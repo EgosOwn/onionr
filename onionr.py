@@ -14,14 +14,14 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import sys
+import sys, api, gui
 class Onionr:
     def __init__(self):
         command = ''
         try:
             command = sys.argv[1].lower()
         except IndexError:
-            pass
+            command = ''
         else:
             if command == 'start':
                 self.daemon()
@@ -31,6 +31,8 @@ class Onionr:
                 self.showStats()
             elif command == 'help' or command == '--help':
                 self.showHelp()
+            else:
+                help(Onionr)
         return
     def daemon(self):
         return
