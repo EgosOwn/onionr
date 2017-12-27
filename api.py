@@ -13,8 +13,8 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-from flask import Flask, request
-app = Flask(__name__)
+import flask
+from flask import request, Response
 import configparser, sys, random
 '''
 Main API
@@ -23,6 +23,8 @@ class API:
     
     def __init__(self, config, debug):
         self.config = config
+        self.debug = debug
+        app = flask.Flask(__name__)
         bindPort = int(self.config['CLIENT']['PORT'])
         clientToken = self.config['CLIENT']['CLIENT HMAC']
 
@@ -32,10 +34,26 @@ class API:
         else:
             self.host = '127.0.0.1' 
 
+        @app.after_request
+        def afterReq(resp):
+            resp.headers['Access-Control-Allow-Origin'] = '*'
+            resp.headers['server'] = 'Onionr'
+            resp.headers['content-type'] = 'text/plain'
+            resp.headers["Content-Security-Policy"] = "default-src 'none'"
+            resp.headers['x-frame-options'] = 'deny'
+            return resp
+            
         @app.route('/client/hello')
         def hello_world():
             self.validateHost()
-            return 'Hello, World!' + request.host
+            resp = Response('Hello, World!' + request.host)
+            return resp
+
+        @app.errorhandler(404)
+        def notfound(err):
+            resp = Response("\_(0_0)_/ I got nothin")
+            resp.headers = getHeaders(resp)
+            return resp
 
         print('Starting client on ' + self.host + ':' + str(bindPort))
         print('Client token:', clientToken)
@@ -43,6 +61,8 @@ class API:
         app.run(host=self.host, port=bindPort, debug=True)
     
     def validateHost(self):
+        if self.debug:
+            return
         # Validate host header, to protect against DNS rebinding attacks
         if request.host != '127.0.0.1:' + str(self.config['CLIENT']['PORT']):
             sys.exit(1)
