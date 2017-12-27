@@ -14,9 +14,26 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import sys, api, gui
+import sys, os, threading, configparser, base64, random
+import gui, api
 class Onionr:
     def __init__(self):
+
+        self.debug = True # Whole application debugging
+
+        os.chdir(sys.path[0])
+        self.config = configparser.ConfigParser()
+        if os.path.exists('data/config.ini'):
+            self.config.read('data/config.ini')
+        else:
+            # Hostname should only be set if different from 127.x.x.x. Important for DNS rebinding attack prevention.
+            if debug:
+                randomPort = 8080
+            else:
+                randomPort = random.randint(1024, 65535)
+            self.config['CLIENT'] = {'CLIENT HMAC': base64.b64encode(os.urandom(32)).decode('utf-8'), 'PORT': randomPort}
+            with open('data/config.ini', 'w') as configfile:
+                self.config.write(configfile)
         command = ''
         try:
             command = sys.argv[1].lower()
@@ -32,9 +49,10 @@ class Onionr:
             elif command == 'help' or command == '--help':
                 self.showHelp()
             else:
-                help(Onionr)
+                return
         return
     def daemon(self):
+        api.API(self.config, self.debug)
         return
     def killDaemon(self):
         return
@@ -43,4 +61,4 @@ class Onionr:
     def showHelp(self):
         return
 
-main = Onionr()
+Onionr()
