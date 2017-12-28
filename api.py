@@ -15,7 +15,7 @@
 '''
 import flask
 from flask import request, Response
-import configparser, sys, random
+import configparser, sys, random, threading
 '''
 Main API
 ''' 
@@ -33,6 +33,10 @@ class API:
             self.host = '127.' + str(hostNums[0]) + '.' + str(hostNums[1]) + '.' + str(hostNums[2])
         else:
             self.host = '127.0.0.1' 
+
+        @app.before_request
+        def beforeReq():
+            return
 
         @app.after_request
         def afterReq(resp):
@@ -58,7 +62,7 @@ class API:
         print('Starting client on ' + self.host + ':' + str(bindPort))
         print('Client token:', clientToken)
 
-        app.run(host=self.host, port=bindPort, debug=True)
+        app.run(host=self.host, port=bindPort, debug=True, threaded=True)
     
     def validateHost(self):
         if self.debug:

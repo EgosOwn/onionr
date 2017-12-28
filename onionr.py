@@ -20,10 +20,14 @@ class Onionr:
     def __init__(self):
 
         # Get configuration and Handle commands
-
+        
         self.debug = True # Whole application debugging
 
         os.chdir(sys.path[0])
+
+        if not os.path.exists('data'):
+            os.mkdir('data')
+
         # Get configuration
         self.config = configparser.ConfigParser()
         if os.path.exists('data/config.ini'):
@@ -31,7 +35,7 @@ class Onionr:
         else:
             # Generate default config
             # Hostname should only be set if different from 127.x.x.x. Important for DNS rebinding attack prevention.
-            if debug:
+            if self.debug:
                 randomPort = 8080
             else:
                 randomPort = random.randint(1024, 65535)
