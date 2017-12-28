@@ -18,10 +18,6 @@ import sys, os, threading, configparser, base64, random
 import gui, api, colors
 from colors import Colors
 
-# Detect python 2
-if sys.version.major == '2':
-    print "Onion requires Python 3"
-
 class Onionr:
     def __init__(self):
         colors = Colors()
@@ -63,6 +59,8 @@ class Onionr:
                 self.showStats()
             elif command == 'help' or command == '--help':
                 self.showHelp()
+            elif command == '':
+                print('Do', sys.argv[0], ' --help for Onionr help.')
             else:
                 print(colors.RED, 'Invalid Command', colors.RESET)
                 return
