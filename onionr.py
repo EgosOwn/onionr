@@ -15,9 +15,16 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 import sys, os, threading, configparser, base64, random
-import gui, api
+import gui, api, colors
+from colors import Colors
+
+# Detect python 2
+if sys.version.major == '2':
+    print "Onion requires Python 3"
+
 class Onionr:
     def __init__(self):
+        colors = Colors()
 
         # Get configuration and Handle commands
         
@@ -47,7 +54,7 @@ class Onionr:
             command = sys.argv[1].lower()
         except IndexError:
             command = ''
-        else:
+        finally:
             if command == 'start':
                 self.daemon()
             elif command == 'stop':
@@ -57,6 +64,7 @@ class Onionr:
             elif command == 'help' or command == '--help':
                 self.showHelp()
             else:
+                print(colors.RED, 'Invalid Command', colors.RESET)
                 return
         return
     def daemon(self):
