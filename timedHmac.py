@@ -33,7 +33,11 @@ class TimedHMAC:
         return
 
     def check(self, data):
+        # Check a hash (and verify time is sane)
         testHash = hmac.HMAC(base64.b64decode(base64Key).decode(), digestmod=self.hashAlgo)
         testHash.update(data + math.floor(time.time()))
         testHash = testHash.hexdigest()
-        if hmac.compare_digest(testHash, self.HMACResult)
+        if hmac.compare_digest(testHash, self.HMACResult):
+            return true
+        else:
+            return false
