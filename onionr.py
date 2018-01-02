@@ -20,11 +20,12 @@ from colors import Colors
 
 class Onionr:
     def __init__(self):
+
         colors = Colors()
 
         # Get configuration and Handle commands
         
-        self.debug = True # Whole application debugging
+        self.debug = False # Whole application debugging
 
         os.chdir(sys.path[0])
 
