@@ -18,11 +18,30 @@ import unittest, sys, os
 
 class OnionrTests(unittest.TestCase):
     def testNone(self):
+        print('--------------------------')
+        print('Running simple program run test')
         # Test just running ./onionr with no arguments
         blank = os.system('./onionr.py')
         if blank != 0:
             self.assertTrue(False)
         else:
             self.assertTrue(True)
-
+    def testQueue(self):
+        print('--------------------------')
+        print('running daemon queue test')
+        # test if the daemon queue can read/write data
+        import core
+        myCore = core.Core()
+        while True:
+            command = myCore.daemonQueue()
+            if command == False:
+                print('The queue is empty (false)')
+                break
+            else:
+                print(command[0])
+        myCore.daemonQueueAdd('testCommand', 'testData')
+        command = myCore.daemonQueue()
+        if command[0] == 'testCommand':
+            if myCore.daemonQueue() == False:
+                print('Succesfully added and read command')
 unittest.main()

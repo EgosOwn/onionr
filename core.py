@@ -31,16 +31,13 @@ class Core:
             c.execute('''CREATE TABLE commands
                         (id integer primary key autoincrement, command text, data text, date text)''')
             conn.commit()
-            print('created table')
         else:
             conn = sqlite3.connect(self.queueDB)
             c = conn.cursor()
             for row in c.execute('SELECT command, data, date, min(ID) FROM commands group by id'):
                 retData = row
-                print(retData)
                 break
             if retData != False:
-                print('3', retData[3])
                 c.execute('delete from commands where id = ?', (retData[3],))
         conn.commit()
         conn.close()
