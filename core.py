@@ -17,26 +17,38 @@ import sqlite3, os, time, math
 class Core:
     def __init__(self):
         self.queueDB = 'data/queue.db'
-        self.daemonQueue() # Call to create the DB if it doesn't exist
+        #self.daemonQueue() # Call to create the DB if it doesn't exist
         return
 
     def daemonQueue(self):
+        # This function intended to be used by the client
         # Queue to exchange data between "client" and server.
         retData = False
-        conn = sqlite3.connect(self.queueDB)
-        c = conn.cursor()
         if not os.path.exists(self.queueDB):
+            conn = sqlite3.connect(self.queueDB)
+            c = conn.cursor()
             # Create table
             c.execute('''CREATE TABLE commands
                         (id integer primary key autoincrement, command text, data text, date text)''')
             conn.commit()
+            print('created table')
         else:
-            retData = c.execute('SELECT command, data, date, min(ID) FROM commands group by id')[0]
+            conn = sqlite3.connect(self.queueDB)
+            c = conn.cursor()
+            for row in c.execute('SELECT command, data, date, min(ID) FROM commands group by id'):
+                retData = row
+                print(retData)
+                break
+            if retData != False:
+                print('3', retData[3])
+                c.execute('delete from commands where id = ?', (retData[3],))
+        conn.commit()
         conn.close()
 
         return retData
 
     def daemonQueueAdd(self, command, data=''):
+        # Intended to be used by the web server
         date = math.floor(time.time())
         conn = sqlite3.connect(self.queueDB)
         c = conn.cursor()
