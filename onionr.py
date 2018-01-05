@@ -43,7 +43,7 @@ class Onionr:
                 randomPort = 8080
             else:
                 randomPort = random.randint(1024, 65535)
-            self.config['CLIENT'] = {'CLIENT HMAC': base64.b64encode(os.urandom(32)).decode('utf-8'), 'PORT': randomPort}
+            self.config['CLIENT'] = {'CLIENT HMAC': base64.b64encode(os.urandom(32)).decode('utf-8'), 'PORT': randomPort, 'API VERSION': '0.0.0'}
             with open('data/config.ini', 'w') as configfile:
                 self.config.write(configfile)
         command = ''
@@ -67,6 +67,8 @@ class Onionr:
                 return
         return
     def daemon(self):
+        os.system('./communicator.py')
+        print('Started communicator')
         api.API(self.config, self.debug)
         return
     def killDaemon(self):

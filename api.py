@@ -15,7 +15,7 @@
 '''
 import flask
 from flask import request, Response, abort
-import configparser, sys, random, threading, hmac, hashlib, base64
+import configparser, sys, random, threading, hmac, hashlib, base64, time, math, gnupg
 
 from core import Core
 '''
@@ -31,6 +31,8 @@ class API:
     def __init__(self, config, debug):
         self.config = config
         self.debug = debug
+        self._privateDelayTime = 3
+        self._core = Core()
         app = flask.Flask(__name__)
         bindPort = int(self.config['CLIENT']['PORT'])
         self.bindPort = bindPort
@@ -44,12 +46,15 @@ class API:
 
         @app.before_request
         def beforeReq():
+            self.requestFailed = False
             return
 
         @app.after_request
         def afterReq(resp):
-            resp.headers['Access-Control-Allow-Origin'] = '*'
-            resp.headers['server'] = 'Onionr'
+            if not self.requestFailed:
+                resp.headers['Access-Control-Allow-Origin'] = '*'
+            else:
+                resp.headers['server'] = 'Onionr'
             resp.headers['content-type'] = 'text/plain'
             resp.headers["Content-Security-Policy"] = "default-src 'none'"
             resp.headers['x-frame-options'] = 'deny'
@@ -57,29 +62,47 @@ class API:
             
         @app.route('/client/')
         def private_handler():
+            startTime = math.floor(time.time())
             # we should keep a hash DB of requests (with hmac) to prevent replays
             action = request.args.get('action')
             #if not self.debug:
             token = request.args.get('token')
             if not self.validateToken(token):
                 abort(403)
-            self.validateHost()
+            self.validateHost('private')
             if action == 'hello':
                 resp = Response('Hello, World! ' + request.host)
             elif action == 'stats':
-                resp =Response('something')
+                resp = Response('something')
+            elif action == 'init':
+                # generate PGP key
+                pass
+
             else:
                 resp = Response('(O_o) Dude what? (invalid command)')
+            endTime = math.floor(time.time())
+            elapsed = endTime - startTime
+            if elapsed < self._privateDelayTime:
+                time.sleep(self._privateDelayTime - elapsed)
             return resp
+
+        @app.route('/public/')
+        def public_handler():
+            # Public means it is publicly network accessible
+            self.validateHost('public')
+            action = request.args.get('action')
+
 
         @app.errorhandler(404)
         def notfound(err):
-            resp = Response("\_(0_0)_/ I got nothin")
+            self.requestFailed = True
+            resp = Response("")
             #resp.headers = getHeaders(resp)
             return resp
         @app.errorhandler(403)
         def authFail(err):
-            resp = Response("Auth required/security failure")
+            self.requestFailed = True
+            resp = Response("403")
             return resp
 
         print('Starting client on ' + self.host + ':' + str(bindPort))
@@ -87,13 +110,17 @@ class API:
 
         app.run(host=self.host, port=bindPort, debug=True, threaded=True)
     
-    def validateHost(self):
+    def validateHost(self, hostType):
         if self.debug:
             return
         # Validate host header, to protect against DNS rebinding attacks
         host = self.host
-        if not request.host.startswith('127'):
-            abort(403)
+        if hostType == 'private':
+            if not request.host.startswith('127'):
+                abort(403)
+        elif hostType == 'public':
+            if not request.host.endswith('onion') and not request.hosst.endswith('i2p'):
+                abort(403)
         # Validate x-requested-with, to protect against CSRF/metadata leaks
         '''
         try:

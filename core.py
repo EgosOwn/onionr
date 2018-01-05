@@ -13,11 +13,16 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import sqlite3, os, time, math
+import sqlite3, os, time, math, gnupg
 class Core:
     def __init__(self):
         self.queueDB = 'data/queue.db'
         #self.daemonQueue() # Call to create the DB if it doesn't exist
+        return
+
+    def generateMainPGP(self):
+        # Generate main pgp key
+        gpg = gnupg.GPG(gnupghome='data/pgp/')
         return
 
     def daemonQueue(self):

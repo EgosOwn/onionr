@@ -17,6 +17,12 @@
 import unittest, sys, os
 
 class OnionrTests(unittest.TestCase):
+    def testPython3(self):
+        if sys.version_info.major != 3:
+            print(sys.version_info.major)
+            self.assertTrue(False)
+        else:
+            self.assertTrue(True)
     def testNone(self):
         print('--------------------------')
         print('Running simple program run test')
