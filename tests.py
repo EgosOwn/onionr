@@ -32,6 +32,17 @@ class OnionrTests(unittest.TestCase):
             self.assertTrue(False)
         else:
             self.assertTrue(True)
+    def testPGPGen(self):
+        print('--------------------------')
+        print('Testing PGP key generation')
+        if os.path.exists('data/pgp/'):
+            self.assertTrue(False)
+        else:
+            import core
+            myCore = core.Core()
+            myCore.generateMainPGP()
+            if os.path.exists('data/pgp/'):
+                self.assertTrue(True)
     def testQueue(self):
         print('--------------------------')
         print('running daemon queue test')

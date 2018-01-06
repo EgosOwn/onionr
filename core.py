@@ -23,6 +23,11 @@ class Core:
     def generateMainPGP(self):
         # Generate main pgp key
         gpg = gnupg.GPG(gnupghome='data/pgp/')
+        input_data = gpg.gen_key_input(key_type="RSA", key_length=2048, name_real='anon', name_comment='Onionr key', name_email='anon@onionr')
+        key = gpg.gen_key(input_data)
+        return
+    
+    def dataDirEncrypt(self):
         return
 
     def daemonQueue(self):

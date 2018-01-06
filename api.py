@@ -76,8 +76,8 @@ class API:
                 resp = Response('something')
             elif action == 'init':
                 # generate PGP key
+                self._core.generateMainPGP()
                 pass
-
             else:
                 resp = Response('(O_o) Dude what? (invalid command)')
             endTime = math.floor(time.time())
