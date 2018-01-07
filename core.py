@@ -13,7 +13,11 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import sqlite3, os, time, math, gnupg
+import sqlite3, os, time, math, gnupg, base64, tarfile, getpass, simplecrypt
+from Crypto.Cipher import AES
+from Crypto import Random
+
+
 class Core:
     def __init__(self):
         self.queueDB = 'data/queue.db'
@@ -28,6 +32,7 @@ class Core:
         return
     
     def dataDirEncrypt(self):
+        simplecrypt.encrypt()
         return
 
     def daemonQueue(self):

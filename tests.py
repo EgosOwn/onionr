@@ -14,7 +14,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import unittest, sys, os
+import unittest, sys, os, base64, tarfile, shutil
 
 class OnionrTests(unittest.TestCase):
     def testPython3(self):
@@ -32,11 +32,19 @@ class OnionrTests(unittest.TestCase):
             self.assertTrue(False)
         else:
             self.assertTrue(True)
+    def testDataEncrypt(self):
+        testFile = open('data/test.txt', 'w')
+        testFile.write("test data")
+        testFile.close()
+        import core
+        myCore = Core.core()
+
+        self.assertTrue(True)
     def testPGPGen(self):
         print('--------------------------')
         print('Testing PGP key generation')
         if os.path.exists('data/pgp/'):
-            self.assertTrue(False)
+            self.assertTrue(True)
         else:
             import core
             myCore = core.Core()
