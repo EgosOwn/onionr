@@ -31,10 +31,31 @@ class Core:
         key = gpg.gen_key(input_data)
         return
     
-    def dataDirEncrypt(self):
-        simplecrypt.encrypt()
+    def dataDirEncrypt(self, password):
+        # Encrypt data directory (don't delete it in this function)
+        if os.path.exists('data.tar'):
+            os.remove('data.tar')
+        tar = tarfile.open("data.tar", "w")
+        for name in ['data']:
+            tar.add(name)
+        tar.close()
+        tarData = open('data.tar', 'r',  encoding = "ISO-8859-1").read()
+        encrypted = simplecrypt.encrypt(password, tarData)
+        open('data-encrypted.dat', 'wb').write(encrypted)
+        os.remove('data.tar')
         return
-
+    def dataDirDecrypt(self, password):
+        # Decrypt data directory
+        if not os.path.exists('data-encrypted.dat'):
+            return (False, 'encrypted archive does not exist')
+        data = open('data-encrypted.dat', 'rb').read()
+        try:
+            decrypted = simplecrypt.decrypt(password, data)
+        except simplecrypt.DecryptionException:
+            return (False, 'wrong password')
+        else:
+            open('data.tar', 'wb').write(decrypted)
+        return (True, '')
     def daemonQueue(self):
         # This function intended to be used by the client
         # Queue to exchange data between "client" and server.
