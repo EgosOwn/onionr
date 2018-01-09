@@ -52,9 +52,12 @@ class Core:
         try:
             decrypted = simplecrypt.decrypt(password, data)
         except simplecrypt.DecryptionException:
-            return (False, 'wrong password')
+            return (False, 'wrong password (or corrupted archive)')
         else:
             open('data.tar', 'wb').write(decrypted)
+            tar = tarfile.open('data.tar')
+            tar.extractall()
+            tar.close()
         return (True, '')
     def daemonQueue(self):
         # This function intended to be used by the client

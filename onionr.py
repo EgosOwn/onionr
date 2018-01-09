@@ -14,8 +14,9 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import sys, os, threading, configparser, base64, random
-import gui, api, colors
+import sys, os, threading, configparser, base64, random, getpass, shutil
+import gui, api, colors, core
+from onionrutils import OnionrUtils
 from colors import Colors
 
 class Onionr:
@@ -23,13 +24,24 @@ class Onionr:
 
         colors = Colors()
 
+        onionrCore = core.Core()
+        onionrUtils = OnionrUtils()
+
         # Get configuration and Handle commands
         
         self.debug = False # Whole application debugging
 
         os.chdir(sys.path[0])
-
-        if not os.path.exists('data'):
+        if os.path.exists('data-encrypted.dat'):
+            while True:
+                print('Enter password to decrypt:')
+                password = getpass.getpass()
+                result = onionrCore.dataDirDecrypt(password)
+                if os.path.exists('data/'):
+                    break
+                else:
+                    print('Failed to decrypt: ' + result[1])
+        else:
             os.mkdir('data')
 
         # Get configuration
@@ -65,6 +77,9 @@ class Onionr:
             else:
                 print(colors.RED, 'Invalid Command', colors.RESET)
                 return
+        encryptionPassword = onionrUtils.getPassword('Enter password to encrypt directory.')
+        onionrCore.dataDirEncrypt(encryptionPassword)
+        shutil.rmtree('data/')
         return
     def daemon(self):
         os.system('./communicator.py')
