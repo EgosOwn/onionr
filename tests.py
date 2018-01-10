@@ -32,7 +32,7 @@ class OnionrTests(unittest.TestCase):
             self.assertTrue(False)
         else:
             self.assertTrue(True)
-    def testPeerDBCreation(self):
+    def testPeer_a_DBCreation(self):
         print('--------------------------')
         print('Running peer db creation test')
         if os.path.exists('data/peers.db'):
@@ -42,6 +42,16 @@ class OnionrTests(unittest.TestCase):
         myCore.createPeerDB()
         if os.path.exists('data/peers.db'):
             self.assertTrue(True)
+        else:
+            self.assertTrue(False)
+    def testPeer_b_addPeerToDB(self):
+        print('--------------------------')
+        print('Running peer db insertion test')
+        import core
+        myCore = core.Core()
+        myCore.createPeerDB()
+        if myCore.addPeer('test'):
+            self.asserTrue(True)
         else:
             self.assertTrue(False)
     def testData_b_Encrypt(self):

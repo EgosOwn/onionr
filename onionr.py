@@ -50,7 +50,7 @@ class Onionr:
             if not os.path.exists('data/'):
                 os.mkdir('data/')
         
-        if os.path.exists('data/peers.db'):
+        if not os.path.exists('data/peers.db'):
             onionrCore.createPeerDB()
             pass
 

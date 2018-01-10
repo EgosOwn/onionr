@@ -33,9 +33,15 @@ class Core:
         key = gpg.gen_key(input_data)
         return
 
-    def addPeer(self, id, name=''):
+    def addPeer(self, peerID, name=''):
         # This function simply adds a peer to the DB
-        return
+        conn = sqlite3.connect(self.peerDB)
+        c = conn.cursor()
+        t = (peerID, name)
+        c.execute('Insert into users (id, name) values(?, ?);', t)
+        conn.commit()
+        conn.close()
+        return True
 
     def createPeerDB(self):
         # generate the peer database
