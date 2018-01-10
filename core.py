@@ -21,6 +21,8 @@ from Crypto import Random
 class Core:
     def __init__(self):
         self.queueDB = 'data/queue.db'
+        self.peerDB = 'data/peers.db'
+
         #self.daemonQueue() # Call to create the DB if it doesn't exist
         return
 
@@ -30,6 +32,27 @@ class Core:
         input_data = gpg.gen_key_input(key_type="RSA", key_length=2048, name_real='anon', name_comment='Onionr key', name_email='anon@onionr')
         key = gpg.gen_key(input_data)
         return
+
+    def addPeer(self, id, name=''):
+        # This function simply adds a peer to the DB
+        return
+
+    def createPeerDB(self):
+        # generate the peer database
+        conn = sqlite3.connect(self.peerDB)
+        c = conn.cursor()
+        c.execute('''
+        create table users(
+        ID text not null,
+        name text,
+        pgpKey text,
+        hmacKey text,
+        forwardKey text,
+        dateSeen not null,
+        trust int);
+        ''')
+        conn.commit()
+        conn.close()
     
     def dataDirEncrypt(self, password):
         # Encrypt data directory (don't delete it in this function)

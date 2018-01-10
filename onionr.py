@@ -21,6 +21,11 @@ from colors import Colors
 
 class Onionr:
     def __init__(self):
+        if os.path.exists('dev-enabled'):
+            print('DEVELOPMENT MODE ENABLED (THIS IS LESS SECURE!)')
+            self._developmentMode = True
+        else:
+            self._developmentMode = False
 
         colors = Colors()
 
@@ -42,7 +47,12 @@ class Onionr:
                 else:
                     print('Failed to decrypt: ' + result[1])
         else:
-            os.mkdir('data')
+            if not os.path.exists('data/'):
+                os.mkdir('data/')
+        
+        if os.path.exists('data/peers.db'):
+            onionrCore.createPeerDB()
+            pass
 
         # Get configuration
         self.config = configparser.ConfigParser()
@@ -76,10 +86,11 @@ class Onionr:
                 print('Do', sys.argv[0], ' --help for Onionr help.')
             else:
                 print(colors.RED, 'Invalid Command', colors.RESET)
-                return
-        encryptionPassword = onionrUtils.getPassword('Enter password to encrypt directory.')
-        onionrCore.dataDirEncrypt(encryptionPassword)
-        shutil.rmtree('data/')
+                
+        if not self._developmentMode:
+            encryptionPassword = onionrUtils.getPassword('Enter password to encrypt directory.')
+            onionrCore.dataDirEncrypt(encryptionPassword)
+            shutil.rmtree('data/')
         return
     def daemon(self):
         os.system('./communicator.py')

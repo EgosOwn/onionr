@@ -29,6 +29,11 @@ class API:
             return True
 
     def __init__(self, config, debug):
+        if os.path.exists('dev-enabled'):
+            print('DEVELOPMENT MODE ENABLED (THIS IS LESS SECURE!)')
+            self._developmentMode = True
+        else:
+            self._developmentMode = False
         self.config = config
         self.debug = debug
         self._privateDelayTime = 3
@@ -91,7 +96,8 @@ class API:
             # Public means it is publicly network accessible
             self.validateHost('public')
             action = request.args.get('action')
-
+            if action == 'firstConnect':
+                pass
 
         @app.errorhandler(404)
         def notfound(err):
@@ -122,10 +128,9 @@ class API:
             if not request.host.endswith('onion') and not request.hosst.endswith('i2p'):
                 abort(403)
         # Validate x-requested-with, to protect against CSRF/metadata leaks
-        '''
-        try:
-            request.headers['x-requested-with']
-        except:
-            # we exit rather than abort to avoid fingerprinting
-            sys.exit(1)
-        '''
+        if self._developmentMode:
+            try:
+                request.headers['x-requested-with']
+            except:
+                # we exit rather than abort to avoid fingerprinting
+                sys.exit(1)
