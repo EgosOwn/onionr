@@ -15,7 +15,7 @@
 '''
 import flask
 from flask import request, Response, abort
-import configparser, sys, random, threading, hmac, hashlib, base64, time, math, gnupg
+import configparser, sys, random, threading, hmac, hashlib, base64, time, math, gnupg, os
 
 from core import Core
 '''
@@ -96,6 +96,8 @@ class API:
             # Public means it is publicly network accessible
             self.validateHost('public')
             action = request.args.get('action')
+            requestingPeer = request.args.get('myID')
+            
             if action == 'firstConnect':
                 pass
 
