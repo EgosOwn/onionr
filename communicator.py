@@ -19,5 +19,15 @@ import core
 class OnionrCommunicate:
     def __init__(self):
         return
+    def getKey(self, peerID):
+        '''This function contacts a peer and gets their main PGP key.
+        This is safe because Tor or I2P is used, but it does not insure that the person is who they say they are
+        '''
+        url = 'http://' + peerID + '/public/?action=getPGP'
+        r = requests.get(url, headers=headers)
+        response = r.text
+        return response
+
+
 
 OnionrCommunicate()

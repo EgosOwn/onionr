@@ -42,6 +42,7 @@ class API:
         bindPort = int(self.config['CLIENT']['PORT'])
         self.bindPort = bindPort
         self.clientToken = self.config['CLIENT']['CLIENT HMAC']
+        print(self.clientToken)
 
         if not debug:
             hostNums = [random.randint(1, 255), random.randint(1, 255), random.randint(1, 255)]
@@ -99,6 +100,7 @@ class API:
             requestingPeer = request.args.get('myID')
             
             if action == 'firstConnect':
+                
                 pass
 
         @app.errorhandler(404)
@@ -130,7 +132,7 @@ class API:
             if not request.host.endswith('onion') and not request.hosst.endswith('i2p'):
                 abort(403)
         # Validate x-requested-with, to protect against CSRF/metadata leaks
-        if self._developmentMode:
+        if not self._developmentMode:
             try:
                 request.headers['x-requested-with']
             except:
