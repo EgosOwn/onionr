@@ -14,12 +14,16 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import sqlite3, requests, hmac, hashlib
+import sqlite3, requests, hmac, hashlib, time
 import core
 class OnionrCommunicate:
     def __init__(self):
+        self._core = core.Core()
+        while True:
+            print('Onionr daemon running')
+            time.sleep(2)
         return
-    def getKey(self, peerID):
+    def getRemotePeerKey(self, peerID):
         '''This function contacts a peer and gets their main PGP key.
         This is safe because Tor or I2P is used, but it does not insure that the person is who they say they are
         '''

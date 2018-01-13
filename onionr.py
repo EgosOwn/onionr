@@ -14,7 +14,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import sys, os, threading, configparser, base64, random, getpass, shutil
+import sys, os, configparser, base64, random, getpass, shutil, subprocess
 import gui, api, colors, core
 from onionrutils import OnionrUtils
 from colors import Colors
@@ -93,8 +93,9 @@ class Onionr:
             shutil.rmtree('data/')
         return
     def daemon(self):
-        os.system('./communicator.py')
-        print('Started communicator')
+        if not os.environ.get("WERKZEUG_RUN_MAIN") == "true":
+            subprocess.Popen(["./communicator.py"])
+            print('Started communicator')
         api.API(self.config, self.debug)
         return
     def killDaemon(self):
