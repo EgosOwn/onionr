@@ -37,8 +37,8 @@ class Core:
         # This function simply adds a peer to the DB
         conn = sqlite3.connect(self.peerDB)
         c = conn.cursor()
-        t = (peerID, name)
-        c.execute('Insert into users (id, name) values(?, ?);', t)
+        t = (peerID, name, 'unknown')
+        c.execute('Insert into users (id, name, dateSeen) values(?, ?, ?);', t)
         conn.commit()
         conn.close()
         return True

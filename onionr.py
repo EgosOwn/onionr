@@ -1,6 +1,12 @@
 #!/usr/bin/env python3
 '''
-    Onionr - P2P Microblogging Platform & Social network. Run with 'help' for usage.
+    Onionr - P2P Microblogging Platform & Social network. 
+
+    Onionr is the name for both the protocol and the original/reference software.
+
+    Run with 'help' for usage.
+'''
+'''
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -21,6 +27,10 @@ from colors import Colors
 
 class Onionr:
     def __init__(self):
+        '''Main Onionr class. This is for the CLI program, and does not handle much of the logic.
+        In general, external programs and plugins should not use this class.
+
+        '''
         if os.path.exists('dev-enabled'):
             print('DEVELOPMENT MODE ENABLED (THIS IS LESS SECURE!)')
             self._developmentMode = True
@@ -35,8 +45,11 @@ class Onionr:
         # Get configuration and Handle commands
         
         self.debug = False # Whole application debugging
+        try:
+            os.chdir(sys.path[0])
+        except FileNotFoundError:
+            pass
 
-        os.chdir(sys.path[0])
         if os.path.exists('data-encrypted.dat'):
             while True:
                 print('Enter password to decrypt:')
@@ -94,7 +107,7 @@ class Onionr:
         return
     def daemon(self):
         if not os.environ.get("WERKZEUG_RUN_MAIN") == "true":
-            subprocess.Popen(["./communicator.py"])
+            subprocess.Popen(["./communicator.py", "run"])
             print('Started communicator')
         api.API(self.config, self.debug)
         return
