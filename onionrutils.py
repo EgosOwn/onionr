@@ -14,10 +14,12 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 # Misc functions that do not fit in the main api, but are useful
-import getpass
+import getpass, sys
 class OnionrUtils():
     def __init__(self):
         return
+    def printErr(self, text='an error occured'):
+        sys.stderr.write(text + '\n')
     def getPassword(self, message='Enter password: '):
         # Get a password safely with confirmation and return it
         while True:

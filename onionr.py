@@ -31,6 +31,7 @@ class Onionr:
         In general, external programs and plugins should not use this class.
 
         '''
+        self.runningDaemon = False
         if os.path.exists('dev-enabled'):
             print('DEVELOPMENT MODE ENABLED (THIS IS LESS SECURE!)')
             self._developmentMode = True
@@ -106,12 +107,17 @@ class Onionr:
             shutil.rmtree('data/')
         return
     def daemon(self):
+        ''' Start the Onionr communication daemon
+        '''
         if not os.environ.get("WERKZEUG_RUN_MAIN") == "true":
             subprocess.Popen(["./communicator.py", "run"])
             print('Started communicator')
         api.API(self.config, self.debug)
         return
     def killDaemon(self):
+        if self.runningDaemon == False:
+            onionrUtils.printErr('No known daemon is running')
+            sys.exit(1)
         return
     def showStats(self):
         return
