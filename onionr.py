@@ -20,7 +20,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import sys, os, configparser, base64, random, getpass, shutil, subprocess
+import sys, os, configparser, base64, random, getpass, shutil, subprocess, requests
 import gui, api, colors, core
 from onionrutils import OnionrUtils
 from colors import Colors
@@ -31,7 +31,6 @@ class Onionr:
         In general, external programs and plugins should not use this class.
 
         '''
-        self.runningDaemon = False
         if os.path.exists('dev-enabled'):
             print('DEVELOPMENT MODE ENABLED (THIS IS LESS SECURE!)')
             self._developmentMode = True
@@ -40,8 +39,8 @@ class Onionr:
 
         colors = Colors()
 
-        onionrCore = core.Core()
-        onionrUtils = OnionrUtils()
+        self.onionrCore = core.Core()
+        self.onionrUtils = OnionrUtils()
 
         # Get configuration and Handle commands
         
@@ -55,7 +54,7 @@ class Onionr:
             while True:
                 print('Enter password to decrypt:')
                 password = getpass.getpass()
-                result = onionrCore.dataDirDecrypt(password)
+                result = self.onionrCore.dataDirDecrypt(password)
                 if os.path.exists('data/'):
                     break
                 else:
@@ -65,7 +64,7 @@ class Onionr:
                 os.mkdir('data/')
         
         if not os.path.exists('data/peers.db'):
-            onionrCore.createPeerDB()
+            self.onionrCore.createPeerDB()
             pass
 
         # Get configuration
@@ -89,7 +88,16 @@ class Onionr:
             command = ''
         finally:
             if command == 'start':
-                self.daemon()
+                if os.path.exists('.onionr-lock'):
+                    self.onionrUtils.printErr('Cannot start. Daemon is already running, or it did not exit cleanly.\n(if you are sure that there is not a daemon running, delete .onionr-lock & try again).')
+                else:
+                    if not self.debug and not self._developmentMode:
+                        lockFile = open('.onionr-lock', 'w')
+                        lockFile.write('')
+                        lockFile.close()
+                    self.daemon()
+                    if not self.debug and not self._developmentMode:
+                        os.remove('.onionr-lock')
             elif command == 'stop':
                 self.killDaemon()
             elif command == 'stats':
@@ -102,8 +110,8 @@ class Onionr:
                 print(colors.RED, 'Invalid Command', colors.RESET)
                 
         if not self._developmentMode:
-            encryptionPassword = onionrUtils.getPassword('Enter password to encrypt directory.')
-            onionrCore.dataDirEncrypt(encryptionPassword)
+            encryptionPassword = self.onionrUtils.getPassword('Enter password to encrypt directory.')
+            self.onionrCore.dataDirEncrypt(encryptionPassword)
             shutil.rmtree('data/')
         return
     def daemon(self):
@@ -115,13 +123,20 @@ class Onionr:
         api.API(self.config, self.debug)
         return
     def killDaemon(self):
-        if self.runningDaemon == False:
-            onionrUtils.printErr('No known daemon is running')
-            sys.exit(1)
+        '''Shutdown the Onionr Daemon'''
+        print('Killing the running daemon')
+        try:
+            self.onionrUtils.localCommand('shutdown')
+        except requests.exceptions.ConnectionError:
+            pass
+        else:
+            self.onionrCore.daemonQueueAdd('shutdown')
         return
     def showStats(self):
+        '''Display statistics and exit'''
         return
     def showHelp(self):
+        '''Show help for Onionr'''
         return
 
 Onionr()

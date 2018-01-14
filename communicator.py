@@ -28,6 +28,14 @@ class OnionrCommunicate:
         This class handles communication with nodes in the Onionr network.
         '''
         self._core = core.Core()
+        while True:
+            command = self._core.daemonQueue()
+            print('Daemon heartbeat')
+            if command != False:
+                if command[0] == 'shutdown':
+                    print('Daemon recieved exit command.')
+                    break
+            time.sleep(1)
         return
     def getRemotePeerKey(self, peerID):
         '''This function contacts a peer and gets their main PGP key.

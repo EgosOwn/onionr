@@ -1,5 +1,9 @@
 '''
     Onionr - P2P Microblogging Platform & Social network
+
+    This file handles all incoming http requests to the client, using Flask
+'''
+'''
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -15,20 +19,27 @@
 '''
 import flask
 from flask import request, Response, abort
+from multiprocessing import Process
 import configparser, sys, random, threading, hmac, hashlib, base64, time, math, gnupg, os
 
 from core import Core
-'''
-Main API
-''' 
 class API:
+    ''' Main http api (flask)'''
     def validateToken(self, token):
+        '''
+        Validate if the client token (hmac) matches the given token
+        '''
         if self.clientToken != token:
             return False
         else:
             return True
 
     def __init__(self, config, debug):
+        ''' Initialize the api server, preping variables for later use
+        This initilization defines all of the API entry points and handlers for the endpoints and errors
+
+        This also saves the used host (random localhost IP address) to the data folder in host.txt
+        '''
         if os.path.exists('dev-enabled'):
             print('DEVELOPMENT MODE ENABLED (THIS IS LESS SECURE!)')
             self._developmentMode = True
@@ -44,14 +55,20 @@ class API:
         self.clientToken = self.config['CLIENT']['CLIENT HMAC']
         print(self.clientToken)
 
-        if not debug:
+        if not debug and not self._developmentMode:
             hostNums = [random.randint(1, 255), random.randint(1, 255), random.randint(1, 255)]
             self.host = '127.' + str(hostNums[0]) + '.' + str(hostNums[1]) + '.' + str(hostNums[2])
         else:
             self.host = '127.0.0.1' 
+        hostFile = open('data/host.txt', 'w')
+        hostFile.write(self.host)
+        hostFile.close()
 
         @app.before_request
         def beforeReq():
+            '''
+            Simply define the request as not having yet failed, before every request.
+            '''
             self.requestFailed = False
             return
 
@@ -78,6 +95,9 @@ class API:
             self.validateHost('private')
             if action == 'hello':
                 resp = Response('Hello, World! ' + request.host)
+            elif action == 'shutdown':
+                request.environ.get('werkzeug.server.shutdown')()
+                resp = Response('Goodbye')
             elif action == 'stats':
                 resp = Response('something')
             elif action == 'init':
@@ -100,7 +120,6 @@ class API:
             requestingPeer = request.args.get('myID')
             
             if action == 'firstConnect':
-                
                 pass
 
         @app.errorhandler(404)
@@ -121,6 +140,12 @@ class API:
         app.run(host=self.host, port=bindPort, debug=True, threaded=True)
     
     def validateHost(self, hostType):
+        ''' Validate various features of the request including:
+            If private (/client/), is the host header local?
+            If public (/public/), is the host header onion or i2p?
+            
+            Was x-request-with used?
+        '''
         if self.debug:
             return
         # Validate host header, to protect against DNS rebinding attacks

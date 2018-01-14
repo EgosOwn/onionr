@@ -1,5 +1,9 @@
 '''
     Onionr - P2P Microblogging Platform & Social network
+
+    Core Onionr library, useful for external programs. Handles peer processing and cryptography.
+'''
+'''
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -20,6 +24,9 @@ from Crypto import Random
 
 class Core:
     def __init__(self):
+        '''
+        Initialize Core Onionr library
+        '''
         self.queueDB = 'data/queue.db'
         self.peerDB = 'data/peers.db'
 
@@ -27,6 +34,8 @@ class Core:
         return
 
     def generateMainPGP(self):
+        ''' Generate the main PGP key for our client. Should not be done often. 
+        Uses own PGP home folder in the data/ directory. '''
         # Generate main pgp key
         gpg = gnupg.GPG(gnupghome='data/pgp/')
         input_data = gpg.gen_key_input(key_type="RSA", key_length=2048, name_real='anon', name_comment='Onionr key', name_email='anon@onionr')
@@ -34,6 +43,8 @@ class Core:
         return
 
     def addPeer(self, peerID, name=''):
+        ''' Add a peer by their ID, with an optional name, to the peer database.'''
+        ''' DOES NO SAFETY CHECKS if the ID is valid, but prepares the insertion. '''
         # This function simply adds a peer to the DB
         conn = sqlite3.connect(self.peerDB)
         c = conn.cursor()
@@ -44,6 +55,9 @@ class Core:
         return True
 
     def createPeerDB(self):
+        '''
+        Generate the peer sqlite3 database and populate it with the peers table.
+        '''
         # generate the peer database
         conn = sqlite3.connect(self.peerDB)
         c = conn.cursor()
@@ -61,6 +75,9 @@ class Core:
         conn.close()
     
     def dataDirEncrypt(self, password):
+        '''
+        Encrypt the data directory on Onionr shutdown
+        '''
         # Encrypt data directory (don't delete it in this function)
         if os.path.exists('data.tar'):
             os.remove('data.tar')
@@ -74,6 +91,9 @@ class Core:
         os.remove('data.tar')
         return
     def dataDirDecrypt(self, password):
+        '''
+        Decrypt the data directory on startup
+        '''
         # Decrypt data directory
         if not os.path.exists('data-encrypted.dat'):
             return (False, 'encrypted archive does not exist')
@@ -89,6 +109,9 @@ class Core:
             tar.close()
         return (True, '')
     def daemonQueue(self):
+        '''
+        Gives commands to the communication proccess/daemon by reading an sqlite3 database
+        '''
         # This function intended to be used by the client
         # Queue to exchange data between "client" and server.
         retData = False
@@ -113,6 +136,9 @@ class Core:
         return retData
 
     def daemonQueueAdd(self, command, data=''):
+        '''
+        Add a command to the daemon queue, used by the communication daemon (communicator.py)
+        '''
         # Intended to be used by the web server
         date = math.floor(time.time())
         conn = sqlite3.connect(self.queueDB)
