@@ -1,5 +1,7 @@
 # Onionr
 
+![build status](https://travis-ci.org/beardog108/onionr.svg?branch=master)
+
 P2P microblogging platform and social network, using Tor & I2P.
 
 Major work in progress.
