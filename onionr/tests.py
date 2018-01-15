@@ -110,4 +110,5 @@ class OnionrTests(unittest.TestCase):
         if command[0] == 'testCommand':
             if myCore.daemonQueue() == False:
                 print('Succesfully added and read command')
+os.chdir(sys.path[0])
 unittest.main()
