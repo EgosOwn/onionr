@@ -1,0 +1,6 @@
+simple_crypt==4.1.7
+requests==2.18.4
+setuptools==38.2.4
+Flask==0.12.2
+pycrypto==2.6.1
+gnupg==2.3.1

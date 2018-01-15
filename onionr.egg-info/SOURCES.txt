@@ -1,0 +1,9 @@
+setup.cfg
+setup.py
+onionr/__init__.py
+onionr.egg-info/PKG-INFO
+onionr.egg-info/SOURCES.txt
+onionr.egg-info/dependency_links.txt
+onionr.egg-info/entry_points.txt
+onionr.egg-info/top_level.txt
+onionr.egg-info/zip-safe
