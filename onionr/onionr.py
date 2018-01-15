@@ -31,6 +31,10 @@ class Onionr:
         In general, external programs and plugins should not use this class.
 
         '''
+        try:
+            os.chdir(sys.path[0])
+        except FileNotFoundError:
+            pass
         if os.path.exists('dev-enabled'):
             print('DEVELOPMENT MODE ENABLED (THIS IS LESS SECURE!)')
             self._developmentMode = True
@@ -45,10 +49,6 @@ class Onionr:
         # Get configuration and Handle commands
         
         self.debug = False # Whole application debugging
-        try:
-            os.chdir(sys.path[0])
-        except FileNotFoundError:
-            pass
 
         if os.path.exists('data-encrypted.dat'):
             while True:
