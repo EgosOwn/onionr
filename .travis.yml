@@ -4,4 +4,4 @@ python:
 # install dependencies
 install:
         - pip install -r requirements.txt
-script: onionr/test.sh
+script: beardog108/onionr/test.sh
