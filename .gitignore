@@ -2,4 +2,3 @@ __pycache__/
 onionr/data/config.ini
 onionr/data/*.db
 onionr/data-old/*
-onionr/dev-enabled
