@@ -19,7 +19,7 @@ and code to operate as a daemon, getting commands from the command queue databas
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import sqlite3, requests, hmac, hashlib, time, sys
+import sqlite3, requests, hmac, hashlib, time, sys, os
 import core
 class OnionrCommunicate:
     def __init__(self):
@@ -47,10 +47,14 @@ class OnionrCommunicate:
         response = r.text
         return response
 shouldRun = False
+debug = False
+developmentMode = False
+if os.path.exists('dev-enabled'):
+    developmentMode = True
 try:
     if sys.argv[1] == 'run':
         shouldRun = True
 except IndexError:
     pass
 if shouldRun:
-    OnionrCommunicate()
+    OnionrCommunicate(debug, developmentMode)
