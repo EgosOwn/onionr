@@ -18,7 +18,12 @@ setup(name='onionr',
       include_package_data=True,
       zip_safe=True,
       install_requires=[
-          # -*- Extra requirements: -*-
+          'simple_crypt',
+          'requests',
+          'setuptools',
+          'Flask',
+          'pycrypto',
+          'gnupg'
       ],
       entry_points="""
       # -*- Entry points: -*-
