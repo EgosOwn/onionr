@@ -22,7 +22,7 @@ and code to operate as a daemon, getting commands from the command queue databas
 import sqlite3, requests, hmac, hashlib, time, sys, os
 import core
 class OnionrCommunicate:
-    def __init__(self):
+    def __init__(self, debug, developmentMode):
         ''' OnionrCommunicate
 
         This class handles communication with nodes in the Onionr network.
@@ -57,4 +57,7 @@ try:
 except IndexError:
     pass
 if shouldRun:
-    OnionrCommunicate(debug, developmentMode)
+    try:
+        OnionrCommunicate(debug, developmentMode)
+    except KeyboardInterrupt:
+        pass
