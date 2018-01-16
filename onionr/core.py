@@ -148,3 +148,9 @@ class Core:
         conn.commit()
         conn.close()
         return
+    
+    def generateHMAC(self):
+        '''
+        generate and return an HMAC key
+        '''
+        return

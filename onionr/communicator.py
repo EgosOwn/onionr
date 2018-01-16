@@ -46,6 +46,16 @@ class OnionrCommunicate:
         r = requests.get(url, headers=headers)
         response = r.text
         return response
+    def shareHMAC(self, peerID, key):
+        '''This function shares an HMAC key to a peer
+        '''
+        return
+    def getPeerProof(self, peerID):
+        '''This function gets the current peer proof requirement'''
+        return
+    def sendPeerProof(self, peerID, data):
+        '''This function sends the proof result to a peer previously fetched with getPeerProof'''
+        return
 shouldRun = False
 debug = False
 developmentMode = False
