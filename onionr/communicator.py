@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 '''
-Onionr - P2P Microblogging Platform & Social network. 
-    
+Onionr - P2P Microblogging Platform & Social network.
+
 This file contains both the OnionrCommunicate class for communcating with peers
 and code to operate as a daemon, getting commands from the command queue database (see core.Core.daemonQueue)
 '''
@@ -39,7 +39,7 @@ class OnionrCommunicate:
         return
     def getRemotePeerKey(self, peerID):
         '''This function contacts a peer and gets their main PGP key.
-        
+
         This is safe because Tor or I2P is used, but it does not ensure that the person is who they say they are
         '''
         url = 'http://' + peerID + '/public/?action=getPGP'

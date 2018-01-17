@@ -34,7 +34,7 @@ class Core:
         return
 
     def generateMainPGP(self):
-        ''' Generate the main PGP key for our client. Should not be done often. 
+        ''' Generate the main PGP key for our client. Should not be done often.
         Uses own PGP home folder in the data/ directory. '''
         # Generate main pgp key
         gpg = gnupg.GPG(homedir='data/pgp/')
@@ -49,7 +49,7 @@ class Core:
         conn = sqlite3.connect(self.peerDB)
         c = conn.cursor()
         t = (peerID, name, 'unknown')
-        c.execute('Insert into users (id, name, dateSeen) values(?, ?, ?);', t)
+        c.execute('Insert into peers (id, name, dateSeen) values(?, ?, ?);', t)
         conn.commit()
         conn.close()
         return True
@@ -62,7 +62,7 @@ class Core:
         conn = sqlite3.connect(self.peerDB)
         c = conn.cursor()
         c.execute('''
-        create table users(
+        create table peers(
         ID text not null,
         name text,
         pgpKey text,
@@ -74,7 +74,7 @@ class Core:
         ''')
         conn.commit()
         conn.close()
-    
+
     def dataDirEncrypt(self, password):
         '''
         Encrypt the data directory on Onionr shutdown
@@ -149,9 +149,10 @@ class Core:
         conn.commit()
         conn.close()
         return
-    
+
     def generateHMAC(self):
         '''
         generate and return an HMAC key
         '''
-        return
+        key = base64.b64encode(os.urandom(32))
+        return key

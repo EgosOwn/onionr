@@ -14,7 +14,7 @@ There are no central servers and all traffic is peer to peer by default (routed 
 User IDs are simply Tor onion service/I2P host id + PGP fingerprint.
 Clients consolidate feeds from peers into 1 “timeline” using RSS format.
 Private messages are only accessible by the intended peer based on the PGP id.
-Onionr is not intended to be a replacement for Ricochet or OnionShare.
+Onionr is not intended to be a replacement for Ricochet, OnionShare, or Briar.
 All traffic is over onion/I2P because if only some was, then that would make that traffic inherently suspicious.
 ## Goals:
     • Selective sharing of information with friends & public
@@ -54,6 +54,9 @@ Clients MUST use HTTP(s) to communicate with one another to maintain compatibili
     Posts can contain text and images. All posts MUST be time stamped.
     Images SHOULD not be displayed by non-friends by default, to prevent unwanted viewing of offensive material & to reduce attack surface.
     All received posts must be verified to be stored and/or displayed to the user.
+
+    All data being transfered MUST be encrypted to the end node receiving the data, then the data MUST be encrypted the node(s) transporting/storing the data,
+
      Posts have two settings:
         • Friends only:
             ◦ Posts MUST be encrypted to all trusted peers via AES256-HMAC-SHA256 and PGP signed (signed before encryption) and time stamped to prevent replaying. A temporary RSA key for use in every post (or message) is exchanged every X many configured post (or message), for use in addition with PGP and the HMAC.
@@ -64,8 +67,8 @@ Clients MUST use HTTP(s) to communicate with one another to maintain compatibili
     Private messages are messages that can have attached images. They MUST be encrypted via AES256-HMAC-SHA256 and PGP signed (signed before encryption) and time stamped to prevent replaying. A temporary RSA key for use in every message is exchanged every X many configured messages (or posts), for use in addition with PGP and the HMAC.
     When both peers are online messages SHOULD be dispatched directly between peers.
     All messages must be verified prior to being displayed.
-    
-    CLients SHOULD allow configurable message padding.
+
+    Clients SHOULD allow configurable message padding.
 ## Spam mitigation
 
 To send or receive data, a node can optionally request that the other node generate a hash that when in hexadecimal representation contains a random string at a random location in the string. Clients will configure what difficulty to request, and what difficulty is acceptable for themselves to perform. Difficulty should correlate with recent network & disk usage and data size. Friends can be configured to have less strict (to non existent) limits, separately from strangers. (proof of work).

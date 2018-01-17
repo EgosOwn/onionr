@@ -90,6 +90,17 @@ class OnionrTests(unittest.TestCase):
             myCore.generateMainPGP()
             if os.path.exists('data/pgp/'):
                 self.assertTrue(True)
+    def testHMACGen(self):
+        print('--------------------------')
+        print('running daemon queue test')
+        # Test if hmac key generation is working
+        import core
+        myCore = core.Core()
+        key = myCore.generateHMAC()
+        if len(key) > 10:
+            self.assertTrue(True)
+        else:
+            self.assertTrue(False)
     def testQueue(self):
         print('--------------------------')
         print('running daemon queue test')
