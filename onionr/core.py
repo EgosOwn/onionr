@@ -69,6 +69,7 @@ class Core:
         hmacKey text,
         forwardKey text,
         dateSeen not null,
+        bytesStored int,
         trust int);
         ''')
         conn.commit()
