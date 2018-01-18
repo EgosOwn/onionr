@@ -30,7 +30,8 @@ class OnionrCommunicate:
         self._core = core.Core()
         while True:
             command = self._core.daemonQueue()
-            print('Daemon heartbeat')
+            if debug:
+                print('Daemon heartbeat')
             if command != False:
                 if command[0] == 'shutdown':
                     print('Daemon recieved exit command.')
