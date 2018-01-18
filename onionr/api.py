@@ -118,9 +118,15 @@ class API:
             self.validateHost('public')
             action = request.args.get('action')
             requestingPeer = request.args.get('myID')
-            
+            data = request.args.get('data')
             if action == 'firstConnect':
                 pass
+            elif action == 'ping':
+                resp = Response("pong!")
+            elif action == 'setHMAC':
+                pass
+
+            return resp
 
         @app.errorhandler(404)
         def notfound(err):
@@ -154,7 +160,7 @@ class API:
             if not request.host.startswith('127'):
                 abort(403)
         elif hostType == 'public':
-            if not request.host.endswith('onion') and not request.hosst.endswith('i2p'):
+            if not request.host.endswith('onion') and not request.host.endswith('i2p'):
                 abort(403)
         # Validate x-requested-with, to protect against CSRF/metadata leaks
         if not self._developmentMode:
