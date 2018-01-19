@@ -17,7 +17,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import subprocess, os
+import subprocess, os, random, sys
 class NetController:
     '''NetController
     This class handles hidden service setup on Tor and I2P
@@ -25,8 +25,9 @@ class NetController:
     def __init__(self, hsPort):
         self.torConfigLocation = 'data/torrc'
         self.readyState = False
-        self.socksPort = socksPort
+        self.socksPort = random.randint(1024, 65535)
         self.hsPort = hsPort
+        self.myID = ''
         if os.path.exists(self.torConfigLocation):
             torrc = open(self.torConfigLocation, 'r')
             if not self.hsPort in torrc.read():
@@ -35,9 +36,9 @@ class NetController:
     def generateTorrc(self):
         if os.path.exists(self.torConfigLocation):
             os.remove(self.torConfigLocation)
-        torrcData = '''SOCKSPORT ''' + self.socksPort + '''
-HiddenServiceData data/hs/
-HiddenServicePort 80 127.0.0.1:''' + self.hsPort + '''
+        torrcData = '''SOCKSPORT ''' + str(self.socksPort) + '''
+HiddenServiceDir data/hs/
+HiddenServicePort 80 127.0.0.1:''' + str(self.hsPort) + '''
         '''
         torrc = open(self.torConfigLocation, 'w')
         torrc.write(torrcData)
@@ -45,7 +46,14 @@ HiddenServicePort 80 127.0.0.1:''' + self.hsPort + '''
         return
 
     def startTor(self):
-        if not os.path.exists(self.torConfigLocation):
-            self.generateTorrc()
-        subprocess.Popen(['tor', '-f ' + self.torConfigLocation])
+        self.generateTorrc()
+        tor = subprocess.Popen(['tor', '-f', self.torConfigLocation], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        for line in iter(tor.stdout.readline, b''):
+            if 'Bootstrapped 100%: Done' in line.decode():
+                break
+        print('Finished starting Tor')
+        self.readyState = True
+        myID = open('data/hs/hostname', 'r')
+        self.myID = myID.read()
+        myID.close()
         return

@@ -20,7 +20,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import sys, os, configparser, base64, random, getpass, shutil, subprocess, requests
+import sys, os, configparser, base64, random, getpass, shutil, subprocess, requests, time
 import gui, api, colors, core
 from onionrutils import OnionrUtils
 from colors import Colors
@@ -119,10 +119,10 @@ class Onionr:
         ''' Start the Onionr communication daemon
         '''
         if not os.environ.get("WERKZEUG_RUN_MAIN") == "true":
-            net = NetController(self.config['PORT'])
+            net = NetController(self.config['CLIENT']['PORT'])
             print('Tor is starting...')
-            net.startTor(self.config['CLIENT']['PORT'])
-            time.sleep(5)
+            net.startTor()
+            time.sleep(1)
             subprocess.Popen(["./communicator.py", "run"])
             print('Started communicator')
         api.API(self.config, self.debug)
