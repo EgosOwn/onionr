@@ -20,7 +20,7 @@
 import sqlite3, os, time, math, gnupg, base64, tarfile, getpass, simplecrypt
 from Crypto.Cipher import AES
 from Crypto import Random
-
+import netcontroller
 
 class Core:
     def __init__(self):

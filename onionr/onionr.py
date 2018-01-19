@@ -24,6 +24,7 @@ import sys, os, configparser, base64, random, getpass, shutil, subprocess, reque
 import gui, api, colors, core
 from onionrutils import OnionrUtils
 from colors import Colors
+from netcontroller import NetController
 
 class Onionr:
     def __init__(self):
@@ -118,6 +119,10 @@ class Onionr:
         ''' Start the Onionr communication daemon
         '''
         if not os.environ.get("WERKZEUG_RUN_MAIN") == "true":
+            net = NetController(self.config['PORT'])
+            print('Tor is starting...')
+            net.startTor(self.config['CLIENT']['PORT'])
+            time.sleep(5)
             subprocess.Popen(["./communicator.py", "run"])
             print('Started communicator')
         api.API(self.config, self.debug)

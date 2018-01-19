@@ -17,21 +17,35 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import subprocess
+import subprocess, os
 class NetController:
     '''NetController
     This class handles hidden service setup on Tor and I2P
     '''
-    def __init__(self, hsPort, socksPort):
+    def __init__(self, hsPort):
         self.torConfigLocation = 'data/torrc'
         self.readyState = False
+        self.socksPort = socksPort
+        self.hsPort = hsPort
+        if os.path.exists(self.torConfigLocation):
+            torrc = open(self.torConfigLocation, 'r')
+            if not self.hsPort in torrc.read():
+                os.remove(self.torConfigLocation)
         return
     def generateTorrc(self):
-        torrcData = '''SOCKSPORT 
-
+        if os.path.exists(self.torConfigLocation):
+            os.remove(self.torConfigLocation)
+        torrcData = '''SOCKSPORT ''' + self.socksPort + '''
+HiddenServiceData data/hs/
+HiddenServicePort 80 127.0.0.1:''' + self.hsPort + '''
         '''
+        torrc = open(self.torConfigLocation, 'w')
+        torrc.write(torrcData)
+        torrc.close()
         return
 
     def startTor(self):
+        if not os.path.exists(self.torConfigLocation):
+            self.generateTorrc()
         subprocess.Popen(['tor', '-f ' + self.torConfigLocation])
         return

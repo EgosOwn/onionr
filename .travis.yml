@@ -3,6 +3,6 @@ python:
         - "3.6.4"
 # install dependencies
 install:
-        - sudo apt install gnupg
+        - sudo apt install gnupg tor
         - pip install -r requirements.txt
 script: ./test.sh
