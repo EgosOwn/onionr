@@ -23,6 +23,7 @@ from multiprocessing import Process
 import configparser, sys, random, threading, hmac, hashlib, base64, time, math, gnupg, os
 
 from core import Core
+import onionrutils
 class API:
     ''' Main http api (flask)'''
     def validateToken(self, token):
@@ -49,6 +50,7 @@ class API:
         self.debug = debug
         self._privateDelayTime = 3
         self._core = Core()
+        self._utils = onionrutils.OnionrUtils()
         app = flask.Flask(__name__)
         bindPort = int(self.config['CLIENT']['PORT'])
         self.bindPort = bindPort
@@ -126,7 +128,7 @@ class API:
             elif action == 'setHMAC':
                 pass
             elif action == 'getPGP':
-                ascii_armored_public_keys = gpg.export_keys('')
+                resp = Response(self._utils.exportMyPubkey())
 
             return resp
 
