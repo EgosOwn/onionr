@@ -57,6 +57,7 @@ class OnionrCommunicate:
     def sendPeerProof(self, peerID, data):
         '''This function sends the proof result to a peer previously fetched with getPeerProof'''
         return
+
 shouldRun = False
 debug = False
 developmentMode = False

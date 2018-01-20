@@ -36,7 +36,7 @@ class NetController:
     def generateTorrc(self):
         if os.path.exists(self.torConfigLocation):
             os.remove(self.torConfigLocation)
-        torrcData = '''SOCKSPORT ''' + str(self.socksPort) + '''
+        torrcData = '''SocksPort ''' + str(self.socksPort) + '''
 HiddenServiceDir data/hs/
 HiddenServicePort 80 127.0.0.1:''' + str(self.hsPort) + '''
         '''
@@ -46,11 +46,16 @@ HiddenServicePort 80 127.0.0.1:''' + str(self.hsPort) + '''
         return
 
     def startTor(self):
+        '''Start Tor with onion service on port 80 & socks proxy on random port
+        '''
         self.generateTorrc()
         tor = subprocess.Popen(['tor', '-f', self.torConfigLocation], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        # wait for tor to get to 100% bootstrap
         for line in iter(tor.stdout.readline, b''):
             if 'Bootstrapped 100%: Done' in line.decode():
                 break
+            elif 'Opening Socks listener' in line.decode():
+                print(line.decode())
         print('Finished starting Tor')
         self.readyState = True
         myID = open('data/hs/hostname', 'r')

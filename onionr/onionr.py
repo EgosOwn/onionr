@@ -118,10 +118,12 @@ class Onionr:
     def daemon(self):
         ''' Start the Onionr communication daemon
         '''
+        colors = Colors()
         if not os.environ.get("WERKZEUG_RUN_MAIN") == "true":
             net = NetController(self.config['CLIENT']['PORT'])
             print('Tor is starting...')
             net.startTor()
+            print(colors.GREEN + 'Started Tor .onion service: ' + colors.UNDERLINE + net.myID + colors.RESET)
             time.sleep(1)
             subprocess.Popen(["./communicator.py", "run"])
             print('Started communicator')
