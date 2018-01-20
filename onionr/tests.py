@@ -82,12 +82,13 @@ class OnionrTests(unittest.TestCase):
     def testPGPGen(self):
         print('--------------------------')
         print('Testing PGP key generation')
+        torID = open('data/hs/hostname').read()
         if os.path.exists('data/pgp/'):
             self.assertTrue(True)
         else:
             import core
             myCore = core.Core()
-            myCore.generateMainPGP()
+            myCore.generateMainPGP(torID)
             if os.path.exists('data/pgp/'):
                 self.assertTrue(True)
     def testHMACGen(self):

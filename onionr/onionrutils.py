@@ -18,10 +18,11 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 # Misc functions that do not fit in the main api, but are useful
-import getpass, sys, requests, configparser, os, socket
+import getpass, sys, requests, configparser, os, socket, gnupg
 class OnionrUtils():
     '''Various useful functions'''
     def __init__(self):
+        self.fingerprintFile = 'data/own-fingerprint.txt'
         return
     def printErr(self, text='an error occured'):
         '''Print an error message to stderr with a new line'''
@@ -61,3 +62,12 @@ class OnionrUtils():
         finally:
             sock.close()
         return retVal
+    def exportMyPubkey(self):
+        '''Export our PGP key if it exists'''
+        if not os.path.exists(self.fingerprintFile):
+            raise Exception("No fingerprint found, cannot export our PGP key.")
+        gpg = gnupg.GPG(gnupghome='./data/pgp/')
+        with open(self.fingerprintFile,'r') as f:
+            fingerprint = f.read()
+        ascii_armored_public_keys = gpg.export_keys(fingerprint)
+        return ascii_armored_public_keys
