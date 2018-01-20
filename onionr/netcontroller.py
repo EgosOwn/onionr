@@ -30,8 +30,9 @@ class NetController:
         self.myID = ''
         if os.path.exists(self.torConfigLocation):
             torrc = open(self.torConfigLocation, 'r')
-            if not self.hsPort in torrc.read():
+            if not str(self.hsPort) in torrc.read():
                 os.remove(self.torConfigLocation)
+            torrc.close()
         return
     def generateTorrc(self):
         if os.path.exists(self.torConfigLocation):

@@ -82,12 +82,14 @@ class OnionrTests(unittest.TestCase):
     def testPGPGen(self):
         print('--------------------------')
         print('Testing PGP key generation')
-        torID = open('data/hs/hostname').read()
         if os.path.exists('data/pgp/'):
             self.assertTrue(True)
         else:
-            import core
+            import core, netcontroller
             myCore = core.Core()
+            net = netcontroller.NetController(1337)
+            net.startTor()
+            torID = open('data/hs/hostname').read()
             myCore.generateMainPGP(torID)
             if os.path.exists('data/pgp/'):
                 self.assertTrue(True)
