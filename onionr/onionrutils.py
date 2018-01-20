@@ -18,7 +18,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 # Misc functions that do not fit in the main api, but are useful
-import getpass, sys, requests, configparser, os
+import getpass, sys, requests, configparser, os, socket
 class OnionrUtils():
     '''Various useful functions'''
     def __init__(self):
@@ -48,3 +48,16 @@ class OnionrUtils():
             else:
                 break
         return pass1
+    def checkPort(self, port):
+        '''Checks if a port is available, returns bool'''
+        # inspired by https://www.reddit.com/r/learnpython/comments/2i4qrj/how_to_write_a_python_script_that_checks_to_see/ckzarux/
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        retVal = False
+        try:
+            sock.bind(('', port))
+        except OSError as e:
+            if e.errno is 98:
+                retVal = True
+        finally:
+            sock.close()
+        return retVal

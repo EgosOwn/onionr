@@ -12,3 +12,7 @@ Major work in progress.
 # Development
 
 This software is in heavy development. If for some reason you want to get involved, get in touch first.
+
+## Disclaimer
+
+The Tor Project, I2P developers, and anyone else do not own, create, or endorse this project, and are not otherwise involved.

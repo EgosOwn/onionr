@@ -125,6 +125,8 @@ class API:
                 resp = Response("pong!")
             elif action == 'setHMAC':
                 pass
+            elif action == 'getPGP':
+                ascii_armored_public_keys = gpg.export_keys('')
 
             return resp
 

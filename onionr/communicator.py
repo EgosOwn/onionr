@@ -28,6 +28,18 @@ class OnionrCommunicate:
         This class handles communication with nodes in the Onionr network.
         '''
         self._core = core.Core()
+        if debug:
+            print('Communicator debugging enabled')
+        torID = open('data/hs/hostname').read()
+
+        # get our own PGP fingerprint
+        fingerprintFile = 'data/own-fingerprint.txt'
+        if not os.path.exists(fingerprintFile):
+            self._core.generateMainPGP(torID)
+        with open(fingerprintFile,'r') as f:
+            self.pgpOwnFingerprint = f.read()
+        print('My PGP fingerprint is ' + self.pgpOwnFingerprint)
+
         while True:
             command = self._core.daemonQueue()
             if debug:

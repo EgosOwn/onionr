@@ -78,7 +78,10 @@ class Onionr:
             if self.debug:
                 randomPort = 8080
             else:
-                randomPort = random.randint(1024, 65535)
+                while True:
+                    randomPort = random.randint(1024, 65535)
+                    if self.onionrUtils.checkPort(randomPort):
+                        break
             self.config['CLIENT'] = {'CLIENT HMAC': base64.b64encode(os.urandom(32)).decode('utf-8'), 'PORT': randomPort, 'API VERSION': '0.0.0'}
             with open('data/config.ini', 'w') as configfile:
                 self.config.write(configfile)
