@@ -30,6 +30,7 @@ class Core:
         self.queueDB = 'data/queue.db'
         self.peerDB = 'data/peers.db'
         self.ownPGPID = ''
+        self.blockDB = 'data/blocks.db'
 
         #self.daemonQueue() # Call to create the DB if it doesn't exist
         return
@@ -81,6 +82,39 @@ class Core:
         bytesStored int,
         trust int);
         ''')
+        conn.commit()
+        conn.close()
+    def createBlockDB(self):
+        '''
+        Create a database for blocks
+
+        hash - the hash of a block
+        dateReceived - the date the block was recieved, not necessarily when it was created
+        decrypted - if we can successfully decrypt the block (does not describe its current state)
+        dataObtained - if the data has been obtained for the block
+        '''
+        if os.path.exists(self.blockDB):
+            raise Exception("Block database already exists")
+        conn = sqlite3.connect(self.blockDB)
+        c = conn.cursor()
+        c.execute('''create table hashes(
+            hash text not null,
+            dateReceived int,
+            decrypted int,
+            dataFound int
+        );
+        ''')
+        conn.commit()
+        conn.close()
+    def addToBlockDB(self, newHash):
+        '''add a hash value to the block db (should be in hex format)'''
+        if not os.path.exists(self.blockDB):
+            raise Exception('Block db does not exist')
+        conn = sqlite3.connect(self.blockDB)
+        c = conn.cursor()
+        currentTime = math.floor(time.time())
+        data = (newHash, currentTime, 0, 0)
+        c.execute('INSERT into hashes values(?, ?, ?, ?);', data)
         conn.commit()
         conn.close()
 
