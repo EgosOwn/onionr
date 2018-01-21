@@ -69,6 +69,7 @@ class OnionrCommunicate:
     def sendPeerProof(self, peerID, data):
         '''This function sends the proof result to a peer previously fetched with getPeerProof'''
         return
+    
     def performGet(self, action, peer, data=None, type='tor'):
         '''performs a request to a peer through Tor or i2p (currently only tor)'''
         if not peer.endswith('.onion') and not peer.endswith('.onion/'):

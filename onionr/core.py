@@ -31,8 +31,8 @@ class Core:
         self.peerDB = 'data/peers.db'
         self.ownPGPID = ''
         self.blockDB = 'data/blocks.db'
+        self.blockDataLocation = 'data/blocks/'
 
-        #self.daemonQueue() # Call to create the DB if it doesn't exist
         return
 
     def generateMainPGP(self, myID):
@@ -117,6 +117,13 @@ class Core:
         c.execute('INSERT into hashes values(?, ?, ?, ?);', data)
         conn.commit()
         conn.close()
+
+    def getData(self,hash):
+        '''simply return the data associated to a hash'''
+        dataFile = open(self.blockDataLocation + hash + '.dat')
+        data = dataFile.read()
+        dataFile.close()
+        return data
 
     def dataDirEncrypt(self, password):
         '''
