@@ -129,6 +129,8 @@ class API:
                 pass
             elif action == 'getPGP':
                 resp = Response(self._utils.exportMyPubkey())
+            elif action == 'storeData':
+                pass
 
             return resp
 

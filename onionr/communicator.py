@@ -69,6 +69,19 @@ class OnionrCommunicate:
     def sendPeerProof(self, peerID, data):
         '''This function sends the proof result to a peer previously fetched with getPeerProof'''
         return
+    def performGet(self, action, peer, data=None, type='tor'):
+        '''performs a request to a peer through Tor or i2p (currently only tor)'''
+        if not peer.endswith('.onion') and not peer.endswith('.onion/'):
+            raise PeerError('Currently only Tor .onion peers are supported. You must manually specify .onion')
+        socksPort = sys.argv[2]
+        proxies = {'http': 'socks5://127.0.0.1:' + str(socksPort), 'https': 'socks5://127.0.0.1:' + str(socksPort)}
+        headers = {'user-agent': 'PyOnionr'}
+        url = 'http://' + peer + '/public/?action=' + action
+        if data != None:
+            url = url + '&data=' + data
+        r = requests.get(url, headers=headers, proxies=proxies)
+        return r.text
+        
 
 shouldRun = False
 debug = False

@@ -128,7 +128,7 @@ class Onionr:
             net.startTor()
             print(colors.GREEN + 'Started Tor .onion service: ' + colors.UNDERLINE + net.myID + colors.RESET)
             time.sleep(1)
-            subprocess.Popen(["./communicator.py", "run"])
+            subprocess.Popen(["./communicator.py", "run", net.socksPort])
             print('Started communicator')
         api.API(self.config, self.debug)
         return
