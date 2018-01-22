@@ -17,7 +17,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import sqlite3, os, time, math, gnupg, base64, tarfile, getpass, simplecrypt, hashlib
+import sqlite3, os, sys, time, math, gnupg, base64, tarfile, getpass, simplecrypt, hashlib
 from Crypto.Cipher import AES
 from Crypto import Random
 import netcontroller
