@@ -17,10 +17,17 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import sqlite3, os, time, math, gnupg, base64, tarfile, getpass, simplecrypt
+import sqlite3, os, time, math, gnupg, base64, tarfile, getpass, simplecrypt, hashlib
 from Crypto.Cipher import AES
 from Crypto import Random
 import netcontroller
+
+if sys.version_info < (3, 6):
+    try:
+        import sha3
+    except ModuleNotFoundError:
+        sys.stderr.write('On Python 3 versions prior to 3.6.x, you need the sha3 module')
+        sys.exit(1)
 
 class Core:
     def __init__(self):
@@ -124,6 +131,10 @@ class Core:
         data = dataFile.read()
         dataFile.close()
         return data
+
+    def setData(self, data):
+        '''set the data assciated with a hash'''
+        hasher = hashlib.sha3_256
 
     def dataDirEncrypt(self, password):
         '''

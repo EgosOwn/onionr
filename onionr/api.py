@@ -130,7 +130,10 @@ class API:
             elif action == 'getPGP':
                 resp = Response(self._utils.exportMyPubkey())
             elif action == 'setData':
-                pass
+                if data == None:
+                    abort(401)
+                else:
+                    self._core.setData(data)
             elif action == 'getData':
                 resp = Response(self._core.getData(data))
 
@@ -146,6 +149,11 @@ class API:
         def authFail(err):
             self.requestFailed = True
             resp = Response("403")
+            return resp
+        @app.errorhandler(401)
+        def clientError(err):
+            self.requestFailed = True
+            resp = Response("Invalid request")
             return resp
 
         print('Starting client on ' + self.host + ':' + str(bindPort))
