@@ -80,7 +80,10 @@ class OnionrCommunicate:
         url = 'http://' + peer + '/public/?action=' + action
         if data != None:
             url = url + '&data=' + data
-        r = requests.get(url, headers=headers, proxies=proxies)
+        try:
+            r = requests.get(url, headers=headers, proxies=proxies)
+        except requests.exceptions.RequestException:
+            return False
         return r.text
         
 
