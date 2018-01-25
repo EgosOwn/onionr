@@ -134,7 +134,18 @@ class Core:
 
     def setData(self, data):
         '''set the data assciated with a hash'''
-        hasher = hashlib.sha3_256
+        data = data.encode()
+        hasher = hashlib.sha3_256()
+        hasher.update(data)
+        dataHash = hasher.hexdigest()
+        blockFileName = self.blockDataLocation + dataHash + '.dat'
+        if os.path.exists(blockFileName):
+            raise Exception("Data is already set for " + dataHash)
+        else:
+            blockFile = open(blockFileName, 'w')
+            blockFile.write(data)
+            blockFile.close()
+        return dataHash
 
     def dataDirEncrypt(self, password):
         '''
@@ -217,3 +228,10 @@ class Core:
         '''
         key = base64.b64encode(os.urandom(32))
         return key
+
+    def processBlocks(self):
+        '''
+        Work with the block database and download any missing blocks
+        This is meant to be called from the communicator daemon on its timer.
+        '''
+        return

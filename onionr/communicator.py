@@ -28,6 +28,8 @@ class OnionrCommunicate:
         This class handles communication with nodes in the Onionr network.
         '''
         self._core = core.Core()
+        blockProcessTimer = 0
+        blockProccesAmount = 5
         if debug:
             print('Communicator debugging enabled')
         torID = open('data/hs/hostname').read()
@@ -42,8 +44,15 @@ class OnionrCommunicate:
 
         while True:
             command = self._core.daemonQueue()
+
+            # Process blocks based on a timer
+            blockProcessTimer += 1
+            if blockProcessTimer == blockProcessAmount:
+                self._core.processBlocks()
+                blockProcessTimer = 0
+
             if debug:
-                print('Daemon heartbeat')
+                print('Communicator daemon heartbeat')
             if command != False:
                 if command[0] == 'shutdown':
                     print('Daemon recieved exit command.')

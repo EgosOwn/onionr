@@ -129,11 +129,7 @@ class API:
                 pass
             elif action == 'getPGP':
                 resp = Response(self._utils.exportMyPubkey())
-            elif action == 'setData':
-                if data == None:
-                    abort(401)
-                else:
-                    self._core.setData(data)
+            # setData should be something the communicator initiates, not this api
             elif action == 'getData':
                 resp = Response(self._core.getData(data))
 
