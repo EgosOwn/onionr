@@ -18,12 +18,12 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 # Misc functions that do not fit in the main api, but are useful
-import getpass, sys, requests, configparser, os, socket, gnupg, hashlib
+import getpass, sys, requests, configparser, os, socket, gnupg, hashlib, logger
 if sys.version_info < (3, 6):
     try:
         import sha3
     except ModuleNotFoundError:
-        sys.stderr.write('On Python 3 versions prior to 3.6.x, you need the sha3 module')
+        logger.fatal('On Python 3 versions prior to 3.6.x, you need the sha3 module')
         sys.exit(1)
 class OnionrUtils:
     '''Various useful functions'''
@@ -33,7 +33,7 @@ class OnionrUtils:
         return
     def printErr(self, text='an error occured'):
         '''Print an error message to stderr with a new line'''
-        sys.stderr.write(text + '\n')
+        logger.error(text)
     def localCommand(self, command):
         '''Send a command to the local http API server, securely. Intended for local clients, DO NOT USE for remote peers.'''
         config = configparser.ConfigParser()
@@ -51,7 +51,7 @@ class OnionrUtils:
             print('Confirm password: ')
             pass2 = getpass.getpass()
             if pass1 != pass2:
-                print("Passwords do not match.")
+                logger.error("Passwords do not match.")
                 input()
             else:
                 break

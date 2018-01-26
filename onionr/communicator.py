@@ -19,7 +19,7 @@ and code to operate as a daemon, getting commands from the command queue databas
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import sqlite3, requests, hmac, hashlib, time, sys, os
+import sqlite3, requests, hmac, hashlib, time, sys, os, logger
 import core
 class OnionrCommunicate:
     def __init__(self, debug, developmentMode):
@@ -30,8 +30,7 @@ class OnionrCommunicate:
         self._core = core.Core()
         blockProcessTimer = 0
         blockProcessAmount = 5
-        if debug:
-            print('Communicator debugging enabled')
+        logger.debug('Communicator debugging enabled.')
         torID = open('data/hs/hostname').read()
 
         # get our own PGP fingerprint
@@ -40,7 +39,7 @@ class OnionrCommunicate:
             self._core.generateMainPGP(torID)
         with open(fingerprintFile,'r') as f:
             self.pgpOwnFingerprint = f.read()
-        print('My PGP fingerprint is ' + self.pgpOwnFingerprint)
+        logger.info('My PGP fingerprint is ' + logger.colors.underline + self.pgpOwnFingerprint + logger.colors.reset + logger.colors.fg.green + '.')
 
         while True:
             command = self._core.daemonQueue()
@@ -51,11 +50,10 @@ class OnionrCommunicate:
                 self.lookupBlocks()
                 self._core.processBlocks()
                 blockProcessTimer = 0
-            if debug:
-                print('Communicator daemon heartbeat')
+            logger.debug('Communicator daemon heartbeat')
             if command != False:
                 if command[0] == 'shutdown':
-                    print('Daemon recieved exit command.')
+                    logger.warn('Daemon recieved exit command.')
                     break
             time.sleep(1)
         return
@@ -94,11 +92,11 @@ class OnionrCommunicate:
                 # skip hash if it isn't valid
                 continue
             else:
-                print('adding', i, 'to hash database')
+                logger.debug('Adding ' +  i + ' to hash database...')
                 self._core.addToBlockDB(i)
 
         return
-    
+
     def performGet(self, action, peer, data=None, type='tor'):
         '''performs a request to a peer through Tor or i2p (currently only tor)'''
         if not peer.endswith('.onion') and not peer.endswith('.onion/'):
@@ -114,7 +112,7 @@ class OnionrCommunicate:
         except requests.exceptions.RequestException:
             return False
         return r.text
-        
+
 
 shouldRun = False
 debug = False

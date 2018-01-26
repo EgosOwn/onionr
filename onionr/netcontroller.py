@@ -17,7 +17,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import subprocess, os, random, sys
+import subprocess, os, random, sys, logger
 class NetController:
     '''NetController
     This class handles hidden service setup on Tor and I2P
@@ -56,8 +56,8 @@ HiddenServicePort 80 127.0.0.1:''' + str(self.hsPort) + '''
             if 'Bootstrapped 100%: Done' in line.decode():
                 break
             elif 'Opening Socks listener' in line.decode():
-                print(line.decode())
-        print('Finished starting Tor')
+                logger.debug(line.decode())
+        logger.info('Finished starting Tor')
         self.readyState = True
         myID = open('data/hs/hostname', 'r')
         self.myID = myID.read()
