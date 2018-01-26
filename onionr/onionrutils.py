@@ -102,3 +102,32 @@ class OnionrUtils:
             except ValueError:
                 retVal = False
         return retVal
+    def validateID(self, id):
+        '''validate if a user ID is a valid tor or i2p hidden service'''
+        idLength = len(id)
+        retVal = True
+        idNoDomain = ''
+        #if idLength != 60 and idLength != 22 and idLength != 62:
+        if idLength == 60:
+            if not id.endsWith('.b32.i2p'):
+                retVal = False
+            else:
+                idNoDomain = id.split('.b32.i2p')[0]
+        elif idLength == 22 or idLength == 62:
+            if not id.endsWith('.onion'):
+                retVal = False
+            else:
+                idNoDomain = id.split('.onion')[0]
+        else:
+            retVal = False
+        if retVal:
+            if id.endsWith('.onion'):
+                try:
+                    int(idNoDomain, 16)
+                except ValueError:
+                    retVal = False
+            elif id.endsWith('.b32.i2p'):
+                if not idNoDomain.isalnum():
+                    retVal = False
+        return retVal
+

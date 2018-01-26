@@ -22,6 +22,8 @@ from Crypto.Cipher import AES
 from Crypto import Random
 import netcontroller
 
+import onionrutils
+
 if sys.version_info < (3, 6):
     try:
         import sha3
@@ -39,6 +41,7 @@ class Core:
         self.ownPGPID = ''
         self.blockDB = 'data/blocks.db'
         self.blockDataLocation = 'data/blocks/'
+        self._utils = onionrutils.OnionrUtils(self)
 
         return
 
@@ -63,6 +66,8 @@ class Core:
         ''' Add a peer by their ID, with an optional name, to the peer database.'''
         ''' DOES NO SAFETY CHECKS if the ID is valid, but prepares the insertion. '''
         # This function simply adds a peer to the DB
+        if not self._utils.validateID(peerID):
+            return False
         conn = sqlite3.connect(self.peerDB)
         c = conn.cursor()
         t = (peerID, name, 'unknown')
