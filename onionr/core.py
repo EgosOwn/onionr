@@ -17,7 +17,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import sqlite3, os, sys, time, math, gnupg, base64, tarfile, getpass, simplecrypt, hashlib, nacl
+import sqlite3, os, sys, time, math, gnupg, base64, tarfile, getpass, simplecrypt, hashlib, nacl, logger
 from Crypto.Cipher import AES
 from Crypto import Random
 import netcontroller
@@ -26,7 +26,7 @@ if sys.version_info < (3, 6):
     try:
         import sha3
     except ModuleNotFoundError:
-        sys.stderr.write('On Python 3 versions prior to 3.6.x, you need the sha3 module')
+        logger.fatal('On Python 3 versions prior to 3.6.x, you need the sha3 module')
         sys.exit(1)
 
 class Core:
@@ -66,7 +66,7 @@ class Core:
         conn = sqlite3.connect(self.peerDB)
         c = conn.cursor()
         t = (peerID, name, 'unknown')
-        c.execute('Insert into peers (id, name, dateSeen) values(?, ?, ?);', t)
+        c.execute('insert into peers (id, name, dateSeen) values(?, ?, ?);', t)
         conn.commit()
         conn.close()
         return True
@@ -295,4 +295,3 @@ class Core:
             for i in row:
                 retData += i
         return retData
-        

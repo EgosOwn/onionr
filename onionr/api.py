@@ -20,7 +20,7 @@
 import flask
 from flask import request, Response, abort
 from multiprocessing import Process
-import configparser, sys, random, threading, hmac, hashlib, base64, time, math, gnupg, os
+import configparser, sys, random, threading, hmac, hashlib, base64, time, math, gnupg, os, logging
 
 from core import Core
 import onionrutils
@@ -42,10 +42,13 @@ class API:
         This also saves the used host (random localhost IP address) to the data folder in host.txt
         '''
         if os.path.exists('dev-enabled'):
-            print('DEVELOPMENT MODE ENABLED (THIS IS LESS SECURE!)')
             self._developmentMode = True
+            logger.set_level(logger.LEVEL_DEBUG)
+            logger.warn('DEVELOPMENT MODE ENABLED (THIS IS LESS SECURE!)')
         else:
             self._developmentMode = False
+            logger.set_level(logger.LEVEL_INFO)
+
         self.config = config
         self.debug = debug
         self._privateDelayTime = 3
@@ -55,13 +58,13 @@ class API:
         bindPort = int(self.config['CLIENT']['PORT'])
         self.bindPort = bindPort
         self.clientToken = self.config['CLIENT']['CLIENT HMAC']
-        print(self.clientToken)
+        logger.debug('Your HMAC token: ' + logger.colors.underline + self.clientToken)
 
         if not debug and not self._developmentMode:
             hostNums = [random.randint(1, 255), random.randint(1, 255), random.randint(1, 255)]
             self.host = '127.' + str(hostNums[0]) + '.' + str(hostNums[1]) + '.' + str(hostNums[2])
         else:
-            self.host = '127.0.0.1' 
+            self.host = '127.0.0.1'
         hostFile = open('data/host.txt', 'w')
         hostFile.write(self.host)
         hostFile.close()
@@ -80,11 +83,11 @@ class API:
                 resp.headers['Access-Control-Allow-Origin'] = '*'
             else:
                 resp.headers['server'] = 'Onionr'
-            resp.headers['content-type'] = 'text/plain'
+            resp.headers['Content-Type'] = 'text/plain'
             resp.headers["Content-Security-Policy"] = "default-src 'none'"
-            resp.headers['x-frame-options'] = 'deny'
+            resp.headers['X-Frame-Options'] = 'deny'
             return resp
-            
+
         @app.route('/client/')
         def private_handler():
             startTime = math.floor(time.time())
@@ -101,7 +104,7 @@ class API:
                 request.environ.get('werkzeug.server.shutdown')()
                 resp = Response('Goodbye')
             elif action == 'stats':
-                resp = Response('something')
+                resp = Response('me_irl')
             elif action == 'init':
                 # generate PGP key
                 self._core.generateMainPGP()
@@ -156,17 +159,17 @@ class API:
             resp = Response("Invalid request")
             return resp
 
-        print('Starting client on ' + self.host + ':' + str(bindPort))
-        print('Client token:', self.clientToken)
+        logger.info('Starting client on ' + self.host + ':' + str(bindPort) + '...')
+        logger.debug('Client token: ' + logger.colors.underline + self.clientToken)
 
         app.run(host=self.host, port=bindPort, debug=True, threaded=True)
-    
+
     def validateHost(self, hostType):
         ''' Validate various features of the request including:
             If private (/client/), is the host header local?
             If public (/public/), is the host header onion or i2p?
-            
-            Was x-request-with used?
+
+            Was X-Request-With used?
         '''
         if self.debug:
             return
@@ -181,7 +184,8 @@ class API:
         # Validate x-requested-with, to protect against CSRF/metadata leaks
         if not self._developmentMode:
             try:
-                request.headers['x-requested-with']
+                request.headers['X-Requested-With']
             except:
                 # we exit rather than abort to avoid fingerprinting
+                logger.debug('Avoiding fingerprinting, exiting...')
                 sys.exit(1)

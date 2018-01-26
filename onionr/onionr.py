@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 '''
-    Onionr - P2P Microblogging Platform & Social network. 
+    Onionr - P2P Microblogging Platform & Social network.
 
     Onionr is the name for both the protocol and the original/reference software.
 
@@ -20,10 +20,9 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import sys, os, configparser, base64, random, getpass, shutil, subprocess, requests, time
-import gui, api, colors, core
+import sys, os, configparser, base64, random, getpass, shutil, subprocess, requests, time, logger
+import gui, api, core
 from onionrutils import OnionrUtils
-from colors import Colors
 from netcontroller import NetController
 
 class Onionr:
@@ -37,18 +36,18 @@ class Onionr:
         except FileNotFoundError:
             pass
         if os.path.exists('dev-enabled'):
-            print('DEVELOPMENT MODE ENABLED (THIS IS LESS SECURE!)')
             self._developmentMode = True
+            logger.set_level(logger.LEVEL_DEBUG)
+            logger.warn('DEVELOPMENT MODE ENABLED (THIS IS LESS SECURE!)')
         else:
             self._developmentMode = False
-
-        colors = Colors()
+            logger.set_level(logger.LEVEL_INFO)
 
         self.onionrCore = core.Core()
         self.onionrUtils = OnionrUtils(self.onionrCore)
 
         # Get configuration and Handle commands
-        
+
         self.debug = False # Whole application debugging
 
         if os.path.exists('data-encrypted.dat'):
@@ -59,12 +58,12 @@ class Onionr:
                 if os.path.exists('data/'):
                     break
                 else:
-                    print('Failed to decrypt: ' + result[1])
+                    logger.error('Failed to decrypt: ' + result[1])
         else:
             if not os.path.exists('data/'):
                 os.mkdir('data/')
                 os.mkdir('data/blocks/')
-        
+
         if not os.path.exists('data/peers.db'):
             self.onionrCore.createPeerDB()
             pass
@@ -94,7 +93,7 @@ class Onionr:
         finally:
             if command == 'start':
                 if os.path.exists('.onionr-lock'):
-                    self.onionrUtils.printErr('Cannot start. Daemon is already running, or it did not exit cleanly.\n(if you are sure that there is not a daemon running, delete .onionr-lock & try again).')
+                    logger.fatal('Cannot start. Daemon is already running, or it did not exit cleanly.\n(if you are sure that there is not a daemon running, delete .onionr-lock & try again).')
                 else:
                     if not self.debug and not self._developmentMode:
                         lockFile = open('.onionr-lock', 'w')
@@ -110,32 +109,31 @@ class Onionr:
             elif command == 'help' or command == '--help':
                 self.showHelp()
             elif command == '':
-                print('Do', sys.argv[0], ' --help for Onionr help.')
+                logger.info('Do ' + logger.colors.bold + sys.argv[0] + ' --help' + logger.colors.reset + logger.colors.fg.green + ' for Onionr help.')
             else:
-                print(colors.RED, 'Invalid Command', colors.RESET)
-                
+                logger.error('Invalid command.')
+
         if not self._developmentMode:
-            encryptionPassword = self.onionrUtils.getPassword('Enter password to encrypt directory.')
+            encryptionPassword = self.onionrUtils.getPassword('Enter password to encrypt directory: ')
             self.onionrCore.dataDirEncrypt(encryptionPassword)
             shutil.rmtree('data/')
         return
     def daemon(self):
         ''' Start the Onionr communication daemon
         '''
-        colors = Colors()
         if not os.environ.get("WERKZEUG_RUN_MAIN") == "true":
             net = NetController(self.config['CLIENT']['PORT'])
-            print('Tor is starting...')
+            logger.info('Tor is starting...')
             net.startTor()
-            print(colors.GREEN + 'Started Tor .onion service: ' + colors.UNDERLINE + net.myID + colors.RESET)
+            logger.info('Started Tor .onion service: ' + logger.colors.underline + net.myID)
             time.sleep(1)
             subprocess.Popen(["./communicator.py", "run", str(net.socksPort)])
-            print('Started communicator')
+            logger.debug('Started communicator')
         api.API(self.config, self.debug)
         return
     def killDaemon(self):
         '''Shutdown the Onionr Daemon'''
-        print('Killing the running daemon')
+        logger.warn('Killing the running daemon')
         try:
             self.onionrUtils.localCommand('shutdown')
         except requests.exceptions.ConnectionError:
@@ -149,6 +147,6 @@ class Onionr:
     def showHelp(self):
         '''Show help for Onionr'''
         return
-        
+
 
 Onionr()

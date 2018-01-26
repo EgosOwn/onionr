@@ -14,18 +14,18 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import unittest, sys, os, base64, tarfile, shutil, simplecrypt
+import unittest, sys, os, base64, tarfile, shutil, simplecrypt, logger
 
 class OnionrTests(unittest.TestCase):
     def testPython3(self):
         if sys.version_info.major != 3:
-            print(sys.version_info.major)
+            logger.debug('Python version: ' + sys.version_info.major)
             self.assertTrue(False)
         else:
             self.assertTrue(True)
     def testNone(self):
-        print('--------------------------')
-        print('Running simple program run test')
+        logger.debug('--------------------------')
+        logger.info('Running simple program run test...')
         # Test just running ./onionr with no arguments
         blank = os.system('./onionr.py')
         if blank != 0:
@@ -33,8 +33,8 @@ class OnionrTests(unittest.TestCase):
         else:
             self.assertTrue(True)
     def testPeer_a_DBCreation(self):
-        print('--------------------------')
-        print('Running peer db creation test')
+        logger.debug('--------------------------')
+        logger.info('Running peer db creation test...')
         if os.path.exists('data/peers.db'):
             os.remove('data/peers.db')
         import core
@@ -45,8 +45,8 @@ class OnionrTests(unittest.TestCase):
         else:
             self.assertTrue(False)
     def testPeer_b_addPeerToDB(self):
-        print('--------------------------')
-        print('Running peer db insertion test')
+        logger.debug('--------------------------')
+        logger.info('Running peer db insertion test...')
         import core
         myCore = core.Core()
         if not os.path.exists('data/peers.db'):
@@ -58,8 +58,8 @@ class OnionrTests(unittest.TestCase):
     def testData_b_Encrypt(self):
         self.assertTrue(True)
         return
-        print('--------------------------')
-        print('Running data dir encrypt test')
+        logger.debug('--------------------------')
+        logger.info('Running data dir encrypt test...')
         import core
         myCore = core.Core()
         myCore.dataDirEncrypt('password')
@@ -70,8 +70,8 @@ class OnionrTests(unittest.TestCase):
     def testData_a_Decrypt(self):
         self.assertTrue(True)
         return
-        print('--------------------------')
-        print('Running data dir decrypt test')
+        logger.debug('--------------------------')
+        logger.info('Running data dir decrypt test...')
         import core
         myCore = core.Core()
         myCore.dataDirDecrypt('password')
@@ -80,8 +80,8 @@ class OnionrTests(unittest.TestCase):
         else:
             self.assertTrue(False)
     def testPGPGen(self):
-        print('--------------------------')
-        print('Testing PGP key generation')
+        logger.debug('--------------------------')
+        logger.info('Running PGP key generation test...')
         if os.path.exists('data/pgp/'):
             self.assertTrue(True)
         else:
@@ -94,8 +94,8 @@ class OnionrTests(unittest.TestCase):
             if os.path.exists('data/pgp/'):
                 self.assertTrue(True)
     def testHMACGen(self):
-        print('--------------------------')
-        print('running daemon queue test')
+        logger.debug('--------------------------')
+        logger.info('Running HMAC generation test...')
         # Test if hmac key generation is working
         import core
         myCore = core.Core()
@@ -105,8 +105,8 @@ class OnionrTests(unittest.TestCase):
         else:
             self.assertTrue(False)
     def testQueue(self):
-        print('--------------------------')
-        print('running daemon queue test')
+        logger.debug('--------------------------')
+        logger.info('Running daemon queue test...')
         # test if the daemon queue can read/write data
         import core
         myCore = core.Core()
