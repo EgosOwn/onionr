@@ -29,7 +29,7 @@ class OnionrCommunicate:
         '''
         self._core = core.Core()
         blockProcessTimer = 0
-        blockProccesAmount = 5
+        blockProcessAmount = 5
         if debug:
             print('Communicator debugging enabled')
         torID = open('data/hs/hostname').read()
@@ -48,9 +48,9 @@ class OnionrCommunicate:
             # Process blocks based on a timer
             blockProcessTimer += 1
             if blockProcessTimer == blockProcessAmount:
+                self.lookupBlocks()
                 self._core.processBlocks()
                 blockProcessTimer = 0
-
             if debug:
                 print('Communicator daemon heartbeat')
             if command != False:
@@ -77,6 +77,26 @@ class OnionrCommunicate:
         return
     def sendPeerProof(self, peerID, data):
         '''This function sends the proof result to a peer previously fetched with getPeerProof'''
+        return
+
+    def lookupBlocks(self):
+        '''Lookup blocks and merge new ones'''
+        peerList = self._core.listPeers()
+        blocks = ''
+        for i in peerList:
+            lastDB = self._core.getPeerInfo(i, 'blockDBHash')
+            currentDB = self.performGet('getDBHash', i)
+            if lastDB != currentDB:
+                blocks += self.performGet('getBlockHashes', i)
+        blockList = blocks.split('\n')
+        for i in blockList:
+            if not self._core.validateHash(i):
+                # skip hash if it isn't valid
+                continue
+            else:
+                print('adding', i, 'to hash database')
+                self._core.addToBlockDB(i)
+
         return
     
     def performGet(self, action, peer, data=None, type='tor'):

@@ -18,11 +18,18 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 # Misc functions that do not fit in the main api, but are useful
-import getpass, sys, requests, configparser, os, socket, gnupg
-class OnionrUtils():
+import getpass, sys, requests, configparser, os, socket, gnupg, hashlib
+if sys.version_info < (3, 6):
+    try:
+        import sha3
+    except ModuleNotFoundError:
+        sys.stderr.write('On Python 3 versions prior to 3.6.x, you need the sha3 module')
+        sys.exit(1)
+class OnionrUtils:
     '''Various useful functions'''
-    def __init__(self):
+    def __init__(self, coreInstance):
         self.fingerprintFile = 'data/own-fingerprint.txt'
+        self._core = coreInstance
         return
     def printErr(self, text='an error occured'):
         '''Print an error message to stderr with a new line'''
@@ -74,3 +81,24 @@ class OnionrUtils():
             fingerprint = f.read()
         ascii_armored_public_keys = gpg.export_keys(fingerprint)
         return ascii_armored_public_keys
+
+    def getBlockDBHash(self):
+        '''Return a sha3_256 hash of the blocks DB'''
+        with open(self._core.blockDB, 'rb') as data:
+            data = data.read()
+        hasher = hashlib.sha3_256()
+        hasher.update(data)
+        dataHash = hasher.hexdigest()
+        return dataHash
+
+    def validateHash(self, data, length=64):
+        '''validate if a string is a valid hex formatted hash'''
+        retVal = True
+        if len(data) != length:
+            retVal = False
+        else:
+            try:
+                int(data, 16)
+            except ValueError:
+                retVal = False
+        return retVal

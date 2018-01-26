@@ -45,7 +45,7 @@ class Onionr:
         colors = Colors()
 
         self.onionrCore = core.Core()
-        self.onionrUtils = OnionrUtils()
+        self.onionrUtils = OnionrUtils(self.onionrCore)
 
         # Get configuration and Handle commands
         
@@ -63,6 +63,7 @@ class Onionr:
         else:
             if not os.path.exists('data/'):
                 os.mkdir('data/')
+                os.mkdir('data/blocks/')
         
         if not os.path.exists('data/peers.db'):
             self.onionrCore.createPeerDB()
@@ -128,7 +129,7 @@ class Onionr:
             net.startTor()
             print(colors.GREEN + 'Started Tor .onion service: ' + colors.UNDERLINE + net.myID + colors.RESET)
             time.sleep(1)
-            subprocess.Popen(["./communicator.py", "run", net.socksPort])
+            subprocess.Popen(["./communicator.py", "run", str(net.socksPort)])
             print('Started communicator')
         api.API(self.config, self.debug)
         return
@@ -148,5 +149,6 @@ class Onionr:
     def showHelp(self):
         '''Show help for Onionr'''
         return
+        
 
 Onionr()

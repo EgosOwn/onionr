@@ -84,6 +84,7 @@ class Core:
         name text,
         pgpKey text,
         hmacKey text,
+        blockDBHash text,
         forwardKey text,
         dateSeen not null,
         bytesStored int,
@@ -108,7 +109,8 @@ class Core:
             hash text not null,
             dateReceived int,
             decrypted int,
-            dataFound int
+            dataFound int,
+            dataSaved int
         );
         ''')
         conn.commit()
@@ -229,9 +231,68 @@ class Core:
         key = base64.b64encode(os.urandom(32))
         return key
 
+    def listPeers(self):
+        '''Return a list of peers
+        '''
+        conn = sqlite3.connect(self.peerDB)
+        c = conn.cursor()
+        peers = c.execute('SELECT * FROM peers;')
+        peerList = []
+        for i in peers:
+            peerList.append(i[0])
+        conn.close()
+        return peerList
+
     def processBlocks(self):
         '''
         Work with the block database and download any missing blocks
         This is meant to be called from the communicator daemon on its timer.
         '''
+        conn = sqlite3.connect(self.blockDB)
+        c = conn.cursor()
+        for i in blocks:
+            pass
+        conn.close()
         return
+    def getPeerInfo(self, peer, info):
+        '''
+        get info about a peer
+
+        id text             0
+        name text,          1
+        pgpKey text,        2
+        hmacKey text,       3
+        blockDBHash text,   4
+        forwardKey text,    5
+        dateSeen not null,  7
+        bytesStored int,    8
+        trust int           9
+        '''
+        # Lookup something about a peer from their database entry
+        conn = sqlite3.connect(self.peerDB)
+        c = conn.cursor()
+        command = (peer,)
+        infoNumbers = {'id': 0, 'name': 1, 'pgpKey': 2, 'hmacKey': 3, 'blockDBHash': 4, 'forwardKey': 5, 'dateSeen': 6, 'bytesStored': 7, 'trust': 8}
+        info = infoNumbers[info]
+        iterCount = 0
+        retVal = ''
+        for row in c.execute('SELECT * from peers where id=?;', command):
+            for i in row:
+                if iterCount == info:
+                    retVal = i
+                    break
+                else:
+                    iterCount += 1
+        conn.close()
+        return retVal
+
+    def getBlockList(self):
+        '''get list of our blocks'''
+        conn = sqlite3.connect(self.blockDB)
+        c = conn.cursor()
+        retData = ''
+        for row in c.execute('SELECT hash FROM hashes;'):
+            for i in row:
+                retData += i
+        return retData
+        

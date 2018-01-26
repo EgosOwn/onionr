@@ -50,7 +50,7 @@ class API:
         self.debug = debug
         self._privateDelayTime = 3
         self._core = Core()
-        self._utils = onionrutils.OnionrUtils()
+        self._utils = onionrutils.OnionrUtils(self._core)
         app = flask.Flask(__name__)
         bindPort = int(self.config['CLIENT']['PORT'])
         self.bindPort = bindPort
@@ -127,6 +127,10 @@ class API:
                 resp = Response("pong!")
             elif action == 'setHMAC':
                 pass
+            elif action == 'getDBHash':
+                resp = Response(self._utils.getBlockDBHash())
+            elif action == 'getBlockHashes':
+                resp = Response(self._core.getBlockList())
             elif action == 'getPGP':
                 resp = Response(self._utils.exportMyPubkey())
             # setData should be something the communicator initiates, not this api
