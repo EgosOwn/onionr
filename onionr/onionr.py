@@ -138,8 +138,7 @@ class Onionr:
             self.onionrUtils.localCommand('shutdown')
         except requests.exceptions.ConnectionError:
             pass
-        else:
-            self.onionrCore.daemonQueueAdd('shutdown')
+        self.onionrCore.daemonQueueAdd('shutdown')
         return
     def showStats(self):
         '''Display statistics and exit'''

@@ -20,7 +20,7 @@
 import flask
 from flask import request, Response, abort
 from multiprocessing import Process
-import configparser, sys, random, threading, hmac, hashlib, base64, time, math, gnupg, os, logging
+import configparser, sys, random, threading, hmac, hashlib, base64, time, math, gnupg, os, logger
 
 from core import Core
 import onionrutils
