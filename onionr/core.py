@@ -228,6 +228,13 @@ class Core:
         conn.commit()
         conn.close()
         return
+    def clearDaemonQueue(self):
+        '''clear the daemon queue (somewhat dangerousous)'''
+        conn = sqlite3.connect(self.queueDB)
+        c = conn.cursor()
+        c.execute('Delete from commands;')
+        conn.commit()
+        conn.close()
 
     def generateHMAC(self):
         '''
@@ -253,11 +260,8 @@ class Core:
         Work with the block database and download any missing blocks
         This is meant to be called from the communicator daemon on its timer.
         '''
-        conn = sqlite3.connect(self.blockDB)
-        c = conn.cursor()
-        for i in blocks:
-            pass
-        conn.close()
+        for i in self.getBlockList(True):
+            print('UNSAVED BLOCK:', i)
         return
     def getPeerInfo(self, peer, info):
         '''
@@ -291,12 +295,16 @@ class Core:
         conn.close()
         return retVal
 
-    def getBlockList(self):
+    def getBlockList(self, unsaved=False):
         '''get list of our blocks'''
         conn = sqlite3.connect(self.blockDB)
         c = conn.cursor()
         retData = ''
-        for row in c.execute('SELECT hash FROM hashes;'):
+        if unsaved:
+            execute = 'SELECT hash FROM hashes where dataSaved != 1;'
+        else:
+            execute = 'SELECT hash FROM hashes;'
+        for row in c.execute(execute):
             for i in row:
                 retData += i
         return retData

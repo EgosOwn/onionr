@@ -20,7 +20,7 @@ and code to operate as a daemon, getting commands from the command queue databas
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 import sqlite3, requests, hmac, hashlib, time, sys, os, logger
-import core
+import core, onionrutils
 class OnionrCommunicate:
     def __init__(self, debug, developmentMode):
         ''' OnionrCommunicate
@@ -28,6 +28,7 @@ class OnionrCommunicate:
         This class handles communication with nodes in the Onionr network.
         '''
         self._core = core.Core()
+        self._utils = onionrutils.OnionrUtils(self._core)
         blockProcessTimer = 0
         blockProcessAmount = 5
         logger.debug('Communicator debugging enabled.')
@@ -40,7 +41,7 @@ class OnionrCommunicate:
         with open(fingerprintFile,'r') as f:
             self.pgpOwnFingerprint = f.read()
         logger.info('My PGP fingerprint is ' + logger.colors.underline + self.pgpOwnFingerprint + logger.colors.reset + logger.colors.fg.green + '.')
-
+        self._core.clearDaemonQueue()
         while True:
             command = self._core.daemonQueue()
 
@@ -84,17 +85,17 @@ class OnionrCommunicate:
         for i in peerList:
             lastDB = self._core.getPeerInfo(i, 'blockDBHash')
             currentDB = self.performGet('getDBHash', i)
-            if lastDB != currentDB:
-                blocks += self.performGet('getBlockHashes', i)
+            if currentDB != False:
+                if lastDB != currentDB:
+                    blocks += self.performGet('getBlockHashes', i)
         blockList = blocks.split('\n')
         for i in blockList:
-            if not self._core.validateHash(i):
+            if not self._utils.validateHash(i):
                 # skip hash if it isn't valid
                 continue
             else:
                 logger.debug('Adding ' +  i + ' to hash database...')
                 self._core.addToBlockDB(i)
-
         return
 
     def performGet(self, action, peer, data=None, type='tor'):
@@ -115,7 +116,7 @@ class OnionrCommunicate:
 
 
 shouldRun = False
-debug = False
+debug = True
 developmentMode = False
 if os.path.exists('dev-enabled'):
     developmentMode = True

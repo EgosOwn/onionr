@@ -70,6 +70,7 @@ class OnionrUtils:
             sock.close()
         return retVal
     def checkIsIP(self, ip):
+        '''Check if a string is a valid ipv4 address'''
         try:
             socket.inet_aton(ip)
         except:
