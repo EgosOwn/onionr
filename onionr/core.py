@@ -43,6 +43,12 @@ class Core:
         self.blockDataLocation = 'data/blocks/'
         self._utils = onionrutils.OnionrUtils(self)
 
+        if not os.path.exists('data/'):
+            os.mkdir('data/')
+
+        if not os.path.exists(self.blockDB):
+            self.createBlockDB()
+
         return
 
     def generateMainPGP(self, myID):
@@ -50,9 +56,14 @@ class Core:
         Uses own PGP home folder in the data/ directory. '''
         # Generate main pgp key
         gpg = gnupg.GPG(homedir='./data/pgp/')
-        input_data = gpg.gen_key_input(key_type="RSA", key_length=2048, name_real=myID, name_email='anon@onionr')
+        input_data = gpg.gen_key_input(key_type="RSA", key_length=1024, name_real=myID, name_email='anon@onionr', testing=True)
         #input_data = gpg.gen_key_input(key_type="RSA", key_length=1024)
         key = gpg.gen_key(input_data)
+        logger.info("Generating PGP key, this will take some time..")
+        while key.status != "key created":
+            time.sleep(0.5)
+            print(key.status)
+        logger.info("Finished generating PGP key")
         # Write the key
         myFingerpintFile = open('data/own-fingerprint.txt', 'w')
         myFingerpintFile.write(key.fingerprint)
@@ -229,8 +240,11 @@ class Core:
         '''clear the daemon queue (somewhat dangerousous)'''
         conn = sqlite3.connect(self.queueDB)
         c = conn.cursor()
-        c.execute('Delete from commands;')
-        conn.commit()
+        try:
+            c.execute('delete from commands;')
+            conn.commit()
+        except:
+            pass
         conn.close()
 
     def generateHMAC(self):
