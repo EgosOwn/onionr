@@ -72,6 +72,7 @@ HiddenServicePort 80 127.0.0.1:''' + str(self.hsPort) + '''
         torPidFile.close()
         return
     def killTor(self):
+        '''properly kill tor based on pid saved to file'''
         try:
             pid = open('data/torPid.txt', 'r')
             pidN = pid.read()
