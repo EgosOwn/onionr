@@ -1,4 +1,1 @@
-SocksPort 16712
-HiddenServiceDir data/hs/
-HiddenServicePort 80 127.0.0.1:1337
-        
+
