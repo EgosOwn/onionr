@@ -117,7 +117,7 @@ class OnionrCommunicate:
         try:
             r = requests.get(url, headers=headers, proxies=proxies)
         except requests.exceptions.RequestException:
-            logger.warn("Failed to get blocks")
+            logger.warn(action + " failed with peer " + peer)
             return False
         return r.text
 
