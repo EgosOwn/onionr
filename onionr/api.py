@@ -176,7 +176,7 @@ class API:
         # Validate host header, to protect against DNS rebinding attacks
         host = self.host
         if hostType == 'private':
-            if not request.host.startswith('127'):
+            if not request.host.startswith('127') and not self._utils.checkIsIP(request.host):
                 abort(403)
         elif hostType == 'public':
             if not request.host.endswith('onion') and not request.host.endswith('i2p'):

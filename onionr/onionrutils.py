@@ -69,6 +69,13 @@ class OnionrUtils:
         finally:
             sock.close()
         return retVal
+    def checkIsIP(self, ip):
+        try:
+            socket.inet_aton(ip)
+        except:
+            return False
+        else:
+            return True
     def exportMyPubkey(self):
         '''Export our PGP key if it exists'''
         if not os.path.exists(self.fingerprintFile):
@@ -107,27 +114,39 @@ class OnionrUtils:
         idLength = len(id)
         retVal = True
         idNoDomain = ''
-        #if idLength != 60 and idLength != 22 and idLength != 62:
+        peerType = ''
+        # i2p b32 addresses are 60 characters long (including .b32.i2p)
         if idLength == 60:
-            if not id.endsWith('.b32.i2p'):
+            peerType = 'i2p'
+            if not id.endswith('.b32.i2p'):
                 retVal = False
             else:
                 idNoDomain = id.split('.b32.i2p')[0]
+        # Onion v2's are 22 (including .onion), v3's are 62 with .onion
         elif idLength == 22 or idLength == 62:
-            if not id.endsWith('.onion'):
+            peerType = 'onion'
+            if not id.endswith('.onion'):
                 retVal = False
             else:
                 idNoDomain = id.split('.onion')[0]
         else:
             retVal = False
         if retVal:
-            if id.endsWith('.onion'):
+            if peerType == 'i2p':
                 try:
-                    int(idNoDomain, 16)
-                except ValueError:
+                    id.split('.b32.i2p')[2]
+                except:
+                    pass
+                else:
                     retVal = False
-            elif id.endsWith('.b32.i2p'):
-                if not idNoDomain.isalnum():
+            elif peerType == 'onion':
+                try:
+                    id.split('.onion')[2]
+                except:
+                    pass
+                else:
                     retVal = False
+            if not idNoDomain.isalnum():
+                retVal = False
         return retVal
 
