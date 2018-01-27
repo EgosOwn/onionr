@@ -49,7 +49,7 @@ class Core:
         ''' Generate the main PGP key for our client. Should not be done often.
         Uses own PGP home folder in the data/ directory. '''
         # Generate main pgp key
-        gpg = gnupg.GPG(gnupghome='./data/pgp/')
+        gpg = gnupg.GPG(homedir='./data/pgp/')
         input_data = gpg.gen_key_input(key_type="RSA", key_length=2048, name_real=myID, name_email='anon@onionr')
         #input_data = gpg.gen_key_input(key_type="RSA", key_length=1024)
         key = gpg.gen_key(input_data)

@@ -81,10 +81,7 @@ class OnionrUtils:
         '''Export our PGP key if it exists'''
         if not os.path.exists(self.fingerprintFile):
             raise Exception("No fingerprint found, cannot export our PGP key.")
-        if os.getenv('TRAVIS') == 'true':
-            gpg = gnupg.GPG(homedir='./data/pgp/')
-        else:
-            gpg = gnupg.GPG(gnupghome='./data/pgp/')
+        gpg = gnupg.GPG(homedir='./data/pgp/')
         with open(self.fingerprintFile,'r') as f:
             fingerprint = f.read()
         ascii_armored_public_keys = gpg.export_keys(fingerprint)
