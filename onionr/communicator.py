@@ -99,7 +99,7 @@ class OnionrCommunicate:
         return
 
     def performGet(self, action, peer, data=None, type='tor'):
-        '''performs a request to a peer through Tor or i2p (currently only tor)'''
+        '''Performs a request to a peer through Tor or i2p (currently only tor)'''
         if not peer.endswith('.onion') and not peer.endswith('.onion/'):
             raise PeerError('Currently only Tor .onion peers are supported. You must manually specify .onion')
         socksPort = sys.argv[2]

@@ -18,7 +18,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 
-import re
+import re, sys
 
 class colors:
     '''
@@ -126,6 +126,51 @@ def log(prefix, data, color = ''):
         output = colors.filter(output)
 
     raw(output)
+
+'''
+    Takes in input from the console, not stored in logs
+    message: The message to display before taking input
+'''
+def input(message = 'Enter input: '):
+    color = colors.fg.green + colors.bold
+    output = colors.reset + str(color) + '... ' + colors.reset + str(message) + colors.reset
+
+    if not get_settings() & USE_ANSI:
+        output = colors.filter(output)
+
+    sys.stdout.write(output)
+    return raw_input()
+
+'''
+    Displays an "Are you sure" message, returns True for Y and False for N
+    message: The confirmation message, use %s for (y/n)
+    default: which to prefer-- y or n
+'''
+def confirm(default = 'y', message = 'Are you sure %s? '):
+    color = colors.fg.green + colors.bold
+
+    default = default.lower()
+    confirm = colors.bold
+    if default.startswith('y'):
+        confirm += '(Y/n)'
+    else:
+        confirm += '(y/N)'
+    confirm += colors.reset + color
+
+    output = colors.reset + str(color) + '... ' + colors.reset + str(message) + colors.reset
+
+    if not get_settings() & USE_ANSI:
+        output = colors.filter(output)
+
+    sys.stdout.write(output.replace('%s', confirm))
+    inp = raw_input().lower()
+
+    if 'y' in inp:
+        return True
+    if 'n' in inp:
+        return False
+    else:
+        return default == 'y'
 
 # debug: when there is info that could be useful for debugging purposes only
 def debug(data):

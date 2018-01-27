@@ -4,3 +4,5 @@ onionr/data/*.db
 onionr/data-old/*
 onionr/*.pyc
 onionr/*.log
+onionr/data/hs/hostname
+onionr/data/*
