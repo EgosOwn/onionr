@@ -17,7 +17,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import subprocess, os, random, sys, logger, time
+import subprocess, os, random, sys, logger, time, signal
 class NetController:
     '''NetController
     This class handles hidden service setup on Tor and I2P
@@ -27,6 +27,7 @@ class NetController:
         self.readyState = False
         self.socksPort = random.randint(1024, 65535)
         self.hsPort = hsPort
+        self._torInstnace = ''
         self.myID = ''
         '''
         if os.path.exists(self.torConfigLocation):
@@ -66,4 +67,20 @@ HiddenServicePort 80 127.0.0.1:''' + str(self.hsPort) + '''
         myID = open('data/hs/hostname', 'r')
         self.myID = myID.read()
         myID.close()
+        torPidFile = open('data/torPid.txt', 'w')
+        torPidFile.write(str(tor.pid))
+        torPidFile.close()
         return
+    def killTor(self):
+        try:
+            pid = open('data/torPid.txt', 'r')
+            pidN = pid.read()
+            pid.close()
+        except FileNotFoundError:
+            return
+        try:
+            int(pidN)
+        except:
+            return
+        os.kill(int(pidN), signal.SIGTERM)
+        os.remove('data/torPid.txt')

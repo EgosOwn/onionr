@@ -134,11 +134,13 @@ class Onionr:
     def killDaemon(self):
         '''Shutdown the Onionr Daemon'''
         logger.warn('Killing the running daemon')
+        net = NetController(self.config['CLIENT']['PORT'])
         try:
             self.onionrUtils.localCommand('shutdown')
         except requests.exceptions.ConnectionError:
             pass
         self.onionrCore.daemonQueueAdd('shutdown')
+        net.killTor()
         return
     def showStats(self):
         '''Display statistics and exit'''
