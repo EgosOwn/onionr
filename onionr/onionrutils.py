@@ -31,9 +31,6 @@ class OnionrUtils:
         self.fingerprintFile = 'data/own-fingerprint.txt'
         self._core = coreInstance
         return
-    def printErr(self, text='an error occured'):
-        '''Print an error message to stderr with a new line'''
-        logger.error(text)
     def localCommand(self, command):
         '''Send a command to the local http API server, securely. Intended for local clients, DO NOT USE for remote peers.'''
         config = configparser.ConfigParser()
@@ -42,27 +39,30 @@ class OnionrUtils:
         else:
             return
         requests.get('http://' + open('data/host.txt', 'r').read() + ':' + str(config['CLIENT']['PORT']) + '/client/?action=' + command + '&token=' + config['CLIENT']['CLIENT HMAC'])
-    def getPassword(self, message='Enter password: '):
+    def getPassword(self, message='Enter password: ', confirm = True):
         '''Get a password without showing the users typing and confirm the input'''
         # Get a password safely with confirmation and return it
         while True:
             print(message)
             pass1 = getpass.getpass()
-            print('Confirm password: ')
-            pass2 = getpass.getpass()
-            if pass1 != pass2:
-                logger.error("Passwords do not match.")
-                input()
+            if confirm:
+                print('Confirm password: ')
+                pass2 = getpass.getpass()
+                if pass1 != pass2:
+                    logger.error("Passwords do not match.")
+                    input()
+                else:
+                    break
             else:
                 break
         return pass1
-    def checkPort(self, port):
+    def checkPort(self, port, host = ''):
         '''Checks if a port is available, returns bool'''
         # inspired by https://www.reddit.com/r/learnpython/comments/2i4qrj/how_to_write_a_python_script_that_checks_to_see/ckzarux/
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         retVal = False
         try:
-            sock.bind(('', port))
+            sock.bind((host, port))
         except OSError as e:
             if e.errno is 98:
                 retVal = True
@@ -92,7 +92,7 @@ class OnionrUtils:
         return dataHash
 
     def validateHash(self, data, length=64):
-        '''validate if a string is a valid hex formatted hash'''
+        '''Validate if a string is a valid hex formatted hash'''
         retVal = True
         if len(data) != length:
             retVal = False

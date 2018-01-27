@@ -115,13 +115,13 @@ class OnionrTests(unittest.TestCase):
         while True:
             command = myCore.daemonQueue()
             if command == False:
-                print('The queue is empty (false)')
+                logger.debug('The queue is empty (false)')
                 break
             else:
-                print(command[0])
+                logger.debug(command[0])
         myCore.daemonQueueAdd('testCommand', 'testData')
         command = myCore.daemonQueue()
         if command[0] == 'testCommand':
             if myCore.daemonQueue() == False:
-                print('Succesfully added and read command')
+                logger.info('Succesfully added and read command')
 unittest.main()
