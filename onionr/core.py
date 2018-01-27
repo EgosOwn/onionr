@@ -45,6 +45,8 @@ class Core:
 
         if not os.path.exists('data/'):
             os.mkdir('data/')
+        if not os.path.exists('data/blocks/'):
+            os.mkdir('data/blocks/')
 
         if not os.path.exists(self.blockDB):
             self.createBlockDB()
@@ -142,9 +144,12 @@ class Core:
 
     def getData(self,hash):
         '''simply return the data associated to a hash'''
-        dataFile = open(self.blockDataLocation + hash + '.dat')
-        data = dataFile.read()
-        dataFile.close()
+        try:
+            dataFile = open(self.blockDataLocation + hash + '.dat')
+            data = dataFile.read()
+            dataFile.close()
+        except FileNotFoundError:
+            data = False
         return data
 
     def setData(self, data):
@@ -158,7 +163,7 @@ class Core:
             raise Exception("Data is already set for " + dataHash)
         else:
             blockFile = open(blockFileName, 'w')
-            blockFile.write(data)
+            blockFile.write(data.decode())
             blockFile.close()
         return dataHash
 

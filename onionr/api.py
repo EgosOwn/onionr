@@ -138,7 +138,13 @@ class API:
                 resp = Response(self._utils.exportMyPubkey())
             # setData should be something the communicator initiates, not this api
             elif action == 'getData':
-                resp = Response(self._core.getData(data))
+                resp = self._core.getData(data)
+                if resp == False:
+                    abort(404)
+                    resp = ""
+                resp = Response(resp)
+            else:
+                resp = Response("")
 
             return resp
 

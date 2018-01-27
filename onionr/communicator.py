@@ -31,6 +31,8 @@ class OnionrCommunicate:
         self._utils = onionrutils.OnionrUtils(self._core)
         blockProcessTimer = 0
         blockProcessAmount = 5
+        heartBeatTimer = 0
+        heartBeatRate = 10
         logger.debug('Communicator debugging enabled.')
         torID = open('data/hs/hostname').read()
 
@@ -45,14 +47,17 @@ class OnionrCommunicate:
             self._core.clearDaemonQueue()
         while True:
             command = self._core.daemonQueue()
-
             # Process blocks based on a timer
             blockProcessTimer += 1
+            heartBeatTimer += 1
+            if heartBeatRate == heartBeatTimer:
+                logger.debug('Communicator heartbeat')
+                heartBeatTimer = 0
             if blockProcessTimer == blockProcessAmount:
                 self.lookupBlocks()
                 self._core.processBlocks()
                 blockProcessTimer = 0
-            logger.debug('Communicator daemon heartbeat')
+            #logger.debug('Communicator daemon heartbeat')
             if command != False:
                 if command[0] == 'shutdown':
                     logger.warn('Daemon recieved exit command.')
