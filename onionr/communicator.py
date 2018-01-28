@@ -103,11 +103,8 @@ class OnionrCommunicate:
                 if lastDB != currentDB:
                     logger.debug('Fetching hash from ' + i + ' - ' + currentDB + ' current hash.')
                     blocks += self.performGet('getBlockHashes', i)
-            if currentDB != lastDB:
                 if self._utils.validateHash(currentDB):
                     self._core.setPeerInfo(i, "blockDBHash", currentDB)
-                else:
-                    logger.warn("Peer " + i + " returned malformed hash")
         logger.debug('BLOCKS: \n' + blocks)
         blockList = blocks.split('\n')
         for i in blockList:
