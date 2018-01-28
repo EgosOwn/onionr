@@ -109,6 +109,10 @@ class Onionr:
                         os.remove('.onionr-lock')
             elif command == 'stop':
                 self.killDaemon()
+            elif command in ('listpeers', 'list-peers'):
+                logger.info('Peer list:\n')
+                for i in self.onionrCore.listPeers():
+                    logger.info(i)
             elif command in ('addmsg', 'addmessage'):
                 while True:
                     messageToAdd = input('Broadcast message to network: ')

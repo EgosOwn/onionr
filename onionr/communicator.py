@@ -55,7 +55,7 @@ class OnionrCommunicate:
                 heartBeatTimer = 0
             if blockProcessTimer == blockProcessAmount:
                 self.lookupBlocks()
-                self._core.processBlocks()
+                self.processBlocks()
                 blockProcessTimer = 0
             #logger.debug('Communicator daemon heartbeat')
             if command != False:
@@ -114,6 +114,15 @@ class OnionrCommunicate:
             else:
                 logger.debug('Adding ' +  i + ' to hash database...')
                 self._core.addToBlockDB(i)
+        return
+    def processBlocks(self):
+        '''
+        Work with the block database and download any missing blocks
+        This is meant to be called from the communicator daemon on its timer.
+        '''
+        for i in self.getBlockList(True).split("\n"):
+            if i != "":
+                print('UNSAVED BLOCK:', i)
         return
 
     def performGet(self, action, peer, data=None, type='tor'):

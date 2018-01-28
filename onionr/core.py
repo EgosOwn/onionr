@@ -280,15 +280,6 @@ class Core:
         conn.close()
         return peerList
 
-    def processBlocks(self):
-        '''
-        Work with the block database and download any missing blocks
-        This is meant to be called from the communicator daemon on its timer.
-        '''
-        for i in self.getBlockList(True).split("\n"):
-            if i != "":
-                print('UNSAVED BLOCK:', i)
-        return
     def getPeerInfo(self, peer, info):
         '''
         get info about a peer
