@@ -323,6 +323,8 @@ class Core:
         # TODO: validate key on whitelist
 
         c.execute('UPDATE peers SET ' + key + ' = ? where id=?', command)
+        conn.commit()
+        conn.close()
 
     def getBlockList(self, unsaved=False):
         '''get list of our blocks'''
