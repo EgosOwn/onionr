@@ -86,6 +86,7 @@ class API:
             resp.headers['Content-Type'] = 'text/plain'
             resp.headers["Content-Security-Policy"] = "default-src 'none'"
             resp.headers['X-Frame-Options'] = 'deny'
+            resp.headers['X-Content-Type-Options'] = "nosniff"
             return resp
 
         @app.route('/client/')
@@ -105,10 +106,6 @@ class API:
                 resp = Response('Goodbye')
             elif action == 'stats':
                 resp = Response('me_irl')
-            elif action == 'init':
-                # generate PGP key
-                self._core.generateMainPGP()
-                pass
             else:
                 resp = Response('(O_o) Dude what? (invalid command)')
             endTime = math.floor(time.time())

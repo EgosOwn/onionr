@@ -25,6 +25,11 @@ import gui, api, core
 from onionrutils import OnionrUtils
 from netcontroller import NetController
 
+try:
+    from urllib3.contrib.socks import SOCKSProxyManager
+except ImportError:
+    raise Exception("You need the PySocks module (for use with socks5 proxy to use Tor)")
+
 class Onionr:
     def __init__(self):
         '''Main Onionr class. This is for the CLI program, and does not handle much of the logic.
@@ -104,6 +109,12 @@ class Onionr:
                         os.remove('.onionr-lock')
             elif command == 'stop':
                 self.killDaemon()
+            elif command in ('addmsg', 'addmessage'):
+                while True:
+                    messageToAdd = input('Broadcast message to network: ')
+                    if len(messageToAdd) >= 1:
+                        break
+                self.onionrCore.setData(messageToAdd)
             elif command == 'stats':
                 self.showStats()
             elif command == 'help' or command == '--help':
@@ -124,7 +135,8 @@ class Onionr:
         if not os.environ.get("WERKZEUG_RUN_MAIN") == "true":
             net = NetController(self.config['CLIENT']['PORT'])
             logger.info('Tor is starting...')
-            net.startTor()
+            if not net.startTor():
+                sys.exit(1)
             logger.info('Started Tor .onion service: ' + logger.colors.underline + net.myID)
             time.sleep(1)
             subprocess.Popen(["./communicator.py", "run", str(net.socksPort)])
@@ -148,6 +160,4 @@ class Onionr:
     def showHelp(self):
         '''Show help for Onionr'''
         return
-
-
 Onionr()

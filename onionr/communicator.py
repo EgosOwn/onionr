@@ -94,6 +94,11 @@ class OnionrCommunicate:
             if currentDB != False:
                 if lastDB != currentDB:
                     blocks += self.performGet('getBlockHashes', i)
+            if currentDB != lastDB:
+                if self._utils.validateHash(currentDB):
+                    self._core.setPeerInfo(i, "blockDBHash", currentDB)
+                else:
+                    logger.warn("Peer " + i + " returned malformed hash")
         blockList = blocks.split('\n')
         for i in blockList:
             if not self._utils.validateHash(i):
@@ -109,15 +114,16 @@ class OnionrCommunicate:
         if not peer.endswith('.onion') and not peer.endswith('.onion/'):
             raise PeerError('Currently only Tor .onion peers are supported. You must manually specify .onion')
         socksPort = sys.argv[2]
-        proxies = {'http': 'socks5://127.0.0.1:' + str(socksPort), 'https': 'socks5://127.0.0.1:' + str(socksPort)}
+        '''We use socks5h to use tor as DNS'''
+        proxies = {'http': 'socks5h://127.0.0.1:' + str(socksPort), 'https': 'socks5h://127.0.0.1:' + str(socksPort)}
         headers = {'user-agent': 'PyOnionr'}
         url = 'http://' + peer + '/public/?action=' + action
         if data != None:
             url = url + '&data=' + data
         try:
             r = requests.get(url, headers=headers, proxies=proxies)
-        except requests.exceptions.RequestException:
-            logger.warn(action + " failed with peer " + peer)
+        except requests.exceptions.RequestException as e:
+            logger.warn(action + " failed with peer " + peer + ": " + e)
             return False
         return r.text
 

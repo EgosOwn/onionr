@@ -259,12 +259,17 @@ class Core:
         key = base64.b64encode(os.urandom(32))
         return key
 
-    def listPeers(self):
+    def listPeers(self, randomOrder=True):
         '''Return a list of peers
+
+        randomOrder determines if the list should be in a random order
         '''
         conn = sqlite3.connect(self.peerDB)
         c = conn.cursor()
-        peers = c.execute('SELECT * FROM peers;')
+        if randomOrder:
+            peers = c.execute('SELECT * FROM peers order by RANDOM();')
+        else:
+            peers = c.execute('SELECT * FROM peers;')
         peerList = []
         for i in peers:
             peerList.append(i[0])
@@ -310,6 +315,14 @@ class Core:
                     iterCount += 1
         conn.close()
         return retVal
+    def setPeerInfo(self, peer, key, data):
+        '''update a peer for a key'''
+        conn = sqlite3.connect(self.peerDB)
+        c = conn.cursor()
+        command = (peer,)
+        # TODO: validate key on whitelist
+
+        c.execute('UPDATE peers SET ' + key + ' = ' + data + ' where id=?', command)
 
     def getBlockList(self, unsaved=False):
         '''get list of our blocks'''
