@@ -1,7 +1,10 @@
-simple_crypt==4.1.7
-requests==2.18.4
 PyNaCl==1.2.1
-Flask==0.12.2
-pycrypto==2.6.1
 gnupg==2.3.1
+Flask==0.12.2
+requests==2.18.4
+urllib3==1.22
+simple_crypt==4.1.7
 sha3==0.2.1
+pycrypto==2.6.1
+nacl==0.0.0
+socks==0.0.0

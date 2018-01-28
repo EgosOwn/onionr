@@ -286,7 +286,8 @@ class Core:
         This is meant to be called from the communicator daemon on its timer.
         '''
         for i in self.getBlockList(True).split("\n"):
-            print('UNSAVED BLOCK:', i)
+            if i != "":
+                print('UNSAVED BLOCK:', i)
         return
     def getPeerInfo(self, peer, info):
         '''
