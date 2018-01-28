@@ -7,4 +7,4 @@ simple_crypt==4.1.7
 sha3==0.2.1
 pycrypto==2.6.1
 pynacl==1.2.1
-socks==1.6.8
+PySocks==1.6.8
