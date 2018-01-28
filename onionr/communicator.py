@@ -122,7 +122,7 @@ class OnionrCommunicate:
         '''
         for i in self._core.getBlockList(True).split("\n"):
             if i != "":
-                logger.warn('UNSAVED BLOCK:', i)
+                logger.warn('UNSAVED BLOCK: ' + i)
                 data = self.downloadBlock(i)
         return
     
