@@ -106,6 +106,7 @@ class OnionrCommunicate:
                     logger.warn("Peer " + i + " returned malformed hash")
         blockList = blocks.split('\n')
         for i in blockList:
+            logger.debug('Exchanged block (blockList): ' + i)
             if not self._utils.validateHash(i):
                 # skip hash if it isn't valid
                 logger.warn('Hash ' + i + ' is not valid')

@@ -130,15 +130,19 @@ class Core:
         ''')
         conn.commit()
         conn.close()
-    def addToBlockDB(self, newHash):
+    def addToBlockDB(self, newHash, selfInsert=False):
         '''add a hash value to the block db (should be in hex format)'''
         if not os.path.exists(self.blockDB):
             raise Exception('Block db does not exist')
         conn = sqlite3.connect(self.blockDB)
         c = conn.cursor()
         currentTime = math.floor(time.time())
-        data = (newHash, currentTime, 0, 0)
-        c.execute('INSERT into hashes values(?, ?, ?, ?);', data)
+        if selfInsert:
+            selfInsert = 1
+        else:
+            selfInsert = 0
+        data = (newHash, currentTime, 0, 0, selfInsert)
+        c.execute('INSERT into hashes values(?, ?, ?, ?, ?);', data)
         conn.commit()
         conn.close()
 

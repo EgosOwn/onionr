@@ -114,7 +114,8 @@ class Onionr:
                     messageToAdd = input('Broadcast message to network: ')
                     if len(messageToAdd) >= 1:
                         break
-                self.onionrCore.setData(messageToAdd)
+                addedHash = self.onionrCore.setData(messageToAdd)
+                self.onionrCore.addToBlockDB(addedHash, selfInsert=True)
             elif command == 'stats':
                 self.showStats()
             elif command == 'help' or command == '--help':
