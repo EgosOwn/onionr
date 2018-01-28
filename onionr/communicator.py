@@ -96,6 +96,10 @@ class OnionrCommunicate:
                 logger.debug('Fetching hash from ' + i + ', ' + lastDB + ' last known')
             currentDB = self.performGet('getDBHash', i)
             if currentDB != False:
+                logger.debug(i + " hash db (from request): " + currentDB)
+            else:
+                logger.warn("Error getting hash db status for " + i)
+            if currentDB != False:
                 if lastDB != currentDB:
                     logger.debug('Fetching hash from ' + i + ' - ' + currentDB + ' current hash.')
                     blocks += self.performGet('getBlockHashes', i)
