@@ -104,6 +104,7 @@ class OnionrCommunicate:
                     self._core.setPeerInfo(i, "blockDBHash", currentDB)
                 else:
                     logger.warn("Peer " + i + " returned malformed hash")
+        logger.debug('BLOCKS: \n' + blocks)
         blockList = blocks.split('\n')
         for i in blockList:
             logger.debug('Exchanged block (blockList): ' + i)
