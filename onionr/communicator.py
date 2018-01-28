@@ -90,7 +90,12 @@ class OnionrCommunicate:
         blocks = ''
         for i in peerList:
             lastDB = self._core.getPeerInfo(i, 'blockDBHash')
+            if lastDB == None:
+                logger.debug('Fetching hash from ' + i + ' No previous known.')
+            else:
+                logger.debug('Fetching hash from ' + i + ', ' + lastDB + ' last known')
             currentDB = self.performGet('getDBHash', i)
+            logger.debug('Fetching hash from ' + i + ' - ' + currentDB + ' current hash.')
             if currentDB != False:
                 if lastDB != currentDB:
                     blocks += self.performGet('getBlockHashes', i)
