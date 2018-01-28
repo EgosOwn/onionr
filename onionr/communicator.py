@@ -108,6 +108,7 @@ class OnionrCommunicate:
         for i in blockList:
             if not self._utils.validateHash(i):
                 # skip hash if it isn't valid
+                logger.warn('Hash ' + i + ' is not valid')
                 continue
             else:
                 logger.debug('Adding ' +  i + ' to hash database...')
