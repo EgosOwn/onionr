@@ -122,8 +122,22 @@ class OnionrCommunicate:
         '''
         for i in self._core.getBlockList(True).split("\n"):
             if i != "":
-                print('UNSAVED BLOCK:', i)
+                logger.warn('UNSAVED BLOCK:', i)
+                data = self.downloadBlock(i)
         return
+    
+    def downloadBlock(self, hash):
+        peerList = self._core.listPeers()
+        blocks = ''
+        for i in peerList:
+            hasher = hashlib.sha3_256()
+            data = self.performGet('getData', i, hash)
+            if data == False or len(data) > 10000000:
+                continue
+            hasher.update(data.encode())
+            if hasher.hexdigest() == hash:
+                self._core.setData(data)
+                logger.info('Successfully obtained data for ' + hash)
 
     def performGet(self, action, peer, data=None, type='tor'):
         '''Performs a request to a peer through Tor or i2p (currently only tor)'''
