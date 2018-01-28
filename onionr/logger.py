@@ -195,4 +195,4 @@ def error(data):
 # fatal: when the something so bad has happened that the prorgam must stop
 def fatal(data):
     if get_level() <= LEVEL_FATAL:
-        log('#', data, colors.bg.red + colors.fg.black)
+        log('#', data, colors.bg.red + colors.fg.green + colors.bold)

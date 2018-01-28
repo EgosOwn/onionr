@@ -61,7 +61,7 @@ HiddenServicePort 80 127.0.0.1:''' + str(self.hsPort) + '''
         try:
             tor = subprocess.Popen([torBinary, '-f', self.torConfigLocation], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         except FileNotFoundError:
-            logger.error("Tor was not found in your path or the Onionr directory. Install Tor and try again.")
+            logger.fatal("Tor was not found in your path or the Onionr directory. Please install Tor and try again.")
             sys.exit(1)
         # wait for tor to get to 100% bootstrap
         for line in iter(tor.stdout.readline, b''):
@@ -70,7 +70,7 @@ HiddenServicePort 80 127.0.0.1:''' + str(self.hsPort) + '''
             elif 'Opening Socks listener' in line.decode():
                 logger.debug(line.decode())
         else:
-            logger.error('Failed to start Tor. Try killing any other Tor processes owned by this user.')
+            logger.fatal('Failed to start Tor. Try killing any other Tor processes owned by this user.')
             return False
         logger.info('Finished starting Tor')
         self.readyState = True
