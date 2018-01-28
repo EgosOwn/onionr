@@ -23,4 +23,6 @@ HTTP API
     - export node's PGP public key
 -   getData
     - get a data block
+-   getBlockHashes
+    - get a list of the node's hashes
 -------------------------------------------------
