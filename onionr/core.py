@@ -319,10 +319,10 @@ class Core:
         '''update a peer for a key'''
         conn = sqlite3.connect(self.peerDB)
         c = conn.cursor()
-        command = (peer,)
+        command = (data, peer)
         # TODO: validate key on whitelist
 
-        c.execute('UPDATE peers SET ' + key + ' = ' + data + ' where id=?', command)
+        c.execute('UPDATE peers SET ' + key + ' = ? where id=?', command)
 
     def getBlockList(self, unsaved=False):
         '''get list of our blocks'''
