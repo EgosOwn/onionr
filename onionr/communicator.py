@@ -123,7 +123,7 @@ class OnionrCommunicate:
         try:
             r = requests.get(url, headers=headers, proxies=proxies)
         except requests.exceptions.RequestException as e:
-            logger.warn(action + " failed with peer " + peer + ": " + e)
+            logger.warn(action + " failed with peer " + peer + ": " + str(e))
             return False
         return r.text
 
