@@ -137,9 +137,11 @@ class OnionrCommunicate:
             if data == False or len(data) > 10000000:
                 continue
             hasher.update(data.encode())
-            if hasher.hexdigest() == hash:
+            if hasher.hexdigest() == hash.strip():
                 self._core.setData(data)
                 logger.info('Successfully obtained data for ' + hash)
+            else:
+                logger.warn("Failed to validate " + hash)
 
     def performGet(self, action, peer, data=None, type='tor'):
         '''Performs a request to a peer through Tor or i2p (currently only tor)'''
