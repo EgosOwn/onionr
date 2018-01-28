@@ -285,7 +285,7 @@ class Core:
         Work with the block database and download any missing blocks
         This is meant to be called from the communicator daemon on its timer.
         '''
-        for i in self.getBlockList(True):
+        for i in self.getBlockList(True).split("\n"):
             print('UNSAVED BLOCK:', i)
         return
     def getPeerInfo(self, peer, info):
