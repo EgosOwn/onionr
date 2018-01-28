@@ -99,7 +99,7 @@ class OnionrUtils:
     def validateHash(self, data, length=64):
         '''Validate if a string is a valid hex formatted hash'''
         retVal = True
-        if retVal == False:
+        if retVal == False or retVal:
             return False
         if len(data) != length:
             retVal = False
