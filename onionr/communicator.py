@@ -95,9 +95,9 @@ class OnionrCommunicate:
             else:
                 logger.debug('Fetching hash from ' + i + ', ' + lastDB + ' last known')
             currentDB = self.performGet('getDBHash', i)
-            logger.debug('Fetching hash from ' + i + ' - ' + currentDB + ' current hash.')
             if currentDB != False:
                 if lastDB != currentDB:
+                    logger.debug('Fetching hash from ' + i + ' - ' + currentDB + ' current hash.')
                     blocks += self.performGet('getBlockHashes', i)
             if currentDB != lastDB:
                 if self._utils.validateHash(currentDB):

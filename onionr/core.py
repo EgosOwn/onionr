@@ -337,5 +337,5 @@ class Core:
             execute = 'SELECT hash FROM hashes;'
         for row in c.execute(execute):
             for i in row:
-                retData += i
+                retData += i + "\n"
         return retData
