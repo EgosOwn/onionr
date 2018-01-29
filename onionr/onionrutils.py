@@ -18,7 +18,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 # Misc functions that do not fit in the main api, but are useful
-import getpass, sys, requests, configparser, os, socket, gnupg, hashlib, logger
+import getpass, sys, requests, configparser, os, socket, gnupg, hashlib, logger, sqlite3
 if sys.version_info < (3, 6):
     try:
         import sha3
@@ -95,6 +95,22 @@ class OnionrUtils:
         hasher.update(data)
         dataHash = hasher.hexdigest()
         return dataHash
+
+    def hasBlock(self, hash):
+        '''detect if we have a block in the list or not'''
+        conn = sqlite3.connect(self._core.blockDB)
+        c = conn.cursor()
+        if not self.validateHash(hash):
+            raise Exception("Invalid hash")
+        for result in c.execute("SELECT COUNT() FROM hashes where hash='" + hash + "'"):
+            if result[0] >= 1:
+                conn.commit()
+                conn.close()
+                return True
+            else:
+                conn.commit()
+                conn.close()
+                return False
 
     def validateHash(self, data, length=64):
         '''Validate if a string is a valid hex formatted hash'''
