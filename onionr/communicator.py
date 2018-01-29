@@ -137,7 +137,10 @@ class OnionrCommunicate:
             if data == False or len(data) > 10000000:
                 continue
             hasher.update(data.encode())
-            if hasher.hexdigest() == hash.strip():
+            digest = hasher.hexdigest()
+            if digest is bytes:
+                digest = digest.decode()
+            if digest == hash.strip():
                 self._core.setData(data)
                 logger.info('Successfully obtained data for ' + hash)
             else:

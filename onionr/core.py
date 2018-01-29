@@ -169,6 +169,13 @@ class Core:
             blockFile = open(blockFileName, 'w')
             blockFile.write(data.decode())
             blockFile.close()
+
+            conn = sqlite3.connect(self.blockDB)
+            c = conn.cursor()
+            c.execute("UPDATE hashes set dataSaved=1 where id = '" + dataHash + "';")
+            conn.commit()
+            conn.close()
+
         return dataHash
 
     def dataDirEncrypt(self, password):
