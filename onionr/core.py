@@ -134,6 +134,8 @@ class Core:
         '''add a hash value to the block db (should be in hex format)'''
         if not os.path.exists(self.blockDB):
             raise Exception('Block db does not exist')
+        if self._utils.hasBlock(newHash):
+            return
         conn = sqlite3.connect(self.blockDB)
         c = conn.cursor()
         currentTime = math.floor(time.time())
