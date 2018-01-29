@@ -138,7 +138,7 @@ class OnionrCommunicate:
                 continue
             hasher.update(data.encode())
             digest = hasher.hexdigest()
-            if digest is bytes:
+            if type(digest) is bytes:
                 digest = digest.decode()
             if digest == hash.strip():
                 self._core.setData(data)
