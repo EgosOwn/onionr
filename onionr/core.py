@@ -162,6 +162,8 @@ class Core:
         hasher = hashlib.sha3_256()
         hasher.update(data)
         dataHash = hasher.hexdigest()
+        if type(dataHash) is bytes:
+            dataHash = dataHash.decode()
         blockFileName = self.blockDataLocation + dataHash + '.dat'
         if os.path.exists(blockFileName):
             raise Exception("Data is already set for " + dataHash)
