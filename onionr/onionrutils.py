@@ -50,7 +50,7 @@ class OnionrUtils:
                 pass2 = getpass.getpass()
                 if pass1 != pass2:
                     logger.error("Passwords do not match.")
-                    input()
+                    logger.readline()
                 else:
                     break
             else:
@@ -166,4 +166,3 @@ class OnionrUtils:
             if not idNoDomain.isalnum():
                 retVal = False
         return retVal
-

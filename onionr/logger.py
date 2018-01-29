@@ -131,7 +131,7 @@ def log(prefix, data, color = ''):
     Takes in input from the console, not stored in logs
     message: The message to display before taking input
 '''
-def input(message = 'Enter input: '):
+def readline(message = 'Enter input: '):
     color = colors.fg.green + colors.bold
     output = colors.reset + str(color) + '... ' + colors.reset + str(message) + colors.reset
 
@@ -139,7 +139,8 @@ def input(message = 'Enter input: '):
         output = colors.filter(output)
 
     sys.stdout.write(output)
-    return raw_input()
+
+    return input()
 
 '''
     Displays an "Are you sure" message, returns True for Y and False for N
@@ -163,7 +164,8 @@ def confirm(default = 'y', message = 'Are you sure %s? '):
         output = colors.filter(output)
 
     sys.stdout.write(output.replace('%s', confirm))
-    inp = raw_input().lower()
+
+    inp = input().lower()
 
     if 'y' in inp:
         return True

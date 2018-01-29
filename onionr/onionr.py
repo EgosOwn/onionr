@@ -123,7 +123,7 @@ class Onionr:
                     logger.info(i)
             elif command in ('addmsg', 'addmessage'):
                 while True:
-                    messageToAdd = input('Broadcast message to network: ')
+                    messageToAdd = logger.readline('Broadcast message to network: ')
                     if len(messageToAdd) >= 1:
                         break
                 addedHash = self.onionrCore.setData(messageToAdd)
