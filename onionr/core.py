@@ -172,7 +172,7 @@ class Core:
 
             conn = sqlite3.connect(self.blockDB)
             c = conn.cursor()
-            c.execute("UPDATE hashes set dataSaved=1 where id = '" + dataHash + "';")
+            c.execute("UPDATE hashes set dataSaved=1 where hash = '" + dataHash + "';")
             conn.commit()
             conn.close()
 
