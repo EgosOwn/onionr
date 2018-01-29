@@ -109,6 +109,14 @@ class Onionr:
                         os.remove('.onionr-lock')
             elif command == 'stop':
                 self.killDaemon()
+            elif command == 'addpeer':
+                try:
+                    newPeer = sys.argv[2]
+                except:
+                    pass
+                else:
+                    logger.info("Adding peer.")
+                    self.onionrCore.addPeer(newPeer)
             elif command in ('listpeers', 'list-peers'):
                 logger.info('Peer list:\n')
                 for i in self.onionrCore.listPeers():

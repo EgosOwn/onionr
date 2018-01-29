@@ -133,6 +133,7 @@ class OnionrCommunicate:
         return
     
     def downloadBlock(self, hash):
+        '''download a block from random order of peers'''
         peerList = self._core.listPeers()
         blocks = ''
         for i in peerList:

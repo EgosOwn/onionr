@@ -329,7 +329,8 @@ class Core:
         c = conn.cursor()
         command = (data, peer)
         # TODO: validate key on whitelist
-
+        if key not in ('id', 'text', 'name', 'pgpKey', 'hmacKey', 'blockDBHash', 'forwardKey', 'dateSeen', 'bytesStored', 'trust'):
+            raise Exception("Got invalid database key when setting peer info")
         c.execute('UPDATE peers SET ' + key + ' = ? where id=?', command)
         conn.commit()
         conn.close()

@@ -51,7 +51,7 @@ class OnionrTests(unittest.TestCase):
         myCore = core.Core()
         if not os.path.exists('data/peers.db'):
             myCore.createPeerDB()
-        if myCore.addPeer('facebookcorewwwi.onion') and not myCore.addPeer('invalidpeer.onion'):
+        if myCore.addPeer('2ks5c5bm6zk3ejqg.onion') and not myCore.addPeer('invalidpeer.onion'):
             self.assertTrue(True)
         else:
             self.assertTrue(False)
