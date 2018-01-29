@@ -111,7 +111,8 @@ class OnionrCommunicate:
             logger.debug('Exchanged block (blockList): ' + i)
             if not self._utils.validateHash(i):
                 # skip hash if it isn't valid
-                logger.warn('Hash ' + i + ' is not valid')
+                if len(i.strip()) != 0
+                    logger.warn('Hash ' + i + ' is not valid')
                 continue
             else:
                 logger.debug('Adding ' +  i + ' to hash database...')
