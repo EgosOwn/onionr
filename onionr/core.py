@@ -166,6 +166,7 @@ class Core:
             dataHash = dataHash.decode()
         blockFileName = self.blockDataLocation + dataHash + '.dat'
         if os.path.exists(blockFileName):
+            return # to do, properly check if block is already saved elsewhere
             raise Exception("Data is already set for " + dataHash)
         else:
             blockFile = open(blockFileName, 'w')

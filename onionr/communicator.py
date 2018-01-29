@@ -159,7 +159,7 @@ class OnionrCommunicate:
         if data != None:
             url = url + '&data=' + data
         try:
-            r = requests.get(url, headers=headers, proxies=proxies)
+            r = requests.get(url, headers=headers, proxies=proxies, timeout=(5, 30))
         except requests.exceptions.RequestException as e:
             logger.warn(action + " failed with peer " + peer + ": " + str(e))
             return False
