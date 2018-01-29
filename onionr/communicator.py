@@ -147,6 +147,8 @@ class OnionrCommunicate:
             if digest == hash.strip():
                 self._core.setData(data)
                 logger.info('Successfully obtained data for ' + hash)
+                if len(data) < 120:
+                    logger.debug('Block text:\n' + data)
             else:
                 logger.warn("Failed to validate " + hash)
 
