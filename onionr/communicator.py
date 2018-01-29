@@ -108,13 +108,14 @@ class OnionrCommunicate:
         logger.debug('BLOCKS: \n' + blocks)
         blockList = blocks.split('\n')
         for i in blockList:
+            if len(i.strip()) == 0:
+                continue
             if self._utils.hasBlock(i):
                 continue
             logger.debug('Exchanged block (blockList): ' + i)
             if not self._utils.validateHash(i):
                 # skip hash if it isn't valid
-                if len(i.strip()) != 0:
-                    logger.warn('Hash ' + i + ' is not valid')
+                logger.warn('Hash ' + i + ' is not valid')
                 continue
             else:
                 logger.debug('Adding ' +  i + ' to hash database...')
