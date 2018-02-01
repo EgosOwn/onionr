@@ -1,7 +1,7 @@
 '''
     Onionr - P2P Microblogging Platform & Social network
 
-    Core Onionr library, useful for external programs. Handles peer processing and cryptography.
+    Core Onionr library, useful for external programs. Handles peer & data processing
 '''
 '''
     This program is free software: you can redistribute it and/or modify
