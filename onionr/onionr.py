@@ -123,13 +123,16 @@ class Onionr:
                     logger.info(i)
             elif command in ('addmsg', 'addmessage'):
                 while True:
-                    messageToAdd = logger.readline('Broadcast message to network: ')
+                    messageToAdd = '-txt-' + logger.readline('Broadcast message to network: ')
                     if len(messageToAdd) >= 1:
                         break
                 addedHash = self.onionrCore.setData(messageToAdd)
                 self.onionrCore.addToBlockDB(addedHash, selfInsert=True)
+                self.onionrCore.setBlockType(addedHash, 'txt')
             elif command == 'stats':
                 self.showStats()
+            elif command == 'gui':
+                gui.OnionrGUI(self.onionrCore)
             elif command == 'help' or command == '--help':
                 self.showHelp()
             elif command == '':

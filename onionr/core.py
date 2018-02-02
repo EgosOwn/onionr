@@ -114,7 +114,9 @@ class Core:
         hash - the hash of a block
         dateReceived - the date the block was recieved, not necessarily when it was created
         decrypted - if we can successfully decrypt the block (does not describe its current state)
-        dataObtained - if the data has been obtained for the block
+        dataType - data type of the block
+        dataFound - if the data has been found for the block
+        dataSaved - if the data has been saved for the block
         '''
         if os.path.exists(self.blockDB):
             raise Exception("Block database already exists")
@@ -124,6 +126,7 @@ class Core:
             hash text not null,
             dateReceived int,
             decrypted int,
+            dataType text,
             dataFound int,
             dataSaved int
         );
@@ -143,8 +146,8 @@ class Core:
             selfInsert = 1
         else:
             selfInsert = 0
-        data = (newHash, currentTime, 0, 0, selfInsert)
-        c.execute('INSERT into hashes values(?, ?, ?, ?, ?);', data)
+        data = (newHash, currentTime, 0, '', 0, selfInsert)
+        c.execute('INSERT into hashes values(?, ?, ?, ?, ?, ?);', data)
         conn.commit()
         conn.close()
 
@@ -348,3 +351,23 @@ class Core:
             for i in row:
                 retData += i + "\n"
         return retData
+
+    def getBlocksByType(self, blockType):
+        conn = sqlite3.connect(self.blockDB)
+        c = conn.cursor()
+        retData = ''
+        execute = 'SELECT hash FROM hashes where dataType=?'
+        args = (blockType,)
+        for row in c.execute(execute, args):
+            for i in row:
+                retData += i + "\n"
+        return retData.split('\n')
+
+    def setBlockType(self, hash, blockType):
+        conn = sqlite3.connect(self.blockDB)
+        c = conn.cursor()
+        if blockType not in ("txt"):
+            return
+        c.execute("UPDATE hashes set dataType='" + blockType + "' where hash = '" + hash + "';")
+        conn.commit()
+        conn.close()

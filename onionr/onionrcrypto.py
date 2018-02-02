@@ -26,3 +26,5 @@ class OnionrCrypto:
         return
     def symmetricPeerDecrypt(self, data, key):
         return
+    def rsaEncrypt(self, peer, data):
+        return
