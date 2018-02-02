@@ -20,6 +20,7 @@ class OnionrGUI:
     def __init__(self, myCore):
         self.root = Tk()
         self.myCore = myCore # onionr core
+        self.root.title("PyOnionr")
 
         w = Label(self.root, text="Onionr", width=10)
         w.config(font=("Sans-Serif", 22))
@@ -33,6 +34,11 @@ class OnionrGUI:
         idLabel = Label(self.root, text="ID: " + idText)
         idLabel.pack(pady=5)
 
+        self.sendEntry = Entry(self.root)
+        sendBtn = Button(self.root, text='Send Message', command=self.sendMessage)
+        self.sendEntry.pack()
+        sendBtn.pack()
+
         self.listbox = Listbox(self.root, yscrollcommand=scrollbar.set)
 
         #listbox.insert(END, str(i))
@@ -41,6 +47,13 @@ class OnionrGUI:
         scrollbar.config(command=self.listbox.yview)
         self.root.after(2000, self.update)
         self.root.mainloop() 
+
+    def sendMessage(self):
+        messageToAdd = self.sendEntry.get()
+        addedHash = self.myCore.setData(messageToAdd)
+        self.myCore.addToBlockDB(addedHash, selfInsert=True)
+        self.myCore.setBlockType(addedHash, 'txt')
+        self.sendEntry.delete(0, END)
 
     def update(self):
         for i in self.myCore.getBlocksByType('txt'):
