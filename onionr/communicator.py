@@ -147,6 +147,8 @@ class OnionrCommunicate:
                 digest = digest.decode()
             if digest == hash.strip():
                 self._core.setData(data)
+                if data.startswith('-txt-'):
+                    self._core.setBlockType(hash, 'txt')
                 logger.info('Successfully obtained data for ' + hash)
                 if len(data) < 120:
                     logger.debug('Block text:\n' + data)
@@ -165,7 +167,7 @@ class OnionrCommunicate:
         if data != None:
             url = url + '&data=' + data
         try:
-            r = requests.get(url, headers=headers, proxies=proxies, timeout=(5, 30))
+            r = requests.get(url, headers=headers, proxies=proxies, timeout=(15, 30))
         except requests.exceptions.RequestException as e:
             logger.warn(action + " failed with peer " + peer + ": " + str(e))
             return False

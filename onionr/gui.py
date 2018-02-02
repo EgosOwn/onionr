@@ -49,7 +49,7 @@ class OnionrGUI:
         self.root.mainloop() 
 
     def sendMessage(self):
-        messageToAdd = self.sendEntry.get()
+        messageToAdd = '-txt-' + self.sendEntry.get()
         addedHash = self.myCore.setData(messageToAdd)
         self.myCore.addToBlockDB(addedHash, selfInsert=True)
         self.myCore.setBlockType(addedHash, 'txt')

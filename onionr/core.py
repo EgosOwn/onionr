@@ -366,8 +366,8 @@ class Core:
     def setBlockType(self, hash, blockType):
         conn = sqlite3.connect(self.blockDB)
         c = conn.cursor()
-        if blockType not in ("txt"):
-            return
-        c.execute("UPDATE hashes set dataType='" + blockType + "' where hash = '" + hash + "';")
+        #if blockType not in ("txt"):
+        #    return
+        c.execute("UPDATE hashes SET dataType='" + blockType + "' WHERE hash = '" + hash + "';")
         conn.commit()
         conn.close()
