@@ -39,7 +39,7 @@ class OnionrGUI:
         self.sendEntry.pack()
         sendBtn.pack()
 
-        self.listbox = Listbox(self.root, yscrollcommand=scrollbar.set)
+        self.listbox = Listbox(self.root, yscrollcommand=scrollbar.set, height=15)
 
         #listbox.insert(END, str(i))
         self.listbox.pack(fill=BOTH)
@@ -63,6 +63,7 @@ class OnionrGUI:
             self.listbox.insert(END, str(blockFile.read().replace('-txt-', '')))
             blockFile.close()
             self.listedBlocks.append(i)
+            self.listbox.see(END)
         blocksList = os.listdir('./data/blocks/') # dir is your directory path
         number_blocks = len(blocksList)
 

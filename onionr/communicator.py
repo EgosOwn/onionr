@@ -19,7 +19,7 @@ and code to operate as a daemon, getting commands from the command queue databas
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import sqlite3, requests, hmac, hashlib, time, sys, os, logger, urllib.parse
+import sqlite3, requests, hmac, hashlib, time, sys, os, math, logger, urllib.parse
 import core, onionrutils
 
 class OnionrCommunicate:
@@ -37,6 +37,8 @@ class OnionrCommunicate:
         heartBeatRate = 10
         logger.debug('Communicator debugging enabled.')
         torID = open('data/hs/hostname').read()
+
+        self.peerData = {} # Session data for peers (recent reachability, speed, etc)
 
         # get our own PGP fingerprint
         fingerprintFile = 'data/own-fingerprint.txt'
@@ -194,6 +196,11 @@ class OnionrCommunicate:
         '''
         if not peer.endswith('.onion') and not peer.endswith('.onion/'):
             raise PeerError('Currently only Tor .onion peers are supported. You must manually specify .onion')
+
+        # Store peer in peerData dictionary (non permanent)
+        if not peer in self.peerData:
+            self.peerData[peer] = {'connectCount': 0, 'failCount': 0, 'lastConnectTime': math.floor(time.time())}
+
         socksPort = sys.argv[2]
         '''We use socks5h to use tor as DNS'''
         proxies = {'http': 'socks5h://127.0.0.1:' + str(socksPort), 'https': 'socks5h://127.0.0.1:' + str(socksPort)}
@@ -203,11 +210,17 @@ class OnionrCommunicate:
             url = url + '&data=' + self.urlencode(data)
         try:
             r = requests.get(url, headers=headers, proxies=proxies, timeout=(15, 30))
+            retData = r.text
         except requests.exceptions.RequestException as e:
             logger.warn(action + " failed with peer " + peer + ": " + str(e))
-            return False
-
-        return r.text
+            retData = False
+        
+        if not retData:
+            self.peerData[peer]['failCount'] += 1
+        else:
+            self.peerData[peer]['connectCount'] += 1
+            self.peerData[peer]['lastConnectTime'] = math.floor(time.time())
+        return retData
 
 
 shouldRun = False
