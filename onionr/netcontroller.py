@@ -19,8 +19,8 @@
 '''
 import subprocess, os, random, sys, logger, time, signal
 class NetController:
-    '''NetController
-    This class handles hidden service setup on Tor and I2P
+    '''
+        This class handles hidden service setup on Tor and I2P
     '''
     def __init__(self, hsPort):
         self.torConfigLocation = 'data/torrc'
@@ -30,15 +30,19 @@ class NetController:
         self._torInstnace = ''
         self.myID = ''
         '''
-        if os.path.exists(self.torConfigLocation):
-            torrc = open(self.torConfigLocation, 'r')
-            if not str(self.hsPort) in torrc.read():
-                os.remove(self.torConfigLocation)
-            torrc.close()
+            if os.path.exists(self.torConfigLocation):
+                torrc = open(self.torConfigLocation, 'r')
+                if not str(self.hsPort) in torrc.read():
+                    os.remove(self.torConfigLocation)
+                torrc.close()
         '''
+        
         return
+
     def generateTorrc(self):
-        '''generate a torrc file for our tor instance'''
+        '''
+            Generate a torrc file for our tor instance
+        '''
         if os.path.exists(self.torConfigLocation):
             os.remove(self.torConfigLocation)
         torrcData = '''SocksPort ''' + str(self.socksPort) + '''
@@ -48,10 +52,12 @@ HiddenServicePort 80 127.0.0.1:''' + str(self.hsPort) + '''
         torrc = open(self.torConfigLocation, 'w')
         torrc.write(torrcData)
         torrc.close()
+
         return
 
     def startTor(self):
-        '''Start Tor with onion service on port 80 & socks proxy on random port
+        '''
+            Start Tor with onion service on port 80 & socks proxy on random port
         '''
         self.generateTorrc()
         if os.path.exists('./tor'):
@@ -80,9 +86,13 @@ HiddenServicePort 80 127.0.0.1:''' + str(self.hsPort) + '''
         torPidFile = open('data/torPid.txt', 'w')
         torPidFile.write(str(tor.pid))
         torPidFile.close()
+
         return True
+
     def killTor(self):
-        '''properly kill tor based on pid saved to file'''
+        '''
+            Properly kill tor based on pid saved to file
+        '''
         try:
             pid = open('data/torPid.txt', 'r')
             pidN = pid.read()
@@ -95,3 +105,5 @@ HiddenServicePort 80 127.0.0.1:''' + str(self.hsPort) + '''
             return
         os.kill(int(pidN), signal.SIGTERM)
         os.remove('data/torPid.txt')
+
+        return

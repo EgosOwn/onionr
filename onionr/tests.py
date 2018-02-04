@@ -23,6 +23,7 @@ class OnionrTests(unittest.TestCase):
             self.assertTrue(False)
         else:
             self.assertTrue(True)
+
     def testNone(self):
         logger.debug('--------------------------')
         logger.info('Running simple program run test...')
@@ -32,6 +33,7 @@ class OnionrTests(unittest.TestCase):
             self.assertTrue(False)
         else:
             self.assertTrue(True)
+
     def testPeer_a_DBCreation(self):
         logger.debug('--------------------------')
         logger.info('Running peer db creation test...')
@@ -44,6 +46,7 @@ class OnionrTests(unittest.TestCase):
             self.assertTrue(True)
         else:
             self.assertTrue(False)
+
     def testPeer_b_addPeerToDB(self):
         logger.debug('--------------------------')
         logger.info('Running peer db insertion test...')
@@ -55,6 +58,7 @@ class OnionrTests(unittest.TestCase):
             self.assertTrue(True)
         else:
             self.assertTrue(False)
+
     def testData_b_Encrypt(self):
         self.assertTrue(True)
         return
@@ -67,6 +71,7 @@ class OnionrTests(unittest.TestCase):
             self.assertTrue(True)
         else:
             self.assertTrue(False)
+
     def testData_a_Decrypt(self):
         self.assertTrue(True)
         return
@@ -79,6 +84,7 @@ class OnionrTests(unittest.TestCase):
             self.assertTrue(True)
         else:
             self.assertTrue(False)
+
     def testPGPGen(self):
         logger.debug('--------------------------')
         logger.info('Running PGP key generation test...')
@@ -93,6 +99,7 @@ class OnionrTests(unittest.TestCase):
             myCore.generateMainPGP(torID)
             if os.path.exists('data/pgp/'):
                 self.assertTrue(True)
+
     def testHMACGen(self):
         logger.debug('--------------------------')
         logger.info('Running HMAC generation test...')
@@ -104,6 +111,7 @@ class OnionrTests(unittest.TestCase):
             self.assertTrue(True)
         else:
             self.assertTrue(False)
+
     def testQueue(self):
         logger.debug('--------------------------')
         logger.info('Running daemon queue test...')
@@ -124,4 +132,5 @@ class OnionrTests(unittest.TestCase):
         if command[0] == 'testCommand':
             if myCore.daemonQueue() == False:
                 logger.info('Succesfully added and read command')
+                
 unittest.main()

@@ -34,7 +34,7 @@ if sys.version_info < (3, 6):
 class Core:
     def __init__(self):
         '''
-        Initialize Core Onionr library
+            Initialize Core Onionr library
         '''
         self.queueDB = 'data/queue.db'
         self.peerDB = 'data/peers.db'
@@ -54,87 +54,101 @@ class Core:
         return
 
     def generateMainPGP(self, myID):
-        ''' Generate the main PGP key for our client. Should not be done often.
-        Uses own PGP home folder in the data/ directory. '''
-        # Generate main pgp key
+        '''
+            Generate the main PGP key for our client. Should not be done often.
+
+            Uses own PGP home folder in the data/ directory
+        '''
         gpg = gnupg.GPG(homedir='./data/pgp/')
         input_data = gpg.gen_key_input(key_type="RSA", key_length=1024, name_real=myID, name_email='anon@onionr', testing=True)
-        #input_data = gpg.gen_key_input(key_type="RSA", key_length=1024)
         key = gpg.gen_key(input_data)
         logger.info("Generating PGP key, this will take some time..")
         while key.status != "key created":
             time.sleep(0.5)
             print(key.status)
+
         logger.info("Finished generating PGP key")
         # Write the key
         myFingerpintFile = open('data/own-fingerprint.txt', 'w')
         myFingerpintFile.write(key.fingerprint)
         myFingerpintFile.close()
+
         return
 
     def addPeer(self, peerID, name=''):
-        ''' Add a peer by their ID, with an optional name, to the peer database.'''
-        ''' DOES NO SAFETY CHECKS if the ID is valid, but prepares the insertion. '''
+        '''
+            Add a peer by their ID, with an optional name, to the peer database
+
+            DOES NO SAFETY CHECKS if the ID is valid, but prepares the insertion
+        '''
         # This function simply adds a peer to the DB
         if not self._utils.validateID(peerID):
             return False
         conn = sqlite3.connect(self.peerDB)
         c = conn.cursor()
         t = (peerID, name, 'unknown')
-        c.execute('insert into peers (id, name, dateSeen) values(?, ?, ?);', t)
+        c.execute('INSERT INTO peers (id, name, dateSeen) VALUES(?, ?, ?);', t)
         conn.commit()
         conn.close()
         return True
 
     def createPeerDB(self):
         '''
-        Generate the peer sqlite3 database and populate it with the peers table.
+            Generate the peer sqlite3 database and populate it with the peers table.
         '''
         # generate the peer database
         conn = sqlite3.connect(self.peerDB)
         c = conn.cursor()
-        c.execute('''
-        create table peers(
-        ID text not null,
-        name text,
-        pgpKey text,
-        hmacKey text,
-        blockDBHash text,
-        forwardKey text,
-        dateSeen not null,
-        bytesStored int,
-        trust int);
+        c.execute('''CREATE TABLE peers(
+            ID text not null,
+            name text,
+            pgpKey text,
+            hmacKey text,
+            blockDBHash text,
+            forwardKey text,
+            dateSeen not null,
+            bytesStored int,
+            trust int);
         ''')
         conn.commit()
         conn.close()
+
+        return
+
     def createBlockDB(self):
         '''
-        Create a database for blocks
+            Create a database for blocks
 
-        hash - the hash of a block
-        dateReceived - the date the block was recieved, not necessarily when it was created
-        decrypted - if we can successfully decrypt the block (does not describe its current state)
-        dataType - data type of the block
-        dataFound - if the data has been found for the block
-        dataSaved - if the data has been saved for the block
+            hash - the hash of a block
+            dateReceived - the date the block was recieved, not necessarily when it was created
+            decrypted - if we can successfully decrypt the block (does not describe its current state)
+            dataType - data type of the block
+            dataFound - if the data has been found for the block
+            dataSaved - if the data has been saved for the block
         '''
         if os.path.exists(self.blockDB):
             raise Exception("Block database already exists")
         conn = sqlite3.connect(self.blockDB)
         c = conn.cursor()
-        c.execute('''create table hashes(
+        c.execute('''CREATE TABLE hashes(
             hash text not null,
             dateReceived int,
             decrypted int,
             dataType text,
             dataFound int,
-            dataSaved int
-        );
+            dataSaved int);
         ''')
         conn.commit()
         conn.close()
+
+        return
+
     def addToBlockDB(self, newHash, selfInsert=False):
-        '''add a hash value to the block db (should be in hex format)'''
+        '''
+            Add a hash value to the block db
+
+            Should be in hex format!
+        '''
         if not os.path.exists(self.blockDB):
             raise Exception('Block db does not exist')
         if self._utils.hasBlock(newHash):
@@ -147,22 +161,29 @@ class Core:
         else:
             selfInsert = 0
         data = (newHash, currentTime, 0, '', 0, selfInsert)
-        c.execute('INSERT into hashes values(?, ?, ?, ?, ?, ?);', data)
+        c.execute('INSERT INTO hashes VALUES(?, ?, ?, ?, ?, ?);', data)
         conn.commit()
         conn.close()
 
+        return
+
     def getData(self,hash):
-        '''simply return the data associated to a hash'''
+        '''
+            Simply return the data associated to a hash
+        '''
         try:
             dataFile = open(self.blockDataLocation + hash + '.dat')
             data = dataFile.read()
             dataFile.close()
         except FileNotFoundError:
             data = False
+
         return data
 
     def setData(self, data):
-        '''set the data assciated with a hash'''
+        '''
+            Set the data assciated with a hash
+        '''
         data = data.encode()
         hasher = hashlib.sha3_256()
         hasher.update(data)
@@ -171,7 +192,7 @@ class Core:
             dataHash = dataHash.decode()
         blockFileName = self.blockDataLocation + dataHash + '.dat'
         if os.path.exists(blockFileName):
-            pass # to do, properly check if block is already saved elsewhere
+            pass # TODO: properly check if block is already saved elsewhere
             #raise Exception("Data is already set for " + dataHash)
         else:
             blockFile = open(blockFileName, 'w')
@@ -180,7 +201,7 @@ class Core:
 
         conn = sqlite3.connect(self.blockDB)
         c = conn.cursor()
-        c.execute("UPDATE hashes set dataSaved=1 where hash = '" + dataHash + "';")
+        c.execute("UPDATE hashes SET dataSaved=1 WHERE hash = '" + dataHash + "';")
         conn.commit()
         conn.close()
 
@@ -188,9 +209,8 @@ class Core:
 
     def dataDirEncrypt(self, password):
         '''
-        Encrypt the data directory on Onionr shutdown
+            Encrypt the data directory on Onionr shutdown
         '''
-        # Encrypt data directory (don't delete it in this function)
         if os.path.exists('data.tar'):
             os.remove('data.tar')
         tar = tarfile.open("data.tar", "w")
@@ -201,12 +221,13 @@ class Core:
         encrypted = simplecrypt.encrypt(password, tarData)
         open('data-encrypted.dat', 'wb').write(encrypted)
         os.remove('data.tar')
+
         return
+
     def dataDirDecrypt(self, password):
         '''
-        Decrypt the data directory on startup
+            Decrypt the data directory on startup
         '''
-        # Decrypt data directory
         if not os.path.exists('data-encrypted.dat'):
             return (False, 'encrypted archive does not exist')
         data = open('data-encrypted.dat', 'rb').read()
@@ -219,13 +240,15 @@ class Core:
             tar = tarfile.open('data.tar')
             tar.extractall()
             tar.close()
+
         return (True, '')
+
     def daemonQueue(self):
         '''
-        Gives commands to the communication proccess/daemon by reading an sqlite3 database
+            Gives commands to the communication proccess/daemon by reading an sqlite3 database
+
+            This function intended to be used by the client. Queue to exchange data between "client" and server.
         '''
-        # This function intended to be used by the client
-        # Queue to exchange data between "client" and server.
         retData = False
         if not os.path.exists(self.queueDB):
             conn = sqlite3.connect(self.queueDB)
@@ -241,7 +264,7 @@ class Core:
                 retData = row
                 break
             if retData != False:
-                c.execute('delete from commands where id = ?', (retData[3],))
+                c.execute('DELETE FROM commands WHERE id=?;', (retData[3],))
         conn.commit()
         conn.close()
 
@@ -249,19 +272,23 @@ class Core:
 
     def daemonQueueAdd(self, command, data=''):
         '''
-        Add a command to the daemon queue, used by the communication daemon (communicator.py)
+            Add a command to the daemon queue, used by the communication daemon (communicator.py)
         '''
         # Intended to be used by the web server
         date = math.floor(time.time())
         conn = sqlite3.connect(self.queueDB)
         c = conn.cursor()
         t = (command, data, date)
-        c.execute('INSERT into commands (command, data, date) values (?, ?, ?)', t)
+        c.execute('INSERT INTO commands (command, data, date) VALUES(?, ?, ?)', t)
         conn.commit()
         conn.close()
+
         return
+
     def clearDaemonQueue(self):
-        '''clear the daemon queue (somewhat dangerousous)'''
+        '''
+            Clear the daemon queue (somewhat dangerous)
+        '''
         conn = sqlite3.connect(self.queueDB)
         c = conn.cursor()
         try:
@@ -271,45 +298,49 @@ class Core:
             pass
         conn.close()
 
-    def generateHMAC(self):
+        return
+
+    def generateHMAC(self, length=32):
         '''
-        generate and return an HMAC key
+            Generate and return an HMAC key
         '''
-        key = base64.b64encode(os.urandom(32))
+        key = base64.b64encode(os.urandom(length))
+
         return key
 
     def listPeers(self, randomOrder=True):
-        '''Return a list of peers
+        '''
+            Return a list of peers
 
-        randomOrder determines if the list should be in a random order
+            randomOrder determines if the list should be in a random order
         '''
         conn = sqlite3.connect(self.peerDB)
         c = conn.cursor()
         if randomOrder:
-            peers = c.execute('SELECT * FROM peers order by RANDOM();')
+            peers = c.execute('SELECT * FROM peers ORDER BY RANDOM();')
         else:
             peers = c.execute('SELECT * FROM peers;')
         peerList = []
         for i in peers:
             peerList.append(i[0])
         conn.close()
+
         return peerList
 
     def getPeerInfo(self, peer, info):
         '''
-        get info about a peer
+            Get info about a peer from their database entry
 
-        id text             0
-        name text,          1
-        pgpKey text,        2
-        hmacKey text,       3
-        blockDBHash text,   4
-        forwardKey text,    5
-        dateSeen not null,  7
-        bytesStored int,    8
-        trust int           9
+            id text             0
+            name text,          1
+            pgpKey text,        2
+            hmacKey text,       3
+            blockDBHash text,   4
+            forwardKey text,    5
+            dateSeen not null,  7
+            bytesStored int,    8
+            trust int           9
         '''
-        # Lookup something about a peer from their database entry
         conn = sqlite3.connect(self.peerDB)
         c = conn.cursor()
         command = (peer,)
@@ -325,21 +356,29 @@ class Core:
                 else:
                     iterCount += 1
         conn.close()
+
         return retVal
+
     def setPeerInfo(self, peer, key, data):
-        '''update a peer for a key'''
+        '''
+            Update a peer for a key
+        '''
         conn = sqlite3.connect(self.peerDB)
         c = conn.cursor()
         command = (data, peer)
         # TODO: validate key on whitelist
         if key not in ('id', 'text', 'name', 'pgpKey', 'hmacKey', 'blockDBHash', 'forwardKey', 'dateSeen', 'bytesStored', 'trust'):
             raise Exception("Got invalid database key when setting peer info")
-        c.execute('UPDATE peers SET ' + key + ' = ? where id=?', command)
+        c.execute('UPDATE peers SET ' + key + ' = ? WHERE id=?', command)
         conn.commit()
         conn.close()
 
+        return
+
     def getBlockList(self, unsaved=False):
-        '''get list of our blocks'''
+        '''
+            Get list of our blocks
+        '''
         conn = sqlite3.connect(self.blockDB)
         c = conn.cursor()
         retData = ''
@@ -350,24 +389,33 @@ class Core:
         for row in c.execute(execute):
             for i in row:
                 retData += i + "\n"
+
         return retData
 
     def getBlocksByType(self, blockType):
+        '''
+            Returns a list of blocks by the type
+        '''
         conn = sqlite3.connect(self.blockDB)
         c = conn.cursor()
         retData = ''
-        execute = 'SELECT hash FROM hashes where dataType=?'
+        execute = 'SELECT hash FROM hashes WHERE dataType=?;'
         args = (blockType,)
         for row in c.execute(execute, args):
             for i in row:
                 retData += i + "\n"
+
         return retData.split('\n')
 
     def setBlockType(self, hash, blockType):
+        '''
+            Sets the type of block
+        '''
+
         conn = sqlite3.connect(self.blockDB)
         c = conn.cursor()
-        #if blockType not in ("txt"):
-        #    return
         c.execute("UPDATE hashes SET dataType='" + blockType + "' WHERE hash = '" + hash + "';")
         conn.commit()
         conn.close()
+
+        return

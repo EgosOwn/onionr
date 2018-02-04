@@ -32,15 +32,22 @@ class OnionrUtils:
         self._core = coreInstance
         return
     def localCommand(self, command):
-        '''Send a command to the local http API server, securely. Intended for local clients, DO NOT USE for remote peers.'''
+        '''
+            Send a command to the local http API server, securely. Intended for local clients, DO NOT USE for remote peers.
+        '''
         config = configparser.ConfigParser()
         if os.path.exists('data/config.ini'):
             config.read('data/config.ini')
         else:
             return
         requests.get('http://' + open('data/host.txt', 'r').read() + ':' + str(config['CLIENT']['PORT']) + '/client/?action=' + command + '&token=' + config['CLIENT']['CLIENT HMAC'])
+
+        return
+
     def getPassword(self, message='Enter password: ', confirm = True):
-        '''Get a password without showing the users typing and confirm the input'''
+        '''
+            Get a password without showing the users typing and confirm the input
+        '''
         # Get a password safely with confirmation and return it
         while True:
             print(message)
@@ -55,9 +62,13 @@ class OnionrUtils:
                     break
             else:
                 break
+
         return pass1
-    def checkPort(self, port, host = ''):
-        '''Checks if a port is available, returns bool'''
+
+    def checkPort(self, port, host=''):
+        '''
+            Checks if a port is available, returns bool
+        '''
         # inspired by https://www.reddit.com/r/learnpython/comments/2i4qrj/how_to_write_a_python_script_that_checks_to_see/ckzarux/
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         retVal = False
@@ -68,36 +79,49 @@ class OnionrUtils:
                 retVal = True
         finally:
             sock.close()
+
         return retVal
+
     def checkIsIP(self, ip):
-        '''Check if a string is a valid ipv4 address'''
+        '''
+            Check if a string is a valid IPv4 address
+        '''
         try:
             socket.inet_aton(ip)
         except:
             return False
         else:
             return True
+
     def exportMyPubkey(self):
-        '''Export our PGP key if it exists'''
+        '''
+            Export our PGP key if it exists
+        '''
         if not os.path.exists(self.fingerprintFile):
             raise Exception("No fingerprint found, cannot export our PGP key.")
         gpg = gnupg.GPG(homedir='./data/pgp/')
         with open(self.fingerprintFile,'r') as f:
             fingerprint = f.read()
         ascii_armored_public_keys = gpg.export_keys(fingerprint)
+
         return ascii_armored_public_keys
 
     def getBlockDBHash(self):
-        '''Return a sha3_256 hash of the blocks DB'''
+        '''
+            Return a sha3_256 hash of the blocks DB
+        '''
         with open(self._core.blockDB, 'rb') as data:
             data = data.read()
         hasher = hashlib.sha3_256()
         hasher.update(data)
         dataHash = hasher.hexdigest()
+
         return dataHash
 
     def hasBlock(self, hash):
-        '''detect if we have a block in the list or not'''
+        '''
+            Check for new block in the list
+        '''
         conn = sqlite3.connect(self._core.blockDB)
         c = conn.cursor()
         if not self.validateHash(hash):
@@ -113,7 +137,9 @@ class OnionrUtils:
                 return False
 
     def validateHash(self, data, length=64):
-        '''Validate if a string is a valid hex formatted hash'''
+        '''
+            Validate if a string is a valid hex formatted hash
+        '''
         retVal = True
         if data == False or data == True:
             return False
@@ -125,9 +151,13 @@ class OnionrUtils:
                 int(data, 16)
             except ValueError:
                 retVal = False
+
         return retVal
+
     def validateID(self, id):
-        '''validate if a user ID is a valid tor or i2p hidden service'''
+        '''
+            Validate if a user ID is a valid tor or i2p hidden service
+        '''
         idLength = len(id)
         retVal = True
         idNoDomain = ''
@@ -165,4 +195,5 @@ class OnionrUtils:
                     retVal = False
             if not idNoDomain.isalnum():
                 retVal = False
+        
         return retVal

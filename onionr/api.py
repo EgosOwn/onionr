@@ -25,10 +25,12 @@ import configparser, sys, random, threading, hmac, hashlib, base64, time, math, 
 from core import Core
 import onionrutils
 class API:
-    ''' Main http api (flask)'''
+    '''
+        Main HTTP API (Flask)
+    '''
     def validateToken(self, token):
         '''
-        Validate if the client token (hmac) matches the given token
+            Validate that the client token (hmac) matches the given token
         '''
         if self.clientToken != token:
             return False
@@ -36,10 +38,11 @@ class API:
             return True
 
     def __init__(self, config, debug):
-        ''' Initialize the api server, preping variables for later use
-        This initilization defines all of the API entry points and handlers for the endpoints and errors
+        '''
+            Initialize the api server, preping variables for later use
 
-        This also saves the used host (random localhost IP address) to the data folder in host.txt
+            This initilization defines all of the API entry points and handlers for the endpoints and errors
+            This also saves the used host (random localhost IP address) to the data folder in host.txt
         '''
         if os.path.exists('dev-enabled'):
             self._developmentMode = True
@@ -72,9 +75,10 @@ class API:
         @app.before_request
         def beforeReq():
             '''
-            Simply define the request as not having yet failed, before every request.
+                Simply define the request as not having yet failed, before every request.
             '''
             self.requestFailed = False
+
             return
 
         @app.after_request
@@ -87,6 +91,7 @@ class API:
             resp.headers["Content-Security-Policy"] = "default-src 'none'"
             resp.headers['X-Frame-Options'] = 'deny'
             resp.headers['X-Content-Type-Options'] = "nosniff"
+
             return resp
 
         @app.route('/client/')
@@ -112,6 +117,7 @@ class API:
             elapsed = endTime - startTime
             if elapsed < self._privateDelayTime:
                 time.sleep(self._privateDelayTime - elapsed)
+
             return resp
 
         @app.route('/public/')
@@ -149,17 +155,21 @@ class API:
         def notfound(err):
             self.requestFailed = True
             resp = Response("")
-            #resp.headers = getHeaders(resp)
+
             return resp
+
         @app.errorhandler(403)
         def authFail(err):
             self.requestFailed = True
             resp = Response("403")
+
             return resp
+
         @app.errorhandler(401)
         def clientError(err):
             self.requestFailed = True
             resp = Response("Invalid request")
+
             return resp
 
         logger.info('Starting client on ' + self.host + ':' + str(bindPort) + '...')
@@ -168,7 +178,9 @@ class API:
         app.run(host=self.host, port=bindPort, debug=True, threaded=True)
 
     def validateHost(self, hostType):
-        ''' Validate various features of the request including:
+        '''
+            Validate various features of the request including:
+
             If private (/client/), is the host header local?
             If public (/public/), is the host header onion or i2p?
 

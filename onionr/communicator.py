@@ -19,13 +19,15 @@ and code to operate as a daemon, getting commands from the command queue databas
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import sqlite3, requests, hmac, hashlib, time, sys, os, logger
+import sqlite3, requests, hmac, hashlib, time, sys, os, logger, urllib.parse
 import core, onionrutils
+
 class OnionrCommunicate:
     def __init__(self, debug, developmentMode):
-        ''' OnionrCommunicate
+        '''
+            OnionrCommunicate
 
-        This class handles communication with nodes in the Onionr network.
+            This class handles communication with nodes in the Onionr network.
         '''
         self._core = core.Core()
         self._utils = onionrutils.OnionrUtils(self._core)
@@ -63,29 +65,46 @@ class OnionrCommunicate:
                     logger.warn('Daemon recieved exit command.')
                     break
             time.sleep(1)
-        return
-    def getRemotePeerKey(self, peerID):
-        '''This function contacts a peer and gets their main PGP key.
 
-        This is safe because Tor or I2P is used, but it does not ensure that the person is who they say they are
+        return
+
+    def getRemotePeerKey(self, peerID):
+        '''
+            This function contacts a peer and gets their main PGP key.
+
+            This is safe because Tor or I2P is used, but it does not ensure that the person is who they say they are
         '''
         url = 'http://' + peerID + '/public/?action=getPGP'
         r = requests.get(url, headers=headers)
         response = r.text
+
         return response
+
     def shareHMAC(self, peerID, key):
-        '''This function shares an HMAC key to a peer
         '''
+            This function shares an HMAC key to a peer
+        '''
+
         return
+
     def getPeerProof(self, peerID):
-        '''This function gets the current peer proof requirement'''
+        '''
+            This function gets the current peer proof requirement
+        '''
+
         return
+
     def sendPeerProof(self, peerID, data):
-        '''This function sends the proof result to a peer previously fetched with getPeerProof'''
+        '''
+            This function sends the proof result to a peer previously fetched with getPeerProof
+        '''
+
         return
 
     def lookupBlocks(self):
-        '''Lookup blocks and merge new ones'''
+        '''
+            Lookup blocks and merge new ones
+        '''
         peerList = self._core.listPeers()
         blocks = ''
         for i in peerList:
@@ -120,20 +139,26 @@ class OnionrCommunicate:
             else:
                 logger.debug('Adding ' +  i + ' to hash database...')
                 self._core.addToBlockDB(i)
+
         return
+
     def processBlocks(self):
         '''
-        Work with the block database and download any missing blocks
-        This is meant to be called from the communicator daemon on its timer.
+            Work with the block database and download any missing blocks
+
+            This is meant to be called from the communicator daemon on its timer.
         '''
         for i in self._core.getBlockList(True).split("\n"):
             if i != "":
                 logger.warn('UNSAVED BLOCK: ' + i)
                 data = self.downloadBlock(i)
+
         return
-    
+
     def downloadBlock(self, hash):
-        '''download a block from random order of peers'''
+        '''
+            Download a block from random order of peers
+        '''
         peerList = self._core.listPeers()
         blocks = ''
         for i in peerList:
@@ -155,22 +180,33 @@ class OnionrCommunicate:
             else:
                 logger.warn("Failed to validate " + hash)
 
+        return
+
+    def urlencode(self, data):
+        '''
+            URL encodes the data
+        '''
+        return urllib.parse.quote_plus(data)
+
     def performGet(self, action, peer, data=None, type='tor'):
-        '''Performs a request to a peer through Tor or i2p (currently only tor)'''
+        '''
+            Performs a request to a peer through Tor or i2p (currently only Tor)
+        '''
         if not peer.endswith('.onion') and not peer.endswith('.onion/'):
             raise PeerError('Currently only Tor .onion peers are supported. You must manually specify .onion')
         socksPort = sys.argv[2]
         '''We use socks5h to use tor as DNS'''
         proxies = {'http': 'socks5h://127.0.0.1:' + str(socksPort), 'https': 'socks5h://127.0.0.1:' + str(socksPort)}
         headers = {'user-agent': 'PyOnionr'}
-        url = 'http://' + peer + '/public/?action=' + action
+        url = 'http://' + peer + '/public/?action=' + urlencode(action)
         if data != None:
-            url = url + '&data=' + data
+            url = url + '&data=' + urlencode(data)
         try:
             r = requests.get(url, headers=headers, proxies=proxies, timeout=(15, 30))
         except requests.exceptions.RequestException as e:
             logger.warn(action + " failed with peer " + peer + ": " + str(e))
             return False
+
         return r.text
 
 

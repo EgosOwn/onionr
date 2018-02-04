@@ -22,9 +22,12 @@ import nacl
 class OnionrCrypto:
     def __init__(self):
         return
+
     def symmetricPeerEncrypt(self, data, key):
         return
+
     def symmetricPeerDecrypt(self, data, key):
         return
+
     def rsaEncrypt(self, peer, data):
         return

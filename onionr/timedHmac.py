@@ -16,12 +16,12 @@ import hmac, base64, time, math
 class TimedHMAC:
     def __init__(self, base64Key, data, hashAlgo):
         '''
-        base64Key = base64 encoded key
-        data = data to hash
-        expire = time expiry in epoch
-        hashAlgo = string in hashlib.algorithms_available
+            base64Key = base64 encoded key
+            data = data to hash
+            expire = time expiry in epoch
+            hashAlgo = string in hashlib.algorithms_available
 
-        Maximum of 10 seconds grace period
+            Maximum of 10 seconds grace period
         '''
         self.data = data
         self.expire = math.floor(time.time())
@@ -30,6 +30,7 @@ class TimedHMAC:
         generatedHMAC = hmac.HMAC(base64.b64decode(base64Key).decode(), digestmod=self.hashAlgo)
         generatedHMAC.update(data + expire)
         self.HMACResult = generatedHMAC.hexdigest()
+
         return
 
     def check(self, data):
