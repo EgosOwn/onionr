@@ -20,8 +20,8 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import sys, os, configparser, base64, random, getpass, shutil, subprocess, requests, time, logger
-import gui, api, core
+import sys, os, configparser, base64, random, getpass, shutil, subprocess, requests, time, logger, platform
+import api, core
 from onionrutils import OnionrUtils
 from netcontroller import NetController
 
@@ -30,16 +30,20 @@ try:
 except ImportError:
     raise Exception("You need the PySocks module (for use with socks5 proxy to use Tor)")
 
+ONIONR_VERSION = '0.0.0' # for debugging and stuff
+API_VERSION = '1' # increments of 1; only change when something fundemental about how the API works changes. This way other nodes knows how to communicate without learning too much information about you.
+
 class Onionr:
     def __init__(self):
-        '''Main Onionr class. This is for the CLI program, and does not handle much of the logic.
-        In general, external programs and plugins should not use this class.
-
+        '''
+            Main Onionr class. This is for the CLI program, and does not handle much of the logic.
+            In general, external programs and plugins should not use this class.
         '''
         try:
             os.chdir(sys.path[0])
         except FileNotFoundError:
             pass
+
         if os.path.exists('dev-enabled'):
             self._developmentMode = True
             logger.set_level(logger.LEVEL_DEBUG)
@@ -87,67 +91,111 @@ class Onionr:
                     randomPort = random.randint(1024, 65535)
                     if self.onionrUtils.checkPort(randomPort):
                         break
-            self.config['CLIENT'] = {'CLIENT HMAC': base64.b64encode(os.urandom(32)).decode('utf-8'), 'PORT': randomPort, 'API VERSION': '0.0.0'}
+            self.config['CLIENT'] = {'CLIENT HMAC': base64.b64encode(os.urandom(32)).decode('utf-8'), 'PORT': randomPort, 'API VERSION': API_VERSION}
             with open('data/config.ini', 'w') as configfile:
                 self.config.write(configfile)
+
         command = ''
         try:
             command = sys.argv[1].lower()
         except IndexError:
             command = ''
         finally:
-            if command == 'start':
-                if os.path.exists('.onionr-lock'):
-                    logger.fatal('Cannot start. Daemon is already running, or it did not exit cleanly.\n(if you are sure that there is not a daemon running, delete .onionr-lock & try again).')
-                else:
-                    if not self.debug and not self._developmentMode:
-                        lockFile = open('.onionr-lock', 'w')
-                        lockFile.write('')
-                        lockFile.close()
-                    self.daemon()
-                    if not self.debug and not self._developmentMode:
-                        os.remove('.onionr-lock')
-            elif command == 'stop':
-                self.killDaemon()
-            elif command == 'addpeer':
-                try:
-                    newPeer = sys.argv[2]
-                except:
-                    pass
-                else:
-                    logger.info("Adding peer.")
-                    self.onionrCore.addPeer(newPeer)
-            elif command in ('listpeers', 'list-peers'):
-                logger.info('Peer list:\n')
-                for i in self.onionrCore.listPeers():
-                    logger.info(i)
-            elif command in ('addmsg', 'addmessage'):
-                while True:
-                    messageToAdd = '-txt-' + logger.readline('Broadcast message to network: ')
-                    if len(messageToAdd) >= 1:
-                        break
-                addedHash = self.onionrCore.setData(messageToAdd)
-                self.onionrCore.addToBlockDB(addedHash, selfInsert=True)
-                self.onionrCore.setBlockType(addedHash, 'txt')
-            elif command == 'stats':
-                self.showStats()
-            elif command == 'gui':
-                gui.OnionrGUI(self.onionrCore)
-            elif command == 'help' or command == '--help':
-                self.showHelp()
-            elif command == '':
-                logger.info('Do ' + logger.colors.bold + sys.argv[0] + ' --help' + logger.colors.reset + logger.colors.fg.green + ' for Onionr help.')
-            else:
-                logger.error('Invalid command.')
+            self.execute(command)
 
         if not self._developmentMode:
             encryptionPassword = self.onionrUtils.getPassword('Enter password to encrypt directory: ')
             self.onionrCore.dataDirEncrypt(encryptionPassword)
             shutil.rmtree('data/')
+
         return
+
+    '''
+        THIS SECTION HANDLES THE COMMANDS
+    '''
+
+    def getCommands(self):
+        return {
+            'start': self.start,
+            'stop': self.killDaemon,
+            'version': self.version,
+            'listpeers': self.listPeers,
+            'list-peers': self.listPeers,
+            'stats': self.showStats,
+            'help': self.showHelp,
+            '': self.showHelpSuggestion,
+            'addmsg': self.addMessage,
+            'addmessage': self.addMessage,
+            'add-msg': self.addMessage,
+            'add-message': self.addMessage,
+            'gui': self.openGUI,
+            'addpeer': self.addPeer,
+            'add-peer': self.addPeer
+        }
+
+    def execute(self, argument):
+        argument = argument[argument.startswith('--') and len('--'):] # remove -- if it starts with it
+
+        # define commands
+        commands = self.getCommands()
+
+        command = commands.get(argument, self.notFound)
+        command()
+
+    '''
+        THIS SECTION DEFINES THE COMMANDS
+    '''
+
+    def version(self):
+        logger.info('Onionr ' + ONIONR_VERSION + ' (' + platform.machine() + ') : API v' + API_VERSION)
+        logger.info('Running on ' + platform.platform() + ' ' + platform.release())
+
+    def openGUI(self):
+        gui.OnionrGUI(self.onionrCore)
+
+    def listPeers(self):
+        logger.info('Peer list:\n')
+        for i in self.onionrCore.listPeers():
+            logger.info(i)
+
+    def addPeer(self):
+        try:
+            newPeer = sys.argv[2]
+        except:
+            pass
+        else:
+            logger.info("Adding peer: " + logger.colors.underline + newPeer)
+            self.onionrCore.addPeer(newPeer)
+
+    def addMessage(self):
+        while True:
+            messageToAdd = '-txt-' + logger.readline('Broadcast message to network: ')
+            if len(messageToAdd) >= 1:
+                break
+        addedHash = self.onionrCore.setData(messageToAdd)
+        self.onionrCore.addToBlockDB(addedHash, selfInsert=True)
+        self.onionrCore.setBlockType(addedHash, 'txt')
+
+    def notFound(self):
+        logger.error('Command not found.')
+
+    def showHelpSuggestion(self):
+        logger.info('Do ' + logger.colors.bold + sys.argv[0] + ' --help' + logger.colors.reset + logger.colors.fg.green + ' for Onionr help.')
+
+    def start(self):
+        if os.path.exists('.onionr-lock'):
+            logger.fatal('Cannot start. Daemon is already running, or it did not exit cleanly.\n(if you are sure that there is not a daemon running, delete .onionr-lock & try again).')
+        else:
+            if not self.debug and not self._developmentMode:
+                lockFile = open('.onionr-lock', 'w')
+                lockFile.write('')
+                lockFile.close()
+            self.daemon()
+            if not self.debug and not self._developmentMode:
+                os.remove('.onionr-lock')
+
     def daemon(self):
-        ''' Start the Onionr communication daemon
-        '''
+        ''' Start the Onionr communication daemon '''
         if not os.environ.get("WERKZEUG_RUN_MAIN") == "true":
             net = NetController(self.config['CLIENT']['PORT'])
             logger.info('Tor is starting...')
@@ -158,9 +206,12 @@ class Onionr:
             subprocess.Popen(["./communicator.py", "run", str(net.socksPort)])
             logger.debug('Started communicator')
         api.API(self.config, self.debug)
+
         return
+
     def killDaemon(self):
-        '''Shutdown the Onionr Daemon'''
+        ''' Shutdown the Onionr Daemon '''
+
         logger.warn('Killing the running daemon')
         net = NetController(self.config['CLIENT']['PORT'])
         try:
@@ -169,11 +220,18 @@ class Onionr:
             pass
         self.onionrCore.daemonQueueAdd('shutdown')
         net.killTor()
+
         return
+
     def showStats(self):
-        '''Display statistics and exit'''
+        ''' Display statistics and exit '''
+
         return
+
     def showHelp(self):
-        '''Show help for Onionr'''
+        ''' Show help for Onionr '''
+
         return
+
 Onionr()
+
