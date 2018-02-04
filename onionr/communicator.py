@@ -198,9 +198,9 @@ class OnionrCommunicate:
         '''We use socks5h to use tor as DNS'''
         proxies = {'http': 'socks5h://127.0.0.1:' + str(socksPort), 'https': 'socks5h://127.0.0.1:' + str(socksPort)}
         headers = {'user-agent': 'PyOnionr'}
-        url = 'http://' + peer + '/public/?action=' + urlencode(action)
+        url = 'http://' + peer + '/public/?action=' + self.urlencode(action)
         if data != None:
-            url = url + '&data=' + urlencode(data)
+            url = url + '&data=' + self.urlencode(data)
         try:
             r = requests.get(url, headers=headers, proxies=proxies, timeout=(15, 30))
         except requests.exceptions.RequestException as e:

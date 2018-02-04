@@ -21,7 +21,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 import sys, os, configparser, base64, random, getpass, shutil, subprocess, requests, time, logger, platform
-import api, core
+import api, core, gui
 from onionrutils import OnionrUtils
 from netcontroller import NetController
 
