@@ -23,7 +23,7 @@ from multiprocessing import Process
 import configparser, sys, random, threading, hmac, hashlib, base64, time, math, gnupg, os, logger
 
 from core import Core
-import onionrutils
+import onionrutils, onionrcrypto
 class API:
     '''
         Main HTTP API (Flask)
@@ -56,6 +56,7 @@ class API:
         self.debug = debug
         self._privateDelayTime = 3
         self._core = Core()
+        self._crypto = onionrcrypto.OnionrCrypto(self._core)
         self._utils = onionrutils.OnionrUtils(self._core)
         app = flask.Flask(__name__)
         bindPort = int(self.config['CLIENT']['PORT'])
@@ -131,7 +132,9 @@ class API:
                 pass
             elif action == 'ping':
                 resp = Response("pong!")
-            elif action == 'setHMAC':
+            elif action == 'getHMAC':
+                resp = Response(self._crypto.generateHMAC())
+            elif action == 'getSymmetric':
                 pass
             elif action == 'getDBHash':
                 resp = Response(self._utils.getBlockDBHash())

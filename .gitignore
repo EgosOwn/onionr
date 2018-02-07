@@ -6,3 +6,4 @@ onionr/*.pyc
 onionr/*.log
 onionr/data/hs/hostname
 onionr/data/*
+onionr/gnupg/*

@@ -153,6 +153,17 @@ class OnionrUtils:
                 retVal = False
 
         return retVal
+    
+    def getPeerPGPFingerprint(self, peer):
+        '''
+            Get peer's PGP fingerprint
+        '''
+        retData = ''
+        gpg = gnupg.GPG(homedir=self._core.gpgHome)
+        for i in gpg.list_keys():
+            if peer in i['uids'][0]:
+                retData = i['fingerprint']
+        return retData
 
     def validateID(self, id):
         '''

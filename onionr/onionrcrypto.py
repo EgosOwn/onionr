@@ -17,10 +17,11 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import nacl
+import nacl, gnupg
 
 class OnionrCrypto:
-    def __init__(self):
+    def __init__(self, coreInstance):
+        self._core = coreInstance
         return
 
     def symmetricPeerEncrypt(self, data, key):
@@ -31,3 +32,8 @@ class OnionrCrypto:
 
     def rsaEncrypt(self, peer, data):
         return
+    
+    def verifyPGP(self, peer, signature):
+        '''Verify PGP signed data'''
+        gpg = gnupg.GPG(homedir=self._core.gpgHome)
+        

@@ -13,6 +13,8 @@ Major work in progress.
 
 This software is in heavy development. If for some reason you want to get involved, get in touch first.
 
+**Onionr API and functionality is subject to non-backwards compatible change during development**
+
 ## Disclaimer
 
 The Tor Project, I2P developers, and anyone else do not own, create, or endorse this project, and are not otherwise involved.

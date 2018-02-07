@@ -18,11 +18,11 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 import sqlite3, os, sys, time, math, gnupg, base64, tarfile, getpass, simplecrypt, hashlib, nacl, logger
-from Crypto.Cipher import AES
-from Crypto import Random
+#from Crypto.Cipher import AES
+#from Crypto import Random
 import netcontroller
 
-import onionrutils
+import onionrutils, onionrcrypto
 
 if sys.version_info < (3, 6):
     try:
@@ -41,7 +41,9 @@ class Core:
         self.ownPGPID = ''
         self.blockDB = 'data/blocks.db'
         self.blockDataLocation = 'data/blocks/'
+        self.gpgHome = './data/pgp/'
         self._utils = onionrutils.OnionrUtils(self)
+        self._crypto = onionrcrypto.OnionrCrypto(self)
 
         if not os.path.exists('data/'):
             os.mkdir('data/')
@@ -59,7 +61,7 @@ class Core:
 
             Uses own PGP home folder in the data/ directory
         '''
-        gpg = gnupg.GPG(homedir='./data/pgp/')
+        gpg = gnupg.GPG(homedir=self.gpgHome)
         input_data = gpg.gen_key_input(key_type="RSA", key_length=1024, name_real=myID, name_email='anon@onionr', testing=True)
         key = gpg.gen_key(input_data)
         logger.info("Generating PGP key, this will take some time..")
