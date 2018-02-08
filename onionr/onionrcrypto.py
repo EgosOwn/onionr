@@ -36,4 +36,8 @@ class OnionrCrypto:
     def verifyPGP(self, peer, signature):
         '''Verify PGP signed data'''
         gpg = gnupg.GPG(homedir=self._core.gpgHome)
-        
+    
+    def generateSymmetric():
+        return
+    def generateHMAC():
+        return

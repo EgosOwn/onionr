@@ -161,6 +161,7 @@ class Onionr:
                 logger.error('Invalid peer ID')
         message = logger.readline("Enter a message: ")
         logger.info("Sending message to " + peer)
+        self.onionrUtils.sendPM(peer, message)
 
 
     def openGUI(self):

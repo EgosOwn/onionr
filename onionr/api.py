@@ -133,9 +133,9 @@ class API:
             elif action == 'ping':
                 resp = Response("pong!")
             elif action == 'getHMAC':
-                resp = Response(self._crypto.generateHMAC())
+                resp = Response(self._crypto.generateSymmetric())
             elif action == 'getSymmetric':
-                pass
+                resp = Response(self._crypto.generateSymmetric())
             elif action == 'getDBHash':
                 resp = Response(self._utils.getBlockDBHash())
             elif action == 'getBlockHashes':
