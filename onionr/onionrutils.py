@@ -208,3 +208,8 @@ class OnionrUtils:
                 retVal = False
         
         return retVal
+
+    def sendPM(self, peer, message):
+        '''Send an encrypted private message to a user'''
+        
+        return

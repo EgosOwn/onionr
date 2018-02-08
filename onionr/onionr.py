@@ -128,6 +128,7 @@ class Onionr:
             'addmessage': self.addMessage,
             'add-msg': self.addMessage,
             'add-message': self.addMessage,
+            'pm': self.sendEncrypt,
             'gui': self.openGUI,
             'addpeer': self.addPeer,
             'add-peer': self.addPeer
@@ -149,6 +150,18 @@ class Onionr:
     def version(self):
         logger.info('Onionr ' + ONIONR_VERSION + ' (' + platform.machine() + ') : API v' + API_VERSION)
         logger.info('Running on ' + platform.platform() + ' ' + platform.release())
+
+    def sendEncrypt(self):
+        '''Create a private message and send it'''
+        while True:
+            peer = logger.readline('Peer to send to: ')
+            if self.onionrUtils.validateID(peer):
+                break
+            else:
+                logger.error('Invalid peer ID')
+        message = logger.readline("Enter a message: ")
+        logger.info("Sending message to " + peer)
+
 
     def openGUI(self):
         gui.OnionrGUI(self.onionrCore)
