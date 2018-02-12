@@ -4,9 +4,6 @@ A social network/microblogging platform for Tor & I2P
 
 Draft Dec 25 2017
 
-notes:
-Use Blowfish in addition with AES?
-
 # Overview
 
 Onionr is an encrypted microblogging & mailing system designed in the spirit of Twitter.
