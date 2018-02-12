@@ -33,7 +33,7 @@ Clients MUST use HTTP(s) to communicate with one another to maintain compatibili
 ## Connections
     When a node first comes online, it attempts to bootstrap using a default list provided by a client.
     When two peers connect, they exchange PGP public keys and then generate a shared AES-SHA3-512 HMAC token. These keys are stored in a peer database until expiry.
-    HMAC tokens are regenerated either every X many communications with a peer or every X minutes. Every 10 communications or every 24 hours is a recommended default.
+    HMAC tokens are regenerated either every X many communications with a peer or every X minutes. Every 10MB or every 2 hours is a recommended default.
     All valid requests with HMAC should be recorded until used HMAC's expiry to prevent replay attacks.
     Peer Types
         * Friends:
@@ -64,7 +64,7 @@ Clients MUST use HTTP(s) to communicate with one another to maintain compatibili
             ◦ Posts MUST be PGP signed, and MUST NOT use any encryption.
 ## Private Messages
 
-    Private messages are messages that can have attached images. They MUST be encrypted via AES256-HMAC-SHA256 and PGP signed (signed before encryption) and time stamped to prevent replaying. A temporary RSA key for use in every message is exchanged every X many configured messages (or posts), for use in addition with PGP and the HMAC.
+    Private messages are messages that can have attached images. They MUST be encrypted via AES256-HMAC-SHA256 and PGP signed (signed before encryption) and time stamped to prevent replaying. A temporary EdDSA key for use in every message is exchanged every X many configured messages (or posts), for use in addition with PGP and the HMAC.
     When both peers are online messages SHOULD be dispatched directly between peers.
     All messages must be verified prior to being displayed.
 
