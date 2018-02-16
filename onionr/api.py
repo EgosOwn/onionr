@@ -20,7 +20,7 @@
 import flask
 from flask import request, Response, abort
 from multiprocessing import Process
-import configparser, sys, random, threading, hmac, hashlib, base64, time, math, gnupg, os, logger
+import configparser, sys, random, threading, hmac, hashlib, base64, time, math, os, logger
 
 from core import Core
 import onionrutils, onionrcrypto
@@ -140,8 +140,6 @@ class API:
                 resp = Response(self._utils.getBlockDBHash())
             elif action == 'getBlockHashes':
                 resp = Response(self._core.getBlockList())
-            elif action == 'getPGP':
-                resp = Response(self._utils.exportMyPubkey())
             # setData should be something the communicator initiates, not this api
             elif action == 'getData':
                 resp = self._core.getData(data)

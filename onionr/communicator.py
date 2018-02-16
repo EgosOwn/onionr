@@ -40,13 +40,6 @@ class OnionrCommunicate:
 
         self.peerData = {} # Session data for peers (recent reachability, speed, etc)
 
-        # get our own PGP fingerprint
-        fingerprintFile = 'data/own-fingerprint.txt'
-        if not os.path.exists(fingerprintFile):
-            self._core.generateMainPGP(torID)
-        with open(fingerprintFile,'r') as f:
-            self.pgpOwnFingerprint = f.read()
-        logger.info('My PGP fingerprint is ' + logger.colors.underline + self.pgpOwnFingerprint + logger.colors.reset + logger.colors.fg.green + '.')
         if os.path.exists(self._core.queueDB):
             self._core.clearDaemonQueue()
         while True:

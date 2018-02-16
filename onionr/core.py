@@ -17,7 +17,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import sqlite3, os, sys, time, math, gnupg, base64, tarfile, getpass, simplecrypt, hashlib, nacl, logger
+import sqlite3, os, sys, time, math, base64, tarfile, getpass, simplecrypt, hashlib, nacl, logger
 #from Crypto.Cipher import AES
 #from Crypto import Random
 import netcontroller
@@ -38,10 +38,8 @@ class Core:
         '''
         self.queueDB = 'data/queue.db'
         self.peerDB = 'data/peers.db'
-        self.ownPGPID = ''
         self.blockDB = 'data/blocks.db'
         self.blockDataLocation = 'data/blocks/'
-        self.gpgHome = './data/pgp/'
         self._utils = onionrutils.OnionrUtils(self)
         self._crypto = onionrcrypto.OnionrCrypto(self)
 
@@ -52,28 +50,6 @@ class Core:
 
         if not os.path.exists(self.blockDB):
             self.createBlockDB()
-
-        return
-
-    def generateMainPGP(self, myID):
-        '''
-            Generate the main PGP key for our client. Should not be done often.
-
-            Uses own PGP home folder in the data/ directory
-        '''
-        gpg = gnupg.GPG(homedir=self.gpgHome)
-        input_data = gpg.gen_key_input(key_type="RSA", key_length=1024, name_real=myID, name_email='anon@onionr', testing=True)
-        key = gpg.gen_key(input_data)
-        logger.info("Generating PGP key, this will take some time..")
-        while key.status != "key created":
-            time.sleep(0.5)
-            print(key.status)
-
-        logger.info("Finished generating PGP key")
-        # Write the key
-        myFingerpintFile = open('data/own-fingerprint.txt', 'w')
-        myFingerpintFile.write(key.fingerprint)
-        myFingerpintFile.close()
 
         return
 
@@ -104,8 +80,7 @@ class Core:
         c.execute('''CREATE TABLE peers(
             ID text not null,
             name text,
-            pgpKey text,
-            hmacKey text,
+            pubkey text,
             blockDBHash text,
             forwardKey text,
             dateSeen not null,
@@ -335,7 +310,6 @@ class Core:
 
             id text             0
             name text,          1
-            pgpKey text,        2
             hmacKey text,       3
             blockDBHash text,   4
             forwardKey text,    5
@@ -346,7 +320,7 @@ class Core:
         conn = sqlite3.connect(self.peerDB)
         c = conn.cursor()
         command = (peer,)
-        infoNumbers = {'id': 0, 'name': 1, 'pgpKey': 2, 'hmacKey': 3, 'blockDBHash': 4, 'forwardKey': 5, 'dateSeen': 6, 'bytesStored': 7, 'trust': 8}
+        infoNumbers = {'id': 0, 'name': 1, 'hmacKey': 3, 'blockDBHash': 4, 'forwardKey': 5, 'dateSeen': 6, 'bytesStored': 7, 'trust': 8}
         info = infoNumbers[info]
         iterCount = 0
         retVal = ''
@@ -369,7 +343,7 @@ class Core:
         c = conn.cursor()
         command = (data, peer)
         # TODO: validate key on whitelist
-        if key not in ('id', 'text', 'name', 'pgpKey', 'hmacKey', 'blockDBHash', 'forwardKey', 'dateSeen', 'bytesStored', 'trust'):
+        if key not in ('id', 'name', 'pubkey', 'blockDBHash', 'forwardKey', 'dateSeen', 'bytesStored', 'trust'):
             raise Exception("Got invalid database key when setting peer info")
         c.execute('UPDATE peers SET ' + key + ' = ? WHERE id=?', command)
         conn.commit()

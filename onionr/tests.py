@@ -85,33 +85,6 @@ class OnionrTests(unittest.TestCase):
         else:
             self.assertTrue(False)
 
-    def testPGPGen(self):
-        logger.debug('--------------------------')
-        logger.info('Running PGP key generation test...')
-        if os.path.exists('data/pgp/'):
-            self.assertTrue(True)
-        else:
-            import core, netcontroller
-            myCore = core.Core()
-            net = netcontroller.NetController(1337)
-            net.startTor()
-            torID = open('data/hs/hostname').read()
-            myCore.generateMainPGP(torID)
-            if os.path.exists('data/pgp/'):
-                self.assertTrue(True)
-
-    def testHMACGen(self):
-        logger.debug('--------------------------')
-        logger.info('Running HMAC generation test...')
-        # Test if hmac key generation is working
-        import core
-        myCore = core.Core()
-        key = myCore.generateHMAC()
-        if len(key) > 10:
-            self.assertTrue(True)
-        else:
-            self.assertTrue(False)
-
     def testQueue(self):
         logger.debug('--------------------------')
         logger.info('Running daemon queue test...')

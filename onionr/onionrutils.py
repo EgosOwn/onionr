@@ -18,7 +18,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 # Misc functions that do not fit in the main api, but are useful
-import getpass, sys, requests, configparser, os, socket, gnupg, hashlib, logger, sqlite3
+import getpass, sys, requests, configparser, os, socket, hashlib, logger, sqlite3
 if sys.version_info < (3, 6):
     try:
         import sha3
@@ -93,19 +93,6 @@ class OnionrUtils:
         else:
             return True
 
-    def exportMyPubkey(self):
-        '''
-            Export our PGP key if it exists
-        '''
-        if not os.path.exists(self.fingerprintFile):
-            raise Exception("No fingerprint found, cannot export our PGP key.")
-        gpg = gnupg.GPG(homedir='./data/pgp/')
-        with open(self.fingerprintFile,'r') as f:
-            fingerprint = f.read()
-        ascii_armored_public_keys = gpg.export_keys(fingerprint)
-
-        return ascii_armored_public_keys
-
     def getBlockDBHash(self):
         '''
             Return a sha3_256 hash of the blocks DB
@@ -153,17 +140,6 @@ class OnionrUtils:
                 retVal = False
 
         return retVal
-    
-    def getPeerPGPFingerprint(self, peer):
-        '''
-            Get peer's PGP fingerprint
-        '''
-        retData = ''
-        gpg = gnupg.GPG(homedir=self._core.gpgHome)
-        for i in gpg.list_keys():
-            if peer in i['uids'][0]:
-                retData = i['fingerprint']
-        return retData
 
     def validateID(self, id):
         '''
