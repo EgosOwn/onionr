@@ -17,7 +17,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import nacl, gnupg
+import nacl
 
 class OnionrCrypto:
     def __init__(self, coreInstance):
@@ -29,15 +29,9 @@ class OnionrCrypto:
 
     def symmetricPeerDecrypt(self, data, key):
         return
-
-    def rsaEncrypt(self, peer, data):
-        return
-    
-    def verifyPGP(self, peer, signature):
-        '''Verify PGP signed data'''
-        gpg = gnupg.GPG(homedir=self._core.gpgHome)
     
     def generateSymmetric():
         return
+
     def generateHMAC():
         return
