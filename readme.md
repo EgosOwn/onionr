@@ -2,12 +2,20 @@
 
 [![Build Status](https://travis-ci.org/beardog108/onionr.svg?branch=master)](https://travis-ci.org/beardog108/onionr)
 
-P2P microblogging platform and social network, using Tor & I2P.
+P2P platform, using Tor & I2P.
 
 Major work in progress.
 
 ***THIS SOFTWARE IS NOT USABLE OR SAFE YET.***
 
+
+**Roadmap/features:**
+
+* [X] Fully p2p/decentralized, no trackers or other single points of failure
+* [X] High level of anonymity
+* [] End to end encryption where applicable
+* [X] Optional non-encrypted blocks, useful for blog posts or public file sharing
+* [] Easy API system for integration to websites
 
 # Development
 
