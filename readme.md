@@ -13,9 +13,9 @@ Major work in progress.
 
 * [X] Fully p2p/decentralized, no trackers or other single points of failure
 * [X] High level of anonymity
-* [] End to end encryption where applicable
+* [ ] End to end encryption where applicable
 * [X] Optional non-encrypted blocks, useful for blog posts or public file sharing
-* [] Easy API system for integration to websites
+* [ ] Easy API system for integration to websites
 
 # Development
 
