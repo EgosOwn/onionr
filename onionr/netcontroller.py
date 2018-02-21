@@ -103,7 +103,12 @@ HiddenServicePort 80 127.0.0.1:''' + str(self.hsPort) + '''
             int(pidN)
         except:
             return
-        os.kill(int(pidN), signal.SIGTERM)
-        os.remove('data/torPid.txt')
+        try:
+            os.kill(int(pidN), signal.SIGTERM)
+            os.remove('data/torPid.txt')
+        except ProcessLookupError:
+            pass
+        except FileNotFoundError:
+            pass
 
         return

@@ -47,7 +47,6 @@ class Onionr:
         if os.path.exists('dev-enabled'):
             self._developmentMode = True
             logger.set_level(logger.LEVEL_DEBUG)
-            logger.warn('DEVELOPMENT MODE ENABLED (THIS IS LESS SECURE!)')
         else:
             self._developmentMode = False
             logger.set_level(logger.LEVEL_INFO)
@@ -211,11 +210,14 @@ class Onionr:
     def daemon(self):
         ''' Start the Onionr communication daemon '''
         if not os.environ.get("WERKZEUG_RUN_MAIN") == "true":
+            if self._developmentMode:
+                logger.warn('DEVELOPMENT MODE ENABLED (THIS IS LESS SECURE!)')
             net = NetController(self.config['CLIENT']['PORT'])
             logger.info('Tor is starting...')
             if not net.startTor():
                 sys.exit(1)
             logger.info('Started Tor .onion service: ' + logger.colors.underline + net.myID)
+            logger.info('Our Public key: ' + self.onionrCore._crypto.pubKey)
             time.sleep(1)
             subprocess.Popen(["./communicator.py", "run", str(net.socksPort)])
             logger.debug('Started communicator')

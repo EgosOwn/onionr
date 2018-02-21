@@ -20,7 +20,7 @@ and code to operate as a daemon, getting commands from the command queue databas
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 import sqlite3, requests, hmac, hashlib, time, sys, os, math, logger, urllib.parse
-import core, onionrutils
+import core, onionrutils, onionrcrypto
 
 class OnionrCommunicate:
     def __init__(self, debug, developmentMode):
@@ -31,6 +31,7 @@ class OnionrCommunicate:
         '''
         self._core = core.Core()
         self._utils = onionrutils.OnionrUtils(self._core)
+        self._crypto = onionrcrypto.OnionrCrypto(self._core)
         blockProcessTimer = 0
         blockProcessAmount = 5
         heartBeatTimer = 0

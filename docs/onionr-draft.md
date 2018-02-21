@@ -24,6 +24,8 @@ All traffic is over Tor/I2P, connecting only to Tor onion and I2P hidden service
 
 Onionr nodes use HTTP (over Tor/I2P) to exchange keys, metadata, and blocks. Blocks are identified by their sha3_256 hash. Nodes sync a table of blocks hashes and attempt to download blocks they do not yet have from random peers.
 
+Blocks may be encrypted using Curve25519.
+
 ## Connections
 
 When a node first comes online, it attempts to bootstrap using a default list provided by a client.

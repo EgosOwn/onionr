@@ -41,13 +41,14 @@ class Core:
         self.blockDB = 'data/blocks.db'
         self.blockDataLocation = 'data/blocks/'
         self._utils = onionrutils.OnionrUtils(self)
+
+        # Initialize the crypto object
         self._crypto = onionrcrypto.OnionrCrypto(self)
 
         if not os.path.exists('data/'):
             os.mkdir('data/')
         if not os.path.exists('data/blocks/'):
             os.mkdir('data/blocks/')
-
         if not os.path.exists(self.blockDB):
             self.createBlockDB()
 

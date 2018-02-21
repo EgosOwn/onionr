@@ -47,7 +47,7 @@ class API:
         if os.path.exists('dev-enabled'):
             self._developmentMode = True
             logger.set_level(logger.LEVEL_DEBUG)
-            logger.warn('DEVELOPMENT MODE ENABLED (THIS IS LESS SECURE!)')
+            #logger.warn('DEVELOPMENT MODE ENABLED (THIS IS LESS SECURE!)')
         else:
             self._developmentMode = False
             logger.set_level(logger.LEVEL_INFO)
@@ -172,9 +172,9 @@ class API:
             resp = Response("Invalid request")
 
             return resp
-
-        logger.info('Starting client on ' + self.host + ':' + str(bindPort) + '...')
-        logger.debug('Client token: ' + logger.colors.underline + self.clientToken)
+        if not os.environ.get("WERKZEUG_RUN_MAIN") == "true":
+            logger.info('Starting client on ' + self.host + ':' + str(bindPort) + '...')
+            logger.debug('Client token: ' + logger.colors.underline + self.clientToken)
 
         app.run(host=self.host, port=bindPort, debug=True, threaded=True)
 
