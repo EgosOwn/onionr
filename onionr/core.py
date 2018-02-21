@@ -40,6 +40,7 @@ class Core:
         self.peerDB = 'data/peers.db'
         self.blockDB = 'data/blocks.db'
         self.blockDataLocation = 'data/blocks/'
+        self.addressDB = 'data/address.db'
         self._utils = onionrutils.OnionrUtils(self)
 
         # Initialize the crypto object
@@ -61,7 +62,7 @@ class Core:
             DOES NO SAFETY CHECKS if the ID is valid, but prepares the insertion
         '''
         # This function simply adds a peer to the DB
-        if not self._utils.validateID(peerID):
+        if not self._utils.validatePubKey(peerID):
             return False
         conn = sqlite3.connect(self.peerDB)
         c = conn.cursor()
@@ -70,6 +71,29 @@ class Core:
         conn.commit()
         conn.close()
         return True
+    
+    def createAddressDB(self):
+        '''
+            Generate the address database
+
+            types:
+                1: I2P b32 address
+                2: Tor v2 (like facebookcorewwwi.onion)
+                3: Tor v3
+        '''
+        conn = sqlite3.connect(self.addressDB)
+        c = conn.cursor()
+        c.execute('''CREATE TABLE adders(
+            address text,
+            type int,
+            knownPeer text,
+            speed int,
+            success int,
+            failure int
+            );
+        ''')
+        conn.commit()
+        conn.close()
 
     def createPeerDB(self):
         '''
@@ -81,7 +105,7 @@ class Core:
         c.execute('''CREATE TABLE peers(
             ID text not null,
             name text,
-            pubkey text,
+            adders text,
             blockDBHash text,
             forwardKey text,
             dateSeen not null,
@@ -90,7 +114,6 @@ class Core:
         ''')
         conn.commit()
         conn.close()
-
         return
 
     def createBlockDB(self):
@@ -278,14 +301,6 @@ class Core:
 
         return
 
-    def generateHMAC(self, length=32):
-        '''
-            Generate and return an HMAC key
-        '''
-        key = base64.b64encode(os.urandom(length))
-
-        return key
-
     def listPeers(self, randomOrder=True):
         '''
             Return a list of peers
@@ -300,7 +315,7 @@ class Core:
             peers = c.execute('SELECT * FROM peers;')
         peerList = []
         for i in peers:
-            peerList.append(i[0])
+            peerList.append(i[2])
         conn.close()
 
         return peerList
@@ -311,17 +326,17 @@ class Core:
 
             id text             0
             name text,          1
-            hmacKey text,       3
-            blockDBHash text,   4
-            forwardKey text,    5
-            dateSeen not null,  7
-            bytesStored int,    8
-            trust int           9
+            adders text,        2
+            blockDBHash text,   3
+            forwardKey text,    4
+            dateSeen not null,  5
+            bytesStored int,    6
+            trust int           7
         '''
         conn = sqlite3.connect(self.peerDB)
         c = conn.cursor()
         command = (peer,)
-        infoNumbers = {'id': 0, 'name': 1, 'hmacKey': 3, 'blockDBHash': 4, 'forwardKey': 5, 'dateSeen': 6, 'bytesStored': 7, 'trust': 8}
+        infoNumbers = {'id': 0, 'name': 1, 'adders': 2, 'blockDBHash': 3, 'forwardKey': 4, 'dateSeen': 5, 'bytesStored': 6, 'trust': 7}
         info = infoNumbers[info]
         iterCount = 0
         retVal = ''
