@@ -35,7 +35,7 @@ class OnionrCommunicate:
         blockProcessTimer = 0
         blockProcessAmount = 5
         heartBeatTimer = 0
-        heartBeatRate = 10
+        heartBeatRate = 100
         logger.debug('Communicator debugging enabled.')
         torID = open('data/hs/hostname').read()
 
@@ -87,7 +87,8 @@ class OnionrCommunicate:
                     blocks += self.performGet('getBlockHashes', i)
                 if self._utils.validateHash(currentDB):
                     self._core.setPeerInfo(i, "blockDBHash", currentDB)
-        logger.debug('BLOCKS: \n' + blocks)
+        if len(blocks.strip()) != 0:
+            logger.debug('BLOCKS:' + blocks)
         blockList = blocks.split('\n')
         for i in blockList:
             if len(i.strip()) == 0:

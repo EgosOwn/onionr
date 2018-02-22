@@ -105,5 +105,15 @@ class OnionrTests(unittest.TestCase):
         if command[0] == 'testCommand':
             if myCore.daemonQueue() == False:
                 logger.info('Succesfully added and read command')
-                
+
+    def testHashValidation(self):
+        logger.debug('--------------------------')
+        logger.info('Running hash validation test...')
+        import core
+        myCore = core.Core()
+        if not myCore._utils.validateHash("$324dfgfdg") and myCore._utils.validateHash("f2ca1bb6c7e907d06dafe4687e579fce76b37e4e93b7605022da52e6ccc26fd2") and not myCore._utils.validateHash("f2ca1bb6c7e907d06dafe4687e579fce76b37e4e93b7605022da52e6ccc26fd$"):
+            self.assertTrue(True)
+        else:
+            self.assertTrue(False)
+    
 unittest.main()

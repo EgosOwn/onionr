@@ -62,7 +62,8 @@ class API:
         bindPort = int(self.config['CLIENT']['PORT'])
         self.bindPort = bindPort
         self.clientToken = self.config['CLIENT']['CLIENT HMAC']
-        logger.debug('Your HMAC token: ' + logger.colors.underline + self.clientToken)
+        if not os.environ.get("WERKZEUG_RUN_MAIN") == "true":
+            logger.debug('Your HMAC token: ' + logger.colors.underline + self.clientToken)
 
         if not debug and not self._developmentMode:
             hostNums = [random.randint(1, 255), random.randint(1, 255), random.randint(1, 255)]
@@ -174,7 +175,7 @@ class API:
             return resp
         if not os.environ.get("WERKZEUG_RUN_MAIN") == "true":
             logger.info('Starting client on ' + self.host + ':' + str(bindPort) + '...')
-            logger.debug('Client token: ' + logger.colors.underline + self.clientToken)
+            #logger.debug('Client token: ' + logger.colors.underline + self.clientToken)
 
         app.run(host=self.host, port=bindPort, debug=True, threaded=True)
 
