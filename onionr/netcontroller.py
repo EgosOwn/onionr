@@ -69,6 +69,15 @@ HiddenServicePort 80 127.0.0.1:''' + str(self.hsPort) + '''
         except FileNotFoundError:
             logger.fatal("Tor was not found in your path or the Onionr directory. Please install Tor and try again.")
             sys.exit(1)
+        else:
+            # Test Tor Version
+            torVersion = subprocess.Popen([torBinary, '--version'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            for line in iter(torVersion.stdout.readline, b''):
+                if 'Tor 0.2.' in line.decode():
+                    logger.warn("Running 0.2.x Tor series, no support for v3 onion peers")
+                    break
+            torVersion.kill()
+
         # wait for tor to get to 100% bootstrap
         for line in iter(tor.stdout.readline, b''):
             if 'Bootstrapped 100%: Done' in line.decode():

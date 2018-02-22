@@ -300,6 +300,22 @@ class Core:
         conn.close()
 
         return
+    
+    def listAdders(self, randomOrder=True, i2p=True):
+        '''
+            Return a list of addresses
+        '''
+        conn = sqlite3.connect(self.addressDB)
+        c = conn.cursor()
+        if randomOrder:
+            addresses = c.execute('SELECT * FROM adders ORDER BY RANDOM();')
+        else:
+            addresses = c.execute('SELECT * FROM adders;')
+        addressList = []
+        for i in addresses:
+            addressList.append(i[2])
+        conn.close()
+        return addressList
 
     def listPeers(self, randomOrder=True):
         '''

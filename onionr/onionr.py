@@ -72,9 +72,11 @@ class Onionr:
                 os.mkdir('data/')
                 os.mkdir('data/blocks/')
 
-        if not os.path.exists('data/peers.db'):
+        if not os.path.exists(self.onionrCore.peerDB):
             self.onionrCore.createPeerDB()
             pass
+        if not os.path.exists(self.onionrCore.addressDB):
+            self.onionrCore.createAddressDB()
 
         # Get configuration
         self.config = configparser.ConfigParser()
@@ -90,7 +92,7 @@ class Onionr:
                     randomPort = random.randint(1024, 65535)
                     if self.onionrUtils.checkPort(randomPort):
                         break
-            self.config['CLIENT'] = {'CLIENT HMAC': base64.b64encode(os.urandom(32)).decode('utf-8'), 'PORT': randomPort, 'API VERSION': API_VERSION}
+            self.config['CLIENT'] = {'participate': 'true', 'CLIENT HMAC': base64.b64encode(os.urandom(32)).decode('utf-8'), 'PORT': randomPort, 'API VERSION': API_VERSION}
             with open('data/config.ini', 'w') as configfile:
                 self.config.write(configfile)
 

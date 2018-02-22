@@ -23,4 +23,5 @@ reset:
 	rm -f onionr/data/blocks/*.dat | true > /dev/null 2>&1
 	rm -f onionr/data/peers.db | true > /dev/null 2>&1
 	rm -f onionr/data/blocks.db | true > /dev/null 2>&1
+	rm -rf onionr/data/address.db | true > /dev/null 2>&1
 

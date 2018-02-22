@@ -68,7 +68,7 @@ class OnionrCommunicate:
         '''
             Lookup blocks and merge new ones
         '''
-        peerList = self._core.listPeers()
+        peerList = self._core.listAdders()
         blocks = ''
         for i in peerList:
             lastDB = self._core.getPeerInfo(i, 'blockDBHash')
@@ -123,7 +123,7 @@ class OnionrCommunicate:
         '''
             Download a block from random order of peers
         '''
-        peerList = self._core.listPeers()
+        peerList = self._core.listAdders()
         blocks = ''
         for i in peerList:
             hasher = hashlib.sha3_256()
