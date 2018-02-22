@@ -17,3 +17,10 @@ uninstall:
 
 test:
 	@cd onionr; ./tests.py
+	
+reset:
+	echo "RESETING ONIONR"
+	rm -f onionr/data/blocks/*.dat | true > /dev/null 2>&1
+	rm -f onionr/data/peers.db | true > /dev/null 2>&1
+	rm -f onionr/data/blocks.db | true > /dev/null 2>&1
+

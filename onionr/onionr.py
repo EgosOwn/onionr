@@ -133,7 +133,24 @@ class Onionr:
             'add-peer': self.addPeer
         }
 
+    def getHelp(self):
+        return {
+            'help': 'Displays this Onionr help menu',
+            'version': 'Displays the Onionr version',
+            'start': 'Starts the Onionr daemon',
+            'stop': 'Stops the Onionr daemon',
+            'stats': 'Displays node statistics',
+            'list-peers': 'Displays a list of peers (?)',
+            'add-peer': 'Adds a peer (?)',
+            'add-msg': 'Broadcasts a message to the Onionr network',
+            'pm': 'Adds a private message (?)',
+            'gui': 'Opens a graphical interface for Onionr'
+        }
+
     def execute(self, argument):
+        '''
+            Executes a command
+        '''
         argument = argument[argument.startswith('--') and len('--'):] # remove -- if it starts with it
 
         # define commands
@@ -146,12 +163,21 @@ class Onionr:
         THIS SECTION DEFINES THE COMMANDS
     '''
 
-    def version(self):
-        logger.info('Onionr ' + ONIONR_VERSION + ' (' + platform.machine() + ') : API v' + API_VERSION)
-        logger.info('Running on ' + platform.platform() + ' ' + platform.release())
+    def version(self, verbosity=5):
+        '''
+            Displays the Onionr version
+        '''
+        logger.info('Onionr ' + ONIONR_VERSION + ' (' + platform.machine() + ') - API v' + API_VERSION)
+        if verbosity >= 1:
+            logger.info('Anonymous P2P Platform - GPLv3 - onionr.voidnet.tech')
+        if verbosity >= 2:
+            logger.info('Running on ' + platform.platform() + ' ' + platform.release())
 
     def sendEncrypt(self):
-        '''Create a private message and send it'''
+        '''
+            Create a private message and send it
+        '''
+
         while True:
             peer = logger.readline('Peer to send to: ')
             if self.onionrUtils.validateID(peer):
@@ -164,14 +190,26 @@ class Onionr:
 
 
     def openGUI(self):
+        '''
+            Opens a graphical interface for Onionr
+        '''
+
         gui.OnionrGUI(self.onionrCore)
 
     def listPeers(self):
+        '''
+            Displays a list of peers (?)
+        '''
+
         logger.info('Peer list:\n')
         for i in self.onionrCore.listPeers():
             logger.info(i)
 
     def addPeer(self):
+        '''
+            Adds a peer (?)
+        '''
+
         try:
             newPeer = sys.argv[2]
         except:
@@ -181,21 +219,38 @@ class Onionr:
             self.onionrCore.addPeer(newPeer)
 
     def addMessage(self):
+        '''
+            Broadcasts a message to the Onionr network
+        '''
+
         while True:
             messageToAdd = '-txt-' + logger.readline('Broadcast message to network: ')
             if len(messageToAdd) >= 1:
                 break
+
         addedHash = self.onionrCore.setData(messageToAdd)
         self.onionrCore.addToBlockDB(addedHash, selfInsert=True)
         self.onionrCore.setBlockType(addedHash, 'txt')
 
     def notFound(self):
+        '''
+            Displays a "command not found" message
+        '''
+
         logger.error('Command not found.')
 
     def showHelpSuggestion(self):
+        '''
+            Displays a message suggesting help
+        '''
+
         logger.info('Do ' + logger.colors.bold + sys.argv[0] + ' --help' + logger.colors.reset + logger.colors.fg.green + ' for Onionr help.')
 
     def start(self):
+        '''
+            Starts the Onionr daemon
+        '''
+
         if os.path.exists('.onionr-lock'):
             logger.fatal('Cannot start. Daemon is already running, or it did not exit cleanly.\n(if you are sure that there is not a daemon running, delete .onionr-lock & try again).')
         else:
@@ -208,7 +263,9 @@ class Onionr:
                 os.remove('.onionr-lock')
 
     def daemon(self):
-        ''' Start the Onionr communication daemon '''
+        '''
+            Starts the Onionr communication daemon
+        '''
         if not os.environ.get("WERKZEUG_RUN_MAIN") == "true":
             if self._developmentMode:
                 logger.warn('DEVELOPMENT MODE ENABLED (THIS IS LESS SECURE!)')
@@ -226,7 +283,9 @@ class Onionr:
         return
 
     def killDaemon(self):
-        ''' Shutdown the Onionr Daemon '''
+        '''
+            Shutdown the Onionr daemon
+        '''
 
         logger.warn('Killing the running daemon')
         net = NetController(self.config['CLIENT']['PORT'])
@@ -240,13 +299,31 @@ class Onionr:
         return
 
     def showStats(self):
-        ''' Display statistics and exit '''
+        '''
+            Displays statistics and exits
+        '''
 
         return
 
-    def showHelp(self):
-        ''' Show help for Onionr '''
+    def showHelp(self, command = None):
+        '''
+            Show help for Onionr
+        '''
 
+        helpmenu = self.getHelp()
+
+        if command is None and len(sys.argv) >= 3:
+            for cmd in sys.argv[2:]:
+                self.showHelp(cmd)
+        elif not command is None:
+            if command.lower() in helpmenu:
+                logger.info(logger.colors.bold + command  + logger.colors.reset + logger.colors.fg.blue + ' : ' + logger.colors.reset +  helpmenu[command.lower()])
+            else:
+                logger.warn(logger.colors.bold + command  + logger.colors.reset + logger.colors.fg.blue + ' : ' + logger.colors.reset + 'No help menu entry was found')
+        else:
+            self.version(0)
+            for command, helpmessage in helpmenu.items():
+                self.showHelp(command)
         return
 
 Onionr()
