@@ -146,9 +146,11 @@ class OnionrUtils:
         '''Validate if a string is a valid base32 encoded Ed25519 key'''
         retVal = False
         try:
-            nacl.signing.SigningKey(self, seed=key, encoder=nacl.encoding.Base32Encoder)
+            nacl.signing.SigningKey(seed=key, encoder=nacl.encoding.Base32Encoder)
         except nacl.exceptions.ValueError:
             pass
+        else:
+            retVal = True
         return retVal
 
 
