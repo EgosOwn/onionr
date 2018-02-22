@@ -214,7 +214,7 @@ class OnionrCommunicate:
         except requests.exceptions.RequestException as e:
             logger.warn(action + " failed with peer " + peer + ": " + str(e))
             retData = False
-        
+
         if not retData:
             self.peerData[peer]['failCount'] += 1
         else:
