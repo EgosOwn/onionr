@@ -28,7 +28,7 @@ class OnionrTests(unittest.TestCase):
         logger.debug('--------------------------')
         logger.info('Running simple program run test...')
         # Test just running ./onionr with no arguments
-        blank = os.system('./onionr.py')
+        blank = os.system('./onionr.py --version')
         if blank != 0:
             self.assertTrue(False)
         else:

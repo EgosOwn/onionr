@@ -375,7 +375,7 @@ class Core:
         c = conn.cursor()
         retData = ''
         if unsaved:
-            execute = 'SELECT hash FROM hashes where dataSaved != 1;'
+            execute = 'SELECT hash FROM hashes WHERE dataSaved != 1;'
         else:
             execute = 'SELECT hash FROM hashes;'
         for row in c.execute(execute):
