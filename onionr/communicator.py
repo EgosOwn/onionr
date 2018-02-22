@@ -20,7 +20,7 @@ and code to operate as a daemon, getting commands from the command queue databas
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 import sqlite3, requests, hmac, hashlib, time, sys, os, math, logger, urllib.parse
-import core, onionrutils
+import core, onionrutils, onionrcrypto
 
 class OnionrCommunicate:
     def __init__(self, debug, developmentMode):
@@ -31,6 +31,7 @@ class OnionrCommunicate:
         '''
         self._core = core.Core()
         self._utils = onionrutils.OnionrUtils(self._core)
+        self._crypto = onionrcrypto.OnionrCrypto(self._core)
         blockProcessTimer = 0
         blockProcessAmount = 5
         heartBeatTimer = 0
@@ -40,13 +41,6 @@ class OnionrCommunicate:
 
         self.peerData = {} # Session data for peers (recent reachability, speed, etc)
 
-        # get our own PGP fingerprint
-        fingerprintFile = 'data/own-fingerprint.txt'
-        if not os.path.exists(fingerprintFile):
-            self._core.generateMainPGP(torID)
-        with open(fingerprintFile,'r') as f:
-            self.pgpOwnFingerprint = f.read()
-        logger.info('My PGP fingerprint is ' + logger.colors.underline + self.pgpOwnFingerprint + logger.colors.reset + logger.colors.fg.green + '.')
         if os.path.exists(self._core.queueDB):
             self._core.clearDaemonQueue()
         while True:
@@ -69,40 +63,7 @@ class OnionrCommunicate:
             time.sleep(1)
 
         return
-
-    def getRemotePeerKey(self, peerID):
-        '''
-            This function contacts a peer and gets their main PGP key.
-
-            This is safe because Tor or I2P is used, but it does not ensure that the person is who they say they are
-        '''
-        url = 'http://' + peerID + '/public/?action=getPGP'
-        r = requests.get(url, headers=headers)
-        response = r.text
-
-        return response
-
-    def shareHMAC(self, peerID, key):
-        '''
-            This function shares an HMAC key to a peer
-        '''
-
-        return
-
-    def getPeerProof(self, peerID):
-        '''
-            This function gets the current peer proof requirement
-        '''
-
-        return
-
-    def sendPeerProof(self, peerID, data):
-        '''
-            This function sends the proof result to a peer previously fetched with getPeerProof
-        '''
-
-        return
-
+        
     def lookupBlocks(self):
         '''
             Lookup blocks and merge new ones

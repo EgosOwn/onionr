@@ -18,7 +18,8 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 # Misc functions that do not fit in the main api, but are useful
-import getpass, sys, requests, configparser, os, socket, gnupg, hashlib, logger, sqlite3
+import getpass, sys, requests, configparser, os, socket, hashlib, logger, sqlite3
+import nacl.signing, nacl.encoding
 if sys.version_info < (3, 6):
     try:
         import sha3
@@ -93,19 +94,6 @@ class OnionrUtils:
         else:
             return True
 
-    def exportMyPubkey(self):
-        '''
-            Export our PGP key if it exists
-        '''
-        if not os.path.exists(self.fingerprintFile):
-            raise Exception("No fingerprint found, cannot export our PGP key.")
-        gpg = gnupg.GPG(homedir='./data/pgp/')
-        with open(self.fingerprintFile,'r') as f:
-            fingerprint = f.read()
-        ascii_armored_public_keys = gpg.export_keys(fingerprint)
-
-        return ascii_armored_public_keys
-
     def getBlockDBHash(self):
         '''
             Return a sha3_256 hash of the blocks DB
@@ -153,10 +141,22 @@ class OnionrUtils:
                 retVal = False
 
         return retVal
+    
+    def validatePubKey(self, key):
+        '''Validate if a string is a valid base32 encoded Ed25519 key'''
+        retVal = False
+        try:
+            nacl.signing.SigningKey(seed=key, encoder=nacl.encoding.Base32Encoder)
+        except nacl.exceptions.ValueError:
+            pass
+        else:
+            retVal = True
+        return retVal
+
 
     def validateID(self, id):
         '''
-            Validate if a user ID is a valid tor or i2p hidden service
+            Validate if an address is a valid tor or i2p hidden service
         '''
         idLength = len(id)
         retVal = True

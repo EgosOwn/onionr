@@ -47,7 +47,6 @@ class Onionr:
         if os.path.exists('dev-enabled'):
             self._developmentMode = True
             logger.set_level(logger.LEVEL_DEBUG)
-            logger.warn('DEVELOPMENT MODE ENABLED (THIS IS LESS SECURE!)')
         else:
             self._developmentMode = False
             logger.set_level(logger.LEVEL_INFO)
@@ -128,6 +127,7 @@ class Onionr:
             'addmessage': self.addMessage,
             'add-msg': self.addMessage,
             'add-message': self.addMessage,
+            'pm': self.sendEncrypt,
             'gui': self.openGUI,
             'addpeer': self.addPeer,
             'add-peer': self.addPeer
@@ -149,6 +149,19 @@ class Onionr:
     def version(self):
         logger.info('Onionr ' + ONIONR_VERSION + ' (' + platform.machine() + ') : API v' + API_VERSION)
         logger.info('Running on ' + platform.platform() + ' ' + platform.release())
+
+    def sendEncrypt(self):
+        '''Create a private message and send it'''
+        while True:
+            peer = logger.readline('Peer to send to: ')
+            if self.onionrUtils.validateID(peer):
+                break
+            else:
+                logger.error('Invalid peer ID')
+        message = logger.readline("Enter a message: ")
+        logger.info("Sending message to " + peer)
+        self.onionrUtils.sendPM(peer, message)
+
 
     def openGUI(self):
         gui.OnionrGUI(self.onionrCore)
@@ -197,11 +210,14 @@ class Onionr:
     def daemon(self):
         ''' Start the Onionr communication daemon '''
         if not os.environ.get("WERKZEUG_RUN_MAIN") == "true":
+            if self._developmentMode:
+                logger.warn('DEVELOPMENT MODE ENABLED (THIS IS LESS SECURE!)')
             net = NetController(self.config['CLIENT']['PORT'])
             logger.info('Tor is starting...')
             if not net.startTor():
                 sys.exit(1)
             logger.info('Started Tor .onion service: ' + logger.colors.underline + net.myID)
+            logger.info('Our Public key: ' + self.onionrCore._crypto.pubKey)
             time.sleep(1)
             subprocess.Popen(["./communicator.py", "run", str(net.socksPort)])
             logger.debug('Started communicator')

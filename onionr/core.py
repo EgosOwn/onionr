@@ -17,12 +17,12 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import sqlite3, os, sys, time, math, gnupg, base64, tarfile, getpass, simplecrypt, hashlib, nacl, logger
-from Crypto.Cipher import AES
-from Crypto import Random
+import sqlite3, os, sys, time, math, base64, tarfile, getpass, simplecrypt, hashlib, nacl, logger
+#from Crypto.Cipher import AES
+#from Crypto import Random
 import netcontroller
 
-import onionrutils
+import onionrutils, onionrcrypto
 
 if sys.version_info < (3, 6):
     try:
@@ -38,40 +38,20 @@ class Core:
         '''
         self.queueDB = 'data/queue.db'
         self.peerDB = 'data/peers.db'
-        self.ownPGPID = ''
         self.blockDB = 'data/blocks.db'
         self.blockDataLocation = 'data/blocks/'
-        self._utils = onionrutils.OnionrUtils(self)
+        self.addressDB = 'data/address.db'
 
         if not os.path.exists('data/'):
             os.mkdir('data/')
         if not os.path.exists('data/blocks/'):
             os.mkdir('data/blocks/')
-
         if not os.path.exists(self.blockDB):
             self.createBlockDB()
-
-        return
-
-    def generateMainPGP(self, myID):
-        '''
-            Generate the main PGP key for our client. Should not be done often.
-
-            Uses own PGP home folder in the data/ directory
-        '''
-        gpg = gnupg.GPG(homedir='./data/pgp/')
-        input_data = gpg.gen_key_input(key_type="RSA", key_length=1024, name_real=myID, name_email='anon@onionr', testing=True)
-        key = gpg.gen_key(input_data)
-        logger.info("Generating PGP key, this will take some time..")
-        while key.status != "key created":
-            time.sleep(0.5)
-            print(key.status)
-
-        logger.info("Finished generating PGP key")
-        # Write the key
-        myFingerpintFile = open('data/own-fingerprint.txt', 'w')
-        myFingerpintFile.write(key.fingerprint)
-        myFingerpintFile.close()
+            
+        self._utils = onionrutils.OnionrUtils(self)
+        # Initialize the crypto object
+        self._crypto = onionrcrypto.OnionrCrypto(self)
 
         return
 
@@ -82,7 +62,7 @@ class Core:
             DOES NO SAFETY CHECKS if the ID is valid, but prepares the insertion
         '''
         # This function simply adds a peer to the DB
-        if not self._utils.validateID(peerID):
+        if not self._utils.validatePubKey(peerID):
             return False
         conn = sqlite3.connect(self.peerDB)
         c = conn.cursor()
@@ -91,6 +71,29 @@ class Core:
         conn.commit()
         conn.close()
         return True
+    
+    def createAddressDB(self):
+        '''
+            Generate the address database
+
+            types:
+                1: I2P b32 address
+                2: Tor v2 (like facebookcorewwwi.onion)
+                3: Tor v3
+        '''
+        conn = sqlite3.connect(self.addressDB)
+        c = conn.cursor()
+        c.execute('''CREATE TABLE adders(
+            address text,
+            type int,
+            knownPeer text,
+            speed int,
+            success int,
+            failure int
+            );
+        ''')
+        conn.commit()
+        conn.close()
 
     def createPeerDB(self):
         '''
@@ -102,8 +105,7 @@ class Core:
         c.execute('''CREATE TABLE peers(
             ID text not null,
             name text,
-            pgpKey text,
-            hmacKey text,
+            adders text,
             blockDBHash text,
             forwardKey text,
             dateSeen not null,
@@ -112,7 +114,6 @@ class Core:
         ''')
         conn.commit()
         conn.close()
-
         return
 
     def createBlockDB(self):
@@ -300,14 +301,6 @@ class Core:
 
         return
 
-    def generateHMAC(self, length=32):
-        '''
-            Generate and return an HMAC key
-        '''
-        key = base64.b64encode(os.urandom(length))
-
-        return key
-
     def listPeers(self, randomOrder=True):
         '''
             Return a list of peers
@@ -322,7 +315,7 @@ class Core:
             peers = c.execute('SELECT * FROM peers;')
         peerList = []
         for i in peers:
-            peerList.append(i[0])
+            peerList.append(i[2])
         conn.close()
 
         return peerList
@@ -333,18 +326,17 @@ class Core:
 
             id text             0
             name text,          1
-            pgpKey text,        2
-            hmacKey text,       3
-            blockDBHash text,   4
-            forwardKey text,    5
-            dateSeen not null,  7
-            bytesStored int,    8
-            trust int           9
+            adders text,        2
+            blockDBHash text,   3
+            forwardKey text,    4
+            dateSeen not null,  5
+            bytesStored int,    6
+            trust int           7
         '''
         conn = sqlite3.connect(self.peerDB)
         c = conn.cursor()
         command = (peer,)
-        infoNumbers = {'id': 0, 'name': 1, 'pgpKey': 2, 'hmacKey': 3, 'blockDBHash': 4, 'forwardKey': 5, 'dateSeen': 6, 'bytesStored': 7, 'trust': 8}
+        infoNumbers = {'id': 0, 'name': 1, 'adders': 2, 'blockDBHash': 3, 'forwardKey': 4, 'dateSeen': 5, 'bytesStored': 6, 'trust': 7}
         info = infoNumbers[info]
         iterCount = 0
         retVal = ''
@@ -367,7 +359,7 @@ class Core:
         c = conn.cursor()
         command = (data, peer)
         # TODO: validate key on whitelist
-        if key not in ('id', 'text', 'name', 'pgpKey', 'hmacKey', 'blockDBHash', 'forwardKey', 'dateSeen', 'bytesStored', 'trust'):
+        if key not in ('id', 'name', 'pubkey', 'blockDBHash', 'forwardKey', 'dateSeen', 'bytesStored', 'trust'):
             raise Exception("Got invalid database key when setting peer info")
         c.execute('UPDATE peers SET ' + key + ' = ? WHERE id=?', command)
         conn.commit()

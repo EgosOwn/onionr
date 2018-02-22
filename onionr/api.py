@@ -20,10 +20,10 @@
 import flask
 from flask import request, Response, abort
 from multiprocessing import Process
-import configparser, sys, random, threading, hmac, hashlib, base64, time, math, gnupg, os, logger
+import configparser, sys, random, threading, hmac, hashlib, base64, time, math, os, logger
 
 from core import Core
-import onionrutils
+import onionrutils, onionrcrypto
 class API:
     '''
         Main HTTP API (Flask)
@@ -47,7 +47,7 @@ class API:
         if os.path.exists('dev-enabled'):
             self._developmentMode = True
             logger.set_level(logger.LEVEL_DEBUG)
-            logger.warn('DEVELOPMENT MODE ENABLED (THIS IS LESS SECURE!)')
+            #logger.warn('DEVELOPMENT MODE ENABLED (THIS IS LESS SECURE!)')
         else:
             self._developmentMode = False
             logger.set_level(logger.LEVEL_INFO)
@@ -56,6 +56,7 @@ class API:
         self.debug = debug
         self._privateDelayTime = 3
         self._core = Core()
+        self._crypto = onionrcrypto.OnionrCrypto(self._core)
         self._utils = onionrutils.OnionrUtils(self._core)
         app = flask.Flask(__name__)
         bindPort = int(self.config['CLIENT']['PORT'])
@@ -131,14 +132,14 @@ class API:
                 pass
             elif action == 'ping':
                 resp = Response("pong!")
-            elif action == 'setHMAC':
-                pass
+            elif action == 'getHMAC':
+                resp = Response(self._crypto.generateSymmetric())
+            elif action == 'getSymmetric':
+                resp = Response(self._crypto.generateSymmetric())
             elif action == 'getDBHash':
                 resp = Response(self._utils.getBlockDBHash())
             elif action == 'getBlockHashes':
                 resp = Response(self._core.getBlockList())
-            elif action == 'getPGP':
-                resp = Response(self._utils.exportMyPubkey())
             # setData should be something the communicator initiates, not this api
             elif action == 'getData':
                 resp = self._core.getData(data)
@@ -171,9 +172,9 @@ class API:
             resp = Response("Invalid request")
 
             return resp
-
-        logger.info('Starting client on ' + self.host + ':' + str(bindPort) + '...')
-        logger.debug('Client token: ' + logger.colors.underline + self.clientToken)
+        if not os.environ.get("WERKZEUG_RUN_MAIN") == "true":
+            logger.info('Starting client on ' + self.host + ':' + str(bindPort) + '...')
+            logger.debug('Client token: ' + logger.colors.underline + self.clientToken)
 
         app.run(host=self.host, port=bindPort, debug=True, threaded=True)
 

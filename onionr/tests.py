@@ -54,7 +54,7 @@ class OnionrTests(unittest.TestCase):
         myCore = core.Core()
         if not os.path.exists('data/peers.db'):
             myCore.createPeerDB()
-        if myCore.addPeer('2ks5c5bm6zk3ejqg.onion') and not myCore.addPeer('invalidpeer.onion'):
+        if myCore.addPeer('6M5MXL237OK57ITHVYN5WGHANPGOMKS5C3PJLHBBNKFFJQOIDOJA====') and not myCore.addPeer('NFXHMYLMNFSAU==='):
             self.assertTrue(True)
         else:
             self.assertTrue(False)
@@ -81,33 +81,6 @@ class OnionrTests(unittest.TestCase):
         myCore = core.Core()
         myCore.dataDirDecrypt('password')
         if os.path.exists('data/'):
-            self.assertTrue(True)
-        else:
-            self.assertTrue(False)
-
-    def testPGPGen(self):
-        logger.debug('--------------------------')
-        logger.info('Running PGP key generation test...')
-        if os.path.exists('data/pgp/'):
-            self.assertTrue(True)
-        else:
-            import core, netcontroller
-            myCore = core.Core()
-            net = netcontroller.NetController(1337)
-            net.startTor()
-            torID = open('data/hs/hostname').read()
-            myCore.generateMainPGP(torID)
-            if os.path.exists('data/pgp/'):
-                self.assertTrue(True)
-
-    def testHMACGen(self):
-        logger.debug('--------------------------')
-        logger.info('Running HMAC generation test...')
-        # Test if hmac key generation is working
-        import core
-        myCore = core.Core()
-        key = myCore.generateHMAC()
-        if len(key) > 10:
             self.assertTrue(True)
         else:
             self.assertTrue(False)
