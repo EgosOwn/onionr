@@ -20,7 +20,7 @@
 import flask
 from flask import request, Response, abort
 from multiprocessing import Process
-import configparser, sys, random, threading, hmac, hashlib, base64, time, math, os, logger
+import sys, random, threading, hmac, hashlib, base64, time, math, os, logger, config
 
 from core import Core
 import onionrutils, onionrcrypto
@@ -37,31 +37,32 @@ class API:
         else:
             return True
 
-    def __init__(self, config, debug):
+    def __init__(self, debug):
         '''
             Initialize the api server, preping variables for later use
 
             This initilization defines all of the API entry points and handlers for the endpoints and errors
             This also saves the used host (random localhost IP address) to the data folder in host.txt
         '''
-        if os.path.exists('dev-enabled'):
+
+        config.reload()
+
+        if config.get('devmode', True):
             self._developmentMode = True
             logger.set_level(logger.LEVEL_DEBUG)
-            #logger.warn('DEVELOPMENT MODE ENABLED (THIS IS LESS SECURE!)')
         else:
             self._developmentMode = False
             logger.set_level(logger.LEVEL_INFO)
 
-        self.config = config
         self.debug = debug
         self._privateDelayTime = 3
         self._core = Core()
         self._crypto = onionrcrypto.OnionrCrypto(self._core)
         self._utils = onionrutils.OnionrUtils(self._core)
         app = flask.Flask(__name__)
-        bindPort = int(self.config['CLIENT']['PORT'])
+        bindPort = int(config.get('CLIENT')['PORT'])
         self.bindPort = bindPort
-        self.clientToken = self.config['CLIENT']['CLIENT HMAC']
+        self.clientToken = config.get('CLIENT')['CLIENT HMAC']
         if not os.environ.get("WERKZEUG_RUN_MAIN") == "true":
             logger.debug('Your HMAC token: ' + logger.colors.underline + self.clientToken)
 
