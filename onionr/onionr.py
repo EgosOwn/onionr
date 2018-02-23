@@ -48,8 +48,18 @@ class Onionr:
         # Load global configuration data
 
         exists = os.path.exists(config.get_config_file())
-        config.set_config({'devmode': True}) # this is the default config, it will be overwritten if a config file already exists. Else, it saves it
+        config.set_config({'devmode': True, 'log.file': True, 'log.console': True, 'log.outputfile': 'data/output.log', 'log.color': True}) # this is the default config, it will be overwritten if a config file already exists. Else, it saves it
         config.reload() # this will read the configuration file into memory
+
+        settings = 0b000
+        if config.get('log.color', True):
+            settings = settings | logger.USE_ANSI
+        if config.get('log.console', True):
+            settings = settings | logger.OUTPUT_TO_CONSOLE
+        if config.get('log.file', False):
+            settings = settings | logger.OUTPUT_TO_FILE
+            logger.set_file(config.get('log.outputfile', 'data/output.log'))
+        logger.set_settings(settings)
 
         if config.get('devmode', True):
             self._developmentMode = True
