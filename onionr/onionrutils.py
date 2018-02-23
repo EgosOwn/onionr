@@ -18,30 +18,34 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 # Misc functions that do not fit in the main api, but are useful
-import getpass, sys, requests, configparser, os, socket, hashlib, logger, sqlite3
+import getpass, sys, requests, os, socket, hashlib, logger, sqlite3, config
 import nacl.signing, nacl.encoding
+
 if sys.version_info < (3, 6):
     try:
         import sha3
     except ModuleNotFoundError:
         logger.fatal('On Python 3 versions prior to 3.6.x, you need the sha3 module')
         sys.exit(1)
+
 class OnionrUtils:
-    '''Various useful functions'''
+    '''
+        Various useful function
+    '''
     def __init__(self, coreInstance):
         self.fingerprintFile = 'data/own-fingerprint.txt'
         self._core = coreInstance
         return
+
     def localCommand(self, command):
         '''
             Send a command to the local http API server, securely. Intended for local clients, DO NOT USE for remote peers.
         '''
-        config = configparser.ConfigParser()
-        if os.path.exists('data/config.ini'):
-            config.read('data/config.ini')
-        else:
-            return
-        requests.get('http://' + open('data/host.txt', 'r').read() + ':' + str(config['CLIENT']['PORT']) + '/client/?action=' + command + '&token=' + config['CLIENT']['CLIENT HMAC'])
+
+        config.reload()
+
+        # TODO: URL encode parameters, just as an extra measure. May not be needed, but should be added regardless.
+        requests.get('http://' + open('data/host.txt', 'r').read() + ':' + str(config.get('CLIENT')['PORT']) + '/client/?action=' + command + '&token=' + config.get('CLIENT')['CLIENT HMAC'])
 
         return
 
@@ -141,7 +145,7 @@ class OnionrUtils:
                 retVal = False
 
         return retVal
-    
+
     def validatePubKey(self, key):
         '''Validate if a string is a valid base32 encoded Ed25519 key'''
         retVal = False
@@ -195,5 +199,5 @@ class OnionrUtils:
                     retVal = False
             if not idNoDomain.isalnum():
                 retVal = False
-        
+
         return retVal

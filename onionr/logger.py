@@ -108,6 +108,21 @@ def get_level():
 
     return _level
 
+def set_file(outputfile):
+    '''
+        Set the file to output to, if enabled
+    '''
+
+    global _outputfile
+    _outputfile = outputfile
+
+def get_file():
+    '''
+        Get the file to output to
+    '''
+
+    return _outputfile
+
 def raw(data):
     '''
         Outputs raw data to console without formatting

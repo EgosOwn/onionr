@@ -20,8 +20,8 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import sys, os, configparser, base64, random, getpass, shutil, subprocess, requests, time, logger, platform
-import api, core, gui
+import sys, os, base64, random, getpass, shutil, subprocess, requests, time, platform
+import api, core, gui, config, logger
 from onionrutils import OnionrUtils
 from netcontroller import NetController
 
@@ -39,12 +39,29 @@ class Onionr:
             Main Onionr class. This is for the CLI program, and does not handle much of the logic.
             In general, external programs and plugins should not use this class.
         '''
+
         try:
             os.chdir(sys.path[0])
         except FileNotFoundError:
             pass
 
-        if os.path.exists('dev-enabled'):
+        # Load global configuration data
+
+        exists = os.path.exists(config.get_config_file())
+        config.set_config({'devmode': True, 'log.file': True, 'log.console': True, 'log.outputfile': 'data/output.log', 'log.color': True}) # this is the default config, it will be overwritten if a config file already exists. Else, it saves it
+        config.reload() # this will read the configuration file into memory
+
+        settings = 0b000
+        if config.get('log.color', True):
+            settings = settings | logger.USE_ANSI
+        if config.get('log.console', True):
+            settings = settings | logger.OUTPUT_TO_CONSOLE
+        if config.get('log.file', False):
+            settings = settings | logger.OUTPUT_TO_FILE
+            logger.set_file(config.get('log.outputfile', 'data/output.log'))
+        logger.set_settings(settings)
+
+        if config.get('devmode', True):
             self._developmentMode = True
             logger.set_level(logger.LEVEL_DEBUG)
         else:
@@ -54,7 +71,7 @@ class Onionr:
         self.onionrCore = core.Core()
         self.onionrUtils = OnionrUtils(self.onionrCore)
 
-        # Get configuration and Handle commands
+        # Handle commands
 
         self.debug = False # Whole application debugging
 
@@ -79,10 +96,8 @@ class Onionr:
             self.onionrCore.createAddressDB()
 
         # Get configuration
-        self.config = configparser.ConfigParser()
-        if os.path.exists('data/config.ini'):
-            self.config.read('data/config.ini')
-        else:
+
+        if not exists:
             # Generate default config
             # Hostname should only be set if different from 127.x.x.x. Important for DNS rebinding attack prevention.
             if self.debug:
@@ -92,9 +107,7 @@ class Onionr:
                     randomPort = random.randint(1024, 65535)
                     if self.onionrUtils.checkPort(randomPort):
                         break
-            self.config['CLIENT'] = {'participate': 'true', 'CLIENT HMAC': base64.b64encode(os.urandom(32)).decode('utf-8'), 'PORT': randomPort, 'API VERSION': API_VERSION}
-            with open('data/config.ini', 'w') as configfile:
-                self.config.write(configfile)
+            config.set('CLIENT', {'participate': 'true', 'CLIENT HMAC': base64.b64encode(os.urandom(32)).decode('utf-8'), 'PORT': randomPort, 'API VERSION': API_VERSION}, True)
 
         command = ''
         try:
@@ -117,13 +130,14 @@ class Onionr:
 
     def getCommands(self):
         return {
+            'help': self.showHelp,
+            'version': self.version,
+            'config': self.configure,
             'start': self.start,
             'stop': self.killDaemon,
-            'version': self.version,
+            'stats': self.showStats,
             'listpeers': self.listPeers,
             'list-peers': self.listPeers,
-            'stats': self.showStats,
-            'help': self.showHelp,
             '': self.showHelpSuggestion,
             'addmsg': self.addMessage,
             'addmessage': self.addMessage,
@@ -139,6 +153,7 @@ class Onionr:
         return {
             'help': 'Displays this Onionr help menu',
             'version': 'Displays the Onionr version',
+            'config': 'Configures something and adds it to the file',
             'start': 'Starts the Onionr daemon',
             'stop': 'Stops the Onionr daemon',
             'stats': 'Displays node statistics',
@@ -148,6 +163,23 @@ class Onionr:
             'pm': 'Adds a private message (?)',
             'gui': 'Opens a graphical interface for Onionr'
         }
+
+    def configure(self):
+        '''
+            Displays something from the configuration file, or sets it
+        '''
+
+        if len(sys.argv) >= 4:
+            config.reload()
+            config.set(sys.argv[2], sys.argv[3], True)
+            logger.debug('Configuration file updated.')
+        elif len(sys.argv) >= 3:
+            config.reload()
+            logger.info(logger.colors.bold + sys.argv[2] + ': ' + logger.colors.reset + str(config.get(sys.argv[2], logger.colors.fg.red + 'Not set.')))
+        else:
+            logger.info(logger.colors.bold + 'Get a value: ' + logger.colors.reset + sys.argv[0] + ' ' + sys.argv[1] + ' <key>')
+            logger.info(logger.colors.bold + 'Set a value: ' + logger.colors.reset + sys.argv[0] + ' ' + sys.argv[1] + ' <key> <value>')
+
 
     def execute(self, argument):
         '''
@@ -271,7 +303,7 @@ class Onionr:
         if not os.environ.get("WERKZEUG_RUN_MAIN") == "true":
             if self._developmentMode:
                 logger.warn('DEVELOPMENT MODE ENABLED (THIS IS LESS SECURE!)')
-            net = NetController(self.config['CLIENT']['PORT'])
+            net = NetController(config.get('CLIENT')['PORT'])
             logger.info('Tor is starting...')
             if not net.startTor():
                 sys.exit(1)
@@ -280,7 +312,7 @@ class Onionr:
             time.sleep(1)
             subprocess.Popen(["./communicator.py", "run", str(net.socksPort)])
             logger.debug('Started communicator')
-        api.API(self.config, self.debug)
+        api.API(self.debug)
 
         return
 
@@ -290,7 +322,7 @@ class Onionr:
         '''
 
         logger.warn('Killing the running daemon')
-        net = NetController(self.config['CLIENT']['PORT'])
+        net = NetController(config.get('CLIENT')['PORT'])
         try:
             self.onionrUtils.localCommand('shutdown')
         except requests.exceptions.ConnectionError:
