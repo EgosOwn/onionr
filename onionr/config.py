@@ -27,7 +27,7 @@ def get(key, default = None):
     '''
         Gets the key from configuration, or returns `default`
     '''
-    if key in get_config():
+    if is_set(key):
         return get_config()[key]
     return default
 
@@ -41,6 +41,9 @@ def set(key, value = None, savefile = False):
 
     if savefile:
         save()
+
+def is_set(key):
+    return key in get_config() and not get_config()[key] is None
 
 def check():
     '''
@@ -64,7 +67,7 @@ def save():
     check()
     try:
         with open(get_config_file(), 'w', encoding="utf8") as configfile:
-            json.dump(get_config(), configfile)
+            json.dump(get_config(), configfile, indent=2, sort_keys=True)
     except:
         logger.warn('Failed to write to configuration file.')
 

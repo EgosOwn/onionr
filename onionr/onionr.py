@@ -120,13 +120,14 @@ class Onionr:
 
     def getCommands(self):
         return {
+            'help': self.showHelp,
+            'version': self.version,
+            'config': self.configure,
             'start': self.start,
             'stop': self.killDaemon,
-            'version': self.version,
+            'stats': self.showStats,
             'listpeers': self.listPeers,
             'list-peers': self.listPeers,
-            'stats': self.showStats,
-            'help': self.showHelp,
             '': self.showHelpSuggestion,
             'addmsg': self.addMessage,
             'addmessage': self.addMessage,
@@ -142,6 +143,7 @@ class Onionr:
         return {
             'help': 'Displays this Onionr help menu',
             'version': 'Displays the Onionr version',
+            'config': 'Configures something and adds it to the file',
             'start': 'Starts the Onionr daemon',
             'stop': 'Stops the Onionr daemon',
             'stats': 'Displays node statistics',
@@ -151,6 +153,23 @@ class Onionr:
             'pm': 'Adds a private message (?)',
             'gui': 'Opens a graphical interface for Onionr'
         }
+
+    def configure(self):
+        '''
+            Displays something from the configuration file, or sets it
+        '''
+
+        if len(sys.argv) >= 4:
+            config.reload()
+            config.set(sys.argv[2], sys.argv[3], True)
+            logger.debug('Configuration file updated.')
+        elif len(sys.argv) >= 3:
+            config.reload()
+            logger.info(logger.colors.bold + sys.argv[2] + ': ' + logger.colors.reset + str(config.get(sys.argv[2], logger.colors.fg.red + 'Not set.')))
+        else:
+            logger.info(logger.colors.bold + 'Get a value: ' + logger.colors.reset + sys.argv[0] + ' ' + sys.argv[1] + ' <key>')
+            logger.info(logger.colors.bold + 'Set a value: ' + logger.colors.reset + sys.argv[0] + ' ' + sys.argv[1] + ' <key> <value>')
+
 
     def execute(self, argument):
         '''
