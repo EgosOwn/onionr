@@ -8,3 +8,4 @@ sha3==0.2.1
 pycrypto==2.6.1
 pynacl==1.2.1
 PySocks==1.6.8
+bitpeer.py==0.4.7.5
