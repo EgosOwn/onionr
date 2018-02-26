@@ -22,7 +22,7 @@ import sqlite3, os, sys, time, math, base64, tarfile, getpass, simplecrypt, hash
 #from Crypto import Random
 import netcontroller
 
-import onionrutils, onionrcrypto
+import onionrutils, onionrcrypto, btc
 
 if sys.version_info < (3, 6):
     try:

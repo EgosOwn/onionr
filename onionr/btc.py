@@ -36,3 +36,9 @@ class OnionrBTC:
 		self.node.connect ()
 		self.node.loop ()
 
+if __name__ == "__main__":
+    torPort = int(sys.argv[1])
+    bitcoin = OnionrBTC(torPort)
+    while True:
+        print(bitcoin.node.getBlockHash(bitcoin.node.getLastBlockHeight())) # Using print on purpose, do not change to logger
+        time.sleep(5)

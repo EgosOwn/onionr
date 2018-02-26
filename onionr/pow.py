@@ -18,6 +18,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 import nacl.encoding, nacl.hash, nacl.utils, time, math, threading, binascii, logger
+import btc
 class POW:
     def pow(self):
         startTime = math.floor(time.time())
@@ -27,11 +28,13 @@ class POW:
         heartbeat = 200000
         hbCount = 0
         while self.hashing:
+            block = self.bitcoinNode.getBlockHash(self.bitcoinNode.getLastBlockHeight())
             if hbCount == heartbeat:
-                logger.info('hb')
+                logger.debug('hb')
+                logger.debug('using bitcoin block: ' + block)
                 hbCount = 0
             hbCount += 1
-            token = nacl.hash.blake2b(nacl.utils.random()).decode()
+            token = nacl.hash.blake2b(nacl.utils.random() + block.encode()).decode()
             if self.mainHash[0:self.difficulty] == token[0:self.difficulty]:
                 self.hashing = False
                 iFound = True
@@ -40,16 +43,18 @@ class POW:
             logger.info('Found token ' + token)
             endTime = math.floor(time.time())
             logger.info('took ' + str(endTime - startTime))
+            self.result = token
     
-    def __init__(self, difficulty):
+    def __init__(self, difficulty, bitcoinNode):
         self.foundHash = False
         self.difficulty = difficulty
 
-        logger.info('Computing difficulty of ' + str(self.difficulty))
+        logger.debug('Computing difficulty of ' + str(self.difficulty))
 
         self.mainHash = nacl.hash.blake2b(nacl.utils.random()).decode()
         self.puzzle = self.mainHash[0:self.difficulty]
-        logger.info('trying to find ' + str(self.mainHash))
+        self.bitcoinNode = bitcoinNode
+        logger.debug('trying to find ' + str(self.mainHash))
         tOne = threading.Thread(name='one', target=self.pow)
         tTwo = threading.Thread(name='two', target=self.pow)
         tThree = threading.Thread(name='three', target=self.pow)
@@ -60,3 +65,16 @@ class POW:
 
     def shutdown(self):
         self.hashing = False
+        self.puzzle = ''
+    
+    def changeDifficulty(self, newDiff):
+        self.difficulty = newDiff
+
+    def getResult(self):
+        '''Returns the result then sets to false, useful to automatically clear the result'''
+        try:
+            retVal = self.result
+        except AttributeError:
+            retVal = False
+        self.result = False
+        return retVal
