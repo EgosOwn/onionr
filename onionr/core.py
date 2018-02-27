@@ -71,7 +71,33 @@ class Core:
         conn.commit()
         conn.close()
         return True
-    
+
+    def addAddress(self, address):
+        '''Add an address to the address database (only tor currently)'''
+        if self._utils.validateID(address):
+            conn = sqlite3.connect(self.addressDB)
+            c = conn.cursor()
+            t = (address, 1)
+            c.execute('INSERT INTO adders (address, type) VALUES(?, ?);', t)
+            conn.commit()
+            conn.close()
+            return True
+        else:
+            return False
+            
+    def removeAddress(self, address):
+        '''Remove an address from the address database'''
+        if self._utils.validateID(address):
+            conn = sqlite3.connect(self.addressDB)
+            c = conn.cursor()
+            t = (address,)
+            c.execute('Delete from adders where address=?;', t)
+            conn.commit()
+            conn.close()
+            return True
+        else:
+            return False 
+
     def createAddressDB(self):
         '''
             Generate the address database

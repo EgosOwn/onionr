@@ -149,6 +149,11 @@ class API:
                     abort(404)
                     resp = ""
                 resp = Response(resp)
+            elif action == 'pex':
+                response = ','.join(self._core.listAdders())
+                if len(response) == 0:
+                    response = 'none'
+                resp = Response(response)
             else:
                 resp = Response("")
 

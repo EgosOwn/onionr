@@ -146,7 +146,10 @@ class Onionr:
             'pm': self.sendEncrypt,
             'gui': self.openGUI,
             'addpeer': self.addPeer,
-            'add-peer': self.addPeer
+            'add-peer': self.addPeer,
+            'add-address': self.addAddress,
+            'connect': self.addAddress,
+            'addaddress': self.addAddress
         }
 
     def getHelp(self):
@@ -251,6 +254,19 @@ class Onionr:
         else:
             logger.info("Adding peer: " + logger.colors.underline + newPeer)
             self.onionrCore.addPeer(newPeer)
+    
+    def addAddress(self):
+        '''Adds a Onionr node address'''
+        try:
+            newAddress = sys.argv[2]
+        except:
+            pass
+        else:
+            logger.info("Adding address: " + logger.colors.underline + newAddress)
+            if self.onionrCore.addAddress(newAddress):
+                logger.info("Successfully added address")
+            else:
+                logger.warn("Unable to add address")
 
     def addMessage(self):
         '''

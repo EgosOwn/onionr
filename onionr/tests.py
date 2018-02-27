@@ -115,5 +115,17 @@ class OnionrTests(unittest.TestCase):
             self.assertTrue(True)
         else:
             self.assertTrue(False)
-    
+
+    def testAddAdder(self):
+        logger.debug('--------------------------')
+        logger.info('Running address add+remove test')
+        import core
+        myCore = core.Core()
+        if myCore.addAddress('facebookcorewwwi.onion') and not myCore.removeAddress('invalid'):
+            if myCore.removeAddress('facebookcorewwwi.onion'):
+                self.assertTrue(True)
+            else:
+                self.assertTrue(False)
+        else:
+            self.assertTrue(False)
 unittest.main()
