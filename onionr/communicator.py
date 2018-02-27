@@ -20,7 +20,7 @@ and code to operate as a daemon, getting commands from the command queue databas
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 import sqlite3, requests, hmac, hashlib, time, sys, os, math, logger, urllib.parse
-import core, onionrutils, onionrcrypto
+import core, onionrutils, onionrcrypto, pow, btc
 
 class OnionrCommunicate:
     def __init__(self, debug, developmentMode):
@@ -32,10 +32,20 @@ class OnionrCommunicate:
         self._core = core.Core()
         self._utils = onionrutils.OnionrUtils(self._core)
         self._crypto = onionrcrypto.OnionrCrypto(self._core)
+        logger.info('Starting Bitcoin Node... with Tor socks port:' + str(sys.argv[2]))
+        while True:
+            try:
+                self.bitcoin = btc.OnionrBTC(torP=int(sys.argv[2]))
+            except:
+                # ugly but needed
+                pass
+            else:
+                break
+        logger.info('Bitcoin Node started, on block: ' + self.bitcoin.node.getBlockHash(self.bitcoin.node.getLastBlockHeight()))
         blockProcessTimer = 0
         blockProcessAmount = 5
         heartBeatTimer = 0
-        heartBeatRate = 100
+        heartBeatRate = 5
         logger.debug('Communicator debugging enabled.')
         torID = open('data/hs/hostname').read()
 

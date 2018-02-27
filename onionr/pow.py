@@ -20,19 +20,24 @@
 import nacl.encoding, nacl.hash, nacl.utils, time, math, threading, binascii, logger
 import btc
 class POW:
-    def pow(self):
+    def pow(self, reporting=False):
         startTime = math.floor(time.time())
         self.hashing = True
+        self.reporting = reporting
         iFound = False # if current thread is the one that found the answer
         answer = ''
         heartbeat = 200000
         hbCount = 0
+        blockCheck = 300000 # How often the hasher should check if the bitcoin block is updated (slows hashing but prevents less wasted work)
+        blockCheckCount = 0
+        block = self.bitcoinNode.getBlockHash(self.bitcoinNode.getLastBlockHeight())
         while self.hashing:
-            block = self.bitcoinNode.getBlockHash(self.bitcoinNode.getLastBlockHeight())
-            if hbCount == heartbeat:
-                logger.debug('hb')
-                logger.debug('using bitcoin block: ' + block)
-                hbCount = 0
+            if blockCheckCount == blockCheck:
+                if self.reporting:
+                    logger.debug('Refreshing Bitcoin block')
+                block = self.bitcoinNode.getBlockHash(self.bitcoinNode.getLastBlockHeight())
+                blockCheckCount = 0
+            blockCheckCount += 1
             hbCount += 1
             token = nacl.hash.blake2b(nacl.utils.random() + block.encode()).decode()
             if self.mainHash[0:self.difficulty] == token[0:self.difficulty]:
@@ -40,9 +45,10 @@ class POW:
                 iFound = True
                 break
         if iFound:
-            logger.info('Found token ' + token)
             endTime = math.floor(time.time())
-            logger.info('took ' + str(endTime - startTime))
+            if self.reporting:
+                logger.info('Found token ' + token)
+                logger.info('took ' + str(endTime - startTime))
             self.result = token
     
     def __init__(self, difficulty, bitcoinNode):
@@ -55,7 +61,7 @@ class POW:
         self.puzzle = self.mainHash[0:self.difficulty]
         self.bitcoinNode = bitcoinNode
         logger.debug('trying to find ' + str(self.mainHash))
-        tOne = threading.Thread(name='one', target=self.pow)
+        tOne = threading.Thread(name='one', target=self.pow, args=(True,))
         tTwo = threading.Thread(name='two', target=self.pow)
         tThree = threading.Thread(name='three', target=self.pow)
         tOne.start()
