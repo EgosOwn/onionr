@@ -36,6 +36,10 @@ class OnionrUtils:
         self.fingerprintFile = 'data/own-fingerprint.txt'
         self._core = coreInstance
         return
+    
+    def sendPM(self, user, message):
+        '''High level function to encrypt a message to a peer and insert it as a block'''
+        return
 
     def localCommand(self, command):
         '''

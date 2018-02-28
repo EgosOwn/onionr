@@ -216,14 +216,23 @@ class Onionr:
         '''
 
         while True:
-            peer = logger.readline('Peer to send to: ')
-            if self.onionrUtils.validateID(peer):
+            try:
+                peer = logger.readline('Peer to send to: ')
+            except KeyboardInterrupt:
                 break
             else:
-                logger.error('Invalid peer ID')
-        message = logger.readline("Enter a message: ")
-        logger.info("Sending message to " + peer)
-        self.onionrUtils.sendPM(peer, message)
+                if self.onionrUtils.validateID(peer):
+                    break
+                else:
+                    logger.error('Invalid peer ID')
+        else:
+            try:
+                message = logger.readline("Enter a message: ")
+            except KeyboardInterrupt:
+                pass
+            else:
+                logger.info("Sending message to " + peer)
+                self.onionrUtils.sendPM(peer, message)
 
 
     def openGUI(self):
