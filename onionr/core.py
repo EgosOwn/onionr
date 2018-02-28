@@ -84,7 +84,7 @@ class Core:
             return True
         else:
             return False
-            
+
     def removeAddress(self, address):
         '''Remove an address from the address database'''
         if self._utils.validateID(address):
@@ -115,6 +115,7 @@ class Core:
             knownPeer text,
             speed int,
             success int,
+            DBHash text,
             failure int
             );
         ''')
@@ -339,7 +340,7 @@ class Core:
             addresses = c.execute('SELECT * FROM adders;')
         addressList = []
         for i in addresses:
-            addressList.append(i[2])
+            addressList.append(i[0])
         conn.close()
         return addressList
 
@@ -369,16 +370,15 @@ class Core:
             id text             0
             name text,          1
             adders text,        2
-            blockDBHash text,   3
-            forwardKey text,    4
-            dateSeen not null,  5
-            bytesStored int,    6
-            trust int           7
+            forwardKey text,    3
+            dateSeen not null,  4
+            bytesStored int,    5
+            trust int           6
         '''
         conn = sqlite3.connect(self.peerDB)
         c = conn.cursor()
         command = (peer,)
-        infoNumbers = {'id': 0, 'name': 1, 'adders': 2, 'blockDBHash': 3, 'forwardKey': 4, 'dateSeen': 5, 'bytesStored': 6, 'trust': 7}
+        infoNumbers = {'id': 0, 'name': 1, 'adders': 2, 'forwardKey': 3, 'dateSeen': 4, 'bytesStored': 5, 'trust': 6}
         info = infoNumbers[info]
         iterCount = 0
         retVal = ''
@@ -406,7 +406,50 @@ class Core:
         c.execute('UPDATE peers SET ' + key + ' = ? WHERE id=?', command)
         conn.commit()
         conn.close()
+        return
 
+    def getAddressInfo(self, address, info):
+        '''
+            Get info about an address from its database entry
+
+            address text, 0
+            type int, 1
+            knownPeer text, 2
+            speed int, 3
+            success int, 4
+            DBHash text, 5
+            failure int 6
+        '''
+        conn = sqlite3.connect(self.addressDB)
+        c = conn.cursor()
+        command = (address,)
+        infoNumbers = {'address': 0, 'type': 1, 'knownPeer': 2, 'speed': 3, 'success': 4, 'DBHash': 5, 'failure': 6}
+        info = infoNumbers[info]
+        iterCount = 0
+        retVal = ''
+        for row in c.execute('SELECT * from adders where address=?;', command):
+            for i in row:
+                if iterCount == info:
+                    retVal = i
+                    break
+                else:
+                    iterCount += 1
+        conn.close()
+        return retVal
+
+    def setAddressInfo(self, address, key, data):
+        '''
+            Update an address for a key
+        '''
+        conn = sqlite3.connect(self.addressDB)
+        c = conn.cursor()
+        command = (data, address)
+        # TODO: validate key on whitelist
+        if key not in ('address', 'type', 'knownPeer', 'speed', 'success', 'DBHash', 'failure'):
+            raise Exception("Got invalid database key when setting address info")
+        c.execute('UPDATE adders SET ' + key + ' = ? WHERE address=?', command)
+        conn.commit()
+        conn.close()
         return
 
     def getBlockList(self, unsaved=False):

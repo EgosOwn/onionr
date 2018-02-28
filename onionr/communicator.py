@@ -33,14 +33,14 @@ class OnionrCommunicate:
         self._utils = onionrutils.OnionrUtils(self._core)
         self._crypto = onionrcrypto.OnionrCrypto(self._core)
         logger.info('Starting Bitcoin Node... with Tor socks port:' + str(sys.argv[2]))
-        while True:
-            try:
-                self.bitcoin = btc.OnionrBTC(torP=int(sys.argv[2]))
-            except:
+        #while True:
+            #try:
+        self.bitcoin = btc.OnionrBTC(torP=int(sys.argv[2]))
+            #except:
                 # ugly but needed
-                pass
-            else:
-                break
+            #    pass
+            #else:
+            #    break
         logger.info('Bitcoin Node started, on block: ' + self.bitcoin.node.getBlockHash(self.bitcoin.node.getLastBlockHeight()))
         blockProcessTimer = 0
         blockProcessAmount = 5
@@ -81,11 +81,11 @@ class OnionrCommunicate:
         peerList = self._core.listAdders()
         blocks = ''
         for i in peerList:
-            lastDB = self._core.getPeerInfo(i, 'blockDBHash')
+            lastDB = self._core.getAddressInfo(i, 'DBHash')
             if lastDB == None:
                 logger.debug('Fetching hash from ' + i + ' No previous known.')
             else:
-                logger.debug('Fetching hash from ' + i + ', ' + lastDB + ' last known')
+                logger.debug('Fetching hash from ' + str(i) + ', ' + lastDB + ' last known')
             currentDB = self.performGet('getDBHash', i)
             if currentDB != False:
                 logger.debug(i + " hash db (from request): " + currentDB)
@@ -96,7 +96,7 @@ class OnionrCommunicate:
                     logger.debug('Fetching hash from ' + i + ' - ' + currentDB + ' current hash.')
                     blocks += self.performGet('getBlockHashes', i)
                 if self._utils.validateHash(currentDB):
-                    self._core.setPeerInfo(i, "blockDBHash", currentDB)
+                    self._core.setAddressInfo(i, "DBHash", currentDB)
         if len(blocks.strip()) != 0:
             logger.debug('BLOCKS:' + blocks)
         blockList = blocks.split('\n')
@@ -162,7 +162,7 @@ class OnionrCommunicate:
         '''
         return urllib.parse.quote_plus(data)
 
-    def performGet(self, action, peer, data=None, type='tor'):
+    def performGet(self, action, peer, data=None, peerType='tor'):
         '''
             Performs a request to a peer through Tor or i2p (currently only Tor)
         '''
@@ -172,10 +172,10 @@ class OnionrCommunicate:
         # Store peer in peerData dictionary (non permanent)
         if not peer in self.peerData:
             self.peerData[peer] = {'connectCount': 0, 'failCount': 0, 'lastConnectTime': math.floor(time.time())}
-
         socksPort = sys.argv[2]
+        logger.debug('Contacting ' + peer + ' on port ' + socksPort)
         '''We use socks5h to use tor as DNS'''
-        proxies = {'http': 'socks5h://127.0.0.1:' + str(socksPort), 'https': 'socks5h://127.0.0.1:' + str(socksPort)}
+        proxies = {'http': 'socks5://127.0.0.1:' + str(socksPort), 'https': 'socks5://127.0.0.1:' + str(socksPort)}
         headers = {'user-agent': 'PyOnionr'}
         url = 'http://' + peer + '/public/?action=' + self.urlencode(action)
         if data != None:
