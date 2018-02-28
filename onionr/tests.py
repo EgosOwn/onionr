@@ -121,6 +121,8 @@ class OnionrTests(unittest.TestCase):
         logger.info('Running address add+remove test')
         import core
         myCore = core.Core()
+        if not os.path.exists('data/address.db'):
+            myCore.createAddressDB()
         if myCore.addAddress('facebookcorewwwi.onion') and not myCore.removeAddress('invalid'):
             if myCore.removeAddress('facebookcorewwwi.onion'):
                 self.assertTrue(True)
