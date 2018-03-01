@@ -40,6 +40,26 @@ class OnionrCrypto:
                 keyfile.write(self.pubKey + ',' + self.privKey)
         return
 
+    def edVerify(self, data, key):
+        '''Verify signed data (combined in nacl) to an ed25519 key'''
+        key = nacl.signing.VerifyKey(key=key, encoder=nacl.encoding.Base32Encoder)
+        retData = ''
+        if encodeResult:
+            retData = key.verify(data.encode(), encoder=nacl.encoding.Base64Encoder) # .encode() is not the same as nacl.encoding
+        else:
+            retData = key.verify(data.encode())
+        return retData
+    
+    def edSign(self, data, key, encodeResult=False):
+        '''Ed25519 sign data'''
+        key = nacl.signing.SigningKey(seed=key, encoder=nacl.encoding.Base32Encoder)
+        retData = ''
+        if encodeResult:
+            retData = key.sign(data.encode(), encoder=nacl.encoding.Base64Encoder) # .encode() is not the same as nacl.encoding
+        else:
+            retData = key.sign(data.encode())
+        return retData
+
     def pubKeyEncrypt(self, data, peer):
         '''Encrypt to a peers public key (Curve25519, taken from Ed25519 pubkey)'''
         return
