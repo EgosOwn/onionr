@@ -33,14 +33,7 @@ class OnionrCommunicate:
         self._utils = onionrutils.OnionrUtils(self._core)
         self._crypto = onionrcrypto.OnionrCrypto(self._core)
         logger.info('Starting Bitcoin Node... with Tor socks port:' + str(sys.argv[2]))
-        #while True:
-            #try:
         self.bitcoin = btc.OnionrBTC(torP=int(sys.argv[2]))
-            #except:
-                # ugly but needed
-            #    pass
-            #else:
-            #    break
         logger.info('Bitcoin Node started, on block: ' + self.bitcoin.node.getBlockHash(self.bitcoin.node.getLastBlockHeight()))
         blockProcessTimer = 0
         blockProcessAmount = 5
@@ -60,6 +53,9 @@ class OnionrCommunicate:
             # Process blocks based on a timer
             blockProcessTimer += 1
             heartBeatTimer += 1
+            pexCount += 1
+            if pexTimer == pexCount:
+                self.getNewPeers()
             if heartBeatRate == heartBeatTimer:
                 logger.debug('Communicator heartbeat')
                 heartBeatTimer = 0
@@ -75,7 +71,13 @@ class OnionrCommunicate:
             time.sleep(1)
 
         return
-        
+    
+    def getNewPeers(self):
+        '''
+            Get new peers
+        '''
+        return
+
     def lookupBlocks(self):
         '''
             Lookup blocks and merge new ones
