@@ -20,7 +20,7 @@ and code to operate as a daemon, getting commands from the command queue databas
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 import sqlite3, requests, hmac, hashlib, time, sys, os, math, logger, urllib.parse
-import core, onionrutils, onionrcrypto, onionrproofs, btc
+import core, onionrutils, onionrcrypto, onionrproofs, btc, config
 
 class OnionrCommunicate:
     def __init__(self, debug, developmentMode):
@@ -41,7 +41,7 @@ class OnionrCommunicate:
         except:
             logger.fatal('Failed to start Bitcoin Node, exiting...')
             exit(1)
-        
+
         blockProcessTimer = 0
         blockProcessAmount = 5
         heartBeatTimer = 0
@@ -218,7 +218,7 @@ class OnionrCommunicate:
 shouldRun = False
 debug = True
 developmentMode = False
-if os.path.exists('dev-enabled'):
+if logger.get('devmode', True):
     developmentMode = True
 try:
     if sys.argv[1] == 'run':
