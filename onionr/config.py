@@ -27,7 +27,7 @@ def get(key, default = None):
     '''
         Gets the key from configuration, or returns `default`
     '''
-    
+
     if is_set(key):
         return get_config()[key]
     return default
@@ -38,7 +38,10 @@ def set(key, value = None, savefile = False):
     '''
 
     global _config
-    _config[key] = value
+    if value is None:
+        del _config[key]
+    else:
+        _config[key] = value
 
     if savefile:
         save()

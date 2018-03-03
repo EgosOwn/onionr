@@ -14,7 +14,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import unittest, sys, os, base64, tarfile, shutil, simplecrypt, logger
+import unittest, sys, os, base64, tarfile, shutil, simplecrypt, logger, btc
 
 class OnionrTests(unittest.TestCase):
     def testPython3(self):
@@ -25,9 +25,9 @@ class OnionrTests(unittest.TestCase):
             self.assertTrue(True)
 
     def testNone(self):
-        logger.debug('--------------------------')
+        logger.debug('-'*26 + '\n')
         logger.info('Running simple program run test...')
-        # Test just running ./onionr with no arguments
+
         blank = os.system('./onionr.py --version')
         if blank != 0:
             self.assertTrue(False)
@@ -35,8 +35,9 @@ class OnionrTests(unittest.TestCase):
             self.assertTrue(True)
 
     def testPeer_a_DBCreation(self):
-        logger.debug('--------------------------')
+        logger.debug('-'*26 + '\n')
         logger.info('Running peer db creation test...')
+
         if os.path.exists('data/peers.db'):
             os.remove('data/peers.db')
         import core
@@ -48,8 +49,9 @@ class OnionrTests(unittest.TestCase):
             self.assertTrue(False)
 
     def testPeer_b_addPeerToDB(self):
-        logger.debug('--------------------------')
+        logger.debug('-'*26 + '\n')
         logger.info('Running peer db insertion test...')
+
         import core
         myCore = core.Core()
         if not os.path.exists('data/peers.db'):
@@ -62,8 +64,10 @@ class OnionrTests(unittest.TestCase):
     def testData_b_Encrypt(self):
         self.assertTrue(True)
         return
-        logger.debug('--------------------------')
+
+        logger.debug('-'*26 + '\n')
         logger.info('Running data dir encrypt test...')
+
         import core
         myCore = core.Core()
         myCore.dataDirEncrypt('password')
@@ -75,8 +79,10 @@ class OnionrTests(unittest.TestCase):
     def testData_a_Decrypt(self):
         self.assertTrue(True)
         return
-        logger.debug('--------------------------')
+
+        logger.debug('-'*26 + '\n')
         logger.info('Running data dir decrypt test...')
+
         import core
         myCore = core.Core()
         myCore.dataDirDecrypt('password')
@@ -85,9 +91,42 @@ class OnionrTests(unittest.TestCase):
         else:
             self.assertTrue(False)
 
-    def testPlugins(self):
-        logger.debug('--------------------------')
-        logger.info('Running simple plugin system test...')
+    def testConfig(self):
+        logger.debug('-'*26 + '\n')
+        logger.info('Running simple configuration test...')
+
+        import config
+
+        config.check()
+        config.reload()
+        configdata = str(config.get_config())
+
+        config.set('testval', 1337)
+        if not config.get('testval', None) is 1337:
+            self.assertTrue(False)
+
+        config.set('testval')
+        if not config.get('testval', None) is None:
+            self.assertTrue(False)
+
+        config.save()
+        config.reload()
+
+        if not str(config.get_config()) == configdata:
+            self.assertTrue(False)
+
+        self.assertTrue(True)
+
+    def testBitcoinNode(self):
+        logger.debug('-'*26 + '\n')
+        logger.info('Running bitcoin node test...')
+
+        sbitcoin = btc.OnionrBTC()
+
+    def testPluginReload(self):
+        logger.debug('-'*26 + '\n')
+        logger.info('Running simple plugin reload test...')
+
         import onionrplugins
         try:
             onionrplugins.reload('test')
@@ -95,9 +134,36 @@ class OnionrTests(unittest.TestCase):
         except:
             self.assertTrue(False)
 
+    def testPluginStopStart(self):
+        logger.debug('-'*26 + '\n')
+        logger.info('Running simple plugin restart test...')
+
+        import onionrplugins
+        try:
+            onionrplugins.start('test')
+            onionrplugins.stop('test')
+            self.assertTrue(True)
+        except:
+            self.assertTrue(False)
+
+    def testPluginEvent(self):
+        logger.debug('-'*26 + '\n')
+        logger.info('Running plugin event test...')
+
+        import onionrplugins as plugins, onionrevents as events
+
+        plugins.start('test')
+        if not events.call(plugins.get_plugin('test'), 'test'):
+            self.assertTrue(False)
+
+        events.event('test', data = {'tests': self})
+
+        self.assertTrue(True)
+
     def testQueue(self):
-        logger.debug('--------------------------')
+        logger.debug('-'*26 + '\n')
         logger.info('Running daemon queue test...')
+
         # test if the daemon queue can read/write data
         import core
         myCore = core.Core()
@@ -117,8 +183,9 @@ class OnionrTests(unittest.TestCase):
                 logger.info('Succesfully added and read command')
 
     def testHashValidation(self):
-        logger.debug('--------------------------')
+        logger.debug('-'*26 + '\n')
         logger.info('Running hash validation test...')
+
         import core
         myCore = core.Core()
         if not myCore._utils.validateHash("$324dfgfdg") and myCore._utils.validateHash("f2ca1bb6c7e907d06dafe4687e579fce76b37e4e93b7605022da52e6ccc26fd2") and not myCore._utils.validateHash("f2ca1bb6c7e907d06dafe4687e579fce76b37e4e93b7605022da52e6ccc26fd$"):
@@ -127,8 +194,9 @@ class OnionrTests(unittest.TestCase):
             self.assertTrue(False)
 
     def testAddAdder(self):
-        logger.debug('--------------------------')
+        logger.debug('-'*26 + '\n')
         logger.info('Running address add+remove test')
+
         import core
         myCore = core.Core()
         if not os.path.exists('data/address.db'):
@@ -140,4 +208,5 @@ class OnionrTests(unittest.TestCase):
                 self.assertTrue(False)
         else:
             self.assertTrue(False)
+
 unittest.main()

@@ -6,5 +6,6 @@ onionr/*.pyc
 onionr/*.log
 onionr/data/hs/hostname
 onionr/data/*
+onionr/data-backup/*
 onionr/gnupg/*
 run.sh

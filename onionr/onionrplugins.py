@@ -173,8 +173,6 @@ def exists(name):
         Return value indicates whether or not the plugin exists
     '''
 
-    check()
-
     return os.path.isdir(get_plugins_folder(str(name).lower()))
 
 def get_enabled_plugins():
@@ -226,6 +224,11 @@ def check():
 
     if not os.path.exists(os.path.dirname(get_plugins_folder())):
         logger.debug('Generating plugin data folder...')
-        os.path.mkdirs(os.path.dirname(get_plugins_folder()))
+        os.makedirs(os.path.dirname(get_plugins_folder()))
 
+    if not exists('test'):
+        os.makedirs(get_plugins_folder('test'))
+        with open(get_plugins_folder('test') + '/main.py', 'a') as main:
+            main.write("print('Running')\n\ndef on_test(onionr = None, data = None):\n    print('received test event!')\n    return True\n\ndef on_start(onionr = None, data = None):\n    print('start event called')\n\ndef on_stop(onionr = None, data = None):\n    print('stop event called')\n\ndef on_enable(onionr = None, data = None):\n    print('enable event called')\n\ndef on_disable(onionr = None, data = None):\n    print('disable event called')\n")
+        enable('test')
     return
