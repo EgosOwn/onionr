@@ -2,7 +2,10 @@
 
 [![Build Status](https://travis-ci.org/beardog108/onionr.svg?branch=master)](https://travis-ci.org/beardog108/onionr)
 
-P2P platform, using Tor & I2P.
+Anonymous P2P platform, using Tor & I2P.
+
+![Onionr logo](./docs/onionr-logo.png)
+
 
 Major work in progress.
 
