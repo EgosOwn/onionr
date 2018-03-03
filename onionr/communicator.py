@@ -20,7 +20,7 @@ and code to operate as a daemon, getting commands from the command queue databas
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 import sqlite3, requests, hmac, hashlib, time, sys, os, math, logger, urllib.parse
-import core, onionrutils, onionrcrypto, onionrproofs, btc, config
+import core, onionrutils, onionrcrypto, onionrproofs, btc, config, onionrplugins as plugins
 
 class OnionrCommunicate:
     def __init__(self, debug, developmentMode):
@@ -76,7 +76,7 @@ class OnionrCommunicate:
                 blockProcessTimer = 0
             if command != False:
                 if command[0] == 'shutdown':
-                    logger.warn('Daemon recieved exit command.')
+                    logger.info('Daemon recieved exit command.')
                     break
             time.sleep(1)
 
@@ -218,7 +218,7 @@ class OnionrCommunicate:
 shouldRun = False
 debug = True
 developmentMode = False
-if logger.get('devmode', True):
+if config.get('devmode', True):
     developmentMode = True
 try:
     if sys.argv[1] == 'run':
