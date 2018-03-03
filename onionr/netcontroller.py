@@ -17,11 +17,14 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
+
 import subprocess, os, random, sys, logger, time, signal
+
 class NetController:
     '''
         This class handles hidden service setup on Tor and I2P
     '''
+
     def __init__(self, hsPort):
         self.torConfigLocation = 'data/torrc'
         self.readyState = False
@@ -36,13 +39,14 @@ class NetController:
                     os.remove(self.torConfigLocation)
                 torrc.close()
         '''
-        
+
         return
 
     def generateTorrc(self):
         '''
             Generate a torrc file for our tor instance
         '''
+
         if os.path.exists(self.torConfigLocation):
             os.remove(self.torConfigLocation)
         torrcData = '''SocksPort ''' + str(self.socksPort) + '''
@@ -59,11 +63,16 @@ HiddenServicePort 80 127.0.0.1:''' + str(self.hsPort) + '''
         '''
             Start Tor with onion service on port 80 & socks proxy on random port
         '''
+
         self.generateTorrc()
+
         if os.path.exists('./tor'):
             torBinary = './tor'
+        elif os.path.exists('/usr/bin/tor'):
+            torBinary = '/usr/bin/tor'
         else:
             torBinary = 'tor'
+
         try:
             tor = subprocess.Popen([torBinary, '-f', self.torConfigLocation], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         except FileNotFoundError:
@@ -83,15 +92,18 @@ HiddenServicePort 80 127.0.0.1:''' + str(self.hsPort) + '''
             if 'Bootstrapped 100%: Done' in line.decode():
                 break
             elif 'Opening Socks listener' in line.decode():
-                logger.debug(line.decode())
+                logger.debug(line.decode().replace('\n', ''))
         else:
             logger.fatal('Failed to start Tor. Try killing any other Tor processes owned by this user.')
             return False
+
         logger.info('Finished starting Tor')
         self.readyState = True
+
         myID = open('data/hs/hostname', 'r')
-        self.myID = myID.read()
+        self.myID = myID.read().replace('\n', '')
         myID.close()
+
         torPidFile = open('data/torPid.txt', 'w')
         torPidFile.write(str(tor.pid))
         torPidFile.close()
@@ -102,16 +114,19 @@ HiddenServicePort 80 127.0.0.1:''' + str(self.hsPort) + '''
         '''
             Properly kill tor based on pid saved to file
         '''
+
         try:
             pid = open('data/torPid.txt', 'r')
             pidN = pid.read()
             pid.close()
         except FileNotFoundError:
             return
+
         try:
             int(pidN)
         except:
             return
+
         try:
             os.kill(int(pidN), signal.SIGTERM)
             os.remove('data/torPid.txt')

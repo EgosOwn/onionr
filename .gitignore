@@ -7,3 +7,4 @@ onionr/*.log
 onionr/data/hs/hostname
 onionr/data/*
 onionr/gnupg/*
+run.sh
