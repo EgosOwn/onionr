@@ -21,7 +21,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 import sys, os, base64, random, getpass, shutil, subprocess, requests, time, platform
-import api, core, gui, config, logger
+import api, core, gui, config, logger, onionrplugins as plugins
 from onionrutils import OnionrUtils
 from netcontroller import NetController
 
@@ -130,26 +130,44 @@ class Onionr:
 
     def getCommands(self):
         return {
+            '': self.showHelpSuggestion,
             'help': self.showHelp,
             'version': self.version,
             'config': self.configure,
             'start': self.start,
             'stop': self.killDaemon,
             'stats': self.showStats,
+
+            'enable-plugin': self.enablePlugin,
+            'enplugin': self.enablePlugin,
+            'enableplugin': self.enablePlugin,
+            'enmod': self.enablePlugin,
+            'disable-plugin': self.disablePlugin,
+            'displugin': self.disablePlugin,
+            'disableplugin': self.disablePlugin,
+            'dismod': self.disablePlugin,
+            'reload-plugin': self.reloadPlugin,
+            'reloadplugin': self.reloadPlugin,
+            'reload-plugins': self.reloadPlugin,
+            'reloadplugins': self.reloadPlugin,
+
             'listpeers': self.listPeers,
             'list-peers': self.listPeers,
-            '': self.showHelpSuggestion,
+
             'addmsg': self.addMessage,
             'addmessage': self.addMessage,
             'add-msg': self.addMessage,
             'add-message': self.addMessage,
             'pm': self.sendEncrypt,
+
             'gui': self.openGUI,
+
             'addpeer': self.addPeer,
             'add-peer': self.addPeer,
             'add-address': self.addAddress,
-            'connect': self.addAddress,
-            'addaddress': self.addAddress
+            'addaddress': self.addAddress,
+
+            'connect': self.addAddress
         }
 
     def getHelp(self):
@@ -160,10 +178,13 @@ class Onionr:
             'start': 'Starts the Onionr daemon',
             'stop': 'Stops the Onionr daemon',
             'stats': 'Displays node statistics',
-            'list-peers': 'Displays a list of peers (?)',
+            'enable-plugin': 'Enables and starts a plugin',
+            'disable-plugin': 'Disables and stops a plugin',
+            'reload-plugin': 'Reloads a plugin',
+            'list-peers': 'Displays a list of peers',
             'add-peer': 'Adds a peer (?)',
             'add-msg': 'Broadcasts a message to the Onionr network',
-            'pm': 'Adds a private message (?)',
+            'pm': 'Adds a private message to block',
             'gui': 'Opens a graphical interface for Onionr'
         }
 
@@ -263,7 +284,9 @@ class Onionr:
         else:
             logger.info("Adding peer: " + logger.colors.underline + newPeer)
             self.onionrCore.addPeer(newPeer)
-    
+
+        return
+
     def addAddress(self):
         '''Adds a Onionr node address'''
         try:
@@ -276,6 +299,8 @@ class Onionr:
                 logger.info("Successfully added address")
             else:
                 logger.warn("Unable to add address")
+
+        return
 
     def addMessage(self):
         '''
@@ -290,6 +315,52 @@ class Onionr:
         addedHash = self.onionrCore.setData(messageToAdd)
         self.onionrCore.addToBlockDB(addedHash, selfInsert=True)
         self.onionrCore.setBlockType(addedHash, 'txt')
+
+        return
+
+    def enablePlugin(self):
+        '''
+            Enables and starts the given plugin
+        '''
+
+        if len(sys.argv) >= 3:
+            plugin_name = sys.argv[2]
+            logger.info('Enabling plugin \"' + plugin_name + '\"...')
+            plugins.enable(plugin_name)
+        else:
+            logger.info(sys.argv[0] + ' ' + sys.argv[1] + ' <plugin>')
+
+        return
+
+    def disablePlugin(self):
+        '''
+            Disables and stops the given plugin
+        '''
+
+        if len(sys.argv) >= 3:
+            plugin_name = sys.argv[2]
+            logger.info('Disabling plugin \"' + plugin_name + '\"...')
+            plugins.disable(plugin_name)
+        else:
+            logger.info(sys.argv[0] + ' ' + sys.argv[1] + ' <plugin>')
+
+        return
+
+    def reloadPlugin(self):
+        '''
+            Reloads (stops and starts) all plugins, or the given plugin
+        '''
+
+        if len(sys.argv) >= 3:
+            plugin_name = sys.argv[2]
+            logger.info('Reloading plugin \"' + plugin_name + '\"...')
+            plugins.stop(plugin_name)
+            plugins.start(plugin_name)
+        else:
+            logger.info('Reloading all plugins...')
+            plugins.reload()
+
+        return
 
     def notFound(self):
         '''
@@ -325,6 +396,7 @@ class Onionr:
         '''
             Starts the Onionr communication daemon
         '''
+
         if not os.environ.get("WERKZEUG_RUN_MAIN") == "true":
             if self._developmentMode:
                 logger.warn('DEVELOPMENT MODE ENABLED (THIS IS LESS SECURE!)')
