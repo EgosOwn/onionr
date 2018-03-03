@@ -34,6 +34,9 @@ ONIONR_VERSION = '0.0.0' # for debugging and stuff
 API_VERSION = '1' # increments of 1; only change when something fundemental about how the API works changes. This way other nodes knows how to communicate without learning too much information about you.
 
 class Onionr:
+    cmds = {}
+    cmdhelp = {}
+
     def __init__(self):
         '''
             Main Onionr class. This is for the CLI program, and does not handle much of the logic.
@@ -109,27 +112,7 @@ class Onionr:
                         break
             config.set('CLIENT', {'participate': 'true', 'CLIENT HMAC': base64.b64encode(os.urandom(32)).decode('utf-8'), 'PORT': randomPort, 'API VERSION': API_VERSION}, True)
 
-        command = ''
-        try:
-            command = sys.argv[1].lower()
-        except IndexError:
-            command = ''
-        finally:
-            self.execute(command)
-
-        if not self._developmentMode:
-            encryptionPassword = self.onionrUtils.getPassword('Enter password to encrypt directory: ')
-            self.onionrCore.dataDirEncrypt(encryptionPassword)
-            shutil.rmtree('data/')
-
-        return
-
-    '''
-        THIS SECTION HANDLES THE COMMANDS
-    '''
-
-    def getCommands(self):
-        return {
+        self.cmds = {
             '': self.showHelpSuggestion,
             'help': self.showHelp,
             'version': self.version,
@@ -170,8 +153,7 @@ class Onionr:
             'connect': self.addAddress
         }
 
-    def getHelp(self):
-        return {
+        self.cmdhelp = {
             'help': 'Displays this Onionr help menu',
             'version': 'Displays the Onionr version',
             'config': 'Configures something and adds it to the file',
@@ -187,6 +169,37 @@ class Onionr:
             'pm': 'Adds a private message to block',
             'gui': 'Opens a graphical interface for Onionr'
         }
+
+        command = ''
+        try:
+            command = sys.argv[1].lower()
+        except IndexError:
+            command = ''
+        finally:
+            self.execute(command)
+
+        if not self._developmentMode:
+            encryptionPassword = self.onionrUtils.getPassword('Enter password to encrypt directory: ')
+            self.onionrCore.dataDirEncrypt(encryptionPassword)
+            shutil.rmtree('data/')
+
+        return
+
+    '''
+        THIS SECTION HANDLES THE COMMANDS
+    '''
+
+    def getCommands(self):
+        return self.cmds
+
+    def getHelp(self):
+        return self.cmdhelp
+
+    def addCommand(self, command, function):
+        cmds[str(command).lower()] = function
+
+    def addHelp(self, command, description):
+        cmdhelp[str(command).lower()] = str(description)
 
     def configure(self):
         '''
