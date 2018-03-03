@@ -52,17 +52,17 @@ class Onionr:
         # Load global configuration data
 
         exists = os.path.exists(config.get_config_file())
-        config.set_config({'devmode': True, 'log.file': True, 'log.console': True, 'log.outputfile': 'data/output.log', 'log.color': True}) # this is the default config, it will be overwritten if a config file already exists. Else, it saves it
+        config.set_config({'devmode': True, 'log': {'file': {'output': True, 'path': 'data/output.log'}, 'console': {'output': True, 'color': True}}}) # this is the default config, it will be overwritten if a config file already exists. Else, it saves it
         config.reload() # this will read the configuration file into memory
 
         settings = 0b000
-        if config.get('log.color', True):
+        if config.get('log', {'console': {'color': True}})['console']['color']:
             settings = settings | logger.USE_ANSI
-        if config.get('log.console', True):
+        if config.get('log', {'console': {'output': True}})['console']['output']:
             settings = settings | logger.OUTPUT_TO_CONSOLE
-        if config.get('log.file', False):
+        if config.get('log', {'file': {'output': True}})['file']['output']:
             settings = settings | logger.OUTPUT_TO_FILE
-            logger.set_file(config.get('log.outputfile', 'data/output.log'))
+            logger.set_file(config.get('log', {'file': {'path': 'data/output.log'}})['file']['path'])
         logger.set_settings(settings)
 
         if config.get('devmode', True):
@@ -111,7 +111,7 @@ class Onionr:
                     randomPort = random.randint(1024, 65535)
                     if self.onionrUtils.checkPort(randomPort):
                         break
-            config.set('CLIENT', {'participate': 'true', 'CLIENT HMAC': base64.b64encode(os.urandom(32)).decode('utf-8'), 'PORT': randomPort, 'API VERSION': API_VERSION}, True)
+            config.set('client', {'participate': 'true', 'client_hmac': base64.b64encode(os.urandom(32)).decode('utf-8'), 'port': randomPort, 'api_version': API_VERSION}, True)
 
         self.cmds = {
             '': self.showHelpSuggestion,
@@ -414,7 +414,7 @@ class Onionr:
         if not os.environ.get("WERKZEUG_RUN_MAIN") == "true":
             if self._developmentMode:
                 logger.warn('DEVELOPMENT MODE ENABLED (THIS IS LESS SECURE!)')
-            net = NetController(config.get('CLIENT')['PORT'])
+            net = NetController(config.get('client')['port'])
             logger.info('Tor is starting...')
             if not net.startTor():
                 sys.exit(1)
@@ -433,7 +433,7 @@ class Onionr:
         '''
 
         logger.warn('Killing the running daemon')
-        net = NetController(config.get('CLIENT')['PORT'])
+        net = NetController(config.get('client')['port'])
         try:
             self.onionrUtils.localCommand('shutdown')
         except requests.exceptions.ConnectionError:

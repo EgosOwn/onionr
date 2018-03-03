@@ -60,9 +60,9 @@ class API:
         self._crypto = onionrcrypto.OnionrCrypto(self._core)
         self._utils = onionrutils.OnionrUtils(self._core)
         app = flask.Flask(__name__)
-        bindPort = int(config.get('CLIENT')['PORT'])
+        bindPort = int(config.get('client')['port'])
         self.bindPort = bindPort
-        self.clientToken = config.get('CLIENT')['CLIENT HMAC']
+        self.clientToken = config.get('client')['client_hmac']
         if not os.environ.get("WERKZEUG_RUN_MAIN") == "true":
             logger.debug('Your HMAC token: ' + logger.colors.underline + self.clientToken)
 

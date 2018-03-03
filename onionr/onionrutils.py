@@ -36,7 +36,7 @@ class OnionrUtils:
         self.fingerprintFile = 'data/own-fingerprint.txt'
         self._core = coreInstance
         return
-    
+
     def sendPM(self, user, message):
         '''High level function to encrypt a message to a peer and insert it as a block'''
         return
@@ -49,7 +49,7 @@ class OnionrUtils:
         config.reload()
 
         # TODO: URL encode parameters, just as an extra measure. May not be needed, but should be added regardless.
-        requests.get('http://' + open('data/host.txt', 'r').read() + ':' + str(config.get('CLIENT')['PORT']) + '/client/?action=' + command + '&token=' + config.get('CLIENT')['CLIENT HMAC'])
+        requests.get('http://' + open('data/host.txt', 'r').read() + ':' + str(config.get('client')['port']) + '/client/?action=' + command + '&token=' + str(config.get('client')['client_hmac']))
 
         return
 
