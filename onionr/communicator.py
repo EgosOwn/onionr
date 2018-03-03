@@ -29,12 +29,19 @@ class OnionrCommunicate:
 
             This class handles communication with nodes in the Onionr network.
         '''
+
         self._core = core.Core()
         self._utils = onionrutils.OnionrUtils(self._core)
         self._crypto = onionrcrypto.OnionrCrypto(self._core)
-        logger.info('Starting Bitcoin Node... with Tor socks port:' + str(sys.argv[2]))
-        self.bitcoin = btc.OnionrBTC(torP=int(sys.argv[2]))
-        logger.info('Bitcoin Node started, on block: ' + self.bitcoin.node.getBlockHash(self.bitcoin.node.getLastBlockHeight()))
+
+        try:
+            logger.info('Starting Bitcoin Node... with Tor socks port:' + str(sys.argv[2]))
+            self.bitcoin = btc.OnionrBTC(torP=int(sys.argv[2]))
+            logger.info('Bitcoin Node started, on block: ' + self.bitcoin.node.getBlockHash(self.bitcoin.node.getLastBlockHeight()))
+        except:
+            logger.fatal('Failed to start Bitcoin Node, exiting...')
+            exit(1)
+        
         blockProcessTimer = 0
         blockProcessAmount = 5
         heartBeatTimer = 0
@@ -48,6 +55,10 @@ class OnionrCommunicate:
 
         if os.path.exists(self._core.queueDB):
             self._core.clearDaemonQueue()
+
+        # Loads in and starts the enabled plugins
+        plugins.reload()
+
         while True:
             command = self._core.daemonQueue()
             # Process blocks based on a timer
@@ -63,7 +74,6 @@ class OnionrCommunicate:
                 self.lookupBlocks()
                 self.processBlocks()
                 blockProcessTimer = 0
-            #logger.debug('Communicator daemon heartbeat')
             if command != False:
                 if command[0] == 'shutdown':
                     logger.warn('Daemon recieved exit command.')
@@ -71,17 +81,19 @@ class OnionrCommunicate:
             time.sleep(1)
 
         return
-    
+
     def getNewPeers(self):
         '''
             Get new peers
         '''
+
         return
 
     def lookupBlocks(self):
         '''
             Lookup blocks and merge new ones
         '''
+
         peerList = self._core.listAdders()
         blocks = ''
         for i in peerList:
@@ -126,6 +138,7 @@ class OnionrCommunicate:
 
             This is meant to be called from the communicator daemon on its timer.
         '''
+
         for i in self._core.getBlockList(True).split("\n"):
             if i != "":
                 logger.warn('UNSAVED BLOCK: ' + i)
@@ -137,6 +150,7 @@ class OnionrCommunicate:
         '''
             Download a block from random order of peers
         '''
+
         peerList = self._core.listAdders()
         blocks = ''
         for i in peerList:
@@ -164,12 +178,14 @@ class OnionrCommunicate:
         '''
             URL encodes the data
         '''
+
         return urllib.parse.quote_plus(data)
 
     def performGet(self, action, peer, data=None, peerType='tor'):
         '''
             Performs a request to a peer through Tor or i2p (currently only Tor)
         '''
+
         if not peer.endswith('.onion') and not peer.endswith('.onion/'):
             raise PeerError('Currently only Tor .onion peers are supported. You must manually specify .onion')
 

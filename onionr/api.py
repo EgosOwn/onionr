@@ -181,9 +181,13 @@ class API:
             return resp
         if not os.environ.get("WERKZEUG_RUN_MAIN") == "true":
             logger.info('Starting client on ' + self.host + ':' + str(bindPort) + '...')
-            #logger.debug('Client token: ' + logger.colors.underline + self.clientToken)
 
-        app.run(host=self.host, port=bindPort, debug=True, threaded=True)
+        try:
+            app.run(host=self.host, port=bindPort, debug=True, threaded=True)
+        except Exception as e:
+            logger.error(str(e))
+            logger.fatal('Failed to start client on ' + self.host + ':' + str(bindPort) + ', exiting...')
+            exit(1)
 
     def validateHost(self, hostType):
         '''

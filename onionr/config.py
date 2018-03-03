@@ -27,6 +27,7 @@ def get(key, default = None):
     '''
         Gets the key from configuration, or returns `default`
     '''
+    
     if is_set(key):
         return get_config()[key]
     return default
