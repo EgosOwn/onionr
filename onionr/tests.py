@@ -85,6 +85,16 @@ class OnionrTests(unittest.TestCase):
         else:
             self.assertTrue(False)
 
+    def testPlugins(self):
+        logger.debug('--------------------------')
+        logger.info('Running simple plugin system test...')
+        import onionrplugins
+        try:
+            onionrplugins.reload('test')
+            self.assertTrue(True)
+        except:
+            self.assertTrue(False)
+
     def testQueue(self):
         logger.debug('--------------------------')
         logger.info('Running daemon queue test...')

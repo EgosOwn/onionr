@@ -30,6 +30,7 @@ try:
 except ImportError:
     raise Exception("You need the PySocks module (for use with socks5 proxy to use Tor)")
 
+ONIONR_TAGLINE = 'Anonymous P2P Platform - GPLv3 - onionr.voidnet.tech'
 ONIONR_VERSION = '0.0.0' # for debugging and stuff
 API_VERSION = '1' # increments of 1; only change when something fundemental about how the API works changes. This way other nodes knows how to communicate without learning too much information about you.
 
@@ -240,7 +241,7 @@ class Onionr:
         '''
         logger.info('Onionr ' + ONIONR_VERSION + ' (' + platform.machine() + ') - API v' + API_VERSION)
         if verbosity >= 1:
-            logger.info('Anonymous P2P Platform - GPLv3 - onionr.voidnet.tech')
+            logger.info(ONIONR_TAGLINE)
         if verbosity >= 2:
             logger.info('Running on ' + platform.platform() + ' ' + platform.release())
 
