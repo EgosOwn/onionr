@@ -38,7 +38,8 @@ class OnionrCommunicate:
             logger.info('Starting Bitcoin Node... with Tor socks port:' + str(sys.argv[2]))
             self.bitcoin = btc.OnionrBTC(torP=int(sys.argv[2]))
             logger.info('Bitcoin Node started, on block: ' + self.bitcoin.node.getBlockHash(self.bitcoin.node.getLastBlockHeight()))
-        except:
+        except Exception as e:
+            logger.error(str(e))
             logger.fatal('Failed to start Bitcoin Node, exiting...')
             exit(1)
 
