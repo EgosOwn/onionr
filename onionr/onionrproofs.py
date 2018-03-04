@@ -30,12 +30,12 @@ class POW:
         hbCount = 0
         blockCheck = 300000 # How often the hasher should check if the bitcoin block is updated (slows hashing but prevents less wasted work)
         blockCheckCount = 0
-        block = self.bitcoinNode.getBlockHash(self.bitcoinNode.getLastBlockHeight())
+        block = ''#self.bitcoinNode.getBlockHash(self.bitcoinNode.getLastBlockHeight())
         while self.hashing:
             if blockCheckCount == blockCheck:
                 if self.reporting:
                     logger.debug('Refreshing Bitcoin block')
-                block = self.bitcoinNode.getBlockHash(self.bitcoinNode.getLastBlockHeight())
+                block = ''#self.bitcoinNode.getBlockHash(self.bitcoinNode.getLastBlockHeight())
                 blockCheckCount = 0
             blockCheckCount += 1
             hbCount += 1

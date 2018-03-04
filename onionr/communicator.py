@@ -33,14 +33,17 @@ class OnionrCommunicate:
         self._core = core.Core()
         self._utils = onionrutils.OnionrUtils(self._core)
         self._crypto = onionrcrypto.OnionrCrypto(self._core)
-
+        '''
+        logger.info('Starting Bitcoin Node... with Tor socks port:' + str(sys.argv[2]))
         try:
-            logger.info('Starting Bitcoin Node... with Tor socks port:' + str(sys.argv[2]))
             self.bitcoin = btc.OnionrBTC(torP=int(sys.argv[2]))
-            logger.info('Bitcoin Node started, on block: ' + self.bitcoin.node.getBlockHash(self.bitcoin.node.getLastBlockHeight()))
-        except:
-            logger.fatal('Failed to start Bitcoin Node, exiting...')
-            exit(1)
+        except _gdbm.error:
+            pass
+        logger.info('Bitcoin Node started, on block: ' + self.bitcoin.node.getBlockHash(self.bitcoin.node.getLastBlockHeight()))
+        '''
+        #except:
+        #logger.fatal('Failed to start Bitcoin Node, exiting...')
+        #exit(1)
 
         blockProcessTimer = 0
         blockProcessAmount = 5
@@ -229,4 +232,5 @@ if shouldRun:
     try:
         OnionrCommunicate(debug, developmentMode)
     except KeyboardInterrupt:
+        sys.exit(1)
         pass
