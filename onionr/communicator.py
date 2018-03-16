@@ -70,6 +70,7 @@ class OnionrCommunicate:
             pexCount += 1
             if pexTimer == pexCount:
                 self.getNewPeers()
+                pexCount = 0
             if heartBeatRate == heartBeatTimer:
                 logger.debug('Communicator heartbeat')
                 heartBeatTimer = 0
@@ -92,15 +93,19 @@ class OnionrCommunicate:
         peersCheck = 5 # Amount of peers to ask for new peers + keys
         peersChecked = 0
         peerList = list(self._core.listAdders()) # random ordered list of peers
-        logger.warn(len(peerList))
         newKeys = []
         newAdders = []
+        if len(peerList) > 0:
+            maxN = len(peerList) - 1
+        else:
+            peersCheck = 0
+            maxN = 0
 
         if len(peerList) > peersCheck:
             peersCheck = len(peerList)
 
         while peersCheck > peersChecked:
-            i = random.randint(0, len(peerList))
+            i = random.randint(0, maxN)
             logger.info('Using ' + peerList[i] + ' to find new peers')
             try:
                 newAdders = self.performGet('pex', peerList[i])

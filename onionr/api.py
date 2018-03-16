@@ -154,6 +154,11 @@ class API:
                 if len(response) == 0:
                     response = 'none'
                 resp = Response(response)
+            elif action == 'kex':
+                response = ','.join(self._core.listPeers())
+                if len(response) == 0:
+                    response = 'none'
+                resp = Response(response)
             else:
                 resp = Response("")
 

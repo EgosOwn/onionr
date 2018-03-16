@@ -60,11 +60,21 @@ class OnionrCrypto:
             retData = key.sign(data.encode())
         return retData
 
-    def pubKeyEncrypt(self, data, peer):
-        '''Encrypt to a peers public key (Curve25519, taken from Ed25519 pubkey)'''
-        return
+    def pubKeyEncrypt(self, data, pubkey, anonymous=False):
+        '''Encrypt to a public key (Curve25519, taken from base32 Ed25519 pubkey)'''
+        retVal = ''
+        if self.privKey != None and not anonymous:
+            ownKey = nacl.signing.SigningKey(seed=self.privKey, encoder=nacl.encoding.Base32Encoder())
+            key = nacl.signing.VerifyKey(key=pubkey, encoder=nacl.encoding.Base32Encoder).to_curve25519_public_key()
+            ourBox = nacl.public.Box(ownKey, key)
+            retVal = ourBox.encrypt(data.encode(), encoder=nacl.encoding.RawEncoder)
+        elif anonymous:
+            key = nacl.signing.VerifyKey(key=pubkey, encoder=nacl.encoding.Base32Encoder).to_curve25519_public_key()
+            anonBox = nacl.public.SealedBox(key)
+            retVal = anonBox.encrypt(data.encode(), encoder=nacl.encoding.RawEncoder)
+        return retVal
 
-    def pubKeyEncrypt(self, data, peer):
+    def pubKeyDecrypt(self, data, peer):
         '''pubkey decrypt (Curve25519, taken from Ed25519 pubkey)'''
         return
 
