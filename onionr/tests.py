@@ -120,10 +120,10 @@ class OnionrTests(unittest.TestCase):
     def testBitcoinNode(self):
         # temporarily disabled- this takes a lot of time the CI doesn't have
         self.assertTrue(True)
-        logger.debug('-'*26 + '\n')
-        logger.info('Running bitcoin node test...')
+        #logger.debug('-'*26 + '\n')
+        #logger.info('Running bitcoin node test...')
 
-        sbitcoin = btc.OnionrBTC()
+        #sbitcoin = btc.OnionrBTC()
 
     def testPluginReload(self):
         logger.debug('-'*26 + '\n')

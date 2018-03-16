@@ -57,7 +57,7 @@ class Core:
 
     def addPeer(self, peerID, name=''):
         '''
-            Add a peer by their ID, with an optional name, to the peer database
+            Adds a public key to the key database (misleading function name)
 
             DOES NO SAFETY CHECKS if the ID is valid, but prepares the insertion
         '''
@@ -346,7 +346,7 @@ class Core:
 
     def listPeers(self, randomOrder=True):
         '''
-            Return a list of peers
+            Return a list of public keys (misleading function name)
 
             randomOrder determines if the list should be in a random order
         '''

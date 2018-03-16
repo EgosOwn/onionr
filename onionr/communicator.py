@@ -19,7 +19,7 @@ and code to operate as a daemon, getting commands from the command queue databas
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import sqlite3, requests, hmac, hashlib, time, sys, os, math, logger, urllib.parse
+import sqlite3, requests, hmac, hashlib, time, sys, os, math, logger, urllib.parse, random
 import core, onionrutils, onionrcrypto, onionrproofs, btc, config, onionrplugins as plugins
 
 class OnionrCommunicate:
@@ -49,7 +49,7 @@ class OnionrCommunicate:
         blockProcessAmount = 5
         heartBeatTimer = 0
         heartBeatRate = 5
-        pexTimer = 900 # How often we should check for new peers
+        pexTimer = 5 # How often we should check for new peers
         pexCount = 0
         logger.debug('Communicator debugging enabled.')
         torID = open('data/hs/hostname').read()
@@ -89,14 +89,42 @@ class OnionrCommunicate:
         '''
             Get new peers
         '''
+        peersCheck = 5 # Amount of peers to ask for new peers + keys
+        peersChecked = 0
+        peerList = list(self._core.listAdders()) # random ordered list of peers
+        logger.warn(len(peerList))
+        newKeys = []
+        newAdders = []
 
+        if len(peerList) > peersCheck:
+            peersCheck = len(peerList)
+
+        while peersCheck > peersChecked:
+            i = random.randint(0, len(peerList))
+            logger.info('Using ' + peerList[i] + ' to find new peers')
+            try:
+                newAdders = self.performGet('pex', peerList[i])
+                self._utils.mergeAdders(newAdders)
+            except requests.exceptions.ConnectionError:
+                logger.info(peerList[i] + ' connection failed')
+                continue
+            else:
+                try:
+                    logger.info('Using ' + peerList[i] + ' to find new keys')
+                    newKeys = self.performGet('kex', peerList[i])
+                    # TODO: Require keys to come with POW token (very large amount of POW)
+                    self._utils.mergeKeys(newKeys)
+                except requests.exceptions.ConnectionError:
+                    logger.info(peerList[i] + ' connection failed')
+                    continue
+                else:
+                    peersChecked += 1
         return
 
     def lookupBlocks(self):
         '''
             Lookup blocks and merge new ones
         '''
-
         peerList = self._core.listAdders()
         blocks = ''
         for i in peerList:
