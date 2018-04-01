@@ -108,7 +108,7 @@ class OnionrCommunicate:
             i = random.randint(0, maxN)
             logger.info('Using ' + peerList[i] + ' to find new peers')
             try:
-                newAdders = self.performGet('pex', peerList[i])
+                newAdders = self.performGet('pex', peerList[i], skipHighFailureAddress=True)
                 self._utils.mergeAdders(newAdders)
             except requests.exceptions.ConnectionError:
                 logger.info(peerList[i] + ' connection failed')
@@ -116,7 +116,7 @@ class OnionrCommunicate:
             else:
                 try:
                     logger.info('Using ' + peerList[i] + ' to find new keys')
-                    newKeys = self.performGet('kex', peerList[i])
+                    newKeys = self.performGet('kex', peerList[i], skipHighFailureAddress=True)
                     # TODO: Require keys to come with POW token (very large amount of POW)
                     self._utils.mergeKeys(newKeys)
                 except requests.exceptions.ConnectionError:
@@ -217,7 +217,7 @@ class OnionrCommunicate:
 
         return urllib.parse.quote_plus(data)
 
-    def performGet(self, action, peer, data=None, peerType='tor'):
+    def performGet(self, action, peer, data=None, skipHighFailureAddress=False, peerType='tor'):
         '''
             Performs a request to a peer through Tor or i2p (currently only Tor)
         '''
@@ -229,7 +229,6 @@ class OnionrCommunicate:
         if not peer in self.peerData:
             self.peerData[peer] = {'connectCount': 0, 'failCount': 0, 'lastConnectTime': math.floor(time.time())}
         socksPort = sys.argv[2]
-        logger.debug('Contacting ' + peer + ' on port ' + socksPort)
         '''We use socks5h to use tor as DNS'''
         proxies = {'http': 'socks5://127.0.0.1:' + str(socksPort), 'https': 'socks5://127.0.0.1:' + str(socksPort)}
         headers = {'user-agent': 'PyOnionr'}
@@ -237,8 +236,13 @@ class OnionrCommunicate:
         if data != None:
             url = url + '&data=' + self.urlencode(data)
         try:
-            r = requests.get(url, headers=headers, proxies=proxies, timeout=(15, 30))
-            retData = r.text
+            if skipHighFailureAddress and self.peerData[peer]['failCount'] > 10:
+                retData = False
+                logger.debug('Skipping ' + peer + ' because of high failure rate')
+            else:
+                logger.debug('Contacting ' + peer + ' on port ' + socksPort)
+                r = requests.get(url, headers=headers, proxies=proxies, timeout=(15, 30))
+                retData = r.text
         except requests.exceptions.RequestException as e:
             logger.warn(action + " failed with peer " + peer + ": " + str(e))
             retData = False

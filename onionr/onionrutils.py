@@ -40,23 +40,38 @@ class OnionrUtils:
     def sendPM(self, user, message):
         '''High level function to encrypt a message to a peer and insert it as a block'''
         return
+    
+    def incrementAddressSuccess(self, address):
+        '''Increase the recorded sucesses for an address'''
+        increment = self._core.getAddressInfo(address, 'success') + 1
+        self._core.setAddressInfo(address, 'success', increment)
+        return
+        
+    def decrementAddressSuccess(self, address):
+        '''Decrease the recorded sucesses for an address'''
+        increment = self._core.getAddressInfo(address, 'success') - 1
+        self._core.setAddressInfo(address, 'success', increment)
+        return
 
     def mergeKeys(self, newKeyList):
         '''Merge ed25519 key list to our database'''
         retVal = False
-        for key in newKeyList:
-            if not key in self._core.listPeers(randomOrder=False):
-                if self._core.addPeer(key):
-                   retVal = True
+        if newKeyList != False:
+            for key in newKeyList:
+                if not key in self._core.listPeers(randomOrder=False):
+                    if self._core.addPeer(key):
+                        retVal = True
         return retVal
+
     
     def mergeAdders(self, newAdderList):
         '''Merge peer adders list to our database'''
         retVal = False
-        for adder in newAdderList:
-            if not adder in self._core.listAdders(randomOrder=False):
-                if self._core.addAddress(adder):
-                   retVal = True
+        if newAdderList != False:
+            for adder in newAdderList:
+                if not adder in self._core.listAdders(randomOrder=False):
+                    if self._core.addAddress(adder):
+                        retVal = True
         return retVal
 
     def localCommand(self, command):
