@@ -1,8 +1,8 @@
 ![Onionr logo](./docs/onionr-logo.png)
 
-# Onionr
-
 [![Build Status](https://travis-ci.org/beardog108/onionr.svg?branch=master)](https://travis-ci.org/beardog108/onionr)
+[![Open Source Love](https://badges.frapsoft.com/os/v3/open-source.png?v=103)](https://github.com/ellerbrock/open-source-badges/)
+
 
 Anonymous P2P platform, using Tor & I2P.
 
@@ -25,6 +25,14 @@ This software is in heavy development. If for some reason you want to get involv
 
 **Onionr API and functionality is subject to non-backwards compatible change during development**
 
+# Donate
+
+Bitcoin/Bitcoin Cash: 1onion55FXzm6h8KQw3zFw2igpHcV7LPq
+
 ## Disclaimer
 
 The Tor Project, I2P developers, and anyone else do not own, create, or endorse this project, and are not otherwise involved.
+
+The badges (besides travis-ci build) are by Maik Ellerbrock is licensed under a Creative Commons Attribution 4.0 International License.
+
+The onion in the Onionr logo is adapted from [this](https://commons.wikimedia.org/wiki/File:Red_Onion_on_White.JPG) image by Colin on Wikimedia under a Creative Commons Attribution-Share Alike 3.0 Unported license
