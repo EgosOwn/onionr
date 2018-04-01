@@ -20,45 +20,51 @@
 import flask
 from flask import request, Response, abort
 from multiprocessing import Process
-import configparser, sys, random, threading, hmac, hashlib, base64, time, math, gnupg, os, logger
+import sys, random, threading, hmac, hashlib, base64, time, math, os, logger, config
 
 from core import Core
-import onionrutils
+import onionrutils, onionrcrypto
 class API:
-    ''' Main http api (flask)'''
+    '''
+        Main HTTP API (Flask)
+    '''
     def validateToken(self, token):
         '''
-        Validate if the client token (hmac) matches the given token
+            Validate that the client token (hmac) matches the given token
         '''
         if self.clientToken != token:
             return False
         else:
             return True
 
-    def __init__(self, config, debug):
-        ''' Initialize the api server, preping variables for later use
-        This initilization defines all of the API entry points and handlers for the endpoints and errors
-
-        This also saves the used host (random localhost IP address) to the data folder in host.txt
+    def __init__(self, debug):
         '''
-        if os.path.exists('dev-enabled'):
+            Initialize the api server, preping variables for later use
+
+            This initilization defines all of the API entry points and handlers for the endpoints and errors
+            This also saves the used host (random localhost IP address) to the data folder in host.txt
+        '''
+
+        config.reload()
+
+        if config.get('devmode', True):
             self._developmentMode = True
             logger.set_level(logger.LEVEL_DEBUG)
-            logger.warn('DEVELOPMENT MODE ENABLED (THIS IS LESS SECURE!)')
         else:
             self._developmentMode = False
             logger.set_level(logger.LEVEL_INFO)
 
-        self.config = config
         self.debug = debug
         self._privateDelayTime = 3
         self._core = Core()
+        self._crypto = onionrcrypto.OnionrCrypto(self._core)
         self._utils = onionrutils.OnionrUtils(self._core)
         app = flask.Flask(__name__)
-        bindPort = int(self.config['CLIENT']['PORT'])
+        bindPort = int(config.get('client')['port'])
         self.bindPort = bindPort
-        self.clientToken = self.config['CLIENT']['CLIENT HMAC']
-        logger.debug('Your HMAC token: ' + logger.colors.underline + self.clientToken)
+        self.clientToken = config.get('client')['client_hmac']
+        if not os.environ.get("WERKZEUG_RUN_MAIN") == "true":
+            logger.debug('Your HMAC token: ' + logger.colors.underline + self.clientToken)
 
         if not debug and not self._developmentMode:
             hostNums = [random.randint(1, 255), random.randint(1, 255), random.randint(1, 255)]
@@ -72,9 +78,10 @@ class API:
         @app.before_request
         def beforeReq():
             '''
-            Simply define the request as not having yet failed, before every request.
+                Simply define the request as not having yet failed, before every request.
             '''
             self.requestFailed = False
+
             return
 
         @app.after_request
@@ -87,6 +94,7 @@ class API:
             resp.headers["Content-Security-Policy"] = "default-src 'none'"
             resp.headers['X-Frame-Options'] = 'deny'
             resp.headers['X-Content-Type-Options'] = "nosniff"
+
             return resp
 
         @app.route('/client/')
@@ -112,6 +120,7 @@ class API:
             elapsed = endTime - startTime
             if elapsed < self._privateDelayTime:
                 time.sleep(self._privateDelayTime - elapsed)
+
             return resp
 
         @app.route('/public/')
@@ -125,14 +134,14 @@ class API:
                 pass
             elif action == 'ping':
                 resp = Response("pong!")
-            elif action == 'setHMAC':
-                pass
+            elif action == 'getHMAC':
+                resp = Response(self._crypto.generateSymmetric())
+            elif action == 'getSymmetric':
+                resp = Response(self._crypto.generateSymmetric())
             elif action == 'getDBHash':
                 resp = Response(self._utils.getBlockDBHash())
             elif action == 'getBlockHashes':
                 resp = Response(self._core.getBlockList())
-            elif action == 'getPGP':
-                resp = Response(self._utils.exportMyPubkey())
             # setData should be something the communicator initiates, not this api
             elif action == 'getData':
                 resp = self._core.getData(data)
@@ -140,6 +149,16 @@ class API:
                     abort(404)
                     resp = ""
                 resp = Response(resp)
+            elif action == 'pex':
+                response = ','.join(self._core.listAdders())
+                if len(response) == 0:
+                    response = 'none'
+                resp = Response(response)
+            elif action == 'kex':
+                response = ','.join(self._core.listPeers())
+                if len(response) == 0:
+                    response = 'none'
+                resp = Response(response)
             else:
                 resp = Response("")
 
@@ -149,26 +168,36 @@ class API:
         def notfound(err):
             self.requestFailed = True
             resp = Response("")
-            #resp.headers = getHeaders(resp)
+
             return resp
+
         @app.errorhandler(403)
         def authFail(err):
             self.requestFailed = True
             resp = Response("403")
+
             return resp
+
         @app.errorhandler(401)
         def clientError(err):
             self.requestFailed = True
             resp = Response("Invalid request")
+
             return resp
+        if not os.environ.get("WERKZEUG_RUN_MAIN") == "true":
+            logger.info('Starting client on ' + self.host + ':' + str(bindPort) + '...')
 
-        logger.info('Starting client on ' + self.host + ':' + str(bindPort) + '...')
-        logger.debug('Client token: ' + logger.colors.underline + self.clientToken)
-
-        app.run(host=self.host, port=bindPort, debug=True, threaded=True)
+        try:
+            app.run(host=self.host, port=bindPort, debug=True, threaded=True)
+        except Exception as e:
+            logger.error(str(e))
+            logger.fatal('Failed to start client on ' + self.host + ':' + str(bindPort) + ', exiting...')
+            exit(1)
 
     def validateHost(self, hostType):
-        ''' Validate various features of the request including:
+        '''
+            Validate various features of the request including:
+
             If private (/client/), is the host header local?
             If public (/public/), is the host header onion or i2p?
 

@@ -78,60 +78,82 @@ _type = OUTPUT_TO_CONSOLE | USE_ANSI # the default settings for logging
 _level = LEVEL_DEBUG # the lowest level to log
 _outputfile = './output.log' # the file to log to
 
-'''
-    Set the settings for the logger using bitwise operators
-'''
 def set_settings(type):
+    '''
+        Set the settings for the logger using bitwise operators
+    '''
+
     global _type
     _type = type
 
-'''
-    Get settings from the logger
-'''
 def get_settings():
+    '''
+        Get settings from the logger
+    '''
+
     return _type
 
-'''
-    Set the lowest log level to output
-'''
 def set_level(level):
+    '''
+        Set the lowest log level to output
+    '''
+
     global _level
     _level = level
 
-'''
-    Get the lowest log level currently being outputted
-'''
 def get_level():
+    '''
+        Get the lowest log level currently being outputted
+    '''
+
     return _level
 
-'''
-    Outputs raw data to console without formatting
-'''
+def set_file(outputfile):
+    '''
+        Set the file to output to, if enabled
+    '''
+
+    global _outputfile
+    _outputfile = outputfile
+
+def get_file():
+    '''
+        Get the file to output to
+    '''
+
+    return _outputfile
+
 def raw(data):
+    '''
+        Outputs raw data to console without formatting
+    '''
+
     if get_settings() & OUTPUT_TO_CONSOLE:
         print(data)
     if get_settings() & OUTPUT_TO_FILE:
         with open(_outputfile, "a+") as f:
             f.write(colors.filter(data) + '\n')
 
-'''
-    Logs the data
-    prefix : The prefix to the output
-    data   : The actual data to output
-    color  : The color to output before the data
-'''
 def log(prefix, data, color = ''):
+    '''
+        Logs the data
+        prefix : The prefix to the output
+        data   : The actual data to output
+        color  : The color to output before the data
+    '''
+
     output = colors.reset + str(color) + '[' + colors.bold + str(prefix) + colors.reset + str(color) + '] ' + str(data) + colors.reset
     if not get_settings() & USE_ANSI:
         output = colors.filter(output)
 
     raw(output)
 
-'''
-    Takes in input from the console, not stored in logs
-    message: The message to display before taking input
-'''
-def input(message = 'Enter input: '):
+def readline(message = ''):
+    '''
+        Takes in input from the console, not stored in logs
+        message: The message to display before taking input
+    '''
+
     color = colors.fg.green + colors.bold
     output = colors.reset + str(color) + '... ' + colors.reset + str(message) + colors.reset
 
@@ -139,14 +161,16 @@ def input(message = 'Enter input: '):
         output = colors.filter(output)
 
     sys.stdout.write(output)
-    return raw_input()
 
-'''
-    Displays an "Are you sure" message, returns True for Y and False for N
-    message: The confirmation message, use %s for (y/n)
-    default: which to prefer-- y or n
-'''
+    return input()
+
 def confirm(default = 'y', message = 'Are you sure %s? '):
+    '''
+        Displays an "Are you sure" message, returns True for Y and False for N
+        message: The confirmation message, use %s for (y/n)
+        default: which to prefer-- y or n
+    '''
+
     color = colors.fg.green + colors.bold
 
     default = default.lower()
@@ -163,7 +187,8 @@ def confirm(default = 'y', message = 'Are you sure %s? '):
         output = colors.filter(output)
 
     sys.stdout.write(output.replace('%s', confirm))
-    inp = raw_input().lower()
+
+    inp = input().lower()
 
     if 'y' in inp:
         return True

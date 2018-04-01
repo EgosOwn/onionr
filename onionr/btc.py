@@ -20,8 +20,9 @@
 from bitpeer.node import *
 from bitpeer.storage.shelve import ShelveStorage
 import logging, time
+import socks, sys
 class OnionrBTC:
-	def __init__(self, lastBlock='00000000000000000021ee6242d08e3797764c9258e54e686bc2afff51baf599', lastHeight=510613):
+	def __init__(self, lastBlock='00000000000000000021ee6242d08e3797764c9258e54e686bc2afff51baf599', lastHeight=510613, torP=9050):
 		stream = logging.StreamHandler()
 		logger = logging.getLogger('halfnode')
 		logger.addHandler(stream)
@@ -29,9 +30,15 @@ class OnionrBTC:
 
 		LASTBLOCK = lastBlock
 		LASTBLOCKINDEX = lastHeight
-		self.node = Node ('BTC', ShelveStorage ('./btc-blocks.db'), lastblockhash=LASTBLOCK, lastblockheight=LASTBLOCKINDEX)
+		self.node = Node ('BTC', ShelveStorage ('data/btc-blocks.db'), lastblockhash=LASTBLOCK, lastblockheight=LASTBLOCKINDEX, torPort=torP)
 
 		self.node.bootstrap ()
 		self.node.connect ()
 		self.node.loop ()
 
+if __name__ == "__main__":
+    torPort = int(sys.argv[1])
+    bitcoin = OnionrBTC(torPort)
+    while True:
+        print(bitcoin.node.getBlockHash(bitcoin.node.getLastBlockHeight())) # Using print on purpose, do not change to logger
+        time.sleep(5)

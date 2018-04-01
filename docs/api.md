@@ -1,3 +1,9 @@
+BLOCK HEADERS (simple ID system to identify block type)
+-----------------------------------------------
+-crypt- (encrypted block)
+-bin- (binary file)
+-txt- (plaintext)
+
 HTTP API
 ------------------------------------------------
 /client/ (Private info, not publicly accessible)
