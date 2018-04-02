@@ -18,7 +18,7 @@ uninstall:
 test:
 	@rm -rf onionr/data-backup
 	@mv onionr/data onionr/data-backup | true > /dev/null 2>&1
-	-@cd onionr; ./tests.py
+	-@cd onionr; ./tests.py; ./cryptotests.py;
 	@rm -rf onionr/data
 	@mv onionr/data-backup onionr/data | true > /dev/null 2>&1
 

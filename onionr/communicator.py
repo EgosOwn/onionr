@@ -33,6 +33,8 @@ class OnionrCommunicate:
         self._core = core.Core()
         self._utils = onionrutils.OnionrUtils(self._core)
         self._crypto = onionrcrypto.OnionrCrypto(self._core)
+
+        self.highFailureAmount = 7
         '''
         logger.info('Starting Bitcoin Node... with Tor socks port:' + str(sys.argv[2]))
         try:
@@ -47,6 +49,8 @@ class OnionrCommunicate:
 
         blockProcessTimer = 0
         blockProcessAmount = 5
+        highFailureTimer = 0
+        highFailureRate = 10
         heartBeatTimer = 0
         heartBeatRate = 5
         pexTimer = 5 # How often we should check for new peers
@@ -68,6 +72,11 @@ class OnionrCommunicate:
             blockProcessTimer += 1
             heartBeatTimer += 1
             pexCount += 1
+            if highFailureTimer == highFailureRate:
+                highFailureTimer = 0
+                for i in self.peerData:
+                    if self.peerData[i]['failCount'] == self.highFailureAmount:
+                        self.peerData[i]['failCount'] -= 1
             if pexTimer == pexCount:
                 self.getNewPeers()
                 pexCount = 0
@@ -236,7 +245,7 @@ class OnionrCommunicate:
         if data != None:
             url = url + '&data=' + self.urlencode(data)
         try:
-            if skipHighFailureAddress and self.peerData[peer]['failCount'] > 10:
+            if skipHighFailureAddress and self.peerData[peer]['failCount'] > self.highFailureAmount:
                 retData = False
                 logger.debug('Skipping ' + peer + ' because of high failure rate')
             else:
@@ -251,6 +260,7 @@ class OnionrCommunicate:
             self.peerData[peer]['failCount'] += 1
         else:
             self.peerData[peer]['connectCount'] += 1
+            self.peerData[peer]['failCount'] -= 1
             self.peerData[peer]['lastConnectTime'] = math.floor(time.time())
         return retData
 

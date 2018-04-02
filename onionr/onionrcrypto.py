@@ -17,7 +17,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import nacl.signing, nacl.encoding, nacl.public, os
+import nacl.signing, nacl.encoding, nacl.public, nacl.secret, os, binascii, base64
 
 class OnionrCrypto:
     def __init__(self, coreInstance):
@@ -60,35 +60,111 @@ class OnionrCrypto:
             retData = key.sign(data.encode())
         return retData
 
-    def pubKeyEncrypt(self, data, pubkey, anonymous=False):
+    def pubKeyEncrypt(self, data, pubkey, anonymous=False, encodedData=False):
         '''Encrypt to a public key (Curve25519, taken from base32 Ed25519 pubkey)'''
         retVal = ''
+
+        if encodedData:
+            encoding = nacl.encoding.Base64Encoder
+        else:
+            encoding = nacl.encoding.RawEncoder
+
         if self.privKey != None and not anonymous:
             ownKey = nacl.signing.SigningKey(seed=self.privKey, encoder=nacl.encoding.Base32Encoder())
             key = nacl.signing.VerifyKey(key=pubkey, encoder=nacl.encoding.Base32Encoder).to_curve25519_public_key()
             ourBox = nacl.public.Box(ownKey, key)
-            retVal = ourBox.encrypt(data.encode(), encoder=nacl.encoding.RawEncoder)
+            retVal = ourBox.encrypt(data.encode(), encoder=encoding)
         elif anonymous:
             key = nacl.signing.VerifyKey(key=pubkey, encoder=nacl.encoding.Base32Encoder).to_curve25519_public_key()
             anonBox = nacl.public.SealedBox(key)
-            retVal = anonBox.encrypt(data.encode(), encoder=nacl.encoding.RawEncoder)
+            retVal = anonBox.encrypt(data.encode(), encoder=encoding)
         return retVal
 
-    def pubKeyDecrypt(self, data, peer):
+    def pubKeyDecrypt(self, data, pubkey, anonymous=False, encodedData=False):
         '''pubkey decrypt (Curve25519, taken from Ed25519 pubkey)'''
-        return
+        retVal = ''
+        if encodedData:
+            encoding = nacl.encoding.Base64Encoder
+        else:
+            encoding = nacl.encoding.RawEncoder
+        ownKey = nacl.signing.SigningKey(seed=self.privKey, encoder=nacl.encoding.Base32Encoder())
+        if self.privKey != None and not anoymous:
+            ourBox = nacl.public.Box(ownKey, pubkey)
+            decrypted = ourBox.decrypt(data, encoder=encoding)
+        elif anonymous:
+            anonBox = nacl.public.SealedBox(ownKey)
+            decrypted = anonBox.decrypt(data.encode(), encoder=encoding)
+        return decrypted
 
-    def symmetricPeerEncrypt(self, data):
-        '''Salsa20 encrypt data to peer (with mac)'''
-        return
+    def symmetricPeerEncrypt(self, data, peer):
+        '''Salsa20 encrypt data to peer (with mac)
+            this function does not accept a key, it is a wrapper for encryption with a peer
+        '''
+        key = self._core.getPeerInfo(4)
+        if type(key) != bytes:
+            key = self._core.getPeerInfo(2)
+        encrypted = self.symmetricEncrypt(data, key, encodedKey=True)
+        return encrypted
 
     def symmetricPeerDecrypt(self, data, peer):
-        '''Salsa20 decrypt data from peer (with mac)'''
+        '''Salsa20 decrypt data from peer (with mac)
+        this function does not accept a key, it is a wrapper for encryption with a peer
+        '''
+        key = self._core.getPeerInfo(4)
+        if type(key) != bytes:
+            key = self._core.getPeerInfo(2)
+        decrypted = self.symmetricDecrypt(data, key, encodedKey=True)
+        return decrypted
+
         return
+
+    def symmetricEncrypt(self, data, key, encodedKey=False, returnEncoded=True):
+        '''Encrypt data to a 32-byte key (Salsa20-Poly1305 MAC)'''
+        if encodedKey:
+            encoding = nacl.encoding.Base64Encoder
+        else:
+            encoding = nacl.encoding.RawEncoder
+
+        # Make sure data is bytes
+        if type(data) != bytes:
+            data = data.encode()
+
+        box = nacl.secret.SecretBox(key, encoder=encoding)
+
+        if returnEncoded:
+            encoding = nacl.encoding.Base64Encoder
+        else:
+            encoding = nacl.encoding.RawEncoder
+
+        encrypted = box.encrypt(data, encoder=encoding)
+        return encrypted
+
+    def symmetricDecrypt(self, data, key, encodedKey=False, encodedMessage=False, returnEncoded=False):
+        '''Decrypt data to a 32-byte key (Salsa20-Poly1305 MAC)'''
+        if encodedKey:
+            encoding = nacl.encoding.Base64Encoder
+        else:
+            encoding = nacl.encoding.RawEncoder
+        box = nacl.secret.SecretBox(key, encoder=encoding)
+
+        if encodedMessage:
+            encoding = nacl.encoding.Base64Encoder
+        else:
+            encoding = nacl.encoding.RawEncoder
+        decrypted = box.decrypt(data, encoder=encoding)
+        if returnEncoded:
+            decrypted = base64.b64encode(decrypted)
+        return decrypted
     
-    def generateSymmetric(self, data, peer):
-        '''Generate symmetric key'''
+    def generateSymmetricPeer(self, peer):
+        '''Generate symmetric key for a peer and save it to the peer database'''
+        key = self.generateSymmetric()
+        self._core.setPeerInfo(peer, 'forwardKey', key)
         return
+
+    def generateSymmetric(self):
+        '''Generate a symmetric key (bytes) and return it'''
+        return binascii.hexlify(nacl.utils.random(nacl.secret.SecretBox.KEY_SIZE))
 
     def generatePubKey(self):
         '''Generate a Ed25519 public key pair, return tuple of base64encoded pubkey, privkey'''
