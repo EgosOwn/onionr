@@ -53,7 +53,7 @@ class OnionrCommunicate:
         highFailureRate = 10
         heartBeatTimer = 0
         heartBeatRate = 5
-        pexTimer = 5 # How often we should check for new peers
+        pexTimer = 10 # How often we should check for new peers
         pexCount = 0
         logger.debug('Communicator debugging enabled.')
         torID = open('data/hs/hostname').read()
@@ -223,7 +223,6 @@ class OnionrCommunicate:
         '''
             URL encodes the data
         '''
-
         return urllib.parse.quote_plus(data)
 
     def performGet(self, action, peer, data=None, skipHighFailureAddress=False, peerType='tor'):

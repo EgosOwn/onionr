@@ -18,7 +18,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 # Misc functions that do not fit in the main api, but are useful
-import getpass, sys, requests, os, socket, hashlib, logger, sqlite3, config
+import getpass, sys, requests, os, socket, hashlib, logger, sqlite3, config, binascii
 import nacl.signing, nacl.encoding
 
 if sys.version_info < (3, 6):
@@ -189,6 +189,8 @@ class OnionrUtils:
         try:
             nacl.signing.SigningKey(seed=key, encoder=nacl.encoding.Base32Encoder)
         except nacl.exceptions.ValueError:
+            pass
+        except binascii.Error:
             pass
         else:
             retVal = True
