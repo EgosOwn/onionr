@@ -352,15 +352,17 @@ class Core:
         '''
         conn = sqlite3.connect(self.peerDB)
         c = conn.cursor()
+        payload = ""
         if randomOrder:
-            peers = c.execute('SELECT * FROM peers ORDER BY RANDOM();')
+            payload = 'SELECT * FROM peers ORDER BY RANDOM();'
         else:
-            peers = c.execute('SELECT * FROM peers;')
+            payload = 'SELECT * FROM peers;'
         peerList = []
-        for i in peers:
+        for i in c.execute(payload):
+            print('lol - ' + i[2])
             peerList.append(i[2])
+        peerList.append(self._crypto.pubKey)
         conn.close()
-
         return peerList
 
     def getPeerInfo(self, peer, info):

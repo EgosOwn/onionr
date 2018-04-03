@@ -39,6 +39,7 @@ class OnionrUtils:
 
     def sendPM(self, user, message):
         '''High level function to encrypt a message to a peer and insert it as a block'''
+        
         return
     
     def incrementAddressSuccess(self, address):
