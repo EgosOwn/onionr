@@ -39,7 +39,7 @@ class OnionrUtils:
 
     def sendPM(self, user, message):
         '''High level function to encrypt a message to a peer and insert it as a block'''
-        
+
         return
     
     def incrementAddressSuccess(self, address):
@@ -72,6 +72,7 @@ class OnionrUtils:
             for adder in newAdderList:
                 if not adder in self._core.listAdders(randomOrder=False):
                     if self._core.addAddress(adder):
+                        logger.info('added ' + adder + ' to db')
                         retVal = True
         return retVal
 
