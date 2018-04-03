@@ -58,8 +58,8 @@ class OnionrUtils:
         '''Merge ed25519 key list to our database'''
         retVal = False
         if newKeyList != False:
-            for key in newKeyList:
-                if not key in self._core.listPeers(randomOrder=False):
+            for key in newKeyList.split(','):
+                if not key in self._core.listPeers(randomOrder=False) and type(key) != None and key != self._core._crypto.pubKey:
                     if self._core.addPeer(key):
                         retVal = True
         return retVal
@@ -69,12 +69,21 @@ class OnionrUtils:
         '''Merge peer adders list to our database'''
         retVal = False
         if newAdderList != False:
-            for adder in newAdderList:
-                if not adder in self._core.listAdders(randomOrder=False):
+            for adder in newAdderList.split(','):
+                if not adder in self._core.listAdders(randomOrder=False) and adder.strip() != self.getMyAddress():
                     if self._core.addAddress(adder):
                         logger.info('added ' + adder + ' to db')
+                        input()
                         retVal = True
+                else:
+                    logger.debug(adder + " is either our address or already in our DB")
         return retVal
+
+    def getMyAddress(self):
+        myAddressFile = open("data/hs/hostname", 'r')
+        myAddress = myAddressFile.read()
+        myAddressFile.close()
+        return myAddress.strip()
 
     def localCommand(self, command):
         '''

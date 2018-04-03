@@ -359,8 +359,8 @@ class Core:
             payload = 'SELECT * FROM peers;'
         peerList = []
         for i in c.execute(payload):
-            print('lol - ' + i[2])
-            peerList.append(i[2])
+            if type(i[2] != None):
+                peerList.append(i[2])
         peerList.append(self._crypto.pubKey)
         conn.close()
         return peerList

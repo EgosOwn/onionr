@@ -53,7 +53,7 @@ class OnionrCommunicate:
         highFailureRate = 10
         heartBeatTimer = 0
         heartBeatRate = 5
-        pexTimer = 1000 # How often we should check for new peers
+        pexTimer = 25 # How often we should check for new peers
         pexCount = 0
         logger.debug('Communicator debugging enabled.')
         torID = open('data/hs/hostname').read()
@@ -79,7 +79,7 @@ class OnionrCommunicate:
                         self.peerData[i]['failCount'] -= 1
             if pexTimer == pexCount:
                 self.getNewPeers()
-                pexCount = 0
+                pexCount = 0 # TODO: do not reset timer if low peer count
             if heartBeatRate == heartBeatTimer:
                 logger.debug('Communicator heartbeat')
                 heartBeatTimer = 0
@@ -97,7 +97,7 @@ class OnionrCommunicate:
 
     def getNewPeers(self):
         '''
-            Get new peers
+            Get new peers and keys
         '''
         peersCheck = 5 # Amount of peers to ask for new peers + keys
         peersChecked = 0
@@ -118,6 +118,8 @@ class OnionrCommunicate:
             logger.info('Using ' + peerList[i] + ' to find new peers')
             try:
                 newAdders = self.performGet('pex', peerList[i], skipHighFailureAddress=True)
+                logger.debug('Attempting to merge address: ')
+                logger.debug(newAdders)
                 self._utils.mergeAdders(newAdders)
             except requests.exceptions.ConnectionError:
                 logger.info(peerList[i] + ' connection failed')
@@ -126,6 +128,8 @@ class OnionrCommunicate:
                 try:
                     logger.info('Using ' + peerList[i] + ' to find new keys')
                     newKeys = self.performGet('kex', peerList[i], skipHighFailureAddress=True)
+                    logger.debug('Attempting to merge pubkey: ')
+                    logger.debug(newKeys)
                     # TODO: Require keys to come with POW token (very large amount of POW)
                     self._utils.mergeKeys(newKeys)
                 except requests.exceptions.ConnectionError:
