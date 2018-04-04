@@ -156,9 +156,7 @@ class API:
                 resp = Response(response)
             elif action == 'kex':
                 peers = self._core.listPeers()
-                response = ''
-                if type(peers) != None:
-                    response = ','.join(self._core.listPeers())
+                response = ','.join(self._core.listPeers())
                 resp = Response(response)
             else:
                 resp = Response("")
