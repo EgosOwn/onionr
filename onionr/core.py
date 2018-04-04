@@ -67,6 +67,16 @@ class Core:
         conn = sqlite3.connect(self.peerDB)
         c = conn.cursor()
         t = (peerID, name, 'unknown')
+
+        for i in c.execute("SELECT * FROM PEERS where id = '" + peerID + "';"):
+            try:
+                if i[0] == peerID:
+                    conn.close()
+                    return False
+            except ValueError:
+                pass
+            except IndexError:
+                pass
         c.execute('INSERT INTO peers (id, name, dateSeen) VALUES(?, ?, ?);', t)
         conn.commit()
         conn.close()
@@ -361,8 +371,8 @@ class Core:
         peerList = []
         for i in c.execute(payload):
             try:
-                if len(i[2]) != 0:
-                    peerList.append(i[2])
+                if len(i[0]) != 0:
+                    peerList.append(i[0])
             except TypeError:
                 pass
         peerList.append(self._crypto.pubKey)
@@ -375,18 +385,17 @@ class Core:
 
             id text             0
             name text,          1
-            pubkey text,        2
-            adders text,        3
-            forwardKey text,    4
-            dateSeen not null,  5
-            bytesStored int,    6
-            trust int           7
-            pubkeyExchanged int 8
+            adders text,        2
+            forwardKey text,    3
+            dateSeen not null,  4
+            bytesStored int,    5
+            trust int           6
+            pubkeyExchanged int 7
         '''
         conn = sqlite3.connect(self.peerDB)
         c = conn.cursor()
         command = (peer,)
-        infoNumbers = {'id': 0, 'name': 1, 'pubkey': 2, 'adders': 3, 'forwardKey': 4, 'dateSeen': 5, 'bytesStored': 6, 'trust': 7, 'pubkeyExchanged': 8}
+        infoNumbers = {'id': 0, 'name': 1, 'adders': 2, 'forwardKey': 3, 'dateSeen': 4, 'bytesStored': 5, 'trust': 6, 'pubkeyExchanged': 7}
         info = infoNumbers[info]
         iterCount = 0
         retVal = ''

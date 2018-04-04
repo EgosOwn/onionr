@@ -42,7 +42,7 @@ class OnionrUtils:
 
         forwardKey = self._core.getPeerInfo(pubkey, 'forwardKey')
         
-        if self._core.getPeerInfo(pubkey, 'pubkeyExchanged'):
+        if self._core.getPeerInfo(pubkey, 'pubkeyExchanged') == 1:
             pass
 
         if len(forwardKey) > 0:
