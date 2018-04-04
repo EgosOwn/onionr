@@ -137,7 +137,8 @@ class Core:
             forwardKey text,
             dateSeen not null,
             bytesStored int,
-            trust int);
+            trust int,
+            pubkeyExchanged int);
         ''')
         conn.commit()
         conn.close()
@@ -377,11 +378,12 @@ class Core:
             dateSeen not null,  5
             bytesStored int,    6
             trust int           7
+            pubkeyExchanged int 8
         '''
         conn = sqlite3.connect(self.peerDB)
         c = conn.cursor()
         command = (peer,)
-        infoNumbers = {'id': 0, 'name': 1, 'pubkey': 2, 'adders': 3, 'forwardKey': 4, 'dateSeen': 5, 'bytesStored': 6, 'trust': 7}
+        infoNumbers = {'id': 0, 'name': 1, 'pubkey': 2, 'adders': 3, 'forwardKey': 4, 'dateSeen': 5, 'bytesStored': 6, 'trust': 7, 'pubkeyExchanged': 8}
         info = infoNumbers[info]
         iterCount = 0
         retVal = ''

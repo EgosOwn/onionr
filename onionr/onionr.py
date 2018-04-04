@@ -256,7 +256,7 @@ class Onionr:
             except KeyboardInterrupt:
                 break
             else:
-                if self.onionrUtils.validateID(peer):
+                if self.onionrUtils.validatePubKey(peer):
                     break
                 else:
                     logger.error('Invalid peer ID')

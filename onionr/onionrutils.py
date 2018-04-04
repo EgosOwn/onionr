@@ -37,8 +37,16 @@ class OnionrUtils:
         self._core = coreInstance
         return
 
-    def sendPM(self, user, message):
+    def sendPM(self, pubkey, message):
         '''High level function to encrypt a message to a peer and insert it as a block'''
+
+        forwardKey = self._core.getPeerInfo(pubkey, 'forwardKey')
+        
+        if self._core.getPeerInfo(pubkey, 'pubkeyExchanged'):
+            pass
+
+        if len(forwardKey) > 0:
+            pass
 
         return
     
