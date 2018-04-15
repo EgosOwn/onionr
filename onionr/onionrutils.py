@@ -40,13 +40,13 @@ class OnionrUtils:
     def sendPM(self, pubkey, message):
         '''High level function to encrypt a message to a peer and insert it as a block'''
 
-        forwardKey = self._core.getPeerInfo(pubkey, 'forwardKey')
+        #forwardKey = self._core.getPeerInfo(pubkey, 'forwardKey')
         
-        if self._core.getPeerInfo(pubkey, 'pubkeyExchanged') == 1:
-            pass
-
-        if len(forwardKey) > 0:
-            pass
+        #if self._core.getPeerInfo(pubkey, 'pubkeyExchanged') == 1:
+        #    pass
+        encrypted = self._core._crypto.pubKeyEncrypt(message, pubkey, anonymous=True, encodedData=True)
+        logger.info(encrypted)
+        return
 
         return
     

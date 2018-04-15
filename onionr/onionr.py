@@ -249,15 +249,15 @@ class Onionr:
         '''
             Create a private message and send it
         '''
-
-        while True:
+        invalidID = True
+        while invalidID:
             try:
                 peer = logger.readline('Peer to send to: ')
             except KeyboardInterrupt:
                 break
             else:
                 if self.onionrUtils.validatePubKey(peer):
-                    break
+                    invalidID = False
                 else:
                     logger.error('Invalid peer ID')
         else:
