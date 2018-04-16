@@ -19,30 +19,55 @@ import os, sqlite3, core
 class OnionrGUI:
     def __init__(self, myCore):
         self.root = Tk()
+
         self.myCore = myCore # onionr core
         self.root.title("PyOnionr")
 
-        w = Label(self.root, text="Onionr", width=10)
-        w.config(font=("Sans-Serif", 22))
-        w.pack()
+        self.runningCheckDelay = 5
+        self.runningCheckDelayCount = 0
+
         scrollbar = Scrollbar(self.root)
         scrollbar.pack(side=RIGHT, fill=Y)
 
         self.listedBlocks = []
 
+        self.nodeInfo = Frame(self.root)
+        self.keyInfo = Frame(self.root)
+
         idText = open('./data/hs/hostname', 'r').read()
-        idLabel = Label(self.root, text="ID: " + idText)
-        idLabel.pack(pady=5)
+        #idLabel = Label(self.info, text="Node Address: " + idText)
+        #idLabel.pack(pady=5)
+
+        idEntry = Entry(self.nodeInfo)
+        Label(self.nodeInfo, text="Node Address: ").pack(side=LEFT)
+        idEntry.pack()
+        idEntry.insert(0, idText.strip())
+        idEntry.configure(state="readonly")
+
+        self.nodeInfo.pack()
+
+        pubKeyEntry = Entry(self.keyInfo)
+
+        Label(self.keyInfo, text="Public key: ").pack(side=LEFT)
+
+        pubKeyEntry.pack()
+        pubKeyEntry.insert(0, self.myCore._crypto.pubKey)
+        pubKeyEntry.configure(state="readonly")
+
+        self.keyInfo.pack()
 
         self.sendEntry = Entry(self.root)
         sendBtn = Button(self.root, text='Send Message', command=self.sendMessage)
-        self.sendEntry.pack()
-        sendBtn.pack()
+        self.sendEntry.pack(side=TOP, pady=5)
+        sendBtn.pack(side=TOP)
 
         self.listbox = Listbox(self.root, yscrollcommand=scrollbar.set, height=15)
 
         #listbox.insert(END, str(i))
-        self.listbox.pack(fill=BOTH)
+        self.listbox.pack(fill=BOTH, pady=25)
+
+        self.daemonStatus = Label(self.root, text="Onionr Daemon Status: unknown")
+        self.daemonStatus.pack()
 
         scrollbar.config(command=self.listbox.yview)
         self.root.after(2000, self.update)
@@ -66,5 +91,12 @@ class OnionrGUI:
             self.listbox.see(END)
         blocksList = os.listdir('./data/blocks/') # dir is your directory path
         number_blocks = len(blocksList)
+        self.runningCheckDelayCount += 1
 
+        if self.runningCheckDelayCount == self.runningCheckDelay:
+            if self.myCore._utils.localCommand('ping') == 'pong':
+                self.daemonStatus.config(text="Onionr Daemon Status: Running")
+            else:
+                self.daemonStatus.config(text="Onionr Daemon Status: Not Running")
+            self.runningCheckDelayCount = 0
         self.root.after(10000, self.update)

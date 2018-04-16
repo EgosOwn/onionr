@@ -18,7 +18,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 # Misc functions that do not fit in the main api, but are useful
-import getpass, sys, requests, os, socket, hashlib, logger, sqlite3, config, binascii
+import getpass, sys, requests, os, socket, hashlib, logger, sqlite3, config, binascii, time
 import nacl.signing, nacl.encoding
 
 if sys.version_info < (3, 6):
@@ -35,7 +35,15 @@ class OnionrUtils:
     def __init__(self, coreInstance):
         self.fingerprintFile = 'data/own-fingerprint.txt'
         self._core = coreInstance
+
+        self.timingToken = ''
+
         return
+    
+    def getTimeBypassToken(self):
+        if os.path.exists('data/time-bypass.txt'):
+            with open('data/time-bypass.txt', 'r') as bypass:
+                self.timingToken = bypass.read()
 
     def sendPM(self, pubkey, message):
         '''High level function to encrypt a message to a peer and insert it as a block'''
@@ -44,9 +52,13 @@ class OnionrUtils:
         
         #if self._core.getPeerInfo(pubkey, 'pubkeyExchanged') == 1:
         #    pass
-        encrypted = self._core._crypto.pubKeyEncrypt(message, pubkey, anonymous=True, encodedData=True)
-        logger.info(encrypted)
-        return
+        encrypted = self._core._crypto.pubKeyEncrypt(message, pubkey, anonymous=True, encodedData=True).decode()
+        block = self._core.insertBlock(encrypted, header='pm')
+
+        if block == '':
+            logger.error('Could not send PM')
+        else:
+            logger.info('Sent PM, hash: ' + block)
 
         return
     
@@ -99,11 +111,14 @@ class OnionrUtils:
         '''
 
         config.reload()
-
+        self.getTimeBypassToken()
         # TODO: URL encode parameters, just as an extra measure. May not be needed, but should be added regardless.
-        requests.get('http://' + open('data/host.txt', 'r').read() + ':' + str(config.get('client')['port']) + '/client/?action=' + command + '&token=' + str(config.get('client')['client_hmac']))
+        try:
+            retData = requests.get('http://' + open('data/host.txt', 'r').read() + ':' + str(config.get('client')['port']) + '/client/?action=' + command + '&token=' + str(config.get('client')['client_hmac']) + '&timingToken=' + self.timingToken).text
+        except requests.ConnectionError:
+            retData = False    
 
-        return
+        return retData
 
     def getPassword(self, message='Enter password: ', confirm = True):
         '''

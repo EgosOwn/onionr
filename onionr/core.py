@@ -513,3 +513,17 @@ class Core:
         conn.close()
 
         return
+
+    def insertBlock(self, data, header='txt'):
+        '''
+            Inserts a block into the network
+        '''
+        retData = ''
+        if len(data) == 0:
+            logger.error('Will not insert empty block')
+        else:
+            addedHash = self.setData('-' + header + '-' + data)
+            self.addToBlockDB(addedHash, selfInsert=True)
+            self.setBlockType(addedHash, header)
+            retData = addedHash
+        return retData

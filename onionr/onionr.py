@@ -111,7 +111,7 @@ class Onionr:
                     randomPort = random.randint(1024, 65535)
                     if self.onionrUtils.checkPort(randomPort):
                         break
-            config.set('client', {'participate': 'true', 'client_hmac': base64.b64encode(os.urandom(32)).decode('utf-8'), 'port': randomPort, 'api_version': API_VERSION}, True)
+            config.set('client', {'participate': 'true', 'client_hmac': base64.b16encode(os.urandom(32)).decode('utf-8'), 'port': randomPort, 'api_version': API_VERSION}, True)
 
         self.cmds = {
             '': self.showHelpSuggestion,
@@ -316,14 +316,15 @@ class Onionr:
 
         return
 
-    def addMessage(self):
+    def addMessage(self, header="txt"):
         '''
             Broadcasts a message to the Onionr network
         '''
 
         while True:
+
             messageToAdd = '-txt-' + logger.readline('Broadcast message to network: ')
-            if len(messageToAdd) >= 1:
+            if len(messageToAdd) - 5 >= 1:
                 break
 
         addedHash = self.onionrCore.setData(messageToAdd)

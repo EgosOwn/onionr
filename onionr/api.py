@@ -32,7 +32,8 @@ class API:
         '''
             Validate that the client token (hmac) matches the given token
         '''
-        if self.clientToken != token:
+
+        if not hmac.compare_digest(self.clientToken.strip(), token.strip()):
             return False
         else:
             return True
@@ -63,6 +64,11 @@ class API:
         bindPort = int(config.get('client')['port'])
         self.bindPort = bindPort
         self.clientToken = config.get('client')['client_hmac']
+        self.timeBypassToken = base64.b16encode(os.urandom(32)).decode()
+
+        with open('data/time-bypass.txt', 'w') as bypass:
+            bypass.write(self.timeBypassToken)
+
         if not os.environ.get("WERKZEUG_RUN_MAIN") == "true":
             logger.debug('Your HMAC token: ' + logger.colors.underline + self.clientToken)
 
@@ -99,11 +105,16 @@ class API:
 
         @app.route('/client/')
         def private_handler():
+            if request.args.get('timingToken') is None:
+                timingToken = ''
+            else:
+                timingToken = request.args.get('timingToken')
             startTime = math.floor(time.time())
             # we should keep a hash DB of requests (with hmac) to prevent replays
             action = request.args.get('action')
             #if not self.debug:
             token = request.args.get('token')
+
             if not self.validateToken(token):
                 abort(403)
             self.validateHost('private')
@@ -112,14 +123,19 @@ class API:
             elif action == 'shutdown':
                 request.environ.get('werkzeug.server.shutdown')()
                 resp = Response('Goodbye')
+            elif action == 'ping':
+                resp = Response('pong')
             elif action == 'stats':
                 resp = Response('me_irl')
             else:
                 resp = Response('(O_o) Dude what? (invalid command)')
             endTime = math.floor(time.time())
             elapsed = endTime - startTime
-            if elapsed < self._privateDelayTime:
-                time.sleep(self._privateDelayTime - elapsed)
+
+            # if bypass token not used, delay response to prevent timing attacks
+            if not hmac.compare_digest(timingToken, self.timeBypassToken):
+                if elapsed < self._privateDelayTime:
+                    time.sleep(self._privateDelayTime - elapsed)
 
             return resp
 
@@ -208,9 +224,11 @@ class API:
         host = self.host
         if hostType == 'private':
             if not request.host.startswith('127') and not self._utils.checkIsIP(request.host):
+                print("WHAT")
                 abort(403)
         elif hostType == 'public':
             if not request.host.endswith('onion') and not request.host.endswith('i2p'):
+                print("WHAT2")
                 abort(403)
         # Validate x-requested-with, to protect against CSRF/metadata leaks
         if not self._developmentMode:
