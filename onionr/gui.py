@@ -24,7 +24,7 @@ class OnionrGUI:
         self.root.title("PyOnionr")
 
         self.runningCheckDelay = 5
-        self.runningCheckDelayCount = 0
+        self.runningCheckDelayCount = 5
 
         scrollbar = Scrollbar(self.root)
         scrollbar.pack(side=RIGHT, fill=Y)
