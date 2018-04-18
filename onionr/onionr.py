@@ -21,7 +21,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 import sys, os, base64, random, getpass, shutil, subprocess, requests, time, platform
-import api, core, gui, config, logger, onionrplugins as plugins
+import api, core, config, logger, onionrplugins as plugins
 from onionrutils import OnionrUtils
 from netcontroller import NetController
 
@@ -29,6 +29,12 @@ try:
     from urllib3.contrib.socks import SOCKSProxyManager
 except ImportError:
     raise Exception("You need the PySocks module (for use with socks5 proxy to use Tor)")
+
+try:
+    import gui
+except ImportError:
+    logger.error('You need python3 tkinter and tk installed to use Onionr.')
+    sys.exit(1)
 
 ONIONR_TAGLINE = 'Anonymous P2P Platform - GPLv3 - onionr.voidnet.tech'
 ONIONR_VERSION = '0.0.0' # for debugging and stuff
