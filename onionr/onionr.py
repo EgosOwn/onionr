@@ -135,14 +135,17 @@ class Onionr:
             'reload-plugins': self.reloadPlugin,
             'reloadplugins': self.reloadPlugin,
 
-            'listpeers': self.listPeers,
-            'list-peers': self.listPeers,
+            'listkeys': self.listKeys,
+            'list-keys': self.listKeys,
 
             'addmsg': self.addMessage,
             'addmessage': self.addMessage,
             'add-msg': self.addMessage,
             'add-message': self.addMessage,
             'pm': self.sendEncrypt,
+
+            'getpms': self.getPMs,
+            'get-pms': self.getPMs,
 
             'gui': self.openGUI,
 
@@ -168,7 +171,8 @@ class Onionr:
             'add-peer': 'Adds a peer (?)',
             'add-msg': 'Broadcasts a message to the Onionr network',
             'pm': 'Adds a private message to block',
-            'gui': 'Opens a graphical interface for Onionr'
+            'gui': 'Opens a graphical interface for Onionr',
+            'getpms': 'Shows private messages sent to you'
         }
 
         command = ''
@@ -277,12 +281,12 @@ class Onionr:
 
         gui.OnionrGUI(self.onionrCore)
 
-    def listPeers(self):
+    def listKeys(self):
         '''
-            Displays a list of peers (?)
+            Displays a list of keys (used to be called peers) (?)
         '''
 
-        logger.info('Peer list:\n')
+        logger.info('Public keys in database:\n')
         for i in self.onionrCore.listPeers():
             logger.info(i)
 
@@ -290,7 +294,7 @@ class Onionr:
         '''
             Adds a peer (?)
         '''
-
+        
         try:
             newPeer = sys.argv[2]
         except:
@@ -332,6 +336,12 @@ class Onionr:
         self.onionrCore.setBlockType(addedHash, 'txt')
 
         return
+    
+    def getPMs(self):
+        '''
+            display PMs sent to us
+        '''
+        self.onionrUtils.loadPMs()
 
     def enablePlugin(self):
         '''

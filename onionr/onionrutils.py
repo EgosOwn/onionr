@@ -224,7 +224,7 @@ class OnionrUtils:
             nacl.signing.SigningKey(seed=key, encoder=nacl.encoding.Base32Encoder)
         except nacl.exceptions.ValueError:
             pass
-        except binascii.Error:
+        except base64.binascii.Error as err:
             pass
         else:
             retVal = True
@@ -274,3 +274,26 @@ class OnionrUtils:
                 retVal = False
 
         return retVal
+
+    def loadPMs(self):
+        '''
+            Find, decrypt, and return array of PMs (array of dictionary, {from, text})
+        '''
+        blocks = self._core.getBlockList().split('\n')
+        message = ''
+        sender = ''
+        for i in blocks:
+            if len (i) == 0:
+                continue
+            with open('data/blocks/' + i + '.dat', 'r') as potentialMessage:
+                message = potentialMessage.read()
+                if message.startswith('-pm-'):
+                    try:
+                        message = self._core._crypto.pubKeyDecrypt(message.replace('-pm-', ''), encodedData=True, anonymous=True)
+                    except nacl.exceptions.CryptoError as e:
+                        #logger.debug('Unable to decrypt ' + i)
+                        #logger.debug(str(e))
+                        pass
+                    else:
+                        logger.info('Recieved message: ' + message.decode())
+        return

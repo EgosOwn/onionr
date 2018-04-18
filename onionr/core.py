@@ -87,6 +87,20 @@ class Core:
         if self._utils.validateID(address):
             conn = sqlite3.connect(self.addressDB)
             c = conn.cursor()
+            # check if address is in database
+            # this is safe to do because the address is validated above, but we strip some chars here too just in case
+            address = address.replace('\'', '').replace(';', '').replace('"', '').replace('\\', '')
+            for i in c.execute("SELECT * FROM adders where address = '" + address + "';"):
+                try:
+                    if i[0] == address:
+                        logger.warn('Not adding existing address')
+                        conn.close()
+                        return False
+                except ValueError:
+                    pass
+                except IndexError:
+                    pass
+
             t = (address, 1)
             c.execute('INSERT INTO adders (address, type) VALUES(?, ?);', t)
             conn.commit()

@@ -80,20 +80,20 @@ class OnionrCrypto:
             retVal = anonBox.encrypt(data.encode(), encoder=encoding)
         return retVal
 
-    def pubKeyDecrypt(self, data, pubkey, anonymous=False, encodedData=False):
+    def pubKeyDecrypt(self, data, pubkey='', anonymous=False, encodedData=False):
         '''pubkey decrypt (Curve25519, taken from Ed25519 pubkey)'''
-        retVal = ''
+        retVal = False
         if encodedData:
             encoding = nacl.encoding.Base64Encoder
         else:
             encoding = nacl.encoding.RawEncoder
-        ownKey = nacl.signing.SigningKey(seed=self.privKey, encoder=nacl.encoding.Base32Encoder())
-        if self.privKey != None and not anoymous:
+        ownKey = nacl.signing.SigningKey(seed=self.privKey, encoder=nacl.encoding.Base32Encoder()).to_curve25519_private_key()
+        if self.privKey != None and not anonymous:
             ourBox = nacl.public.Box(ownKey, pubkey)
             decrypted = ourBox.decrypt(data, encoder=encoding)
         elif anonymous:
             anonBox = nacl.public.SealedBox(ownKey)
-            decrypted = anonBox.decrypt(data.encode(), encoder=encoding)
+            decrypted = anonBox.decrypt(data, encoder=encoding)
         return decrypted
 
     def symmetricPeerEncrypt(self, data, peer):

@@ -32,11 +32,13 @@ class API:
         '''
             Validate that the client token (hmac) matches the given token
         '''
-
-        if not hmac.compare_digest(self.clientToken.strip(), token.strip()):
+        try:
+            if not hmac.compare_digest(self.clientToken, token):
+                return False
+            else:
+                return True
+        except TypeError:
             return False
-        else:
-            return True
 
     def __init__(self, debug):
         '''
@@ -70,7 +72,7 @@ class API:
             bypass.write(self.timeBypassToken)
 
         if not os.environ.get("WERKZEUG_RUN_MAIN") == "true":
-            logger.debug('Your HMAC token: ' + logger.colors.underline + self.clientToken)
+            logger.debug('Your web password (KEEP SECRET): ' + logger.colors.underline + self.clientToken)
 
         if not debug and not self._developmentMode:
             hostNums = [random.randint(1, 255), random.randint(1, 255), random.randint(1, 255)]
