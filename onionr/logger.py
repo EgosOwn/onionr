@@ -18,7 +18,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 
-import re, sys
+import re, sys, time
 
 class colors:
     '''
@@ -134,15 +134,18 @@ def raw(data):
         with open(_outputfile, "a+") as f:
             f.write(colors.filter(data) + '\n')
 
-def log(prefix, data, color = ''):
+def log(prefix, data, color = '', timestamp=True):
     '''
         Logs the data
         prefix : The prefix to the output
         data   : The actual data to output
         color  : The color to output before the data
     '''
-
-    output = colors.reset + str(color) + '[' + colors.bold + str(prefix) + colors.reset + str(color) + '] ' + str(data) + colors.reset
+    if timestamp:
+        curTime = time.strftime("%m-%d %H:%M:%S")
+    else:
+        curTime = ''
+    output = colors.reset + str(color) + '[' + colors.bold + str(prefix) + colors.reset + str(color) + '] ' + curTime + ' ' + str(data) + colors.reset
     if not get_settings() & USE_ANSI:
         output = colors.filter(output)
 

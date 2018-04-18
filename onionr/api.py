@@ -226,11 +226,9 @@ class API:
         host = self.host
         if hostType == 'private':
             if not request.host.startswith('127') and not self._utils.checkIsIP(request.host):
-                print("WHAT")
                 abort(403)
         elif hostType == 'public':
             if not request.host.endswith('onion') and not request.host.endswith('i2p'):
-                print("WHAT2")
                 abort(403)
         # Validate x-requested-with, to protect against CSRF/metadata leaks
         if not self._developmentMode:
