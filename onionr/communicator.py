@@ -52,7 +52,7 @@ class OnionrCommunicate:
         highFailureTimer = 0
         highFailureRate = 10
         heartBeatTimer = 0
-        heartBeatRate = 5
+        heartBeatRate = 0
         pexTimer = 25 # How often we should check for new peers
         pexCount = 0
         logger.debug('Communicator debugging enabled.')
@@ -167,7 +167,10 @@ class OnionrCommunicate:
             if currentDB != False:
                 if lastDB != currentDB:
                     logger.debug('Fetching hash from ' + i + ' - ' + currentDB + ' current hash.')
-                    blocks += self.performGet('getBlockHashes', i)
+                    try:
+                        blocks += self.performGet('getBlockHashes', i)
+                    except TypeError:
+                        logger.warn('Failed to get data hash from ' + i)
                 if self._utils.validateHash(currentDB):
                     self._core.setAddressInfo(i, "DBHash", currentDB)
         if len(blocks.strip()) != 0:
