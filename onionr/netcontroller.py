@@ -97,7 +97,7 @@ HiddenServicePort 80 127.0.0.1:''' + str(self.hsPort) + '''
             logger.fatal('Failed to start Tor. Try killing any other Tor processes owned by this user.')
             return False
 
-        logger.info('Finished starting Tor')
+        logger.info('Finished starting Tor', timestamp=True)
         self.readyState = True
 
         myID = open('data/hs/hostname', 'r')

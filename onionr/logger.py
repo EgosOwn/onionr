@@ -141,10 +141,10 @@ def log(prefix, data, color = '', timestamp=True):
         data   : The actual data to output
         color  : The color to output before the data
     '''
+    curTime = ''
     if timestamp:
         curTime = time.strftime("%m-%d %H:%M:%S")
-    else:
-        curTime = ''
+
     output = colors.reset + str(color) + '[' + colors.bold + str(prefix) + colors.reset + str(color) + '] ' + curTime + ' ' + str(data) + colors.reset
     if not get_settings() & USE_ANSI:
         output = colors.filter(output)
@@ -201,26 +201,26 @@ def confirm(default = 'y', message = 'Are you sure %s? '):
         return default == 'y'
 
 # debug: when there is info that could be useful for debugging purposes only
-def debug(data):
+def debug(data, timestamp=True):
     if get_level() <= LEVEL_DEBUG:
-        log('/', data)
+        log('/', data, timestamp=timestamp)
 
 # info: when there is something to notify the user of, such as the success of a process
-def info(data):
+def info(data, timestamp=False):
     if get_level() <= LEVEL_INFO:
-        log('+', data, colors.fg.green)
+        log('+', data, colors.fg.green, timestamp=timestamp)
 
 # warn: when there is a potential for something bad to happen
-def warn(data):
+def warn(data, timestamp=True):
     if get_level() <= LEVEL_WARN:
-        log('!', data, colors.fg.orange)
+        log('!', data, colors.fg.orange, timestamp=timestamp)
 
 # error: when only one function, module, or process of the program encountered a problem and must stop
-def error(data):
+def error(data, timestamp=True):
     if get_level() <= LEVEL_ERROR:
-        log('-', data, colors.fg.red)
+        log('-', data, colors.fg.red, timestamp=timestamp)
 
 # fatal: when the something so bad has happened that the prorgam must stop
-def fatal(data):
+def fatal(data, timestamp=True):
     if get_level() <= LEVEL_FATAL:
-        log('#', data, colors.bg.red + colors.fg.green + colors.bold)
+        log('#', data, colors.bg.red + colors.fg.green + colors.bold, timestamp=timestamp)

@@ -215,7 +215,7 @@ class API:
 
             return resp
         if not os.environ.get("WERKZEUG_RUN_MAIN") == "true":
-            logger.info('Starting client on ' + self.host + ':' + str(bindPort) + '...')
+            logger.info('Starting client on ' + self.host + ':' + str(bindPort) + '...', timestamp=True)
 
         try:
             app.run(host=self.host, port=bindPort, debug=True, threaded=True)

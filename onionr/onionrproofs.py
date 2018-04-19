@@ -47,10 +47,10 @@ class POW:
         if iFound:
             endTime = math.floor(time.time())
             if self.reporting:
-                logger.info('Found token ' + token)
-                logger.info('took ' + str(endTime - startTime))
+                logger.info('Found token ' + token, timestamp=True)
+                logger.info('took ' + str(endTime - startTime), timestamp=True)
             self.result = token
-    
+
     def __init__(self, difficulty, bitcoinNode):
         self.foundHash = False
         self.difficulty = difficulty
@@ -72,7 +72,7 @@ class POW:
     def shutdown(self):
         self.hashing = False
         self.puzzle = ''
-    
+
     def changeDifficulty(self, newDiff):
         self.difficulty = newDiff
 

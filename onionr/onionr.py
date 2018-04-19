@@ -158,6 +158,8 @@ class Onionr:
             'addpeer': self.addPeer,
             'add-peer': self.addPeer,
             'add-address': self.addAddress,
+            'add-addr': self.addAddress,
+            'addaddr': self.addAddress,
             'addaddress': self.addAddress,
 
             'connect': self.addAddress
@@ -173,12 +175,12 @@ class Onionr:
             'enable-plugin': 'Enables and starts a plugin',
             'disable-plugin': 'Disables and stops a plugin',
             'reload-plugin': 'Reloads a plugin',
-            'list-peers': 'Displays a list of peers',
             'add-peer': 'Adds a peer (?)',
+            'list-peers': 'Displays a list of peers',
             'add-msg': 'Broadcasts a message to the Onionr network',
             'pm': 'Adds a private message to block',
-            'gui': 'Opens a graphical interface for Onionr',
-            'getpms': 'Shows private messages sent to you'
+            'get-pms': 'Shows private messages sent to you',
+            'gui': 'Opens a graphical interface for Onionr'
         }
 
         command = ''
@@ -300,7 +302,7 @@ class Onionr:
         '''
             Adds a peer (?)
         '''
-        
+
         try:
             newPeer = sys.argv[2]
         except:
@@ -312,7 +314,9 @@ class Onionr:
         return
 
     def addAddress(self):
-        '''Adds a Onionr node address'''
+        '''
+            Adds a Onionr node address
+        '''
         try:
             newAddress = sys.argv[2]
         except:
@@ -320,9 +324,9 @@ class Onionr:
         else:
             logger.info("Adding address: " + logger.colors.underline + newAddress)
             if self.onionrCore.addAddress(newAddress):
-                logger.info("Successfully added address")
+                logger.info("Successfully added address.")
             else:
-                logger.warn("Unable to add address")
+                logger.warn("Unable to add address.")
 
         return
 
@@ -342,7 +346,7 @@ class Onionr:
         self.onionrCore.setBlockType(addedHash, 'txt')
 
         return
-    
+
     def getPMs(self):
         '''
             display PMs sent to us

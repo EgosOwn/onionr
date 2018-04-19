@@ -39,19 +39,17 @@ class OnionrUtils:
         self.timingToken = ''
 
         return
-    
+
     def getTimeBypassToken(self):
         if os.path.exists('data/time-bypass.txt'):
             with open('data/time-bypass.txt', 'r') as bypass:
                 self.timingToken = bypass.read()
 
     def sendPM(self, pubkey, message):
-        '''High level function to encrypt a message to a peer and insert it as a block'''
+        '''
+            High level function to encrypt a message to a peer and insert it as a block
+        '''
 
-        #forwardKey = self._core.getPeerInfo(pubkey, 'forwardKey')
-        
-        #if self._core.getPeerInfo(pubkey, 'pubkeyExchanged') == 1:
-        #    pass
         encrypted = self._core._crypto.pubKeyEncrypt(message, pubkey, anonymous=True, encodedData=True).decode()
         block = self._core.insertBlock(encrypted, header='pm')
 
@@ -61,21 +59,27 @@ class OnionrUtils:
             logger.info('Sent PM, hash: ' + block)
 
         return
-    
+
     def incrementAddressSuccess(self, address):
-        '''Increase the recorded sucesses for an address'''
+        '''
+            Increase the recorded sucesses for an address
+        '''
         increment = self._core.getAddressInfo(address, 'success') + 1
         self._core.setAddressInfo(address, 'success', increment)
         return
-        
+
     def decrementAddressSuccess(self, address):
-        '''Decrease the recorded sucesses for an address'''
+        '''
+            Decrease the recorded sucesses for an address
+        '''
         increment = self._core.getAddressInfo(address, 'success') - 1
         self._core.setAddressInfo(address, 'success', increment)
         return
 
     def mergeKeys(self, newKeyList):
-        '''Merge ed25519 key list to our database'''
+        '''
+            Merge ed25519 key list to our database
+        '''
         retVal = False
         if newKeyList != False:
             for key in newKeyList.split(','):
@@ -84,15 +88,17 @@ class OnionrUtils:
                         retVal = True
         return retVal
 
-    
+
     def mergeAdders(self, newAdderList):
-        '''Merge peer adders list to our database'''
+        '''
+            Merge peer adders list to our database
+        '''
         retVal = False
         if newAdderList != False:
             for adder in newAdderList.split(','):
                 if not adder in self._core.listAdders(randomOrder=False) and adder.strip() != self.getMyAddress():
                     if self._core.addAddress(adder):
-                        logger.info('added ' + adder + ' to db')
+                        logger.info('Added ' + adder + ' to db.', timestamp=True)
                         input()
                         retVal = True
                 else:
@@ -116,7 +122,7 @@ class OnionrUtils:
         try:
             retData = requests.get('http://' + open('data/host.txt', 'r').read() + ':' + str(config.get('client')['port']) + '/client/?action=' + command + '&token=' + str(config.get('client')['client_hmac']) + '&timingToken=' + self.timingToken).text
         except requests.ConnectionError:
-            retData = False    
+            retData = False
 
         return retData
 
