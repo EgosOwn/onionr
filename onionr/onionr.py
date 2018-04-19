@@ -71,12 +71,13 @@ class Onionr:
             logger.set_file(config.get('log', {'file': {'path': 'data/output.log'}})['file']['path'])
         logger.set_settings(settings)
 
-        if config.get('devmode', True):
+        if config.get('devmode', True).lower() == 'true':
             self._developmentMode = True
             logger.set_level(logger.LEVEL_DEBUG)
         else:
             self._developmentMode = False
             logger.set_level(logger.LEVEL_INFO)
+        print('enabled? ' + str(self._developmentMode))
 
         self.onionrCore = core.Core()
         self.onionrUtils = OnionrUtils(self.onionrCore)
@@ -149,7 +150,6 @@ class Onionr:
             'add-msg': self.addMessage,
             'add-message': self.addMessage,
             'pm': self.sendEncrypt,
-            'introduce': self.onionrCore.introduceNode,
 
             'getpms': self.getPMs,
             'get-pms': self.getPMs,
@@ -169,7 +169,6 @@ class Onionr:
         self.cmdhelp = {
             'help': 'Displays this Onionr help menu',
             'version': 'Displays the Onionr version',
-            'introduce': 'Introduce your node to the public Onionr network. (DAEMON MUST BE RUNNING)',
             'config': 'Configures something and adds it to the file',
             'start': 'Starts the Onionr daemon',
             'stop': 'Stops the Onionr daemon',
@@ -180,7 +179,7 @@ class Onionr:
             'add-peer': 'Adds a peer (?)',
             'list-peers': 'Displays a list of peers',
             'add-msg': 'Broadcasts a message to the Onionr network',
-            'pm': 'Sends a private message to a user as an Onionr block',
+            'pm': 'Adds a private message to block',
             'get-pms': 'Shows private messages sent to you',
             'gui': 'Opens a graphical interface for Onionr'
         }
