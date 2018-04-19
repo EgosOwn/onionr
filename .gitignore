@@ -9,3 +9,4 @@ onionr/data/*
 onionr/data-backup/*
 onionr/gnupg/*
 run.sh
+onionr/data-encrypted.dat
