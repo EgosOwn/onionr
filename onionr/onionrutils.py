@@ -41,22 +41,28 @@ class OnionrUtils:
         return
 
     def getTimeBypassToken(self):
-        if os.path.exists('data/time-bypass.txt'):
-            with open('data/time-bypass.txt', 'r') as bypass:
-                self.timingToken = bypass.read()
+        try:
+            if os.path.exists('data/time-bypass.txt'):
+                with open('data/time-bypass.txt', 'r') as bypass:
+                    self.timingToken = bypass.read()
+        except Exception as error:
+            logger.error('Failed to fetch time bypass token.', error=error)
 
     def sendPM(self, pubkey, message):
         '''
             High level function to encrypt a message to a peer and insert it as a block
         '''
 
-        encrypted = self._core._crypto.pubKeyEncrypt(message, pubkey, anonymous=True, encodedData=True).decode()
-        block = self._core.insertBlock(encrypted, header='pm')
+        try:
+            encrypted = self._core._crypto.pubKeyEncrypt(message, pubkey, anonymous=True, encodedData=True).decode()
+            block = self._core.insertBlock(encrypted, header='pm')
 
-        if block == '':
-            logger.error('Could not send PM')
-        else:
-            logger.info('Sent PM, hash: ' + block)
+            if block == '':
+                logger.error('Could not send PM')
+            else:
+                logger.info('Sent PM, hash: ' + block)
+        except Exception as error:
+            logger.error('Failed to send PM.', error=error)
 
         return
 
@@ -80,36 +86,49 @@ class OnionrUtils:
         '''
             Merge ed25519 key list to our database
         '''
-        retVal = False
-        if newKeyList != False:
-            for key in newKeyList.split(','):
-                if not key in self._core.listPeers(randomOrder=False) and type(key) != None and key != self._core._crypto.pubKey:
-                    if self._core.addPeer(key):
-                        retVal = True
-        return retVal
+        try:
+            retVal = False
+            if newKeyList != False:
+                for key in newKeyList.split(','):
+                    if not key in self._core.listPeers(randomOrder=False) and type(key) != None and key != self._core._crypto.pubKey:
+                        if self._core.addPeer(key):
+                            retVal = True
+            return retVal
+        except Exception as error:
+            logger.error('Failed to merge keys.', error=error)
+            return False
 
 
     def mergeAdders(self, newAdderList):
         '''
             Merge peer adders list to our database
         '''
-        retVal = False
-        if newAdderList != False:
-            for adder in newAdderList.split(','):
-                if not adder in self._core.listAdders(randomOrder=False) and adder.strip() != self.getMyAddress():
-                    if self._core.addAddress(adder):
-                        logger.info('Added ' + adder + ' to db.', timestamp=True)
-                        input()
-                        retVal = True
-                else:
-                    logger.debug(adder + " is either our address or already in our DB")
-        return retVal
+        try:
+            retVal = False
+            if newAdderList != False:
+                for adder in newAdderList.split(','):
+                    if not adder in self._core.listAdders(randomOrder=False) and adder.strip() != self.getMyAddress():
+                        if self._core.addAddress(adder):
+                            logger.info('Added ' + adder + ' to db.', timestamp=True)
+                            input()
+                            retVal = True
+                    else:
+                        logger.debug(adder + " is either our address or already in our DB")
+            return retVal
+        except Exception as error:
+            logger.error('Failed to merge adders.', error=error)
+            return False
 
     def getMyAddress(self):
-        myAddressFile = open("data/hs/hostname", 'r')
-        myAddress = myAddressFile.read()
-        myAddressFile.close()
-        return myAddress.strip()
+        try:
+            myAddressFile = open("data/hs/hostname", 'r')
+            myAddress = myAddressFile.read()
+            myAddressFile.close()
+
+            return myAddress.strip()
+        except Exception as error:
+            logger.error('Failed to read my address.', error=error)
+            return ''
 
     def localCommand(self, command):
         '''
@@ -121,7 +140,8 @@ class OnionrUtils:
         # TODO: URL encode parameters, just as an extra measure. May not be needed, but should be added regardless.
         try:
             retData = requests.get('http://' + open('data/host.txt', 'r').read() + ':' + str(config.get('client')['port']) + '/client/?action=' + command + '&token=' + str(config.get('client')['client_hmac']) + '&timingToken=' + self.timingToken).text
-        except requests.ConnectionError:
+        except Exception as error:
+            logger.error('Failed to make local request (command: ' + str(command) + ').', error=error)
             retData = False
 
         return retData
@@ -179,13 +199,16 @@ class OnionrUtils:
         '''
             Return a sha3_256 hash of the blocks DB
         '''
-        with open(self._core.blockDB, 'rb') as data:
-            data = data.read()
-        hasher = hashlib.sha3_256()
-        hasher.update(data)
-        dataHash = hasher.hexdigest()
+        try:
+            with open(self._core.blockDB, 'rb') as data:
+                data = data.read()
+            hasher = hashlib.sha3_256()
+            hasher.update(data)
+            dataHash = hasher.hexdigest()
 
-        return dataHash
+            return dataHash
+        except Exception as error:
+            logger.error('Failed to get block DB hash.', error=error)
 
     def hasBlock(self, hash):
         '''
@@ -224,7 +247,9 @@ class OnionrUtils:
         return retVal
 
     def validatePubKey(self, key):
-        '''Validate if a string is a valid base32 encoded Ed25519 key'''
+        '''
+            Validate if a string is a valid base32 encoded Ed25519 key
+        '''
         retVal = False
         try:
             nacl.signing.SigningKey(seed=key, encoder=nacl.encoding.Base32Encoder)
@@ -241,45 +266,48 @@ class OnionrUtils:
         '''
             Validate if an address is a valid tor or i2p hidden service
         '''
-        idLength = len(id)
-        retVal = True
-        idNoDomain = ''
-        peerType = ''
-        # i2p b32 addresses are 60 characters long (including .b32.i2p)
-        if idLength == 60:
-            peerType = 'i2p'
-            if not id.endswith('.b32.i2p'):
-                retVal = False
-            else:
-                idNoDomain = id.split('.b32.i2p')[0]
-        # Onion v2's are 22 (including .onion), v3's are 62 with .onion
-        elif idLength == 22 or idLength == 62:
-            peerType = 'onion'
-            if not id.endswith('.onion'):
-                retVal = False
-            else:
-                idNoDomain = id.split('.onion')[0]
-        else:
-            retVal = False
-        if retVal:
-            if peerType == 'i2p':
-                try:
-                    id.split('.b32.i2p')[2]
-                except:
-                    pass
-                else:
+        try:
+            idLength = len(id)
+            retVal = True
+            idNoDomain = ''
+            peerType = ''
+            # i2p b32 addresses are 60 characters long (including .b32.i2p)
+            if idLength == 60:
+                peerType = 'i2p'
+                if not id.endswith('.b32.i2p'):
                     retVal = False
-            elif peerType == 'onion':
-                try:
-                    id.split('.onion')[2]
-                except:
-                    pass
                 else:
+                    idNoDomain = id.split('.b32.i2p')[0]
+            # Onion v2's are 22 (including .onion), v3's are 62 with .onion
+            elif idLength == 22 or idLength == 62:
+                peerType = 'onion'
+                if not id.endswith('.onion'):
                     retVal = False
-            if not idNoDomain.isalnum():
+                else:
+                    idNoDomain = id.split('.onion')[0]
+            else:
                 retVal = False
+            if retVal:
+                if peerType == 'i2p':
+                    try:
+                        id.split('.b32.i2p')[2]
+                    except:
+                        pass
+                    else:
+                        retVal = False
+                elif peerType == 'onion':
+                    try:
+                        id.split('.onion')[2]
+                    except:
+                        pass
+                    else:
+                        retVal = False
+                if not idNoDomain.isalnum():
+                    retVal = False
 
-        return retVal
+            return retVal
+        except:
+            return False
 
     def loadPMs(self):
         '''
@@ -298,8 +326,7 @@ class OnionrUtils:
                         try:
                             message = self._core._crypto.pubKeyDecrypt(message.replace('-pm-', ''), encodedData=True, anonymous=True)
                         except nacl.exceptions.CryptoError as e:
-                            #logger.debug('Unable to decrypt ' + i)
-                            #logger.debug(str(e))
+                            logger.debug('Unable to decrypt ' + i, error=e)
                             pass
                         else:
                             logger.info('Recieved message: ' + message.decode())

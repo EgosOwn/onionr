@@ -36,28 +36,32 @@ class Core:
         '''
             Initialize Core Onionr library
         '''
-        self.queueDB = 'data/queue.db'
-        self.peerDB = 'data/peers.db'
-        self.blockDB = 'data/blocks.db'
-        self.blockDataLocation = 'data/blocks/'
-        self.addressDB = 'data/address.db'
-        self.hsAdder = ''
+        try:
+            self.queueDB = 'data/queue.db'
+            self.peerDB = 'data/peers.db'
+            self.blockDB = 'data/blocks.db'
+            self.blockDataLocation = 'data/blocks/'
+            self.addressDB = 'data/address.db'
+            self.hsAdder = ''
 
-        if not os.path.exists('data/'):
-            os.mkdir('data/')
-        if not os.path.exists('data/blocks/'):
-            os.mkdir('data/blocks/')
-        if not os.path.exists(self.blockDB):
-            self.createBlockDB()
-        
-        if os.path.exists('data/hs/hostname'):
-            with open('data/hs/hostname', 'r') as hs:
-                self.hsAdder = hs.read()
-            
-        self._utils = onionrutils.OnionrUtils(self)
-        # Initialize the crypto object
-        self._crypto = onionrcrypto.OnionrCrypto(self)
+            if not os.path.exists('data/'):
+                os.mkdir('data/')
+            if not os.path.exists('data/blocks/'):
+                os.mkdir('data/blocks/')
+            if not os.path.exists(self.blockDB):
+                self.createBlockDB()
 
+            if os.path.exists('data/hs/hostname'):
+                with open('data/hs/hostname', 'r') as hs:
+                    self.hsAdder = hs.read()
+
+            self._utils = onionrutils.OnionrUtils(self)
+            # Initialize the crypto object
+            self._crypto = onionrcrypto.OnionrCrypto(self)
+        except Exception as error:
+            logger.error('Failed to initialize core Onionr library.', error=error)
+            logger.fatal('Cannot recover from error.')
+            exit(1)
         return
 
     def addPeer(self, peerID, name=''):
@@ -125,7 +129,7 @@ class Core:
             conn.close()
             return True
         else:
-            return False 
+            return False
 
     def createAddressDB(self):
         '''
@@ -357,7 +361,7 @@ class Core:
         conn.close()
 
         return
-    
+
     def listAdders(self, randomOrder=True, i2p=True):
         '''
             Return a list of addresses
@@ -546,7 +550,7 @@ class Core:
             self.setBlockType(addedHash, header)
             retData = addedHash
         return retData
-    
+
     def introduceNode(self):
         '''
             Introduces our node into the network by telling X many nodes our HS address
