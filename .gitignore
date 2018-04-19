@@ -10,3 +10,4 @@ onionr/data-backup/*
 onionr/gnupg/*
 run.sh
 onionr/data-encrypted.dat
+onionr/.onionr-lock

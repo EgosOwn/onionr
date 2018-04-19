@@ -71,7 +71,7 @@ class Onionr:
             logger.set_file(config.get('log', {'file': {'path': 'data/output.log'}})['file']['path'])
         logger.set_settings(settings)
 
-        if config.get('devmode', True).lower() == 'true':
+        if str(config.get('devmode', True)).lower() == 'true':
             self._developmentMode = True
             logger.set_level(logger.LEVEL_DEBUG)
         else:
