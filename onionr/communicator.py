@@ -91,13 +91,18 @@ class OnionrCommunicate:
                 if command[0] == 'shutdown':
                     logger.info('Daemon recieved exit command.', timestamp=True)
                     break
-                elif command[0] == 'anounceNode':
-                    announceAmount = 1
+                elif command[0] == 'announceNode':
+                    announceAttempts = 3
+                    announceAttemptCount = 0
                     announceVal = False
-                    for i in command[1]:
-                        logger.info('Announcing our node to ' + command[1][i], timestamp=True)
-                        while not announceVal:
-                            announceVal = self.performGet('announce', command[1][i], data=self._core.hsAdder, skipHighFailureAddress=True)
+                    logger.info('Announcing our node to ' + command[1], timestamp=True)
+                    while not announceVal:
+                        announceAttemptCount += 1
+                        announceVal = self.performGet('announce', command[1], data=self._core.hsAdder.replace('\n', ''), skipHighFailureAddress=True)
+                        logger.info(announceVal)
+                        if announceAttemptCount >= announceAttempts:
+                            logger.warn('Unable to announce to ' + command[1])
+                            break
 
             time.sleep(1)
 

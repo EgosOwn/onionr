@@ -555,6 +555,13 @@ class Core:
         '''
             Introduces our node into the network by telling X many nodes our HS address
         '''
-        nodeList = self.listAdders().split('\n')
-        self.daemonQueueAdd('announceNode', nodeList)
+        announceAmount = 2
+        nodeList = self.listAdders()
+        if len(nodeList) == 0:
+            self.addAddress('onionragxuddecmg.onion')
+            nodeList.append('onionragxuddecmg.onion')
+        if announceAmount > len(nodeList):
+            announceAmount = len(nodeList)
+        for i in range(announceAmount):
+            self.daemonQueueAdd('announceNode', nodeList[i])
         return

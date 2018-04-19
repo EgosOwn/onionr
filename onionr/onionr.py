@@ -149,6 +149,7 @@ class Onionr:
             'add-msg': self.addMessage,
             'add-message': self.addMessage,
             'pm': self.sendEncrypt,
+            'introduce': self.onionrCore.introduceNode,
 
             'getpms': self.getPMs,
             'get-pms': self.getPMs,
@@ -168,6 +169,7 @@ class Onionr:
         self.cmdhelp = {
             'help': 'Displays this Onionr help menu',
             'version': 'Displays the Onionr version',
+            'introduce': 'Introduce your node to the public Onionr network. (DAEMON MUST BE RUNNING)',
             'config': 'Configures something and adds it to the file',
             'start': 'Starts the Onionr daemon',
             'stop': 'Stops the Onionr daemon',
@@ -178,7 +180,7 @@ class Onionr:
             'add-peer': 'Adds a peer (?)',
             'list-peers': 'Displays a list of peers',
             'add-msg': 'Broadcasts a message to the Onionr network',
-            'pm': 'Adds a private message to block',
+            'pm': 'Sends a private message to a user as an Onionr block',
             'get-pms': 'Shows private messages sent to you',
             'gui': 'Opens a graphical interface for Onionr'
         }
