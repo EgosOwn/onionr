@@ -164,8 +164,8 @@ def readline(message = ''):
         output = colors.filter(output)
 
     sys.stdout.write(output)
-
-    return input()
+    
+    return sys.stdin.readline()
 
 def confirm(default = 'y', message = 'Are you sure %s? '):
     '''

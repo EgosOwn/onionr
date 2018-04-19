@@ -93,7 +93,7 @@ class Onionr:
                 if os.path.exists('data/'):
                     break
                 else:
-                    logger.error('Failed to decrypt: ' + result[1])
+                    logger.error('Failed to decrypt: ' + result[1], timestamp = False)
         else:
             if not os.path.exists('data/'):
                 os.mkdir('data/')
@@ -404,7 +404,7 @@ class Onionr:
             Displays a "command not found" message
         '''
 
-        logger.error('Command not found.')
+        logger.error('Command not found.', timestamp = False)
 
     def showHelpSuggestion(self):
         '''
