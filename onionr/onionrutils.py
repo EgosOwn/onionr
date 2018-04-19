@@ -96,10 +96,10 @@ class OnionrUtils:
         retVal = False
         if newAdderList != False:
             for adder in newAdderList.split(','):
+                logger.debug('Seeing if we should add ' + adder)
                 if not adder in self._core.listAdders(randomOrder=False) and adder.strip() != self.getMyAddress():
                     if self._core.addAddress(adder):
                         logger.info('Added ' + adder + ' to db.', timestamp=True)
-                        input()
                         retVal = True
                 else:
                     logger.debug(adder + " is either our address or already in our DB")

@@ -181,7 +181,7 @@ class OnionrCommunicate:
                 continue
             if self._utils.hasBlock(i):
                 continue
-            logger.debug('Exchanged block (blockList): ' + i)
+            #logger.debug('Exchanged block (blockList): ' + i)
             if not self._utils.validateHash(i):
                 # skip hash if it isn't valid
                 logger.warn('Hash ' + i + ' is not valid')
@@ -230,7 +230,7 @@ class OnionrCommunicate:
                 if len(data) < 120:
                     logger.debug('Block text:\n' + data)
             else:
-                logger.warn("Failed to validate " + hash)
+                logger.warn("Failed to validate " + hash + " " + " hash calculated was " + digest)
 
         return
 
