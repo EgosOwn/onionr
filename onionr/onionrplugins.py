@@ -226,9 +226,9 @@ def check():
         logger.debug('Generating plugin data folder...')
         os.makedirs(os.path.dirname(get_plugins_folder()))
 
-    if not exists('test'):
-        os.makedirs(get_plugins_folder('test'))
-        with open(get_plugins_folder('test') + '/main.py', 'a') as main:
-            main.write("print('Running')\n\ndef on_test(onionr = None, data = None):\n    print('received test event!')\n    return True\n\ndef on_start(onionr = None, data = None):\n    print('start event called')\n\ndef on_stop(onionr = None, data = None):\n    print('stop event called')\n\ndef on_enable(onionr = None, data = None):\n    print('enable event called')\n\ndef on_disable(onionr = None, data = None):\n    print('disable event called')\n")
-        enable('test')
+    #if not exists('test'):
+        #os.makedirs(get_plugins_folder('test'))
+        #with open(get_plugins_folder('test') + '/main.py', 'a') as main:
+            #main.write("print('Running')\n\ndef on_test(onionr = None, data = None):\n    print('received test event!')\n    return True\n\ndef on_start(onionr = None, data = None):\n    print('start event called')\n\ndef on_stop(onionr = None, data = None):\n    print('stop event called')\n\ndef on_enable(onionr = None, data = None):\n    print('enable event called')\n\ndef on_disable(onionr = None, data = None):\n    print('disable event called')\n")
+        #enable('test')
     return
