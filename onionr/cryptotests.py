@@ -24,12 +24,12 @@ class OnionrCryptoTests(unittest.TestCase):
         crypto = onionrcrypto.OnionrCrypto(myCore)
         key = key = b"tttttttttttttttttttttttttttttttt"
 
-        logger.info("Encrypting: " + dataString)
+        logger.info("Encrypting: " + dataString, timestamp=True)
         encrypted = crypto.symmetricEncrypt(dataString, key, returnEncoded=True)
-        logger.info(encrypted)
-        logger.info('Decrypting encrypted string:')
+        logger.info(encrypted, timestamp=True)
+        logger.info('Decrypting encrypted string:', timestamp=True)
         decrypted = crypto.symmetricDecrypt(encrypted, key, encodedMessage=True)
-        logger.info(decrypted)
+        logger.info(decrypted, timestamp=True)
         self.assertTrue(True)
 if __name__ == "__main__":
     unittest.main()

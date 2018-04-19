@@ -36,12 +36,12 @@ class OnionrCommunicate:
 
         self.highFailureAmount = 7
         '''
-        logger.info('Starting Bitcoin Node... with Tor socks port:' + str(sys.argv[2]))
+        logger.info('Starting Bitcoin Node... with Tor socks port:' + str(sys.argv[2]), timestamp=True)
         try:
             self.bitcoin = btc.OnionrBTC(torP=int(sys.argv[2]))
         except _gdbm.error:
             pass
-        logger.info('Bitcoin Node started, on block: ' + self.bitcoin.node.getBlockHash(self.bitcoin.node.getLastBlockHeight()))
+        logger.info('Bitcoin Node started, on block: ' + self.bitcoin.node.getBlockHash(self.bitcoin.node.getLastBlockHeight()), timestamp=True)
         '''
         #except:
         #logger.fatal('Failed to start Bitcoin Node, exiting...')
@@ -89,16 +89,16 @@ class OnionrCommunicate:
                 blockProcessTimer = 0
             if command != False:
                 if command[0] == 'shutdown':
-                    logger.info('Daemon recieved exit command.')
+                    logger.info('Daemon recieved exit command.', timestamp=True)
                     break
                 elif command[0] == 'anounceNode':
                     announceAmount = 1
                     announceVal = False
                     for i in command[1]:
-                        logger.info('Announcing our node to ' + command[1][i])
+                        logger.info('Announcing our node to ' + command[1][i], timestamp=True)
                         while not announceVal:
                             announceVal = self.performGet('announce', command[1][i], data=self._core.hsAdder, skipHighFailureAddress=True)
-                    
+
             time.sleep(1)
 
         return
@@ -123,14 +123,14 @@ class OnionrCommunicate:
 
         while peersCheck > peersChecked:
             i = random.randint(0, maxN)
-            logger.info('Using ' + peerList[i] + ' to find new peers')
+            logger.info('Using ' + peerList[i] + ' to find new peers', timestamp=True)
             try:
                 newAdders = self.performGet('pex', peerList[i], skipHighFailureAddress=True)
                 logger.debug('Attempting to merge address: ')
                 logger.debug(newAdders)
                 self._utils.mergeAdders(newAdders)
             except requests.exceptions.ConnectionError:
-                logger.info(peerList[i] + ' connection failed')
+                logger.info(peerList[i] + ' connection failed', timestamp=True)
                 continue
             else:
                 try:
@@ -141,7 +141,7 @@ class OnionrCommunicate:
                     # TODO: Require keys to come with POW token (very large amount of POW)
                     self._utils.mergeKeys(newKeys)
                 except requests.exceptions.ConnectionError:
-                    logger.info(peerList[i] + ' connection failed')
+                    logger.info(peerList[i] + ' connection failed', timestamp=True)
                     continue
                 else:
                     peersChecked += 1
@@ -226,7 +226,7 @@ class OnionrCommunicate:
                 self._core.setData(data)
                 if data.startswith('-txt-'):
                     self._core.setBlockType(hash, 'txt')
-                logger.info('Successfully obtained data for ' + hash)
+                logger.info('Successfully obtained data for ' + hash, timestamp=True)
                 if len(data) < 120:
                     logger.debug('Block text:\n' + data)
             else:
