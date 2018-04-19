@@ -143,9 +143,9 @@ def log(prefix, data, color = '', timestamp=True):
     '''
     curTime = ''
     if timestamp:
-        curTime = time.strftime("%m-%d %H:%M:%S")
+        curTime = time.strftime("%m-%d %H:%M:%S") + ' '
 
-    output = colors.reset + str(color) + '[' + colors.bold + str(prefix) + colors.reset + str(color) + '] ' + curTime + ' ' + str(data) + colors.reset
+    output = colors.reset + str(color) + '[' + colors.bold + str(prefix) + colors.reset + str(color) + '] ' + curTime + str(data) + colors.reset
     if not get_settings() & USE_ANSI:
         output = colors.filter(output)
 
