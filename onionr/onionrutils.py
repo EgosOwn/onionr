@@ -291,15 +291,18 @@ class OnionrUtils:
         for i in blocks:
             if len (i) == 0:
                 continue
-            with open('data/blocks/' + i + '.dat', 'r') as potentialMessage:
-                message = potentialMessage.read()
-                if message.startswith('-pm-'):
-                    try:
-                        message = self._core._crypto.pubKeyDecrypt(message.replace('-pm-', ''), encodedData=True, anonymous=True)
-                    except nacl.exceptions.CryptoError as e:
-                        #logger.debug('Unable to decrypt ' + i)
-                        #logger.debug(str(e))
-                        pass
-                    else:
-                        logger.info('Recieved message: ' + message.decode())
+            try:
+                with open('data/blocks/' + i + '.dat', 'r') as potentialMessage:
+                    message = potentialMessage.read()
+                    if message.startswith('-pm-'):
+                        try:
+                            message = self._core._crypto.pubKeyDecrypt(message.replace('-pm-', ''), encodedData=True, anonymous=True)
+                        except nacl.exceptions.CryptoError as e:
+                            #logger.debug('Unable to decrypt ' + i)
+                            #logger.debug(str(e))
+                            pass
+                        else:
+                            logger.info('Recieved message: ' + message.decode())
+            except Exception as error:
+                logger.error('Failed to open block ' + str(i) + '.', error=error)
         return

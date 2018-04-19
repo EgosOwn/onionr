@@ -216,9 +216,11 @@ def warn(data, timestamp=True):
         log('!', data, colors.fg.orange, timestamp=timestamp)
 
 # error: when only one function, module, or process of the program encountered a problem and must stop
-def error(data, timestamp=True):
+def error(data, error=None, timestamp=True):
     if get_level() <= LEVEL_ERROR:
         log('-', data, colors.fg.red, timestamp=timestamp)
+    if not error is None:
+        debug('Error details: ' + str(error))
 
 # fatal: when the something so bad has happened that the prorgam must stop
 def fatal(data, timestamp=True):
