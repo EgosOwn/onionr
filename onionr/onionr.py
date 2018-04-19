@@ -36,7 +36,7 @@ except ImportError:
     logger.error('You need python3 tkinter and tk installed to use Onionr.')
     sys.exit(1)
 
-ONIONR_TAGLINE = 'Anonymous P2P Platform - GPLv3 - onionr.voidnet.tech'
+ONIONR_TAGLINE = 'Anonymous P2P Platform - GPLv3 - https://Onionr.VoidNet.Tech'
 ONIONR_VERSION = '0.0.0' # for debugging and stuff
 API_VERSION = '1' # increments of 1; only change when something fundemental about how the API works changes. This way other nodes knows how to communicate without learning too much information about you.
 

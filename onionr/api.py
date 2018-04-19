@@ -148,6 +148,10 @@ class API:
             action = request.args.get('action')
             requestingPeer = request.args.get('myID')
             data = request.args.get('data')
+            try:
+                data
+            except:
+                data = ''
             if action == 'firstConnect':
                 pass
             elif action == 'ping':
@@ -160,6 +164,15 @@ class API:
                 resp = Response(self._utils.getBlockDBHash())
             elif action == 'getBlockHashes':
                 resp = Response(self._core.getBlockList())
+            elif action == 'announce':
+                if data != '':
+                    # TODO: require POW for this
+                    if self._core.addAddress(data):
+                        resp = Response('Success')
+                    else:
+                        resp = Response('')
+                else:
+                    resp = Response('')
             # setData should be something the communicator initiates, not this api
             elif action == 'getData':
                 resp = self._core.getData(data)

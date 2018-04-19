@@ -41,6 +41,7 @@ class Core:
         self.blockDB = 'data/blocks.db'
         self.blockDataLocation = 'data/blocks/'
         self.addressDB = 'data/address.db'
+        self.hsAdder = ''
 
         if not os.path.exists('data/'):
             os.mkdir('data/')
@@ -48,6 +49,10 @@ class Core:
             os.mkdir('data/blocks/')
         if not os.path.exists(self.blockDB):
             self.createBlockDB()
+        
+        if os.path.exists('data/hs/hostname'):
+            with open('data/hs/hostname', 'r') as hs:
+                self.hsAdder = hs.read()
             
         self._utils = onionrutils.OnionrUtils(self)
         # Initialize the crypto object
@@ -541,3 +546,11 @@ class Core:
             self.setBlockType(addedHash, header)
             retData = addedHash
         return retData
+    
+    def introduceNode(self):
+        '''
+            Introduces our node into the network by telling X many nodes our HS address
+        '''
+        nodeList = self.listAdders().split('\n')
+        self.daemonQueueAdd('announceNode', nodeList)
+        return

@@ -91,6 +91,14 @@ class OnionrCommunicate:
                 if command[0] == 'shutdown':
                     logger.info('Daemon recieved exit command.')
                     break
+                elif command[0] == 'anounceNode':
+                    announceAmount = 1
+                    announceVal = False
+                    for i in command[1]:
+                        logger.info('Announcing our node to ' + command[1][i])
+                        while not announceVal:
+                            announceVal = self.performGet('announce', command[1][i], data=self._core.hsAdder, skipHighFailureAddress=True)
+                    
             time.sleep(1)
 
         return
