@@ -18,7 +18,10 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 
-import config, logger, onionrplugins as plugins
+import config, logger, onionrplugins as plugins, onionrpluginapi as pluginapi
+
+def get_pluginapi(onionr):
+    return pluginapi.PluginAPI(onionr)
 
 def event(event_name, data = None, onionr = None):
     '''
@@ -27,11 +30,11 @@ def event(event_name, data = None, onionr = None):
 
     for plugin in plugins.get_enabled_plugins():
         try:
-            call(plugins.get_plugin(plugin), event_name, data, onionr)
+            call(plugins.get_plugin(plugin), event_name, data, self.get_pluginapi(onionr))
         except:
             logger.warn('Event \"' + event_name + '\" failed for plugin \"' + plugin + '\".')
 
-def call(plugin, event_name, data = None, onionr = None):
+def call(plugin, event_name, data = None, pluginapi = None):
     '''
         Calls an event on a plugin if one is defined
     '''
@@ -43,7 +46,7 @@ def call(plugin, event_name, data = None, onionr = None):
             # TODO: Use multithreading perhaps?
             if hasattr(plugin, attribute):
                 logger.debug('Calling event ' + str(event_name))
-                getattr(plugin, attribute)(onionr, data)
+                getattr(plugin, attribute)(pluginapi, data)
 
             return True
         except:

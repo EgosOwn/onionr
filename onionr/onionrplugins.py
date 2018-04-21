@@ -24,7 +24,7 @@ import onionrevents as events
 _pluginsfolder = 'data/plugins/'
 _instances = dict()
 
-def reload(stop_event = True):
+def reload(onionr = None, stop_event = True):
     '''
         Reloads all the plugins
     '''
@@ -41,10 +41,10 @@ def reload(stop_event = True):
 
         if stop_event is True:
             for plugin in enabled_plugins:
-                stop(plugin)
+                stop(plugin, onionr)
 
         for plugin in enabled_plugins:
-            start(plugin)
+            start(plugin, onionr)
 
         return True
     except:
@@ -53,7 +53,7 @@ def reload(stop_event = True):
     return False
 
 
-def enable(name, start_event = True):
+def enable(name, onionr = None, start_event = True):
     '''
         Enables a plugin
     '''
@@ -67,7 +67,7 @@ def enable(name, start_event = True):
         config_plugins['enabled'] = enabled_plugins
         config.set('plugins', config_plugins, True)
 
-        events.call(get_plugin(name), 'enable')
+        events.call(get_plugin(name), 'enable', onionr)
 
         if start_event is True:
             start(name)
@@ -80,7 +80,7 @@ def enable(name, start_event = True):
         return False
 
 
-def disable(name, stop_event = True):
+def disable(name, onionr = None, stop_event = True):
     '''
         Disables a plugin
     '''
@@ -95,12 +95,12 @@ def disable(name, stop_event = True):
         config.set('plugins', config_plugins, True)
 
     if exists(name):
-        events.call(get_plugin(name), 'disable')
+        events.call(get_plugin(name), 'disable', onionr)
 
         if stop_event is True:
             stop(name)
 
-def start(name):
+def start(name, onionr = None):
     '''
         Starts the plugin
     '''
@@ -114,7 +114,7 @@ def start(name):
             if plugin is None:
                 raise Exception('Failed to import module.')
             else:
-                events.call(plugin, 'start')
+                events.call(plugin, 'start', onionr)
 
             return plugin
         except:
@@ -124,7 +124,7 @@ def start(name):
 
     return None
 
-def stop(name):
+def stop(name, onionr = None):
     '''
         Stops the plugin
     '''
@@ -138,7 +138,7 @@ def stop(name):
             if plugin is None:
                 raise Exception('Failed to import module.')
             else:
-                events.call(plugin, 'stop')
+                events.call(plugin, 'stop', onionr)
 
             return plugin
         except:
@@ -225,10 +225,5 @@ def check():
     if not os.path.exists(os.path.dirname(get_plugins_folder())):
         logger.debug('Generating plugin data folder...')
         os.makedirs(os.path.dirname(get_plugins_folder()))
-
-    #if not exists('test'):
-        #os.makedirs(get_plugins_folder('test'))
-        #with open(get_plugins_folder('test') + '/main.py', 'a') as main:
-            #main.write("print('Running')\n\ndef on_test(onionr = None, data = None):\n    print('received test event!')\n    return True\n\ndef on_start(onionr = None, data = None):\n    print('start event called')\n\ndef on_stop(onionr = None, data = None):\n    print('stop event called')\n\ndef on_enable(onionr = None, data = None):\n    print('enable event called')\n\ndef on_disable(onionr = None, data = None):\n    print('disable event called')\n")
-        #enable('test')
+    
     return

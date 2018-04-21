@@ -41,9 +41,6 @@ ONIONR_VERSION = '0.0.0' # for debugging and stuff
 API_VERSION = '1' # increments of 1; only change when something fundemental about how the API works changes. This way other nodes knows how to communicate without learning too much information about you.
 
 class Onionr:
-    cmds = {}
-    cmdhelp = {}
-
     def __init__(self):
         '''
             Main Onionr class. This is for the CLI program, and does not handle much of the logic.
@@ -210,10 +207,16 @@ class Onionr:
         return self.cmdhelp
 
     def addCommand(self, command, function):
-        cmds[str(command).lower()] = function
+        self.cmds[str(command).lower()] = function
 
     def addHelp(self, command, description):
-        cmdhelp[str(command).lower()] = str(description)
+        self.cmdhelp[str(command).lower()] = str(description)
+        
+    def delCommand(self, command):
+        return self.cmds.pop(str(command).lower(), None)
+        
+    def delHelp(self, command):
+        return self.cmdhelp.pop(str(command).lower(), None)
 
     def configure(self):
         '''
@@ -243,6 +246,8 @@ class Onionr:
 
         command = commands.get(argument, self.notFound)
         command()
+        
+        return
 
     '''
         THIS SECTION DEFINES THE COMMANDS
@@ -257,6 +262,8 @@ class Onionr:
             logger.info(ONIONR_TAGLINE)
         if verbosity >= 2:
             logger.info('Running on ' + platform.platform() + ' ' + platform.release())
+            
+        return
 
     def sendEncrypt(self):
         '''
@@ -362,7 +369,7 @@ class Onionr:
         if len(sys.argv) >= 3:
             plugin_name = sys.argv[2]
             logger.info('Enabling plugin \"' + plugin_name + '\"...')
-            plugins.enable(plugin_name)
+            plugins.enable(plugin_name, self)
         else:
             logger.info(sys.argv[0] + ' ' + sys.argv[1] + ' <plugin>')
 
@@ -376,7 +383,7 @@ class Onionr:
         if len(sys.argv) >= 3:
             plugin_name = sys.argv[2]
             logger.info('Disabling plugin \"' + plugin_name + '\"...')
-            plugins.disable(plugin_name)
+            plugins.disable(plugin_name, self)
         else:
             logger.info(sys.argv[0] + ' ' + sys.argv[1] + ' <plugin>')
 
@@ -390,11 +397,11 @@ class Onionr:
         if len(sys.argv) >= 3:
             plugin_name = sys.argv[2]
             logger.info('Reloading plugin \"' + plugin_name + '\"...')
-            plugins.stop(plugin_name)
-            plugins.start(plugin_name)
+            plugins.stop(plugin_name, self)
+            plugins.start(plugin_name, self)
         else:
             logger.info('Reloading all plugins...')
-            plugins.reload()
+            plugins.reload(self)
 
         return
 
