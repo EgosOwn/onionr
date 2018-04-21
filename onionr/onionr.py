@@ -74,7 +74,6 @@ class Onionr:
         else:
             self._developmentMode = False
             logger.set_level(logger.LEVEL_INFO)
-        print('enabled? ' + str(self._developmentMode))
 
         self.onionrCore = core.Core()
         self.onionrUtils = OnionrUtils(self.onionrCore)
@@ -211,10 +210,10 @@ class Onionr:
 
     def addHelp(self, command, description):
         self.cmdhelp[str(command).lower()] = str(description)
-        
+
     def delCommand(self, command):
         return self.cmds.pop(str(command).lower(), None)
-        
+
     def delHelp(self, command):
         return self.cmdhelp.pop(str(command).lower(), None)
 
@@ -246,7 +245,7 @@ class Onionr:
 
         command = commands.get(argument, self.notFound)
         command()
-        
+
         return
 
     '''
@@ -262,7 +261,7 @@ class Onionr:
             logger.info(ONIONR_TAGLINE)
         if verbosity >= 2:
             logger.info('Running on ' + platform.platform() + ' ' + platform.release())
-            
+
         return
 
     def sendEncrypt(self):
