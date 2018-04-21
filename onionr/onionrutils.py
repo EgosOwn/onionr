@@ -129,7 +129,7 @@ class OnionrUtils:
             logger.error('Failed to read my address.', error=error)
             return ''
 
-    def localCommand(self, command):
+    def localCommand(self, command, silent = True):
         '''
             Send a command to the local http API server, securely. Intended for local clients, DO NOT USE for remote peers.
         '''
@@ -140,7 +140,8 @@ class OnionrUtils:
         try:
             retData = requests.get('http://' + open('data/host.txt', 'r').read() + ':' + str(config.get('client')['port']) + '/client/?action=' + command + '&token=' + str(config.get('client')['client_hmac']) + '&timingToken=' + self.timingToken).text
         except Exception as error:
-            logger.error('Failed to make local request (command: ' + str(command) + ').', error=error)
+            if not silent:
+                logger.error('Failed to make local request (command: ' + str(command) + ').', error=error)
             retData = False
 
         return retData

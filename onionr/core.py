@@ -22,7 +22,7 @@ import sqlite3, os, sys, time, math, base64, tarfile, getpass, simplecrypt, hash
 #from Crypto import Random
 import netcontroller
 
-import onionrutils, onionrcrypto, btc
+import onionrutils, onionrcrypto, btc, onionrevents as events
 
 if sys.version_info < (3, 6):
     try:
@@ -89,10 +89,13 @@ class Core:
         c.execute('INSERT INTO peers (id, name, dateSeen) VALUES(?, ?, ?);', t)
         conn.commit()
         conn.close()
+
         return True
 
     def addAddress(self, address):
-        '''Add an address to the address database (only tor currently)'''
+        '''
+            Add an address to the address database (only tor currently)
+        '''
         if self._utils.validateID(address):
             conn = sqlite3.connect(self.addressDB)
             c = conn.cursor()
@@ -114,12 +117,17 @@ class Core:
             c.execute('INSERT INTO adders (address, type) VALUES(?, ?);', t)
             conn.commit()
             conn.close()
+
+            events.event('address_add', data = {'address': address}, onionr = None)
+
             return True
         else:
             return False
 
     def removeAddress(self, address):
-        '''Remove an address from the address database'''
+        '''
+            Remove an address from the address database
+        '''
         if self._utils.validateID(address):
             conn = sqlite3.connect(self.addressDB)
             c = conn.cursor()
@@ -127,6 +135,9 @@ class Core:
             c.execute('Delete from adders where address=?;', t)
             conn.commit()
             conn.close()
+
+            events.event('address_remove', data = {'address': address}, onionr = None)
+
             return True
         else:
             return False
@@ -330,6 +341,8 @@ class Core:
         conn.commit()
         conn.close()
 
+        events.event('queue_pop', data = {'data': retData}, onionr = None)
+
         return retData
 
     def daemonQueueAdd(self, command, data=''):
@@ -345,6 +358,8 @@ class Core:
         conn.commit()
         conn.close()
 
+        events.event('queue_push', data = {'command': command, 'data': data}, onionr = None)
+
         return
 
     def clearDaemonQueue(self):
@@ -354,11 +369,12 @@ class Core:
         conn = sqlite3.connect(self.queueDB)
         c = conn.cursor()
         try:
-            c.execute('delete from commands;')
+            c.execute('DELETE FROM commands;')
             conn.commit()
         except:
             pass
         conn.close()
+        events.event('queue_clear', onionr = None)
 
         return
 
@@ -564,4 +580,5 @@ class Core:
             announceAmount = len(nodeList)
         for i in range(announceAmount):
             self.daemonQueueAdd('announceNode', nodeList[i])
+        events.event('introduction', onionr = None)
         return

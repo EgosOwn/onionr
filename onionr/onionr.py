@@ -20,8 +20,8 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import sys, os, base64, random, getpass, shutil, subprocess, requests, time, platform
-import api, core, config, logger, onionrplugins as plugins
+import sys, os, base64, random, getpass, shutil, subprocess, requests, time, platform, datetime, re
+import api, core, config, logger, onionrplugins as plugins, onionrevents as events
 from onionrutils import OnionrUtils
 from netcontroller import NetController
 
@@ -137,6 +137,9 @@ class Onionr:
             'reloadplugin': self.reloadPlugin,
             'reload-plugins': self.reloadPlugin,
             'reloadplugins': self.reloadPlugin,
+            'create-plugin': self.createPlugin,
+            'createplugin': self.createPlugin,
+            'plugin-create': self.createPlugin,
 
             'listkeys': self.listKeys,
             'list-keys': self.listKeys,
@@ -159,6 +162,7 @@ class Onionr:
             'addaddr': self.addAddress,
             'addaddress': self.addAddress,
 
+            'introduce': self.onionrCore.introduceNode,
             'connect': self.addAddress
         }
 
@@ -172,13 +176,18 @@ class Onionr:
             'enable-plugin': 'Enables and starts a plugin',
             'disable-plugin': 'Disables and stops a plugin',
             'reload-plugin': 'Reloads a plugin',
+            'create-plugin': 'Creates directory structure for a plugin',
             'add-peer': 'Adds a peer (?)',
             'list-peers': 'Displays a list of peers',
             'add-msg': 'Broadcasts a message to the Onionr network',
             'pm': 'Adds a private message to block',
             'get-pms': 'Shows private messages sent to you',
-            'gui': 'Opens a graphical interface for Onionr'
+            'gui': 'Opens a graphical interface for Onionr',
+            'introduce': 'Introduce your node to the public Onionr network (DAEMON MUST BE RUNNING)',
         }
+
+        # initialize plugins
+        events.event('init', onionr = self)
 
         command = ''
         try:
@@ -238,6 +247,7 @@ class Onionr:
         '''
             Executes a command
         '''
+
         argument = argument[argument.startswith('--') and len('--'):] # remove -- if it starts with it
 
         # define commands
@@ -256,6 +266,7 @@ class Onionr:
         '''
             Displays the Onionr version
         '''
+
         logger.info('Onionr ' + ONIONR_VERSION + ' (' + platform.machine() + ') - API v' + API_VERSION)
         if verbosity >= 1:
             logger.info(ONIONR_TAGLINE)
@@ -268,6 +279,7 @@ class Onionr:
         '''
             Create a private message and send it
         '''
+
         invalidID = True
         while invalidID:
             try:
@@ -404,6 +416,34 @@ class Onionr:
 
         return
 
+    def createPlugin(self):
+        '''
+            Creates the directory structure for a plugin name
+        '''
+
+        if len(sys.argv) >= 3:
+            try:
+                plugin_name = re.sub('[^0-9a-zA-Z]+', '', str(sys.argv[2]).lower())
+
+                if not plugins.exists(plugin_name):
+                    logger.info('Creating plugin \"' + plugin_name + '\"...')
+
+                    os.makedirs(plugins.get_plugins_folder(plugin_name))
+                    with open(plugins.get_plugins_folder(plugin_name) + '/main.py', 'a') as main:
+                        main.write(open('default_plugin.txt').read().replace('$user', os.getlogin()).replace('$date', datetime.datetime.now().strftime('%Y-%m-%d')))
+
+                    logger.info('Enabling plugin \"' + plugin_name + '\"...')
+                    plugins.enable(plugin_name, self)
+                else:
+                    logger.warn('Cannot create plugin directory structure; plugin "' + plugin_name + '" exists.')
+
+            except Exception as e:
+                logger.error('Failed to create plugin directory structure.', e)
+        else:
+            logger.info(sys.argv[0] + ' ' + sys.argv[1] + ' <plugin>')
+
+        return
+
     def notFound(self):
         '''
             Displays a "command not found" message
@@ -451,6 +491,7 @@ class Onionr:
             time.sleep(1)
             subprocess.Popen(["./communicator.py", "run", str(net.socksPort)])
             logger.debug('Started communicator')
+            events.event('daemon_start', onionr = self)
         api.API(self.debug)
 
         return
@@ -461,6 +502,7 @@ class Onionr:
         '''
 
         logger.warn('Killing the running daemon')
+        events.event('daemon_stop', onionr = self)
         net = NetController(config.get('client')['port'])
         try:
             self.onionrUtils.localCommand('shutdown')

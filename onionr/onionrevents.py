@@ -20,19 +20,20 @@
 
 import config, logger, onionrplugins as plugins, onionrpluginapi as pluginapi
 
-def get_pluginapi(onionr):
-    return pluginapi.PluginAPI(onionr)
+def get_pluginapi(onionr, data):
+    return pluginapi.pluginapi(onionr, data)
 
-def event(event_name, data = None, onionr = None):
+def event(event_name, data = {}, onionr = None):
     '''
         Calls an event on all plugins (if defined)
     '''
 
     for plugin in plugins.get_enabled_plugins():
         try:
-            call(plugins.get_plugin(plugin), event_name, data, self.get_pluginapi(onionr))
-        except:
+            call(plugins.get_plugin(plugin), event_name, data, get_pluginapi(onionr, data))
+        except Exception as e:
             logger.warn('Event \"' + event_name + '\" failed for plugin \"' + plugin + '\".')
+            logger.debug(str(e))
 
 def call(plugin, event_name, data = None, pluginapi = None):
     '''
@@ -45,12 +46,12 @@ def call(plugin, event_name, data = None, pluginapi = None):
 
             # TODO: Use multithreading perhaps?
             if hasattr(plugin, attribute):
-                logger.debug('Calling event ' + str(event_name))
-                getattr(plugin, attribute)(pluginapi, data)
+                #logger.debug('Calling event ' + str(event_name))
+                getattr(plugin, attribute)(pluginapi)
 
             return True
-        except:
-            logger.warn('Failed to call event ' + str(event_name) + ' on module.')
+        except Exception as e:
+            logger.debug(str(e))
             return False
     else:
         return True

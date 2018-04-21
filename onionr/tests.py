@@ -134,7 +134,7 @@ class OnionrTests(unittest.TestCase):
         if not onionrplugins.exists('test'):
             os.makedirs(onionrplugins.get_plugins_folder('test'))
             with open(onionrplugins.get_plugins_folder('test') + '/main.py', 'a') as main:
-                main.write("print('Running')\n\ndef on_test(onionr = None, data = None):\n    print('received test event!')\n    return True\n\ndef on_start(onionr = None, data = None):\n    print('start event called')\n\ndef on_stop(onionr = None, data = None):\n    print('stop event called')\n\ndef on_enable(onionr = None, data = None):\n    print('enable event called')\n\ndef on_disable(onionr = None, data = None):\n    print('disable event called')\n")
+                main.write("print('Running')\n\ndef on_test(pluginapi, data = None):\n    print('received test event!')\n    return True\n\ndef on_start(pluginapi, data = None):\n    print('start event called')\n\ndef on_stop(pluginapi, data = None):\n    print('stop event called')\n\ndef on_enable(pluginapi, data = None):\n    print('enable event called')\n\ndef on_disable(pluginapi, data = None):\n    print('disable event called')\n")
             onionrplugins.enable('test')
 
         try:
@@ -152,7 +152,7 @@ class OnionrTests(unittest.TestCase):
         if not onionrplugins.exists('test'):
             os.makedirs(onionrplugins.get_plugins_folder('test'))
             with open(onionrplugins.get_plugins_folder('test') + '/main.py', 'a') as main:
-                main.write("print('Running')\n\ndef on_test(onionr = None, data = None):\n    print('received test event!')\n    return True\n\ndef on_start(onionr = None, data = None):\n    print('start event called')\n\ndef on_stop(onionr = None, data = None):\n    print('stop event called')\n\ndef on_enable(onionr = None, data = None):\n    print('enable event called')\n\ndef on_disable(onionr = None, data = None):\n    print('disable event called')\n")
+                main.write("print('Running')\n\ndef on_test(pluginapi, data = None):\n    print('received test event!')\n    return True\n\ndef on_start(pluginapi, data = None):\n    print('start event called')\n\ndef on_stop(pluginapi, data = None):\n    print('stop event called')\n\ndef on_enable(pluginapi, data = None):\n    print('enable event called')\n\ndef on_disable(pluginapi, data = None):\n    print('disable event called')\n")
             onionrplugins.enable('test')
 
         try:
@@ -171,7 +171,7 @@ class OnionrTests(unittest.TestCase):
         if not plugins.exists('test'):
             os.makedirs(plugins.get_plugins_folder('test'))
             with open(plugins.get_plugins_folder('test') + '/main.py', 'a') as main:
-                main.write("print('Running')\n\ndef on_test(onionr = None, data = None):\n    print('received test event!')\n    return True\n\ndef on_start(onionr = None, data = None):\n    print('start event called')\n\ndef on_stop(onionr = None, data = None):\n    print('stop event called')\n\ndef on_enable(onionr = None, data = None):\n    print('enable event called')\n\ndef on_disable(onionr = None, data = None):\n    print('disable event called')\n")
+                main.write("print('Running')\n\ndef on_test(pluginapi, data = None):\n    print('received test event!')\n    return True\n\ndef on_start(pluginapi, data = None):\n    print('start event called')\n\ndef on_stop(pluginapi, data = None):\n    print('stop event called')\n\ndef on_enable(pluginapi, data = None):\n    print('enable event called')\n\ndef on_disable(pluginapi, data = None):\n    print('disable event called')\n")
             plugins.enable('test')
 
 
