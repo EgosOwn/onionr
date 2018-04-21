@@ -20,6 +20,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
+
 import sys, os, base64, random, getpass, shutil, subprocess, requests, time, platform, datetime, re
 import api, core, config, logger, onionrplugins as plugins, onionrevents as events
 from onionrutils import OnionrUtils
@@ -54,8 +55,15 @@ class Onionr:
 
         # Load global configuration data
 
+        data_exists = os.path.exists('data/')
+
+        if not data_exists:
+            os.mkdir('data/')
+
         exists = os.path.exists(config.get_config_file())
         config.set_config({'devmode': True, 'log': {'file': {'output': True, 'path': 'data/output.log'}, 'console': {'output': True, 'color': True}}}) # this is the default config, it will be overwritten if a config file already exists. Else, it saves it
+        if not exists:
+            config.save()
         config.reload() # this will read the configuration file into memory
 
         settings = 0b000
@@ -92,9 +100,19 @@ class Onionr:
                 else:
                     logger.error('Failed to decrypt: ' + result[1], timestamp = False)
         else:
-            if not os.path.exists('data/'):
-                os.mkdir('data/')
-                os.mkdir('data/blocks/')
+            # If data folder does not exist
+            if not data_exists:
+                if not os.path.exists('data/blocks/'):
+                    os.mkdir('data/blocks/')
+
+                # Copy default plugins into plugins folder
+                if os.path.exists('default-plugins/'):
+                    names = [f for f in os.listdir("default-plugins/") if not os.path.isfile(f)]
+                    shutil.copytree('default-plugins/', 'data/plugins/')
+
+                    # Enable plugins
+                    for name in names:
+                        plugins.enable(name, self)
 
         if not os.path.exists(self.onionrCore.peerDB):
             self.onionrCore.createPeerDB()

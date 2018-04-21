@@ -14,8 +14,10 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
+
 from tkinter import *
 import os, sqlite3, core
+
 class OnionrGUI:
     def __init__(self, myCore):
         self.root = Tk()
@@ -71,7 +73,7 @@ class OnionrGUI:
 
         scrollbar.config(command=self.listbox.yview)
         self.root.after(2000, self.update)
-        self.root.mainloop() 
+        self.root.mainloop()
 
     def sendMessage(self):
         messageToAdd = '-txt-' + self.sendEntry.get()

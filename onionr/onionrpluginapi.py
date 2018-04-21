@@ -66,11 +66,14 @@ class PluginAPI:
     def disable(self, name):
         plugins.disable(name)
 
+    def event(self, name, data = {}):
+        events.event(name, data = data, onionr = self.pluginapi.get_onionr())
+
     def is_enabled(self, name):
         return plugins.is_enabled(name)
 
     def get_enabled_plugins(self):
-        return plugins.get_enabled_plugins()
+        return plugins.get_enabled()
 
 class CommandAPI:
     def __init__(self, pluginapi):
