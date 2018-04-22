@@ -44,6 +44,9 @@ class Core:
             self.addressDB = 'data/address.db'
             self.hsAdder = ''
 
+            self.bootstrapFileLocation = 'static-data/bootstrap-nodes.txt'
+            self.bootstrapList = []
+
             if not os.path.exists('data/'):
                 os.mkdir('data/')
             if not os.path.exists('data/blocks/'):
@@ -54,10 +57,20 @@ class Core:
             if os.path.exists('data/hs/hostname'):
                 with open('data/hs/hostname', 'r') as hs:
                     self.hsAdder = hs.read()
+            else:
+                logger.warn('Warning: address bootstrap file not found ' + self.bootstrapFileLocation)
+
+            # Load bootstrap address list
+            if os.path.exists(self.bootstrapFileLocation):
+                with open(self.bootstrapFileLocation, 'r') as bootstrap:
+                    bootstrap = bootstrap.read()
+                for i in bootstrap.split('\n'):
+                    self.bootstrapList.append(i)
 
             self._utils = onionrutils.OnionrUtils(self)
             # Initialize the crypto object
             self._crypto = onionrcrypto.OnionrCrypto(self)
+
         except Exception as error:
             logger.error('Failed to initialize core Onionr library.', error=error)
             logger.fatal('Cannot recover from error.')
@@ -574,8 +587,10 @@ class Core:
         announceAmount = 2
         nodeList = self.listAdders()
         if len(nodeList) == 0:
-            self.addAddress('onionragxuddecmg.onion')
-            nodeList.append('onionragxuddecmg.onion')
+            for i in self.bootstrapList:
+                if self._utils.validateID(i):
+                    self.addAddress(i)
+                    nodeList.append(i)
         if announceAmount > len(nodeList):
             announceAmount = len(nodeList)
         for i in range(announceAmount):

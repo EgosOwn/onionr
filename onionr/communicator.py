@@ -263,13 +263,20 @@ class OnionrCommunicate:
         '''
         return urllib.parse.quote_plus(data)
 
-    def performGet(self, action, peer, data=None, skipHighFailureAddress=False, peerType='tor'):
+    def performGet(self, action, peer, data=None, skipHighFailureAddress=False, peerType='tor', selfCheck=True):
         '''
             Performs a request to a peer through Tor or i2p (currently only Tor)
         '''
 
         if not peer.endswith('.onion') and not peer.endswith('.onion/'):
             raise PeerError('Currently only Tor .onion peers are supported. You must manually specify .onion')
+        
+        if len(self._core.hsAdder.strip()) == 0:
+            raise Exception("Could not perform self address check in performGet due to not knowing our address")
+        if selfCheck:
+            if peer.replace('/', '') == self._core.hsAdder:
+                logger.warn('Tried to performget to own hidden service, but selfCheck was not set to false')
+                return
 
         # Store peer in peerData dictionary (non permanent)
         if not peer in self.peerData:
