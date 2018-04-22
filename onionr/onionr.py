@@ -22,6 +22,7 @@
 '''
 
 import sys, os, base64, random, getpass, shutil, subprocess, requests, time, platform, datetime, re
+from threading import Thread
 import api, core, config, logger, onionrplugins as plugins, onionrevents as events
 from onionrutils import OnionrUtils
 from netcontroller import NetController
@@ -30,12 +31,6 @@ try:
     from urllib3.contrib.socks import SOCKSProxyManager
 except ImportError:
     raise Exception("You need the PySocks module (for use with socks5 proxy to use Tor)")
-
-try:
-    import gui
-except ImportError:
-    logger.error('You need python3 tkinter and tk installed to use Onionr.')
-    sys.exit(1)
 
 ONIONR_TAGLINE = 'Anonymous P2P Platform - GPLv3 - https://Onionr.VoidNet.Tech'
 ONIONR_VERSION = '0.0.0' # for debugging and stuff
@@ -171,8 +166,6 @@ class Onionr:
             'getpms': self.getPMs,
             'get-pms': self.getPMs,
 
-            'gui': self.openGUI,
-
             'addpeer': self.addPeer,
             'add-peer': self.addPeer,
             'add-address': self.addAddress,
@@ -200,7 +193,6 @@ class Onionr:
             'add-msg': 'Broadcasts a message to the Onionr network',
             'pm': 'Adds a private message to block',
             'get-pms': 'Shows private messages sent to you',
-            'gui': 'Opens a graphical interface for Onionr',
             'introduce': 'Introduce your node to the public Onionr network (DAEMON MUST BE RUNNING)',
         }
 
@@ -318,13 +310,6 @@ class Onionr:
                 logger.info("Sending message to " + peer)
                 self.onionrUtils.sendPM(peer, message)
 
-
-    def openGUI(self):
-        '''
-            Opens a graphical interface for Onionr
-        '''
-
-        gui.OnionrGUI(self.onionrCore)
 
     def listKeys(self):
         '''
@@ -476,7 +461,7 @@ class Onionr:
 
         logger.info('Do ' + logger.colors.bold + sys.argv[0] + ' --help' + logger.colors.reset + logger.colors.fg.green + ' for Onionr help.')
 
-    def start(self):
+    def start(self, input = False):
         '''
             Starts the Onionr daemon
         '''
@@ -488,7 +473,9 @@ class Onionr:
                 lockFile = open('.onionr-lock', 'w')
                 lockFile.write('')
                 lockFile.close()
+            self.running = True
             self.daemon()
+            self.running = False
             if not self.debug and not self._developmentMode:
                 os.remove('.onionr-lock')
 
@@ -550,13 +537,16 @@ class Onionr:
                 self.showHelp(cmd)
         elif not command is None:
             if command.lower() in helpmenu:
-                logger.info(logger.colors.bold + command  + logger.colors.reset + logger.colors.fg.blue + ' : ' + logger.colors.reset +  helpmenu[command.lower()])
+                logger.info(logger.colors.bold + command  + logger.colors.reset + logger.colors.fg.blue + ' : ' + logger.colors.reset +  helpmenu[command.lower()], timestamp = False)
             else:
-                logger.warn(logger.colors.bold + command  + logger.colors.reset + logger.colors.fg.blue + ' : ' + logger.colors.reset + 'No help menu entry was found')
+                logger.warn(logger.colors.bold + command  + logger.colors.reset + logger.colors.fg.blue + ' : ' + logger.colors.reset + 'No help menu entry was found', timestamp = False)
         else:
             self.version(0)
             for command, helpmessage in helpmenu.items():
                 self.showHelp(command)
         return
+
+    def get_hostname(self):
+        return open('./data/hs/hostname', 'r').read()
 
 Onionr()
