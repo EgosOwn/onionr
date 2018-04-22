@@ -57,8 +57,6 @@ class Core:
             if os.path.exists('data/hs/hostname'):
                 with open('data/hs/hostname', 'r') as hs:
                     self.hsAdder = hs.read()
-            else:
-                logger.warn('Warning: address bootstrap file not found ' + self.bootstrapFileLocation)
 
             # Load bootstrap address list
             if os.path.exists(self.bootstrapFileLocation):
@@ -66,6 +64,8 @@ class Core:
                     bootstrap = bootstrap.read()
                 for i in bootstrap.split('\n'):
                     self.bootstrapList.append(i)
+            else:
+                logger.warn('Warning: address bootstrap file not found ' + self.bootstrapFileLocation)
 
             self._utils = onionrutils.OnionrUtils(self)
             # Initialize the crypto object
