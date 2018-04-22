@@ -20,7 +20,7 @@ and code to operate as a daemon, getting commands from the command queue databas
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 import sqlite3, requests, hmac, hashlib, time, sys, os, math, logger, urllib.parse, random
-import core, onionrutils, onionrcrypto, onionrproofs, btc, config, onionrplugins as plugins
+import core, onionrutils, onionrcrypto, netcontroller, onionrproofs, btc, config, onionrplugins as plugins
 
 class OnionrCommunicate:
     def __init__(self, debug, developmentMode):
@@ -33,6 +33,7 @@ class OnionrCommunicate:
         self._core = core.Core()
         self._utils = onionrutils.OnionrUtils(self._core)
         self._crypto = onionrcrypto.OnionrCrypto(self._core)
+        self._netController = netcontroller.NetController(0) # arg is the HS port but not needed rn in this file
 
         self.highFailureAmount = 7
         '''
@@ -57,6 +58,9 @@ class OnionrCommunicate:
         pexCount = 0
         logger.debug('Communicator debugging enabled.')
         torID = open('data/hs/hostname').read()
+
+        apiRunningCheckRate = 10
+        apiRunningCheckCount = 0
 
         self.peerData = {} # Session data for peers (recent reachability, speed, etc)
 
@@ -103,9 +107,23 @@ class OnionrCommunicate:
                         if announceAttemptCount >= announceAttempts:
                             logger.warn('Unable to announce to ' + command[1])
                             break
+            apiRunningCheckCount += 1
+            # check if local API is up
+            if apiRunningCheckCount > apiRunningCheckRate:
+                if self._core._utils.localCommand('ping') != 'pong':
+                    for i in range(4):
+                        if self._utils.localCommand('ping') == 'pong':
+                            apiRunningCheckCount = 0
+                            break # break for loop
+                        time.sleep(1)
+                    else:
+                        # This executes if the api is NOT detected to be running
+                        logger.error('Daemon detected API crash (or otherwise unable to reach API after long time, stopping)')
+                        break # break main daemon loop
+                apiRunningCheckCount = 0
 
             time.sleep(1)
-
+        self._netController.killTor()
         return
 
     def getNewPeers(self):

@@ -550,6 +550,11 @@ class Onionr:
         return
 
     def get_hostname(self):
-        return open('./data/hs/hostname', 'r').read()
+        retVal = ''
+        try:
+            with open('./data/hs/hostname', 'r') as hostname:
+                retval = retVal.read()
+        except FileNotFoundError:
+            return retVal
 
 Onionr()

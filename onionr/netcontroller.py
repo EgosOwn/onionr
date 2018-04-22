@@ -52,6 +52,7 @@ class NetController:
         torrcData = '''SocksPort ''' + str(self.socksPort) + '''
 HiddenServiceDir data/hs/
 HiddenServicePort 80 127.0.0.1:''' + str(self.hsPort) + '''
+DataDirectory data/tordata/
         '''
         torrc = open(self.torConfigLocation, 'w')
         torrc.write(torrcData)
