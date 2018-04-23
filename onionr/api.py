@@ -196,7 +196,9 @@ class API:
                     resp = Response('')
             # setData should be something the communicator initiates, not this api
             elif action == 'getData':
-                resp = base64.b64encode(self._core.getData(data))
+                if self._utils.validateHash(data):
+                    if not os.path.exists('data/blocks/' + data + '.db'):
+                        resp = base64.b64encode(self._core.getData(data))
                 if resp == False:
                     abort(404)
                     resp = ""
