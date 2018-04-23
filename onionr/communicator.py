@@ -245,7 +245,7 @@ class OnionrCommunicate:
                 data = b''
             if data == False or len(data) > 10000000:
                 continue
-            hasher.update(data.encode())
+            hasher.update(data)
             digest = hasher.hexdigest()
             if type(digest) is bytes:
                 digest = digest.decode()
