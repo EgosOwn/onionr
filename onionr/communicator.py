@@ -36,7 +36,7 @@ class OnionrCommunicate:
         self._netController = netcontroller.NetController(0) # arg is the HS port but not needed rn in this file
 
         self.newHashes = {} # use this to not keep hashes around too long if we cant get their data
-        self.keepNewHash = 100
+        self.keepNewHash = 20
         self.ignoredHashes = []
 
         self.highFailureAmount = 7
