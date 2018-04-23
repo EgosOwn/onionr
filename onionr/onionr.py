@@ -556,13 +556,11 @@ class Onionr:
         return
 
     def get_hostname(self):
-        retVal = ''
         try:
             with open('./data/hs/hostname', 'r') as hostname:
-                retVal = hostname.read()
-        except FileNotFoundError:
-            retVal = None
-        return retVal
+                return hostname.read().strip()
+        except Exception:
+            return None
 
     def addFile(self):
         '''command to add a file to the onionr network'''

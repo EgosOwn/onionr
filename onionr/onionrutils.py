@@ -120,14 +120,11 @@ class OnionrUtils:
 
     def getMyAddress(self):
         try:
-            myAddressFile = open("data/hs/hostname", 'r')
-            myAddress = myAddressFile.read()
-            myAddressFile.close()
-
-            return myAddress.strip()
+            with open('./data/hs/hostname', 'r') as hostname:
+                return hostname.read().strip()
         except Exception as error:
             logger.error('Failed to read my address.', error=error)
-            return ''
+            return None
 
     def localCommand(self, command, silent = True):
         '''

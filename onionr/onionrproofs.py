@@ -17,10 +17,12 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
+
 import nacl.encoding, nacl.hash, nacl.utils, time, math, threading, binascii, logger
 import btc
+
 class POW:
-    def pow(self, reporting=False):
+    def pow(self, reporting = False):
         startTime = math.floor(time.time())
         self.hashing = True
         self.reporting = reporting
@@ -30,12 +32,12 @@ class POW:
         hbCount = 0
         blockCheck = 300000 # How often the hasher should check if the bitcoin block is updated (slows hashing but prevents less wasted work)
         blockCheckCount = 0
-        block = ''#self.bitcoinNode.getBlockHash(self.bitcoinNode.getLastBlockHeight())
+        block = '' #self.bitcoinNode.getBlockHash(self.bitcoinNode.getLastBlockHeight())
         while self.hashing:
             if blockCheckCount == blockCheck:
                 if self.reporting:
                     logger.debug('Refreshing Bitcoin block')
-                block = ''#self.bitcoinNode.getBlockHash(self.bitcoinNode.getLastBlockHeight())
+                block = '' #self.bitcoinNode.getBlockHash(self.bitcoinNode.getLastBlockHeight())
                 blockCheckCount = 0
             blockCheckCount += 1
             hbCount += 1
@@ -77,7 +79,9 @@ class POW:
         self.difficulty = newDiff
 
     def getResult(self):
-        '''Returns the result then sets to false, useful to automatically clear the result'''
+        '''
+            Returns the result then sets to false, useful to automatically clear the result
+        '''
         try:
             retVal = self.result
         except AttributeError:
