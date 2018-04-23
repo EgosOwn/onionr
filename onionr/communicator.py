@@ -239,7 +239,6 @@ class OnionrCommunicate:
         for i in peerList:
             hasher = hashlib.sha3_256()
             data = self.performGet('getData', i, hash)
-            print('b64 data', data)
             if data == False or len(data) > 10000000:
                 continue
             try:
