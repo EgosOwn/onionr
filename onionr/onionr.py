@@ -114,7 +114,10 @@ class Onionr:
 
         for name in plugins.get_enabled_plugins():
             if not os.path.exists(plugins.get_plugin_data_folder(name)):
-                os.mkdir(plugins.get_plugin_data_folder(name))
+                try:
+                    os.mkdir(plugins.get_plugin_data_folder(name))
+                except:
+                    plugins.disable(name, onionr = self, stop_event = False)
 
         if not os.path.exists(self.onionrCore.peerDB):
             self.onionrCore.createPeerDB()
