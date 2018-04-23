@@ -204,12 +204,19 @@ def get_plugins_folder(name = None, absolute = True):
         path = _pluginsfolder
     else:
         # only allow alphanumeric characters
-        path = _pluginsfolder + re.sub('[^0-9a-zA-Z]+', '', str(name).lower()) + '/'
+        path = _pluginsfolder + re.sub('[^0-9a-zA-Z]+', '', str(name).lower())
 
     if absolute is True:
         path = os.path.abspath(path)
 
-    return path
+    return path + '/'
+
+def get_plugin_data_folder(name, absolute = True):
+    '''
+        Returns the location of a plugin's data folder
+    '''
+
+    return get_plugins_folder(name, absolute) + 'data/'
 
 def check():
     '''

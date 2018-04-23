@@ -102,15 +102,19 @@ class Onionr:
 
                 # Copy default plugins into plugins folder
 
-            if not os.path.exists('data/plugins/'):
+            if not os.path.exists(plugins.get_plugins_folder()):
                 if os.path.exists('default-plugins/'):
                     names = [f for f in os.listdir("default-plugins/") if not os.path.isfile(f)]
-                    shutil.copytree('default-plugins/', 'data/plugins/')
+                    shutil.copytree('default-plugins/', plugins.get_plugins_folder())
 
                     # Enable plugins
                     for name in names:
                         if not name in plugins.get_enabled_plugins():
                             plugins.enable(name, self)
+
+        for name in plugins.get_enabled_plugins():
+            if not os.path.exists(plugins.get_plugin_data_folder(name)):
+                os.mkdir(plugins.get_plugin_data_folder(name))
 
         if not os.path.exists(self.onionrCore.peerDB):
             self.onionrCore.createPeerDB()

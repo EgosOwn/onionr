@@ -75,6 +75,15 @@ class PluginAPI:
     def get_enabled_plugins(self):
         return plugins.get_enabled()
 
+    def get_folder(self, name = None, absolute = True):
+        return plugins.get_plugins_folder(name = name, absolute = absolute)
+
+    def get_data_folder(self, name, absolute = True):
+        return plugins.get_plugin_data_folder(name, absolute = absolute)
+
+    def daemon_event(self, event, plugin = None):
+        return # later make local command like /client/?action=makeEvent&event=eventname&module=modulename
+
 class CommandAPI:
     def __init__(self, pluginapi):
         self.pluginapi = pluginapi

@@ -228,6 +228,12 @@ class OnionrUtils:
                 conn.close()
                 return False
 
+    def hasKey(self, key):
+        '''
+            Check for key in list of public keys
+        '''
+        return key in self._core.listPeers()
+
     def validateHash(self, data, length=64):
         '''
             Validate if a string is a valid hex formatted hash
