@@ -208,6 +208,8 @@ class OnionrCommunicate:
                 continue
             if self._utils.hasBlock(i):
                 continue
+            if i in self.ignoredHashes:
+                continue
             #logger.debug('Exchanged block (blockList): ' + i)
             if not self._utils.validateHash(i):
                 # skip hash if it isn't valid
