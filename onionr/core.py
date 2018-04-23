@@ -44,6 +44,9 @@ class Core:
             self.addressDB = 'data/address.db'
             self.hsAdder = ''
 
+            self.bootstrapFileLocation = 'static-data/bootstrap-nodes.txt'
+            self.bootstrapList = []
+
             if not os.path.exists('data/'):
                 os.mkdir('data/')
             if not os.path.exists('data/blocks/'):
@@ -55,9 +58,19 @@ class Core:
                 with open('data/hs/hostname', 'r') as hs:
                     self.hsAdder = hs.read()
 
+            # Load bootstrap address list
+            if os.path.exists(self.bootstrapFileLocation):
+                with open(self.bootstrapFileLocation, 'r') as bootstrap:
+                    bootstrap = bootstrap.read()
+                for i in bootstrap.split('\n'):
+                    self.bootstrapList.append(i)
+            else:
+                logger.warn('Warning: address bootstrap file not found ' + self.bootstrapFileLocation)
+
             self._utils = onionrutils.OnionrUtils(self)
             # Initialize the crypto object
             self._crypto = onionrcrypto.OnionrCrypto(self)
+
         except Exception as error:
             logger.error('Failed to initialize core Onionr library.', error=error)
             logger.fatal('Cannot recover from error.')
@@ -245,7 +258,7 @@ class Core:
             Simply return the data associated to a hash
         '''
         try:
-            dataFile = open(self.blockDataLocation + hash + '.dat')
+            dataFile = open(self.blockDataLocation + hash + '.dat', 'rb')
             data = dataFile.read()
             dataFile.close()
         except FileNotFoundError:
@@ -257,8 +270,10 @@ class Core:
         '''
             Set the data assciated with a hash
         '''
-        data = data.encode()
+        data = data
         hasher = hashlib.sha3_256()
+        if not type(data) is bytes:
+            data = data.encode()
         hasher.update(data)
         dataHash = hasher.hexdigest()
         if type(dataHash) is bytes:
@@ -268,8 +283,8 @@ class Core:
             pass # TODO: properly check if block is already saved elsewhere
             #raise Exception("Data is already set for " + dataHash)
         else:
-            blockFile = open(blockFileName, 'w')
-            blockFile.write(data.decode())
+            blockFile = open(blockFileName, 'wb')
+            blockFile.write(data)
             blockFile.close()
 
         conn = sqlite3.connect(self.blockDB)
@@ -574,8 +589,10 @@ class Core:
         announceAmount = 2
         nodeList = self.listAdders()
         if len(nodeList) == 0:
-            self.addAddress('onionragxuddecmg.onion')
-            nodeList.append('onionragxuddecmg.onion')
+            for i in self.bootstrapList:
+                if self._utils.validateID(i):
+                    self.addAddress(i)
+                    nodeList.append(i)
         if announceAmount > len(nodeList):
             announceAmount = len(nodeList)
         for i in range(announceAmount):

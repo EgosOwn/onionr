@@ -19,7 +19,7 @@ and code to operate as a daemon, getting commands from the command queue databas
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import sqlite3, requests, hmac, hashlib, time, sys, os, math, logger, urllib.parse, random
+import sqlite3, requests, hmac, hashlib, time, sys, os, math, logger, urllib.parse, random, base64, binascii
 import core, onionrutils, onionrcrypto, netcontroller, onionrproofs, btc, config, onionrplugins as plugins
 
 class OnionrCommunicate:
@@ -241,17 +241,21 @@ class OnionrCommunicate:
             data = self.performGet('getData', i, hash)
             if data == False or len(data) > 10000000:
                 continue
-            hasher.update(data.encode())
+            try:
+                data = base64.b64decode(data)
+            except binascii.Error:
+                data = b''
+            hasher.update(data)
             digest = hasher.hexdigest()
             if type(digest) is bytes:
                 digest = digest.decode()
             if digest == hash.strip():
                 self._core.setData(data)
-                if data.startswith('-txt-'):
-                    self._core.setBlockType(hash, 'txt')
                 logger.info('Successfully obtained data for ' + hash, timestamp=True)
-                if len(data) < 120:
-                    logger.debug('Block text:\n' + data)
+                if data.startswith(b'-txt-'):
+                    self._core.setBlockType(hash, 'txt')
+                    if len(data) < 120:
+                        logger.debug('Block text:\n' + data.decode())
             else:
                 logger.warn("Failed to validate " + hash + " " + " hash calculated was " + digest)
 
@@ -263,13 +267,20 @@ class OnionrCommunicate:
         '''
         return urllib.parse.quote_plus(data)
 
-    def performGet(self, action, peer, data=None, skipHighFailureAddress=False, peerType='tor'):
+    def performGet(self, action, peer, data=None, skipHighFailureAddress=False, peerType='tor', selfCheck=True):
         '''
             Performs a request to a peer through Tor or i2p (currently only Tor)
         '''
 
         if not peer.endswith('.onion') and not peer.endswith('.onion/'):
             raise PeerError('Currently only Tor .onion peers are supported. You must manually specify .onion')
+        
+        if len(self._core.hsAdder.strip()) == 0:
+            raise Exception("Could not perform self address check in performGet due to not knowing our address")
+        if selfCheck:
+            if peer.replace('/', '') == self._core.hsAdder:
+                logger.warn('Tried to performget to own hidden service, but selfCheck was not set to false')
+                return
 
         # Store peer in peerData dictionary (non permanent)
         if not peer in self.peerData:
