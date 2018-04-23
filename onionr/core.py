@@ -154,6 +154,22 @@ class Core:
             return True
         else:
             return False
+    
+    def removeBlock(self, block):
+        '''
+            remove a block from this node
+        '''
+        if self._utils.validateHash(block):
+            conn = sqlite3.connect(self.blockDB)
+            c = conn.cursor()
+            t = (block,)
+            c.execute('Delete from hashes where hash=?;', t)
+            conn.commit()
+            conn.close()
+            try:
+                os.remove('data/blocks/' + block + '.dat')
+            except FileNotFoundError:
+                pass
 
     def createAddressDB(self):
         '''

@@ -35,6 +35,10 @@ class OnionrCommunicate:
         self._crypto = onionrcrypto.OnionrCrypto(self._core)
         self._netController = netcontroller.NetController(0) # arg is the HS port but not needed rn in this file
 
+        self.newHashes = {} # use this to not keep hashes around too long if we cant get their data
+        self.keepNewHash = 100
+        self.ignoredHashes = []
+
         self.highFailureAmount = 7
         '''
         logger.info('Starting Bitcoin Node... with Tor socks port:' + str(sys.argv[2]), timestamp=True)
@@ -210,6 +214,7 @@ class OnionrCommunicate:
                 logger.warn('Hash ' + i + ' is not valid')
                 continue
             else:
+                self.newHashes[i] = 0
                 logger.debug('Adding ' +  i + ' to hash database...')
                 self._core.addToBlockDB(i)
 
@@ -222,24 +227,39 @@ class OnionrCommunicate:
             This is meant to be called from the communicator daemon on its timer.
         '''
 
-        for i in self._core.getBlockList(True).split("\n"):
+        for i in self._core.getBlockList(unsaved=True).split("\n"):
             if i != "":
+                if i in self.ignoredHashes:
+                    continue
+                try:
+                    self.newHashes[i]
+                except KeyError:
+                    self.newHashes[i] = 0
+                # check if a new hash has been around too long, delete it from database and add it to ignore list
+                if self.newHashes[i] >= self.keepNewHash:
+                    logger.warn('Ignoring block ' + i + ' because it took to long to get valid data.')
+                    del self.newHashes[i]
+                    self._core.removeBlock(i)
+                    self.ignoredHashes.append(i)
+                    continue
+                self.newHashes[i] += 1
                 logger.warn('UNSAVED BLOCK: ' + i)
                 data = self.downloadBlock(i)
-
+                if data:
+                    del self.newHashes[i]
         return
 
     def downloadBlock(self, hash):
         '''
             Download a block from random order of peers
         '''
-
+        retVal = False
         peerList = self._core.listAdders()
         blocks = ''
         for i in peerList:
             hasher = hashlib.sha3_256()
             data = self.performGet('getData', i, hash)
-            if data == False or len(data) > 10000000:
+            if data == False or len(data) > 10000000 or data == '':
                 continue
             try:
                 data = base64.b64decode(data)
@@ -252,6 +272,7 @@ class OnionrCommunicate:
             if digest == hash.strip():
                 self._core.setData(data)
                 logger.info('Successfully obtained data for ' + hash, timestamp=True)
+                retVal = True
                 if data.startswith(b'-txt-'):
                     self._core.setBlockType(hash, 'txt')
                     if len(data) < 120:
@@ -259,7 +280,7 @@ class OnionrCommunicate:
             else:
                 logger.warn("Failed to validate " + hash + " " + " hash calculated was " + digest)
 
-        return
+        return retVal
 
     def urlencode(self, data):
         '''
