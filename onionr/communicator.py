@@ -239,12 +239,12 @@ class OnionrCommunicate:
         for i in peerList:
             hasher = hashlib.sha3_256()
             data = self.performGet('getData', i, hash)
+            if data == False or len(data) > 10000000:
+                continue
             try:
                 base64.b64decode(data)
             except binascii.Error:
                 data = b''
-            if data == False or len(data) > 10000000:
-                continue
             hasher.update(data)
             digest = hasher.hexdigest()
             if type(digest) is bytes:
