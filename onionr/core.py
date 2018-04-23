@@ -272,6 +272,8 @@ class Core:
         '''
         data = data
         hasher = hashlib.sha3_256()
+        if not type(data) is bytes:
+            data = data.encode()
         hasher.update(data)
         dataHash = hasher.hexdigest()
         if type(dataHash) is bytes:
