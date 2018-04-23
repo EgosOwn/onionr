@@ -17,6 +17,10 @@
 
 # Imports some useful libraries
 import logger, config
+try:
+    from tkinter import *
+except:
+    pass
 import os, sqlite3, core
 
 def sendMessage():
@@ -55,8 +59,6 @@ def update():
 
 
 def openGUI():
-    from tkinter import *
-
     global root, runningCheckDelay, runningCheckDelayCount, scrollbar, listedBlocks, nodeInfo, keyInfo, idText, idEntry, pubKeyEntry, listbox, daemonStatus, sendEntry
 
     root = Tk()
