@@ -175,6 +175,7 @@ class Onionr:
             'add-addr': self.addAddress,
             'addaddr': self.addAddress,
             'addaddress': self.addAddress,
+            'addfile': self.addFile,
 
             'introduce': self.onionrCore.introduceNode,
             'connect': self.addAddress
@@ -196,6 +197,7 @@ class Onionr:
             'add-msg': 'Broadcasts a message to the Onionr network',
             'pm': 'Adds a private message to block',
             'get-pms': 'Shows private messages sent to you',
+            'addfile': 'Create an Onionr block from a file',
             'introduce': 'Introduce your node to the public Onionr network (DAEMON MUST BE RUNNING)',
         }
 
@@ -369,7 +371,7 @@ class Onionr:
         addedHash = self.onionrCore.setData(messageToAdd)
         self.onionrCore.addToBlockDB(addedHash, selfInsert=True)
         self.onionrCore.setBlockType(addedHash, 'txt')
-
+        logger.info("inserted your message as block: " + addedHash)
         return
 
     def getPMs(self):
@@ -556,5 +558,20 @@ class Onionr:
                 retval = retVal.read()
         except FileNotFoundError:
             return retVal
+    
+    def addFile(self):
+        '''command to add a file to the onionr network'''
+        if len(sys.argv) >= 2:
+            newFile = sys.argv[2]
+            logger.info('Attempting to add file...')
+            try:
+                with open(newFile, 'r') as new:
+                    new = new.read()
+            except FileNotFoundError:
+                logger.warn('That file does not exist. Improper path?')
+            else:
+                print(new)
+                self.onionrCore.insertBlock(new, header='bin')
+            
 
 Onionr()

@@ -19,7 +19,7 @@ and code to operate as a daemon, getting commands from the command queue databas
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import sqlite3, requests, hmac, hashlib, time, sys, os, math, logger, urllib.parse, random
+import sqlite3, requests, hmac, hashlib, time, sys, os, math, logger, urllib.parse, random, base64
 import core, onionrutils, onionrcrypto, netcontroller, onionrproofs, btc, config, onionrplugins as plugins
 
 class OnionrCommunicate:
@@ -239,6 +239,10 @@ class OnionrCommunicate:
         for i in peerList:
             hasher = hashlib.sha3_256()
             data = self.performGet('getData', i, hash)
+            try:
+                base64.b64decode(data)
+            except binascii.Error:
+                data = b''
             if data == False or len(data) > 10000000:
                 continue
             hasher.update(data.encode())

@@ -258,7 +258,7 @@ class Core:
             Simply return the data associated to a hash
         '''
         try:
-            dataFile = open(self.blockDataLocation + hash + '.dat')
+            dataFile = open(self.blockDataLocation + hash + '.dat', 'rb')
             data = dataFile.read()
             dataFile.close()
         except FileNotFoundError:
@@ -281,8 +281,8 @@ class Core:
             pass # TODO: properly check if block is already saved elsewhere
             #raise Exception("Data is already set for " + dataHash)
         else:
-            blockFile = open(blockFileName, 'w')
-            blockFile.write(data.decode())
+            blockFile = open(blockFileName, 'wb')
+            blockFile.write(data)
             blockFile.close()
 
         conn = sqlite3.connect(self.blockDB)

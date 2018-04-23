@@ -68,6 +68,8 @@ class API:
         self.clientToken = config.get('client')['client_hmac']
         self.timeBypassToken = base64.b16encode(os.urandom(32)).decode()
 
+        self.mimeType = 'text/plain'
+
         with open('data/time-bypass.txt', 'w') as bypass:
             bypass.write(self.timeBypassToken)
 
@@ -96,12 +98,17 @@ class API:
         def afterReq(resp):
             if not self.requestFailed:
                 resp.headers['Access-Control-Allow-Origin'] = '*'
-            else:
-                resp.headers['server'] = 'Onionr'
-            resp.headers['Content-Type'] = 'text/plain'
-            resp.headers["Content-Security-Policy"] = "default-src 'none'"
+            #else:
+            #    resp.headers['server'] = 'Onionr'
+            resp.headers['Content-Type'] = self.mimeType
+            resp.headers["Content-Security-Policy"] =  "default-src 'none'; script-src 'none'; object-src 'none'; style-src data: 'unsafe-inline'; img-src data:; media-src 'none'; frame-src 'none'; font-src 'none'; connect-src 'none'"
             resp.headers['X-Frame-Options'] = 'deny'
             resp.headers['X-Content-Type-Options'] = "nosniff"
+            resp.headers['server'] = 'Onionr'
+
+            # reset to text/plain to help prevent browser attacks
+            if self.mimeType != 'text/plain':
+                self.mimeType = 'text/plain'
 
             return resp
 
@@ -111,6 +118,11 @@ class API:
                 timingToken = ''
             else:
                 timingToken = request.args.get('timingToken')
+            data = request.args.get('data')
+            try:
+                data = data
+            except:
+                data = ''
             startTime = math.floor(time.time())
             # we should keep a hash DB of requests (with hmac) to prevent replays
             action = request.args.get('action')
@@ -129,6 +141,15 @@ class API:
                 resp = Response('pong')
             elif action == 'stats':
                 resp = Response('me_irl')
+            elif action == 'site':
+                block = data
+                siteData = self._core.getData(data)
+                response = 'not found'
+                if siteData != '' and siteData != False:
+                    self.mimeType = 'text/html'
+                    response = siteData.split('-', 2)[-1]
+                resp = Response(response)
+
             else:
                 resp = Response('(O_o) Dude what? (invalid command)')
             endTime = math.floor(time.time())
@@ -149,7 +170,7 @@ class API:
             requestingPeer = request.args.get('myID')
             data = request.args.get('data')
             try:
-                data
+                data = data
             except:
                 data = ''
             if action == 'firstConnect':
@@ -175,7 +196,7 @@ class API:
                     resp = Response('')
             # setData should be something the communicator initiates, not this api
             elif action == 'getData':
-                resp = self._core.getData(data)
+                resp = base64.b64encode(self._core.getData(data))
                 if resp == False:
                     abort(404)
                     resp = ""
