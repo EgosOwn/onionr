@@ -555,7 +555,7 @@ class Onionr:
         retVal = ''
         try:
             with open('./data/hs/hostname', 'r') as hostname:
-                retval = retVal.read()
+                retVal = hostname.read()
         except FileNotFoundError:
             return retVal
     
