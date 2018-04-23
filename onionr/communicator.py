@@ -242,7 +242,7 @@ class OnionrCommunicate:
             if data == False or len(data) > 10000000:
                 continue
             try:
-                base64.b64decode(data)
+                data = base64.b64decode(data)
             except binascii.Error:
                 data = b''
             hasher.update(data)
