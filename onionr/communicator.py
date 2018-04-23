@@ -251,11 +251,11 @@ class OnionrCommunicate:
                 digest = digest.decode()
             if digest == hash.strip():
                 self._core.setData(data)
-                if data.startswith('-txt-'):
-                    self._core.setBlockType(hash, 'txt')
                 logger.info('Successfully obtained data for ' + hash, timestamp=True)
-                if len(data) < 120:
-                    logger.debug('Block text:\n' + data)
+                if data.startswith(b'-txt-'):
+                    self._core.setBlockType(hash, 'txt')
+                    if len(data) < 120:
+                        logger.debug('Block text:\n' + data)
             else:
                 logger.warn("Failed to validate " + hash + " " + " hash calculated was " + digest)
 
