@@ -17,10 +17,6 @@
 
 # Imports some useful libraries
 import logger, config
-try:
-    from tkinter import *
-except:
-    pass
 import os, sqlite3, core
 
 def sendMessage():
@@ -59,37 +55,38 @@ def update():
 
 
 def openGUI():
+    import tkinter
     global root, runningCheckDelay, runningCheckDelayCount, scrollbar, listedBlocks, nodeInfo, keyInfo, idText, idEntry, pubKeyEntry, listbox, daemonStatus, sendEntry
 
-    root = Tk()
+    root = tkinter.Tk()
 
     root.title("Onionr GUI")
 
     runningCheckDelay = 5
     runningCheckDelayCount = 4
 
-    scrollbar = Scrollbar(root)
-    scrollbar.pack(side=RIGHT, fill=Y)
+    scrollbar = tkinter.Scrollbar(root)
+    scrollbar.pack(side=tkinter.RIGHT, fill=tkinter.Y)
 
     listedBlocks = []
 
-    nodeInfo = Frame(root)
-    keyInfo = Frame(root)
+    nodeInfo = tkinter.Frame(root)
+    keyInfo = tkinter.Frame(root)
 
     print(pluginapi.get_onionr().get_hostname())
     idText = pluginapi.get_onionr().get_hostname()
 
-    idEntry = Entry(nodeInfo)
-    Label(nodeInfo, text="Node Address: ").pack(side=LEFT)
+    idEntry = tkinter.Entry(nodeInfo)
+    tkinter.Label(nodeInfo, text="Node Address: ").pack(side=tkinter.LEFT)
     idEntry.pack()
     idEntry.insert(0, idText.strip())
     idEntry.configure(state="readonly")
 
     nodeInfo.pack()
 
-    pubKeyEntry = Entry(keyInfo)
+    pubKeyEntry = tkinter.Entry(keyInfo)
 
-    Label(keyInfo, text="Public key: ").pack(side=LEFT)
+    tkinter.Label(keyInfo, text="Public key: ").pack(side=tkinter.LEFT)
 
     pubKeyEntry.pack()
     pubKeyEntry.insert(0, pluginapi.get_core()._crypto.pubKey)
@@ -97,19 +94,19 @@ def openGUI():
 
     keyInfo.pack()
 
-    sendEntry = Entry(root)
-    sendBtn = Button(root, text='Send Message', command=sendMessage)
-    sendEntry.pack(side=TOP, pady=5)
-    sendBtn.pack(side=TOP)
+    sendEntry = tkinter.Entry(root)
+    sendBtn = tkinter.Button(root, text='Send Message', command=sendMessage)
+    sendEntry.pack(side=tkinter.TOP, pady=5)
+    sendBtn.pack(side=tkinter.TOP)
 
-    listbox = Listbox(root, yscrollcommand=scrollbar.set, height=15)
+    listbox = tkinter.Listbox(root, yscrollcommand=tkinter.scrollbar.set, height=15)
 
-    listbox.pack(fill=BOTH, pady=25)
+    listbox.pack(fill=tkinter.BOTH, pady=25)
 
-    daemonStatus = Label(root, text="Onionr Daemon Status: unknown")
+    daemonStatus = tkinter.Label(root, text="Onionr Daemon Status: unknown")
     daemonStatus.pack()
 
-    scrollbar.config(command=listbox.yview)
+    scrollbar.config(command=tkinter.listbox.yview)
     root.after(2000, update)
     root.mainloop()
 
