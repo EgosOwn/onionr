@@ -147,7 +147,7 @@ class API:
                 response = 'not found'
                 if siteData != '' and siteData != False:
                     self.mimeType = 'text/html'
-                    response = siteData.split('-', 2)[-1]
+                    response = siteData.split(b'-', 2)[-1]
                 resp = Response(response)
 
             else:

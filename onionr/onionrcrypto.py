@@ -167,7 +167,7 @@ class OnionrCrypto:
         return binascii.hexlify(nacl.utils.random(nacl.secret.SecretBox.KEY_SIZE))
 
     def generatePubKey(self):
-        '''Generate a Ed25519 public key pair, return tuple of base64encoded pubkey, privkey'''
+        '''Generate a Ed25519 public key pair, return tuple of base32encoded pubkey, privkey'''
         private_key = nacl.signing.SigningKey.generate()
         public_key = private_key.verify_key.encode(encoder=nacl.encoding.Base32Encoder())
         return (public_key.decode(), private_key.encode(encoder=nacl.encoding.Base32Encoder()).decode())

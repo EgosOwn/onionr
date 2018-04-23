@@ -239,6 +239,7 @@ class OnionrCommunicate:
         for i in peerList:
             hasher = hashlib.sha3_256()
             data = self.performGet('getData', i, hash)
+            print('b64 data', data)
             if data == False or len(data) > 10000000:
                 continue
             try:
@@ -255,7 +256,7 @@ class OnionrCommunicate:
                 if data.startswith(b'-txt-'):
                     self._core.setBlockType(hash, 'txt')
                     if len(data) < 120:
-                        logger.debug('Block text:\n' + data)
+                        logger.debug('Block text:\n' + data.decode())
             else:
                 logger.warn("Failed to validate " + hash + " " + " hash calculated was " + digest)
 
