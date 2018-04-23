@@ -561,8 +561,9 @@ class Onionr:
             with open('./data/hs/hostname', 'r') as hostname:
                 retVal = hostname.read()
         except FileNotFoundError:
-            return retVal
-    
+            retVal = None
+        return retVal
+
     def addFile(self):
         '''command to add a file to the onionr network'''
         if len(sys.argv) >= 2:
@@ -576,6 +577,6 @@ class Onionr:
             else:
                 print(new)
                 self.onionrCore.insertBlock(new, header='bin')
-            
+
 
 Onionr()

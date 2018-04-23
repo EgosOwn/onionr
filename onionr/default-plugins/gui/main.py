@@ -73,6 +73,7 @@ def openGUI():
     nodeInfo = Frame(root)
     keyInfo = Frame(root)
 
+    print(pluginapi.get_onionr().get_hostname())
     idText = pluginapi.get_onionr().get_hostname()
 
     idEntry = Entry(nodeInfo)
