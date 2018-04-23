@@ -270,7 +270,7 @@ class Core:
         '''
             Set the data assciated with a hash
         '''
-        data = data.encode()
+        data = data
         hasher = hashlib.sha3_256()
         hasher.update(data)
         dataHash = hasher.hexdigest()
