@@ -19,7 +19,7 @@ and code to operate as a daemon, getting commands from the command queue databas
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import sqlite3, requests, hmac, hashlib, time, sys, os, math, logger, urllib.parse, base64, binascii, secrets
+import sqlite3, requests, hmac, hashlib, time, sys, os, math, logger, urllib.parse, base64, binascii
 import core, onionrutils, onionrcrypto, netcontroller, onionrproofs, btc, config, onionrplugins as plugins
 
 class OnionrCommunicate:
@@ -149,7 +149,8 @@ class OnionrCommunicate:
             peersCheck = len(peerList)
 
         while peersCheck > peersChecked:
-            i = secrets.randbelow(maxN)
+            #i = secrets.randbelow(maxN) # cant use prior to 3.6
+            i = random.randint(0, maxN)
             logger.info('Using ' + peerList[i] + ' to find new peers', timestamp=True)
             try:
                 newAdders = self.performGet('pex', peerList[i], skipHighFailureAddress=True)
