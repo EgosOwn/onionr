@@ -227,7 +227,7 @@ class Core:
             dataType     - data type of the block
             dataFound    - if the data has been found for the block
             dataSaved    - if the data has been saved for the block
-            signature    - optional signature by the author (not optional if author is specified)
+            sig    - optional signature by the author (not optional if author is specified)
             author       - multi-round partial scrypt hash of authors public key
         '''
         if os.path.exists(self.blockDB):
@@ -241,8 +241,8 @@ class Core:
             dataType text,
             dataFound int,
             dataSaved int,
-            signature text,
-            author text,
+            sig text,
+            author text
             );
         ''')
         conn.commit()
