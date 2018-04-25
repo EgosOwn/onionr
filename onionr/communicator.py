@@ -83,7 +83,7 @@ class OnionrCommunicate:
             if highFailureTimer == highFailureRate:
                 highFailureTimer = 0
                 for i in self.peerData:
-                    if self.peerData[i]['failCount'] == self.highFailureAmount:
+                    if self.peerData[i]['failCount'] >= self.highFailureAmount:
                         self.peerData[i]['failCount'] -= 1
             if pexTimer == pexCount:
                 self.getNewPeers()
@@ -204,7 +204,7 @@ class OnionrCommunicate:
                         blocks += self.performGet('getBlockHashes', i)
                     except TypeError:
                         logger.warn('Failed to get data hash from ' + i)
-                        self.peerData[peer]['failCount'] -= 1
+                        self.peerData[i]['failCount'] -= 1
                 if self._utils.validateHash(currentDB):
                     self._core.setAddressInfo(i, "DBHash", currentDB)
         if len(blocks.strip()) != 0:

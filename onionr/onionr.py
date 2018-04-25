@@ -572,13 +572,13 @@ class Onionr:
             newFile = sys.argv[2]
             logger.info('Attempting to add file...')
             try:
-                with open(newFile, 'r') as new:
+                with open(newFile, 'rb') as new:
                     new = new.read()
             except FileNotFoundError:
                 logger.warn('That file does not exist. Improper path?')
             else:
                 logger.debug(new)
-                self.onionrCore.insertBlock(new, header='bin')
+                logger.info(self.onionrCore.insertBlock(new, header='bin'))
 
 
 Onionr()

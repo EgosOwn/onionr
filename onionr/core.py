@@ -595,6 +595,11 @@ class Core:
         '''
         retData = ''
         metadata = '-' + header + '-'
+        metadata = metadata.encode()
+        try:
+            data.decode()
+        except AttributeError:
+            data = data.encode()
         if len(data) == 0:
             logger.error('Will not insert empty block')
         else:
