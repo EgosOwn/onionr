@@ -552,9 +552,9 @@ class Core:
         c = conn.cursor()
         retData = ''
         if unsaved:
-            execute = 'SELECT hash FROM hashes WHERE dataSaved != 1;'
+            execute = 'SELECT hash FROM hashes WHERE dataSaved != 1 ORDER BY RANDOM();'
         else:
-            execute = 'SELECT hash FROM hashes;'
+            execute = 'SELECT hash FROM hashes ORDER BY RANDOM();'
         for row in c.execute(execute):
             for i in row:
                 retData += i + "\n"
@@ -594,10 +594,7 @@ class Core:
             Inserts a block into the network
         '''
         retData = ''
-        metadata = header
-        if sign:
-            metadata += '-' + self._crypto.pubKeyHashID() + '-'
-            metadata += self._crypto.edSign(data, encodeResult=True) + '-'
+        metadata = '-' + header + '-'
         if len(data) == 0:
             logger.error('Will not insert empty block')
         else:

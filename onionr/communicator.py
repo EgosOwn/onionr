@@ -36,7 +36,7 @@ class OnionrCommunicate:
         self._netController = netcontroller.NetController(0) # arg is the HS port but not needed rn in this file
 
         self.newHashes = {} # use this to not keep hashes around too long if we cant get their data
-        self.keepNewHash = 20
+        self.keepNewHash = 12
         self.ignoredHashes = []
 
         self.highFailureAmount = 7
@@ -182,6 +182,11 @@ class OnionrCommunicate:
         peerList = self._core.listAdders()
         blocks = ''
         for i in peerList:
+            try:
+                if self.peerData[i]['failCount'] >= self.highFailureAmount:
+                    continue
+            except KeyError:
+                pass
             lastDB = self._core.getAddressInfo(i, 'DBHash')
             if lastDB == None:
                 logger.debug('Fetching hash from ' + i + ' No previous known.')
@@ -199,6 +204,7 @@ class OnionrCommunicate:
                         blocks += self.performGet('getBlockHashes', i)
                     except TypeError:
                         logger.warn('Failed to get data hash from ' + i)
+                        self.peerData[peer]['failCount'] -= 1
                 if self._utils.validateHash(currentDB):
                     self._core.setAddressInfo(i, "DBHash", currentDB)
         if len(blocks.strip()) != 0:
@@ -252,17 +258,23 @@ class OnionrCommunicate:
                     del self.newHashes[i]
         return
 
-    def downloadBlock(self, hash):
+    def downloadBlock(self, hash, peerTries=3):
         '''
             Download a block from random order of peers
         '''
         retVal = False
         peerList = self._core.listAdders()
         blocks = ''
+        peerTryCount = 0
         for i in peerList:
+            if self.peerData[i]['failCount'] >= self.highFailureAmount:
+                continue
+            if peerTryCount >= peerTries:
+                break
             hasher = hashlib.sha3_256()
             data = self.performGet('getData', i, hash, skipHighFailureAddress=True)
             if data == False or len(data) > 10000000 or data == '':
+                peerTryCount += 1
                 continue
             try:
                 data = base64.b64decode(data)
@@ -282,6 +294,7 @@ class OnionrCommunicate:
                         logger.debug('Block text:\n' + data.decode())
             else:
                 logger.warn("Failed to validate " + hash + " " + " hash calculated was " + digest)
+                peerTryCount += 1
 
         return retVal
 

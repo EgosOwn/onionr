@@ -333,6 +333,8 @@ class OnionrUtils:
                             pass
                         else:
                             logger.info('Recieved message: ' + message.decode())
+            except FileNotFoundError:
+                pass
             except Exception as error:
                 logger.error('Failed to open block ' + str(i) + '.', error=error)
         return
