@@ -161,6 +161,17 @@ class API:
                     time.sleep(self._privateDelayTime - elapsed)
 
             return resp
+        
+        @app.route('/')
+        def banner():
+            self.mimeType = 'text/html'
+            self.validateHost('public')
+            try:
+                with open('static-data/index.html', 'r') as html:
+                    resp = Response(html.read())
+            except FileNotFoundError:
+                resp = Response("")
+            return resp
 
         @app.route('/public/')
         def public_handler():

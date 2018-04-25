@@ -174,8 +174,10 @@ class OnionrCrypto:
         public_key = private_key.verify_key.encode(encoder=nacl.encoding.Base32Encoder())
         return (public_key.decode(), private_key.encode(encoder=nacl.encoding.Base32Encoder()).decode())
     
-    def pubKeyHashID(self, pubkey=self.pubKey):
+    def pubKeyHashID(self, pubkey=''):
         '''Accept a ed25519 public key, return a truncated result of X many sha3_256 hash rounds'''
+        if pubkey == '':
+            pubkey = self.pubKey
         prev = ''
         pubkey = pubkey.encode()
         for i in range(self.HASH_ID_ROUNDS):
