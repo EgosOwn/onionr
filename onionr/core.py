@@ -221,12 +221,14 @@ class Core:
         '''
             Create a database for blocks
 
-            hash - the hash of a block
+            hash         - the hash of a block
             dateReceived - the date the block was recieved, not necessarily when it was created
-            decrypted - if we can successfully decrypt the block (does not describe its current state)
-            dataType - data type of the block
-            dataFound - if the data has been found for the block
-            dataSaved - if the data has been saved for the block
+            decrypted    - if we can successfully decrypt the block (does not describe its current state)
+            dataType     - data type of the block
+            dataFound    - if the data has been found for the block
+            dataSaved    - if the data has been saved for the block
+            signature    - optional signature by the author (not optional if author is specified)
+            author       - multi-round partial scrypt hash of authors public key
         '''
         if os.path.exists(self.blockDB):
             raise Exception("Block database already exists")
@@ -238,7 +240,10 @@ class Core:
             decrypted int,
             dataType text,
             dataFound int,
-            dataSaved int);
+            dataSaved int,
+            signature text,
+            author text,
+            );
         ''')
         conn.commit()
         conn.close()
@@ -584,15 +589,19 @@ class Core:
 
         return
 
-    def insertBlock(self, data, header='txt'):
+    def insertBlock(self, data, header='txt', sign=False):
         '''
             Inserts a block into the network
         '''
         retData = ''
+        metadata = header
+        if sign:
+            metadata += '-' + self._crypto.pubKeyHashID() + '-'
+            metadata += self._crypto.edSign(data, encodeResult=True) + '-'
         if len(data) == 0:
             logger.error('Will not insert empty block')
         else:
-            addedHash = self.setData('-' + header + '-' + data)
+            addedHash = self.setData(metadata + data)
             self.addToBlockDB(addedHash, selfInsert=True)
             self.setBlockType(addedHash, header)
             retData = addedHash

@@ -17,7 +17,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import nacl.signing, nacl.encoding, nacl.public, nacl.secret, os, binascii, base64
+import nacl.signing, nacl.encoding, nacl.public, nacl.secret, os, binascii, base64, hashlib
 
 class OnionrCrypto:
     def __init__(self, coreInstance):
@@ -25,6 +25,8 @@ class OnionrCrypto:
         self._keyFile = 'data/keys.txt'
         self.pubKey = None
         self.privKey = None
+        
+        self.HASH_ID_ROUNDS = 2000
 
         # Load our own pub/priv Ed25519 keys, gen & save them if they don't exist
         if os.path.exists(self._keyFile):
@@ -171,3 +173,14 @@ class OnionrCrypto:
         private_key = nacl.signing.SigningKey.generate()
         public_key = private_key.verify_key.encode(encoder=nacl.encoding.Base32Encoder())
         return (public_key.decode(), private_key.encode(encoder=nacl.encoding.Base32Encoder()).decode())
+    
+    def pubKeyHashID(self, pubkey=self.pubKey):
+        '''Accept a ed25519 public key, return a truncated result of X many sha3_256 hash rounds'''
+        prev = ''
+        pubkey = pubkey.encode()
+        for i in range(self.HASH_ID_ROUNDS):
+            hasher = hashlib.sha3_256()
+            hasher.update(pubkey + prev.encode())
+            prev = hasher.hexdigest()
+        result = prev
+        return result

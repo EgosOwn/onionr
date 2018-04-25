@@ -576,7 +576,7 @@ class Onionr:
             except FileNotFoundError:
                 logger.warn('That file does not exist. Improper path?')
             else:
-                print(new)
+                logger.debug(new)
                 self.onionrCore.insertBlock(new, header='bin')
 
 
