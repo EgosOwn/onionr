@@ -534,7 +534,8 @@ class Onionr:
         '''
             Displays statistics and exits
         '''
-
+        logger.info('Our pubkey: ' + self.onionrCore._crypto.pubKey)
+        logger.info('Our address: ' + self.get_hostname())
         return
 
     def showHelp(self, command = None):
