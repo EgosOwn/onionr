@@ -19,7 +19,7 @@ and code to operate as a daemon, getting commands from the command queue databas
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import sqlite3, requests, hmac, hashlib, time, sys, os, math, logger, urllib.parse, base64, binascii, random
+import sqlite3, requests, hmac, hashlib, time, sys, os, math, logger, urllib.parse, base64, binascii, random, json
 import core, onionrutils, onionrcrypto, netcontroller, onionrproofs, btc, config, onionrplugins as plugins
 
 class OnionrCommunicate:
@@ -254,8 +254,32 @@ class OnionrCommunicate:
                 self.newHashes[i] += 1
                 logger.warn('UNSAVED BLOCK: ' + i)
                 data = self.downloadBlock(i)
+
+                # if block was successfull gotten (hash already verified)
                 if data:
-                    del self.newHashes[i]
+                    del self.newHashes[i] # remove from probation list
+
+                    # deal with block metadata
+                    blockContent = self._core.getData(i)
+                    try:
+                        blockMetadata = json.loads(self._core.getData(i)).split('}')[0] + '}'
+                        try:
+                            blockMetadata['sig']
+                            blockMetadata['id']
+                        except KeyError:
+                            pass
+                        else:
+                            creator = self._utils.getPeerByHashId(blockMetadata['id'])
+                            if self._crypto.edVerify(blockContent, creator):
+                                self._core.updateBlockInfo(i, 'sig', 'true')
+                            else:
+                                self._core.updateBlockInfo(i, 'sig', 'false')
+                        try:
+                            blockMetadata['type']
+                        except KeyError:
+                            pass
+                    except json.decoder.JSONDecodeError:
+                        pass
         return
 
     def downloadBlock(self, hash, peerTries=3):
@@ -288,10 +312,12 @@ class OnionrCommunicate:
                 self._core.setData(data)
                 logger.info('Successfully obtained data for ' + hash, timestamp=True)
                 retVal = True
+                '''
                 if data.startswith(b'-txt-'):
                     self._core.setBlockType(hash, 'txt')
                     if len(data) < 120:
                         logger.debug('Block text:\n' + data.decode())
+                '''
             else:
                 logger.warn("Failed to validate " + hash + " " + " hash calculated was " + digest)
                 peerTryCount += 1

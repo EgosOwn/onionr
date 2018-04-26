@@ -17,7 +17,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import sqlite3, os, sys, time, math, base64, tarfile, getpass, simplecrypt, hashlib, nacl, logger
+import sqlite3, os, sys, time, math, base64, tarfile, getpass, simplecrypt, hashlib, nacl, logger, json
 #from Crypto.Cipher import AES
 #from Crypto import Random
 import netcontroller
@@ -87,8 +87,9 @@ class Core:
         if not self._utils.validatePubKey(peerID):
             return False
         conn = sqlite3.connect(self.peerDB)
+        hashID = self._crypto.pubKeyHashID(peerID)
         c = conn.cursor()
-        t = (peerID, name, 'unknown')
+        t = (peerID, name, 'unknown', hashID)
 
         for i in c.execute("SELECT * FROM PEERS where id = '" + peerID + "';"):
             try:
@@ -99,7 +100,7 @@ class Core:
                 pass
             except IndexError:
                 pass
-        c.execute('INSERT INTO peers (id, name, dateSeen) VALUES(?, ?, ?);', t)
+        c.execute('INSERT INTO peers (id, name, dateSeen, hashID) VALUES(?, ?, ?, ?);', t)
         conn.commit()
         conn.close()
 
@@ -211,7 +212,8 @@ class Core:
             dateSeen not null,
             bytesStored int,
             trust int,
-            pubkeyExchanged int);
+            pubkeyExchanged int,
+            hashID);
         ''')
         conn.commit()
         conn.close()
@@ -228,7 +230,7 @@ class Core:
             dataFound    - if the data has been found for the block
             dataSaved    - if the data has been saved for the block
             sig    - optional signature by the author (not optional if author is specified)
-            author       - multi-round partial scrypt hash of authors public key
+            author       - multi-round partial sha3-256 hash of authors public key
         '''
         if os.path.exists(self.blockDB):
             raise Exception("Block database already exists")
@@ -466,11 +468,12 @@ class Core:
             bytesStored int,    5
             trust int           6
             pubkeyExchanged int 7
+            hashID text         8
         '''
         conn = sqlite3.connect(self.peerDB)
         c = conn.cursor()
         command = (peer,)
-        infoNumbers = {'id': 0, 'name': 1, 'adders': 2, 'forwardKey': 3, 'dateSeen': 4, 'bytesStored': 5, 'trust': 6, 'pubkeyExchanged': 7}
+        infoNumbers = {'id': 0, 'name': 1, 'adders': 2, 'forwardKey': 3, 'dateSeen': 4, 'bytesStored': 5, 'trust': 6, 'pubkeyExchanged': 7, 'hashID': 8}
         info = infoNumbers[info]
         iterCount = 0
         retVal = ''
@@ -586,20 +589,41 @@ class Core:
         c.execute("UPDATE hashes SET dataType='" + blockType + "' WHERE hash = '" + hash + "';")
         conn.commit()
         conn.close()
-
         return
+    
+    def updateBlockInfo(self, hash, key, data):
+        '''
+            sets info associated with a block
+        '''
+
+        if key not in ('dateReceived', 'decrypted', 'dataType', 'dataFound', 'dataSaved', 'sig', 'author'):
+            return False
+
+        conn = sqlite3.connect(self.blockDB)
+        c = conn.cursor()
+        args = (data, hash)
+        c.execute("UPDATE hashes SET " + key + " = ? where hash = ?;", args)
+        conn.commit()
+        conn.close()
+        return True
 
     def insertBlock(self, data, header='txt', sign=False):
         '''
             Inserts a block into the network
         '''
-        retData = ''
-        metadata = '-' + header + '-'
-        metadata = metadata.encode()
         try:
             data.decode()
         except AttributeError:
             data = data.encode()
+        retData = ''
+        metadata = {'type': header}
+        if sign:
+            signature = self._crypto.edSign(data, self._crypto.privKey, encodedResult=True)
+            ourID = self._crypto.pubKeyHashID()
+            metadata['id'] = ourID
+            metadata['sig'] = signature
+        metadata = json.dumps(metadata)
+        metadata = metadata.encode()
         if len(data) == 0:
             logger.error('Will not insert empty block')
         else:

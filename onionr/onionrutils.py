@@ -338,3 +338,8 @@ class OnionrUtils:
             except Exception as error:
                 logger.error('Failed to open block ' + str(i) + '.', error=error)
         return
+    
+    def getPeerByHashId(self, hash):
+        '''
+            Return the pubkey of the user if known from the hash
+        '''

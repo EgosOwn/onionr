@@ -371,13 +371,14 @@ class Onionr:
 
         while True:
 
-            messageToAdd = '-txt-' + logger.readline('Broadcast message to network: ')
+            messageToAdd = logger.readline('Broadcast message to network: ')
             if len(messageToAdd) - 5 >= 1:
                 break
 
-        addedHash = self.onionrCore.setData(messageToAdd)
-        self.onionrCore.addToBlockDB(addedHash, selfInsert=True)
-        self.onionrCore.setBlockType(addedHash, 'txt')
+        #addedHash = self.onionrCore.setData(messageToAdd)
+        addedHash = self.onionrCore.insertBlock(messageToAdd, header='')
+        #self.onionrCore.addToBlockDB(addedHash, selfInsert=True)
+        #self.onionrCore.setBlockType(addedHash, 'txt')
         logger.info("inserted your message as block: " + addedHash)
         return
 
