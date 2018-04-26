@@ -193,8 +193,12 @@ class OnionrCrypto:
         prev = ''
         pubkey = pubkey.encode()
         for i in range(self.HASH_ID_ROUNDS):
+            try:
+                prev = prev.encode()
+            except AttributeError:
+                pass
             hasher = hashlib.sha3_256()
-            hasher.update(pubkey + prev.encode())
+            hasher.update(pubkey + prev)
             prev = hasher.hexdigest()
         result = prev
         return result

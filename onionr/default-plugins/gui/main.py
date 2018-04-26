@@ -23,15 +23,16 @@ def sendMessage():
     global sendEntry
 
     messageToAdd = '-txt-' + sendEntry.get()
-    addedHash = pluginapi.get_core().setData(messageToAdd)
-    pluginapi.get_core().addToBlockDB(addedHash, selfInsert=True)
-    pluginapi.get_core().setBlockType(addedHash, 'txt')
+    #addedHash = pluginapi.get_core().setData(messageToAdd)
+    #pluginapi.get_core().addToBlockDB(addedHash, selfInsert=True)
+    #pluginapi.get_core().setBlockType(addedHash, 'txt')
+    pluginapi.get_core().insertBlock(messageToAdd, header='txt', sign=True)
     sendEntry.delete(0, END)
 
 def update():
     global listedBlocks, listbox, runningCheckDelayCount, runningCheckDelay, root, daemonStatus
 
-
+    # TO DO: migrate to new header format
     for i in pluginapi.get_core().getBlocksByType('txt'):
         if i.strip() == '' or i in listedBlocks:
             continue
