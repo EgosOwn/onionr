@@ -42,24 +42,36 @@ class OnionrCrypto:
                 keyfile.write(self.pubKey + ',' + self.privKey)
         return
 
-    def edVerify(self, data, key):
+    def edVerify(self, data, key, sig, encodedData=True):
         '''Verify signed data (combined in nacl) to an ed25519 key'''
         key = nacl.signing.VerifyKey(key=key, encoder=nacl.encoding.Base32Encoder)
-        retData = ''
-        if encodeResult:
-            retData = key.verify(data.encode(), encoder=nacl.encoding.Base64Encoder) # .encode() is not the same as nacl.encoding
+        retData = False
+        sig = base64.b64decode(sig)
+        data = data.encode()
+        if encodedData:
+            try:
+                retData = key.verify(data, sig) # .encode() is not the same as nacl.encoding
+            except nacl.exceptions.BadSignatureError:
+                pass
         else:
-            retData = key.verify(data.encode())
+            try:
+                retData = key.verify(data, sig)
+            except nacl.exceptions.BadSignatureError:
+                pass
         return retData
     
     def edSign(self, data, key, encodeResult=False):
         '''Ed25519 sign data'''
+        try:
+            data = data.encode()
+        except AttributeError:
+            pass
         key = nacl.signing.SigningKey(seed=key, encoder=nacl.encoding.Base32Encoder)
         retData = ''
         if encodeResult:
-            retData = key.sign(data.encode(), encoder=nacl.encoding.Base64Encoder) # .encode() is not the same as nacl.encoding
+            retData = key.sign(data, encoder=nacl.encoding.Base64Encoder).signature.decode() # .encode() is not the same as nacl.encoding
         else:
-            retData = key.sign(data.encode())
+            retData = key.sign(data).signature
         return retData
 
     def pubKeyEncrypt(self, data, pubkey, anonymous=False, encodedData=False):
@@ -72,7 +84,7 @@ class OnionrCrypto:
             encoding = nacl.encoding.RawEncoder
 
         if self.privKey != None and not anonymous:
-            ownKey = nacl.signing.SigningKey(seed=self.privKey, encoder=nacl.encoding.Base32Encoder())
+            ownKey = nacl.signing.SigningKey(seed=self.privKey, encoder=nacl.encoding.Base32Encoder)
             key = nacl.signing.VerifyKey(key=pubkey, encoder=nacl.encoding.Base32Encoder).to_curve25519_public_key()
             ourBox = nacl.public.Box(ownKey, key)
             retVal = ourBox.encrypt(data.encode(), encoder=encoding)

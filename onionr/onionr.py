@@ -372,7 +372,7 @@ class Onionr:
         while True:
 
             messageToAdd = logger.readline('Broadcast message to network: ')
-            if len(messageToAdd) - 5 >= 1:
+            if len(messageToAdd) >= 1:
                 break
 
         #addedHash = self.onionrCore.setData(messageToAdd)

@@ -18,7 +18,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 # Misc functions that do not fit in the main api, but are useful
-import getpass, sys, requests, os, socket, hashlib, logger, sqlite3, config, binascii, time, base64
+import getpass, sys, requests, os, socket, hashlib, logger, sqlite3, config, binascii, time, base64, json
 import nacl.signing, nacl.encoding
 
 if sys.version_info < (3, 6):
@@ -55,7 +55,7 @@ class OnionrUtils:
 
         try:
             encrypted = self._core._crypto.pubKeyEncrypt(message, pubkey, anonymous=True, encodedData=True).decode()
-            block = self._core.insertBlock(encrypted, header='pm')
+            block = self._core.insertBlock(encrypted, header='pm', sign=True)
 
             if block == '':
                 logger.error('Could not send PM')
@@ -316,7 +316,8 @@ class OnionrUtils:
         '''
             Find, decrypt, and return array of PMs (array of dictionary, {from, text})
         '''
-        blocks = self._core.getBlockList().split('\n')
+        #blocks = self._core.getBlockList().split('\n')
+        blocks = self._core.getBlocksByType('pm')
         message = ''
         sender = ''
         for i in blocks:
@@ -324,15 +325,37 @@ class OnionrUtils:
                 continue
             try:
                 with open('data/blocks/' + i + '.dat', 'r') as potentialMessage:
-                    message = potentialMessage.read()
-                    if message.startswith('-pm-'):
-                        try:
-                            message = self._core._crypto.pubKeyDecrypt(message.replace('-pm-', ''), encodedData=True, anonymous=True)
-                        except nacl.exceptions.CryptoError as e:
-                            logger.error('Unable to decrypt ' + i, error=e)
-                            pass
+                    data = potentialMessage.read().split('}')
+                    message = data[1]
+                    sigResult = ''
+                    signer = ''
+
+                    try:
+                        metadata = json.loads(data[0] + '}')
+                    except json.decoder.JSONDecodeError:
+                        metadata = {}
+                    try:
+                        sig = json.loads(data[0].strip() + '}')['sig']
+                        signer = self._core._utils.getPeerByHashId(metadata['id'])
+                        print('signer',signer)
+                        print('signature', metadata['sig'])
+                    except KeyError:
+                        pass
+                    else:
+                        sigResult = self._core._crypto.edVerify(message, signer, sig, encodedData=True)
+                        #sigResult = False
+                        if sigResult != False:
+                            sigResult = 'Valid signature by ' + signer
                         else:
-                            logger.info('Recieved message: ' + message.decode())
+                            sigResult = 'Invalid signature by ' + signer
+
+                    try:
+                        message = self._core._crypto.pubKeyDecrypt(message, encodedData=True, anonymous=True)
+                    except nacl.exceptions.CryptoError as e:
+                        logger.error('Unable to decrypt ' + i, error=e)
+                    else:
+                        logger.info('Recieved message: ' + message.decode())
+                        logger.info(sigResult)
             except FileNotFoundError:
                 pass
             except Exception as error:
@@ -343,3 +366,15 @@ class OnionrUtils:
         '''
             Return the pubkey of the user if known from the hash
         '''
+        if self._core._crypto.pubKeyHashID() == hash:
+            retData = self._core._crypto.pubKey
+            return retData
+        conn = sqlite3.connect(self._core.peerDB)
+        c = conn.cursor()
+        command = (hash,)
+        retData = ''
+        print('finding', hash)
+        for row in c.execute('SELECT ID FROM peers where hashID=?', command):
+            if row[0] != '':
+                retData = row[0]
+        return retData

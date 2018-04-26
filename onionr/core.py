@@ -269,8 +269,8 @@ class Core:
             selfInsert = 1
         else:
             selfInsert = 0
-        data = (newHash, currentTime, 0, '', 0, selfInsert)
-        c.execute('INSERT INTO hashes VALUES(?, ?, ?, ?, ?, ?);', data)
+        data = (newHash, currentTime, '', selfInsert)
+        c.execute('INSERT INTO hashes (hash, dateReceived, dataType, dataSaved) VALUES(?, ?, ?, ?);', data)
         conn.commit()
         conn.close()
 
@@ -618,7 +618,7 @@ class Core:
         retData = ''
         metadata = {'type': header}
         if sign:
-            signature = self._crypto.edSign(data, self._crypto.privKey, encodedResult=True)
+            signature = self._crypto.edSign(data, self._crypto.privKey, encodeResult=True)
             ourID = self._crypto.pubKeyHashID()
             metadata['id'] = ourID
             metadata['sig'] = signature
