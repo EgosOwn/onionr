@@ -277,7 +277,6 @@ class OnionrCommunicate:
                             pass
                         else:
                             creator = self._utils.getPeerByHashId(blockMetadata['id'])
-                            logger.debug('Proccess blocks: verifying signature by ' + creator)
                             if self._core._crypto.edVerify(blockContent.split(b'}')[1], creator, blockMetadata['sig'], encodedData=True):
                                 self._core.updateBlockInfo(i, 'sig', 'true')
                             else:

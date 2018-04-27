@@ -44,7 +44,11 @@ class OnionrCrypto:
 
     def edVerify(self, data, key, sig, encodedData=True):
         '''Verify signed data (combined in nacl) to an ed25519 key'''
-        key = nacl.signing.VerifyKey(key=key, encoder=nacl.encoding.Base32Encoder)
+        try:
+            key = nacl.signing.VerifyKey(key=key, encoder=nacl.encoding.Base32Encoder)
+        except nacl.bindings.crypto_sign_PUBLICKEYBYTES:
+            logger.warn('Signature by unknown key (cannot reverse hash)')
+            return False
         retData = False
         sig = base64.b64decode(sig)
         try:
@@ -56,6 +60,7 @@ class OnionrCrypto:
                 retData = key.verify(data, sig) # .encode() is not the same as nacl.encoding
             except nacl.exceptions.BadSignatureError:
                 pass
+
         else:
             try:
                 retData = key.verify(data, sig)
