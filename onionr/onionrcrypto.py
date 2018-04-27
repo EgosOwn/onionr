@@ -17,7 +17,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import nacl.signing, nacl.encoding, nacl.public, nacl.secret, os, binascii, base64, hashlib
+import nacl.signing, nacl.encoding, nacl.public, nacl.secret, os, binascii, base64, hashlib, logger
 
 class OnionrCrypto:
     def __init__(self, coreInstance):
