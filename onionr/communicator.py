@@ -208,7 +208,8 @@ class OnionrCommunicate:
                 if self._utils.validateHash(currentDB):
                     self._core.setAddressInfo(i, "DBHash", currentDB)
         if len(blocks.strip()) != 0:
-            logger.debug('BLOCKS:' + blocks)
+            pass
+            #logger.debug('BLOCKS:' + blocks)
         blockList = blocks.split('\n')
         for i in blockList:
             if len(i.strip()) == 0:
@@ -263,7 +264,12 @@ class OnionrCommunicate:
                     blockContent = self._core.getData(i)
                     try:
                         #blockMetadata = json.loads(self._core.getData(i)).split('}')[0] + '}'
-                        blockMetadata = json.loads(self._core.getData(i).split(b'}')[0] + '}')
+                        blockMetadata = self._core.getData(i).split(b'}')[0]
+                        try:
+                            blockMetadata = blockMetadata.decode()
+                        except AttributeError:
+                            pass
+                        blockMetadata = json.loads(blockMetadata + '}')
                         try:
                             blockMetadata['sig']
                             blockMetadata['id']
