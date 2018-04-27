@@ -46,7 +46,7 @@ class OnionrCrypto:
         '''Verify signed data (combined in nacl) to an ed25519 key'''
         try:
             key = nacl.signing.VerifyKey(key=key, encoder=nacl.encoding.Base32Encoder)
-        except nacl.bindings.crypto_sign_PUBLICKEYBYTES:
+        except nacl.exceptions.ValueError:
             logger.warn('Signature by unknown key (cannot reverse hash)')
             return False
         retData = False
