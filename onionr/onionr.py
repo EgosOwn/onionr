@@ -376,7 +376,7 @@ class Onionr:
                 break
 
         #addedHash = self.onionrCore.setData(messageToAdd)
-        addedHash = self.onionrCore.insertBlock(messageToAdd, header='')
+        addedHash = self.onionrCore.insertBlock(messageToAdd, header='txt')
         #self.onionrCore.addToBlockDB(addedHash, selfInsert=True)
         #self.onionrCore.setBlockType(addedHash, 'txt')
         logger.info("inserted your message as block: " + addedHash)
