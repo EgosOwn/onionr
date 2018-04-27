@@ -262,7 +262,8 @@ class OnionrCommunicate:
                     # deal with block metadata
                     blockContent = self._core.getData(i)
                     try:
-                        blockMetadata = json.loads(self._core.getData(i)).split('}')[0] + '}'
+                        #blockMetadata = json.loads(self._core.getData(i)).split('}')[0] + '}'
+                        blockMetadata = json.loads(self._core.getData(i).split(b'}')[0] + b'}')
                         try:
                             blockMetadata['sig']
                             blockMetadata['id']
@@ -270,15 +271,18 @@ class OnionrCommunicate:
                             pass
                         else:
                             creator = self._utils.getPeerByHashId(blockMetadata['id'])
-                            if self._crypto.edVerify(blockContent, creator):
+                            if self._crypto.edVerify(blockContent.split(b'}')[1], creator, blockMetadata['sig'], encodedData=True):
                                 self._core.updateBlockInfo(i, 'sig', 'true')
                             else:
                                 self._core.updateBlockInfo(i, 'sig', 'false')
                         try:
-                            blockMetadata['type']
+                            logger.info('Block type is ' + blockMetadata['type'])
+                            self._core.updateBlockInfo(i, 'dataType', blockMetadata['type'])
                         except KeyError:
+                            logger.warn('Block has no type')
                             pass
                     except json.decoder.JSONDecodeError:
+                        logger.warn('Could not decode block metadata')
                         pass
         return
 
@@ -312,6 +316,7 @@ class OnionrCommunicate:
                 self._core.setData(data)
                 logger.info('Successfully obtained data for ' + hash, timestamp=True)
                 retVal = True
+                break
                 '''
                 if data.startswith(b'-txt-'):
                     self._core.setBlockType(hash, 'txt')

@@ -47,7 +47,10 @@ class OnionrCrypto:
         key = nacl.signing.VerifyKey(key=key, encoder=nacl.encoding.Base32Encoder)
         retData = False
         sig = base64.b64decode(sig)
-        data = data.encode()
+        try:
+            data = data.encode()
+        except AttributeError:
+            pass
         if encodedData:
             try:
                 retData = key.verify(data, sig) # .encode() is not the same as nacl.encoding

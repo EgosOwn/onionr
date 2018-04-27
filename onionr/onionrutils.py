@@ -337,11 +337,12 @@ class OnionrUtils:
                     try:
                         sig = json.loads(data[0].strip() + '}')['sig']
                         signer = self._core._utils.getPeerByHashId(metadata['id'])
-                        print('signer',signer)
-                        print('signature', metadata['sig'])
+                        logger.debug('signer ' + signer)
+                        logger.debug('signature ' + metadata['sig'])
                     except KeyError:
                         pass
                     else:
+                        # TODO: Possible refactor to use verification on proccessblocks
                         sigResult = self._core._crypto.edVerify(message, signer, sig, encodedData=True)
                         #sigResult = False
                         if sigResult != False:
@@ -355,7 +356,10 @@ class OnionrUtils:
                         logger.error('Unable to decrypt ' + i, error=e)
                     else:
                         logger.info('Recieved message: ' + message.decode())
-                        logger.info(sigResult)
+                        if sigResult.startswith('Invalid'):
+                            logger.warn(sigResult)
+                        else:
+                            logger.info(sigResult)
             except FileNotFoundError:
                 pass
             except Exception as error:
@@ -373,7 +377,6 @@ class OnionrUtils:
         c = conn.cursor()
         command = (hash,)
         retData = ''
-        print('finding', hash)
         for row in c.execute('SELECT ID FROM peers where hashID=?', command):
             if row[0] != '':
                 retData = row[0]
