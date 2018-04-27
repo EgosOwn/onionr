@@ -620,6 +620,11 @@ class Core:
         if sign:
             signature = self._crypto.edSign(data, self._crypto.privKey, encodeResult=True)
             ourID = self._crypto.pubKeyHashID()
+            # Convert from bytes on some py versions?
+            try:
+                ourID = ourID.decode()
+            except AttributeError:
+                pass
             metadata['id'] = ourID
             metadata['sig'] = signature
         metadata = json.dumps(metadata)
