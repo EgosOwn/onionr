@@ -336,7 +336,8 @@ class OnionrUtils:
                         metadata = {}
                     try:
                         sig = json.loads(data[0].strip() + '}')['sig']
-                        signer = self._core._utils.getPeerByHashId(metadata['id'])
+                        sigID = json.loads(data[0].strip() + '}')['id']
+                        signer = self._core._utils.getPeerByHashId(sigID)
                         logger.debug('signer ' + signer)
                         logger.debug('signature ' + metadata['sig'])
                     except KeyError:

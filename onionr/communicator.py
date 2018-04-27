@@ -277,6 +277,10 @@ class OnionrCommunicate:
                             pass
                         else:
                             creator = self._utils.getPeerByHashId(blockMetadata['id'])
+                            try:
+                                creator = creator.decode()
+                            except AttributeError:
+                                pass
                             if self._core._crypto.edVerify(blockContent.split(b'}')[1], creator, blockMetadata['sig'], encodedData=True):
                                 self._core.updateBlockInfo(i, 'sig', 'true')
                             else:
