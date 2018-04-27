@@ -263,7 +263,7 @@ class OnionrCommunicate:
                     blockContent = self._core.getData(i)
                     try:
                         #blockMetadata = json.loads(self._core.getData(i)).split('}')[0] + '}'
-                        blockMetadata = json.loads(self._core.getData(i).split(b'}')[0] + b'}')
+                        blockMetadata = json.loads(self._core.getData(i).split(b'}')[0] + '}')
                         try:
                             blockMetadata['sig']
                             blockMetadata['id']
