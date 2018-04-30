@@ -54,9 +54,20 @@ class OnionrUtils:
         '''
 
         try:
-            encrypted = self._core._crypto.pubKeyEncrypt(message, pubkey, anonymous=True, encodedData=True).decode()
-            block = self._core.insertBlock(encrypted, header='pm', sign=True)
+            # We sign PMs here rather than in core.insertBlock in order to mask the sender's pubkey
+            payload = {'sig': '', 'msg': '', 'id': self._core._crypto.pubKey}
 
+            sign = self._core._crypto.edSign(message, self._core._crypto.privKey, encodeResult=True)
+            #encrypted = self._core._crypto.pubKeyEncrypt(message, pubkey, anonymous=True, encodedData=True).decode()
+            
+            payload['sig'] = sign
+            payload['msg'] = message
+            payload = json.dumps(payload)
+            message = payload
+            encrypted = self._core._crypto.pubKeyEncrypt(message, pubkey, anonymous=True, encodedData=True).decode()
+
+            
+            block = self._core.insertBlock(encrypted, header='pm', sign=False)
             if block == '':
                 logger.error('Could not send PM')
             else:
@@ -334,33 +345,39 @@ class OnionrUtils:
                         metadata = json.loads(data[0] + '}')
                     except json.decoder.JSONDecodeError:
                         metadata = {}
-                    try:
-                        sig = json.loads(data[0].strip() + '}')['sig']
-                        sigID = json.loads(data[0].strip() + '}')['id']
-                        signer = self._core._utils.getPeerByHashId(sigID)
-                        logger.debug('signer ' + signer)
-                        logger.debug('signature ' + metadata['sig'])
-                    except KeyError:
-                        pass
+                    '''
+                    sigResult = self._core._crypto.edVerify(message, signer, sig, encodedData=True)
+                    #sigResult = False
+                    if sigResult != False:
+                        sigResult = 'Valid signature by ' + signer
                     else:
-                        # TODO: Possible refactor to use verification on proccessblocks
-                        sigResult = self._core._crypto.edVerify(message, signer, sig, encodedData=True)
-                        #sigResult = False
-                        if sigResult != False:
-                            sigResult = 'Valid signature by ' + signer
-                        else:
-                            sigResult = 'Invalid signature by ' + signer
+                        sigResult = 'Invalid signature by ' + signer
+                    '''
 
                     try:
                         message = self._core._crypto.pubKeyDecrypt(message, encodedData=True, anonymous=True)
                     except nacl.exceptions.CryptoError as e:
                         logger.error('Unable to decrypt ' + i, error=e)
                     else:
-                        logger.info('Recieved message: ' + message.decode())
-                        if sigResult.startswith('Invalid'):
-                            logger.warn(sigResult)
+                        try:
+                            message = json.loads(message.decode())
+                            message['msg']
+                            message['id']
+                            message['sig']
+                        except json.decoder.JSONDecodeError:
+                            logger.error('Could not decode PM JSON')
+                        except KeyError:
+                            logger.error('PM is missing JSON keys')
                         else:
-                            logger.info(sigResult)
+                            if self.validatePubKey(message['id']):
+                                sigResult = self._core._crypto.edVerify(message['msg'], message['id'], message['sig'], encodedData=True)
+                                logger.info('-----------------------------------')
+                                logger.info('Recieved message: ' + message['msg'])
+                                if sigResult:
+                                    logger.info('Valid signature by ' + message['id'])
+                                else:
+                                    logger.warn('Invalid signature by ' + message['id'])
+
             except FileNotFoundError:
                 pass
             except Exception as error:
