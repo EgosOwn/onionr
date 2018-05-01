@@ -141,6 +141,7 @@ class API:
                 resp = Response('pong')
             elif action == 'stats':
                 resp = Response('me_irl')
+                raise Exception
             elif action == 'site':
                 block = data
                 siteData = self._core.getData(data)
@@ -255,7 +256,7 @@ class API:
             logger.info('Starting client on ' + self.host + ':' + str(bindPort) + '...', timestamp=True)
 
         try:
-            app.run(host=self.host, port=bindPort, debug=True, threaded=True)
+            app.run(host=self.host, port=bindPort, debug=False, threaded=True)
         except Exception as e:
             logger.error(str(e))
             logger.fatal('Failed to start client on ' + self.host + ':' + str(bindPort) + ', exiting...')
