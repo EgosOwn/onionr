@@ -21,7 +21,11 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 
-import sys, os, base64, random, getpass, shutil, subprocess, requests, time, platform, datetime, re
+import sys
+if sys.version_info[0] == 2 or sys.version_info[1] < 5:
+    print('Error, Onionr requires Python 3.4.x+')
+    sys.exit(1)
+import base64, random, getpass, shutil, subprocess, requests, time, platform, datetime, re
 from threading import Thread
 import api, core, config, logger, onionrplugins as plugins, onionrevents as events
 from onionrutils import OnionrUtils

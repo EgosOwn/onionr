@@ -20,6 +20,7 @@
 import flask
 from flask import request, Response, abort
 from multiprocessing import Process
+from gevent.wsgi import WSGIServer
 import sys, random, threading, hmac, hashlib, base64, time, math, os, logger, config
 
 from core import Core
@@ -256,7 +257,11 @@ class API:
             logger.info('Starting client on ' + self.host + ':' + str(bindPort) + '...', timestamp=True)
 
         try:
-            app.run(host=self.host, port=bindPort, debug=False, threaded=True)
+            http_server = WSGIServer((self.host, bindPort), app)
+            http_server.serve_forever()
+        except KeyboardInterrupt:
+            pass
+            #app.run(host=self.host, port=bindPort, debug=False, threaded=True)
         except Exception as e:
             logger.error(str(e))
             logger.fatal('Failed to start client on ' + self.host + ':' + str(bindPort) + ', exiting...')
