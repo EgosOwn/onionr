@@ -400,21 +400,24 @@ class OnionrUtils:
                 retData = row[0]
         return retData
 
-    def isCommunicatorRunning(timeout = 5, interval = 0.1):
-        runcheck_file = 'data/.runcheck'
+    def isCommunicatorRunning(self, timeout = 5, interval = 0.1):
+        try:
+            runcheck_file = 'data/.runcheck'
 
-        if os.path.isfile(runcheck_file):
-            os.remove(runcheck_file)
-            logger.debug('%s file appears to have existed before the run check.' % runcheck_file, timestamp = False)
-
-        self._core.daemonQueueAdd('runCheck')
-        starttime = time.time()
-
-        while True:
-            time.sleep(interval)
             if os.path.isfile(runcheck_file):
                 os.remove(runcheck_file)
+                logger.debug('%s file appears to have existed before the run check.' % runcheck_file, timestamp = False)
 
-                return True
-            elif starttime - time.time() >= timeout:
-                return False
+            self._core.daemonQueueAdd('runCheck')
+            starttime = time.time()
+
+            while True:
+                time.sleep(interval)
+                if os.path.isfile(runcheck_file):
+                    os.remove(runcheck_file)
+
+                    return True
+                elif time.time() - starttime >= timeout:
+                    return False
+        except:
+            return False

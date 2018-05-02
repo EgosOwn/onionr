@@ -114,8 +114,9 @@ class OnionrCommunicate:
                 elif command[0] == 'runCheck':
                     logger.info('Status check; looks good.')
                     open('data/.runcheck', 'w+').close()
-                    break
+
             apiRunningCheckCount += 1
+
             # check if local API is up
             if apiRunningCheckCount > apiRunningCheckRate:
                 if self._core._utils.localCommand('ping') != 'pong':
@@ -131,6 +132,7 @@ class OnionrCommunicate:
                 apiRunningCheckCount = 0
 
             time.sleep(1)
+
         self._netController.killTor()
         return
 
