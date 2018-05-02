@@ -527,15 +527,18 @@ class Onionr:
             Shutdown the Onionr daemon
         '''
 
-        logger.warn('Killing the running daemon')
-        events.event('daemon_stop', onionr = self)
-        net = NetController(config.get('client')['port'])
+        logger.warn('Killing the running daemon...', timestamp = False)
         try:
-            self.onionrUtils.localCommand('shutdown')
-        except requests.exceptions.ConnectionError:
-            pass
-        self.onionrCore.daemonQueueAdd('shutdown')
-        net.killTor()
+            events.event('daemon_stop', onionr = self)
+            net = NetController(config.get('client')['port'])
+            try:
+                self.onionrUtils.localCommand('shutdown')
+            except requests.exceptions.ConnectionError:
+                pass
+            self.onionrCore.daemonQueueAdd('shutdown')
+            net.killTor()
+        except Exception as e:
+            logger.error('Failed to shutdown daemon.', error = e, timestamp = False)
 
         return
 
@@ -543,6 +546,7 @@ class Onionr:
         '''
             Displays statistics and exits
         '''
+        
         logger.info('Our pubkey: ' + self.onionrCore._crypto.pubKey)
         logger.info('Our address: ' + self.get_hostname())
         return

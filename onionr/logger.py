@@ -220,7 +220,7 @@ def error(data, error=None, timestamp=True):
     if get_level() <= LEVEL_ERROR:
         log('-', data, colors.fg.red, timestamp=timestamp)
     if not error is None:
-        debug('Error details: ' + str(error) + parse_error())
+        debug('Error: ' + str(error) + parse_error())
 
 # fatal: when the something so bad has happened that the prorgam must stop
 def fatal(data, timestamp=True):
