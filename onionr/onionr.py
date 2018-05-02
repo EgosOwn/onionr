@@ -293,11 +293,11 @@ class Onionr:
             Displays the Onionr version
         '''
 
-        logger.info('Onionr ' + ONIONR_VERSION + ' (' + platform.machine() + ') - API v' + API_VERSION)
+        logger.info('Onionr %s (%s) - API v%s' % (ONIONR_VERSION, platform.machine(), API_VERSION))
         if verbosity >= 1:
             logger.info(ONIONR_TAGLINE)
         if verbosity >= 2:
-            logger.info('Running on ' + platform.platform() + ' ' + platform.release())
+            logger.info('Running on %s %s' % (platform.platform(), platform.release()))
 
         return
 
@@ -323,7 +323,7 @@ class Onionr:
             except KeyboardInterrupt:
                 pass
             else:
-                logger.info("Sending message to " + peer)
+                logger.info("Sending message to: " + logger.colors.underline + peer)
                 self.onionrUtils.sendPM(peer, message)
 
 
@@ -355,6 +355,7 @@ class Onionr:
         '''
             Adds a Onionr node address
         '''
+
         try:
             newAddress = sys.argv[2]
         except:
@@ -374,22 +375,25 @@ class Onionr:
         '''
 
         while True:
-
-            messageToAdd = logger.readline('Broadcast message to network: ')
-            if len(messageToAdd) >= 1:
-                break
+            try:
+                messageToAdd = logger.readline('Broadcast message to network: ')
+                if len(messageToAdd) >= 1:
+                    break
+            except KeyboardInterrupt:
+                return
 
         #addedHash = self.onionrCore.setData(messageToAdd)
         addedHash = self.onionrCore.insertBlock(messageToAdd, header='txt')
         #self.onionrCore.addToBlockDB(addedHash, selfInsert=True)
         #self.onionrCore.setBlockType(addedHash, 'txt')
-        logger.info("inserted your message as block: " + addedHash)
+        logger.info("Message inserted as as block %s" % addedHash)
         return
 
     def getPMs(self):
         '''
             display PMs sent to us
         '''
+
         self.onionrUtils.loadPMs()
 
     def enablePlugin(self):
@@ -399,10 +403,10 @@ class Onionr:
 
         if len(sys.argv) >= 3:
             plugin_name = sys.argv[2]
-            logger.info('Enabling plugin \"' + plugin_name + '\"...')
+            logger.info('Enabling plugin "%s"...' % plugin_name)
             plugins.enable(plugin_name, self)
         else:
-            logger.info(sys.argv[0] + ' ' + sys.argv[1] + ' <plugin>')
+            logger.info('%s %s <plugin>' % (sys.argv[0], sys.argv[1]))
 
         return
 
@@ -413,10 +417,10 @@ class Onionr:
 
         if len(sys.argv) >= 3:
             plugin_name = sys.argv[2]
-            logger.info('Disabling plugin \"' + plugin_name + '\"...')
+            logger.info('Disabling plugin "%s"...' % plugin_name)
             plugins.disable(plugin_name, self)
         else:
-            logger.info(sys.argv[0] + ' ' + sys.argv[1] + ' <plugin>')
+            logger.info('%s %s <plugin>' % (sys.argv[0], sys.argv[1]))
 
         return
 
@@ -427,7 +431,7 @@ class Onionr:
 
         if len(sys.argv) >= 3:
             plugin_name = sys.argv[2]
-            logger.info('Reloading plugin \"' + plugin_name + '\"...')
+            logger.info('Reloading plugin "%s"...' % plugin_name)
             plugins.stop(plugin_name, self)
             plugins.start(plugin_name, self)
         else:
@@ -446,21 +450,21 @@ class Onionr:
                 plugin_name = re.sub('[^0-9a-zA-Z]+', '', str(sys.argv[2]).lower())
 
                 if not plugins.exists(plugin_name):
-                    logger.info('Creating plugin \"' + plugin_name + '\"...')
+                    logger.info('Creating plugin "%s"...' % plugin_name)
 
                     os.makedirs(plugins.get_plugins_folder(plugin_name))
                     with open(plugins.get_plugins_folder(plugin_name) + '/main.py', 'a') as main:
                         main.write(open('static-data/default_plugin.txt').read().replace('$user', os.getlogin()).replace('$date', datetime.datetime.now().strftime('%Y-%m-%d')))
 
-                    logger.info('Enabling plugin \"' + plugin_name + '\"...')
+                    logger.info('Enabling plugin "%s"...' % plugin_name)
                     plugins.enable(plugin_name, self)
                 else:
-                    logger.warn('Cannot create plugin directory structure; plugin "' + plugin_name + '" exists.')
+                    logger.warn('Cannot create plugin directory structure; plugin "%s" exists.' % plugin_name)
 
             except Exception as e:
                 logger.error('Failed to create plugin directory structure.', e)
         else:
-            logger.info(sys.argv[0] + ' ' + sys.argv[1] + ' <plugin>')
+            logger.info('%s %s <plugin>' % (sys.argv[0], sys.argv[1]))
 
         return
 

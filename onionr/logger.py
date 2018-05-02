@@ -18,7 +18,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 
-import re, sys, time
+import re, sys, time, traceback
 
 class colors:
     '''
@@ -220,9 +220,19 @@ def error(data, error=None, timestamp=True):
     if get_level() <= LEVEL_ERROR:
         log('-', data, colors.fg.red, timestamp=timestamp)
     if not error is None:
-        debug('Error details: ' + str(error))
+        debug('Error details: ' + str(error) + parse_error())
 
 # fatal: when the something so bad has happened that the prorgam must stop
 def fatal(data, timestamp=True):
     if get_level() <= LEVEL_FATAL:
         log('#', data, colors.bg.red + colors.fg.green + colors.bold, timestamp=timestamp)
+
+# returns a formatted error message
+def parse_error():
+    details = traceback.extract_tb(sys.exc_info()[2])
+    output = ''
+
+    for line in details:
+        output += '\n    ... module %s in  %s:%i' % (line[2], line[0], line[1])
+
+    return output

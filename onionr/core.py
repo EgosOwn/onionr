@@ -155,7 +155,7 @@ class Core:
             return True
         else:
             return False
-    
+
     def removeBlock(self, block):
         '''
             remove a block from this node
@@ -590,7 +590,7 @@ class Core:
         conn.commit()
         conn.close()
         return
-    
+
     def updateBlockInfo(self, hash, key, data):
         '''
             sets info associated with a block
