@@ -155,7 +155,7 @@ class Core:
             return True
         else:
             return False
-    
+
     def removeBlock(self, block):
         '''
             remove a block from this node
@@ -590,7 +590,7 @@ class Core:
         conn.commit()
         conn.close()
         return
-    
+
     def updateBlockInfo(self, hash, key, data):
         '''
             sets info associated with a block
@@ -611,12 +611,15 @@ class Core:
         '''
             Inserts a block into the network
         '''
+
         try:
             data.decode()
         except AttributeError:
             data = data.encode()
+
         retData = ''
         metadata = {'type': header}
+
         if sign:
             signature = self._crypto.edSign(data, self._crypto.privKey, encodeResult=True)
             ourID = self._crypto.pubKeyHashID()
@@ -627,8 +630,10 @@ class Core:
                 pass
             metadata['id'] = ourID
             metadata['sig'] = signature
+
         metadata = json.dumps(metadata)
         metadata = metadata.encode()
+
         if len(data) == 0:
             logger.error('Will not insert empty block')
         else:
@@ -642,16 +647,28 @@ class Core:
         '''
             Introduces our node into the network by telling X many nodes our HS address
         '''
-        announceAmount = 2
-        nodeList = self.listAdders()
-        if len(nodeList) == 0:
-            for i in self.bootstrapList:
-                if self._utils.validateID(i):
-                    self.addAddress(i)
-                    nodeList.append(i)
-        if announceAmount > len(nodeList):
-            announceAmount = len(nodeList)
-        for i in range(announceAmount):
-            self.daemonQueueAdd('announceNode', nodeList[i])
-        events.event('introduction', onionr = None)
+
+        if(self._utils.isCommunicatorRunning()):
+            announceAmount = 2
+            nodeList = self.listAdders()
+
+            if len(nodeList) == 0:
+                for i in self.bootstrapList:
+                    if self._utils.validateID(i):
+                        self.addAddress(i)
+                        nodeList.append(i)
+
+            if announceAmount > len(nodeList):
+                announceAmount = len(nodeList)
+
+            for i in range(announceAmount):
+                self.daemonQueueAdd('announceNode', nodeList[i])
+
+            events.event('introduction', onionr = None)
+
+            return True
+        else:
+            logger.error('Onionr daemon is not running.')
+            return False
+
         return

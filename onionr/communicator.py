@@ -111,7 +111,12 @@ class OnionrCommunicate:
                         if announceAttemptCount >= announceAttempts:
                             logger.warn('Unable to announce to ' + command[1])
                             break
+                elif command[0] == 'runCheck':
+                    logger.info('Status check; looks good.')
+                    open('data/.runcheck', 'w+').close()
+
             apiRunningCheckCount += 1
+
             # check if local API is up
             if apiRunningCheckCount > apiRunningCheckRate:
                 if self._core._utils.localCommand('ping') != 'pong':
@@ -127,6 +132,7 @@ class OnionrCommunicate:
                 apiRunningCheckCount = 0
 
             time.sleep(1)
+
         self._netController.killTor()
         return
 
@@ -352,7 +358,7 @@ class OnionrCommunicate:
 
         if not peer.endswith('.onion') and not peer.endswith('.onion/'):
             raise PeerError('Currently only Tor .onion peers are supported. You must manually specify .onion')
-        
+
         if len(self._core.hsAdder.strip()) == 0:
             raise Exception("Could not perform self address check in performGet due to not knowing our address")
         if selfCheck:

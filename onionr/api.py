@@ -136,7 +136,7 @@ class API:
             if action == 'hello':
                 resp = Response('Hello, World! ' + request.host)
             elif action == 'shutdown':
-                request.environ.get('werkzeug.server.shutdown')()
+                # request.environ.get('werkzeug.server.shutdown')()
                 resp = Response('Goodbye')
             elif action == 'ping':
                 resp = Response('pong')
@@ -163,7 +163,7 @@ class API:
                     time.sleep(self._privateDelayTime - elapsed)
 
             return resp
-        
+
         @app.route('/')
         def banner():
             self.mimeType = 'text/html'

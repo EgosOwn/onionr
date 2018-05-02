@@ -59,14 +59,14 @@ class OnionrUtils:
 
             sign = self._core._crypto.edSign(message, self._core._crypto.privKey, encodeResult=True)
             #encrypted = self._core._crypto.pubKeyEncrypt(message, pubkey, anonymous=True, encodedData=True).decode()
-            
+
             payload['sig'] = sign
             payload['msg'] = message
             payload = json.dumps(payload)
             message = payload
             encrypted = self._core._crypto.pubKeyEncrypt(message, pubkey, anonymous=True, encodedData=True).decode()
 
-            
+
             block = self._core.insertBlock(encrypted, header='pm', sign=False)
             if block == '':
                 logger.error('Could not send PM')
@@ -383,7 +383,7 @@ class OnionrUtils:
             except Exception as error:
                 logger.error('Failed to open block ' + str(i) + '.', error=error)
         return
-    
+
     def getPeerByHashId(self, hash):
         '''
             Return the pubkey of the user if known from the hash
@@ -399,3 +399,25 @@ class OnionrUtils:
             if row[0] != '':
                 retData = row[0]
         return retData
+
+    def isCommunicatorRunning(self, timeout = 5, interval = 0.1):
+        try:
+            runcheck_file = 'data/.runcheck'
+
+            if os.path.isfile(runcheck_file):
+                os.remove(runcheck_file)
+                logger.debug('%s file appears to have existed before the run check.' % runcheck_file, timestamp = False)
+
+            self._core.daemonQueueAdd('runCheck')
+            starttime = time.time()
+
+            while True:
+                time.sleep(interval)
+                if os.path.isfile(runcheck_file):
+                    os.remove(runcheck_file)
+
+                    return True
+                elif time.time() - starttime >= timeout:
+                    return False
+        except:
+            return False

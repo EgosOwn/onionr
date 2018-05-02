@@ -99,17 +99,17 @@ def commandInstallPlugin():
             return True
         elif valid_hash and real_block:
             blockhash = str(pkobh)
-            logger.debug('Using block ' + blockhash + '...')
+            logger.debug('Using block %s...' % blockhash)
         elif valid_key and not real_key:
             logger.error('Public key not found. Try adding the node by address manually, if possible.')
             logger.debug('Is valid key, but the key is not a known one.')
         elif valid_key and real_key:
             publickey = str(pkobh)
-            logger.debug('Using public key ' + publickey + '...')
+            logger.debug('Using public key %s...' % publickey)
 
             saveKey(pluginname, pkobh)
         else:
-            logger.error('Unknown data \"' + str(pkobh) + '\"; must be public key or block hash.')
+            logger.error('Unknown data "%s"; must be public key or block hash.' % str(pkobh))
             return
     else:
         help()
