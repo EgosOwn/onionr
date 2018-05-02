@@ -34,6 +34,7 @@ class POW:
         blockCheckCount = 0
         block = '' #self.bitcoinNode.getBlockHash(self.bitcoinNode.getLastBlockHeight())
         while self.hashing:
+            '''
             if blockCheckCount == blockCheck:
                 if self.reporting:
                     logger.debug('Refreshing Bitcoin block')
@@ -41,31 +42,35 @@ class POW:
                 blockCheckCount = 0
             blockCheckCount += 1
             hbCount += 1
-            token = nacl.hash.blake2b(nacl.utils.random() + block.encode()).decode()
-            if self.mainHash[0:self.difficulty] == token[0:self.difficulty]:
+            '''
+            token = nacl.hash.blake2b(nacl.utils.random()).decode()
+            #print(token)
+            if self.puzzle == token[0:self.difficulty]:
                 self.hashing = False
                 iFound = True
                 break
+        else:
+            logger.debug('POW thread exiting, another thread found result')
         if iFound:
             endTime = math.floor(time.time())
             if self.reporting:
                 logger.info('Found token ' + token, timestamp=True)
-                logger.info('took ' + str(endTime - startTime), timestamp=True)
+                logger.info('took ' + str(endTime - startTime) + ' seconds', timestamp=True)
             self.result = token
 
-    def __init__(self, difficulty, bitcoinNode):
+    def __init__(self, difficulty, bitcoinNode=''):
         self.foundHash = False
         self.difficulty = difficulty
 
         logger.debug('Computing difficulty of ' + str(self.difficulty))
 
-        self.mainHash = nacl.hash.blake2b(nacl.utils.random()).decode()
+        self.mainHash = '0000000000000000000000000000000000000000000000000000000000000000'#nacl.hash.blake2b(nacl.utils.random()).decode()
         self.puzzle = self.mainHash[0:self.difficulty]
         self.bitcoinNode = bitcoinNode
-        logger.debug('trying to find ' + str(self.mainHash))
+        #logger.debug('trying to find ' + str(self.mainHash))
         tOne = threading.Thread(name='one', target=self.pow, args=(True,))
-        tTwo = threading.Thread(name='two', target=self.pow)
-        tThree = threading.Thread(name='three', target=self.pow)
+        tTwo = threading.Thread(name='two', target=self.pow, args=(True,))
+        tThree = threading.Thread(name='three', target=self.pow, args=(True,))
         tOne.start()
         tTwo.start()
         tThree.start()
