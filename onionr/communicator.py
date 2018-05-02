@@ -111,6 +111,10 @@ class OnionrCommunicate:
                         if announceAttemptCount >= announceAttempts:
                             logger.warn('Unable to announce to ' + command[1])
                             break
+                elif command[0] == 'runCheck':
+                    logger.info('Status check; looks good.')
+                    open('data/.runcheck', 'w+').close()
+                    break
             apiRunningCheckCount += 1
             # check if local API is up
             if apiRunningCheckCount > apiRunningCheckRate:
