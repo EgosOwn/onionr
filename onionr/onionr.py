@@ -203,13 +203,13 @@ class Onionr:
             'disable-plugin': 'Disables and stops a plugin',
             'reload-plugin': 'Reloads a plugin',
             'create-plugin': 'Creates directory structure for a plugin',
-            'add-peer': 'Adds a peer (?)',
+            'add-peer': 'Adds a peer to database',
             'list-peers': 'Displays a list of peers',
             'add-msg': 'Broadcasts a message to the Onionr network',
             'pm': 'Adds a private message to block',
             'get-pms': 'Shows private messages sent to you',
             'addfile': 'Create an Onionr block from a file',
-            'introduce': 'Introduce your node to the public Onionr network (DAEMON MUST BE RUNNING)',
+            'introduce': 'Introduce your node to the public Onionr network',
         }
 
         # initialize plugins
