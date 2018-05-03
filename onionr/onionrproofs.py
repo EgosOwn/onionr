@@ -33,6 +33,7 @@ class POW:
         blockCheck = 300000 # How often the hasher should check if the bitcoin block is updated (slows hashing but prevents less wasted work)
         blockCheckCount = 0
         block = '' #self.bitcoinNode.getBlockHash(self.bitcoinNode.getLastBlockHeight())
+        print('thread started')
         while self.hashing:
             '''
             if blockCheckCount == blockCheck:
