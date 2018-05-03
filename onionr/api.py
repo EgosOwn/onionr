@@ -137,6 +137,7 @@ class API:
                 resp = Response('Hello, World! ' + request.host)
             elif action == 'shutdown':
                 # request.environ.get('werkzeug.server.shutdown')()
+                self.http_server.stop()
                 resp = Response('Goodbye')
             elif action == 'ping':
                 resp = Response('pong')
@@ -151,7 +152,6 @@ class API:
                     self.mimeType = 'text/html'
                     response = siteData.split(b'-', 2)[-1]
                 resp = Response(response)
-
             else:
                 resp = Response('(O_o) Dude what? (invalid command)')
             endTime = math.floor(time.time())
@@ -257,8 +257,8 @@ class API:
             logger.info('Starting client on ' + self.host + ':' + str(bindPort) + '...', timestamp=True)
 
         try:
-            http_server = WSGIServer((self.host, bindPort), app)
-            http_server.serve_forever()
+            self.http_server = WSGIServer((self.host, bindPort), app)
+            self.http_server.serve_forever()
         except KeyboardInterrupt:
             pass
             #app.run(host=self.host, port=bindPort, debug=False, threaded=True)
