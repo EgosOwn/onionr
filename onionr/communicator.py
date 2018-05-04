@@ -196,7 +196,7 @@ class OnionrCommunicate:
             return self.connection_handlers
         elif name in self.connection_handlers:
             return self.connection_handlers[name]
-        else
+        else:
             return list()
 
     def add_connection_handler(self, name, handler):

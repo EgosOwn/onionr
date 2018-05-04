@@ -25,7 +25,7 @@ import sys
 if sys.version_info[0] == 2 or sys.version_info[1] < 5:
     print('Error, Onionr requires Python 3.4+')
     sys.exit(1)
-import os, base64, random, getpass, shutil, subprocess, requests, time, platform, datetime, re
+import os, base64, random, getpass, shutil, subprocess, requests, time, platform, datetime, re, json
 from threading import Thread
 import api, core, config, logger, onionrplugins as plugins, onionrevents as events
 from onionrutils import OnionrUtils
@@ -64,7 +64,7 @@ class Onionr:
         else:
             # the default config file doesn't exist, try hardcoded config
             config.set_config({'devmode': True, 'log': {'file': {'output': True, 'path': 'data/output.log'}, 'console': {'output': True, 'color': True}}})
-        if not exists:
+        if not data_exists:
             config.save()
         config.reload() # this will read the configuration file into memory
 
@@ -134,7 +134,7 @@ class Onionr:
 
         # Get configuration
 
-        if not exists:
+        if not data_exists:
             # Generate default config
             # Hostname should only be set if different from 127.x.x.x. Important for DNS rebinding attack prevention.
             if self.debug:
