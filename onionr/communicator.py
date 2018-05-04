@@ -512,6 +512,7 @@ class OnionrCommunicate:
         for i in self._core.getBlockList(unsaved=True).split("\n"):
             if i != "":
                 if i in self.blocksProcessing or i in self.ignoredHashes:
+                    logger.debug('already processing ' + i)
                     continue
                 else:
                     self.blocksProcessing.append(i)
@@ -568,14 +569,23 @@ class OnionrCommunicate:
                         try:
                             logger.info('Block type is ' + blockMetadata['type'])
                             self._core.updateBlockInfo(i, 'dataType', blockMetadata['type'])
-                            self.blocksProcessing.pop(i)
+                            self.removeBlockFromProcessingList(i)
+                            self.removeBlockFromProcessingList(i)
                         except KeyError:
                             logger.warn('Block has no type')
                             pass
                     except json.decoder.JSONDecodeError:
                         logger.warn('Could not decode block metadata')
-                        self.blocksProcessing.pop(i)
+                        self.removeBlockFromProcessingList(i)
         return
+
+    def removeBlockFromProcessingList(self, block):
+        try:
+            self.blocksProcessing.remove(block)
+        except ValueError:
+            return False
+        else:
+            return True
 
     def downloadBlock(self, hash, peerTries=3):
         '''
