@@ -1,0 +1,16 @@
+{
+    "devmode": true,
+    "dc_response": true,
+
+    "log": {
+        "file": {
+            "output": true,
+            "path": "data/output.log"
+        },
+
+        "console": {
+            "output": true,
+            "color": true
+        }
+    }
+}

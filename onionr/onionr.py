@@ -59,8 +59,11 @@ class Onionr:
         if not data_exists:
             os.mkdir('data/')
 
-        exists = os.path.exists(config.get_config_file())
-        config.set_config({'devmode': True, 'log': {'file': {'output': True, 'path': 'data/output.log'}, 'console': {'output': True, 'color': True}}}) # this is the default config, it will be overwritten if a config file already exists. Else, it saves it
+        if os.path.exists('static-data/default_config.json'):
+            config.set_config(json.loads(open('static-data/default_config.json').read())) # this is the default config, it will be overwritten if a config file already exists. Else, it saves it
+        else:
+            # the default config file doesn't exist, try hardcoded config
+            config.set_config({'devmode': True, 'log': {'file': {'output': True, 'path': 'data/output.log'}, 'console': {'output': True, 'color': True}}})
         if not exists:
             config.save()
         config.reload() # this will read the configuration file into memory
@@ -454,7 +457,7 @@ class Onionr:
 
                     os.makedirs(plugins.get_plugins_folder(plugin_name))
                     with open(plugins.get_plugins_folder(plugin_name) + '/main.py', 'a') as main:
-                        main.write(open('static-data/default_plugin.txt').read().replace('$user', os.getlogin()).replace('$date', datetime.datetime.now().strftime('%Y-%m-%d')))
+                        main.write(open('static-data/default_plugin.py').read().replace('$user', os.getlogin()).replace('$date', datetime.datetime.now().strftime('%Y-%m-%d')))
 
                     logger.info('Enabling plugin "%s"...' % plugin_name)
                     plugins.enable(plugin_name, self)
@@ -546,7 +549,7 @@ class Onionr:
         '''
             Displays statistics and exits
         '''
-        
+
         logger.info('Our pubkey: ' + self.onionrCore._crypto.pubKey)
         logger.info('Our address: ' + self.get_hostname())
         return
