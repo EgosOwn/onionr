@@ -357,7 +357,8 @@ class OnionrUtils:
                     try:
                         message = self._core._crypto.pubKeyDecrypt(message, encodedData=True, anonymous=True)
                     except nacl.exceptions.CryptoError as e:
-                        logger.error('Unable to decrypt ' + i, error=e)
+                        pass
+                        #logger.error('Unable to decrypt ' + i, error=e)
                     else:
                         try:
                             message = json.loads(message.decode())

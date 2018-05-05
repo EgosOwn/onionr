@@ -41,7 +41,8 @@ class OnionrCommunicate:
 
         self.highFailureAmount = 7
 
-        self.communicatorThreads = []
+        self.communicatorThreads = 0
+        self.maxThreads = 75
 
         self.blocksProcessing = [] # list of blocks currently processing, to avoid trying a block twice at once in 2 seperate threads
         self.peerStatus = {} # network actions (active requests) for peers used mainly to prevent conflicting actions in threads
@@ -63,7 +64,7 @@ class OnionrCommunicate:
         highFailureRate = 10
         heartBeatTimer = 0
         heartBeatRate = 0
-        pexTimer = 25 # How often we should check for new peers
+        pexTimer = 120 # How often we should check for new peers
         pexCount = 0
         logger.debug('Communicator debugging enabled.')
         torID = open('data/hs/hostname').read()
@@ -108,14 +109,18 @@ class OnionrCommunicate:
                 pbT2 = threading.Thread(target=self.processBlocks, name='pbT2')
                 pbT3 = threading.Thread(target=self.processBlocks, name='pbT3')
                 pbT4 = threading.Thread(target=self.processBlocks, name='pbT4')
-                lT1.start()
-                lT2.start()
-                lT3.start()
-                lT4.start()
-                pbT1.start()
-                pbT2.start()
-                pbT3.start()
-                pbT4.start()
+                if (self.maxThreads - 8) >= threading.active_count():
+                    lT1.start()
+                    lT2.start()
+                    lT3.start()
+                    lT4.start()
+                    pbT1.start()
+                    pbT2.start()
+                    pbT3.start()
+                    pbT4.start()
+                else:
+                    logger.debug(threading.active_count())
+                    logger.debug('Too many threads.')
                 blockProcessTimer = 0
             if command != False:
                 if command[0] == 'shutdown':
@@ -385,7 +390,7 @@ class OnionrCommunicate:
             Get new peers and ed25519 keys
         '''
 
-        peersCheck = 5 # Amount of peers to ask for new peers + keys
+        peersCheck = 2 # Amount of peers to ask for new peers + keys
         peersChecked = 0
         peerList = list(self._core.listAdders()) # random ordered list of peers
         newKeys = []
@@ -512,7 +517,7 @@ class OnionrCommunicate:
         for i in self._core.getBlockList(unsaved=True).split("\n"):
             if i != "":
                 if i in self.blocksProcessing or i in self.ignoredHashes:
-                    logger.debug('already processing ' + i)
+                    #logger.debug('already processing ' + i)
                     continue
                 else:
                     self.blocksProcessing.append(i)
