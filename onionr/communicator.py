@@ -603,8 +603,11 @@ class OnionrCommunicate:
         peerTryCount = 0
 
         for i in peerList:
-            if self.peerData[i]['failCount'] >= self.highFailureAmount:
-                continue
+            try:
+                if self.peerData[i]['failCount'] >= self.highFailureAmount:
+                    continue
+            except KeyError:
+                pass
             if peerTryCount >= peerTries:
                 break
 
