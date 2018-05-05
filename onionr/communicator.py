@@ -561,6 +561,12 @@ class OnionrCommunicate:
                             blockMeta2 = {'type': ''}
                             pass
                         blockContent = blockContent[blockContent.rfind(b'}') + 1:]
+                        
+                        if not self.verifyPow(blockContent, blockMeta2):
+                            logger.warn(i + " has invalid or insufficient proof of work token, deleting")
+                            self._core.removeBlock(i)
+                            continue
+
                         try:
                             blockMetadata['sig']
                             blockMeta2['id']
@@ -656,6 +662,31 @@ class OnionrCommunicate:
                 peerTryCount += 1
 
         return retVal
+    
+    def verifyPow(self, blockContent, metadata):
+        '''
+            Verifies the proof of work associated with a block
+        '''
+        retData = False
+        try:
+            metadata['pow']
+            token = metadata['pow']
+        except KeyError:
+            return False
+        dataLen = len(blockContent)
+        expectedHash = self._crypto.blake2bHash(blockContent)
+        difficulty = 0
+        if token == expectedHash:
+            difficulty = math.floor(dataLen/1000000)
+
+            mainHash = '0000000000000000000000000000000000000000000000000000000000000000'#nacl.hash.blake2b(nacl.utils.random()).decode()
+            puzzle = mainHash[0:difficulty]
+
+            if token[0:difficulty] == puzzle:
+                logger.info('Validated block pow')
+                retData = True
+                
+        return retData
 
     def urlencode(self, data):
         '''

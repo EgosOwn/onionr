@@ -638,7 +638,6 @@ class Core:
             if powToken != False:
                 break
             time.sleep(0.3)
-        
 
         try:
             data.decode()
