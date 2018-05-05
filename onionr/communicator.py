@@ -554,7 +554,7 @@ class OnionrCommunicate:
                         pass
                     try:
                         #blockMetadata = json.loads(self._core.getData(i)).split('}')[0] + '}'
-                        blockMetadata = json.loads(blockContent[:blockContent.rfind(b'}') + 1])
+                        blockMetadata = json.loads(blockContent[:blockContent.rfind(b'}') + 1].decode())
                         try:
                             blockMeta2 = json.loads(blockMetadata['meta'])
                         except KeyError:
