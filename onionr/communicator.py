@@ -60,7 +60,7 @@ class OnionrCommunicate:
         #logger.fatal('Failed to start Bitcoin Node, exiting...')
         #exit(1)
 
-        blockProcessTimer = 0
+        blockProcessTimer = 19
         blockProcessAmount = 20
         highFailureTimer = 0
         highFailureRate = 10
@@ -561,6 +561,10 @@ class OnionrCommunicate:
                             blockMeta2 = {'type': ''}
                             pass
                         blockContent = blockContent[blockContent.rfind(b'}') + 1:]
+                        try:
+                            blockContent = blockContent.decode()
+                        except AttributeError:
+                            pass
                         
                         if not self.verifyPow(blockContent, blockMeta2):
                             logger.warn(i + " has invalid or insufficient proof of work token, deleting")
@@ -675,8 +679,13 @@ class OnionrCommunicate:
         except KeyError:
             return False
         dataLen = len(blockContent)
-        expectedHash = self._crypto.blake2bHash(metadata['powToken'] + blockContent)
+        print(blockContent)
+        expectedHash = self._crypto.blake2bHash(base64.b64decode(metadata['powToken']) + blockContent.encode())
         difficulty = 0
+        try:
+            expectedHash = expectedHash.decode()
+        except AttributeError:
+            pass
         if metadata['powHash'] == expectedHash:
             difficulty = math.floor(dataLen/1000000)
 
@@ -689,6 +698,8 @@ class OnionrCommunicate:
             else:
                 logger.warn("Invalid token")
         else:
+            logger.warn('expected hash ' + expectedHash)
+            logger.warn('got hash ' + metadata['powHash'])
             logger.warn("Invalid token2")
 
         return retData

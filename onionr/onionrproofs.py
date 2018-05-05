@@ -19,7 +19,7 @@
 '''
 
 import nacl.encoding, nacl.hash, nacl.utils, time, math, threading, binascii, logger, sys
-import btc
+import btc, core
 
 class POW:
     def pow(self, reporting = False):
@@ -34,6 +34,7 @@ class POW:
         blockCheckCount = 0
         block = '' #self.bitcoinNode.getBlockHash(self.bitcoinNode.getLastBlockHeight())
         #logger.debug('thread started')
+        myCore = core.Core()
         while self.hashing:
             '''
             if blockCheckCount == blockCheck:
@@ -45,7 +46,7 @@ class POW:
             hbCount += 1
             '''
             rand = nacl.utils.random()
-            token = nacl.hash.blake2b(nacl.utils.random() + self.data).decode()
+            token = nacl.hash.blake2b(rand + self.data).decode()
             #print(token)
             if self.puzzle == token[0:self.difficulty]:
                 self.hashing = False

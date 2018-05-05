@@ -217,4 +217,8 @@ class OnionrCrypto:
         return hasher.hexdigest()
     
     def blake2bHash(self, data):
+        try:
+            data = data.encode()
+        except AttributeError:
+            pass
         return nacl.hash.blake2b(data)
