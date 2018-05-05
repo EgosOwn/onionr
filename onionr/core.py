@@ -637,20 +637,22 @@ class Core:
 
         retData = ''
         metadata = {'type': header}
+        sig = {}
+
+        metadata = json.dumps(metadata)
+        metadata = metadata.encode()
 
         if sign:
-            signature = self._crypto.edSign(data, self._crypto.privKey, encodeResult=True)
+            signature = self._crypto.edSign(metadata + data, self._crypto.privKey, encodeResult=True)
             ourID = self._crypto.pubKeyHashID()
             # Convert from bytes on some py versions?
             try:
                 ourID = ourID.decode()
             except AttributeError:
                 pass
-            metadata['id'] = ourID
-            metadata['sig'] = signature
-
-        metadata = json.dumps(metadata)
-        metadata = metadata.encode()
+            metadata = {'sig': signature, 'meta': metadata.decode()}
+            metadata = json.dumps(metadata)
+            metadata = metadata.encode()
 
         if len(data) == 0:
             logger.error('Will not insert empty block')

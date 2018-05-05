@@ -103,14 +103,14 @@ class OnionrCommunicate:
                 logger.debug('Communicator heartbeat')
                 heartBeatTimer = 0
             if blockProcessTimer == blockProcessAmount:
-                lT1 = threading.Thread(target=self.lookupBlocks, name="lt1", args=(isThread=True,))
-                lT2 = threading.Thread(target=self.lookupBlocks, name="lt2", args=(isThread=True,))
-                lT3 = threading.Thread(target=self.lookupBlocks, name="lt3", args=(isThread=True,))
-                lT4 = threading.Thread(target=self.lookupBlocks, name="lt4", args=(isThread=True,))
-                pbT1 = threading.Thread(target=self.processBlocks, name='pbT1', args=(isThread=True,))
-                pbT2 = threading.Thread(target=self.processBlocks, name='pbT2', args=(isThread=True,))
-                pbT3 = threading.Thread(target=self.processBlocks, name='pbT3', args=(isThread=True,))
-                pbT4 = threading.Thread(target=self.processBlocks, name='pbT4', args=(isThread=True,))
+                lT1 = threading.Thread(target=self.lookupBlocks, name="lt1", args=(True,))
+                lT2 = threading.Thread(target=self.lookupBlocks, name="lt2", args=(True,))
+                lT3 = threading.Thread(target=self.lookupBlocks, name="lt3", args=(True,))
+                lT4 = threading.Thread(target=self.lookupBlocks, name="lt4", args=(True,))
+                pbT1 = threading.Thread(target=self.processBlocks, name='pbT1', args=(True,))
+                pbT2 = threading.Thread(target=self.processBlocks, name='pbT2', args=(True,))
+                pbT3 = threading.Thread(target=self.processBlocks, name='pbT3', args=(True,))
+                pbT4 = threading.Thread(target=self.processBlocks, name='pbT4', args=(True,))
                 if (self.maxThreads - 8) >= threading.active_count():
                     lT1.start()
                     lT2.start()
@@ -550,22 +550,25 @@ class OnionrCommunicate:
                     blockContent = self._core.getData(i)
                     try:
                         #blockMetadata = json.loads(self._core.getData(i)).split('}')[0] + '}'
-                        blockMetadata = self._core.getData(i).split(b'}')[0]
+                        blockMetadata = self._core.getData(i)
+                        blockMetadata = json.loads(blockMetadata[:blockMetadata.rfind(b'}') + 1])
                         try:
                             blockMetadata = blockMetadata.decode()
                         except AttributeError:
                             pass
 
-                        blockMetadata = json.loads(blockMetadata + '}')
+                        #blockMetadata = json.loads(blockMetadata + '}')
 
                         try:
                             blockMetadata['sig']
-                            blockMetadata['id']
+                            blockMetadata['meta']['id']
                         except KeyError:
                             pass
-
+                        
                         else:
-                            creator = self._utils.getPeerByHashId(blockMetadata['id'])
+                            blockData = json.dumps(blockMetadata['meta']) + blockMetadata[blockMetadata.rfind(b'}') + 1:]
+
+                            creator = self._utils.getPeerByHashId(blockMetadata['meta']['id'])
                             try:
                                 creator = creator.decode()
                             except AttributeError:
