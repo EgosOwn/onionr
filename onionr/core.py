@@ -635,9 +635,17 @@ class Core:
         # wait for proof to complete
         while True:
             powToken = powProof.getResult()
-            if powToken != False:
+            if powToken == False:
+                time.sleep(0.3)
+                continue
+            powHash = powToken[0]
+            powToken = base64.b64encode(powToken[1])
+            try:
+                powToken = powToken.decode()
+            except AttributeError:
+                pass
+            finally:
                 break
-            time.sleep(0.3)
 
         try:
             data.decode()
@@ -645,7 +653,7 @@ class Core:
             data = data.encode()
 
         retData = ''
-        metadata = {'type': header, 'pow': powToken}
+        metadata = {'type': header, 'powHash': powHash, 'powToken': powToken}
         sig = {}
 
         metadata = json.dumps(metadata)

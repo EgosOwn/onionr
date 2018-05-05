@@ -669,23 +669,28 @@ class OnionrCommunicate:
         '''
         retData = False
         try:
-            metadata['pow']
-            token = metadata['pow']
+            metadata['powToken']
+            metadata['powHash']
+            token = metadata['powToken']
         except KeyError:
             return False
         dataLen = len(blockContent)
-        expectedHash = self._crypto.blake2bHash(blockContent)
+        expectedHash = self._crypto.blake2bHash(metadata['powToken'] + blockContent)
         difficulty = 0
-        if token == expectedHash:
+        if metadata['powHash'] == expectedHash:
             difficulty = math.floor(dataLen/1000000)
 
             mainHash = '0000000000000000000000000000000000000000000000000000000000000000'#nacl.hash.blake2b(nacl.utils.random()).decode()
             puzzle = mainHash[0:difficulty]
 
-            if token[0:difficulty] == puzzle:
+            if metadata['powHash'][0:difficulty] == puzzle:
                 logger.info('Validated block pow')
                 retData = True
-                
+            else:
+                logger.warn("Invalid token")
+        else:
+            logger.warn("Invalid token2")
+
         return retData
 
     def urlencode(self, data):

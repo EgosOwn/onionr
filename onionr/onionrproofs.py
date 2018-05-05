@@ -44,6 +44,7 @@ class POW:
             blockCheckCount += 1
             hbCount += 1
             '''
+            rand = nacl.utils.random()
             token = nacl.hash.blake2b(nacl.utils.random() + self.data).decode()
             #print(token)
             if self.puzzle == token[0:self.difficulty]:
@@ -57,7 +58,7 @@ class POW:
             if self.reporting:
                 logger.info('Found token ' + token, timestamp=True)
                 logger.info('took ' + str(endTime - startTime) + ' seconds', timestamp=True)
-            self.result = token
+            self.result = (token, rand)
 
     def __init__(self, data, bitcoinNode=''):
         self.foundHash = False
