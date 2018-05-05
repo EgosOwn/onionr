@@ -18,7 +18,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 
-import nacl.encoding, nacl.hash, nacl.utils, time, math, threading, binascii, logger
+import nacl.encoding, nacl.hash, nacl.utils, time, math, threading, binascii, logger, sys
 import btc
 
 class POW:
@@ -33,7 +33,7 @@ class POW:
         blockCheck = 300000 # How often the hasher should check if the bitcoin block is updated (slows hashing but prevents less wasted work)
         blockCheckCount = 0
         block = '' #self.bitcoinNode.getBlockHash(self.bitcoinNode.getLastBlockHeight())
-        print('thread started')
+        #logger.debug('thread started')
         while self.hashing:
             '''
             if blockCheckCount == blockCheck:
@@ -44,7 +44,7 @@ class POW:
             blockCheckCount += 1
             hbCount += 1
             '''
-            token = nacl.hash.blake2b(nacl.utils.random()).decode()
+            token = nacl.hash.blake2b(nacl.utils.random() + self.data).decode()
             #print(token)
             if self.puzzle == token[0:self.difficulty]:
                 self.hashing = False
@@ -59,9 +59,21 @@ class POW:
                 logger.info('took ' + str(endTime - startTime) + ' seconds', timestamp=True)
             self.result = token
 
-    def __init__(self, difficulty, bitcoinNode=''):
+    def __init__(self, data, bitcoinNode=''):
         self.foundHash = False
-        self.difficulty = difficulty
+        self.difficulty = 0
+        self.data = data
+
+        dataLen = sys.getsizeof(data)
+        self.difficulty = math.floor(dataLen/1000000)
+        if self.difficulty <= 2:
+            self.difficulty = 4
+
+        try:
+            self.data = self.data.encode()
+        except AttributeError:
+            pass
+        self.data = nacl.hash.blake2b(self.data)
 
         logger.debug('Computing difficulty of ' + str(self.difficulty))
 

@@ -370,43 +370,6 @@ class OnionrUtils:
                             else:
                                 logger.warn("Bad sender id: " + signer)
 
-                    '''
-                    data = potentialMessage.read().split('}')
-                    message = data[1]
-                    sigResult = ''
-                    signer = ''
-
-                    try:
-                        metadata = json.loads(data[0] + '}')
-                    except json.decoder.JSONDecodeError:
-                        metadata = {}
-
-                    try:
-                        message = self._core._crypto.pubKeyDecrypt(message, encodedData=True, anonymous=True)
-                    except nacl.exceptions.CryptoError as e:
-                        pass
-                        #logger.error('Unable to decrypt ' + i, error=e)
-                    else:
-                        try:
-                            message = json.loads(message.decode())
-                            message['msg']
-                            message['id']
-                            message['sig']
-                        except json.decoder.JSONDecodeError:
-                            logger.error('Could not decode PM JSON')
-                        except KeyError:
-                            logger.error('PM is missing JSON keys')
-                        else:
-                            if self.validatePubKey(message['id']):
-                                sigResult = self._core._crypto.edVerify(message['msg'], message['id'], message['sig'], encodedData=True)
-                                logger.info('-----------------------------------')
-                                logger.info('Recieved message: ' + message['msg'])
-                                if sigResult:
-                                    logger.info('Valid signature by ' + message['id'])
-                                else:
-                                    logger.warn('Invalid signature by ' + message['id'])
-                    '''
-
             except FileNotFoundError:
                 pass
             except Exception as error:

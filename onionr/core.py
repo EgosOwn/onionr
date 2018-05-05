@@ -17,11 +17,11 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import sqlite3, os, sys, time, math, base64, tarfile, getpass, simplecrypt, hashlib, nacl, logger, json, netcontroller
+import sqlite3, os, sys, time, math, base64, tarfile, getpass, simplecrypt, hashlib, nacl, logger, json, netcontroller, math
 #from Crypto.Cipher import AES
 #from Crypto import Random
 
-import onionrutils, onionrcrypto, btc, onionrevents as events
+import onionrutils, onionrcrypto, onionrproofs, btc, onionrevents as events
 
 if sys.version_info < (3, 6):
     try:
@@ -630,13 +630,23 @@ class Core:
             Inserts a block into the network
         '''
 
+        powProof = onionrproofs.POW(data)
+        powToken = ''
+        # wait for proof to complete
+        while True:
+            powToken = powProof.getResult()
+            if powToken != False:
+                break
+            time.sleep(0.3)
+        
+
         try:
             data.decode()
         except AttributeError:
             data = data.encode()
 
         retData = ''
-        metadata = {'type': header}
+        metadata = {'type': header, 'pow': powToken}
         sig = {}
 
         metadata = json.dumps(metadata)
