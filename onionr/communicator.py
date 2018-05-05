@@ -550,37 +550,36 @@ class OnionrCommunicate:
                     blockContent = self._core.getData(i)
                     try:
                         #blockMetadata = json.loads(self._core.getData(i)).split('}')[0] + '}'
-                        blockMetadata = self._core.getData(i)
-                        blockMetadata = json.loads(blockMetadata[:blockMetadata.rfind(b'}') + 1])
+                        blockMetadata = json.loads(blockContent[:blockContent.rfind(b'}') + 1])
                         try:
-                            blockMetadata = blockMetadata.decode()
-                        except AttributeError:
+                            blockMeta2 = json.loads(blockMetadata['meta'])
+                        except KeyError:
+                            blockMeta2 = {'type': ''}
                             pass
-
-                        #blockMetadata = json.loads(blockMetadata + '}')
-
+                        blockContent = blockContent[blockContent.rfind(b'}') + 1:]
                         try:
                             blockMetadata['sig']
-                            blockMetadata['meta']['id']
+                            blockMeta2['id']
                         except KeyError:
                             pass
-                        
                         else:
-                            blockData = json.dumps(blockMetadata['meta']) + blockMetadata[blockMetadata.rfind(b'}') + 1:]
+                            #blockData = json.dumps(blockMetadata['meta']) + blockMetadata[blockMetadata.rfind(b'}') + 1:]
 
-                            creator = self._utils.getPeerByHashId(blockMetadata['meta']['id'])
+                            creator = self._utils.getPeerByHashId(blockMeta2['id'])
                             try:
                                 creator = creator.decode()
                             except AttributeError:
                                 pass
 
-                            if self._core._crypto.edVerify(blockContent.split(b'}')[1], creator, blockMetadata['sig'], encodedData=True):
+                            if self._core._crypto.edVerify(blockMetaData['meta'] + blockContent, creator, blockMetadata['sig'], encodedData=True):
+                                logger.info(i + ' was signed')
                                 self._core.updateBlockInfo(i, 'sig', 'true')
                             else:
+                                logger.warn(i + ' has an invalid signature')
                                 self._core.updateBlockInfo(i, 'sig', 'false')
                         try:
-                            logger.info('Block type is ' + blockMetadata['type'])
-                            self._core.updateBlockInfo(i, 'dataType', blockMetadata['type'])
+                            logger.info('Block type is ' + blockMeta2['type'])
+                            self._core.updateBlockInfo(i, 'dataType', blockMeta2['type'])
                             self.removeBlockFromProcessingList(i)
                             self.removeBlockFromProcessingList(i)
                         except KeyError:

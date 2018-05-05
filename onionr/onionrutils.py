@@ -336,6 +336,41 @@ class OnionrUtils:
                 continue
             try:
                 with open('data/blocks/' + i + '.dat', 'r') as potentialMessage:
+                    potentialMessage = potentialMessage.read()
+                    blockMetadata = json.loads(potentialMessage[:potentialMessage.rfind('}') + 1])
+                    blockContent = potentialMessage[potentialMessage.rfind('}') + 1:]
+
+                    try:
+                        message = self._core._crypto.pubKeyDecrypt(blockContent, encodedData=True, anonymous=True)
+                    except nacl.exceptions.CryptoError as e:
+                        pass
+                    else:
+                        try:
+                            message = message.decode()
+                        except AttributeError:
+                            pass
+
+                        try:
+                            message = json.loads(message)
+                        except json.decoder.JSONDecodeError:
+                            pass
+                        else:
+                            print('--------------------')
+                            logger.info('Decrypted ' + i + ':')
+                            logger.info(message["msg"])
+
+                            signer = message["id"]
+                            sig = message["sig"]
+
+                            if self.validatePubKey(signer):
+                                if self._core._crypto.edVerify(message["msg"], signer, sig, encodedData=True):
+                                    logger.info("Good signature by " + signer)
+                                else:
+                                    logger.warn("Bad signature by " + signer)
+                            else:
+                                logger.warn("Bad sender id: " + signer)
+
+                    '''
                     data = potentialMessage.read().split('}')
                     message = data[1]
                     sigResult = ''
@@ -345,14 +380,6 @@ class OnionrUtils:
                         metadata = json.loads(data[0] + '}')
                     except json.decoder.JSONDecodeError:
                         metadata = {}
-                    '''
-                    sigResult = self._core._crypto.edVerify(message, signer, sig, encodedData=True)
-                    #sigResult = False
-                    if sigResult != False:
-                        sigResult = 'Valid signature by ' + signer
-                    else:
-                        sigResult = 'Invalid signature by ' + signer
-                    '''
 
                     try:
                         message = self._core._crypto.pubKeyDecrypt(message, encodedData=True, anonymous=True)
@@ -378,6 +405,7 @@ class OnionrUtils:
                                     logger.info('Valid signature by ' + message['id'])
                                 else:
                                     logger.warn('Invalid signature by ' + message['id'])
+                    '''
 
             except FileNotFoundError:
                 pass

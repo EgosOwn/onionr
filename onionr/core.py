@@ -641,6 +641,7 @@ class Core:
 
         metadata = json.dumps(metadata)
         metadata = metadata.encode()
+        signature = ''
 
         if sign:
             signature = self._crypto.edSign(metadata + data, self._crypto.privKey, encodeResult=True)
@@ -650,9 +651,9 @@ class Core:
                 ourID = ourID.decode()
             except AttributeError:
                 pass
-            metadata = {'sig': signature, 'meta': metadata.decode()}
-            metadata = json.dumps(metadata)
-            metadata = metadata.encode()
+        metadata = {'sig': signature, 'meta': metadata.decode()}
+        metadata = json.dumps(metadata)
+        metadata = metadata.encode()
 
         if len(data) == 0:
             logger.error('Will not insert empty block')
