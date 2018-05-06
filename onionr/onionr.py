@@ -110,9 +110,9 @@ class Onionr:
                 # Copy default plugins into plugins folder
 
             if not os.path.exists(plugins.get_plugins_folder()):
-                if os.path.exists('default-plugins/'):
-                    names = [f for f in os.listdir("default-plugins/") if not os.path.isfile(f)]
-                    shutil.copytree('default-plugins/', plugins.get_plugins_folder())
+                if os.path.exists('static-data/default-plugins/'):
+                    names = [f for f in os.listdir("static-data/default-plugins/") if not os.path.isfile(f)]
+                    shutil.copytree('static-data/default-plugins/', plugins.get_plugins_folder())
 
                     # Enable plugins
                     for name in names:
@@ -216,7 +216,7 @@ class Onionr:
         }
 
         # initialize plugins
-        events.event('init', onionr = self)
+        events.event('init', onionr = self, threaded = False)
 
         command = ''
         try:
