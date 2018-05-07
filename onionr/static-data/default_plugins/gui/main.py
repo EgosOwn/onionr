@@ -73,9 +73,10 @@ def openGUI():
 
     nodeInfo = tkinter.Frame(root)
     keyInfo = tkinter.Frame(root)
-
-    print(pluginapi.get_onionr().get_hostname())
-    idText = pluginapi.get_onionr().get_hostname()
+    
+    hostname = pluginapi.get_onionr().get_hostname()
+    logger.debug('hostname: %s' % hostname)
+    idText = hostname
 
     idEntry = tkinter.Entry(nodeInfo)
     tkinter.Label(nodeInfo, text="Node Address: ").pack(side=tkinter.LEFT)
@@ -100,14 +101,14 @@ def openGUI():
     sendEntry.pack(side=tkinter.TOP, pady=5)
     sendBtn.pack(side=tkinter.TOP)
 
-    listbox = tkinter.Listbox(root, yscrollcommand=tkinter.scrollbar.set, height=15)
+    listbox = tkinter.Listbox(root, yscrollcommand=tkinter.Scrollbar.set, height=15)
 
     listbox.pack(fill=tkinter.BOTH, pady=25)
 
     daemonStatus = tkinter.Label(root, text="Onionr Daemon Status: unknown")
     daemonStatus.pack()
 
-    scrollbar.config(command=tkinter.listbox.yview)
+    scrollbar.config(command=tkinter.Listbox.yview)
     root.after(2000, update)
     root.mainloop()
 
