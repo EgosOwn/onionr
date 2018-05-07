@@ -457,7 +457,10 @@ class Core:
             except TypeError:
                 pass
         if getPow:
-            peerList.append(self._crypto.pubKey + '-' + self._crypto.pubKeyPowToken)
+            try:
+                peerList.append(self._crypto.pubKey + '-' + self._crypto.pubKeyPowToken)
+            except TypeError:
+                pass
         else:
             peerList.append(self._crypto.pubKey)
         conn.close()
