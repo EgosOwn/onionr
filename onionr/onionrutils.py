@@ -105,7 +105,7 @@ class OnionrUtils:
                     if len(key[0]) > 60 or len(key[1]) > 1000:
                         logger.warn(key[0] + ' or its pow value is too large.')
                         continue
-                    if self._core._crypto.blake2bHash(base64.b64decode(key[1]) + key[0]).startswith('0000'):
+                    if self._core._crypto.blake2bHash(base64.b64decode(key[1]) + key[0].encode()).startswith('0000'):
                         if not key[0] in self._core.listPeers(randomOrder=False) and type(key) != None and key[0] != self._core._crypto.pubKey:
                             if self._core.addPeer(key[0], key[1]):
                                 retVal = True

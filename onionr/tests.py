@@ -56,7 +56,7 @@ class OnionrTests(unittest.TestCase):
         myCore = core.Core()
         if not os.path.exists('data/peers.db'):
             myCore.createPeerDB()
-        if myCore.addPeer('6M5MXL237OK57ITHVYN5WGHANPGOMKS5C3PJLHBBNKFFJQOIDOJA====') and not myCore.addPeer('NFXHMYLMNFSAU==='):
+        if myCore.addPeer('6M5MXL237OK57ITHVYN5WGHANPGOMKS5C3PJLHBBNKFFJQOIDOJA====', '1cSix9Ao/yQSdo0sNif8cm2uTcYnSphb4JdZL/3WkN4=') and not myCore.addPeer('NFXHMYLMNFSAU===', '1cSix9Ao/yQSdo0sNif8cm2uTcYnSphb4JdZL/3WkN4='):
             self.assertTrue(True)
         else:
             self.assertTrue(False)
