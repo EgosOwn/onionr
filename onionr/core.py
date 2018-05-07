@@ -76,7 +76,7 @@ class Core:
             exit(1)
         return
 
-    def addPeer(self, peerID, name=''):
+    def addPeer(self, peerID, powID, name=''):
         '''
             Adds a public key to the key database (misleading function name)
 
@@ -85,10 +85,11 @@ class Core:
         # This function simply adds a peer to the DB
         if not self._utils.validatePubKey(peerID):
             return False
+        
         conn = sqlite3.connect(self.peerDB)
         hashID = self._crypto.pubKeyHashID(peerID)
         c = conn.cursor()
-        t = (peerID, name, 'unknown', hashID)
+        t = (peerID, name, 'unknown', hashID, powID)
 
         for i in c.execute("SELECT * FROM PEERS where id = '" + peerID + "';"):
             try:
@@ -99,7 +100,7 @@ class Core:
                 pass
             except IndexError:
                 pass
-        c.execute('INSERT INTO peers (id, name, dateSeen, hashID) VALUES(?, ?, ?, ?);', t)
+        c.execute('INSERT INTO peers (id, name, dateSeen, pow, hashID) VALUES(?, ?, ?, ?, ?);', t)
         conn.commit()
         conn.close()
 
@@ -212,7 +213,8 @@ class Core:
             bytesStored int,
             trust int,
             pubkeyExchanged int,
-            hashID);
+            hashID text,
+            pow text not null);
         ''')
         conn.commit()
         conn.close()
@@ -431,7 +433,7 @@ class Core:
         conn.close()
         return addressList
 
-    def listPeers(self, randomOrder=True):
+    def listPeers(self, randomOrder=True, getPow=False):
         '''
             Return a list of public keys (misleading function name)
 
@@ -448,10 +450,16 @@ class Core:
         for i in c.execute(payload):
             try:
                 if len(i[0]) != 0:
-                    peerList.append(i[0])
+                    if getPow:
+                        peerList.append(i[0] + '-' + i[11])
+                    else:
+                        peerList.append(i[0])
             except TypeError:
                 pass
-        peerList.append(self._crypto.pubKey)
+        if getPow:
+            peerList.append(self._crypto.pubKey + '-' + self._crypto.pubKeyPowToken)
+        else:
+            peerList.append(self._crypto.pubKey)
         conn.close()
         return peerList
 
@@ -633,19 +641,24 @@ class Core:
         powProof = onionrproofs.POW(data)
         powToken = ''
         # wait for proof to complete
-        while True:
-            powToken = powProof.getResult()
-            if powToken == False:
-                time.sleep(0.3)
-                continue
-            powHash = powToken[0]
-            powToken = base64.b64encode(powToken[1])
-            try:
-                powToken = powToken.decode()
-            except AttributeError:
-                pass
-            finally:
-                break
+        try:
+            while True:
+                powToken = powProof.getResult()
+                if powToken == False:
+                    time.sleep(0.3)
+                    continue
+                powHash = powToken[0]
+                powToken = base64.b64encode(powToken[1])
+                try:
+                    powToken = powToken.decode()
+                except AttributeError:
+                    pass
+                finally:
+                    break
+        except KeyboardInterrupt:
+            logger.warn("Got keyboard interrupt while working on inserting block, stopping.")
+            powProof.shutdown()
+            return ''
 
         try:
             data.decode()

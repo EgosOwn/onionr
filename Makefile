@@ -30,4 +30,4 @@ soft-reset:
 reset:
 	@echo "Hard-resetting Onionr..."
 	rm -rf onionr/data/ | true > /dev/null 2>&1
-	@./RUN-LINUX.sh version | grep -v "Failed" --color=always
+	#@./RUN-LINUX.sh version | grep -v "Failed" --color=always

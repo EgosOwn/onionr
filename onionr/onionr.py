@@ -389,7 +389,8 @@ class Onionr:
         addedHash = self.onionrCore.insertBlock(messageToAdd, header='txt')
         #self.onionrCore.addToBlockDB(addedHash, selfInsert=True)
         #self.onionrCore.setBlockType(addedHash, 'txt')
-        logger.info("Message inserted as as block %s" % addedHash)
+        if addedHash != '':
+            logger.info("Message inserted as as block %s" % addedHash)
         return
 
     def getPMs(self):

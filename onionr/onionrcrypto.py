@@ -17,15 +17,19 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import nacl.signing, nacl.encoding, nacl.public, nacl.hash, nacl.secret, os, binascii, base64, hashlib, logger
+import nacl.signing, nacl.encoding, nacl.public, nacl.hash, nacl.secret, os, binascii, base64, hashlib, logger, onionrproofs, time
 
 class OnionrCrypto:
     def __init__(self, coreInstance):
         self._core = coreInstance
         self._keyFile = 'data/keys.txt'
+        self.keyPowFile = 'data/keyPow.txt'
         self.pubKey = None
         self.privKey = None
         
+        self.pubKeyPowToken = None
+        self.pubKeyPowHash = None
+
         self.HASH_ID_ROUNDS = 2000
 
         # Load our own pub/priv Ed25519 keys, gen & save them if they don't exist
@@ -34,12 +38,30 @@ class OnionrCrypto:
                 keys = keys.read().split(',')
                 self.pubKey = keys[0]
                 self.privKey = keys[1]
+            try:
+                with open(self.keyPowFile, 'r') as powFile:
+                    data = powFile.read()
+                    self.pubKeyPowHash = data.split('-')[0]
+                    self.pubKeyPowToken = data.split('-')[1]
+            except (FileNotFoundError, IndexError):
+                pass
         else:
             keys = self.generatePubKey()
             self.pubKey = keys[0]
             self.privKey = keys[1]
             with open(self._keyFile, 'w') as keyfile:
                 keyfile.write(self.pubKey + ',' + self.privKey)
+            with open(self.keyPowFile, 'w') as keyPowFile:
+                proof = onionrproofs.POW(self.pubKey)
+                logger.info('Doing necessary work to insert our public key')
+                while True:
+                    time.sleep(0.2)
+                    powToken = proof.getResult()
+                    if powToken != False:
+                        break
+                keyPowFile.write(base64.b64encode(powToken[1]).decode())
+                self.pubKeyPowToken = powToken[1]
+                self.pubKeyPowHash = powToken[0]
         return
 
     def edVerify(self, data, key, sig, encodedData=True):

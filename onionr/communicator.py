@@ -679,7 +679,7 @@ class OnionrCommunicate:
         except KeyError:
             return False
         dataLen = len(blockContent)
-        print(blockContent)
+        
         expectedHash = self._crypto.blake2bHash(base64.b64decode(metadata['powToken']) + self._crypto.blake2bHash(blockContent.encode()))
         difficulty = 0
         try:
