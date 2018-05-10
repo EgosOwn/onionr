@@ -191,6 +191,8 @@ class Onionr:
             'addaddress': self.addAddress,
             'addfile': self.addFile,
 
+            'importblocks': self.onionrUtils.importNewBlocks,
+
             'introduce': self.onionrCore.introduceNode,
             'connect': self.addAddress
         }
@@ -212,6 +214,7 @@ class Onionr:
             'pm': 'Adds a private message to block',
             'get-pms': 'Shows private messages sent to you',
             'addfile': 'Create an Onionr block from a file',
+            'importblocks': 'import blocks from the disk (Onionr is transport-agnostic!)',
             'introduce': 'Introduce your node to the public Onionr network',
         }
 

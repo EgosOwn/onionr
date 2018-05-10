@@ -18,7 +18,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 # Misc functions that do not fit in the main api, but are useful
-import getpass, sys, requests, os, socket, hashlib, logger, sqlite3, config, binascii, time, base64, json
+import getpass, sys, requests, os, socket, hashlib, logger, sqlite3, config, binascii, time, base64, json, glob
 import nacl.signing, nacl.encoding
 
 if sys.version_info < (3, 6):
@@ -423,3 +423,21 @@ class OnionrUtils:
 
     def token(self, size = 32):
         return binascii.hexlify(os.urandom(size))
+
+    def importNewBlocks(self, scanDir=''):
+        '''This function is intended to scan for new blocks ON THE DISK and import them'''
+        blockList = self._core.getBlockList()
+        if scanDir == '':
+            scanDir = self._core.blockDataLocation
+        if not scanDir.endswith('/'):
+            scanDir += '/'
+        for block in glob.glob(scanDir + "*.dat"):
+            if block.replace(scanDir, '').replace('.dat', '') not in blockList:
+                logger.info("Found new block on dist " + block)
+                with open(block, 'rb') as newBlock:
+                    block = block.replace(scanDir, '').replace('.dat', '')
+                    if self._core._crypto.sha3Hash(newBlock.read()) == block.replace('.dat', ''):
+                        self._core.addToBlockDB(block.replace('.dat', ''), dataSaved=True)
+                        logger.info('Imported block.')
+                    else:
+                        logger.warn('Failed to verify hash for ' + block)

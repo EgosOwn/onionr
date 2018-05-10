@@ -253,7 +253,7 @@ class Core:
 
         return
 
-    def addToBlockDB(self, newHash, selfInsert=False):
+    def addToBlockDB(self, newHash, selfInsert=False, dataSaved=False):
         '''
             Add a hash value to the block db
 
@@ -266,7 +266,7 @@ class Core:
         conn = sqlite3.connect(self.blockDB)
         c = conn.cursor()
         currentTime = math.floor(time.time())
-        if selfInsert:
+        if selfInsert or dataSaved:
             selfInsert = 1
         else:
             selfInsert = 0
