@@ -18,7 +18,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 # Misc functions that do not fit in the main api, but are useful
-import getpass, sys, requests, os, socket, hashlib, logger, sqlite3, config, binascii, time, base64, json, glob
+import getpass, sys, requests, os, socket, hashlib, logger, sqlite3, config, binascii, time, base64, json, glob, shutil
 import nacl.signing, nacl.encoding
 
 if sys.version_info < (3, 6):
@@ -448,6 +448,23 @@ class OnionrUtils:
                         logger.warn('Failed to verify hash for ' + block)
 
 
+    def progressBar(self, value = 0, endvalue = 100, width = None):
+        '''
+            Outputs a progress bar with a percentage. Write \n after use.
+        '''
+
+        if width is None or height is None:
+            width, height = shutil.get_terminal_size((80, 24))
+
+        bar_length = width - 6
+
+        percent = float(value) / endvalue
+        arrow = '─' * int(round(percent * bar_length)-1) + '>'
+        spaces = ' ' * (bar_length - len(arrow))
+
+        sys.stdout.write("\r┣{0}┫ {1}%".format(arrow + spaces, int(round(percent * 100))))
+        sys.stdout.flush()
+
 def size(path='.'):
     '''
         Returns the size of a folder's contents in bytes
@@ -465,6 +482,9 @@ def size(path='.'):
     return total
 
 def humanSize(num, suffix='B'):
+    '''
+        Converts from bytes to a human readable format.
+    '''
     for unit in ['', 'K', 'M', 'G', 'T', 'P', 'E', 'Z']:
         if abs(num) < 1024.0:
             return "%.1f %s%s" % (num, unit, suffix)

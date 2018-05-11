@@ -541,7 +541,7 @@ class OnionrCommunicate:
                 logger.warn('Block is unsaved: %s' % str(i))
                 data = self.downloadBlock(i)
 
-                # if block was successfull gotten (hash already verified)
+                # if block was successfully gotten (hash already verified)
                 if data:
                     del self.newHashes[i] # remove from probation list
 

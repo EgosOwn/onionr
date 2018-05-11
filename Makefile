@@ -31,3 +31,8 @@ reset:
 	@echo "Hard-resetting Onionr..."
 	rm -rf onionr/data/ | true > /dev/null 2>&1
 	#@./RUN-LINUX.sh version | grep -v "Failed" --color=always
+
+plugins-reset:
+	@echo "Resetting plugins..."
+	rm -rf onionr/data/plugins/ | true > /dev/null 2>&1
+	@./RUN-LINUX.sh version | grep -v "Failed" --color=always

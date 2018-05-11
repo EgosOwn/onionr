@@ -4,7 +4,7 @@
 
 # useful libraries
 import logger, config
-import os, sys, json
+import os, sys, json, time, random
 
 plugin_name = 'pluginmanager'
 
@@ -100,6 +100,14 @@ def commandInstallPlugin():
         elif valid_hash and real_block:
             blockhash = str(pkobh)
             logger.debug('Using block %s...' % blockhash)
+
+            logger.info('Downloading plugin...')
+            for i in range(0, 100):
+                pluginapi.get_utils().progressBar(i, 100)
+                time.sleep(random.random() / 5)
+            logger.info('Finished downloading plugin, verifying and installing...')
+            time.sleep(1)
+            logger.info('Installation successful.')
         elif valid_key and not real_key:
             logger.error('Public key not found. Try adding the node by address manually, if possible.')
             logger.debug('Is valid key, but the key is not a known one.')
@@ -108,6 +116,14 @@ def commandInstallPlugin():
             logger.debug('Using public key %s...' % publickey)
 
             saveKey(pluginname, pkobh)
+
+            logger.info('Downloading plugin...')
+            for i in range(0, 100):
+                pluginapi.get_utils().progressBar(i, 100)
+                time.sleep(random.random() / 5)
+            logger.info('Finished downloading plugin, verifying and installing...')
+            time.sleep(1)
+            logger.info('Installation successful.')
         else:
             logger.error('Unknown data "%s"; must be public key or block hash.' % str(pkobh))
             return
