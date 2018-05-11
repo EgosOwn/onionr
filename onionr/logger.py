@@ -222,7 +222,7 @@ def error(data, error=None, timestamp=True):
     if not error is None:
         debug('Error: ' + str(error) + parse_error())
 
-# fatal: when the something so bad has happened that the prorgam must stop
+# fatal: when the something so bad has happened that the program must stop
 def fatal(data, timestamp=True):
     if get_level() <= LEVEL_FATAL:
         log('#', data, colors.bg.red + colors.fg.green + colors.bold, timestamp=timestamp)

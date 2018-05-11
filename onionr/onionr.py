@@ -574,6 +574,16 @@ class Onionr:
                 'Enabled Plugins Count' : str(len(config.get('plugins')['enabled'])) + ' / ' + str(len(os.listdir('data/plugins/')))
             }
 
+            # color configuration
+            colors = {
+                'title' : logger.colors.bold,
+                'key' : logger.colors.fg.lightgreen,
+                'val' : logger.colors.fg.green,
+                'border' : logger.colors.fg.lightblue,
+
+                'reset' : logger.colors.reset
+            }
+
             # pre-processing
             maxlength = 0
             for key, val in messages.items():
@@ -581,14 +591,14 @@ class Onionr:
                     maxlength = max(len(key), maxlength)
 
             # generate stats table
-            logger.info(logger.colors.bold + 'Onionr v%s Statistics' % ONIONR_VERSION + logger.colors.reset)
-            logger.info('─' * (maxlength + 1) + '┐')
+            logger.info(colors['title'] + 'Onionr v%s Statistics' % ONIONR_VERSION + colors['reset'])
+            logger.info(colors['border'] + '─' * (maxlength + 1) + '┐' + colors['reset'])
             for key, val in messages.items():
                 if not (type(val) is bool and val is True):
-                    logger.info(str(key).rjust(maxlength) + ' │ ' + str(val))
+                    logger.info(colors['key'] + str(key).rjust(maxlength) + colors['reset'] + colors['border'] + ' │ ' + colors['reset'] + colors['val'] + str(val) + colors['reset'])
                 else:
-                    logger.info('─' * (maxlength + 1) + '┤')
-            logger.info('─' * (maxlength + 1) + '┘')
+                    logger.info(colors['border'] + '─' * (maxlength + 1) + '┤' + colors['reset'])
+            logger.info(colors['border'] + '─' * (maxlength + 1) + '┘' + colors['reset'])
         except Exception as e:
             logger.error('Failed to generate statistics table.', error = e, timestamp = False)
 
