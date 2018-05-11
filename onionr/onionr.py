@@ -28,6 +28,7 @@ if sys.version_info[0] == 2 or sys.version_info[1] < 5:
 import os, base64, random, getpass, shutil, subprocess, requests, time, platform, datetime, re, json
 from threading import Thread
 import api, core, config, logger, onionrplugins as plugins, onionrevents as events
+import onionrutils
 from onionrutils import OnionrUtils
 from netcontroller import NetController
 
@@ -554,8 +555,43 @@ class Onionr:
             Displays statistics and exits
         '''
 
-        logger.info('Our pubkey: ' + self.onionrCore._crypto.pubKey)
-        logger.info('Our address: ' + self.get_hostname())
+        try:
+            # define stats messages here
+            messages = {
+                # info about local client
+                'Public Key' : self.onionrCore._crypto.pubKey,
+                'Address' : self.get_hostname(),
+
+                # file and folder size stats
+                'div1' : True, # this creates a solid line across the screen, a div
+                'Total Block Size' : onionrutils.humanSize(onionrutils.size('data/blocks/')),
+                'Total Plugin Size' : onionrutils.humanSize(onionrutils.size('data/plugins/')),
+                'Log File Size' : onionrutils.humanSize(onionrutils.size('data/output.log')),
+
+                # count stats
+                'div2' : True,
+                'Known Peers Count' : str(len(self.onionrCore.listPeers())),
+                'Enabled Plugins Count' : str(len(config.get('plugins')['enabled'])) + ' / ' + str(len(os.listdir('data/plugins/')))
+            }
+
+            # pre-processing
+            maxlength = 0
+            for key, val in messages.items():
+                if not (type(val) is bool and val is True):
+                    maxlength = max(len(key), maxlength)
+
+            # generate stats table
+            logger.info(logger.colors.bold + 'Onionr v%s Statistics' % ONIONR_VERSION + logger.colors.reset)
+            logger.info('─' * (maxlength + 1) + '┐')
+            for key, val in messages.items():
+                if not (type(val) is bool and val is True):
+                    logger.info(str(key).rjust(maxlength) + ' │ ' + str(val))
+                else:
+                    logger.info('─' * (maxlength + 1) + '┤')
+            logger.info('─' * (maxlength + 1) + '┘')
+        except Exception as e:
+            logger.error('Failed to generate statistics table.', error = e, timestamp = False)
+
         return
 
     def showHelp(self, command = None):

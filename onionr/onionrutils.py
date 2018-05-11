@@ -422,10 +422,15 @@ class OnionrUtils:
             return False
 
     def token(self, size = 32):
+        '''
+            Generates a secure random hex encoded token
+        '''
         return binascii.hexlify(os.urandom(size))
 
     def importNewBlocks(self, scanDir=''):
-        '''This function is intended to scan for new blocks ON THE DISK and import them'''
+        '''
+            This function is intended to scan for new blocks ON THE DISK and import them
+        '''
         blockList = self._core.getBlockList()
         if scanDir == '':
             scanDir = self._core.blockDataLocation
@@ -441,3 +446,27 @@ class OnionrUtils:
                         logger.info('Imported block.')
                     else:
                         logger.warn('Failed to verify hash for ' + block)
+
+
+def size(path='.'):
+    '''
+        Returns the size of a folder's contents in bytes
+    '''
+    total = 0
+    if os.path.exists(path):
+        if os.path.isfile(path):
+            total = os.path.getsize(path)
+        else:
+            for entry in os.scandir(path):
+                if entry.is_file():
+                    total += entry.stat().st_size
+                elif entry.is_dir():
+                    total += size(entry.path)
+    return total
+
+def humanSize(num, suffix='B'):
+    for unit in ['', 'K', 'M', 'G', 'T', 'P', 'E', 'Z']:
+        if abs(num) < 1024.0:
+            return "%.1f %s%s" % (num, unit, suffix)
+        num /= 1024.0
+    return "%.1f %s%s" % (num, 'Yi', suffix)
