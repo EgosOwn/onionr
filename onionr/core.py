@@ -85,7 +85,7 @@ class Core:
         # This function simply adds a peer to the DB
         if not self._utils.validatePubKey(peerID):
             return False
-        
+
         conn = sqlite3.connect(self.peerDB)
         hashID = self._crypto.pubKeyHashID(peerID)
         c = conn.cursor()

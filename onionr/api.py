@@ -50,7 +50,7 @@ class API:
         '''
 
         config.reload()
-
+        
         if config.get('devmode', True):
             self._developmentMode = True
             logger.set_level(logger.LEVEL_DEBUG)

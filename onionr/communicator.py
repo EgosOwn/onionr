@@ -303,7 +303,7 @@ class OnionrCommunicate:
 
             events.event('outgoing_direct_connection', data = {'callback' : True, 'communicator' : self, 'data' : data, 'id' : identifier, 'token' : token, 'peer' : peer, 'callback' : callback, 'log' : log})
 
-            logger.debug('Direct connection (identifier: "%s"): %s' + (identifier, data_str))
+            logger.debug('Direct connection (identifier: "%s"): %s' % (identifier, data_str))
             try:
                 self.performGet('directMessage', peer, data_str)
             except:
@@ -416,26 +416,25 @@ class OnionrCommunicate:
             except IndexError:
                 pass
 
-            logger.info('Using ' + peerList[i] + ' to find new peers', timestamp=True)
+            logger.info('Using %s to find new peers...' % peerList[i], timestamp=True)
 
             try:
                 newAdders = self.performGet('pex', peerList[i], skipHighFailureAddress=True)
-                logger.debug('Attempting to merge address: ')
-                logger.debug(newAdders)
-                self._utils.mergeAdders(newAdders)
+                if not newAdders is False: # keep the is False thing in there, it might not be bool
+                    logger.debug('Attempting to merge address: %s' % str(newAdders))
+                    self._utils.mergeAdders(newAdders)
             except requests.exceptions.ConnectionError:
-                logger.info(peerList[i] + ' connection failed', timestamp=True)
+                logger.info('%s connection failed' % peerList[i], timestamp=True)
                 continue
             else:
                 try:
-                    logger.info('Using ' + peerList[i] + ' to find new keys')
+                    logger.info('Using %s to find new keys...' % peerList[i])
                     newKeys = self.performGet('kex', peerList[i], skipHighFailureAddress=True)
-                    logger.debug('Attempting to merge pubkey: ')
-                    logger.debug(newKeys)
+                    logger.debug('Attempting to merge pubkey: %s' % str(newKeys))
                     # TODO: Require keys to come with POW token (very large amount of POW)
                     self._utils.mergeKeys(newKeys)
                 except requests.exceptions.ConnectionError:
-                    logger.info(peerList[i] + ' connection failed', timestamp=True)
+                    logger.info('%s connection failed' % peerList[i], timestamp=True)
                     continue
                 else:
                     peersChecked += 1
@@ -462,24 +461,24 @@ class OnionrCommunicate:
             lastDB = self._core.getAddressInfo(i, 'DBHash')
 
             if lastDB == None:
-                logger.debug('Fetching hash from ' + str(i) + ', no previous known.')
+                logger.debug('Fetching hash from %s, no previous known.' % str(i))
             else:
-                logger.debug('Fetching hash from ' + str(i) + ', ' + str(lastDB) + ' last known')
+                logger.debug('Fetching hash from %s, %s last known' % (str(i), str(lastDB)))
 
             currentDB = self.performGet('getDBHash', i)
 
             if currentDB != False:
-                logger.debug(i + " hash db (from request): " + currentDB)
+                logger.debug('%s hash db (from request): %s' % (str(i), str(currentDB)))
             else:
-                logger.warn("Error getting hash db status for " + i)
+                logger.warn('Failed to get hash db status for %s' % str(i))
 
             if currentDB != False:
                 if lastDB != currentDB:
-                    logger.debug('Fetching hash from ' + i + ' - ' + currentDB + ' current hash.')
+                    logger.debug('Fetching hash from %s - %s current hash.' % (str(i), currentDB))
                     try:
                         blocks += self.performGet('getBlockHashes', i)
                     except TypeError:
-                        logger.warn('Failed to get data hash from ' + i)
+                        logger.warn('Failed to get data hash from %s' % str(i))
                         self.peerData[i]['failCount'] -= 1
                 if self._utils.validateHash(currentDB):
                     self._core.setAddressInfo(i, "DBHash", currentDB)
@@ -501,11 +500,11 @@ class OnionrCommunicate:
             #logger.debug('Exchanged block (blockList): ' + i)
             if not self._utils.validateHash(i):
                 # skip hash if it isn't valid
-                logger.warn('Hash ' + i + ' is not valid')
+                logger.warn('Hash %s is not valid' % str(i))
                 continue
             else:
                 self.newHashes[i] = 0
-                logger.debug('Adding ' +  i + ' to hash database...')
+                logger.debug('Adding %s to hash database...' % str(i))
                 self._core.addToBlockDB(i)
         self.lookupBlocksThreads -= 1
         return
@@ -532,14 +531,14 @@ class OnionrCommunicate:
 
                 # check if a new hash has been around too long, delete it from database and add it to ignore list
                 if self.newHashes[i] >= self.keepNewHash:
-                    logger.warn('Ignoring block ' + i + ' because it took to long to get valid data.')
+                    logger.warn('Ignoring block %s because it took to long to get valid data.' % str(i))
                     del self.newHashes[i]
                     self._core.removeBlock(i)
                     self.ignoredHashes.append(i)
                     continue
 
                 self.newHashes[i] += 1
-                logger.warn('UNSAVED BLOCK: ' + i)
+                logger.warn('Block is unsaved: %s' % str(i))
                 data = self.downloadBlock(i)
 
                 # if block was successfull gotten (hash already verified)
@@ -565,9 +564,9 @@ class OnionrCommunicate:
                             blockContent = blockContent.decode()
                         except AttributeError:
                             pass
-                        
+
                         if not self.verifyPow(blockContent, blockMeta2):
-                            logger.warn(i + " has invalid or insufficient proof of work token, deleting")
+                            logger.warn("%s has invalid or insufficient proof of work token, deleting..." % str(i))
                             self._core.removeBlock(i)
                             continue
 
@@ -586,13 +585,13 @@ class OnionrCommunicate:
                                 pass
 
                             if self._core._crypto.edVerify(blockMetaData['meta'] + blockContent, creator, blockMetadata['sig'], encodedData=True):
-                                logger.info(i + ' was signed')
+                                logger.info('%s was signed' % str(i))
                                 self._core.updateBlockInfo(i, 'sig', 'true')
                             else:
-                                logger.warn(i + ' has an invalid signature')
+                                logger.warn('%s has an invalid signature' % str(i))
                                 self._core.updateBlockInfo(i, 'sig', 'false')
                         try:
-                            logger.info('Block type is ' + blockMeta2['type'])
+                            logger.info('Block type is %s' % str(blockMeta2['type']))
                             self._core.updateBlockInfo(i, 'dataType', blockMeta2['type'])
                             self.removeBlockFromProcessingList(i)
                             self.removeBlockFromProcessingList(i)
@@ -652,7 +651,7 @@ class OnionrCommunicate:
 
             if digest == hash.strip():
                 self._core.setData(data)
-                logger.info('Successfully obtained data for ' + hash, timestamp=True)
+                logger.info('Successfully obtained data for %s' % str(hash), timestamp=True)
                 retVal = True
                 break
                 '''
@@ -662,11 +661,11 @@ class OnionrCommunicate:
                         logger.debug('Block text:\n' + data.decode())
                 '''
             else:
-                logger.warn("Failed to validate " + hash + " " + " hash calculated was " + digest)
+                logger.warn("Failed to validate %s -- hash calculated was %s" % (hash, digest))
                 peerTryCount += 1
 
         return retVal
-    
+
     def verifyPow(self, blockContent, metadata):
         '''
             Verifies the proof of work associated with a block
@@ -679,7 +678,7 @@ class OnionrCommunicate:
         except KeyError:
             return False
         dataLen = len(blockContent)
-        
+
         expectedHash = self._crypto.blake2bHash(base64.b64decode(metadata['powToken']) + self._crypto.blake2bHash(blockContent.encode()))
         difficulty = 0
         try:
@@ -696,11 +695,9 @@ class OnionrCommunicate:
                 logger.info('Validated block pow')
                 retData = True
             else:
-                logger.warn("Invalid token")
+                logger.warn("Invalid token (#1)")
         else:
-            logger.warn('expected hash ' + expectedHash)
-            logger.warn('got hash ' + metadata['powHash'])
-            logger.warn("Invalid token2")
+            logger.warn('Invalid token (#2): Expected hash %s, got hash %s...' % (metadata['powHash'], expectedHash))
 
         return retData
 
@@ -722,7 +719,7 @@ class OnionrCommunicate:
             raise Exception("Could not perform self address check in performGet due to not knowing our address")
         if selfCheck:
             if peer.replace('/', '') == self._core.hsAdder:
-                logger.warn('Tried to performget to own hidden service, but selfCheck was not set to false')
+                logger.warn('Tried to performGet to own hidden service, but selfCheck was not set to false')
                 return
 
         # Store peer in peerData dictionary (non permanent)
@@ -738,14 +735,14 @@ class OnionrCommunicate:
         try:
             if skipHighFailureAddress and self.peerData[peer]['failCount'] > self.highFailureAmount:
                 retData = False
-                logger.debug('Skipping ' + peer + ' because of high failure rate')
+                logger.debug('Skipping %s because of high failure rate.' % peer)
             else:
                 self.peerStatus[peer] = action
-                logger.debug('Contacting ' + peer + ' on port ' + socksPort)
+                logger.debug('Contacting %s on port %s' % (peer, str(socksPort)))
                 r = requests.get(url, headers=headers, proxies=proxies, timeout=(15, 30))
                 retData = r.text
         except requests.exceptions.RequestException as e:
-            logger.warn(action + " failed with peer " + peer + ": " + str(e))
+            logger.debug("%s failed with peer %s" % (action, peer))
             retData = False
 
         if not retData:
@@ -755,7 +752,7 @@ class OnionrCommunicate:
             self.peerData[peer]['failCount'] -= 1
             self.peerData[peer]['lastConnectTime'] = math.floor(time.time())
         return retData
-    
+
     def peerStatusTaken(self, peer, status):
         '''
             Returns if a peer is currently performing a specified action

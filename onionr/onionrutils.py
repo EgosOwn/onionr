@@ -125,15 +125,15 @@ class OnionrUtils:
             retVal = False
             if newAdderList != False:
                 for adder in newAdderList.split(','):
-                    if not adder in self._core.listAdders(randomOrder=False) and adder.strip() != self.getMyAddress():
+                    if not adder in self._core.listAdders(randomOrder = False) and adder.strip() != self.getMyAddress():
                         if self._core.addAddress(adder):
-                            logger.info('Added ' + adder + ' to db.', timestamp=True)
+                            logger.info('Added ' + adder + ' to db.', timestamp = True)
                             retVal = True
                     else:
-                        logger.debug(adder + " is either our address or already in our DB")
+                        logger.debug('%s is either our address or already in our DB' % adder)
             return retVal
         except Exception as error:
-            logger.error('Failed to merge adders.', error=error)
+            logger.error('Failed to merge adders.', error = error)
             return False
 
     def getMyAddress(self):
@@ -141,7 +141,7 @@ class OnionrUtils:
             with open('./data/hs/hostname', 'r') as hostname:
                 return hostname.read().strip()
         except Exception as error:
-            logger.error('Failed to read my address.', error=error)
+            logger.error('Failed to read my address.', error = error)
             return None
 
     def localCommand(self, command, silent = True):

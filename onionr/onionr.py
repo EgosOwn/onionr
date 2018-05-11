@@ -154,6 +154,8 @@ class Onionr:
             'config': self.configure,
             'start': self.start,
             'stop': self.killDaemon,
+            'status': self.showStats,
+            'statistics': self.showStats,
             'stats': self.showStats,
 
             'enable-plugin': self.enablePlugin,
@@ -559,6 +561,7 @@ class Onionr:
             # define stats messages here
             messages = {
                 # info about local client
+                'Onionr Daemon Status' : ((logger.colors.fg.green + 'Online') if self.onionrUtils.isCommunicatorRunning(timeout = 2) else logger.colors.fg.red + 'Offline'),
                 'Public Key' : self.onionrCore._crypto.pubKey,
                 'Address' : self.get_hostname(),
 
