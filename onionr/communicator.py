@@ -517,7 +517,7 @@ class OnionrCommunicate:
         '''
         if isThread:
             self.processBlocksThreads += 1
-        for i in self._core.getBlockList(unsaved=True).split("\n"):
+        for i in self._core.getBlockList(unsaved = True):
             if i != "":
                 if i in self.blocksProcessing or i in self.ignoredHashes:
                     #logger.debug('already processing ' + i)
@@ -553,13 +553,13 @@ class OnionrCommunicate:
                         pass
                     try:
                         #blockMetadata = json.loads(self._core.getData(i)).split('}')[0] + '}'
-                        blockMetadata = json.loads(blockContent[:blockContent.rfind(b'}') + 1].decode())
+                        blockMetadata = json.loads(blockContent[:blockContent.find(b'\n')].decode())
                         try:
                             blockMeta2 = json.loads(blockMetadata['meta'])
                         except KeyError:
                             blockMeta2 = {'type': ''}
                             pass
-                        blockContent = blockContent[blockContent.rfind(b'}') + 1:]
+                        blockContent = blockContent[blockContent.find(b'\n') + 1:]
                         try:
                             blockContent = blockContent.decode()
                         except AttributeError:

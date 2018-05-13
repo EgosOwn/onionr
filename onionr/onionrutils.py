@@ -334,7 +334,7 @@ class OnionrUtils:
         '''
             Find, decrypt, and return array of PMs (array of dictionary, {from, text})
         '''
-        #blocks = self._core.getBlockList().split('\n')
+        #blocks = self._core.getBlockList()
         blocks = self._core.getBlocksByType('pm')
         message = ''
         sender = ''
@@ -344,8 +344,8 @@ class OnionrUtils:
             try:
                 with open('data/blocks/' + i + '.dat', 'r') as potentialMessage:
                     potentialMessage = potentialMessage.read()
-                    blockMetadata = json.loads(potentialMessage[:potentialMessage.rfind('}') + 1])
-                    blockContent = potentialMessage[potentialMessage.rfind('}') + 1:]
+                    blockMetadata = json.loads(potentialMessage[:potentialMessage.find('\n')])
+                    blockContent = potentialMessage[potentialMessage.find('\n') + 1:]
 
                     try:
                         message = self._core._crypto.pubKeyDecrypt(blockContent, encodedData=True, anonymous=True)
