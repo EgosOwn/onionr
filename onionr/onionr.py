@@ -108,7 +108,7 @@ class Onionr:
                 if not os.path.exists('data/blocks/'):
                     os.mkdir('data/blocks/')
 
-                # Copy default plugins into plugins folder
+            # Copy default plugins into plugins folder
             if not os.path.exists(plugins.get_plugins_folder()):
                 if os.path.exists('static-data/default-plugins/'):
                     names = [f for f in os.listdir("static-data/default-plugins/") if not os.path.isfile(f)]

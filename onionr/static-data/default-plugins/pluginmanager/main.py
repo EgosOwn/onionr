@@ -4,7 +4,7 @@
 
 # useful libraries
 import logger, config
-import os, sys, json, time, random
+import os, sys, json, time, random, shutil, base64, getpass, datetime
 
 plugin_name = 'pluginmanager'
 
@@ -56,6 +56,78 @@ def check():
     if not os.path.isfile(keys_file):
         writeKeys()
 
+# plugin management
+
+def installBlock(hash, overwrite = True):
+    logger.debug('install')
+
+def pluginToBlock(plugin, import_block = True):
+    try:
+        directory = pluginapi.get_pluginapi().get_folder(plugin)
+        data_directory = pluginapi.get_pluginapi().get_data_folder(plugin)
+        zipfile = pluginapi.get_pluginapi().get_data_folder(plugin_name) + 'plugin.zip'
+
+        if os.path.exists(directory) and not os.path.isfile(directory):
+            if os.path.exists(data_directory) and not os.path.isfile(data_directory):
+                shutil.rmtree(data_directory)
+            if os.path.exists(zipfile) and os.path.isfile(zipfile):
+                os.remove(zipfile)
+            if os.path.exists(directory + '__pycache__') and not os.path.isfile(directory + '__pycache__'):
+                shutil.rmtree(directory + '__pycache__')
+
+            shutil.make_archive(zipfile[:-4], 'zip', directory)
+            data = base64.b64encode(open(zipfile, 'rb').read())
+
+            metadata = {'author' : getpass.getuser(), 'date' : str(datetime.datetime.now()), 'content' : data.decode('utf-8'), 'name' : plugin, 'compiled-by' : plugin_name}
+
+            hash = pluginapi.get_core().insertBlock(json.dumps(metadata), header = 'plugin', sign = True)
+
+            if import_block:
+                pluginapi.get_utils().importNewBlocks()
+
+            return hash
+        else:
+            logger.error('Plugin %s does not exist.' % plugin)
+    except Exception as e:
+        logger.error('Failed to convert plugin to block.', error = e, timestamp = False)
+
+    return False
+
+def parseBlock(hash, key):# deal with block metadata
+    blockContent = pluginapi.get_core().getData(hash)
+
+    try:
+        blockMetadata = json.loads(blockContent[:blockContent.decode().find(b'}') + 1].decode())
+        try:
+            blockMeta2 = json.loads(blockMetadata['meta'])
+        except KeyError:
+            blockMeta2 = {'type': ''}
+            pass
+        blockContent = blockContent[blockContent.rfind(b'}') + 1:]
+        try:
+            blockContent = blockContent.decode()
+        except AttributeError:
+            pass
+
+        if not pluginapi.get_crypto().verifyPow(blockContent, blockMeta2):
+            logger.debug("(pluginmanager): %s has invalid or insufficient proof of work" % str(hash))
+            return False
+
+        if not (('sig' in blockMetadata) and ('id' in blockMeta2)):
+            logger.debug('(pluginmanager): %s is missing required parameters' % hash)
+            return False
+        else:
+            if pluginapi.get_crypto().edVerify(blockMetaData['meta'] + blockContent, key, blockMetadata['sig'], encodedData=True):
+                logger.debug('(pluginmanager): %s was signed' % str(hash))
+                return True
+            else:
+                logger.debug('(pluginmanager): %s has an invalid signature' % str(hash))
+                return False
+    except json.decoder.JSONDecodeError as e:
+        logger.error('(pluginmanager): Could not decode block metadata.', error = e, timestamp = False)
+
+    return False
+
 # command handlers
 
 def help():
@@ -101,13 +173,7 @@ def commandInstallPlugin():
             blockhash = str(pkobh)
             logger.debug('Using block %s...' % blockhash)
 
-            logger.info('Downloading plugin...')
-            for i in range(0, 100):
-                pluginapi.get_utils().progressBar(i, 100)
-                time.sleep(random.random() / 5)
-            logger.info('Finished downloading plugin, verifying and installing...')
-            time.sleep(1)
-            logger.info('Installation successful.')
+            installBlock(blockhash)
         elif valid_key and not real_key:
             logger.error('Public key not found. Try adding the node by address manually, if possible.')
             logger.debug('Is valid key, but the key is not a known one.')
@@ -117,13 +183,14 @@ def commandInstallPlugin():
 
             saveKey(pluginname, pkobh)
 
-            logger.info('Downloading plugin...')
-            for i in range(0, 100):
-                pluginapi.get_utils().progressBar(i, 100)
-                time.sleep(random.random() / 5)
-            logger.info('Finished downloading plugin, verifying and installing...')
-            time.sleep(1)
-            logger.info('Installation successful.')
+            blocks = pluginapi.get_core().getBlocksByType('plugin')
+
+            for hash in blocks:
+                logger.debug('Scanning block for plugin: %s' % hash)
+                if parseBlock(hash, publickey):
+                    logger.info('success')
+                else:
+                    logger.warn('fail')
         else:
             logger.error('Unknown data "%s"; must be public key or block hash.' % str(pkobh))
             return

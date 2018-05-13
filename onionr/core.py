@@ -277,11 +277,12 @@ class Core:
 
         return
 
-    def getData(self,hash):
+    def getData(self, hash):
         '''
             Simply return the data associated to a hash
         '''
         try:
+            # logger.debug('Opening %s' % (str(self.blockDataLocation) + str(hash) + '.dat'))
             dataFile = open(self.blockDataLocation + hash + '.dat', 'rb')
             data = dataFile.read()
             dataFile.close()
@@ -576,22 +577,22 @@ class Core:
 
         return
 
-    def getBlockList(self, unsaved = False):
+    def getBlockList(self, unsaved = False): # TODO: Use unsaved
         '''
             Get list of our blocks
         '''
         conn = sqlite3.connect(self.blockDB)
         c = conn.cursor()
-        retData = ''
         if unsaved:
             execute = 'SELECT hash FROM hashes WHERE dataSaved != 1 ORDER BY RANDOM();'
         else:
             execute = 'SELECT hash FROM hashes ORDER BY RANDOM();'
+        rows = list()
         for row in c.execute(execute):
             for i in row:
-                retData += i + "\n"
+                rows.append(i)
 
-        return retData
+        return rows
 
     def getBlocksByType(self, blockType):
         '''
@@ -599,14 +600,14 @@ class Core:
         '''
         conn = sqlite3.connect(self.blockDB)
         c = conn.cursor()
-        retData = ''
         execute = 'SELECT hash FROM hashes WHERE dataType=?;'
         args = (blockType,)
+        rows = list()
         for row in c.execute(execute, args):
             for i in row:
-                retData += i + "\n"
+                rows.append(i)
 
-        return retData.split('\n')
+        return rows
 
     def setBlockType(self, hash, blockType):
         '''
