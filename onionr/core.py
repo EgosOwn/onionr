@@ -678,7 +678,7 @@ class Core:
         signature = ''
 
         if sign:
-            signature = self._crypto.edSign(metadata + data, self._crypto.privKey, encodeResult=True)
+            signature = self._crypto.edSign(metadata + b'\n' + data, self._crypto.privKey, encodeResult=True)
             ourID = self._crypto.pubKeyHashID()
             # Convert from bytes on some py versions?
             try:
@@ -692,7 +692,7 @@ class Core:
         if len(data) == 0:
             logger.error('Will not insert empty block')
         else:
-            addedHash = self.setData(metadata + data)
+            addedHash = self.setData(metadata + b'\n' + data)
             self.addToBlockDB(addedHash, selfInsert=True)
             self.setBlockType(addedHash, header)
             retData = addedHash
