@@ -447,7 +447,7 @@ class OnionrCommunicate:
         if isThread:
             self.lookupBlocksThreads += 1
         peerList = self._core.listAdders()
-        blocks = ''
+        blockList = list()
 
         for i in peerList:
             if self.peerStatusTaken(i, 'getBlockHashes') or self.peerStatusTaken(i, 'getDBHash'):
@@ -476,18 +476,15 @@ class OnionrCommunicate:
                 if lastDB != currentDB:
                     logger.debug('Fetching hash from %s - %s current hash.' % (str(i), currentDB))
                     try:
-                        blocks += self.performGet('getBlockHashes', i)
+                        blockList.append(self.performGet('getBlockHashes', i))
                     except TypeError:
                         logger.warn('Failed to get data hash from %s' % str(i))
                         self.peerData[i]['failCount'] -= 1
                 if self._utils.validateHash(currentDB):
                     self._core.setAddressInfo(i, "DBHash", currentDB)
 
-        if len(blocks.strip()) != 0:
+        if len(blockList) != 0:
             pass
-            #logger.debug('BLOCKS:' + blocks)
-
-        blockList = blocks.split('\n')
 
         for i in blockList:
             if len(i.strip()) == 0:

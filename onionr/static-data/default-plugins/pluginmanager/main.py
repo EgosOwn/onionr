@@ -97,13 +97,13 @@ def parseBlock(hash, key):# deal with block metadata
     blockContent = pluginapi.get_core().getData(hash)
 
     try:
-        blockMetadata = json.loads(blockContent[:blockContent.decode().find(b'}') + 1].decode())
+        blockMetadata = json.loads(blockContent[:blockContent.decode().find('\n')].decode())
         try:
             blockMeta2 = json.loads(blockMetadata['meta'])
         except KeyError:
             blockMeta2 = {'type': ''}
             pass
-        blockContent = blockContent[blockContent.rfind(b'}') + 1:]
+        blockContent = blockContent[blockContent.rfind(b'\n') + 1:]
         try:
             blockContent = blockContent.decode()
         except AttributeError:

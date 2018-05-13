@@ -153,8 +153,8 @@ class pluginapi:
     def get_utils(self):
         return self.get_onionr().onionrUtils
 
-    def get_crypto():
-        return self.get_core().crypto
+    def get_crypto(self):
+        return self.get_core()._crypto
 
     def get_daemonapi(self):
         return self.daemon
