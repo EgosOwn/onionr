@@ -269,11 +269,11 @@ class OnionrCrypto:
             puzzle = mainHash[:difficulty]
 
             if metadata['powHash'][:difficulty] == puzzle:
-                logger.info('Validated block pow')
+                # logger.debug('Validated block pow')
                 retData = True
             else:
-                logger.warn("Invalid token (#1)")
+                logger.debug("Invalid token (#1)")
         else:
-            logger.warn('Invalid token (#2): Expected hash %s, got hash %s...' % (metadata['powHash'], expectedHash))
+            logger.debug('Invalid token (#2): Expected hash %s, got hash %s...' % (metadata['powHash'], expectedHash))
 
         return retData

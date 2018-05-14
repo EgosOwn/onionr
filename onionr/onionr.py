@@ -463,7 +463,10 @@ class Onionr:
 
                     os.makedirs(plugins.get_plugins_folder(plugin_name))
                     with open(plugins.get_plugins_folder(plugin_name) + '/main.py', 'a') as main:
-                        main.write(open('static-data/default_plugin.py').read().replace('$user', os.getlogin()).replace('$date', datetime.datetime.now().strftime('%Y-%m-%d')))
+                        main.write(open('static-data/default_plugin.py').read().replace('$user', os.getlogin()).replace('$date', datetime.datetime.now().strftime('%Y-%m-%d')).replace('$name', plugin_name))
+
+                    with open(plugins.get_plugins_folder(plugin_name) + '/info.json', 'a') as main:
+                        main.write(json.dumps({'author' : 'anonymous', 'description' : 'the default description of the plugin', 'version' : '1.0'}))
 
                     logger.info('Enabling plugin "%s"...' % plugin_name)
                     plugins.enable(plugin_name, self)

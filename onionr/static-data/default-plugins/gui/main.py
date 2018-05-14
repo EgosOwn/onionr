@@ -19,6 +19,8 @@
 import logger, config
 import os, sqlite3, core
 
+plugin_name = 'gui'
+
 def sendMessage():
     global sendEntry
 
@@ -73,7 +75,7 @@ def openGUI():
 
     nodeInfo = tkinter.Frame(root)
     keyInfo = tkinter.Frame(root)
-    
+
     hostname = pluginapi.get_onionr().get_hostname()
     logger.debug('hostname: %s' % hostname)
     idText = hostname

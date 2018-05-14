@@ -567,7 +567,8 @@ class OnionrCommunicate:
                             self._core.removeBlock(i)
                             continue
                         else:
-                            if (('sig' in blockMetadata) and ('id' in blockMeta2)):
+                            if (('sig' in blockMetadata) and ('id' in blockMeta2)): # id doesn't exist in blockMeta2, so this won't workin the first place
+                            
                                 #blockData = json.dumps(blockMetadata['meta']) + blockMetadata[blockMetadata.rfind(b'}') + 1:]
 
                                 creator = self._utils.getPeerByHashId(blockMeta2['id'])
@@ -576,7 +577,7 @@ class OnionrCommunicate:
                                 except AttributeError:
                                     pass
 
-                                if self._core._crypto.edVerify(blockMetaData['meta'] + blockContent, creator, blockMetadata['sig'], encodedData=True):
+                                if self._core._crypto.edVerify(blockMetadata['meta'] + blockContent, creator, blockMetadata['sig'], encodedData=True):
                                     logger.info('%s was signed' % str(i))
                                     self._core.updateBlockInfo(i, 'sig', 'true')
                                 else:

@@ -4,11 +4,11 @@
 
 # useful libraries
 import logger, config
-import os, sys, json, time, random, shutil, base64, getpass, datetime
+import os, sys, json, time, random, shutil, base64, getpass, datetime, re
 
 plugin_name = 'pluginmanager'
 
-keys_data = {'keys' : {}}
+keys_data = {'keys' : {}, 'plugins' : [], 'repositories' : {}}
 
 # key functions
 
@@ -35,6 +35,7 @@ def getKey(plugin):
         Returns the public key for a given plugin
     '''
 
+    global keys_data
     readKeys()
     return (keys_data['keys'][plugin] if plugin in keys_data['keys'] else None)
 
@@ -43,8 +44,71 @@ def saveKey(plugin, key):
         Saves the public key for a plugin to keystore
     '''
 
+    global keys_data
+    readKeys()
     keys_data['keys'][plugin] = key
     writeKeys()
+
+def getPlugins():
+    '''
+        Returns a list of plugins installed by the plugin manager
+    '''
+
+    global keys_data
+    readKeys()
+    return keys_data['plugins']
+
+def addPlugin(plugin):
+    '''
+        Saves the plugin name, to remember that it was installed by the pluginmanager
+    '''
+
+    global keys_data
+    readKeys()
+    if not plugin in keys_data['plugins']:
+        keys_data['plugins'].append(plugin)
+        writeKeys()
+
+def removePlugin(plugin):
+    '''
+        Removes the plugin name from the pluginmanager's records
+    '''
+
+    global keys_data
+    readKeys()
+    if plugin in keys_data['plugins']:
+        keys_data['plugins'].remove(plugin)
+        writeKeys()
+
+def getRepositories():
+    '''
+        Returns a list of plugins installed by the plugin manager
+    '''
+
+    global keys_data
+    readKeys()
+    return keys_data['repositories']
+
+def addRepository(repositories, data):
+    '''
+        Saves the plugin name, to remember that it was installed by the pluginmanager
+    '''
+
+    global keys_data
+    readKeys()
+    keys_data['repositories'][repositories] = data
+    writeKeys()
+
+def removeRepository(repositories):
+    '''
+        Removes the plugin name from the pluginmanager's records
+    '''
+
+    global keys_data
+    readKeys()
+    if plugin in keys_data['repositories']:
+        del keys_data['repositories'][repositories]
+        writeKeys()
 
 def check():
     '''
@@ -58,11 +122,49 @@ def check():
 
 # plugin management
 
-def installBlock(hash, overwrite = True):
-    logger.debug('install')
+def sanitize(name):
+    return re.sub('[^0-9a-zA-Z]+', '', str(name).lower())[:255]
+
+def blockToPlugin(block):
+    try:
+        blockContent = pluginapi.get_core().getData(block)
+        blockContent = blockContent[blockContent.rfind(b'\n') + 1:].decode()
+        blockContent = json.loads(blockContent)
+
+        name = sanitize(blockContent['name'])
+        author = blockContent['author']
+        date = blockContent['date']
+        version = None
+
+        if 'version' in blockContent['info']:
+            version = blockContent['info']['version']
+
+        content = base64.b64decode(blockContent['content'].encode())
+
+        source = pluginapi.plugins.get_data_folder(plugin_name) + 'plugin.zip'
+        destination = pluginapi.plugins.get_folder(name)
+
+        with open(source, 'wb') as f:
+            f.write(content)
+
+        if os.path.exists(destination) and not os.path.isfile(destination):
+            shutil.rmtree(destination)
+
+        shutil.unpack_archive(source, destination)
+        pluginapi.plugins.enable(name)
+
+        logger.info('Installation of %s complete.' % name)
+
+        return True
+    except Exception as e:
+        logger.error('Failed to install plugin.', error = e, timestamp = False)
+
+    return False
 
 def pluginToBlock(plugin, import_block = True):
     try:
+        plugin = sanitize(plugin)
+
         directory = pluginapi.get_pluginapi().get_folder(plugin)
         data_directory = pluginapi.get_pluginapi().get_data_folder(plugin)
         zipfile = pluginapi.get_pluginapi().get_data_folder(plugin_name) + 'plugin.zip'
@@ -78,7 +180,19 @@ def pluginToBlock(plugin, import_block = True):
             shutil.make_archive(zipfile[:-4], 'zip', directory)
             data = base64.b64encode(open(zipfile, 'rb').read())
 
-            metadata = {'author' : getpass.getuser(), 'date' : str(datetime.datetime.now()), 'content' : data.decode('utf-8'), 'name' : plugin, 'compiled-by' : plugin_name}
+            author = getpass.getuser()
+            info = {"name" : plugin}
+            try:
+                if os.path.exists(directory + 'info.json'):
+                    info = json.loads(open(directory + 'info.json').read())
+                    if 'author' in info:
+                        author = info['author']
+                    if 'description' in info:
+                        author = info['description']
+            except:
+                pass
+
+            metadata = {'author' : author, 'date' : str(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')), 'name' : plugin, 'info' : info, 'compiled-by' : plugin_name, 'content' : data.decode('utf-8')}
 
             hash = pluginapi.get_core().insertBlock(json.dumps(metadata), header = 'plugin', sign = True)
 
@@ -113,33 +227,111 @@ def parseBlock(hash, key):# deal with block metadata
             logger.debug("(pluginmanager): %s has invalid or insufficient proof of work" % str(hash))
             return False
 
-        if not (('sig' in blockMetadata) and ('id' in blockMeta2)):
+        if not (('sig' in blockMetadata)): #  and ('id' in blockMeta2)
             logger.debug('(pluginmanager): %s is missing required parameters' % hash)
             return False
         else:
-            if pluginapi.get_crypto().edVerify(blockMetaData['meta'] + blockContent, key, blockMetadata['sig'], encodedData=True):
-                logger.debug('(pluginmanager): %s was signed' % str(hash))
+            if pluginapi.get_crypto().edVerify(blockMetadata['meta'] + '\n' + blockContent, key, blockMetadata['sig'], encodedData=True):
+                # logger.debug('(pluginmanager): %s was signed' % str(hash))
                 return True
             else:
-                logger.debug('(pluginmanager): %s has an invalid signature' % str(hash))
+                # logger.debug('(pluginmanager): %s has an invalid signature' % str(hash))
                 return False
     except json.decoder.JSONDecodeError as e:
         logger.error('(pluginmanager): Could not decode block metadata.', error = e, timestamp = False)
 
     return False
 
+def installBlock(block):
+    try:
+        blockContent = pluginapi.get_core().getData(block)
+        blockContent = blockContent[blockContent.rfind(b'\n') + 1:].decode()
+        blockContent = json.loads(blockContent)
+
+        name = sanitize(blockContent['name'])
+        author = blockContent['author']
+        date = blockContent['date']
+        version = None
+
+        if 'version' in blockContent['info']:
+            version = blockContent['info']['version']
+
+        install = False
+
+        logger.info(('Will install %s' + (' v' + version if not version is None else '') + ' (%s), by %s') % (name, date, author))
+
+        # TODO: Convert to single line if statement
+        if os.path.exists(pluginapi.plugins.get_folder(name)):
+            install = logger.confirm(message = 'Continue with installation (will overwrite existing plugin) %s?')
+        else:
+            install = logger.confirm(message = 'Continue with installation %s?')
+
+        if install:
+            blockToPlugin(block)
+            addPlugin(name)
+        else:
+            logger.info('Installation cancelled.')
+            return False
+
+        return True
+    except Exception as e:
+        logger.error('Failed to install plugin.', error = e, timestamp = False)
+        return False
+
+def uninstallPlugin(plugin):
+    try:
+        plugin = sanitize(plugin)
+
+        pluginFolder = pluginapi.plugins.get_folder(plugin)
+        exists = (os.path.exists(pluginFolder) and not os.path.isfile(pluginFolder))
+        installedByPluginManager = plugin in getPlugins()
+        remove = False
+
+        if not exists:
+            logger.warn('Plugin %s does not exist.' % plugin, timestamp = False)
+            return False
+
+        default = 'y'
+        if not installedByPluginManager:
+            logger.warn('The plugin %s was not installed by %s.' % (plugin, plugin_name), timestamp = False)
+            default = 'n'
+        remove = logger.confirm(message = 'All plugin data will be lost. Are you sure you want to proceed %s?', default = default)
+
+        if remove:
+            if installedByPluginManager:
+                removePlugin(plugin)
+            pluginapi.plugins.disable(plugin)
+            shutil.rmtree(pluginFolder)
+
+            logger.info('Uninstallation of %s complete.' % plugin)
+
+            return True
+        else:
+            logger.info('Uninstallation cancelled.')
+    except Exception as e:
+        logger.error('Failed to uninstall plugin.', error = e)
+    return False
+
 # command handlers
 
 def help():
     logger.info(sys.argv[0] + ' ' + sys.argv[1] + ' <plugin> [public key/block hash]')
+    logger.info(sys.argv[0] + ' ' + sys.argv[1] + ' <plugin> [public key/block hash]')
 
 def commandInstallPlugin():
-    logger.warn('This feature is not functional or is still in development.')
     if len(sys.argv) >= 3:
         check()
 
         pluginname = sys.argv[2]
         pkobh = None # public key or block hash
+
+        version = None
+        if ':' in pluginname:
+            details = pluginname
+            pluginname = sanitize(details[0])
+            version = details[1]
+
+        sanitize(pluginname)
 
         if len(sys.argv) >= 4:
             # public key or block hash specified
@@ -149,7 +341,54 @@ def commandInstallPlugin():
             pkobh = getKey(pluginname)
 
         if pkobh is None:
-            logger.error('No key for this plugin found in keystore, please specify.')
+            # still nothing found, try searching repositories
+            logger.info('Searching for public key in repositories...')
+            try:
+                repos = getRepositories()
+                distributors = list()
+                for repo, records in repos.items():
+                    if pluginname in records:
+                        logger.debug('Found %s in repository %s for plugin %s.' % (records[pluginname], repo, pluginname))
+                        distributors.append(records[pluginname])
+
+                if len(distributors) != 0:
+                    distributor = None
+
+                    if len(distributors) == 1:
+                        logger.info('Found distributor: %s' % distributors[0])
+                        distributor = distributors[0]
+                    else:
+                        distributors_message = ''
+
+                        index = 1
+                        for dist in distributors:
+                            distributors_message += '    ' + logger.colors.bold + str(index) + ') ' + logger.colors.reset + str(dist) + '\n'
+                            index += 1
+
+                        logger.info((logger.colors.bold + 'Found distributors (%s):' + logger.colors.reset + '\n' + distributors_message) % len(distributors))
+
+                        valid = False
+                        while not valid:
+                            choice = logger.readline('Select the number of the key to use, from 1 to %s, or press Ctrl+C to cancel:' % (index - 1))
+
+                            try:
+                                if int(choice) < index and int(choice) >= 1:
+                                    distributor = distributors[int(choice)]
+                                    valid = True
+                            except KeyboardInterrupt:
+                                logger.info('Installation cancelled.')
+                                return True
+                            except:
+                                pass
+
+                    if not distributor is None:
+                        pkobh = distributor
+            except Exception as e:
+                logger.warn('Failed to lookup plugin in repositories.', timestamp = False)
+                logger.error('asdf', error = e, timestamp = False)
+
+        if pkobh is None:
+            logger.error('No key for this plugin found in keystore or repositories, please specify.')
             help()
             return True
 
@@ -168,6 +407,7 @@ def commandInstallPlugin():
         if valid_hash and not real_block:
             logger.error('Block hash not found. Perhaps it has not been synced yet?')
             logger.debug('Is valid hash, but does not belong to a known block.')
+
             return True
         elif valid_hash and real_block:
             blockhash = str(pkobh)
@@ -185,27 +425,84 @@ def commandInstallPlugin():
 
             blocks = pluginapi.get_core().getBlocksByType('plugin')
 
+            signedBlocks = list()
+
             for hash in blocks:
-                logger.debug('Scanning block for plugin: %s' % hash)
                 if parseBlock(hash, publickey):
-                    logger.info('success')
-                else:
-                    logger.warn('fail')
+                    signedBlocks.append(hash)
+
+            mostRecentTimestamp = None
+            mostRecentVersionBlock = None
+
+            for hash in signedBlocks:
+                try:
+                    blockContent = pluginapi.get_core().getData(hash)
+                    blockContent = blockContent[blockContent.rfind(b'\n') + 1:].decode()
+                    blockContent = json.loads(blockContent)
+
+                    if not (('author' in blockContent) and ('info' in blockContent) and ('date' in blockContent) and ('name' in blockContent)):
+                        raise ValueError('Missing required parameter `date` in block %s.' % hash)
+
+                    blockDatetime = datetime.datetime.strptime(blockContent['date'], '%Y-%m-%d %H:%M:%S')
+
+                    if blockContent['name'] == pluginname:
+                        if ('version' in blockContent['info']) and (blockContent['info']['version'] == version) and (not version is None):
+                            mostRecentTimestamp = blockDatetime
+                            mostRecentVersionBlock = hash
+                            break
+                        elif mostRecentTimestamp is None:
+                            mostRecentTimestamp = blockDatetime
+                            mostRecentVersionBlock = hash
+                        elif blockDatetime > mostRecentTimestamp:
+                            mostRecentTimestamp = blockDatetime
+                            mostRecentVersionBlock = hash
+                except Exception as e:
+                    pass
+
+            logger.warn('Only continue the installation is you are absolutely certain that you trust the plugin distributor. Public key of plugin distributor: %s' % publickey, timestamp = False)
+            installBlock(mostRecentVersionBlock)
         else:
             logger.error('Unknown data "%s"; must be public key or block hash.' % str(pkobh))
             return
     else:
-        help()
+        logger.info(sys.argv[0] + ' ' + sys.argv[1] + ' <plugin> [public key/block hash]')
 
     return True
 
 def commandUninstallPlugin():
-    logger.info('This feature has not been created yet. Please check back later.')
-    return
+    if len(sys.argv) >= 3:
+        uninstallPlugin(sys.argv[2])
+    else:
+        logger.info(sys.argv[0] + ' ' + sys.argv[1] + ' <plugin>')
+
+    return True
 
 def commandSearchPlugin():
     logger.info('This feature has not been created yet. Please check back later.')
-    return
+    return True
+
+def commandAddRepository():
+    logger.info('This feature has not been created yet. Please check back later.')
+    return True
+
+def commandRemoveRepository():
+    logger.info('This feature has not been created yet. Please check back later.')
+    return True
+
+def commandPublishPlugin():
+    if len(sys.argv) >= 3:
+        check()
+
+        pluginname = sanitize(sys.argv[2])
+        pluginfolder = pluginapi.plugins.get_folder(pluginname)
+
+        if os.path.exists(pluginfolder) and not os.path.isfile(pluginfolder):
+            block = pluginToBlock(pluginname)
+            logger.info('Plugin saved in block %s.' % block)
+        else:
+            logger.error('Plugin %s does not exist.' % pluginname, timestamp = False)
+    else:
+        logger.info(sys.argv[0] + ' ' + sys.argv[1] + ' <plugin>')
 
 # event listeners
 
@@ -218,6 +515,9 @@ def on_init(api, data = None):
     api.commands.register(['install-plugin', 'installplugin', 'plugin-install', 'install', 'plugininstall'], commandInstallPlugin)
     api.commands.register(['remove-plugin', 'removeplugin', 'plugin-remove', 'uninstall-plugin', 'uninstallplugin', 'plugin-uninstall', 'uninstall', 'remove', 'pluginremove'], commandUninstallPlugin)
     api.commands.register(['search', 'filter-plugins', 'search-plugins', 'searchplugins', 'search-plugin', 'searchplugin', 'findplugin', 'find-plugin', 'filterplugin', 'plugin-search', 'pluginsearch'], commandSearchPlugin)
+    api.commands.register(['add-repo', 'add-repository', 'addrepo', 'addrepository', 'repository-add', 'repo-add', 'repoadd', 'addrepository', 'add-plugin-repository', 'add-plugin-repo', 'add-pluginrepo', 'add-pluginrepository', 'addpluginrepo', 'addpluginrepository'], commandAddRepository)
+    api.commands.register(['remove-repo', 'remove-repository', 'removerepo', 'removerepository', 'repository-remove', 'repo-remove', 'reporemove', 'removerepository', 'remove-plugin-repository', 'remove-plugin-repo', 'remove-pluginrepo', 'remove-pluginrepository', 'removepluginrepo', 'removepluginrepository', 'rm-repo', 'rm-repository', 'rmrepo', 'rmrepository', 'repository-rm', 'repo-rm', 'reporm', 'rmrepository', 'rm-plugin-repository', 'rm-plugin-repo', 'rm-pluginrepo', 'rm-pluginrepository', 'rmpluginrepo', 'rmpluginrepository'], commandRemoveRepository)
+    api.commands.register(['publish-plugin', 'plugin-publish', 'publishplugin', 'pluginpublish', 'publish'], commandPublishPlugin)
 
     # add help menus once the features are actually implemented
 

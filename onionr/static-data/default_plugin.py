@@ -1,10 +1,12 @@
 '''
-    Default plugin template file
+    $name plugin template file.
     Generated on $date by $user.
 '''
 
 # Imports some useful libraries
 import logger, config
+
+plugin_name = '$name'
 
 def on_init(api, data = None):
     '''
