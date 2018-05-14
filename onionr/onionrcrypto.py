@@ -82,7 +82,6 @@ class OnionrCrypto:
                 retData = key.verify(data, sig) # .encode() is not the same as nacl.encoding
             except nacl.exceptions.BadSignatureError:
                 pass
-
         else:
             try:
                 retData = key.verify(data, sig)
@@ -159,8 +158,6 @@ class OnionrCrypto:
             key = self._core.getPeerInfo(2)
         decrypted = self.symmetricDecrypt(data, key, encodedKey=True)
         return decrypted
-
-        return
 
     def symmetricEncrypt(self, data, key, encodedKey=False, returnEncoded=True):
         '''Encrypt data to a 32-byte key (Salsa20-Poly1305 MAC)'''
