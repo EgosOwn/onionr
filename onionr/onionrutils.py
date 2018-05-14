@@ -71,7 +71,7 @@ class OnionrUtils:
             if block == '':
                 logger.error('Could not send PM')
             else:
-                logger.info('Sent PM, hash: ' + block)
+                logger.info('Sent PM, hash: %s' % block)
         except Exception as error:
             logger.error('Failed to send PM.', error=error)
 
@@ -103,14 +103,14 @@ class OnionrUtils:
                 for key in newKeyList.split(','):
                     key = key.split('-')
                     if len(key[0]) > 60 or len(key[1]) > 1000:
-                        logger.warn(key[0] + ' or its pow value is too large.')
+                        logger.warn('%s or its pow value is too large.' % key[0])
                         continue
                     if self._core._crypto.blake2bHash(base64.b64decode(key[1]) + key[0].encode()).startswith('0000'):
                         if not key[0] in self._core.listPeers(randomOrder=False) and type(key) != None and key[0] != self._core._crypto.pubKey:
                             if self._core.addPeer(key[0], key[1]):
                                 retVal = True
                     else:
-                        logger.warn(key[0] + 'pow failed')
+                        logger.warn('%s pow failed' % key[0])
             return retVal
         except Exception as error:
             logger.error('Failed to merge keys.', error=error)
@@ -127,7 +127,7 @@ class OnionrUtils:
                 for adder in newAdderList.split(','):
                     if not adder in self._core.listAdders(randomOrder = False) and adder.strip() != self.getMyAddress():
                         if self._core.addAddress(adder):
-                            logger.info('Added ' + adder + ' to db.', timestamp = True)
+                            logger.info('Added %s to db.' % adder, timestamp = True)
                             retVal = True
                     else:
                         logger.debug('%s is either our address or already in our DB' % adder)
@@ -156,7 +156,7 @@ class OnionrUtils:
             retData = requests.get('http://' + open('data/host.txt', 'r').read() + ':' + str(config.get('client')['port']) + '/client/?action=' + command + '&token=' + str(config.get('client')['client_hmac']) + '&timingToken=' + self.timingToken).text
         except Exception as error:
             if not silent:
-                logger.error('Failed to make local request (command: ' + str(command) + ').', error=error)
+                logger.error('Failed to make local request (command: %s).' % command, error=error)
             retData = False
 
         return retData
@@ -334,7 +334,7 @@ class OnionrUtils:
         '''
             Find, decrypt, and return array of PMs (array of dictionary, {from, text})
         '''
-        #blocks = self._core.getBlockList().split('\n')
+        #blocks = self._core.getBlockList()
         blocks = self._core.getBlocksByType('pm')
         message = ''
         sender = ''
@@ -344,8 +344,8 @@ class OnionrUtils:
             try:
                 with open('data/blocks/' + i + '.dat', 'r') as potentialMessage:
                     potentialMessage = potentialMessage.read()
-                    blockMetadata = json.loads(potentialMessage[:potentialMessage.rfind('}') + 1])
-                    blockContent = potentialMessage[potentialMessage.rfind('}') + 1:]
+                    blockMetadata = json.loads(potentialMessage[:potentialMessage.find('\n')])
+                    blockContent = potentialMessage[potentialMessage.find('\n') + 1:]
 
                     try:
                         message = self._core._crypto.pubKeyDecrypt(blockContent, encodedData=True, anonymous=True)
@@ -362,8 +362,7 @@ class OnionrUtils:
                         except json.decoder.JSONDecodeError:
                             pass
                         else:
-                            print('--------------------')
-                            logger.info('Decrypted ' + i + ':')
+                            logger.info('Decrypted %s:' % i)
                             logger.info(message["msg"])
 
                             signer = message["id"]
@@ -371,16 +370,16 @@ class OnionrUtils:
 
                             if self.validatePubKey(signer):
                                 if self._core._crypto.edVerify(message["msg"], signer, sig, encodedData=True):
-                                    logger.info("Good signature by " + signer)
+                                    logger.info("Good signature by %s" % signer)
                                 else:
-                                    logger.warn("Bad signature by " + signer)
+                                    logger.warn("Bad signature by %s" % signer)
                             else:
-                                logger.warn("Bad sender id: " + signer)
+                                logger.warn('Bad sender id: %s' % signer)
 
             except FileNotFoundError:
                 pass
             except Exception as error:
-                logger.error('Failed to open block ' + str(i) + '.', error=error)
+                logger.error('Failed to open block %s.' % i, error=error)
         return
 
     def getPeerByHashId(self, hash):
@@ -438,14 +437,14 @@ class OnionrUtils:
             scanDir += '/'
         for block in glob.glob(scanDir + "*.dat"):
             if block.replace(scanDir, '').replace('.dat', '') not in blockList:
-                logger.info("Found new block on dist " + block)
+                logger.info('Found new block on dist %s' % block)
                 with open(block, 'rb') as newBlock:
                     block = block.replace(scanDir, '').replace('.dat', '')
                     if self._core._crypto.sha3Hash(newBlock.read()) == block.replace('.dat', ''):
                         self._core.addToBlockDB(block.replace('.dat', ''), dataSaved=True)
-                        logger.info('Imported block.')
+                        logger.info('Imported block %s.' % block)
                     else:
-                        logger.warn('Failed to verify hash for ' + block)
+                        logger.warn('Failed to verify hash for %s' % block)
 
 
     def progressBar(self, value = 0, endvalue = 100, width = None):

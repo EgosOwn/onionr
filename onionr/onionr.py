@@ -25,7 +25,7 @@ import sys
 if sys.version_info[0] == 2 or sys.version_info[1] < 5:
     print('Error, Onionr requires Python 3.4+')
     sys.exit(1)
-import os, base64, random, getpass, shutil, subprocess, requests, time, platform, datetime, re, json
+import os, base64, random, getpass, shutil, subprocess, requests, time, platform, datetime, re, json, getpass
 from threading import Thread
 import api, core, config, logger, onionrplugins as plugins, onionrevents as events
 import onionrutils
@@ -108,7 +108,7 @@ class Onionr:
                 if not os.path.exists('data/blocks/'):
                     os.mkdir('data/blocks/')
 
-                # Copy default plugins into plugins folder
+            # Copy default plugins into plugins folder
             if not os.path.exists(plugins.get_plugins_folder()):
                 if os.path.exists('static-data/default-plugins/'):
                     names = [f for f in os.listdir("static-data/default-plugins/") if not os.path.isfile(f)]
@@ -463,7 +463,10 @@ class Onionr:
 
                     os.makedirs(plugins.get_plugins_folder(plugin_name))
                     with open(plugins.get_plugins_folder(plugin_name) + '/main.py', 'a') as main:
-                        main.write(open('static-data/default_plugin.py').read().replace('$user', os.getlogin()).replace('$date', datetime.datetime.now().strftime('%Y-%m-%d')))
+                        main.write(open('static-data/default_plugin.py').read().replace('$user', os.getlogin()).replace('$date', datetime.datetime.now().strftime('%Y-%m-%d')).replace('$name', plugin_name))
+
+                    with open(plugins.get_plugins_folder(plugin_name) + '/info.json', 'a') as main:
+                        main.write(json.dumps({'author' : 'anonymous', 'description' : 'the default description of the plugin', 'version' : '1.0'}))
 
                     logger.info('Enabling plugin "%s"...' % plugin_name)
                     plugins.enable(plugin_name, self)

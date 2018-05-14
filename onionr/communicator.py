@@ -447,7 +447,7 @@ class OnionrCommunicate:
         if isThread:
             self.lookupBlocksThreads += 1
         peerList = self._core.listAdders()
-        blocks = ''
+        blockList = list()
 
         for i in peerList:
             if self.peerStatusTaken(i, 'getBlockHashes') or self.peerStatusTaken(i, 'getDBHash'):
@@ -476,18 +476,15 @@ class OnionrCommunicate:
                 if lastDB != currentDB:
                     logger.debug('Fetching hash from %s - %s current hash.' % (str(i), currentDB))
                     try:
-                        blocks += self.performGet('getBlockHashes', i)
+                        blockList.append(self.performGet('getBlockHashes', i))
                     except TypeError:
                         logger.warn('Failed to get data hash from %s' % str(i))
                         self.peerData[i]['failCount'] -= 1
                 if self._utils.validateHash(currentDB):
                     self._core.setAddressInfo(i, "DBHash", currentDB)
 
-        if len(blocks.strip()) != 0:
+        if len(blockList) != 0:
             pass
-            #logger.debug('BLOCKS:' + blocks)
-
-        blockList = blocks.split('\n')
 
         for i in blockList:
             if len(i.strip()) == 0:
@@ -517,7 +514,7 @@ class OnionrCommunicate:
         '''
         if isThread:
             self.processBlocksThreads += 1
-        for i in self._core.getBlockList(unsaved=True).split("\n"):
+        for i in self._core.getBlockList(unsaved = True):
             if i != "":
                 if i in self.blocksProcessing or i in self.ignoredHashes:
                     #logger.debug('already processing ' + i)
@@ -553,43 +550,39 @@ class OnionrCommunicate:
                         pass
                     try:
                         #blockMetadata = json.loads(self._core.getData(i)).split('}')[0] + '}'
-                        blockMetadata = json.loads(blockContent[:blockContent.rfind(b'}') + 1].decode())
+                        blockMetadata = json.loads(blockContent[:blockContent.find(b'\n')].decode())
                         try:
                             blockMeta2 = json.loads(blockMetadata['meta'])
                         except KeyError:
                             blockMeta2 = {'type': ''}
                             pass
-                        blockContent = blockContent[blockContent.rfind(b'}') + 1:]
+                        blockContent = blockContent[blockContent.find(b'\n') + 1:]
                         try:
                             blockContent = blockContent.decode()
                         except AttributeError:
                             pass
 
-                        if not self.verifyPow(blockContent, blockMeta2):
+                        if not self._crypto.verifyPow(blockContent, blockMeta2):
                             logger.warn("%s has invalid or insufficient proof of work token, deleting..." % str(i))
                             self._core.removeBlock(i)
                             continue
-
-                        try:
-                            blockMetadata['sig']
-                            blockMeta2['id']
-                        except KeyError:
-                            pass
                         else:
-                            #blockData = json.dumps(blockMetadata['meta']) + blockMetadata[blockMetadata.rfind(b'}') + 1:]
+                            if (('sig' in blockMetadata) and ('id' in blockMeta2)): # id doesn't exist in blockMeta2, so this won't workin the first place
+                            
+                                #blockData = json.dumps(blockMetadata['meta']) + blockMetadata[blockMetadata.rfind(b'}') + 1:]
 
-                            creator = self._utils.getPeerByHashId(blockMeta2['id'])
-                            try:
-                                creator = creator.decode()
-                            except AttributeError:
-                                pass
+                                creator = self._utils.getPeerByHashId(blockMeta2['id'])
+                                try:
+                                    creator = creator.decode()
+                                except AttributeError:
+                                    pass
 
-                            if self._core._crypto.edVerify(blockMetaData['meta'] + blockContent, creator, blockMetadata['sig'], encodedData=True):
-                                logger.info('%s was signed' % str(i))
-                                self._core.updateBlockInfo(i, 'sig', 'true')
-                            else:
-                                logger.warn('%s has an invalid signature' % str(i))
-                                self._core.updateBlockInfo(i, 'sig', 'false')
+                                if self._core._crypto.edVerify(blockMetadata['meta'] + blockContent, creator, blockMetadata['sig'], encodedData=True):
+                                    logger.info('%s was signed' % str(i))
+                                    self._core.updateBlockInfo(i, 'sig', 'true')
+                                else:
+                                    logger.warn('%s has an invalid signature' % str(i))
+                                    self._core.updateBlockInfo(i, 'sig', 'false')
                         try:
                             logger.info('Block type is %s' % str(blockMeta2['type']))
                             self._core.updateBlockInfo(i, 'dataType', blockMeta2['type'])
@@ -605,12 +598,7 @@ class OnionrCommunicate:
         return
 
     def removeBlockFromProcessingList(self, block):
-        try:
-            self.blocksProcessing.remove(block)
-        except ValueError:
-            return False
-        else:
-            return True
+        return block in blocksProcessing
 
     def downloadBlock(self, hash, peerTries=3):
         '''
@@ -665,41 +653,6 @@ class OnionrCommunicate:
                 peerTryCount += 1
 
         return retVal
-
-    def verifyPow(self, blockContent, metadata):
-        '''
-            Verifies the proof of work associated with a block
-        '''
-        retData = False
-        try:
-            metadata['powToken']
-            metadata['powHash']
-            token = metadata['powToken']
-        except KeyError:
-            return False
-        dataLen = len(blockContent)
-
-        expectedHash = self._crypto.blake2bHash(base64.b64decode(metadata['powToken']) + self._crypto.blake2bHash(blockContent.encode()))
-        difficulty = 0
-        try:
-            expectedHash = expectedHash.decode()
-        except AttributeError:
-            pass
-        if metadata['powHash'] == expectedHash:
-            difficulty = math.floor(dataLen/1000000)
-
-            mainHash = '0000000000000000000000000000000000000000000000000000000000000000'#nacl.hash.blake2b(nacl.utils.random()).decode()
-            puzzle = mainHash[0:difficulty]
-
-            if metadata['powHash'][0:difficulty] == puzzle:
-                logger.info('Validated block pow')
-                retData = True
-            else:
-                logger.warn("Invalid token (#1)")
-        else:
-            logger.warn('Invalid token (#2): Expected hash %s, got hash %s...' % (metadata['powHash'], expectedHash))
-
-        return retData
 
     def urlencode(self, data):
         '''

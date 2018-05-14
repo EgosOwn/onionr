@@ -18,7 +18,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 
-import onionrplugins as plugins, logger
+import onionrplugins, logger
 
 class DaemonAPI:
     def __init__(self, pluginapi):
@@ -52,34 +52,34 @@ class PluginAPI:
         self.pluginapi = pluginapi
 
     def start(self, name):
-        plugins.start(name)
+        onionrplugins.start(name)
 
     def stop(self, name):
-        plugins.stop(name)
+        onionrplugins.stop(name)
 
     def reload(self, name):
-        plugins.reload(name)
+        onionrplugins.reload(name)
 
     def enable(self, name):
-        plugins.enable(name)
+        onionrplugins.enable(name)
 
     def disable(self, name):
-        plugins.disable(name)
+        onionrplugins.disable(name)
 
     def event(self, name, data = {}):
         events.event(name, data = data, onionr = self.pluginapi.get_onionr())
 
     def is_enabled(self, name):
-        return plugins.is_enabled(name)
+        return onionrplugins.is_enabled(name)
 
     def get_enabled_plugins(self):
-        return plugins.get_enabled()
+        return onionrplugins.get_enabled()
 
     def get_folder(self, name = None, absolute = True):
-        return plugins.get_plugins_folder(name = name, absolute = absolute)
+        return onionrplugins.get_plugins_folder(name = name, absolute = absolute)
 
     def get_data_folder(self, name, absolute = True):
-        return plugins.get_plugin_data_folder(name, absolute = absolute)
+        return onionrplugins.get_plugin_data_folder(name, absolute = absolute)
 
     def daemon_event(self, event, plugin = None):
         return # later make local command like /client/?action=makeEvent&event=eventname&module=modulename
@@ -152,6 +152,9 @@ class pluginapi:
 
     def get_utils(self):
         return self.get_onionr().onionrUtils
+
+    def get_crypto(self):
+        return self.get_core()._crypto
 
     def get_daemonapi(self):
         return self.daemon
