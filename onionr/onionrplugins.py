@@ -62,17 +62,20 @@ def enable(name, onionr = None, start_event = True):
 
     if exists(name):
         enabled_plugins = get_enabled_plugins()
-        enabled_plugins.append(name)
-        config_plugins = config.get('plugins')
-        config_plugins['enabled'] = enabled_plugins
-        config.set('plugins', config_plugins, True)
+        if not name in enabled_plugins:
+            enabled_plugins.append(name)
+            config_plugins = config.get('plugins')
+            config_plugins['enabled'] = enabled_plugins
+            config.set('plugins', config_plugins, True)
 
-        events.call(get_plugin(name), 'enable', onionr)
+            events.call(get_plugin(name), 'enable', onionr)
 
-        if start_event is True:
-            start(name)
+            if start_event is True:
+                start(name)
 
-        return True
+            return True
+        else:
+            return False
     else:
         logger.error('Failed to enable plugin \"' + name + '\", disabling plugin.')
         disable(name)
