@@ -181,6 +181,7 @@ def pluginToBlock(plugin, import_block = True):
             data = base64.b64encode(open(zipfile, 'rb').read())
 
             author = getpass.getuser()
+            description = 'Default plugin description'
             info = {"name" : plugin}
             try:
                 if os.path.exists(directory + 'info.json'):
@@ -188,11 +189,11 @@ def pluginToBlock(plugin, import_block = True):
                     if 'author' in info:
                         author = info['author']
                     if 'description' in info:
-                        author = info['description']
+                        description = info['description']
             except:
                 pass
 
-            metadata = {'author' : author, 'date' : str(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')), 'name' : plugin, 'info' : info, 'compiled-by' : plugin_name, 'content' : data.decode('utf-8')}
+            metadata = {'author' : author, 'date' : str(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')), 'name' : plugin, 'info' : info, 'compiled-by' : plugin_name, 'content' : data.decode('utf-8'), 'description' : description}
 
             hash = pluginapi.get_core().insertBlock(json.dumps(metadata), header = 'plugin', sign = True)
 

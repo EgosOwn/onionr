@@ -25,7 +25,7 @@ import sys
 if sys.version_info[0] == 2 or sys.version_info[1] < 5:
     print('Error, Onionr requires Python 3.4+')
     sys.exit(1)
-import os, base64, random, getpass, shutil, subprocess, requests, time, platform, datetime, re, json
+import os, base64, random, getpass, shutil, subprocess, requests, time, platform, datetime, re, json, getpass
 from threading import Thread
 import api, core, config, logger, onionrplugins as plugins, onionrevents as events
 import onionrutils
