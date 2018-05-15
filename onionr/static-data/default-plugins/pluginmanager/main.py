@@ -483,11 +483,62 @@ def commandSearchPlugin():
     return True
 
 def commandAddRepository():
-    logger.info('This feature has not been created yet. Please check back later.')
+    if len(sys.argv) >= 3:
+        check()
+
+        blockhash = sys.argv[2]
+
+        if pluginapi.get_utils().validateHash(blockhash):
+            if pluginapi.get_utils().hasBlock(blockhash):
+                try:
+                    blockContent = pluginapi.get_core().getData(blockhash)
+                    blockContent = blockContent[blockContent.rfind(b'\n') + 1:].decode()
+                    blockContent = json.loads(blockContent)
+
+                    pluginslist = dict()
+
+                    for pluginname, distributor in blockContent['plugins'].items():
+                        if pluginapi.get_utils().validatePubKey(distributor):
+                            pluginslist[pluginname] = distributor
+
+                    logger.debug('Found %s records in repository.' % len(pluginslist))
+
+                    if len(pluginslist) != 0:
+                        addRepository(blockhash, pluginslist)
+                        logger.info('Successfully added repository.')
+                    else:
+                        logger.error('Repository contains no records, not importing.')
+                except Exception as e:
+                    logger.error('Failed to parse block.', error = e)
+            else:
+                logger.error('Block hash not found. Perhaps it has not been synced yet?')
+                logger.debug('Is valid hash, but does not belong to a known block.')
+        else:
+            logger.error('Unknown data "%s"; must be block hash.' % str(pkobh))
+    else:
+        logger.info(sys.argv[0] + ' ' + sys.argv[1] + ' [block hash]')
+
     return True
 
 def commandRemoveRepository():
-    logger.info('This feature has not been created yet. Please check back later.')
+    if len(sys.argv) >= 3:
+        check()
+
+        blockhash = sys.argv[2]
+
+        if pluginapi.get_utils().validateHash(blockhash):
+            if blockhash in getRepositories():
+                try:
+                    removeRepository(blockhash)
+                except Exception as e:
+                    logger.error('Failed to parse block.', error = e)
+            else:
+                logger.error('Repository has not been imported, nothing to remove.')
+        else:
+            logger.error('Unknown data "%s"; must be block hash.' % str(pkobh))
+    else:
+        logger.info(sys.argv[0] + ' ' + sys.argv[1] + ' [block hash]')
+
     return True
 
 def commandPublishPlugin():

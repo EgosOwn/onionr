@@ -563,7 +563,7 @@ class OnionrCommunicate:
                             continue
                         else:
                             if (('sig' in blockMetadata) and ('id' in blockMeta2)): # id doesn't exist in blockMeta2, so this won't workin the first place
-                            
+
                                 #blockData = json.dumps(blockMetadata['meta']) + blockMetadata[blockMetadata.rfind(b'}') + 1:]
 
                                 creator = self._utils.getPeerByHashId(blockMeta2['id'])
