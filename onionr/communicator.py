@@ -489,8 +489,12 @@ class OnionrCommunicate:
         for i in blockList:
             if len(i.strip()) == 0:
                 continue
-            if self._utils.hasBlock(i):
-                continue
+            try:
+                if self._utils.hasBlock(i):
+                    continue
+            except:
+                logger.warn('Invalid hash') # TODO: move below validate hash check below
+                pass
             if i in self.ignoredHashes:
                 continue
 
