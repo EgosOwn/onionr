@@ -21,7 +21,7 @@ import sqlite3, os, sys, time, math, base64, tarfile, getpass, simplecrypt, hash
 #from Crypto.Cipher import AES
 #from Crypto import Random
 
-import onionrutils, onionrcrypto, onionrproofs, btc, onionrevents as events
+import onionrutils, onionrcrypto, onionrproofs, onionrevents as events
 
 if sys.version_info < (3, 6):
     try:
@@ -461,6 +461,7 @@ class Core:
             try:
                 peerList.append(self._crypto.pubKey + '-' + self._crypto.pubKeyPowToken)
             except TypeError:
+                print('what')
                 pass
         else:
             peerList.append(self._crypto.pubKey)

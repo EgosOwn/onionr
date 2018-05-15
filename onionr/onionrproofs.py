@@ -19,7 +19,7 @@
 '''
 
 import nacl.encoding, nacl.hash, nacl.utils, time, math, threading, binascii, logger, sys
-import btc, core
+import core
 
 class POW:
     def pow(self, reporting = False):
@@ -30,20 +30,8 @@ class POW:
         answer = ''
         heartbeat = 200000
         hbCount = 0
-        blockCheck = 300000 # How often the hasher should check if the bitcoin block is updated (slows hashing but prevents less wasted work)
-        blockCheckCount = 0
-        block = '' #self.bitcoinNode.getBlockHash(self.bitcoinNode.getLastBlockHeight())
         myCore = core.Core()
         while self.hashing:
-            '''
-            if blockCheckCount == blockCheck:
-                if self.reporting:
-                    logger.debug('Refreshing Bitcoin block')
-                block = '' #self.bitcoinNode.getBlockHash(self.bitcoinNode.getLastBlockHeight())
-                blockCheckCount = 0
-            blockCheckCount += 1
-            hbCount += 1
-            '''
             rand = nacl.utils.random()
             token = nacl.hash.blake2b(rand + self.data).decode()
             #print(token)
@@ -60,7 +48,7 @@ class POW:
                 logger.info('took ' + str(endTime - startTime) + ' seconds', timestamp=True)
             self.result = (token, rand)
 
-    def __init__(self, data, bitcoinNode=''):
+    def __init__(self, data):
         self.foundHash = False
         self.difficulty = 0
         self.data = data
@@ -80,7 +68,6 @@ class POW:
 
         self.mainHash = '0000000000000000000000000000000000000000000000000000000000000000'#nacl.hash.blake2b(nacl.utils.random()).decode()
         self.puzzle = self.mainHash[0:self.difficulty]
-        self.bitcoinNode = bitcoinNode
         #logger.debug('trying to find ' + str(self.mainHash))
         tOne = threading.Thread(name='one', target=self.pow, args=(True,))
         tTwo = threading.Thread(name='two', target=self.pow, args=(True,))

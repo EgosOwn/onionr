@@ -28,7 +28,7 @@ class OnionrCrypto:
         self.privKey = None
 
         self.pubKeyPowToken = None
-        self.pubKeyPowHash = None
+        #self.pubKeyPowHash = None
 
         self.HASH_ID_ROUNDS = 2000
 
@@ -41,8 +41,7 @@ class OnionrCrypto:
             try:
                 with open(self.keyPowFile, 'r') as powFile:
                     data = powFile.read()
-                    self.pubKeyPowHash = data.split('-')[0]
-                    self.pubKeyPowToken = data.split('-')[1]
+                    self.pubKeyPowToken = data
             except (FileNotFoundError, IndexError):
                 pass
         else:
