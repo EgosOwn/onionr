@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 '''
-Onionr - P2P Microblogging Platform & Social network.
+    Onionr - P2P Microblogging Platform & Social network.
 
-This file contains both the OnionrCommunicate class for communcating with peers
-and code to operate as a daemon, getting commands from the command queue database (see core.Core.daemonQueue)
+    This file contains both the OnionrCommunicate class for communcating with peers
+    and code to operate as a daemon, getting commands from the command queue database (see core.Core.daemonQueue)
 '''
 '''
     This program is free software: you can redistribute it and/or modify
