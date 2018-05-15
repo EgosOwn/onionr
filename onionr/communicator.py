@@ -20,7 +20,7 @@ and code to operate as a daemon, getting commands from the command queue databas
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 import sqlite3, requests, hmac, hashlib, time, sys, os, math, logger, urllib.parse, base64, binascii, random, json, threading
-import core, onionrutils, onionrcrypto, netcontroller, onionrproofs, btc, config, onionrplugins as plugins
+import core, onionrutils, onionrcrypto, netcontroller, onionrproofs, config, onionrplugins as plugins
 
 class OnionrCommunicate:
     def __init__(self, debug, developmentMode):
@@ -48,17 +48,6 @@ class OnionrCommunicate:
 
         self.blocksProcessing = [] # list of blocks currently processing, to avoid trying a block twice at once in 2 seperate threads
         self.peerStatus = {} # network actions (active requests) for peers used mainly to prevent conflicting actions in threads
-        '''
-        logger.info('Starting Bitcoin Node... with Tor socks port:' + str(sys.argv[2]), timestamp=True)
-        try:
-            self.bitcoin = btc.OnionrBTC(torP=int(sys.argv[2]))
-        except _gdbm.error:
-            pass
-        logger.info('Bitcoin Node started, on block: ' + self.bitcoin.node.getBlockHash(self.bitcoin.node.getLastBlockHeight()), timestamp=True)
-        '''
-        #except:
-        #logger.fatal('Failed to start Bitcoin Node, exiting...')
-        #exit(1)
 
         blockProcessTimer = 19
         blockProcessAmount = 20
