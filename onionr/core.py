@@ -79,8 +79,6 @@ class Core:
     def addPeer(self, peerID, powID, name=''):
         '''
             Adds a public key to the key database (misleading function name)
-
-            DOES NO SAFETY CHECKS if the ID is valid, but prepares the insertion
         '''
         # This function simply adds a peer to the DB
         if not self._utils.validatePubKey(peerID):
@@ -452,7 +450,7 @@ class Core:
             try:
                 if len(i[0]) != 0:
                     if getPow:
-                        peerList.append(i[0] + '-' + i[11])
+                        peerList.append(i[0] + '-' + i[1])
                     else:
                         peerList.append(i[0])
             except TypeError:
@@ -461,7 +459,6 @@ class Core:
             try:
                 peerList.append(self._crypto.pubKey + '-' + self._crypto.pubKeyPowToken)
             except TypeError:
-                print('what')
                 pass
         else:
             peerList.append(self._crypto.pubKey)

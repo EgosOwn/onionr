@@ -109,11 +109,17 @@ class OnionrUtils:
                     except IndexError:
                         logger.warn('No pow token')
                         continue
-                    if self._core._crypto.blake2bHash(base64.b64decode(key[1]) + key[0].encode()).startswith('0000'):
+                    powHash = self._core._crypto.blake2bHash(base64.b64decode(key[1]) + self._core._crypto.blake2bHash(key[0].encode()))
+                    try:
+                        powHash = powHash.encode()
+                    except AttributeError:
+                        pass
+                    if powHash.startswith(b'0000'):
                         if not key[0] in self._core.listPeers(randomOrder=False) and type(key) != None and key[0] != self._core._crypto.pubKey:
                             if self._core.addPeer(key[0], key[1]):
                                 retVal = True
                     else:
+                        logger.warn(powHash)
                         logger.warn('%s pow failed' % key[0])
             return retVal
         except Exception as error:

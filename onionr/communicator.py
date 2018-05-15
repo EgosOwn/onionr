@@ -132,6 +132,8 @@ class OnionrCommunicate:
                 elif command[0] == 'runCheck':
                     logger.info('Status check; looks good.')
                     open('data/.runcheck', 'w+').close()
+                elif command[0] == 'kex':
+                    self.pexCount = pexTimer - 1
                 elif command[0] == 'event':
                     # todo
                     pass
