@@ -16,6 +16,8 @@ uninstall:
 	sudo rm -f /usr/bin/onionr
 
 test:
+	@./RUN-LINUX.sh stop
+	@sleep 1
 	@rm -rf onionr/data-backup
 	@mv onionr/data onionr/data-backup | true > /dev/null 2>&1
 	-@cd onionr; ./tests.py; ./cryptotests.py;

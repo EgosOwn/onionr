@@ -14,7 +14,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import unittest, sys, os, base64, tarfile, shutil, simplecrypt, logger, btc
+import unittest, sys, os, base64, tarfile, shutil, simplecrypt, logger #, btc
 
 class OnionrTests(unittest.TestCase):
     def testPython3(self):
