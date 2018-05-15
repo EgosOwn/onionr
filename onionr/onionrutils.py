@@ -446,7 +446,6 @@ class OnionrUtils:
                     else:
                         logger.warn('Failed to verify hash for %s' % block)
 
-
     def progressBar(self, value = 0, endvalue = 100, width = None):
         '''
             Outputs a progress bar with a percentage. Write \n after use.
