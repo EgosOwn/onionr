@@ -23,6 +23,19 @@ import json, os, datetime
 
 class Block:
     def __init__(self, hash = None, core = None):
+        '''
+            Initializes Onionr
+
+            Inputs:
+            - hash (str): the hash of the block to be imported, if any
+            - core (Core/str):
+              - if (Core): this is the Core instance to be used, don't create a new one
+              - if (str): treat `core` as the block content, and instead, treat `hash` as the block type
+
+            Outputs:
+            - (Block): the new Block instance
+        '''
+
         # input from arguments
         if (type(hash) == str) and (type(core) == str):
             self.btype = hash
@@ -115,15 +128,34 @@ class Block:
         return False
 
     def delete(self):
+        '''
+            Deletes the block's file and records, if they exist
+
+            Outputs:
+            - (bool): whether or not the operation was successful
+        '''
+
         if self.exists():
             os.remove(self.getBlockFile())
+            removeBlock(self.getHash())
             return True
         return False
 
-    def save(self, sign = False, recreate = False):
+    def save(self, sign = False, recreate = True):
+        '''
+            Saves a block to file and imports it into Onionr
+
+            Inputs:
+            - sign (bool): whether or not to sign the block before saving
+            - recreate (bool): if the block already exists, whether or not to recreate the block and save under a new hash
+
+            Outputs:
+            - (bool): whether or not the operation was successful
+        '''
+
         try:
             if self.isValid() is True:
-                if (recreate is True) and (not self.getBlockFile() is None):
+                if (not self.getBlockFile() is None) and (recreate is True):
                     with open(self.getBlockFile(), 'wb') as blockFile:
                         blockFile.write(self.getRaw().encode())
                     self.update()
@@ -140,51 +172,159 @@ class Block:
     # getters
 
     def getHash(self):
+        '''
+            Returns the hash of the block if saved to file
+
+            Outputs:
+            - (str): the hash of the block, or None
+        '''
+
         return self.hash
 
     def getCore(self):
+        '''
+            Returns the Core instance being used by the Block
+
+            Outputs:
+            - (Core): the Core instance
+        '''
+
         return self.core
 
     def getType(self):
+        '''
+            Returns the type of the block
+
+            Outputs:
+            - (str): the type of the block
+        '''
+
         return self.btype
 
     def getRaw(self):
+        '''
+            Returns the raw contents of the block, if saved to file
+
+            Outputs:
+            - (str): the raw contents of the block, or None
+        '''
+
         return str(self.raw)
 
     def getHeader(self, key = None):
+        '''
+            Returns the header information
+
+            Inputs:
+            - key (str): only returns the value of the key in the header
+
+            Outputs:
+            - (dict/str): either the whole header as a dict, or one value
+        '''
+
         if not key is None:
             return self.getHeader()[key]
         else:
             return self.bheader
 
     def getMetadata(self, key = None):
+        '''
+            Returns the metadata information
+
+            Inputs:
+            - key (str): only returns the value of the key in the metadata
+
+            Outputs:
+            - (dict/str): either the whole metadata as a dict, or one value
+        '''
+
         if not key is None:
             return self.getMetadata()[key]
         else:
             return self.bmetadata
 
     def getContent(self):
+        '''
+            Returns the contents of the block
+
+            Outputs:
+            - (str): the contents of the block
+        '''
+
         return str(self.bcontent)
 
     def getDate(self):
+        '''
+            Returns the date that the block was received, if loaded from file
+
+            Outputs:
+            - (datetime): the date that the block was received
+        '''
+
         return self.date
 
     def getBlockFile(self):
+        '''
+            Returns the location of the block file if it is saved
+
+            Outputs:
+            - (str): the location of the block file, or None
+        '''
+
         return self.blockFile
 
     def isValid(self):
+        '''
+            Checks if the block is valid
+
+            Outputs:
+            - (bool): whether or not the block is valid
+        '''
+
         return self.valid
 
     def isSigned(self):
+        '''
+            Checks if the block was signed
+
+            Outputs:
+            - (bool): whether or not the block is signed
+        '''
+
         return self.signed
 
     def getSignature(self):
+        '''
+            Returns the base64-encoded signature
+
+            Outputs:
+            - (str): the signature, or None
+        '''
+
         return self.signature
 
     def getSignedData(self):
+        '''
+            Returns the data that was signed
+
+            Outputs:
+            - (str): the data that was signed, or None
+        '''
+
         return self.signedData
 
     def isSigner(self, signer, encodedData = True):
+        '''
+            Checks if the block was signed by the signer inputted
+
+            Inputs:
+            - signer (str): the public key of the signer to check against
+            - encodedData (bool): whether or not the `signer` argument is base64 encoded
+
+            Outputs:
+            - (bool): whether or not the signer of the block is the signer inputted
+        '''
+
         try:
             if (not self.isSigned()) or (not self.getCore()._utils.validatePubKey(signer)):
                 return False
@@ -196,19 +336,50 @@ class Block:
     # setters
 
     def setType(self, btype):
+        '''
+            Sets the type of the block
+
+            Inputs:
+            - btype (str): the type of block to be set to
+
+            Outputs:
+            - (Block): the block instance
+        '''
+
         self.btype = btype
         return self
 
     def setContent(self, bcontent):
+        '''
+            Sets the contents of the block
+
+            Inputs:
+            - bcontent (str): the contents to be set to
+
+            Outputs:
+            - (Block): the block instance
+        '''
+
         self.bcontent = str(bcontent)
         return self
 
     # static
 
-    ORDER_DATE = 0
-    ORDER_ALPHABETIC = 1
+    def getBlocks(type = None, signer = None, signed = None, reverse = False, core = None):
+        '''
+            Returns a list of Block objects based on supplied filters
 
-    def getBlocks(type = None, signer = None, signed = None, order = ORDER_DATE, reverse = False, core = None):
+            Inputs:
+            - type (str): filters by block type
+            - signer (str/list): filters by signer (one in the list has to be a signer)
+            - signed (bool): filters out by whether or not the block is signed
+            - reverse (bool): reverses the list if True
+            - core (Core): lets you optionally supply a core instance so one doesn't need to be started
+
+            Outputs:
+            - (list): a list of Block objects that match the input
+        '''
+
         try:
             core = (core if not core is None else onionrcore.Core())
 
@@ -217,7 +388,7 @@ class Block:
 
             for block in blocks:
                 if Block.exists(block):
-                    block = Block(block)
+                    block = Block(block, core = core)
 
                     relevant = True
 
@@ -239,6 +410,9 @@ class Block:
                     if relevant:
                         relevant_blocks.append(block)
 
+            if bool(reverse):
+                relevant_blocks.reverse()
+
             return relevant_blocks
         except Exception as e:
             logger.debug(('Failed to get blocks: %s' % str(e)) + logger.parse_error())
@@ -246,6 +420,18 @@ class Block:
         return list()
 
     def exists(hash):
+        '''
+            Checks if a block is saved to file or not
+
+            Inputs:
+            - hash (str/Block):
+              - if (Block): check if this block is saved to file
+              - if (str): check if a block by this hash is in file
+
+            Outputs:
+            - (bool): whether or not the block file exists
+        '''
+
         if hash is None:
             return False
         elif type(hash) == Block:
