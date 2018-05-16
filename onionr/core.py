@@ -592,6 +592,20 @@ class Core:
 
         return rows
 
+    def getBlockDate(self, blockHash):
+        '''
+            Returns the date a block was received
+        '''
+        conn = sqlite3.connect(self.blockDB)
+        c = conn.cursor()
+        execute = 'SELECT dateReceived FROM hashes WHERE hash=?;'
+        args = (blockHash,)
+        for row in c.execute(execute, args):
+            for i in row:
+                return int(i)
+
+        return None
+
     def getBlocksByType(self, blockType):
         '''
             Returns a list of blocks by the type

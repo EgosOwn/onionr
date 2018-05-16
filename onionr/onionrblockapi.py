@@ -18,13 +18,35 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 
-import core as onionrcore
+import core as onionrcore, logger
+import json, os, datetime
 
 class Block:
     def __init__(self, hash = None, core = None):
-        self.hash = hash
-        self.core = core
+        # input from arguments
+        if (type(hash) == str) and (type(core) == str):
+            self.btype = hash
+            self.bcontent = core
+            self.hash = None
+            self.core = None
+        else:
+            self.btype = ''
+            self.bcontent = ''
+            self.hash = hash
+            self.core = core
 
+        # initialize variables
+        self.valid = True
+        self.raw = None
+        self.powHash = None
+        self.powToken = None
+        self.signed = False
+        self.signature = None
+        self.signedData = None
+        self.bheader = {}
+        self.bmetadata = {}
+
+        # handle arguments
         if self.getCore() is None:
             self.core = onionrcore.Core()
         if not self.getHash() is None:
@@ -48,13 +70,72 @@ class Block:
             - (bool): indicates whether or not the operation was successful
         '''
 
+        try:
+            # import from string
+            blockdata = data
+
+            # import from file
+            if blockdata is None:
+                filelocation = file
+
+                if filelocation is None:
+                    if self.getHash() is None:
+                        return False
+
+                    filelocation = 'data/blocks/%s.dat' % self.getHash()
+
+                blockdata = open(filelocation, 'rb').read().decode('utf-8')
+
+                self.blockFile = filelocation
+            else:
+                self.blockFile = None
+
+            # parse block
+            self.raw = str(blockdata)
+            self.bheader = json.loads(self.getRaw()[:self.getRaw().index('\n')])
+            self.bcontent = self.getRaw()[self.getRaw().index('\n') + 1:]
+            self.bmetadata = json.loads(self.getHeader('meta'))
+            self.btype = self.getMetadata('type')
+            self.powHash = self.getMetadata('powHash')
+            self.powToken = self.getMetadata('powToken')
+            self.signed = ('sig' in self.getHeader() and self.getHeader('sig') != '')
+            self.signature = (None if not self.isSigned() else self.getHeader('sig'))
+            self.signedData = (None if not self.isSigned() else self.getHeader('meta') + '\n' + self.getContent())
+            self.date = self.getCore().getBlockDate(self.getHash())
+
+            if not self.getDate() is None:
+                self.date = datetime.datetime.fromtimestamp(self.getDate())
+
+            self.valid = True
+            return True
+        except Exception as e:
+            logger.error('Failed to update block data.', error = e, timestamp = False)
+
+        self.valid = False
         return False
 
     def delete(self):
+        if self.exists():
+            os.remove(self.getBlockFile())
+            return True
         return False
 
-    def save(self):
-        return False
+    def save(self, sign = False, recreate = False):
+        try:
+            if self.isValid() is True:
+                if (recreate is True) and (not self.getBlockFile() is None):
+                    with open(self.getBlockFile(), 'wb') as blockFile:
+                        blockFile.write(self.getRaw().encode())
+                    self.update()
+                else:
+                    self.hash = self.getCore().insertBlock(self.getContent(), header = self.getType(), sign = sign)
+                    self.update()
+                return True
+            else:
+                logger.warn('Not writing block; it is invalid.')
+        except Exception as e:
+            logger.error('Failed to save block.', error = e, timestamp = False)
+            return False
 
     # getters
 
@@ -67,14 +148,29 @@ class Block:
     def getType(self):
         return self.btype
 
-    def getMetadata(self):
-        return self.bmetadata
+    def getRaw(self):
+        return str(self.raw)
+
+    def getHeader(self, key = None):
+        if not key is None:
+            return self.getHeader()[key]
+        else:
+            return self.bheader
+
+    def getMetadata(self, key = None):
+        if not key is None:
+            return self.getMetadata()[key]
+        else:
+            return self.bmetadata
 
     def getContent(self):
-        return self.bcontent
+        return str(self.bcontent)
 
     def getDate(self):
         return self.date
+
+    def getBlockFile(self):
+        return self.blockFile
 
     def isValid(self):
         return self.valid
@@ -82,8 +178,20 @@ class Block:
     def isSigned(self):
         return self.signed
 
-    def getSigner(self):
-        return self.signer
+    def getSignature(self):
+        return self.signature
+
+    def getSignedData(self):
+        return self.signedData
+
+    def isSigner(self, signer, encodedData = True):
+        try:
+            if (not self.isSigned()) or (not self.getCore()._utils.validatePubKey(signer)):
+                return False
+
+            return bool(self.getCore()._crypto.edVerify(self.getSignedData(), signer, self.getSignature(), encodedData = encodedData))
+        except:
+            return False
 
     # setters
 
@@ -92,7 +200,7 @@ class Block:
         return self
 
     def setContent(self, bcontent):
-        self.bcontent = bcontent
+        self.bcontent = str(bcontent)
         return self
 
     # static
@@ -100,8 +208,49 @@ class Block:
     ORDER_DATE = 0
     ORDER_ALPHABETIC = 1
 
-    def getBlocks(type = None, signer = None, order = ORDER_DATE, reverse = False):
-        return None
+    def getBlocks(type = None, signer = None, signed = None, order = ORDER_DATE, reverse = False, core = None):
+        try:
+            core = (core if not core is None else onionrcore.Core())
+
+            relevant_blocks = list()
+            blocks = (core.getBlockList() if type is None else core.getBlocksByType(type))
+
+            for block in blocks:
+                if Block.exists(block):
+                    block = Block(block)
+
+                    relevant = True
+
+                    if (not signed is None) and (block.isSigned() != bool(signed)):
+                        relevant = False
+                    if not signer is None:
+                        if isinstance(signer, (str,)):
+                            signer = [signer]
+
+                        isSigner = False
+                        for key in signer:
+                            if block.isSigner(key):
+                                isSigner = True
+                                break
+
+                        if not isSigner:
+                            relevant = False
+
+                    if relevant:
+                        relevant_blocks.append(block)
+
+            return relevant_blocks
+        except Exception as e:
+            logger.debug(('Failed to get blocks: %s' % str(e)) + logger.parse_error())
+
+        return list()
 
     def exists(hash):
-        return None
+        if hash is None:
+            return False
+        elif type(hash) == Block:
+            blockfile = hash.getBlockFile()
+        else:
+            blockfile = 'data/blocks/%s.dat' % hash
+
+        return os.path.exists(blockfile) and os.path.isfile(blockfile)
