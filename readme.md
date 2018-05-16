@@ -35,4 +35,4 @@ The Tor Project, I2P developers, and anyone else do not own, create, or endorse 
 
 The badges (besides travis-ci build) are by Maik Ellerbrock is licensed under a Creative Commons Attribution 4.0 International License.
 
-The onion in the Onionr logo is adapted from [this](https://commons.wikimedia.org/wiki/File:Red_Onion_on_White.JPG) image by Colin on Wikimedia under a Creative Commons Attribution-Share Alike 3.0 Unported license
+The onion in the Onionr logo is adapted from [this](https://commons.wikimedia.org/wiki/File:Red_Onion_on_White.JPG) image by Colin on Wikimedia under a Creative Commons Attribution-Share Alike 3.0 Unported license. The Onionr logo is under the same license.
