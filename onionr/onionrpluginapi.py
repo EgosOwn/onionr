@@ -18,7 +18,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 
-import onionrplugins, logger
+import onionrplugins, core as onionrcore, logger
 
 class DaemonAPI:
     def __init__(self, pluginapi):
@@ -136,6 +136,10 @@ class pluginapi:
     def __init__(self, onionr, data):
         self.onionr = onionr
         self.data = data
+        if self.onionr is None:
+            self.core = onionrcore.Core()
+        else:
+            self.core = self.onionr.onionrCore
 
         self.daemon = DaemonAPI(self)
         self.plugins = PluginAPI(self)
@@ -148,10 +152,10 @@ class pluginapi:
         return self.data
 
     def get_core(self):
-        return self.get_onionr().onionrCore
+        return self.core
 
     def get_utils(self):
-        return self.get_onionr().onionrUtils
+        return self.get_core()._utils
 
     def get_crypto(self):
         return self.get_core()._crypto
