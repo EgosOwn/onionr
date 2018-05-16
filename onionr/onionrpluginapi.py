@@ -40,9 +40,7 @@ class DaemonAPI:
         return
 
     def local_command(self, command):
-        self.pluginapi.get_utils().localCommand(self, command)
-
-        return
+        return self.pluginapi.get_utils().localCommand(self, command)
 
     def queue_pop(self):
         return self.get_core().daemonQueue()

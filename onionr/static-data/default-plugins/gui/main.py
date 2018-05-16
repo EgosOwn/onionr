@@ -16,48 +16,54 @@
 '''
 
 # Imports some useful libraries
-import logger, config
-import os, sqlite3, core
+import logger, config, core
+import os, sqlite3, threading
+from onionrblockapi import Block
 
 plugin_name = 'gui'
+
+def send():
+    global message
+    block = Block()
+    block.setType('txt')
+    block.setContent(message)
+    logger.debug('Sent message in block %s.' % block.save(sign = True))
+
 
 def sendMessage():
     global sendEntry
 
-    messageToAdd = '-txt-' + sendEntry.get()
-    #addedHash = pluginapi.get_core().setData(messageToAdd)
-    #pluginapi.get_core().addToBlockDB(addedHash, selfInsert=True)
-    #pluginapi.get_core().setBlockType(addedHash, 'txt')
-    pluginapi.get_core().insertBlock(messageToAdd, header='txt', sign=True)
-    sendEntry.delete(0, END)
+    global message
+    message = sendEntry.get()
+
+    t = threading.Thread(target = send)
+    t.start()
+
+    sendEntry.delete(0, len(message))
 
 def update():
     global listedBlocks, listbox, runningCheckDelayCount, runningCheckDelay, root, daemonStatus
 
-    # TO DO: migrate to new header format
-    for i in pluginapi.get_core().getBlocksByType('txt'):
-        if i.strip() == '' or i in listedBlocks:
+    for i in Block.getBlocks(type = 'txt'):
+        if i.getContent().strip() == '' or i.getHash() in listedBlocks:
             continue
-        blockFile = open('./data/blocks/' + i + '.dat')
-        listbox.insert(END, str(blockFile.read().replace('-txt-', '')))
-        blockFile.close()
-        listedBlocks.append(i)
-        listbox.see(END)
-    blocksList = os.listdir('./data/blocks/') # dir is your directory path
-    number_blocks = len(blocksList)
+        listbox.insert(99999, str(i.getContent()))
+        listedBlocks.append(i.getHash())
+        listbox.see(99999)
+
     runningCheckDelayCount += 1
 
     if runningCheckDelayCount == runningCheckDelay:
-        resp = pluginapi.get_core()._utils.localCommand('ping')
+        resp = pluginapi.daemon.local_command('ping')
         if resp == 'pong':
-            daemonStatus.config(text="Onionr Daemon Status: Running")
+            daemonStatus.config(text = "Onionr Daemon Status: Running")
         else:
-            daemonStatus.config(text="Onionr Daemon Status: Not Running")
+            daemonStatus.config(text = "Onionr Daemon Status: Not Running")
         runningCheckDelayCount = 0
     root.after(10000, update)
 
 
-def openGUI():
+def reallyOpenGUI():
     import tkinter
     global root, runningCheckDelay, runningCheckDelayCount, scrollbar, listedBlocks, nodeInfo, keyInfo, idText, idEntry, pubKeyEntry, listbox, daemonStatus, sendEntry
 
@@ -77,11 +83,11 @@ def openGUI():
     keyInfo = tkinter.Frame(root)
 
     hostname = pluginapi.get_onionr().get_hostname()
-    logger.debug('hostname: %s' % hostname)
+    logger.debug('Onionr Hostname: %s' % hostname)
     idText = hostname
 
     idEntry = tkinter.Entry(nodeInfo)
-    tkinter.Label(nodeInfo, text="Node Address: ").pack(side=tkinter.LEFT)
+    tkinter.Label(nodeInfo, text = "Node Address: ").pack(side=tkinter.LEFT)
     idEntry.pack()
     idEntry.insert(0, idText.strip())
     idEntry.configure(state="readonly")
@@ -113,6 +119,11 @@ def openGUI():
     scrollbar.config(command=tkinter.Listbox.yview)
     root.after(2000, update)
     root.mainloop()
+
+def openGUI():
+    t = threading.Thread(target = reallyOpenGUI)
+    t.daemon = False
+    t.start()
 
 def on_init(api, data = None):
     global pluginapi

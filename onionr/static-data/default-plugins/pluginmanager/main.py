@@ -21,6 +21,7 @@
 # useful libraries
 import logger, config
 import os, sys, json, time, random, shutil, base64, getpass, datetime, re
+from onionrblockapi import Block
 
 plugin_name = 'pluginmanager'
 
@@ -143,9 +144,8 @@ def sanitize(name):
 
 def blockToPlugin(block):
     try:
-        blockContent = pluginapi.get_core().getData(block)
-        blockContent = blockContent[blockContent.rfind(b'\n') + 1:].decode()
-        blockContent = json.loads(blockContent)
+        block = Block(block)
+        blockContent = json.loads(block.getContent())
 
         name = sanitize(blockContent['name'])
         author = blockContent['author']
@@ -224,46 +224,10 @@ def pluginToBlock(plugin, import_block = True):
 
     return False
 
-def parseBlock(hash, key):# deal with block metadata
-    blockContent = pluginapi.get_core().getData(hash)
-
-    try:
-        blockMetadata = json.loads(blockContent[:blockContent.decode().find('\n')].decode())
-        try:
-            blockMeta2 = json.loads(blockMetadata['meta'])
-        except KeyError:
-            blockMeta2 = {'type': ''}
-            pass
-        blockContent = blockContent[blockContent.rfind(b'\n') + 1:]
-        try:
-            blockContent = blockContent.decode()
-        except AttributeError:
-            pass
-
-        if not pluginapi.get_crypto().verifyPow(blockContent, blockMeta2):
-            logger.debug("(pluginmanager): %s has invalid or insufficient proof of work" % str(hash))
-            return False
-
-        if not (('sig' in blockMetadata)): #  and ('id' in blockMeta2)
-            logger.debug('(pluginmanager): %s is missing required parameters' % hash)
-            return False
-        else:
-            if pluginapi.get_crypto().edVerify(blockMetadata['meta'] + '\n' + blockContent, key, blockMetadata['sig'], encodedData=True):
-                # logger.debug('(pluginmanager): %s was signed' % str(hash))
-                return True
-            else:
-                # logger.debug('(pluginmanager): %s has an invalid signature' % str(hash))
-                return False
-    except json.decoder.JSONDecodeError as e:
-        logger.error('(pluginmanager): Could not decode block metadata.', error = e, timestamp = False)
-
-    return False
-
 def installBlock(block):
     try:
-        blockContent = pluginapi.get_core().getData(block)
-        blockContent = blockContent[blockContent.rfind(b'\n') + 1:].decode()
-        blockContent = json.loads(blockContent)
+        block = Block(block)
+        blockContent = json.loads(block.getContent())
 
         name = sanitize(blockContent['name'])
         author = blockContent['author']
@@ -284,7 +248,7 @@ def installBlock(block):
             install = logger.confirm(message = 'Continue with installation %s?')
 
         if install:
-            blockToPlugin(block)
+            blockToPlugin(block.getHash())
             addPlugin(name)
         else:
             logger.info('Installation cancelled.')
@@ -415,7 +379,7 @@ def commandInstallPlugin():
         real_key = False
 
         if valid_hash:
-            real_block = pluginapi.get_utils().hasBlock(pkobh)
+            real_block = Block.exists(pkobh)
         elif valid_key:
             real_key = pluginapi.get_utils().hasKey(pkobh)
 
@@ -440,39 +404,31 @@ def commandInstallPlugin():
 
             saveKey(pluginname, pkobh)
 
-            blocks = pluginapi.get_core().getBlocksByType('plugin')
-
-            signedBlocks = list()
-
-            for hash in blocks:
-                if parseBlock(hash, publickey):
-                    signedBlocks.append(hash)
+            signedBlocks = Block.getBlocks(type = 'plugin', signed = True, signer = publickey)
 
             mostRecentTimestamp = None
             mostRecentVersionBlock = None
 
-            for hash in signedBlocks:
+            for block in signedBlocks:
                 try:
-                    blockContent = pluginapi.get_core().getData(hash)
-                    blockContent = blockContent[blockContent.rfind(b'\n') + 1:].decode()
-                    blockContent = json.loads(blockContent)
+                    blockContent = json.loads(block.getContent())
 
                     if not (('author' in blockContent) and ('info' in blockContent) and ('date' in blockContent) and ('name' in blockContent)):
-                        raise ValueError('Missing required parameter `date` in block %s.' % hash)
+                        raise ValueError('Missing required parameter `date` in block %s.' % block.getHash())
 
                     blockDatetime = datetime.datetime.strptime(blockContent['date'], '%Y-%m-%d %H:%M:%S')
 
                     if blockContent['name'] == pluginname:
                         if ('version' in blockContent['info']) and (blockContent['info']['version'] == version) and (not version is None):
                             mostRecentTimestamp = blockDatetime
-                            mostRecentVersionBlock = hash
+                            mostRecentVersionBlock = block.getHash()
                             break
                         elif mostRecentTimestamp is None:
                             mostRecentTimestamp = blockDatetime
-                            mostRecentVersionBlock = hash
+                            mostRecentVersionBlock = block.getHash()
                         elif blockDatetime > mostRecentTimestamp:
                             mostRecentTimestamp = blockDatetime
-                            mostRecentVersionBlock = hash
+                            mostRecentVersionBlock = block.getHash()
                 except Exception as e:
                     pass
 
@@ -505,11 +461,9 @@ def commandAddRepository():
         blockhash = sys.argv[2]
 
         if pluginapi.get_utils().validateHash(blockhash):
-            if pluginapi.get_utils().hasBlock(blockhash):
+            if Block.exists(blockhash):
                 try:
-                    blockContent = pluginapi.get_core().getData(blockhash)
-                    blockContent = blockContent[blockContent.rfind(b'\n') + 1:].decode()
-                    blockContent = json.loads(blockContent)
+                    blockContent = json.loads(Block(blockhash).getContent())
 
                     pluginslist = dict()
 

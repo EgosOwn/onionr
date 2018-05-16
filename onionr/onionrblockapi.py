@@ -56,6 +56,7 @@ class Block:
         self.signed = False
         self.signature = None
         self.signedData = None
+        self.blockFile = None
         self.bheader = {}
         self.bmetadata = {}
 
