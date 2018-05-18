@@ -50,7 +50,7 @@ class API:
         '''
 
         config.reload()
-
+        
         if config.get('devmode', True):
             self._developmentMode = True
             logger.set_level(logger.LEVEL_DEBUG)
@@ -227,8 +227,8 @@ class API:
                     response = 'none'
                 resp = Response(response)
             elif action == 'kex':
-                peers = self._core.listPeers()
-                response = ','.join(self._core.listPeers())
+                peers = self._core.listPeers(getPow=True)
+                response = ','.join(peers)
                 resp = Response(response)
             else:
                 resp = Response("")

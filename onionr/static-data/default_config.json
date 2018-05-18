@@ -12,5 +12,9 @@
             "output": true,
             "color": true
         }
+    },
+    "allocations":{
+        "disk": 1000000000,
+        "netTotal": 1000000000
     }
 }

@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 '''
-Onionr - P2P Microblogging Platform & Social network.
+    Onionr - P2P Microblogging Platform & Social network.
 
-This file contains both the OnionrCommunicate class for communcating with peers
-and code to operate as a daemon, getting commands from the command queue database (see core.Core.daemonQueue)
+    This file contains both the OnionrCommunicate class for communcating with peers
+    and code to operate as a daemon, getting commands from the command queue database (see core.Core.daemonQueue)
 '''
 '''
     This program is free software: you can redistribute it and/or modify
@@ -19,8 +19,8 @@ and code to operate as a daemon, getting commands from the command queue databas
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import sqlite3, requests, hmac, hashlib, time, sys, os, math, logger, urllib.parse, base64, binascii, random, json
-import core, onionrutils, onionrcrypto, netcontroller, onionrproofs, btc, config, onionrplugins as plugins
+import sqlite3, requests, hmac, hashlib, time, sys, os, math, logger, urllib.parse, base64, binascii, random, json, threading
+import core, onionrutils, onionrcrypto, netcontroller, onionrproofs, config, onionrplugins as plugins
 
 class OnionrCommunicate:
     def __init__(self, debug, developmentMode):
@@ -40,28 +40,27 @@ class OnionrCommunicate:
         self.ignoredHashes = []
 
         self.highFailureAmount = 7
-        '''
-        logger.info('Starting Bitcoin Node... with Tor socks port:' + str(sys.argv[2]), timestamp=True)
-        try:
-            self.bitcoin = btc.OnionrBTC(torP=int(sys.argv[2]))
-        except _gdbm.error:
-            pass
-        logger.info('Bitcoin Node started, on block: ' + self.bitcoin.node.getBlockHash(self.bitcoin.node.getLastBlockHeight()), timestamp=True)
-        '''
-        #except:
-        #logger.fatal('Failed to start Bitcoin Node, exiting...')
-        #exit(1)
 
-        blockProcessTimer = 0
-        blockProcessAmount = 5
-        highFailureTimer = 0
-        highFailureRate = 10
-        heartBeatTimer = 0
-        heartBeatRate = 0
-        pexTimer = 25 # How often we should check for new peers
-        pexCount = 0
+        self.communicatorThreads = 0
+        self.maxThreads = 75
+        self.processBlocksThreads = 0
+        self.lookupBlocksThreads = 0
+
+        self.blocksProcessing = [] # list of blocks currently processing, to avoid trying a block twice at once in 2 seperate threads
+        self.peerStatus = {} # network actions (active requests) for peers used mainly to prevent conflicting actions in threads
+
+        self.communicatorTimers = {} # communicator timers, name: rate (in seconds)
+        self.communicatorTimerCounts = {}
+        self.communicatorTimerFuncs = {}
+
+        self.registerTimer('blockProcess', 20)
+        self.registerTimer('highFailure', 10)
+        self.registerTimer('heartBeat', 10)
+        self.registerTimer('pex', 120)
         logger.debug('Communicator debugging enabled.')
-        torID = open('data/hs/hostname').read()
+
+        with open('data/hs/hostname', 'r') as torID:
+            todID = torID.read()
 
         apiRunningCheckRate = 10
         apiRunningCheckCount = 0
@@ -77,24 +76,44 @@ class OnionrCommunicate:
         while True:
             command = self._core.daemonQueue()
             # Process blocks based on a timer
-            blockProcessTimer += 1
-            heartBeatTimer += 1
-            pexCount += 1
-            if highFailureTimer == highFailureRate:
-                highFailureTimer = 0
+            self.timerTick() 
+            # TODO: migrate below if statements to be own functions which are called in the above timerTick() function
+            if self.communicatorTimers['highFailure'] == self.communicatorTimerCounts['highFailure']:
+                self.communicatorTimerCounts['highFailure'] = 0
                 for i in self.peerData:
                     if self.peerData[i]['failCount'] >= self.highFailureAmount:
                         self.peerData[i]['failCount'] -= 1
-            if pexTimer == pexCount:
-                self.getNewPeers()
-                pexCount = 0 # TODO: do not reset timer if low peer count
-            if heartBeatRate == heartBeatTimer:
+            if self.communicatorTimers['pex'] == self.communicatorTimerCounts['pex']:
+                pT1 = threading.Thread(target=self.getNewPeers, name="pT1")
+                pT1.start()
+                pT2 = threading.Thread(target=self.getNewPeers, name="pT2")
+                pT2.start()
+                self.communicatorTimerCounts['pex'] = 0# TODO: do not reset timer if low peer count
+            if self.communicatorTimers['heartBeat'] == self.communicatorTimerCounts['heartBeat']:
                 logger.debug('Communicator heartbeat')
-                heartBeatTimer = 0
-            if blockProcessTimer == blockProcessAmount:
-                self.lookupBlocks()
-                self.processBlocks()
-                blockProcessTimer = 0
+                self.communicatorTimerCounts['heartBeat'] = 0
+            if self.communicatorTimers['blockProcess'] == self.communicatorTimerCounts['blockProcess']:
+                lT1 = threading.Thread(target=self.lookupBlocks, name="lt1", args=(True,))
+                lT2 = threading.Thread(target=self.lookupBlocks, name="lt2", args=(True,))
+                lT3 = threading.Thread(target=self.lookupBlocks, name="lt3", args=(True,))
+                lT4 = threading.Thread(target=self.lookupBlocks, name="lt4", args=(True,))
+                pbT1 = threading.Thread(target=self.processBlocks, name='pbT1', args=(True,))
+                pbT2 = threading.Thread(target=self.processBlocks, name='pbT2', args=(True,))
+                pbT3 = threading.Thread(target=self.processBlocks, name='pbT3', args=(True,))
+                pbT4 = threading.Thread(target=self.processBlocks, name='pbT4', args=(True,))
+                if (self.maxThreads - 8) >= threading.active_count():
+                    lT1.start()
+                    lT2.start()
+                    lT3.start()
+                    lT4.start()
+                    pbT1.start()
+                    pbT2.start()
+                    pbT3.start()
+                    pbT4.start()
+                    self.communicatorTimerCounts['blockProcess'] = 0
+                else:
+                    logger.debug(threading.active_count())
+                    logger.debug('Too many threads.')
             if command != False:
                 if command[0] == 'shutdown':
                     logger.info('Daemon received exit command.', timestamp=True)
@@ -114,6 +133,8 @@ class OnionrCommunicate:
                 elif command[0] == 'runCheck':
                     logger.info('Status check; looks good.')
                     open('data/.runcheck', 'w+').close()
+                elif command[0] == 'kex':
+                    self.pexCount = pexTimer - 1
                 elif command[0] == 'event':
                     # todo
                     pass
@@ -165,6 +186,28 @@ class OnionrCommunicate:
     connection_handlers = {}
     id_peer_cache = {}
 
+    def registerTimer(self, timerName, rate, timerFunc=None):
+        '''Register a communicator timer'''
+        self.communicatorTimers[timerName] = rate
+        self.communicatorTimerCounts[timerName] = 0
+        self.communicatorTimerFuncs[timerName] = timerFunc
+    
+    def timerTick(self):
+        '''Increments timers "ticks" and calls funcs if applicable'''
+        tName = ''
+        for i in self.communicatorTimers.items():
+            tName = i[0]
+            self.communicatorTimerCounts[tName] += 1
+
+            if self.communicatorTimerCounts[tName] == self.communicatorTimers[tName]:
+                try:
+                    self.communicatorTimerFuncs[tName]()
+                except TypeError:
+                    pass
+                else:
+                    self.communicatorTimerCounts[tName] = 0
+
+
     def get_connection_handlers(self, name = None):
         '''
             Returns a list of callback handlers by name, or, if name is None, it returns all handlers.
@@ -174,7 +217,7 @@ class OnionrCommunicate:
             return self.connection_handlers
         elif name in self.connection_handlers:
             return self.connection_handlers[name]
-        else
+        else:
             return list()
 
     def add_connection_handler(self, name, handler):
@@ -274,7 +317,7 @@ class OnionrCommunicate:
 
             events.event('outgoing_direct_connection', data = {'callback' : True, 'communicator' : self, 'data' : data, 'id' : identifier, 'token' : token, 'peer' : peer, 'callback' : callback, 'log' : log})
 
-            logger.debug('Direct connection (identifier: "%s"): %s' + (identifier, data_str))
+            logger.debug('Direct connection (identifier: "%s"): %s' % (identifier, data_str))
             try:
                 self.performGet('directMessage', peer, data_str)
             except:
@@ -360,10 +403,10 @@ class OnionrCommunicate:
 
     def getNewPeers(self):
         '''
-            Get new peers and keys
+            Get new peers and ed25519 keys
         '''
 
-        peersCheck = 5 # Amount of peers to ask for new peers + keys
+        peersCheck = 1 # Amount of peers to ask for new peers + keys
         peersChecked = 0
         peerList = list(self._core.listAdders()) # random ordered list of peers
         newKeys = []
@@ -380,40 +423,49 @@ class OnionrCommunicate:
         while peersCheck > peersChecked:
             #i = secrets.randbelow(maxN) # cant use prior to 3.6
             i = random.randint(0, maxN)
-            logger.info('Using ' + peerList[i] + ' to find new peers', timestamp=True)
+
+            try:
+                if self.peerStatusTaken(peerList[i], 'pex') or self.peerStatusTaken(peerList[i], 'kex'):
+                    continue
+            except IndexError:
+                pass
+
+            logger.info('Using %s to find new peers...' % peerList[i], timestamp=True)
 
             try:
                 newAdders = self.performGet('pex', peerList[i], skipHighFailureAddress=True)
-                logger.debug('Attempting to merge address: ')
-                logger.debug(newAdders)
-                self._utils.mergeAdders(newAdders)
+                if not newAdders is False: # keep the is False thing in there, it might not be bool
+                    logger.debug('Attempting to merge address: %s' % str(newAdders))
+                    self._utils.mergeAdders(newAdders)
             except requests.exceptions.ConnectionError:
-                logger.info(peerList[i] + ' connection failed', timestamp=True)
+                logger.info('%s connection failed' % peerList[i], timestamp=True)
                 continue
             else:
                 try:
-                    logger.info('Using ' + peerList[i] + ' to find new keys')
+                    logger.info('Using %s to find new keys...' % peerList[i])
                     newKeys = self.performGet('kex', peerList[i], skipHighFailureAddress=True)
-                    logger.debug('Attempting to merge pubkey: ')
-                    logger.debug(newKeys)
+                    logger.debug('Attempting to merge pubkey: %s' % str(newKeys))
                     # TODO: Require keys to come with POW token (very large amount of POW)
                     self._utils.mergeKeys(newKeys)
                 except requests.exceptions.ConnectionError:
-                    logger.info(peerList[i] + ' connection failed', timestamp=True)
+                    logger.info('%s connection failed' % peerList[i], timestamp=True)
                     continue
                 else:
                     peersChecked += 1
         return
 
-    def lookupBlocks(self):
+    def lookupBlocks(self, isThread=False):
         '''
             Lookup blocks and merge new ones
         '''
-
+        if isThread:
+            self.lookupBlocksThreads += 1
         peerList = self._core.listAdders()
-        blocks = ''
+        blockList = list()
 
         for i in peerList:
+            if self.peerStatusTaken(i, 'getBlockHashes') or self.peerStatusTaken(i, 'getDBHash'):
+                continue
             try:
                 if self.peerData[i]['failCount'] >= self.highFailureAmount:
                     continue
@@ -423,66 +475,70 @@ class OnionrCommunicate:
             lastDB = self._core.getAddressInfo(i, 'DBHash')
 
             if lastDB == None:
-                logger.debug('Fetching hash from ' + str(i) + ', no previous known.')
+                logger.debug('Fetching hash from %s, no previous known.' % str(i))
             else:
-                logger.debug('Fetching hash from ' + str(i) + ', ' + str(lastDB) + ' last known')
+                logger.debug('Fetching hash from %s, %s last known' % (str(i), str(lastDB)))
 
             currentDB = self.performGet('getDBHash', i)
 
             if currentDB != False:
-                logger.debug(i + " hash db (from request): " + currentDB)
+                logger.debug('%s hash db (from request): %s' % (str(i), str(currentDB)))
             else:
-                logger.warn("Error getting hash db status for " + i)
+                logger.warn('Failed to get hash db status for %s' % str(i))
 
             if currentDB != False:
                 if lastDB != currentDB:
-                    logger.debug('Fetching hash from ' + i + ' - ' + currentDB + ' current hash.')
+                    logger.debug('Fetching hash from %s - %s current hash.' % (str(i), currentDB))
                     try:
-                        blocks += self.performGet('getBlockHashes', i)
+                        blockList.append(self.performGet('getBlockHashes', i))
                     except TypeError:
-                        logger.warn('Failed to get data hash from ' + i)
+                        logger.warn('Failed to get data hash from %s' % str(i))
                         self.peerData[i]['failCount'] -= 1
                 if self._utils.validateHash(currentDB):
                     self._core.setAddressInfo(i, "DBHash", currentDB)
 
-        if len(blocks.strip()) != 0:
+        if len(blockList) != 0:
             pass
-            #logger.debug('BLOCKS:' + blocks)
-
-        blockList = blocks.split('\n')
 
         for i in blockList:
             if len(i.strip()) == 0:
                 continue
-            if self._utils.hasBlock(i):
-                continue
+            try:
+                if self._utils.hasBlock(i):
+                    continue
+            except:
+                logger.warn('Invalid hash') # TODO: move below validate hash check below
+                pass
             if i in self.ignoredHashes:
                 continue
 
             #logger.debug('Exchanged block (blockList): ' + i)
             if not self._utils.validateHash(i):
                 # skip hash if it isn't valid
-                logger.warn('Hash ' + i + ' is not valid')
+                logger.warn('Hash %s is not valid' % str(i))
                 continue
             else:
                 self.newHashes[i] = 0
-                logger.debug('Adding ' +  i + ' to hash database...')
+                logger.debug('Adding %s to hash database...' % str(i))
                 self._core.addToBlockDB(i)
-
+        self.lookupBlocksThreads -= 1
         return
 
-    def processBlocks(self):
+    def processBlocks(self, isThread=False):
         '''
             Work with the block database and download any missing blocks
 
             This is meant to be called from the communicator daemon on its timer.
         '''
-
-        for i in self._core.getBlockList(unsaved=True).split("\n"):
+        if isThread:
+            self.processBlocksThreads += 1
+        for i in self._core.getBlockList(unsaved = True):
             if i != "":
-                if i in self.ignoredHashes:
+                if i in self.blocksProcessing or i in self.ignoredHashes:
+                    #logger.debug('already processing ' + i)
                     continue
-
+                else:
+                    self.blocksProcessing.append(i)
                 try:
                     self.newHashes[i]
                 except KeyError:
@@ -490,60 +546,77 @@ class OnionrCommunicate:
 
                 # check if a new hash has been around too long, delete it from database and add it to ignore list
                 if self.newHashes[i] >= self.keepNewHash:
-                    logger.warn('Ignoring block ' + i + ' because it took to long to get valid data.')
+                    logger.warn('Ignoring block %s because it took to long to get valid data.' % str(i))
                     del self.newHashes[i]
                     self._core.removeBlock(i)
                     self.ignoredHashes.append(i)
                     continue
 
                 self.newHashes[i] += 1
-                logger.warn('UNSAVED BLOCK: ' + i)
+                logger.warn('Block is unsaved: %s' % str(i))
                 data = self.downloadBlock(i)
 
-                # if block was successfull gotten (hash already verified)
+                # if block was successfully gotten (hash already verified)
                 if data:
                     del self.newHashes[i] # remove from probation list
 
                     # deal with block metadata
                     blockContent = self._core.getData(i)
                     try:
+                        blockContent = blockContent.encode()
+                    except AttributeError:
+                        pass
+                    try:
                         #blockMetadata = json.loads(self._core.getData(i)).split('}')[0] + '}'
-                        blockMetadata = self._core.getData(i).split(b'}')[0]
+                        blockMetadata = json.loads(blockContent[:blockContent.find(b'\n')].decode())
                         try:
-                            blockMetadata = blockMetadata.decode()
+                            blockMeta2 = json.loads(blockMetadata['meta'])
+                        except KeyError:
+                            blockMeta2 = {'type': ''}
+                            pass
+                        blockContent = blockContent[blockContent.find(b'\n') + 1:]
+                        try:
+                            blockContent = blockContent.decode()
                         except AttributeError:
                             pass
 
-                        blockMetadata = json.loads(blockMetadata + '}')
-
-                        try:
-                            blockMetadata['sig']
-                            blockMetadata['id']
-                        except KeyError:
-                            pass
-
+                        if not self._crypto.verifyPow(blockContent, blockMeta2):
+                            logger.warn("%s has invalid or insufficient proof of work token, deleting..." % str(i))
+                            self._core.removeBlock(i)
+                            continue
                         else:
-                            creator = self._utils.getPeerByHashId(blockMetadata['id'])
-                            try:
-                                creator = creator.decode()
-                            except AttributeError:
-                                pass
+                            if (('sig' in blockMetadata) and ('id' in blockMeta2)): # id doesn't exist in blockMeta2, so this won't workin the first place
 
-                            if self._core._crypto.edVerify(blockContent.split(b'}')[1], creator, blockMetadata['sig'], encodedData=True):
-                                self._core.updateBlockInfo(i, 'sig', 'true')
-                            else:
-                                self._core.updateBlockInfo(i, 'sig', 'false')
+                                #blockData = json.dumps(blockMetadata['meta']) + blockMetadata[blockMetadata.rfind(b'}') + 1:]
+
+                                creator = self._utils.getPeerByHashId(blockMeta2['id'])
+                                try:
+                                    creator = creator.decode()
+                                except AttributeError:
+                                    pass
+
+                                if self._core._crypto.edVerify(blockMetadata['meta'] + blockContent, creator, blockMetadata['sig'], encodedData=True):
+                                    logger.info('%s was signed' % str(i))
+                                    self._core.updateBlockInfo(i, 'sig', 'true')
+                                else:
+                                    logger.warn('%s has an invalid signature' % str(i))
+                                    self._core.updateBlockInfo(i, 'sig', 'false')
                         try:
-                            logger.info('Block type is ' + blockMetadata['type'])
-                            self._core.updateBlockInfo(i, 'dataType', blockMetadata['type'])
+                            logger.info('Block type is %s' % str(blockMeta2['type']))
+                            self._core.updateBlockInfo(i, 'dataType', blockMeta2['type'])
+                            self.removeBlockFromProcessingList(i)
+                            self.removeBlockFromProcessingList(i)
                         except KeyError:
                             logger.warn('Block has no type')
                             pass
                     except json.decoder.JSONDecodeError:
                         logger.warn('Could not decode block metadata')
-                        pass
-
+                        self.removeBlockFromProcessingList(i)
+        self.processBlocksThreads -= 1
         return
+
+    def removeBlockFromProcessingList(self, block):
+        return block in blocksProcessing
 
     def downloadBlock(self, hash, peerTries=3):
         '''
@@ -556,8 +629,11 @@ class OnionrCommunicate:
         peerTryCount = 0
 
         for i in peerList:
-            if self.peerData[i]['failCount'] >= self.highFailureAmount:
-                continue
+            try:
+                if self.peerData[i]['failCount'] >= self.highFailureAmount:
+                    continue
+            except KeyError:
+                pass
             if peerTryCount >= peerTries:
                 break
 
@@ -581,17 +657,11 @@ class OnionrCommunicate:
 
             if digest == hash.strip():
                 self._core.setData(data)
-                logger.info('Successfully obtained data for ' + hash, timestamp=True)
+                logger.info('Successfully obtained data for %s' % str(hash), timestamp=True)
                 retVal = True
                 break
-                '''
-                if data.startswith(b'-txt-'):
-                    self._core.setBlockType(hash, 'txt')
-                    if len(data) < 120:
-                        logger.debug('Block text:\n' + data.decode())
-                '''
             else:
-                logger.warn("Failed to validate " + hash + " " + " hash calculated was " + digest)
+                logger.warn("Failed to validate %s -- hash calculated was %s" % (hash, digest))
                 peerTryCount += 1
 
         return retVal
@@ -614,12 +684,12 @@ class OnionrCommunicate:
             raise Exception("Could not perform self address check in performGet due to not knowing our address")
         if selfCheck:
             if peer.replace('/', '') == self._core.hsAdder:
-                logger.warn('Tried to performget to own hidden service, but selfCheck was not set to false')
+                logger.warn('Tried to performGet to own hidden service, but selfCheck was not set to false')
                 return
 
         # Store peer in peerData dictionary (non permanent)
         if not peer in self.peerData:
-            self.peerData[peer] = {'connectCount': 0, 'failCount': 0, 'lastConnectTime': math.floor(time.time())}
+            self.peerData[peer] = {'connectCount': 0, 'failCount': 0, 'lastConnectTime': self._utils.getEpoch()}
         socksPort = sys.argv[2]
         '''We use socks5h to use tor as DNS'''
         proxies = {'http': 'socks5://127.0.0.1:' + str(socksPort), 'https': 'socks5://127.0.0.1:' + str(socksPort)}
@@ -630,13 +700,14 @@ class OnionrCommunicate:
         try:
             if skipHighFailureAddress and self.peerData[peer]['failCount'] > self.highFailureAmount:
                 retData = False
-                logger.debug('Skipping ' + peer + ' because of high failure rate')
+                logger.debug('Skipping %s because of high failure rate.' % peer)
             else:
-                logger.debug('Contacting ' + peer + ' on port ' + socksPort)
+                self.peerStatus[peer] = action
+                logger.debug('Contacting %s on port %s' % (peer, str(socksPort)))
                 r = requests.get(url, headers=headers, proxies=proxies, timeout=(15, 30))
                 retData = r.text
         except requests.exceptions.RequestException as e:
-            logger.warn(action + " failed with peer " + peer + ": " + str(e))
+            logger.debug("%s failed with peer %s" % (action, peer))
             retData = False
 
         if not retData:
@@ -644,9 +715,20 @@ class OnionrCommunicate:
         else:
             self.peerData[peer]['connectCount'] += 1
             self.peerData[peer]['failCount'] -= 1
-            self.peerData[peer]['lastConnectTime'] = math.floor(time.time())
+            self.peerData[peer]['lastConnectTime'] = self._utils.getEpoch()
+            self._core.setAddressInfo(peer, 'lastConnect', self._utils.getEpoch())
         return retData
 
+    def peerStatusTaken(self, peer, status):
+        '''
+            Returns if we are currently performing a specific action with a peer.
+        '''
+        try:
+            if self.peerStatus[peer] == status:
+                return True
+        except KeyError:
+            pass
+        return False
 
 shouldRun = False
 debug = True

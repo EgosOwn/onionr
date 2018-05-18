@@ -17,15 +17,19 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import nacl.signing, nacl.encoding, nacl.public, nacl.secret, os, binascii, base64, hashlib, logger
+import nacl.signing, nacl.encoding, nacl.public, nacl.hash, nacl.secret, os, binascii, base64, hashlib, logger, onionrproofs, time, math
 
 class OnionrCrypto:
     def __init__(self, coreInstance):
         self._core = coreInstance
         self._keyFile = 'data/keys.txt'
+        self.keyPowFile = 'data/keyPow.txt'
         self.pubKey = None
         self.privKey = None
-        
+
+        self.pubKeyPowToken = None
+        #self.pubKeyPowHash = None
+
         self.HASH_ID_ROUNDS = 2000
 
         # Load our own pub/priv Ed25519 keys, gen & save them if they don't exist
@@ -34,12 +38,29 @@ class OnionrCrypto:
                 keys = keys.read().split(',')
                 self.pubKey = keys[0]
                 self.privKey = keys[1]
+            try:
+                with open(self.keyPowFile, 'r') as powFile:
+                    data = powFile.read()
+                    self.pubKeyPowToken = data
+            except (FileNotFoundError, IndexError):
+                pass
         else:
             keys = self.generatePubKey()
             self.pubKey = keys[0]
             self.privKey = keys[1]
             with open(self._keyFile, 'w') as keyfile:
                 keyfile.write(self.pubKey + ',' + self.privKey)
+            with open(self.keyPowFile, 'w') as keyPowFile:
+                proof = onionrproofs.POW(self.pubKey)
+                logger.info('Doing necessary work to insert our public key')
+                while True:
+                    time.sleep(0.2)
+                    powToken = proof.getResult()
+                    if powToken != False:
+                        break
+                keyPowFile.write(base64.b64encode(powToken[1]).decode())
+                self.pubKeyPowToken = powToken[1]
+                self.pubKeyPowHash = powToken[0]
         return
 
     def edVerify(self, data, key, sig, encodedData=True):
@@ -60,14 +81,13 @@ class OnionrCrypto:
                 retData = key.verify(data, sig) # .encode() is not the same as nacl.encoding
             except nacl.exceptions.BadSignatureError:
                 pass
-
         else:
             try:
                 retData = key.verify(data, sig)
             except nacl.exceptions.BadSignatureError:
                 pass
         return retData
-    
+
     def edSign(self, data, key, encodeResult=False):
         '''Ed25519 sign data'''
         try:
@@ -138,8 +158,6 @@ class OnionrCrypto:
         decrypted = self.symmetricDecrypt(data, key, encodedKey=True)
         return decrypted
 
-        return
-
     def symmetricEncrypt(self, data, key, encodedKey=False, returnEncoded=True):
         '''Encrypt data to a 32-byte key (Salsa20-Poly1305 MAC)'''
         if encodedKey:
@@ -177,7 +195,7 @@ class OnionrCrypto:
         if returnEncoded:
             decrypted = base64.b64encode(decrypted)
         return decrypted
-    
+
     def generateSymmetricPeer(self, peer):
         '''Generate symmetric key for a peer and save it to the peer database'''
         key = self.generateSymmetric()
@@ -193,7 +211,7 @@ class OnionrCrypto:
         private_key = nacl.signing.SigningKey.generate()
         public_key = private_key.verify_key.encode(encoder=nacl.encoding.Base32Encoder())
         return (public_key.decode(), private_key.encode(encoder=nacl.encoding.Base32Encoder()).decode())
-    
+
     def pubKeyHashID(self, pubkey=''):
         '''Accept a ed25519 public key, return a truncated result of X many sha3_256 hash rounds'''
         if pubkey == '':
@@ -210,3 +228,48 @@ class OnionrCrypto:
             prev = hasher.hexdigest()
         result = prev
         return result
+
+    def sha3Hash(self, data):
+        hasher = hashlib.sha3_256()
+        hasher.update(data)
+        return hasher.hexdigest()
+
+    def blake2bHash(self, data):
+        try:
+            data = data.encode()
+        except AttributeError:
+            pass
+        return nacl.hash.blake2b(data)
+
+    def verifyPow(self, blockContent, metadata):
+        '''
+            Verifies the proof of work associated with a block
+        '''
+        retData = False
+
+        if not (('powToken' in metadata) and ('powHash' in metadata)):
+            return False
+
+        dataLen = len(blockContent)
+
+        expectedHash = self.blake2bHash(base64.b64decode(metadata['powToken']) + self.blake2bHash(blockContent.encode()))
+        difficulty = 0
+        try:
+            expectedHash = expectedHash.decode()
+        except AttributeError:
+            pass
+        if metadata['powHash'] == expectedHash:
+            difficulty = math.floor(dataLen / 1000000)
+
+            mainHash = '0000000000000000000000000000000000000000000000000000000000000000'#nacl.hash.blake2b(nacl.utils.random()).decode()
+            puzzle = mainHash[:difficulty]
+
+            if metadata['powHash'][:difficulty] == puzzle:
+                # logger.debug('Validated block pow')
+                retData = True
+            else:
+                logger.debug("Invalid token (#1)")
+        else:
+            logger.debug('Invalid token (#2): Expected hash %s, got hash %s...' % (metadata['powHash'], expectedHash))
+
+        return retData

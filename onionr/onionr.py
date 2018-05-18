@@ -25,9 +25,10 @@ import sys
 if sys.version_info[0] == 2 or sys.version_info[1] < 5:
     print('Error, Onionr requires Python 3.4+')
     sys.exit(1)
-import os, base64, random, getpass, shutil, subprocess, requests, time, platform, datetime, re
+import os, base64, random, getpass, shutil, subprocess, requests, time, platform, datetime, re, json, getpass
 from threading import Thread
 import api, core, config, logger, onionrplugins as plugins, onionrevents as events
+import onionrutils
 from onionrutils import OnionrUtils
 from netcontroller import NetController
 
@@ -64,7 +65,7 @@ class Onionr:
         else:
             # the default config file doesn't exist, try hardcoded config
             config.set_config({'devmode': True, 'log': {'file': {'output': True, 'path': 'data/output.log'}, 'console': {'output': True, 'color': True}}})
-        if not exists:
+        if not data_exists:
             config.save()
         config.reload() # this will read the configuration file into memory
 
@@ -107,12 +108,11 @@ class Onionr:
                 if not os.path.exists('data/blocks/'):
                     os.mkdir('data/blocks/')
 
-                # Copy default plugins into plugins folder
-
+            # Copy default plugins into plugins folder
             if not os.path.exists(plugins.get_plugins_folder()):
-                if os.path.exists('default-plugins/'):
-                    names = [f for f in os.listdir("default-plugins/") if not os.path.isfile(f)]
-                    shutil.copytree('default-plugins/', plugins.get_plugins_folder())
+                if os.path.exists('static-data/default-plugins/'):
+                    names = [f for f in os.listdir("static-data/default-plugins/") if not os.path.isfile(f)]
+                    shutil.copytree('static-data/default-plugins/', plugins.get_plugins_folder())
 
                     # Enable plugins
                     for name in names:
@@ -134,7 +134,7 @@ class Onionr:
 
         # Get configuration
 
-        if not exists:
+        if not data_exists:
             # Generate default config
             # Hostname should only be set if different from 127.x.x.x. Important for DNS rebinding attack prevention.
             if self.debug:
@@ -153,6 +153,8 @@ class Onionr:
             'config': self.configure,
             'start': self.start,
             'stop': self.killDaemon,
+            'status': self.showStats,
+            'statistics': self.showStats,
             'stats': self.showStats,
 
             'enable-plugin': self.enablePlugin,
@@ -191,6 +193,8 @@ class Onionr:
             'addaddress': self.addAddress,
             'addfile': self.addFile,
 
+            'importblocks': self.onionrUtils.importNewBlocks,
+
             'introduce': self.onionrCore.introduceNode,
             'connect': self.addAddress
         }
@@ -212,11 +216,12 @@ class Onionr:
             'pm': 'Adds a private message to block',
             'get-pms': 'Shows private messages sent to you',
             'addfile': 'Create an Onionr block from a file',
+            'importblocks': 'import blocks from the disk (Onionr is transport-agnostic!)',
             'introduce': 'Introduce your node to the public Onionr network',
         }
 
         # initialize plugins
-        events.event('init', onionr = self)
+        events.event('init', onionr = self, threaded = False)
 
         command = ''
         try:
@@ -389,7 +394,8 @@ class Onionr:
         addedHash = self.onionrCore.insertBlock(messageToAdd, header='txt')
         #self.onionrCore.addToBlockDB(addedHash, selfInsert=True)
         #self.onionrCore.setBlockType(addedHash, 'txt')
-        logger.info("Message inserted as as block %s" % addedHash)
+        if addedHash != '':
+            logger.info("Message inserted as as block %s" % addedHash)
         return
 
     def getPMs(self):
@@ -457,7 +463,10 @@ class Onionr:
 
                     os.makedirs(plugins.get_plugins_folder(plugin_name))
                     with open(plugins.get_plugins_folder(plugin_name) + '/main.py', 'a') as main:
-                        main.write(open('static-data/default_plugin.py').read().replace('$user', os.getlogin()).replace('$date', datetime.datetime.now().strftime('%Y-%m-%d')))
+                        main.write(open('static-data/default_plugin.py').read().replace('$user', os.getlogin()).replace('$date', datetime.datetime.now().strftime('%Y-%m-%d')).replace('$name', plugin_name))
+
+                    with open(plugins.get_plugins_folder(plugin_name) + '/info.json', 'a') as main:
+                        main.write(json.dumps({'author' : 'anonymous', 'description' : 'the default description of the plugin', 'version' : '1.0'}))
 
                     logger.info('Enabling plugin "%s"...' % plugin_name)
                     plugins.enable(plugin_name, self)
@@ -550,8 +559,54 @@ class Onionr:
             Displays statistics and exits
         '''
 
-        logger.info('Our pubkey: ' + self.onionrCore._crypto.pubKey)
-        logger.info('Our address: ' + self.get_hostname())
+        try:
+            # define stats messages here
+            messages = {
+                # info about local client
+                'Onionr Daemon Status' : ((logger.colors.fg.green + 'Online') if self.onionrUtils.isCommunicatorRunning(timeout = 2) else logger.colors.fg.red + 'Offline'),
+                'Public Key' : self.onionrCore._crypto.pubKey,
+                'Address' : self.get_hostname(),
+
+                # file and folder size stats
+                'div1' : True, # this creates a solid line across the screen, a div
+                'Total Block Size' : onionrutils.humanSize(onionrutils.size('data/blocks/')),
+                'Total Plugin Size' : onionrutils.humanSize(onionrutils.size('data/plugins/')),
+                'Log File Size' : onionrutils.humanSize(onionrutils.size('data/output.log')),
+
+                # count stats
+                'div2' : True,
+                'Known Peers Count' : str(len(self.onionrCore.listPeers())),
+                'Enabled Plugins Count' : str(len(config.get('plugins')['enabled'])) + ' / ' + str(len(os.listdir('data/plugins/')))
+            }
+
+            # color configuration
+            colors = {
+                'title' : logger.colors.bold,
+                'key' : logger.colors.fg.lightgreen,
+                'val' : logger.colors.fg.green,
+                'border' : logger.colors.fg.lightblue,
+
+                'reset' : logger.colors.reset
+            }
+
+            # pre-processing
+            maxlength = 0
+            for key, val in messages.items():
+                if not (type(val) is bool and val is True):
+                    maxlength = max(len(key), maxlength)
+
+            # generate stats table
+            logger.info(colors['title'] + 'Onionr v%s Statistics' % ONIONR_VERSION + colors['reset'])
+            logger.info(colors['border'] + '─' * (maxlength + 1) + '┐' + colors['reset'])
+            for key, val in messages.items():
+                if not (type(val) is bool and val is True):
+                    logger.info(colors['key'] + str(key).rjust(maxlength) + colors['reset'] + colors['border'] + ' │ ' + colors['reset'] + colors['val'] + str(val) + colors['reset'])
+                else:
+                    logger.info(colors['border'] + '─' * (maxlength + 1) + '┤' + colors['reset'])
+            logger.info(colors['border'] + '─' * (maxlength + 1) + '┘' + colors['reset'])
+        except Exception as e:
+            logger.error('Failed to generate statistics table.', error = e, timestamp = False)
+
         return
 
     def showHelp(self, command = None):

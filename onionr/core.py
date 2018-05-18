@@ -17,11 +17,11 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import sqlite3, os, sys, time, math, base64, tarfile, getpass, simplecrypt, hashlib, nacl, logger, json, netcontroller
+import sqlite3, os, sys, time, math, base64, tarfile, getpass, simplecrypt, hashlib, nacl, logger, json, netcontroller, math
 #from Crypto.Cipher import AES
 #from Crypto import Random
 
-import onionrutils, onionrcrypto, btc, onionrevents as events
+import onionrutils, onionrcrypto, onionrproofs, onionrevents as events
 
 if sys.version_info < (3, 6):
     try:
@@ -73,22 +73,24 @@ class Core:
         except Exception as error:
             logger.error('Failed to initialize core Onionr library.', error=error)
             logger.fatal('Cannot recover from error.')
-            exit(1)
+            sys.exit(1)
         return
 
-    def addPeer(self, peerID, name=''):
+    def addPeer(self, peerID, powID, name=''):
         '''
             Adds a public key to the key database (misleading function name)
-
-            DOES NO SAFETY CHECKS if the ID is valid, but prepares the insertion
         '''
         # This function simply adds a peer to the DB
         if not self._utils.validatePubKey(peerID):
             return False
+        if sys.getsizeof(powID) > 60:
+            logger.warn("POW token for pubkey base64 representation exceeded 60 bytes")
+            return False
+
         conn = sqlite3.connect(self.peerDB)
         hashID = self._crypto.pubKeyHashID(peerID)
         c = conn.cursor()
-        t = (peerID, name, 'unknown', hashID)
+        t = (peerID, name, 'unknown', hashID, powID)
 
         for i in c.execute("SELECT * FROM PEERS where id = '" + peerID + "';"):
             try:
@@ -99,7 +101,7 @@ class Core:
                 pass
             except IndexError:
                 pass
-        c.execute('INSERT INTO peers (id, name, dateSeen, hashID) VALUES(?, ?, ?, ?);', t)
+        c.execute('INSERT INTO peers (id, name, dateSeen, pow, hashID) VALUES(?, ?, ?, ?, ?);', t)
         conn.commit()
         conn.close()
 
@@ -189,7 +191,8 @@ class Core:
             speed int,
             success int,
             DBHash text,
-            failure int
+            failure int,
+            lastConnect int
             );
         ''')
         conn.commit()
@@ -212,7 +215,8 @@ class Core:
             bytesStored int,
             trust int,
             pubkeyExchanged int,
-            hashID);
+            hashID text,
+            pow text not null);
         ''')
         conn.commit()
         conn.close()
@@ -251,7 +255,7 @@ class Core:
 
         return
 
-    def addToBlockDB(self, newHash, selfInsert=False):
+    def addToBlockDB(self, newHash, selfInsert=False, dataSaved=False):
         '''
             Add a hash value to the block db
 
@@ -263,8 +267,8 @@ class Core:
             return
         conn = sqlite3.connect(self.blockDB)
         c = conn.cursor()
-        currentTime = math.floor(time.time())
-        if selfInsert:
+        currentTime = self._utils.getEpoch()
+        if selfInsert or dataSaved:
             selfInsert = 1
         else:
             selfInsert = 0
@@ -275,11 +279,12 @@ class Core:
 
         return
 
-    def getData(self,hash):
+    def getData(self, hash):
         '''
             Simply return the data associated to a hash
         '''
         try:
+            # logger.debug('Opening %s' % (str(self.blockDataLocation) + str(hash) + '.dat'))
             dataFile = open(self.blockDataLocation + hash + '.dat', 'rb')
             data = dataFile.read()
             dataFile.close()
@@ -387,7 +392,7 @@ class Core:
             Add a command to the daemon queue, used by the communication daemon (communicator.py)
         '''
         # Intended to be used by the web server
-        date = math.floor(time.time())
+        date = self._utils.getEpoch()
         conn = sqlite3.connect(self.queueDB)
         c = conn.cursor()
         t = (command, data, date)
@@ -431,7 +436,7 @@ class Core:
         conn.close()
         return addressList
 
-    def listPeers(self, randomOrder=True):
+    def listPeers(self, randomOrder=True, getPow=False):
         '''
             Return a list of public keys (misleading function name)
 
@@ -448,10 +453,19 @@ class Core:
         for i in c.execute(payload):
             try:
                 if len(i[0]) != 0:
-                    peerList.append(i[0])
+                    if getPow:
+                        peerList.append(i[0] + '-' + i[1])
+                    else:
+                        peerList.append(i[0])
             except TypeError:
                 pass
-        peerList.append(self._crypto.pubKey)
+        if getPow:
+            try:
+                peerList.append(self._crypto.pubKey + '-' + self._crypto.pubKeyPowToken)
+            except TypeError:
+                pass
+        else:
+            peerList.append(self._crypto.pubKey)
         conn.close()
         return peerList
 
@@ -513,11 +527,12 @@ class Core:
             success int, 4
             DBHash text, 5
             failure int 6
+            lastConnect 7
         '''
         conn = sqlite3.connect(self.addressDB)
         c = conn.cursor()
         command = (address,)
-        infoNumbers = {'address': 0, 'type': 1, 'knownPeer': 2, 'speed': 3, 'success': 4, 'DBHash': 5, 'failure': 6}
+        infoNumbers = {'address': 0, 'type': 1, 'knownPeer': 2, 'speed': 3, 'success': 4, 'DBHash': 5, 'failure': 6, 'lastConnect': 7}
         info = infoNumbers[info]
         iterCount = 0
         retVal = ''
@@ -539,7 +554,7 @@ class Core:
         c = conn.cursor()
         command = (data, address)
         # TODO: validate key on whitelist
-        if key not in ('address', 'type', 'knownPeer', 'speed', 'success', 'DBHash', 'failure'):
+        if key not in ('address', 'type', 'knownPeer', 'speed', 'success', 'DBHash', 'failure', 'lastConnect'):
             raise Exception("Got invalid database key when setting address info")
         c.execute('UPDATE adders SET ' + key + ' = ? WHERE address=?', command)
         conn.commit()
@@ -565,22 +580,36 @@ class Core:
 
         return
 
-    def getBlockList(self, unsaved = False):
+    def getBlockList(self, unsaved = False): # TODO: Use unsaved
         '''
             Get list of our blocks
         '''
         conn = sqlite3.connect(self.blockDB)
         c = conn.cursor()
-        retData = ''
         if unsaved:
             execute = 'SELECT hash FROM hashes WHERE dataSaved != 1 ORDER BY RANDOM();'
         else:
             execute = 'SELECT hash FROM hashes ORDER BY RANDOM();'
+        rows = list()
         for row in c.execute(execute):
             for i in row:
-                retData += i + "\n"
+                rows.append(i)
 
-        return retData
+        return rows
+
+    def getBlockDate(self, blockHash):
+        '''
+            Returns the date a block was received
+        '''
+        conn = sqlite3.connect(self.blockDB)
+        c = conn.cursor()
+        execute = 'SELECT dateReceived FROM hashes WHERE hash=?;'
+        args = (blockHash,)
+        for row in c.execute(execute, args):
+            for i in row:
+                return int(i)
+
+        return None
 
     def getBlocksByType(self, blockType):
         '''
@@ -588,14 +617,14 @@ class Core:
         '''
         conn = sqlite3.connect(self.blockDB)
         c = conn.cursor()
-        retData = ''
         execute = 'SELECT hash FROM hashes WHERE dataType=?;'
         args = (blockType,)
+        rows = list()
         for row in c.execute(execute, args):
             for i in row:
-                retData += i + "\n"
+                rows.append(i)
 
-        return retData.split('\n')
+        return rows
 
     def setBlockType(self, hash, blockType):
         '''
@@ -630,32 +659,57 @@ class Core:
             Inserts a block into the network
         '''
 
+        powProof = onionrproofs.POW(data)
+        powToken = ''
+        # wait for proof to complete
+        try:
+            while True:
+                powToken = powProof.getResult()
+                if powToken == False:
+                    time.sleep(0.3)
+                    continue
+                powHash = powToken[0]
+                powToken = base64.b64encode(powToken[1])
+                try:
+                    powToken = powToken.decode()
+                except AttributeError:
+                    pass
+                finally:
+                    break
+        except KeyboardInterrupt:
+            logger.warn("Got keyboard interrupt while working on inserting block, stopping.")
+            powProof.shutdown()
+            return ''
+
         try:
             data.decode()
         except AttributeError:
             data = data.encode()
 
         retData = ''
-        metadata = {'type': header}
+        metadata = {'type': header, 'powHash': powHash, 'powToken': powToken}
+        sig = {}
+
+        metadata = json.dumps(metadata)
+        metadata = metadata.encode()
+        signature = ''
 
         if sign:
-            signature = self._crypto.edSign(data, self._crypto.privKey, encodeResult=True)
+            signature = self._crypto.edSign(metadata + b'\n' + data, self._crypto.privKey, encodeResult=True)
             ourID = self._crypto.pubKeyHashID()
             # Convert from bytes on some py versions?
             try:
                 ourID = ourID.decode()
             except AttributeError:
                 pass
-            metadata['id'] = ourID
-            metadata['sig'] = signature
-
+        metadata = {'sig': signature, 'meta': metadata.decode()}
         metadata = json.dumps(metadata)
         metadata = metadata.encode()
 
         if len(data) == 0:
             logger.error('Will not insert empty block')
         else:
-            addedHash = self.setData(metadata + data)
+            addedHash = self.setData(metadata + b'\n' + data)
             self.addToBlockDB(addedHash, selfInsert=True)
             self.setBlockType(addedHash, header)
             retData = addedHash
