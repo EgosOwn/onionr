@@ -73,7 +73,7 @@ class Core:
         except Exception as error:
             logger.error('Failed to initialize core Onionr library.', error=error)
             logger.fatal('Cannot recover from error.')
-            exit(1)
+            sys.exit(1)
         return
 
     def addPeer(self, peerID, powID, name=''):
@@ -82,6 +82,9 @@ class Core:
         '''
         # This function simply adds a peer to the DB
         if not self._utils.validatePubKey(peerID):
+            return False
+        if sys.getsizeof(powID) > 60:
+            logger.warn("POW token for pubkey base64 representation exceeded 60 bytes")
             return False
 
         conn = sqlite3.connect(self.peerDB)
