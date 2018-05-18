@@ -472,6 +472,10 @@ class OnionrUtils:
 
         sys.stdout.write("\r┣{0}┫ {1}%".format(arrow + spaces, int(round(percent * 100))))
         sys.stdout.flush()
+    
+    def getEpoch():
+        '''returns epoch'''
+        return math.floor(time.time())
 
 def size(path='.'):
     '''

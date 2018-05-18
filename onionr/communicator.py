@@ -49,16 +49,18 @@ class OnionrCommunicate:
         self.blocksProcessing = [] # list of blocks currently processing, to avoid trying a block twice at once in 2 seperate threads
         self.peerStatus = {} # network actions (active requests) for peers used mainly to prevent conflicting actions in threads
 
-        blockProcessTimer = 19
-        blockProcessAmount = 20
-        highFailureTimer = 0
-        highFailureRate = 10
-        heartBeatTimer = 0
-        heartBeatRate = 10
-        pexTimer = 120 # How often we should check for new peers
-        pexCount = 0
+        self.communicatorTimers = {} # communicator timers, name: rate (in seconds)
+        self.communicatorTimerCounts = {}
+        self.communicatorTimerFuncs = {}
+
+        self.registerTimer('blockProcess', 20)
+        self.registerTimer('highFailure', 10)
+        self.registerTimer('heartBeat', 10)
+        self.registerTimer('pex', 120)
         logger.debug('Communicator debugging enabled.')
-        torID = open('data/hs/hostname').read()
+
+        with open('data/hs/hostname', 'r') as torID:
+            todID = torID.read()
 
         apiRunningCheckRate = 10
         apiRunningCheckCount = 0
@@ -74,24 +76,23 @@ class OnionrCommunicate:
         while True:
             command = self._core.daemonQueue()
             # Process blocks based on a timer
-            blockProcessTimer += 1
-            heartBeatTimer += 1
-            pexCount += 1
-            if highFailureTimer == highFailureRate:
-                highFailureTimer = 0
+            self.timerTick() 
+            # TODO: migrate below if statements to be own functions which are called in the above timerTick() function
+            if self.communicatorTimers['highFailure'] == self.communicatorTimerCounts['highFailure']:
+                self.communicatorTimerCounts['highFailure'] = 0
                 for i in self.peerData:
                     if self.peerData[i]['failCount'] >= self.highFailureAmount:
                         self.peerData[i]['failCount'] -= 1
-            if pexTimer == pexCount:
+            if self.communicatorTimers['pex'] == self.communicatorTimerCounts['pex']:
                 pT1 = threading.Thread(target=self.getNewPeers, name="pT1")
                 pT1.start()
                 pT2 = threading.Thread(target=self.getNewPeers, name="pT2")
                 pT2.start()
-                pexCount = 0 # TODO: do not reset timer if low peer count
-            if heartBeatRate == heartBeatTimer:
+                self.communicatorTimerCounts['pex'] = 0# TODO: do not reset timer if low peer count
+            if self.communicatorTimers['heartBeat'] == self.communicatorTimerCounts['heartBeat']:
                 logger.debug('Communicator heartbeat')
-                heartBeatTimer = 0
-            if blockProcessTimer == blockProcessAmount:
+                self.communicatorTimerCounts['heartBeat'] = 0
+            if self.communicatorTimers['blockProcess'] == self.communicatorTimerCounts['blockProcess']:
                 lT1 = threading.Thread(target=self.lookupBlocks, name="lt1", args=(True,))
                 lT2 = threading.Thread(target=self.lookupBlocks, name="lt2", args=(True,))
                 lT3 = threading.Thread(target=self.lookupBlocks, name="lt3", args=(True,))
@@ -109,7 +110,7 @@ class OnionrCommunicate:
                     pbT2.start()
                     pbT3.start()
                     pbT4.start()
-                    blockProcessTimer = 0
+                    self.communicatorTimerCounts['blockProcess'] = 0
                 else:
                     logger.debug(threading.active_count())
                     logger.debug('Too many threads.')
@@ -184,6 +185,28 @@ class OnionrCommunicate:
     future_callbacks = {}
     connection_handlers = {}
     id_peer_cache = {}
+
+    def registerTimer(self, timerName, rate, timerFunc=None):
+        '''Register a communicator timer'''
+        self.communicatorTimers[timerName] = rate
+        self.communicatorTimerCounts[timerName] = 0
+        self.communicatorTimerFuncs[timerName] = timerFunc
+    
+    def timerTick(self):
+        '''Increments timers "ticks" and calls funcs if applicable'''
+        tName = ''
+        for i in self.communicatorTimers.items():
+            tName = i[0]
+            self.communicatorTimerCounts[tName] += 1
+
+            if self.communicatorTimerCounts[tName] == self.communicatorTimers[tName]:
+                try:
+                    self.communicatorTimerFuncs[tName]()
+                except TypeError:
+                    pass
+                else:
+                    self.communicatorTimerCounts[tName] = 0
+
 
     def get_connection_handlers(self, name = None):
         '''
@@ -637,12 +660,6 @@ class OnionrCommunicate:
                 logger.info('Successfully obtained data for %s' % str(hash), timestamp=True)
                 retVal = True
                 break
-                '''
-                if data.startswith(b'-txt-'):
-                    self._core.setBlockType(hash, 'txt')
-                    if len(data) < 120:
-                        logger.debug('Block text:\n' + data.decode())
-                '''
             else:
                 logger.warn("Failed to validate %s -- hash calculated was %s" % (hash, digest))
                 peerTryCount += 1
@@ -672,7 +689,7 @@ class OnionrCommunicate:
 
         # Store peer in peerData dictionary (non permanent)
         if not peer in self.peerData:
-            self.peerData[peer] = {'connectCount': 0, 'failCount': 0, 'lastConnectTime': math.floor(time.time())}
+            self.peerData[peer] = {'connectCount': 0, 'failCount': 0, 'lastConnectTime': self._utils.getEpoch()}
         socksPort = sys.argv[2]
         '''We use socks5h to use tor as DNS'''
         proxies = {'http': 'socks5://127.0.0.1:' + str(socksPort), 'https': 'socks5://127.0.0.1:' + str(socksPort)}
@@ -698,12 +715,13 @@ class OnionrCommunicate:
         else:
             self.peerData[peer]['connectCount'] += 1
             self.peerData[peer]['failCount'] -= 1
-            self.peerData[peer]['lastConnectTime'] = math.floor(time.time())
+            self.peerData[peer]['lastConnectTime'] = self._utils.getEpoch()
+            self._core.setAddressInfo(peer, 'lastConnect', self._utils.getEpoch())
         return retData
 
     def peerStatusTaken(self, peer, status):
         '''
-            Returns if a peer is currently performing a specified action
+            Returns if we are currently performing a specific action with a peer.
         '''
         try:
             if self.peerStatus[peer] == status:

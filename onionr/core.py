@@ -188,7 +188,8 @@ class Core:
             speed int,
             success int,
             DBHash text,
-            failure int
+            failure int,
+            lastConnect int
             );
         ''')
         conn.commit()
@@ -263,7 +264,7 @@ class Core:
             return
         conn = sqlite3.connect(self.blockDB)
         c = conn.cursor()
-        currentTime = math.floor(time.time())
+        currentTime = self._utils.getEpoch()
         if selfInsert or dataSaved:
             selfInsert = 1
         else:
@@ -388,7 +389,7 @@ class Core:
             Add a command to the daemon queue, used by the communication daemon (communicator.py)
         '''
         # Intended to be used by the web server
-        date = math.floor(time.time())
+        date = self._utils.getEpoch()
         conn = sqlite3.connect(self.queueDB)
         c = conn.cursor()
         t = (command, data, date)
@@ -523,11 +524,12 @@ class Core:
             success int, 4
             DBHash text, 5
             failure int 6
+            lastConnect 7
         '''
         conn = sqlite3.connect(self.addressDB)
         c = conn.cursor()
         command = (address,)
-        infoNumbers = {'address': 0, 'type': 1, 'knownPeer': 2, 'speed': 3, 'success': 4, 'DBHash': 5, 'failure': 6}
+        infoNumbers = {'address': 0, 'type': 1, 'knownPeer': 2, 'speed': 3, 'success': 4, 'DBHash': 5, 'failure': 6, 'lastConnect': 7}
         info = infoNumbers[info]
         iterCount = 0
         retVal = ''
