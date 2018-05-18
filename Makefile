@@ -16,6 +16,8 @@ uninstall:
 	sudo rm -f /usr/bin/onionr
 
 test:
+	@./RUN-LINUX.sh stop
+	@sleep 1
 	@rm -rf onionr/data-backup
 	@mv onionr/data onionr/data-backup | true > /dev/null 2>&1
 	-@cd onionr; ./tests.py; ./cryptotests.py;
@@ -23,11 +25,16 @@ test:
 	@mv onionr/data-backup onionr/data | true > /dev/null 2>&1
 
 soft-reset:
-	rm -f onionr/data/blocks/*.dat | true > /dev/null 2>&1
-	rm -f onionr/data/*.db | true > /dev/null 2>&1
+	@echo "Soft-resetting Onionr..."
+	rm -f onionr/data/blocks/*.dat onionr/data/*.db | true > /dev/null 2>&1
+	@./RUN-LINUX.sh version | grep -v "Failed" --color=always
 
 reset:
 	@echo "Hard-resetting Onionr..."
 	rm -rf onionr/data/ | true > /dev/null 2>&1
-	@./RUN-LINUX.sh version | grep -v "Failed" --color=always
+	#@./RUN-LINUX.sh version | grep -v "Failed" --color=always
 
+plugins-reset:
+	@echo "Resetting plugins..."
+	rm -rf onionr/data/plugins/ | true > /dev/null 2>&1
+	@./RUN-LINUX.sh version | grep -v "Failed" --color=always

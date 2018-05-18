@@ -18,7 +18,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 
-import re, sys
+import re, sys, time, traceback
 
 class colors:
     '''
@@ -134,15 +134,18 @@ def raw(data):
         with open(_outputfile, "a+") as f:
             f.write(colors.filter(data) + '\n')
 
-def log(prefix, data, color = ''):
+def log(prefix, data, color = '', timestamp=True):
     '''
         Logs the data
         prefix : The prefix to the output
         data   : The actual data to output
         color  : The color to output before the data
     '''
+    curTime = ''
+    if timestamp:
+        curTime = time.strftime("%m-%d %H:%M:%S") + ' '
 
-    output = colors.reset + str(color) + '[' + colors.bold + str(prefix) + colors.reset + str(color) + '] ' + str(data) + colors.reset
+    output = colors.reset + str(color) + '[' + colors.bold + str(prefix) + colors.reset + str(color) + '] ' + curTime + str(data) + colors.reset
     if not get_settings() & USE_ANSI:
         output = colors.filter(output)
 
@@ -198,26 +201,38 @@ def confirm(default = 'y', message = 'Are you sure %s? '):
         return default == 'y'
 
 # debug: when there is info that could be useful for debugging purposes only
-def debug(data):
+def debug(data, timestamp=True):
     if get_level() <= LEVEL_DEBUG:
-        log('/', data)
+        log('/', data, timestamp=timestamp)
 
 # info: when there is something to notify the user of, such as the success of a process
-def info(data):
+def info(data, timestamp=False):
     if get_level() <= LEVEL_INFO:
-        log('+', data, colors.fg.green)
+        log('+', data, colors.fg.green, timestamp=timestamp)
 
 # warn: when there is a potential for something bad to happen
-def warn(data):
+def warn(data, timestamp=True):
     if get_level() <= LEVEL_WARN:
-        log('!', data, colors.fg.orange)
+        log('!', data, colors.fg.orange, timestamp=timestamp)
 
 # error: when only one function, module, or process of the program encountered a problem and must stop
-def error(data):
+def error(data, error=None, timestamp=True):
     if get_level() <= LEVEL_ERROR:
-        log('-', data, colors.fg.red)
+        log('-', data, colors.fg.red, timestamp=timestamp)
+    if not error is None:
+        debug('Error: ' + str(error) + parse_error())
 
-# fatal: when the something so bad has happened that the prorgam must stop
-def fatal(data):
+# fatal: when the something so bad has happened that the program must stop
+def fatal(data, timestamp=True):
     if get_level() <= LEVEL_FATAL:
-        log('#', data, colors.bg.red + colors.fg.green + colors.bold)
+        log('#', data, colors.bg.red + colors.fg.green + colors.bold, timestamp=timestamp)
+
+# returns a formatted error message
+def parse_error():
+    details = traceback.extract_tb(sys.exc_info()[2])
+    output = ''
+
+    for line in details:
+        output += '\n    ... module %s in  %s:%i' % (line[2], line[0], line[1])
+
+    return output

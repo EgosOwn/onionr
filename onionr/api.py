@@ -20,6 +20,7 @@
 import flask
 from flask import request, Response, abort
 from multiprocessing import Process
+from gevent.wsgi import WSGIServer
 import sys, random, threading, hmac, hashlib, base64, time, math, os, logger, config
 
 from core import Core
@@ -32,10 +33,13 @@ class API:
         '''
             Validate that the client token (hmac) matches the given token
         '''
-        if self.clientToken != token:
+        try:
+            if not hmac.compare_digest(self.clientToken, token):
+                return False
+            else:
+                return True
+        except TypeError:
             return False
-        else:
-            return True
 
     def __init__(self, debug):
         '''
@@ -46,7 +50,7 @@ class API:
         '''
 
         config.reload()
-
+        
         if config.get('devmode', True):
             self._developmentMode = True
             logger.set_level(logger.LEVEL_DEBUG)
@@ -63,8 +67,15 @@ class API:
         bindPort = int(config.get('client')['port'])
         self.bindPort = bindPort
         self.clientToken = config.get('client')['client_hmac']
+        self.timeBypassToken = base64.b16encode(os.urandom(32)).decode()
+
+        self.mimeType = 'text/plain'
+
+        with open('data/time-bypass.txt', 'w') as bypass:
+            bypass.write(self.timeBypassToken)
+
         if not os.environ.get("WERKZEUG_RUN_MAIN") == "true":
-            logger.debug('Your HMAC token: ' + logger.colors.underline + self.clientToken)
+            logger.debug('Your web password (KEEP SECRET): ' + logger.colors.underline + self.clientToken)
 
         if not debug and not self._developmentMode:
             hostNums = [random.randint(1, 255), random.randint(1, 255), random.randint(1, 255)]
@@ -88,39 +99,80 @@ class API:
         def afterReq(resp):
             if not self.requestFailed:
                 resp.headers['Access-Control-Allow-Origin'] = '*'
-            else:
-                resp.headers['server'] = 'Onionr'
-            resp.headers['Content-Type'] = 'text/plain'
-            resp.headers["Content-Security-Policy"] = "default-src 'none'"
+            #else:
+            #    resp.headers['server'] = 'Onionr'
+            resp.headers['Content-Type'] = self.mimeType
+            resp.headers["Content-Security-Policy"] =  "default-src 'none'; script-src 'none'; object-src 'none'; style-src data: 'unsafe-inline'; img-src data:; media-src 'none'; frame-src 'none'; font-src 'none'; connect-src 'none'"
             resp.headers['X-Frame-Options'] = 'deny'
             resp.headers['X-Content-Type-Options'] = "nosniff"
+            resp.headers['server'] = 'Onionr'
+
+            # reset to text/plain to help prevent browser attacks
+            if self.mimeType != 'text/plain':
+                self.mimeType = 'text/plain'
 
             return resp
 
         @app.route('/client/')
         def private_handler():
+            if request.args.get('timingToken') is None:
+                timingToken = ''
+            else:
+                timingToken = request.args.get('timingToken')
+            data = request.args.get('data')
+            try:
+                data = data
+            except:
+                data = ''
             startTime = math.floor(time.time())
             # we should keep a hash DB of requests (with hmac) to prevent replays
             action = request.args.get('action')
             #if not self.debug:
             token = request.args.get('token')
+
             if not self.validateToken(token):
                 abort(403)
             self.validateHost('private')
             if action == 'hello':
                 resp = Response('Hello, World! ' + request.host)
             elif action == 'shutdown':
-                request.environ.get('werkzeug.server.shutdown')()
+                # request.environ.get('werkzeug.server.shutdown')()
+                self.http_server.stop()
                 resp = Response('Goodbye')
+            elif action == 'ping':
+                resp = Response('pong')
             elif action == 'stats':
                 resp = Response('me_irl')
+                raise Exception
+            elif action == 'site':
+                block = data
+                siteData = self._core.getData(data)
+                response = 'not found'
+                if siteData != '' and siteData != False:
+                    self.mimeType = 'text/html'
+                    response = siteData.split(b'-', 2)[-1]
+                resp = Response(response)
             else:
                 resp = Response('(O_o) Dude what? (invalid command)')
             endTime = math.floor(time.time())
             elapsed = endTime - startTime
-            if elapsed < self._privateDelayTime:
-                time.sleep(self._privateDelayTime - elapsed)
 
+            # if bypass token not used, delay response to prevent timing attacks
+            if not hmac.compare_digest(timingToken, self.timeBypassToken):
+                if elapsed < self._privateDelayTime:
+                    time.sleep(self._privateDelayTime - elapsed)
+
+            return resp
+
+        @app.route('/')
+        def banner():
+            self.mimeType = 'text/html'
+            self.validateHost('public')
+            try:
+                with open('static-data/index.html', 'r') as html:
+                    resp = Response(html.read())
+            except FileNotFoundError:
+                resp = Response("")
             return resp
 
         @app.route('/public/')
@@ -130,6 +182,10 @@ class API:
             action = request.args.get('action')
             requestingPeer = request.args.get('myID')
             data = request.args.get('data')
+            try:
+                data = data
+            except:
+                data = ''
             if action == 'firstConnect':
                 pass
             elif action == 'ping':
@@ -142,9 +198,25 @@ class API:
                 resp = Response(self._utils.getBlockDBHash())
             elif action == 'getBlockHashes':
                 resp = Response(self._core.getBlockList())
+            elif action == 'directMessage':
+                resp = Response(self._core.handle_direct_connection(data))
+            elif action == 'announce':
+                if data != '':
+                    # TODO: require POW for this
+                    if self._core.addAddress(data):
+                        resp = Response('Success')
+                    else:
+                        resp = Response('')
+                else:
+                    resp = Response('')
             # setData should be something the communicator initiates, not this api
             elif action == 'getData':
-                resp = self._core.getData(data)
+                if self._utils.validateHash(data):
+                    if not os.path.exists('data/blocks/' + data + '.db'):
+                        try:
+                            resp = base64.b64encode(self._core.getData(data))
+                        except TypeError:
+                            resp = ""
                 if resp == False:
                     abort(404)
                     resp = ""
@@ -155,9 +227,8 @@ class API:
                     response = 'none'
                 resp = Response(response)
             elif action == 'kex':
-                response = ','.join(self._core.listPeers())
-                if len(response) == 0:
-                    response = 'none'
+                peers = self._core.listPeers(getPow=True)
+                response = ','.join(peers)
                 resp = Response(response)
             else:
                 resp = Response("")
@@ -185,10 +256,14 @@ class API:
 
             return resp
         if not os.environ.get("WERKZEUG_RUN_MAIN") == "true":
-            logger.info('Starting client on ' + self.host + ':' + str(bindPort) + '...')
+            logger.info('Starting client on ' + self.host + ':' + str(bindPort) + '...', timestamp=True)
 
         try:
-            app.run(host=self.host, port=bindPort, debug=True, threaded=True)
+            self.http_server = WSGIServer((self.host, bindPort), app)
+            self.http_server.serve_forever()
+        except KeyboardInterrupt:
+            pass
+            #app.run(host=self.host, port=bindPort, debug=False, threaded=True)
         except Exception as e:
             logger.error(str(e))
             logger.fatal('Failed to start client on ' + self.host + ':' + str(bindPort) + ', exiting...')

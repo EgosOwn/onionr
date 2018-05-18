@@ -14,7 +14,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import unittest, sys, os, base64, tarfile, shutil, simplecrypt, logger, btc
+import unittest, sys, os, base64, tarfile, shutil, simplecrypt, logger #, btc
 
 class OnionrTests(unittest.TestCase):
     def testPython3(self):
@@ -56,7 +56,7 @@ class OnionrTests(unittest.TestCase):
         myCore = core.Core()
         if not os.path.exists('data/peers.db'):
             myCore.createPeerDB()
-        if myCore.addPeer('6M5MXL237OK57ITHVYN5WGHANPGOMKS5C3PJLHBBNKFFJQOIDOJA====') and not myCore.addPeer('NFXHMYLMNFSAU==='):
+        if myCore.addPeer('6M5MXL237OK57ITHVYN5WGHANPGOMKS5C3PJLHBBNKFFJQOIDOJA====', '1cSix9Ao/yQSdo0sNif8cm2uTcYnSphb4JdZL/3WkN4=') and not myCore.addPeer('NFXHMYLMNFSAU===', '1cSix9Ao/yQSdo0sNif8cm2uTcYnSphb4JdZL/3WkN4='):
             self.assertTrue(True)
         else:
             self.assertTrue(False)
@@ -129,7 +129,14 @@ class OnionrTests(unittest.TestCase):
         logger.debug('-'*26 + '\n')
         logger.info('Running simple plugin reload test...')
 
-        import onionrplugins
+        import onionrplugins, os
+
+        if not onionrplugins.exists('test'):
+            os.makedirs(onionrplugins.get_plugins_folder('test'))
+            with open(onionrplugins.get_plugins_folder('test') + '/main.py', 'a') as main:
+                main.write("print('Running')\n\ndef on_test(pluginapi, data = None):\n    print('received test event!')\n    return True\n\ndef on_start(pluginapi, data = None):\n    print('start event called')\n\ndef on_stop(pluginapi, data = None):\n    print('stop event called')\n\ndef on_enable(pluginapi, data = None):\n    print('enable event called')\n\ndef on_disable(pluginapi, data = None):\n    print('disable event called')\n")
+            onionrplugins.enable('test')
+
         try:
             onionrplugins.reload('test')
             self.assertTrue(True)
@@ -140,7 +147,14 @@ class OnionrTests(unittest.TestCase):
         logger.debug('-'*26 + '\n')
         logger.info('Running simple plugin restart test...')
 
-        import onionrplugins
+        import onionrplugins, os
+
+        if not onionrplugins.exists('test'):
+            os.makedirs(onionrplugins.get_plugins_folder('test'))
+            with open(onionrplugins.get_plugins_folder('test') + '/main.py', 'a') as main:
+                main.write("print('Running')\n\ndef on_test(pluginapi, data = None):\n    print('received test event!')\n    return True\n\ndef on_start(pluginapi, data = None):\n    print('start event called')\n\ndef on_stop(pluginapi, data = None):\n    print('stop event called')\n\ndef on_enable(pluginapi, data = None):\n    print('enable event called')\n\ndef on_disable(pluginapi, data = None):\n    print('disable event called')\n")
+            onionrplugins.enable('test')
+
         try:
             onionrplugins.start('test')
             onionrplugins.stop('test')
@@ -152,13 +166,24 @@ class OnionrTests(unittest.TestCase):
         logger.debug('-'*26 + '\n')
         logger.info('Running plugin event test...')
 
-        import onionrplugins as plugins, onionrevents as events
+        import onionrplugins as plugins, onionrevents as events, os
+
+        if not plugins.exists('test'):
+            os.makedirs(plugins.get_plugins_folder('test'))
+            with open(plugins.get_plugins_folder('test') + '/main.py', 'a') as main:
+                main.write("print('Running')\n\ndef on_test(pluginapi, data = None):\n    print('received test event!')\n    print('thread test started...')\n    import time\n    time.sleep(1)\n    \n    return True\n\ndef on_start(pluginapi, data = None):\n    print('start event called')\n\ndef on_stop(pluginapi, data = None):\n    print('stop event called')\n\ndef on_enable(pluginapi, data = None):\n    print('enable event called')\n\ndef on_disable(pluginapi, data = None):\n    print('disable event called')\n")
+            plugins.enable('test')
+
 
         plugins.start('test')
-        if not events.call(plugins.get_plugin('test'), 'test'):
+        if not events.call(plugins.get_plugin('test'), 'enable'):
             self.assertTrue(False)
 
-        events.event('test', data = {'tests': self})
+        logger.debug('preparing to start thread', timestamp = False)
+        thread = events.event('test', data = {'tests': self})
+        logger.debug('thread running...', timestamp = False)
+        thread.join()
+        logger.debug('thread finished.', timestamp = False)
 
         self.assertTrue(True)
 

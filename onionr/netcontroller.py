@@ -52,6 +52,7 @@ class NetController:
         torrcData = '''SocksPort ''' + str(self.socksPort) + '''
 HiddenServiceDir data/hs/
 HiddenServicePort 80 127.0.0.1:''' + str(self.hsPort) + '''
+DataDirectory data/tordata/
         '''
         torrc = open(self.torConfigLocation, 'w')
         torrc.write(torrcData)
@@ -88,16 +89,20 @@ HiddenServicePort 80 127.0.0.1:''' + str(self.hsPort) + '''
             torVersion.kill()
 
         # wait for tor to get to 100% bootstrap
-        for line in iter(tor.stdout.readline, b''):
-            if 'Bootstrapped 100%: Done' in line.decode():
-                break
-            elif 'Opening Socks listener' in line.decode():
-                logger.debug(line.decode().replace('\n', ''))
-        else:
-            logger.fatal('Failed to start Tor. Try killing any other Tor processes owned by this user.')
+        try:
+            for line in iter(tor.stdout.readline, b''):
+                if 'Bootstrapped 100%: Done' in line.decode():
+                    break
+                elif 'Opening Socks listener' in line.decode():
+                    logger.debug(line.decode().replace('\n', ''))
+            else:
+                logger.fatal('Failed to start Tor. Try killing any other Tor processes owned by this user.')
+                return False
+        except KeyboardInterrupt:
+            logger.fatal("Got keyboard interrupt")
             return False
 
-        logger.info('Finished starting Tor')
+        logger.info('Finished starting Tor', timestamp=True)
         self.readyState = True
 
         myID = open('data/hs/hostname', 'r')

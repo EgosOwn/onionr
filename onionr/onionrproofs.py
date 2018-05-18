@@ -17,10 +17,12 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import nacl.encoding, nacl.hash, nacl.utils, time, math, threading, binascii, logger
-import btc
+
+import nacl.encoding, nacl.hash, nacl.utils, time, math, threading, binascii, logger, sys
+import core
+
 class POW:
-    def pow(self, reporting=False):
+    def pow(self, reporting = False):
         startTime = math.floor(time.time())
         self.hashing = True
         self.reporting = reporting
@@ -28,42 +30,48 @@ class POW:
         answer = ''
         heartbeat = 200000
         hbCount = 0
-        blockCheck = 300000 # How often the hasher should check if the bitcoin block is updated (slows hashing but prevents less wasted work)
-        blockCheckCount = 0
-        block = ''#self.bitcoinNode.getBlockHash(self.bitcoinNode.getLastBlockHeight())
+        myCore = core.Core()
         while self.hashing:
-            if blockCheckCount == blockCheck:
-                if self.reporting:
-                    logger.debug('Refreshing Bitcoin block')
-                block = ''#self.bitcoinNode.getBlockHash(self.bitcoinNode.getLastBlockHeight())
-                blockCheckCount = 0
-            blockCheckCount += 1
-            hbCount += 1
-            token = nacl.hash.blake2b(nacl.utils.random() + block.encode()).decode()
-            if self.mainHash[0:self.difficulty] == token[0:self.difficulty]:
+            rand = nacl.utils.random()
+            token = nacl.hash.blake2b(rand + self.data).decode()
+            #print(token)
+            if self.puzzle == token[0:self.difficulty]:
                 self.hashing = False
                 iFound = True
                 break
+        else:
+            logger.debug('POW thread exiting, another thread found result')
         if iFound:
             endTime = math.floor(time.time())
             if self.reporting:
-                logger.info('Found token ' + token)
-                logger.info('took ' + str(endTime - startTime))
-            self.result = token
-    
-    def __init__(self, difficulty, bitcoinNode):
+                logger.info('Found token ' + token, timestamp=True)
+                logger.info('took ' + str(endTime - startTime) + ' seconds', timestamp=True)
+            self.result = (token, rand)
+
+    def __init__(self, data):
         self.foundHash = False
-        self.difficulty = difficulty
+        self.difficulty = 0
+        self.data = data
+
+        dataLen = sys.getsizeof(data)
+        self.difficulty = math.floor(dataLen/1000000)
+        if self.difficulty <= 2:
+            self.difficulty = 4
+
+        try:
+            self.data = self.data.encode()
+        except AttributeError:
+            pass
+        self.data = nacl.hash.blake2b(self.data)
 
         logger.debug('Computing difficulty of ' + str(self.difficulty))
 
-        self.mainHash = nacl.hash.blake2b(nacl.utils.random()).decode()
+        self.mainHash = '0000000000000000000000000000000000000000000000000000000000000000'#nacl.hash.blake2b(nacl.utils.random()).decode()
         self.puzzle = self.mainHash[0:self.difficulty]
-        self.bitcoinNode = bitcoinNode
-        logger.debug('trying to find ' + str(self.mainHash))
+        #logger.debug('trying to find ' + str(self.mainHash))
         tOne = threading.Thread(name='one', target=self.pow, args=(True,))
-        tTwo = threading.Thread(name='two', target=self.pow)
-        tThree = threading.Thread(name='three', target=self.pow)
+        tTwo = threading.Thread(name='two', target=self.pow, args=(True,))
+        tThree = threading.Thread(name='three', target=self.pow, args=(True,))
         tOne.start()
         tTwo.start()
         tThree.start()
@@ -72,12 +80,14 @@ class POW:
     def shutdown(self):
         self.hashing = False
         self.puzzle = ''
-    
+
     def changeDifficulty(self, newDiff):
         self.difficulty = newDiff
 
     def getResult(self):
-        '''Returns the result then sets to false, useful to automatically clear the result'''
+        '''
+            Returns the result then sets to false, useful to automatically clear the result
+        '''
         try:
             retVal = self.result
         except AttributeError:
