@@ -554,7 +554,7 @@ class Core:
         c = conn.cursor()
         command = (data, address)
         # TODO: validate key on whitelist
-        if key not in ('address', 'type', 'knownPeer', 'speed', 'success', 'DBHash', 'failure'):
+        if key not in ('address', 'type', 'knownPeer', 'speed', 'success', 'DBHash', 'failure', 'lastConnect'):
             raise Exception("Got invalid database key when setting address info")
         c.execute('UPDATE adders SET ' + key + ' = ? WHERE address=?', command)
         conn.commit()
