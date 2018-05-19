@@ -69,6 +69,8 @@ class API:
         self.clientToken = config.get('client')['client_hmac']
         self.timeBypassToken = base64.b16encode(os.urandom(32)).decode()
 
+        self.i2pEnabled = config.get('i2p')['host']
+
         self.mimeType = 'text/plain'
 
         with open('data/time-bypass.txt', 'w') as bypass:
@@ -197,7 +199,7 @@ class API:
             elif action == 'getDBHash':
                 resp = Response(self._utils.getBlockDBHash())
             elif action == 'getBlockHashes':
-                resp = Response(self._core.getBlockList())
+                resp = Response('\n'.join(self._core.getBlockList()))
             elif action == 'directMessage':
                 resp = Response(self._core.handle_direct_connection(data))
             elif action == 'announce':
@@ -289,6 +291,10 @@ class API:
             if not request.host.endswith('onion') and not request.host.endswith('i2p'):
                 abort(403)
         # Validate x-requested-with, to protect against CSRF/metadata leaks
+
+        if not self.i2pEnabled and request.host.endswith('i2p'):
+            abort(403)
+
         if not self._developmentMode:
             try:
                 request.headers['X-Requested-With']

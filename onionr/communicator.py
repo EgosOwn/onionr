@@ -490,7 +490,7 @@ class OnionrCommunicate:
                 if lastDB != currentDB:
                     logger.debug('Fetching hash from %s - %s current hash.' % (str(i), currentDB))
                     try:
-                        blockList.append(self.performGet('getBlockHashes', i))
+                        blockList.extend(self.performGet('getBlockHashes', i).split('\n'))
                     except TypeError:
                         logger.warn('Failed to get data hash from %s' % str(i))
                         self.peerData[i]['failCount'] -= 1
@@ -616,7 +616,13 @@ class OnionrCommunicate:
         return
 
     def removeBlockFromProcessingList(self, block):
-        return block in blocksProcessing
+        '''Remove a block from the processing list'''
+        try:
+            self.blocksProcessing.remove(block)
+        except ValueError:
+            return False
+        else:
+            return True
 
     def downloadBlock(self, hash, peerTries=3):
         '''
@@ -672,13 +678,13 @@ class OnionrCommunicate:
         '''
         return urllib.parse.quote_plus(data)
 
-    def performGet(self, action, peer, data=None, skipHighFailureAddress=False, peerType='tor', selfCheck=True):
+    def performGet(self, action, peer, data=None, skipHighFailureAddress=False, selfCheck=True):
         '''
             Performs a request to a peer through Tor or i2p (currently only Tor)
         '''
 
-        if not peer.endswith('.onion') and not peer.endswith('.onion/'):
-            raise PeerError('Currently only Tor .onion peers are supported. You must manually specify .onion')
+        if not peer.endswith('.onion') and not peer.endswith('.onion/') and not peer.endswith('.b32.i2p'):
+            raise PeerError('Currently only Tor/i2p .onion/.b32.i2p peers are supported. You must manually specify .onion/.b32.i2p')
 
         if len(self._core.hsAdder.strip()) == 0:
             raise Exception("Could not perform self address check in performGet due to not knowing our address")
@@ -692,9 +698,15 @@ class OnionrCommunicate:
             self.peerData[peer] = {'connectCount': 0, 'failCount': 0, 'lastConnectTime': self._utils.getEpoch()}
         socksPort = sys.argv[2]
         '''We use socks5h to use tor as DNS'''
-        proxies = {'http': 'socks5://127.0.0.1:' + str(socksPort), 'https': 'socks5://127.0.0.1:' + str(socksPort)}
+
+        if peer.endswith('onion'):
+            proxies = {'http': 'socks5h://127.0.0.1:' + str(socksPort), 'https': 'socks5h://127.0.0.1:' + str(socksPort)}
+
+        elif peer.endswith('b32.i2p'):
+            proxies = {'http': 'http://127.0.0.1:4444'}
         headers = {'user-agent': 'PyOnionr'}
         url = 'http://' + peer + '/public/?action=' + self.urlencode(action)
+
         if data != None:
             url = url + '&data=' + self.urlencode(data)
         try:
@@ -704,7 +716,11 @@ class OnionrCommunicate:
             else:
                 self.peerStatus[peer] = action
                 logger.debug('Contacting %s on port %s' % (peer, str(socksPort)))
-                r = requests.get(url, headers=headers, proxies=proxies, timeout=(15, 30))
+                try:
+                    r = requests.get(url, headers=headers, proxies=proxies, allow_redirects=False, timeout=(15, 30))
+                except ValueError:
+                    proxies = {'http': 'socks5://127.0.0.1:' + str(socksPort), 'https': 'socks5://127.0.0.1:' + str(socksPort)}
+                    r = requests.get(url, headers=headers, proxies=proxies, allow_redirects=False, timeout=(15, 30))
                 retData = r.text
         except requests.exceptions.RequestException as e:
             logger.debug("%s failed with peer %s" % (action, peer))
