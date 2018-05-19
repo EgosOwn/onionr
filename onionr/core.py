@@ -83,8 +83,8 @@ class Core:
         # This function simply adds a peer to the DB
         if not self._utils.validatePubKey(peerID):
             return False
-        if sys.getsizeof(powID) > 60:
-            logger.warn("POW token for pubkey base64 representation exceeded 60 bytes")
+        if sys.getsizeof(powID) > 120:
+            logger.warn("POW token for pubkey base64 representation exceeded 120 bytes, is " + str(sys.getsizeof(powID)))
             return False
 
         conn = sqlite3.connect(self.peerDB)
