@@ -21,6 +21,7 @@
 '''
 import sqlite3, requests, hmac, hashlib, time, sys, os, math, logger, urllib.parse, base64, binascii, random, json, threading
 import core, onionrutils, onionrcrypto, netcontroller, onionrproofs, config, onionrplugins as plugins
+from onionrblockapi import Block
 
 class OnionrCommunicate:
     def __init__(self, debug, developmentMode):
@@ -76,7 +77,7 @@ class OnionrCommunicate:
         while True:
             command = self._core.daemonQueue()
             # Process blocks based on a timer
-            self.timerTick() 
+            self.timerTick()
             # TODO: migrate below if statements to be own functions which are called in the above timerTick() function
             if self.communicatorTimers['highFailure'] == self.communicatorTimerCounts['highFailure']:
                 self.communicatorTimerCounts['highFailure'] = 0
@@ -191,7 +192,7 @@ class OnionrCommunicate:
         self.communicatorTimers[timerName] = rate
         self.communicatorTimerCounts[timerName] = 0
         self.communicatorTimerFuncs[timerName] = timerFunc
-    
+
     def timerTick(self):
         '''Increments timers "ticks" and calls funcs if applicable'''
         tName = ''

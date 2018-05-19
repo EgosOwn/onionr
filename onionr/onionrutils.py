@@ -20,6 +20,7 @@
 # Misc functions that do not fit in the main api, but are useful
 import getpass, sys, requests, os, socket, hashlib, logger, sqlite3, config, binascii, time, base64, json, glob, shutil, math
 import nacl.signing, nacl.encoding
+from onionrblockapi import Block
 
 if sys.version_info < (3, 6):
     try:
@@ -347,47 +348,41 @@ class OnionrUtils:
         '''
             Find, decrypt, and return array of PMs (array of dictionary, {from, text})
         '''
-        #blocks = self._core.getBlockList()
-        blocks = self._core.getBlocksByType('pm')
+        blocks = Block.getBlocks(type = 'pm', core = self._core)
         message = ''
         sender = ''
         for i in blocks:
-            if len (i) == 0:
-                continue
             try:
-                with open('data/blocks/' + i + '.dat', 'r') as potentialMessage:
-                    potentialMessage = potentialMessage.read()
-                    blockMetadata = json.loads(potentialMessage[:potentialMessage.find('\n')])
-                    blockContent = potentialMessage[potentialMessage.find('\n') + 1:]
+                blockContent = i.getContent()
+
+                try:
+                    message = self._core._crypto.pubKeyDecrypt(blockContent, encodedData=True, anonymous=True)
+                except nacl.exceptions.CryptoError as e:
+                    pass
+                else:
+                    try:
+                        message = message.decode()
+                    except AttributeError:
+                        pass
 
                     try:
-                        message = self._core._crypto.pubKeyDecrypt(blockContent, encodedData=True, anonymous=True)
-                    except nacl.exceptions.CryptoError as e:
+                        message = json.loads(message)
+                    except json.decoder.JSONDecodeError:
                         pass
                     else:
-                        try:
-                            message = message.decode()
-                        except AttributeError:
-                            pass
+                        logger.debug('Decrypted %s:' % i.getHash())
+                        logger.info(message["msg"])
 
-                        try:
-                            message = json.loads(message)
-                        except json.decoder.JSONDecodeError:
-                            pass
-                        else:
-                            logger.info('Decrypted %s:' % i)
-                            logger.info(message["msg"])
+                        signer = message["id"]
+                        sig = message["sig"]
 
-                            signer = message["id"]
-                            sig = message["sig"]
-
-                            if self.validatePubKey(signer):
-                                if self._core._crypto.edVerify(message["msg"], signer, sig, encodedData=True):
-                                    logger.info("Good signature by %s" % signer)
-                                else:
-                                    logger.warn("Bad signature by %s" % signer)
+                        if self.validatePubKey(signer):
+                            if self._core._crypto.edVerify(message["msg"], signer, sig, encodedData=True):
+                                logger.info("Good signature by %s" % signer)
                             else:
-                                logger.warn('Bad sender id: %s' % signer)
+                                logger.warn("Bad signature by %s" % signer)
+                        else:
+                            logger.warn('Bad sender id: %s' % signer)
 
             except FileNotFoundError:
                 pass
@@ -475,7 +470,7 @@ class OnionrUtils:
 
         sys.stdout.write("\r┣{0}┫ {1}%".format(arrow + spaces, int(round(percent * 100))))
         sys.stdout.flush()
-    
+
     def getEpoch(self):
         '''returns epoch'''
         return math.floor(time.time())

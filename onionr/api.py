@@ -22,9 +22,10 @@ from flask import request, Response, abort
 from multiprocessing import Process
 from gevent.wsgi import WSGIServer
 import sys, random, threading, hmac, hashlib, base64, time, math, os, logger, config
-
 from core import Core
+from onionrblockapi import Block
 import onionrutils, onionrcrypto
+
 class API:
     '''
         Main HTTP API (Flask)
@@ -50,7 +51,7 @@ class API:
         '''
 
         config.reload()
-        
+
         if config.get('devmode', True):
             self._developmentMode = True
             logger.set_level(logger.LEVEL_DEBUG)

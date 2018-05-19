@@ -19,6 +19,7 @@
 '''
 
 import subprocess, os, random, sys, logger, time, signal
+from onionrblockapi import Block
 
 class NetController:
     '''
