@@ -163,7 +163,7 @@ class Block:
                 else:
                     self.hash = self.getCore().insertBlock(self.getContent(), header = self.getType(), sign = sign)
                     self.update()
-                return True
+                return self.getHash()
             else:
                 logger.warn('Not writing block; it is invalid.')
         except Exception as e:

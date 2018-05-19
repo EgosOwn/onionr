@@ -117,6 +117,25 @@ class OnionrTests(unittest.TestCase):
 
         self.assertTrue(True)
 
+    def testBlockAPI(self):
+        logger.debug('-'*26 + '\n')
+        logger.info('Running BlockAPI test...')
+
+        content = 'Onionr test block'
+
+        from onionrblockapi import Block
+        hash = Block('test', content).save()
+        block = Block(hash) # test init
+
+        if len(Block.getBlocks(type = 'test')) == 0:
+            logger.warn('Failed to find test block.')
+            self.assertTrue(False)
+        if not block.getContent() == content:
+            logger.warn('Test block content is invalid! (%s != %s)' % (block.getContent(), content))
+            self.assertTrue(False)
+
+
+
     def testBitcoinNode(self):
         # temporarily disabled- this takes a lot of time the CI doesn't have
         self.assertTrue(True)
