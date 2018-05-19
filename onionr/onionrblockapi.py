@@ -98,7 +98,8 @@ class Block:
 
                     filelocation = 'data/blocks/%s.dat' % self.getHash()
 
-                blockdata = open(filelocation, 'rb').read().decode('utf-8')
+                with open(filelocation, 'rb') as f:
+                    blockdata = f.read().decode('utf-8')
 
                 self.blockFile = filelocation
             else:
