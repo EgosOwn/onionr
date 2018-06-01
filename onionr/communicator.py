@@ -123,16 +123,16 @@ class OnionrCommunicate:
                     announceAttempts = 3
                     announceAttemptCount = 0
                     announceVal = False
-                    logger.info('Announcing node to ' + command[1], timestamp=True)
+                    logger.info('Announcing node to %s...' % command[1], timestamp=True)
                     while not announceVal:
                         announceAttemptCount += 1
                         announceVal = self.performGet('announce', command[1], data=self._core.hsAdder.replace('\n', ''), skipHighFailureAddress=True)
-                        logger.info(announceVal)
+                        # logger.info(announceVal)
                         if announceAttemptCount >= announceAttempts:
-                            logger.warn('Unable to announce to ' + command[1])
+                            logger.warn('Unable to announce to %s' % command[1])
                             break
                 elif command[0] == 'runCheck':
-                    logger.info('Status check; looks good.')
+                    logger.debug('Status check; looks good.')
                     open('data/.runcheck', 'w+').close()
                 elif command[0] == 'kex':
                     self.pexCount = pexTimer - 1
@@ -188,13 +188,17 @@ class OnionrCommunicate:
     id_peer_cache = {}
 
     def registerTimer(self, timerName, rate, timerFunc=None):
-        '''Register a communicator timer'''
+        '''
+            Register a communicator timer
+        '''
         self.communicatorTimers[timerName] = rate
         self.communicatorTimerCounts[timerName] = 0
         self.communicatorTimerFuncs[timerName] = timerFunc
 
     def timerTick(self):
-        '''Increments timers "ticks" and calls funcs if applicable'''
+        '''
+            Increments timers "ticks" and calls funcs if applicable
+        '''
         tName = ''
         for i in self.communicatorTimers.items():
             tName = i[0]
@@ -617,7 +621,9 @@ class OnionrCommunicate:
         return
 
     def removeBlockFromProcessingList(self, block):
-        '''Remove a block from the processing list'''
+        '''
+            Remove a block from the processing list
+        '''
         try:
             self.blocksProcessing.remove(block)
         except ValueError:
@@ -724,7 +730,8 @@ class OnionrCommunicate:
                     r = requests.get(url, headers=headers, proxies=proxies, allow_redirects=False, timeout=(15, 30))
                 retData = r.text
         except requests.exceptions.RequestException as e:
-            logger.debug("%s failed with peer %s" % (action, peer))
+            logger.debug('%s failed with peer %s' % (action, peer))
+            logger.debug('Error: %s' % str(e))
             retData = False
 
         if not retData:

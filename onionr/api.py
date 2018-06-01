@@ -70,7 +70,7 @@ class API:
         self.clientToken = config.get('client')['client_hmac']
         self.timeBypassToken = base64.b16encode(os.urandom(32)).decode()
 
-        self.i2pEnabled = config.get('i2p')['host']
+        self.i2pEnabled = config.get('i2p', {'host' : False})['host']
 
         self.mimeType = 'text/plain'
 
@@ -85,9 +85,9 @@ class API:
             self.host = '127.' + str(hostNums[0]) + '.' + str(hostNums[1]) + '.' + str(hostNums[2])
         else:
             self.host = '127.0.0.1'
-        hostFile = open('data/host.txt', 'w')
-        hostFile.write(self.host)
-        hostFile.close()
+        
+        with open('data/host.txt', 'w') as file:
+            file.write(self.host)
 
         @app.before_request
         def beforeReq():
@@ -259,7 +259,7 @@ class API:
 
             return resp
         if not os.environ.get("WERKZEUG_RUN_MAIN") == "true":
-            logger.info('Starting client on ' + self.host + ':' + str(bindPort) + '...', timestamp=True)
+            logger.info('Starting client on ' + self.host + ':' + str(bindPort) + '...', timestamp=False)
 
         try:
             self.http_server = WSGIServer((self.host, bindPort), app)

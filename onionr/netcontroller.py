@@ -103,7 +103,7 @@ DataDirectory data/tordata/
             logger.fatal("Got keyboard interrupt")
             return False
 
-        logger.info('Finished starting Tor', timestamp=True)
+        logger.debug('Finished starting Tor.', timestamp=True)
         self.readyState = True
 
         myID = open('data/hs/hostname', 'r')
