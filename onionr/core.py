@@ -655,7 +655,7 @@ class Core:
         conn.close()
         return True
 
-    def insertBlock(self, data, header='txt', sign=False):
+    def insertBlock(self, data, header='txt', sign=False, metadata = {}):
         '''
             Inserts a block into the network
         '''
@@ -688,7 +688,11 @@ class Core:
             data = data.encode()
 
         retData = ''
-        metadata = {'type': header, 'powHash': powHash, 'powToken': powToken}
+        
+        metadata['type'] = header
+        metadata['powHash'] = powHash
+        metadata['powToken'] = powToken
+        
         sig = {}
 
         metadata = json.dumps(metadata)

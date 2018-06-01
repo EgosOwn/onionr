@@ -81,8 +81,8 @@ class API:
             logger.debug('Your web password (KEEP SECRET): ' + logger.colors.underline + self.clientToken)
 
         if not debug and not self._developmentMode:
-            hostNums = [random.randint(1, 255), random.randint(1, 255), random.randint(1, 255)]
-            self.host = '127.' + str(hostNums[0]) + '.' + str(hostNums[1]) + '.' + str(hostNums[2])
+            hostOctets = [127, random.randint(0x02, 0xFF), random.randint(0x02, 0xFF), random.randint(0x02, 0xFF)]
+            self.host = '.'.join(hostOctets)
         else:
             self.host = '127.0.0.1'
         

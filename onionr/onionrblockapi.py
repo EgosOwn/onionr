@@ -57,6 +57,7 @@ class Block:
         self.signature = None
         self.signedData = None
         self.blockFile = None
+        self.parent = None
         self.bheader = {}
         self.bmetadata = {}
 
@@ -110,6 +111,7 @@ class Block:
             self.bheader = json.loads(self.getRaw()[:self.getRaw().index('\n')])
             self.bcontent = self.getRaw()[self.getRaw().index('\n') + 1:]
             self.bmetadata = json.loads(self.getHeader('meta'))
+            self.parent = (None if not 'parent' in self.getMetadata() else Block(self.getMetadata('parent')))
             self.btype = self.getMetadata('type')
             self.powHash = self.getMetadata('powHash')
             self.powToken = self.getMetadata('powToken')
@@ -162,7 +164,7 @@ class Block:
                         blockFile.write(self.getRaw().encode())
                     self.update()
                 else:
-                    self.hash = self.getCore().insertBlock(self.getContent(), header = self.getType(), sign = sign)
+                    self.hash = self.getCore().insertBlock(self.getContent(), header = self.getType(), sign = sign, metadata = self.getMetadata())
                     self.update()
                 return self.getHash()
             else:
@@ -226,8 +228,7 @@ class Block:
 
         if not key is None:
             return self.getHeader()[key]
-        else:
-            return self.bheader
+        return self.bheader
 
     def getMetadata(self, key = None):
         '''
@@ -242,8 +243,7 @@ class Block:
 
         if not key is None:
             return self.getMetadata()[key]
-        else:
-            return self.bmetadata
+        return self.bmetadata
 
     def getContent(self):
         '''
@@ -254,6 +254,16 @@ class Block:
         '''
 
         return str(self.bcontent)
+        
+    def getParent(self):
+        '''
+            Returns the Block's parent Block, or None
+            
+            Outputs:
+            - (Block): the Block's parent
+        '''
+        
+        return self.parent
 
     def getDate(self):
         '''
@@ -345,10 +355,30 @@ class Block:
             - btype (str): the type of block to be set to
 
             Outputs:
-            - (Block): the block instance
+            - (Block): the Block instance
         '''
 
         self.btype = btype
+        return self
+        
+    def setMetadata(self, key, val):
+        '''
+            Sets a custom metadata value
+            
+            Metadata should not store block-specific data structures.
+            
+            Inputs:
+            - key (str): the key
+            - val: the value (type is irrelevant)
+            
+            Outputs:
+            - (Block): the Block instance
+        '''
+        
+        if key == 'parent' and (not val is None) and (not val == self.getParent().getHash()):
+            self.setParent(val)
+        else:
+            self.bmetadata[key] = val
         return self
 
     def setContent(self, bcontent):
@@ -359,13 +389,31 @@ class Block:
             - bcontent (str): the contents to be set to
 
             Outputs:
-            - (Block): the block instance
+            - (Block): the Block instance
         '''
 
         self.bcontent = str(bcontent)
         return self
+        
+    def setParent(self, parent):
+        '''
+            Sets the Block's parent
+            
+            Inputs:
+            - parent (Block/str): the Block's parent, to be stored in metadata
+            
+            Outputs:
+            - (Block): the Block instance
+        '''
+        
+        if type(parent) == str:
+            parent = Block(parent, core = self.getCore())
+        
+        self.parent = parent
+        self.setMetadata('parent', (None if parent is None else self.getParent().getHash()))
+        return self
 
-    # static
+    # static functions
 
     def getBlocks(type = None, signer = None, signed = None, reverse = False, core = None):
         '''
@@ -420,6 +468,66 @@ class Block:
             logger.debug(('Failed to get blocks: %s' % str(e)) + logger.parse_error())
 
         return list()
+
+    def merge(child, file = None, maximumFollows = 32, core = None):
+        '''
+            Follows a child Block to its root parent Block, merging content
+            
+            Inputs:
+            - child (str/Block): the child Block to be followed
+            - file (str/file): the file to write the content to, instead of returning it
+            - maximumFollows (int): the maximum number of Blocks to follow
+            
+        '''
+        
+        # validate data and instantiate Core
+        core = (core if not core is None else onionrcore.Core())
+        maximumFollows = max(0, maximumFollows)
+        
+        # type conversions
+        if type(child) == str:
+            child = Block(child)
+        if (not file is None) and (type(file) == str):
+            file = open(file, 'ab')
+        
+        # only store hashes to avoid intensive memory usage
+        blocks = [child.getHash()]
+        
+        # generate a list of parent Blocks
+        while True:
+            # end if the maximum number of follows has been exceeded
+            if len(blocks) - 1 >= maximumFollows:
+                break
+            
+            block = Block(blocks[-1], core = core).getParent()
+            
+            # end if there is no parent Block
+            if block is None:
+                break
+            
+            # end if the Block is pointing to a previously parsed Block
+            if block.getHash() in blocks:
+                break
+                
+            # end if the block is not valid
+            if not block.isValid():
+                break
+            
+            blocks.append(block.getHash())
+        
+        buffer = ''
+        
+        # combine block contents
+        for hash in blocks:
+            block = Block(hash, core = core)
+            contents = block.getContent()
+            
+            if file is None:
+                buffer += contents
+            else:
+                file.write(contents)
+        
+        return (None if not file is None else buffer)
 
     def exists(hash):
         '''
