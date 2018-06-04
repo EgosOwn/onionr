@@ -22,9 +22,10 @@ from flask import request, Response, abort
 from multiprocessing import Process
 from gevent.wsgi import WSGIServer
 import sys, random, threading, hmac, hashlib, base64, time, math, os, logger, config
-
 from core import Core
+from onionrblockapi import Block
 import onionrutils, onionrcrypto
+
 class API:
     '''
         Main HTTP API (Flask)
@@ -50,7 +51,7 @@ class API:
         '''
 
         config.reload()
-        
+
         if config.get('devmode', True):
             self._developmentMode = True
             logger.set_level(logger.LEVEL_DEBUG)
@@ -69,7 +70,7 @@ class API:
         self.clientToken = config.get('client')['client_hmac']
         self.timeBypassToken = base64.b16encode(os.urandom(32)).decode()
 
-        self.i2pEnabled = config.get('i2p')['host']
+        self.i2pEnabled = config.get('i2p', {'host' : False})['host']
 
         self.mimeType = 'text/plain'
 
@@ -80,13 +81,13 @@ class API:
             logger.debug('Your web password (KEEP SECRET): ' + logger.colors.underline + self.clientToken)
 
         if not debug and not self._developmentMode:
-            hostNums = [random.randint(1, 255), random.randint(1, 255), random.randint(1, 255)]
-            self.host = '127.' + str(hostNums[0]) + '.' + str(hostNums[1]) + '.' + str(hostNums[2])
+            hostOctets = [127, random.randint(0x02, 0xFF), random.randint(0x02, 0xFF), random.randint(0x02, 0xFF)]
+            self.host = '.'.join(hostOctets)
         else:
             self.host = '127.0.0.1'
-        hostFile = open('data/host.txt', 'w')
-        hostFile.write(self.host)
-        hostFile.close()
+        
+        with open('data/host.txt', 'w') as file:
+            file.write(self.host)
 
         @app.before_request
         def beforeReq():
@@ -258,7 +259,7 @@ class API:
 
             return resp
         if not os.environ.get("WERKZEUG_RUN_MAIN") == "true":
-            logger.info('Starting client on ' + self.host + ':' + str(bindPort) + '...', timestamp=True)
+            logger.info('Starting client on ' + self.host + ':' + str(bindPort) + '...', timestamp=False)
 
         try:
             self.http_server = WSGIServer((self.host, bindPort), app)

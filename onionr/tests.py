@@ -117,6 +117,51 @@ class OnionrTests(unittest.TestCase):
 
         self.assertTrue(True)
 
+    def testBlockAPI(self):
+        logger.debug('-'*26 + '\n')
+        logger.info('Running BlockAPI test #1...')
+
+        content = 'Onionr test block'
+
+        from onionrblockapi import Block
+        hash = Block('test', content).save()
+        block = Block(hash) # test init
+
+        if len(Block.getBlocks(type = 'test')) == 0:
+            logger.warn('Failed to find test block.')
+            self.assertTrue(False)
+        if not block.getContent() == content:
+            logger.warn('Test block content is invalid! (%s != %s)' % (block.getContent(), content))
+            self.assertTrue(False)
+        
+        logger.debug('-'*26 + '\n')
+        logger.info('Running BlockAPI test #2...')
+        
+        original_content = 'onionr'
+        contents = [original_content[i:i+2] for i in range(0, len(original_content), 2)]
+        contents.reverse()
+        
+        blocks = list()
+        parent = None
+        
+        for content in contents:
+            block = Block('test', content)
+            block.setParent(parent)
+            parent = block
+            print('block "%s": %s' % (content, block.save()))
+            blocks.append(block)
+
+        child = blocks[-1]
+        
+        merged = Block.merge(child)
+        
+        print('merged blocks: %s' % merged)
+        
+        if merged != original_content:
+            self.assertTrue(False)
+        self.assertTrue(True)
+
+
     def testBitcoinNode(self):
         # temporarily disabled- this takes a lot of time the CI doesn't have
         self.assertTrue(True)
@@ -234,6 +279,6 @@ class OnionrTests(unittest.TestCase):
             else:
                 self.assertTrue(False)
         else:
-            self.assertTrue(False)
+            self.assertTrue(False) # <- annoying :(
 
 unittest.main()

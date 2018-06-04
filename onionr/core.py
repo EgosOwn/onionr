@@ -109,7 +109,7 @@ class Core:
         '''
             Add an address to the address database (only tor currently)
         '''
-        if address == config.get('i2p')['ownAddr']:
+        if (not (config.is_set('i2p') and 'ownAddr' in config.get('i2p'))) or address == config.get('i2p')['ownAddr']:
             return False
         if self._utils.validateID(address):
             conn = sqlite3.connect(self.addressDB)
@@ -654,7 +654,7 @@ class Core:
         conn.close()
         return True
 
-    def insertBlock(self, data, header='txt', sign=False):
+    def insertBlock(self, data, header='txt', sign=False, metadata = {}):
         '''
             Inserts a block into the network
         '''
@@ -687,7 +687,11 @@ class Core:
             data = data.encode()
 
         retData = ''
-        metadata = {'type': header, 'powHash': powHash, 'powToken': powToken}
+        
+        metadata['type'] = header
+        metadata['powHash'] = powHash
+        metadata['powToken'] = powToken
+        
         sig = {}
 
         metadata = json.dumps(metadata)

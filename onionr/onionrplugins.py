@@ -77,7 +77,7 @@ def enable(name, onionr = None, start_event = True):
         else:
             return False
     else:
-        logger.error('Failed to enable plugin \"' + name + '\", disabling plugin.')
+        logger.error('Failed to enable plugin \"%s\", disabling plugin.' % name)
         disable(name)
 
         return False
@@ -121,9 +121,9 @@ def start(name, onionr = None):
 
             return plugin
         except:
-            logger.error('Failed to start module \"' + name + '\".')
+            logger.error('Failed to start module \"%s\".' % name)
     else:
-        logger.error('Failed to start nonexistant module \"' + name + '\".')
+        logger.error('Failed to start nonexistant module \"%s\".' % name)
 
     return None
 
@@ -145,9 +145,9 @@ def stop(name, onionr = None):
 
             return plugin
         except:
-            logger.error('Failed to stop module \"' + name + '\".')
+            logger.error('Failed to stop module \"%s\".' % name)
     else:
-        logger.error('Failed to stop nonexistant module \"' + name + '\".')
+        logger.error('Failed to stop nonexistant module \"%s\".' % name)
 
     return None
 

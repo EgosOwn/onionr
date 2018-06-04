@@ -5,6 +5,7 @@
 
 # Imports some useful libraries
 import logger, config
+from onionrblockapi import Block
 
 plugin_name = '$name'
 

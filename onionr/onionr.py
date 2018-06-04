@@ -31,6 +31,7 @@ import api, core, config, logger, onionrplugins as plugins, onionrevents as even
 import onionrutils
 from onionrutils import OnionrUtils
 from netcontroller import NetController
+from onionrblockapi import Block
 
 try:
     from urllib3.contrib.socks import SOCKSProxyManager
@@ -38,7 +39,8 @@ except ImportError:
     raise Exception("You need the PySocks module (for use with socks5 proxy to use Tor)")
 
 ONIONR_TAGLINE = 'Anonymous P2P Platform - GPLv3 - https://Onionr.VoidNet.Tech'
-ONIONR_VERSION = '0.0.0' # for debugging and stuff
+ONIONR_VERSION = '0.1.0' # for debugging and stuff
+ONIONR_VERSION_TUPLE = tuple(ONIONR_VERSION.split('.')) # (MAJOR, MINOR, VERSION)
 API_VERSION = '2' # increments of 1; only change when something fundemental about how the API works changes. This way other nodes knows how to communicate without learning too much information about you.
 
 class Onionr:
@@ -191,8 +193,11 @@ class Onionr:
             'add-addr': self.addAddress,
             'addaddr': self.addAddress,
             'addaddress': self.addAddress,
+            
+            'add-file': self.addFile,
             'addfile': self.addFile,
 
+            'import-blocks': self.onionrUtils.importNewBlocks,
             'importblocks': self.onionrUtils.importNewBlocks,
 
             'introduce': self.onionrCore.introduceNode,
@@ -215,8 +220,8 @@ class Onionr:
             'add-msg': 'Broadcasts a message to the Onionr network',
             'pm': 'Adds a private message to block',
             'get-pms': 'Shows private messages sent to you',
-            'addfile': 'Create an Onionr block from a file',
-            'importblocks': 'import blocks from the disk (Onionr is transport-agnostic!)',
+            'add-file': 'Create an Onionr block from a file',
+            'import-blocks': 'import blocks from the disk (Onionr is transport-agnostic!)',
             'introduce': 'Introduce your node to the public Onionr network',
         }
 
@@ -390,12 +395,11 @@ class Onionr:
             except KeyboardInterrupt:
                 return
 
-        #addedHash = self.onionrCore.setData(messageToAdd)
-        addedHash = self.onionrCore.insertBlock(messageToAdd, header='txt')
-        #self.onionrCore.addToBlockDB(addedHash, selfInsert=True)
-        #self.onionrCore.setBlockType(addedHash, 'txt')
-        if addedHash != '':
+        addedHash = Block('txt', messageToAdd).save()
+        if addedHash != None:
             logger.info("Message inserted as as block %s" % addedHash)
+        else:
+            logger.error('Failed to insert block.', timestamp = False)
         return
 
     def getPMs(self):
@@ -519,12 +523,12 @@ class Onionr:
 
         if not os.environ.get("WERKZEUG_RUN_MAIN") == "true":
             if self._developmentMode:
-                logger.warn('DEVELOPMENT MODE ENABLED (THIS IS LESS SECURE!)')
+                logger.warn('DEVELOPMENT MODE ENABLED (THIS IS LESS SECURE!)', timestamp = False)
             net = NetController(config.get('client')['port'])
             logger.info('Tor is starting...')
             if not net.startTor():
                 sys.exit(1)
-            logger.info('Started Tor .onion service: ' + logger.colors.underline + net.myID)
+            logger.info('Started .onion service: ' + logger.colors.underline + net.myID)
             logger.info('Our Public key: ' + self.onionrCore._crypto.pubKey)
             time.sleep(1)
             subprocess.Popen(["./communicator.py", "run", str(net.socksPort)])
@@ -561,6 +565,9 @@ class Onionr:
 
         try:
             # define stats messages here
+            totalBlocks = len(Block.getBlocks())
+            signedBlocks = len(Block.getBlocks(signed = True))
+            
             messages = {
                 # info about local client
                 'Onionr Daemon Status' : ((logger.colors.fg.green + 'Online') if self.onionrUtils.isCommunicatorRunning(timeout = 2) else logger.colors.fg.red + 'Offline'),
@@ -576,7 +583,9 @@ class Onionr:
                 # count stats
                 'div2' : True,
                 'Known Peers Count' : str(len(self.onionrCore.listPeers()) - 1),
-                'Enabled Plugins Count' : str(len(config.get('plugins')['enabled'])) + ' / ' + str(len(os.listdir('data/plugins/')))
+                'Enabled Plugins Count' : str(len(config.get('plugins')['enabled'])) + ' / ' + str(len(os.listdir('data/plugins/'))),
+                'Known Blocks Count' : str(totalBlocks),
+                'Percent Blocks Signed' : str(round(100 * signedBlocks / totalBlocks, 2)) + '%'
             }
 
             # color configuration
@@ -638,18 +647,30 @@ class Onionr:
             return None
 
     def addFile(self):
-        '''command to add a file to the onionr network'''
-        if len(sys.argv) >= 2:
-            newFile = sys.argv[2]
-            logger.info('Attempting to add file...')
-            try:
-                with open(newFile, 'rb') as new:
-                    new = new.read()
-            except FileNotFoundError:
+        '''
+            Adds a file to the onionr network
+        '''
+
+        if len(sys.argv) >= 3:
+            filename = sys.argv[2]
+            contents = None
+            
+            if not os.path.exists(filename):
                 logger.warn('That file does not exist. Improper path?')
+            
+            try:
+                with open(filename, 'rb') as file:
+                    contents = file.read().decode()
+            except:
+                pass
+            
+            if not contents is None:
+                blockhash = Block('bin', contents).save()
+                logger.info('File %s saved in block %s.' % (filename, blockhash))
             else:
-                logger.debug(new)
-                logger.info(self.onionrCore.insertBlock(new, header='bin'))
+                logger.error('Failed to save file in block.', timestamp = False)
+        else:
+            logger.error('%s add-file <filename>' % sys.argv[0], timestamp = False)
 
 
 Onionr()
