@@ -529,6 +529,59 @@ class Block:
         
         return (None if not file is None else buffer)
 
+    def create(data = None, chunksize = 4999000, file = None, type = 'chunk', sign = True):
+        '''
+            Creates a chain of blocks to store larger amounts of data
+
+            The chunksize is set to 4999000 because it provides the least amount of PoW for the most amount of data.
+            
+            TODO: Add docs
+        '''
+        
+        blocks = list()
+        
+        # initial datatype checks
+        if data is None and file is None:
+            return blocks
+        elif not (file is None or (isinstance(file, str) and os.path.exists(file))):
+            return blocks
+        elif isinstance(file, str):
+            file = open(file, 'rb')
+        if isinstance(data, str):
+            data = str(data)
+        
+        if not file is None:
+            while True:
+                # read chunksize bytes from the file
+                content = file.read(chunksize)
+                
+                # if it is the end of the file, exit
+                if not content:
+                    break
+                
+                # create block
+                block = Block()
+                block.setType(type)
+                block.setContent(content)
+                block.setParent((blocks[-1] if len(blocks) != 0 else None))
+                hash = block.save(sign = sign)
+                
+                # remember the hash in cache
+                blocks.append(hash)
+        elif not data is None:
+            for content in [data[n:n + chunksize] for n in range(0, len(data), chunksize)]:
+                # create block
+                block = Block()
+                block.setType(type)
+                block.setContent(content)
+                block.setParent((blocks[-1] if len(blocks) != 0 else None))
+                hash = block.save(sign = sign)
+                
+                # remember the hash in cache
+                blocks.append(hash)
+                
+        return blocks
+    
     def exists(hash):
         '''
             Checks if a block is saved to file or not
