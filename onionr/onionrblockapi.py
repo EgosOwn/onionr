@@ -19,7 +19,7 @@
 '''
 
 import core as onionrcore, logger
-import json, os, datetime
+import json, os, datetime, base64
 
 class Block:
     def __init__(self, hash = None, core = None):
@@ -254,15 +254,15 @@ class Block:
         '''
 
         return str(self.bcontent)
-        
+
     def getParent(self):
         '''
             Returns the Block's parent Block, or None
-            
+
             Outputs:
             - (Block): the Block's parent
         '''
-        
+
         return self.parent
 
     def getDate(self):
@@ -360,21 +360,21 @@ class Block:
 
         self.btype = btype
         return self
-        
+
     def setMetadata(self, key, val):
         '''
             Sets a custom metadata value
-            
+
             Metadata should not store block-specific data structures.
-            
+
             Inputs:
             - key (str): the key
             - val: the value (type is irrelevant)
-            
+
             Outputs:
             - (Block): the Block instance
         '''
-        
+
         if key == 'parent' and (not val is None) and (not val == self.getParent().getHash()):
             self.setParent(val)
         else:
@@ -394,21 +394,21 @@ class Block:
 
         self.bcontent = str(bcontent)
         return self
-        
+
     def setParent(self, parent):
         '''
             Sets the Block's parent
-            
+
             Inputs:
             - parent (Block/str): the Block's parent, to be stored in metadata
-            
+
             Outputs:
             - (Block): the Block instance
         '''
-        
+
         if type(parent) == str:
             parent = Block(parent, core = self.getCore())
-        
+
         self.parent = parent
         self.setMetadata('parent', (None if parent is None else self.getParent().getHash()))
         return self
@@ -469,77 +469,95 @@ class Block:
 
         return list()
 
-    def merge(child, file = None, maximumFollows = 32, core = None):
+    def mergeChain(child, file = None, maximumFollows = 32, core = None):
         '''
             Follows a child Block to its root parent Block, merging content
-            
+
             Inputs:
             - child (str/Block): the child Block to be followed
             - file (str/file): the file to write the content to, instead of returning it
             - maximumFollows (int): the maximum number of Blocks to follow
-            
+
         '''
-        
+
         # validate data and instantiate Core
         core = (core if not core is None else onionrcore.Core())
         maximumFollows = max(0, maximumFollows)
-        
+
         # type conversions
+        if type(child) == list:
+            child = child[-1]
         if type(child) == str:
             child = Block(child)
         if (not file is None) and (type(file) == str):
             file = open(file, 'ab')
-        
+
         # only store hashes to avoid intensive memory usage
         blocks = [child.getHash()]
-        
+
         # generate a list of parent Blocks
         while True:
             # end if the maximum number of follows has been exceeded
             if len(blocks) - 1 >= maximumFollows:
                 break
-            
+
             block = Block(blocks[-1], core = core).getParent()
-            
+
             # end if there is no parent Block
             if block is None:
                 break
-            
+
             # end if the Block is pointing to a previously parsed Block
             if block.getHash() in blocks:
                 break
-                
+
             # end if the block is not valid
             if not block.isValid():
                 break
-            
+
             blocks.append(block.getHash())
-        
+
         buffer = ''
-        
+
         # combine block contents
         for hash in blocks:
             block = Block(hash, core = core)
             contents = block.getContent()
-            
+            contents = base64.b64decode(contents.encode())
+
             if file is None:
-                buffer += contents
+                buffer += contents.decode()
             else:
                 file.write(contents)
-        
+
         return (None if not file is None else buffer)
 
-    def create(data = None, chunksize = 4999000, file = None, type = 'chunk', sign = True):
+    def createChain(data = None, chunksize = 99800, file = None, type = 'chunk', sign = True, encrypt = False, verbose = False):
         '''
             Creates a chain of blocks to store larger amounts of data
 
-            The chunksize is set to 4999000 because it provides the least amount of PoW for the most amount of data.
-            
-            TODO: Add docs
+            The chunksize is set to 99800 because it provides the least amount of PoW for the most amount of data.
+
+            Inputs:
+            - data (*): if `file` is None, the data to be stored in blocks
+            - file (file/str): the filename or file object to read from (or None to read `data` instead)
+            - chunksize (int): the number of bytes per block chunk
+            - type (str): the type header for each of the blocks
+            - sign (bool): whether or not to sign each block
+            - encrypt (str): the public key to encrypt to, or False to disable encryption
+            - verbose (bool): whether or not to return a tuple containing more info
+
+            Outputs:
+            - if `verbose`:
+              - (tuple):
+                - (str): the child block hash
+                - (list): all block hashes associated with storing the file
+            - if not `verbose`:
+              - (str): the child block hash
         '''
-        
+
         blocks = list()
-        
+
         # initial datatype checks
         if data is None and file is None:
             return blocks
@@ -547,41 +565,60 @@ class Block:
             return blocks
         elif isinstance(file, str):
             file = open(file, 'rb')
-        if isinstance(data, str):
+        if not isinstance(data, str):
             data = str(data)
-        
+
         if not file is None:
-            while True:
-                # read chunksize bytes from the file
-                content = file.read(chunksize)
-                
+            filesize = os.stat(file.name).st_size
+            offset = filesize % chunksize
+            maxtimes = int(filesize / chunksize)
+
+            for times in range(0, maxtimes + 1):
+                # read chunksize bytes from the file (end -> beginning)
+                if times < maxtimes:
+                    file.seek(- ((times + 1) * chunksize), 2)
+                    content = file.read(chunksize)
+                else:
+                    file.seek(0, 0)
+                    content = file.read(offset)
+
+                # encode it- python is really bad at handling certain bytes that
+                # are often present in binaries.
+                content = base64.b64encode(content).decode()
+
                 # if it is the end of the file, exit
                 if not content:
                     break
-                
+
                 # create block
                 block = Block()
                 block.setType(type)
                 block.setContent(content)
                 block.setParent((blocks[-1] if len(blocks) != 0 else None))
                 hash = block.save(sign = sign)
-                
+
                 # remember the hash in cache
                 blocks.append(hash)
         elif not data is None:
-            for content in [data[n:n + chunksize] for n in range(0, len(data), chunksize)]:
+            for content in reversed([data[n:n + chunksize] for n in range(0, len(data), chunksize)]):
+                # encode chunk with base64
+                content = base64.b64encode(content.encode()).decode()
+
                 # create block
                 block = Block()
                 block.setType(type)
                 block.setContent(content)
                 block.setParent((blocks[-1] if len(blocks) != 0 else None))
                 hash = block.save(sign = sign)
-                
+
                 # remember the hash in cache
                 blocks.append(hash)
-                
-        return blocks
-    
+
+        # return different things depending on verbosity
+        if verbose:
+            return (blocks[-1], blocks)
+        return blocks[-1]
+
     def exists(hash):
         '''
             Checks if a block is saved to file or not

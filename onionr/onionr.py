@@ -193,7 +193,7 @@ class Onionr:
             'add-addr': self.addAddress,
             'addaddr': self.addAddress,
             'addaddress': self.addAddress,
-            
+
             'add-file': self.addFile,
             'addfile': self.addFile,
 
@@ -467,7 +467,12 @@ class Onionr:
 
                     os.makedirs(plugins.get_plugins_folder(plugin_name))
                     with open(plugins.get_plugins_folder(plugin_name) + '/main.py', 'a') as main:
-                        main.write(open('static-data/default_plugin.py').read().replace('$user', os.getlogin()).replace('$date', datetime.datetime.now().strftime('%Y-%m-%d')).replace('$name', plugin_name))
+                        contents = ''
+                        with open('static-data/default_plugin.py', 'rb') as file:
+                            contents = file.read()
+
+                        # TODO: Fix $user. os.getlogin() is   B U G G Y
+                        main.write(contents.replace('$user', 'some random developer').replace('$date', datetime.datetime.now().strftime('%Y-%m-%d')).replace('$name', plugin_name))
 
                     with open(plugins.get_plugins_folder(plugin_name) + '/info.json', 'a') as main:
                         main.write(json.dumps({'author' : 'anonymous', 'description' : 'the default description of the plugin', 'version' : '1.0'}))
@@ -567,7 +572,7 @@ class Onionr:
             # define stats messages here
             totalBlocks = len(Block.getBlocks())
             signedBlocks = len(Block.getBlocks(signed = True))
-            
+
             messages = {
                 # info about local client
                 'Onionr Daemon Status' : ((logger.colors.fg.green + 'Online') if self.onionrUtils.isCommunicatorRunning(timeout = 2) else logger.colors.fg.red + 'Offline'),
@@ -585,7 +590,7 @@ class Onionr:
                 'Known Peers Count' : str(len(self.onionrCore.listPeers()) - 1),
                 'Enabled Plugins Count' : str(len(config.get('plugins')['enabled'])) + ' / ' + str(len(os.listdir('data/plugins/'))),
                 'Known Blocks Count' : str(totalBlocks),
-                'Percent Blocks Signed' : str(round(100 * signedBlocks / totalBlocks, 2)) + '%'
+                'Percent Blocks Signed' : str(round(100 * signedBlocks / totalBlocks, 2)) + '%' # TODO: div by zero error
             }
 
             # color configuration
@@ -654,16 +659,16 @@ class Onionr:
         if len(sys.argv) >= 3:
             filename = sys.argv[2]
             contents = None
-            
+
             if not os.path.exists(filename):
                 logger.warn('That file does not exist. Improper path?')
-            
+
             try:
                 with open(filename, 'rb') as file:
                     contents = file.read().decode()
             except:
                 pass
-            
+
             if not contents is None:
                 blockhash = Block('bin', contents).save()
                 logger.info('File %s saved in block %s.' % (filename, blockhash))
