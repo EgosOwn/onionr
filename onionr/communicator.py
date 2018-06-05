@@ -762,7 +762,7 @@ class OnionrCommunicate:
         if os.path.exists('static-data/header.txt'):
             with open('static-data/header.txt', 'rb') as file:
                 # only to stdout, not file or log or anything
-                print(file.read().decode().replace('#', logger.colors.fg.pink).replace('$', logger.colors.reset + logger.colors.bold).replace('\n', logger.colors.reset + '\n'))
+                print(file.read().decode().replace('P', logger.colors.fg.pink).replace('W', logger.colors.reset + logger.colors.bold).replace('G', logger.colors.fg.green).replace('\n', logger.colors.reset + '\n'))
                 logger.info(logger.colors.fg.lightgreen + '-> ' + str(message) + logger.colors.reset + logger.colors.fg.lightgreen + ' <-\n')
 
 shouldRun = False
