@@ -110,7 +110,8 @@ class Core:
         '''
             Add an address to the address database (only tor currently)
         '''
-        if (not (config.is_set('i2p') and 'ownAddr' in config.get('i2p'))) or address == config.get('i2p')['ownAddr']:
+        if address == config.get('i2p', {'ownAddr' : None})['ownAddr']:
+
             return False
         if self._utils.validateID(address):
             conn = sqlite3.connect(self.addressDB)
@@ -138,6 +139,7 @@ class Core:
 
             return True
         else:
+            logger.debug('Invalid ID')
             return False
 
     def removeAddress(self, address):
@@ -688,11 +690,11 @@ class Core:
             data = data.encode()
 
         retData = ''
-        
+
         metadata['type'] = header
         metadata['powHash'] = powHash
         metadata['powToken'] = powToken
-        
+
         sig = {}
 
         metadata = json.dumps(metadata)

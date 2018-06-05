@@ -611,13 +611,13 @@ class Onionr:
 
             # generate stats table
             logger.info(colors['title'] + 'Onionr v%s Statistics' % ONIONR_VERSION + colors['reset'])
-            logger.info(colors['border'] + '─' * (maxlength + 1) + '┐' + colors['reset'])
+            logger.info(colors['border'] + '-' * (maxlength + 1) + '+' + colors['reset'])
             for key, val in messages.items():
                 if not (type(val) is bool and val is True):
-                    logger.info(colors['key'] + str(key).rjust(maxlength) + colors['reset'] + colors['border'] + ' │ ' + colors['reset'] + colors['val'] + str(val) + colors['reset'])
+                    logger.info(colors['key'] + str(key).rjust(maxlength) + colors['reset'] + colors['border'] + ' | ' + colors['reset'] + colors['val'] + str(val) + colors['reset'])
                 else:
-                    logger.info(colors['border'] + '─' * (maxlength + 1) + '┤' + colors['reset'])
-            logger.info(colors['border'] + '─' * (maxlength + 1) + '┘' + colors['reset'])
+                    logger.info(colors['border'] + '-' * (maxlength + 1) + '+' + colors['reset'])
+            logger.info(colors['border'] + '-' * (maxlength + 1) + '+' + colors['reset'])
         except Exception as e:
             logger.error('Failed to generate statistics table.', error = e, timestamp = False)
 
@@ -664,15 +664,9 @@ class Onionr:
                 logger.warn('That file does not exist. Improper path?')
 
             try:
-                with open(filename, 'rb') as file:
-                    contents = file.read().decode()
-            except:
-                pass
-
-            if not contents is None:
-                blockhash = Block('bin', contents).save()
+                blockhash = Block.createChain(file = filename)
                 logger.info('File %s saved in block %s.' % (filename, blockhash))
-            else:
+            except:
                 logger.error('Failed to save file in block.', timestamp = False)
         else:
             logger.error('%s add-file <filename>' % sys.argv[0], timestamp = False)

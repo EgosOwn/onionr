@@ -74,6 +74,10 @@ class OnionrCommunicate:
         # Loads in and starts the enabled plugins
         plugins.reload()
 
+        # Print nice header thing :)
+        if config.get('display_header', True):
+            self.header()
+
         while True:
             command = self._core.daemonQueue()
             # Process blocks based on a timer
@@ -753,6 +757,13 @@ class OnionrCommunicate:
         except KeyError:
             pass
         return False
+
+    def header(self, message = logger.colors.fg.pink + logger.colors.bold + 'Onionr' + logger.colors.reset + logger.colors.fg.pink + ' has started.'):
+        if os.path.exists('static-data/header.txt'):
+            with open('static-data/header.txt', 'rb') as file:
+                # only to stdout, not file or log or anything
+                print(file.read().decode().replace('#', logger.colors.fg.pink).replace('$', logger.colors.reset + logger.colors.bold).replace('\n', logger.colors.reset + '\n'))
+                logger.info(logger.colors.fg.lightgreen + '-> ' + str(message) + logger.colors.reset + logger.colors.fg.lightgreen + ' <-\n')
 
 shouldRun = False
 debug = True

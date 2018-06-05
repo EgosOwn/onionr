@@ -2,6 +2,7 @@
     "devmode": true,
     "dc_response": true,
 
+    "display_header" : true,
     "log": {
         "file": {
             "output": true,
@@ -13,6 +14,7 @@
             "color": true
         }
     },
+
     "i2p":{
 	"host": false,
     "connect": true,
