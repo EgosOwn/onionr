@@ -469,7 +469,7 @@ class Onionr:
                     with open(plugins.get_plugins_folder(plugin_name) + '/main.py', 'a') as main:
                         contents = ''
                         with open('static-data/default_plugin.py', 'rb') as file:
-                            contents = file.read()
+                            contents = file.read().decode()
 
                         # TODO: Fix $user. os.getlogin() is   B U G G Y
                         main.write(contents.replace('$user', 'some random developer').replace('$date', datetime.datetime.now().strftime('%Y-%m-%d')).replace('$name', plugin_name))
