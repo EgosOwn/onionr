@@ -263,7 +263,7 @@ class Block:
             - (Block): the Block's parent
         '''
 
-        if self.parent == str:
+        if type(self.parent) == str:
             if self.parent == self.getHash():
                 self.parent = self
             elif Block.exists(self.parent):
