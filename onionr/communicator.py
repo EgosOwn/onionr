@@ -484,9 +484,9 @@ class OnionrCommunicate:
             lastDB = self._core.getAddressInfo(i, 'DBHash')
 
             if lastDB == None:
-                logger.debug('Fetching hash from %s, no previous known.' % str(i))
+                logger.debug('Fetching db hash from %s, no previous known.' % str(i))
             else:
-                logger.debug('Fetching hash from %s, %s last known' % (str(i), str(lastDB)))
+                logger.debug('Fetching db hash from %s, %s last known' % (str(i), str(lastDB)))
 
             currentDB = self.performGet('getDBHash', i)
 

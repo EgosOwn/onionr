@@ -77,9 +77,6 @@ class API:
         with open('data/time-bypass.txt', 'w') as bypass:
             bypass.write(self.timeBypassToken)
 
-        if not os.environ.get("WERKZEUG_RUN_MAIN") == "true":
-            logger.debug('Your web password (KEEP SECRET): ' + logger.colors.underline + self.clientToken)
-
         if not debug and not self._developmentMode:
             hostOctets = [127, random.randint(0x02, 0xFF), random.randint(0x02, 0xFF), random.randint(0x02, 0xFF)]
             self.host = '.'.join(hostOctets)
@@ -193,8 +190,6 @@ class API:
                 pass
             elif action == 'ping':
                 resp = Response("pong!")
-            elif action == 'getHMAC':
-                resp = Response(self._crypto.generateSymmetric())
             elif action == 'getSymmetric':
                 resp = Response(self._crypto.generateSymmetric())
             elif action == 'getDBHash':
@@ -214,13 +209,15 @@ class API:
                     resp = Response('')
             # setData should be something the communicator initiates, not this api
             elif action == 'getData':
+                resp = ''
                 if self._utils.validateHash(data):
-                    if not os.path.exists('data/blocks/' + data + '.db'):
+                    if os.path.exists('data/blocks/' + data + '.db'):
                         try:
-                            resp = base64.b64encode(self._core.getData(data))
+                            block = Block(data, core=self._core)()
+                            resp = base64.b64encode(block.getRaw())
                         except TypeError:
                             resp = ""
-                if resp == False:
+                if len(resp) == 0:
                     abort(404)
                     resp = ""
                 resp = Response(resp)

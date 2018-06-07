@@ -201,7 +201,9 @@ class Onionr:
             'importblocks': self.onionrUtils.importNewBlocks,
 
             'introduce': self.onionrCore.introduceNode,
-            'connect': self.addAddress
+            'connect': self.addAddress,
+
+            'getpassword': self.getWebPassword
         }
 
         self.cmdhelp = {
@@ -211,6 +213,7 @@ class Onionr:
             'start': 'Starts the Onionr daemon',
             'stop': 'Stops the Onionr daemon',
             'stats': 'Displays node statistics',
+            'getpassword': 'Displays the web password',
             'enable-plugin': 'Enables and starts a plugin',
             'disable-plugin': 'Disables and stops a plugin',
             'reload-plugin': 'Reloads a plugin',
@@ -249,6 +252,9 @@ class Onionr:
 
     def getCommands(self):
         return self.cmds
+    
+    def getWebPassword(self):
+        return config.get('client')['client_hmac']
 
     def getHelp(self):
         return self.cmdhelp
