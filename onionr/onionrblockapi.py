@@ -111,7 +111,7 @@ class Block:
             self.bheader = json.loads(self.getRaw()[:self.getRaw().index('\n')])
             self.bcontent = self.getRaw()[self.getRaw().index('\n') + 1:]
             self.bmetadata = json.loads(self.getHeader('meta'))
-            self.parent = (None if not 'parent' in self.getMetadata() else Block(self.getMetadata('parent')))
+            self.parent = (None if not 'parent' in self.getMetadata() else self.getMetadata('parent'))
             self.btype = self.getMetadata('type')
             self.powHash = self.getMetadata('powHash')
             self.powToken = self.getMetadata('powToken')
@@ -262,6 +262,14 @@ class Block:
             Outputs:
             - (Block): the Block's parent
         '''
+
+        if type(self.parent) == str:
+            if self.parent == self.getHash():
+                self.parent = self
+            elif Block.exists(self.parent):
+                self.parent = Block(self.getMetadata('parent'))
+            else:
+                self.parent = None
 
         return self.parent
 
@@ -459,7 +467,6 @@ class Block:
 
                     if relevant:
                         relevant_blocks.append(block)
-
             if bool(reverse):
                 relevant_blocks.reverse()
 
