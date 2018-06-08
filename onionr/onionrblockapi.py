@@ -96,8 +96,10 @@ class Block:
                 if filelocation is None:
                     if self.getHash() is None:
                         return False
-
-                    filelocation = 'data/blocks/%s.dat' % self.getHash()
+                    try:
+                        filelocation = 'data/blocks/%s.dat' % self.getHash().decode()
+                    except AttributeError:
+                        filelocation = 'data/blocks/%s.dat' % self.getHash()
 
                 with open(filelocation, 'rb') as f:
                     blockdata = f.read().decode('utf-8')

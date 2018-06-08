@@ -211,12 +211,10 @@ class API:
             elif action == 'getData':
                 resp = ''
                 if self._utils.validateHash(data):
-                    if os.path.exists('data/blocks/' + data + '.db'):
-                        try:
-                            block = Block(data, core=self._core)()
-                            resp = base64.b64encode(block.getRaw())
-                        except TypeError:
-                            resp = ""
+                    if not os.path.exists('data/blocks/' + data + '.db'):
+                        block = Block(data.encode(), core=self._core)
+                        resp = base64.b64encode(block.getRaw()).decode()
+
                 if len(resp) == 0:
                     abort(404)
                     resp = ""
