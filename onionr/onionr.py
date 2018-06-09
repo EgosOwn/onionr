@@ -32,6 +32,7 @@ import onionrutils
 from onionrutils import OnionrUtils
 from netcontroller import NetController
 from onionrblockapi import Block
+import onionrproofs
 
 try:
     from urllib3.contrib.socks import SOCKSProxyManager
@@ -359,14 +360,31 @@ class Onionr:
         '''
             Adds a peer (?)
         '''
-
         try:
             newPeer = sys.argv[2]
         except:
             pass
         else:
+            if self.onionrUtils.hasKey(newPeer):
+                logger.info('We already have that key')
+                return
+            if not '-' in newPeer:
+                logger.info('Since no POW token was supplied for that key, one is being generated')
+                proof = onionrproofs.POW(newPeer)
+                while True:
+                    result = proof.getResult()
+                    if result == False:
+                        time.sleep(0.5)
+                    else:
+                        break
+                newPeer += '-' + base64.b64encode(result[1]).decode()
+                logger.info(newPeer)
+
             logger.info("Adding peer: " + logger.colors.underline + newPeer)
-            self.onionrCore.addPeer(newPeer)
+            if self.onionrUtils.mergeKeys(newPeer):
+                logger.info('Successfully added key')
+            else:
+                logger.error('Failed to add key')
 
         return
 
@@ -578,12 +596,14 @@ class Onionr:
             # define stats messages here
             totalBlocks = len(Block.getBlocks())
             signedBlocks = len(Block.getBlocks(signed = True))
-
+            powToken = self.onionrCore._crypto.pubKeyPowToken
             messages = {
                 # info about local client
                 'Onionr Daemon Status' : ((logger.colors.fg.green + 'Online') if self.onionrUtils.isCommunicatorRunning(timeout = 2) else logger.colors.fg.red + 'Offline'),
                 'Public Key' : self.onionrCore._crypto.pubKey,
-                'Address' : self.get_hostname(),
+                'POW Token' : powToken,
+                'Combined' : self.onionrCore._crypto.pubKey + '-' + powToken,
+                'Node Address' : self.get_hostname(),
 
                 # file and folder size stats
                 'div1' : True, # this creates a solid line across the screen, a div
