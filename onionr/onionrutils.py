@@ -78,6 +78,13 @@ class OnionrUtils:
 
         return
 
+    def getCurrentHourEpoch(self):
+        '''
+            Returns the current epoch, rounded down to the hour
+        '''
+        epoch = self.getEpoch()
+        return epoch - (epoch % 3600)
+
     def incrementAddressSuccess(self, address):
         '''
             Increase the recorded sucesses for an address
