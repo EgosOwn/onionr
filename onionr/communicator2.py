@@ -19,32 +19,19 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import core, config, onionrblockapi as block, requests, xml
+import sys, core, config, onionrblockapi as block, requests
+from defusedxml import minidom
+
 class OnionrCommunicatorDaemon:
     def __init__(self, debug, developmentMode):
         self.timers = [] # list of tuples, function, time in seconds
         self._core = core.Core()
 
-        self.nistSalt = 0
+        self.nistSaltTimestamp = 0
+        self.powSalt = 0
         return
     
-    def getNistTimeStamp(self):
-        curTime = self._core._utils.getCurrentHourEpoch
-        data = doGetRequest('https://beacon.nist.gov/rest/record/' + str(curTime))
-        
 
-    def doGetRequest(self, url, port=sys.argv[2], proxyType='tor'):
-        '''
-        Do a get request through a local tor or i2p instance
-        '''
-        if proxyType == 'tor':
-            proxies = {'http': 'socks5://127.0.0.1:' + str(port), 'https': 'socks5://127.0.0.1:' + str(port)}
-        elif proxyType == 'i2p':
-            proxies = {'http': 'http://127.0.0.1:4444'}
-        else:
-            return
-        headers = {'user-agent': 'PyOnionr'}
-        r = requests.get(url, headers=headers, proxies=proxies, allow_redirects=False, timeout=(15, 30))
 
 shouldRun = False
 debug = True

@@ -23,5 +23,6 @@
     "allocations":{
         "disk": 1000000000,
         "netTotal": 1000000000
-    }
+    },
+    "newCommunicator": false
 }

@@ -549,7 +549,7 @@ class Onionr:
         '''
             Starts the Onionr communication daemon
         '''
-
+        communicatorDaemon = './communicator.py'
         if not os.environ.get("WERKZEUG_RUN_MAIN") == "true":
             if self._developmentMode:
                 logger.warn('DEVELOPMENT MODE ENABLED (THIS IS LESS SECURE!)', timestamp = False)
@@ -560,7 +560,13 @@ class Onionr:
             logger.info('Started .onion service: ' + logger.colors.underline + net.myID)
             logger.info('Our Public key: ' + self.onionrCore._crypto.pubKey)
             time.sleep(1)
-            subprocess.Popen(["./communicator.py", "run", str(net.socksPort)])
+            try:
+                if config.get('newCommunicator'):
+                    communicatorDaemon = './communicator2.py'
+                    logger.info('Using new communicator')
+            except NameError:
+                pass
+            subprocess.Popen([communicatorDaemon, "run", str(net.socksPort)])
             logger.debug('Started communicator')
             events.event('daemon_start', onionr = self)
         api.API(self.debug)

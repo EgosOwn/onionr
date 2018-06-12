@@ -21,6 +21,8 @@
 import getpass, sys, requests, os, socket, hashlib, logger, sqlite3, config, binascii, time, base64, json, glob, shutil, math
 import nacl.signing, nacl.encoding
 from onionrblockapi import Block
+import onionrexceptions
+from defusedxml import minidom
 
 if sys.version_info < (3, 6):
     try:
@@ -482,6 +484,44 @@ class OnionrUtils:
     def getEpoch(self):
         '''returns epoch'''
         return math.floor(time.time())
+
+    def doGetRequest(self, url, port=0, proxyType='tor'):
+        '''
+        Do a get request through a local tor or i2p instance
+        '''
+        if proxyType == 'tor':
+            if port == 0:
+                raise onionrexceptions.MissingPort('Socks port required for Tor HTTP get request')
+            proxies = {'http': 'socks5://127.0.0.1:' + str(port), 'https': 'socks5://127.0.0.1:' + str(port)}
+        elif proxyType == 'i2p':
+            proxies = {'http': 'http://127.0.0.1:4444'}
+        else:
+            return
+        headers = {'user-agent': 'PyOnionr'}
+        r = requests.get(url, headers=headers, proxies=proxies, allow_redirects=False, timeout=(15, 30))
+        return r.text
+
+    def getNistBeaconSalt(self, torPort=0):
+        '''
+            Get the token for the current hour from the NIST randomness beacon
+        '''
+        if torPort == 0:
+            try:
+                sys.argv[2]
+            except IndexError:
+                raise onionrexceptions.MissingPort('Missing Tor socks port')
+        retData = ''
+        curTime = self._core._utils.getCurrentHourEpoch
+        self.nistSaltTimestamp = curTime
+        data = self.doGetRequest('https://beacon.nist.gov/rest/record/' + str(curTime), port=torPort)
+        dataXML = minidom.parseString(data, forbid_dtd=True, forbid_entities=True, forbid_external=True)
+        try:
+            retData = dataXML.getElementsByTagName('outputValue')[0].childNodes[0].data
+        except ValueError:
+            logger.warn('Could not get NIST beacon value')
+        else:
+            self.powSalt = retData
+        return retData
 
 def size(path='.'):
     '''
