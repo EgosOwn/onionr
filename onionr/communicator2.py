@@ -19,18 +19,39 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import sys, core, config, onionrblockapi as block, requests
+import sys, core, config, onionrblockapi as block, requests, time, logger
 from defusedxml import minidom
 
 class OnionrCommunicatorDaemon:
     def __init__(self, debug, developmentMode):
-        self.timers = [] # list of tuples, function, time in seconds
+        self.timers = []
         self._core = core.Core()
-
         self.nistSaltTimestamp = 0
         self.powSalt = 0
-        return
+        self.delay = 1
+
+        OnionrCommunicatorTimers(self.timers, self.heartbeat, 1)
+
+        while True:
+            time.sleep(self.delay)
+            for i in self.timers:
+                i.processTimer()
     
+    def heartbeat(self):
+        logger.debug('Communicator heartbeat')
+    
+class OnionrCommunicatorTimers:
+    def __init__(self, timerList, timerFunction, frequency):
+        self.timerFunction = timerFunction
+        self.frequency = frequency
+
+        timerList.append(self)
+        self.count = 0
+    def processTimer(self):
+        self.count += 1
+        if self.count == self.frequency:
+            self.timerFunction()
+            self.count = 0
 
 
 shouldRun = False
@@ -49,3 +70,5 @@ if shouldRun:
     except KeyboardInterrupt:
         sys.exit(1)
         pass
+    except Exception as e:
+        logger.error('Error occured in Communicator', error = e, timestamp = False)
