@@ -178,6 +178,7 @@ class API:
         @app.route('/public/')
         def public_handler():
             # Public means it is publicly network accessible
+            # TODO, stop hard coding endpoints, use whitelist and serializer.
             self.validateHost('public')
             action = request.args.get('action')
             requestingPeer = request.args.get('myID')

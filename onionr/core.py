@@ -194,6 +194,7 @@ class Core:
             speed int,
             success int,
             DBHash text,
+            powValue text,
             failure int,
             lastConnect int
             );
