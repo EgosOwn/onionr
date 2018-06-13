@@ -622,7 +622,7 @@ class Onionr:
                 'Known Peers Count' : str(len(self.onionrCore.listPeers()) - 1),
                 'Enabled Plugins Count' : str(len(config.get('plugins')['enabled'])) + ' / ' + str(len(os.listdir('data/plugins/'))),
                 'Known Blocks Count' : str(totalBlocks),
-                'Percent Blocks Signed' : str(round(100 * signedBlocks / totalBlocks, 2)) + '%' # TODO: div by zero error
+                'Percent Blocks Signed' : str(round(100 * signedBlocks / max(totalBlocks, 1), 2)) + '%'
             }
 
             # color configuration
