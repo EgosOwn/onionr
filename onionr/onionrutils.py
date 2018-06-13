@@ -498,8 +498,14 @@ class OnionrUtils:
         else:
             return
         headers = {'user-agent': 'PyOnionr'}
-        r = requests.get(url, headers=headers, proxies=proxies, allow_redirects=False, timeout=(15, 30))
-        return r.text
+        try:
+            proxies = {'http': 'socks5h://127.0.0.1:' + str(port), 'https': 'socks5h://127.0.0.1:' + str(port)}
+            r = requests.get(url, headers=headers, proxies=proxies, allow_redirects=False, timeout=(15, 30))
+            retData = r.text
+        except requests.exceptions.RequestException as e:
+            logger.debug('Error: %s' % str(e))
+            retData = False
+        return retData
 
     def getNistBeaconSalt(self, torPort=0):
         '''

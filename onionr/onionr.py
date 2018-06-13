@@ -197,6 +197,7 @@ class Onionr:
 
             'add-file': self.addFile,
             'addfile': self.addFile,
+            'listconn': self.listConn,
 
             'import-blocks': self.onionrUtils.importNewBlocks,
             'importblocks': self.onionrUtils.importNewBlocks,
@@ -226,6 +227,7 @@ class Onionr:
             'get-pms': 'Shows private messages sent to you',
             'add-file': 'Create an Onionr block from a file',
             'import-blocks': 'import blocks from the disk (Onionr is transport-agnostic!)',
+            'listconn': 'list connected peers',
             'introduce': 'Introduce your node to the public Onionr network',
         }
 
@@ -253,6 +255,9 @@ class Onionr:
 
     def getCommands(self):
         return self.cmds
+
+    def listConn(self):
+        self.onionrCore.daemonQueueAdd('connectedPeers')
 
     def getWebPassword(self):
         return config.get('client')['client_hmac']
