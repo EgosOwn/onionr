@@ -253,7 +253,7 @@ class Onionr:
 
     def getCommands(self):
         return self.cmds
-    
+
     def getWebPassword(self):
         return config.get('client')['client_hmac']
 
@@ -622,7 +622,7 @@ class Onionr:
                 'Known Peers Count' : str(len(self.onionrCore.listPeers()) - 1),
                 'Enabled Plugins Count' : str(len(config.get('plugins')['enabled'])) + ' / ' + str(len(os.listdir('data/plugins/'))),
                 'Known Blocks Count' : str(totalBlocks),
-                'Percent Blocks Signed' : str(round(100 * signedBlocks / totalBlocks, 2)) + '%' # TODO: div by zero error
+                'Percent Blocks Signed' : str(round(100 * signedBlocks / max(totalBlocks, 1), 2)) + '%'
             }
 
             # color configuration
@@ -637,16 +637,24 @@ class Onionr:
 
             # pre-processing
             maxlength = 0
+            width = self.getConsoleWidth()
             for key, val in messages.items():
                 if not (type(val) is bool and val is True):
                     maxlength = max(len(key), maxlength)
+            prewidth = maxlength + len(' | ')
+            groupsize = width - prewidth - len('[+] ')
 
             # generate stats table
             logger.info(colors['title'] + 'Onionr v%s Statistics' % ONIONR_VERSION + colors['reset'])
             logger.info(colors['border'] + '-' * (maxlength + 1) + '+' + colors['reset'])
             for key, val in messages.items():
                 if not (type(val) is bool and val is True):
-                    logger.info(colors['key'] + str(key).rjust(maxlength) + colors['reset'] + colors['border'] + ' | ' + colors['reset'] + colors['val'] + str(val) + colors['reset'])
+                    val = [str(val)[i:i + groupsize] for i in range(0, len(str(val)), groupsize)]
+
+                    logger.info(colors['key'] + str(key).rjust(maxlength) + colors['reset'] + colors['border'] + ' | ' + colors['reset'] + colors['val'] + str(val.pop(0)) + colors['reset'])
+
+                    for value in val:
+                        logger.info(' ' * maxlength + colors['border'] + ' | ' + colors['reset'] + colors['val'] + str(value) + colors['reset'])
                 else:
                     logger.info(colors['border'] + '-' * (maxlength + 1) + '+' + colors['reset'])
             logger.info(colors['border'] + '-' * (maxlength + 1) + '+' + colors['reset'])
@@ -682,6 +690,21 @@ class Onionr:
                 return hostname.read().strip()
         except Exception:
             return None
+
+    def getConsoleWidth(self):
+        '''
+            Returns an integer, the width of the terminal/cmd window
+        '''
+
+        columns = 80
+
+        try:
+            columns = int(os.popen('stty size', 'r').read().split()[1])
+        except:
+            # if it errors, it's probably windows, so default to 80.
+            pass
+
+        return columns
 
     def addFile(self):
         '''
