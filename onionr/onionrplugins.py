@@ -64,9 +64,7 @@ def enable(name, onionr = None, start_event = True):
         enabled_plugins = get_enabled_plugins()
         if not name in enabled_plugins:
             enabled_plugins.append(name)
-            config_plugins = config.get('plugins')
-            config_plugins['enabled'] = enabled_plugins
-            config.set('plugins', config_plugins, True)
+            config.set('plugins.enabled', enabled_plugins, True)
 
             events.call(get_plugin(name), 'enable', onionr)
 
@@ -93,9 +91,7 @@ def disable(name, onionr = None, stop_event = True):
     if is_enabled(name):
         enabled_plugins = get_enabled_plugins()
         enabled_plugins.remove(name)
-        config_plugins = config.get('plugins')
-        config_plugins['enabled'] = enabled_plugins
-        config.set('plugins', config_plugins, True)
+        config.set('plugins.enabled', enabled_plugins, True)
 
     if exists(name):
         events.call(get_plugin(name), 'disable', onionr)
@@ -187,7 +183,7 @@ def get_enabled_plugins():
 
     config.reload()
 
-    return config.get('plugins')['enabled']
+    return config.get('plugins.enabled', list())
 
 def is_enabled(name):
     '''

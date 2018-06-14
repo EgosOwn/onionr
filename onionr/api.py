@@ -52,7 +52,7 @@ class API:
 
         config.reload()
 
-        if config.get('devmode', True):
+        if config.get('dev_mode', True):
             self._developmentMode = True
             logger.set_level(logger.LEVEL_DEBUG)
         else:
@@ -65,12 +65,12 @@ class API:
         self._crypto = onionrcrypto.OnionrCrypto(self._core)
         self._utils = onionrutils.OnionrUtils(self._core)
         app = flask.Flask(__name__)
-        bindPort = int(config.get('client')['port'])
+        bindPort = int(config.get('client.port', 59496))
         self.bindPort = bindPort
-        self.clientToken = config.get('client')['client_hmac']
+        self.clientToken = config.get('client.hmac')
         self.timeBypassToken = base64.b16encode(os.urandom(32)).decode()
 
-        self.i2pEnabled = config.get('i2p', {'host' : False})['host']
+        self.i2pEnabled = config.get('i2p.host', False)
 
         self.mimeType = 'text/plain'
 
@@ -82,7 +82,7 @@ class API:
             self.host = '.'.join(hostOctets)
         else:
             self.host = '127.0.0.1'
-        
+
         with open('data/host.txt', 'w') as file:
             file.write(self.host)
 

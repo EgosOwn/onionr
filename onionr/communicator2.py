@@ -37,7 +37,7 @@ class OnionrCommunicatorDaemon:
         self.threadCounts = {}
 
         self.shutdown = False
-        
+
         # Clear the daemon queue for any dead messages
         if os.path.exists(self._core.queueDB):
             self._core.clearDaemonQueue()
@@ -46,7 +46,7 @@ class OnionrCommunicatorDaemon:
         plugins.reload()
 
         # Print nice header thing :)
-        if config.get('display_header', True):
+        if config.get('general.display_header', True):
             self.header()
 
         if debug or developmentMode:
@@ -63,7 +63,7 @@ class OnionrCommunicatorDaemon:
                 i.processTimer()
             time.sleep(self.delay)
         logger.info('Goodbye.')
-    
+
     def decrementThreadCount(self, threadName):
         if self.threadCounts[threadName] > 0:
             self.threadCounts[threadName] -= 1
@@ -102,8 +102,8 @@ class OnionrCommunicatorDaemon:
                 logger.debug('failed to connect to ' + address)
         else:
             logger.warn('Could not connect to any peer')
-        return retData            
-        
+        return retData
+
     def heartbeat(self):
         '''Show a heartbeat debug message'''
         logger.debug('Communicator heartbeat')
@@ -126,7 +126,7 @@ class OnionrCommunicatorDaemon:
             else:
                 logger.info('Recieved daemonQueue command:' + cmd[0])
         self.decrementThreadCount('daemonCommands')
-    
+
     def printOnlinePeers(self):
         '''logs online peer list'''
         if len(self.onlinePeers) == 0:
@@ -148,7 +148,7 @@ class OnionrCommunicatorDaemon:
                 if announceCount == announceAmount:
                     logger.warn('Could not introduce node. Try again soon')
                     break
-    
+
     def peerAction(self, peer, action, data=''):
         '''Perform a get request to a peer'''
         logger.info('Performing ' + action + ' with ' + peer + ' on port ' + str(self.proxyPort))
@@ -177,7 +177,7 @@ class OnionrCommunicatorDaemon:
                 # only to stdout, not file or log or anything
                 print(file.read().decode().replace('P', logger.colors.fg.pink).replace('W', logger.colors.reset + logger.colors.bold).replace('G', logger.colors.fg.green).replace('\n', logger.colors.reset + '\n'))
                 logger.info(logger.colors.fg.lightgreen + '-> ' + str(message) + logger.colors.reset + logger.colors.fg.lightgreen + ' <-\n')
-    
+
 class OnionrCommunicatorTimers:
     def __init__(self, daemonInstance, timerFunction, frequency, makeThread=True, threadAmount=1, maxThreads=5):
         self.timerFunction = timerFunction
@@ -215,7 +215,7 @@ class OnionrCommunicatorTimers:
 shouldRun = False
 debug = True
 developmentMode = False
-if config.get('devmode', True):
+if config.get('general.dev_mode', True):
     developmentMode = True
 try:
     if sys.argv[1] == 'run':

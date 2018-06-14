@@ -28,9 +28,20 @@ def get(key, default = None):
         Gets the key from configuration, or returns `default`
     '''
 
-    if is_set(key):
-        return get_config()[key]
-    return default
+    key = str(key).split('.')
+    data = _config
+
+    last = key.pop()
+
+    for item in key:
+        if (not item in data) or (not type(data[item]) == dict):
+            return default
+        data = data[item]
+
+    if not last in data:
+        return default
+
+    return data[last]
 
 def set(key, value = None, savefile = False):
     '''
@@ -38,16 +49,40 @@ def set(key, value = None, savefile = False):
     '''
 
     global _config
+
+    key = str(key).split('.')
+    data = _config
+
+    last = key.pop()
+
+    for item in key:
+        if (not item in data) or (not type(data[item]) == dict):
+            data[item] = dict()
+        data = data[item]
+
     if value is None:
-        del _config[key]
+        del data[last]
     else:
-        _config[key] = value
+        data[last] = value
 
     if savefile:
         save()
 
 def is_set(key):
-    return key in get_config() and not get_config()[key] is None
+    key = str(key).split('.')
+    data = _config
+
+    last = key.pop()
+
+    for item in key:
+        if (not item in data) or (not type(data[item]) == dict):
+            return False
+        data = data[item]
+
+    if not last in data:
+        return False
+
+    return True
 
 def check():
     '''

@@ -1,8 +1,18 @@
 {
-    "devmode": true,
-    "dc_response": true,
+    "general" : {
+        "dev_mode": true,
+        "display_header" : true,
 
-    "display_header" : true,
+        "newCommunicator": false,
+
+        "dc_response": true,
+        "dc_execcallbacks" : true
+    },
+
+    "client" : {
+
+    },
+
     "log": {
         "file": {
             "output": true,
@@ -15,14 +25,20 @@
         }
     },
 
+    "tor" : {
+
+    },
+
     "i2p":{
-	"host": false,
-    "connect": true,
-    "ownAddr": ""
+    	"host": false,
+        "connect": true,
+        "ownAddr": ""
      },
+
     "allocations":{
         "disk": 1000000000,
-        "netTotal": 1000000000
-    },
-    "newCommunicator": false
+        "netTotal": 1000000000,
+        "blockCache" : 5000000,
+        "blockCacheTotal" : 50000000
+    }
 }

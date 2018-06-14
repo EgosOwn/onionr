@@ -18,6 +18,15 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 
+# general exceptions
+class NotFound(Exception):
+    pass
+class Unknown(Exception):
+    pass
+class Invalid(Exception):
+    pass
+
+# network level exceptions
 class MissingPort(Exception):
     pass
 class InvalidAddress(Exception):

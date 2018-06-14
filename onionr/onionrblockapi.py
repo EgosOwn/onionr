@@ -18,10 +18,13 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 
-import core as onionrcore, logger
-import json, os, datetime, base64
+import core as onionrcore, logger, config
+import json, os, sys, datetime, base64
 
 class Block:
+    blockCacheOrder = list() # NEVER write your own code that writes to this!
+    blockCache = dict() # should never be accessed directly, look at Block.getCache()
+
     def __init__(self, hash = None, core = None):
         '''
             Initializes Onionr
@@ -43,6 +46,9 @@ class Block:
             self.hash = None
             self.core = None
         else:
+            if type(hash) == bytes:
+                hash = hash.decode()
+
             self.btype = ''
             self.bcontent = ''
             self.hash = hash
@@ -65,7 +71,8 @@ class Block:
         if self.getCore() is None:
             self.core = onionrcore.Core()
         if not self.getHash() is None:
-            self.update()
+            if not self.update():
+                logger.debug('Failed to open block %s.' % self.getHash())
 
     # logic
 
@@ -93,16 +100,23 @@ class Block:
             if blockdata is None:
                 filelocation = file
 
+                readfile = True
+
                 if filelocation is None:
                     if self.getHash() is None:
                         return False
-                    try:
-                        filelocation = 'data/blocks/%s.dat' % self.getHash().decode()
-                    except AttributeError:
+                    elif self.getHash() in Block.getCache():
+                        # get the block from cache, if it's in it
+                        blockdata = Block.getCache(self.getHash())
+                        readfile = False
+
+                    # read from file if it's still None
+                    if blockdata is None:
                         filelocation = 'data/blocks/%s.dat' % self.getHash()
 
-                with open(filelocation, 'rb') as f:
-                    blockdata = f.read().decode('utf-8')
+                if readfile:
+                    with open(filelocation, 'rb') as f:
+                        blockdata = f.read().decode()
 
                 self.blockFile = filelocation
             else:
@@ -126,6 +140,10 @@ class Block:
                 self.date = datetime.datetime.fromtimestamp(self.getDate())
 
             self.valid = True
+
+            if len(self.getRaw()) <= config.get('allocations.blockCache', 500000):
+                self.cache()
+
             return True
         except Exception as e:
             logger.error('Failed to update block data.', error = e, timestamp = False)
@@ -641,11 +659,54 @@ class Block:
             - (bool): whether or not the block file exists
         '''
 
+        # no input data? scrap it.
         if hash is None:
             return False
-        elif type(hash) == Block:
+
+        if type(hash) == Block:
             blockfile = hash.getBlockFile()
         else:
             blockfile = 'data/blocks/%s.dat' % hash
 
         return os.path.exists(blockfile) and os.path.isfile(blockfile)
+
+    def getCache(hash = None):
+        # give a list of the hashes of the cached blocks
+        if hash is None:
+            return list(Block.blockCache.keys())
+
+        # if they inputted self or a Block, convert to hash
+        if type(hash) == Block:
+            hash = hash.getHash()
+
+        # just to make sure someone didn't put in a bool or something lol
+        hash = str(hash)
+
+        # if it exists, return its content
+        if hash in Block.getCache():
+            return Block.blockCache[hash]
+
+        return None
+
+    def cache(block, override = False):
+        # why even bother if they're giving bad data?
+        if not type(block) == Block:
+            return False
+
+        # only cache if written to file
+        if block.getHash() is None:
+            return False
+
+        # if it's already cached, what are we here for?
+        if block.getHash() in Block.getCache() and not override:
+            return False
+
+        # dump old cached blocks if the size exeeds the maximum
+        if sys.getsizeof(Block.blockCacheOrder) >= config.get('allocations.blockCacheTotal', 50000000): # 50MB default cache size
+            del Block.blockCache[blockCacheOrder.pop(0)]
+
+        # cache block content
+        Block.blockCache[block.getHash()] = block.getRaw()
+        Block.blockCacheOrder.append(block.getHash())
+
+        return True
