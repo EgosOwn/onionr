@@ -106,7 +106,7 @@ def save():
     check()
     try:
         with open(get_config_file(), 'w', encoding="utf8") as configfile:
-            json.dump(get_config(), configfile, indent=2, sort_keys=True)
+            json.dump(get_config(), configfile, indent=2)
     except:
         logger.warn('Failed to write to configuration file.')
 
