@@ -25,6 +25,8 @@ from defusedxml import minidom
 
 class OnionrCommunicatorDaemon:
     def __init__(self, debug, developmentMode):
+        logger.warn('New (unstable) communicator is being used.')
+
         self.timers = []
         self._core = core.Core()
         self.nistSaltTimestamp = 0
