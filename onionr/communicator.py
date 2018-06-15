@@ -75,7 +75,7 @@ class OnionrCommunicate:
         plugins.reload()
 
         # Print nice header thing :)
-        if config.get('display_header', True):
+        if config.get('general.display_header', True):
             self.header()
 
         while True:
@@ -149,7 +149,7 @@ class OnionrCommunicate:
 
                         logger.info('Checking for callbacks with connection %s...' % data['id'])
 
-                        self.check_callbacks(data, config.get('dc_execcallbacks', True))
+                        self.check_callbacks(data, config.get('general.dc_execcallbacks', True))
 
                         events.event('incoming_direct_connection', data = {'callback' : True, 'communicator' : self, 'data' : data})
                     except Exception as e:
@@ -349,7 +349,7 @@ class OnionrCommunicate:
             If yet another callback is requested, it can be put in the `callback` parameter.
         '''
 
-        if config.get('dc_response', True):
+        if config.get('general.dc_response', True):
             data['id'] = identifier
             data['sender'] = open('data/hs/hostname').read()
             data['callback'] = True
@@ -768,7 +768,7 @@ class OnionrCommunicate:
 shouldRun = False
 debug = True
 developmentMode = False
-if config.get('devmode', True):
+if config.get('general.dev_mode', True):
     developmentMode = True
 try:
     if sys.argv[1] == 'run':

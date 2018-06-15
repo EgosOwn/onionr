@@ -110,7 +110,7 @@ class Core:
         '''
             Add an address to the address database (only tor currently)
         '''
-        if address == config.get('i2p', {'ownAddr' : None})['ownAddr']:
+        if address == config.get('i2p.ownAddr', None):
 
             return False
         if self._utils.validateID(address):

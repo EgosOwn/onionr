@@ -25,6 +25,8 @@ from defusedxml import minidom
 
 class OnionrCommunicatorDaemon:
     def __init__(self, debug, developmentMode):
+        logger.warn('New (unstable) communicator is being used.')
+
         self.timers = []
         self._core = core.Core()
         self.nistSaltTimestamp = 0
@@ -48,7 +50,7 @@ class OnionrCommunicatorDaemon:
         plugins.reload()
 
         # Print nice header thing :)
-        if config.get('display_header', True):
+        if config.get('general.display_header', True):
             self.header()
 
         if debug or developmentMode:
@@ -217,7 +219,7 @@ class OnionrCommunicatorDaemon:
                 # only to stdout, not file or log or anything
                 print(file.read().decode().replace('P', logger.colors.fg.pink).replace('W', logger.colors.reset + logger.colors.bold).replace('G', logger.colors.fg.green).replace('\n', logger.colors.reset + '\n'))
                 logger.info(logger.colors.fg.lightgreen + '-> ' + str(message) + logger.colors.reset + logger.colors.fg.lightgreen + ' <-\n')
-    
+
 class OnionrCommunicatorTimers:
     def __init__(self, daemonInstance, timerFunction, frequency, makeThread=True, threadAmount=1, maxThreads=5):
         self.timerFunction = timerFunction
@@ -255,7 +257,7 @@ class OnionrCommunicatorTimers:
 shouldRun = False
 debug = True
 developmentMode = False
-if config.get('devmode', True):
+if config.get('general.dev_mode', True):
     developmentMode = True
 try:
     if sys.argv[1] == 'run':

@@ -67,22 +67,22 @@ class Onionr:
             config.set_config(json.loads(open('static-data/default_config.json').read())) # this is the default config, it will be overwritten if a config file already exists. Else, it saves it
         else:
             # the default config file doesn't exist, try hardcoded config
-            config.set_config({'devmode': True, 'log': {'file': {'output': True, 'path': 'data/output.log'}, 'console': {'output': True, 'color': True}}})
+            config.set_config({'dev_mode': True, 'log': {'file': {'output': True, 'path': 'data/output.log'}, 'console': {'output': True, 'color': True}}})
         if not data_exists:
             config.save()
         config.reload() # this will read the configuration file into memory
 
         settings = 0b000
-        if config.get('log', {'console': {'color': True}})['console']['color']:
+        if config.get('log.console.color', True):
             settings = settings | logger.USE_ANSI
-        if config.get('log', {'console': {'output': True}})['console']['output']:
+        if config.get('log.console.output', True):
             settings = settings | logger.OUTPUT_TO_CONSOLE
-        if config.get('log', {'file': {'output': True}})['file']['output']:
+        if config.get('log.file.output', True):
             settings = settings | logger.OUTPUT_TO_FILE
-            logger.set_file(config.get('log', {'file': {'path': 'data/output.log'}})['file']['path'])
+            logger.set_file(config.get('log.file.path', '/tmp/onionr.log'))
         logger.set_settings(settings)
 
-        if str(config.get('devmode', True)).lower() == 'true':
+        if str(config.get('general.dev_mode', True)).lower() == 'true':
             self._developmentMode = True
             logger.set_level(logger.LEVEL_DEBUG)
         else:
@@ -149,7 +149,7 @@ class Onionr:
                     randomPort = random.randint(1024, 65535)
                     if self.onionrUtils.checkPort(randomPort):
                         break
-            config.set('client', {'participate': 'true', 'client_hmac': base64.b16encode(os.urandom(32)).decode('utf-8'), 'port': randomPort, 'api_version': API_VERSION}, True)
+            config.set('client', {'participate': 'true', 'hmac': base64.b16encode(os.urandom(32)).decode('utf-8'), 'port': randomPort, 'api_version': API_VERSION}, True)
 
         self.cmds = {
             '': self.showHelpSuggestion,
@@ -262,7 +262,7 @@ class Onionr:
         self.onionrCore.daemonQueueAdd('connectedPeers')
 
     def getWebPassword(self):
-        return config.get('client')['client_hmac']
+        return config.get('client.hmac')
 
     def getHelp(self):
         return self.cmdhelp
@@ -534,12 +534,12 @@ class Onionr:
 
         logger.info('Do ' + logger.colors.bold + sys.argv[0] + ' --help' + logger.colors.reset + logger.colors.fg.green + ' for Onionr help.')
 
-    def start(self, input = False):
+    def start(self, input = False, override = False):
         '''
             Starts the Onionr daemon
         '''
 
-        if os.path.exists('.onionr-lock'):
+        if os.path.exists('.onionr-lock') and not override:
             logger.fatal('Cannot start. Daemon is already running, or it did not exit cleanly.\n(if you are sure that there is not a daemon running, delete .onionr-lock & try again).')
         else:
             if not self.debug and not self._developmentMode:
@@ -560,7 +560,7 @@ class Onionr:
         if not os.environ.get("WERKZEUG_RUN_MAIN") == "true":
             if self._developmentMode:
                 logger.warn('DEVELOPMENT MODE ENABLED (THIS IS LESS SECURE!)', timestamp = False)
-            net = NetController(config.get('client')['port'])
+            net = NetController(config.get('client.port', 59496))
             logger.info('Tor is starting...')
             if not net.startTor():
                 sys.exit(1)
@@ -568,7 +568,7 @@ class Onionr:
             logger.info('Our Public key: ' + self.onionrCore._crypto.pubKey)
             time.sleep(1)
             try:
-                if config.get('newCommunicator'):
+                if config.get('general.newCommunicator', False):
                     communicatorDaemon = './communicator2.py'
                     logger.info('Using new communicator')
             except NameError:
@@ -589,7 +589,7 @@ class Onionr:
         logger.warn('Killing the running daemon...', timestamp = False)
         try:
             events.event('daemon_stop', onionr = self)
-            net = NetController(config.get('client')['port'])
+            net = NetController(config.get('client.port', 59496))
             try:
                 self.onionrUtils.localCommand('shutdown')
             except requests.exceptions.ConnectionError:
@@ -628,7 +628,7 @@ class Onionr:
                 # count stats
                 'div2' : True,
                 'Known Peers Count' : str(len(self.onionrCore.listPeers()) - 1),
-                'Enabled Plugins Count' : str(len(config.get('plugins')['enabled'])) + ' / ' + str(len(os.listdir('data/plugins/'))),
+                'Enabled Plugins Count' : str(len(config.get('plugins.enabled', list()))) + ' / ' + str(len(os.listdir('data/plugins/'))),
                 'Known Blocks Count' : str(totalBlocks),
                 'Percent Blocks Signed' : str(round(100 * signedBlocks / max(totalBlocks, 1), 2)) + '%'
             }
