@@ -92,6 +92,8 @@ class Onionr:
         self.onionrCore = core.Core()
         self.onionrUtils = OnionrUtils(self.onionrCore)
 
+        self.userOS = platform.system()
+
         # Handle commands
 
         self.debug = False # Whole application debugging
@@ -571,6 +573,7 @@ class Onionr:
                     logger.info('Using new communicator')
             except NameError:
                 pass
+            #TODO make runable on windows
             subprocess.Popen([communicatorDaemon, "run", str(net.socksPort)])
             logger.debug('Started communicator')
             events.event('daemon_start', onionr = self)

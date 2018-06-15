@@ -17,7 +17,13 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import nacl.signing, nacl.encoding, nacl.public, nacl.hash, nacl.secret, os, binascii, base64, hashlib, logger, onionrproofs, time, math
+import nacl.signing, nacl.encoding, nacl.public, nacl.hash, nacl.secret, os, binascii, base64, hashlib, logger, onionrproofs, time, math, sys
+
+# secrets module was added into standard lib in 3.6+
+if sys.version_info[0] == 3 and sys.version_info[1] < 6:
+    from dependencies import secrets
+elif sys.version_info[0] == 3 and sys.version_info[1] >= 6:
+    import secrets
 
 class OnionrCrypto:
     def __init__(self, coreInstance):
@@ -26,6 +32,8 @@ class OnionrCrypto:
         self.keyPowFile = 'data/keyPow.txt'
         self.pubKey = None
         self.privKey = None
+
+        self.secrets = secrets
 
         self.pubKeyPowToken = None
         #self.pubKeyPowHash = None

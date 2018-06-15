@@ -37,6 +37,8 @@ class OnionrCommunicatorDaemon:
         self.threadCounts = {}
 
         self.shutdown = False
+
+        self.blockQueue = [] # list of new blocks to download
         
         # Clear the daemon queue for any dead messages
         if os.path.exists(self._core.queueDB):
@@ -56,6 +58,8 @@ class OnionrCommunicatorDaemon:
         OnionrCommunicatorTimers(self, self.daemonCommands, 5)
         OnionrCommunicatorTimers(self, self.detectAPICrash, 12)
         OnionrCommunicatorTimers(self, self.getOnlinePeers, 60)
+        OnionrCommunicatorTimers(self, self.lookupBlocks, 120)
+        OnionrCommunicatorTimers(self, self.getBlocks, 30)
 
         # Main daemon loop, mainly for calling timers, do not do any complex operations here
         while not self.shutdown:
@@ -64,7 +68,43 @@ class OnionrCommunicatorDaemon:
             time.sleep(self.delay)
         logger.info('Goodbye.')
     
+    def lookupBlocks(self):
+        '''Lookup new blocks'''
+        tryAmount = 2
+        newBlocks = ''
+        for i in range(tryAmount):
+            newBlocks = self.peerAction(pickOnlinePeer(), 'getBlockHashes')
+            if newBlocks != False:
+                # if request was a success
+                for i in newBlocks.split('\n'):
+                    if self._core.utils.validateHash(i):
+                        # if newline seperated string is valid hash
+                        if not os.path.exists('data/blocks/' + i + '.db'):
+                            # if block does not exist on disk
+                            self.blockQueue.append(i)
+        self.decrementThreadCount('lookupBlocks')
+        return
+
+    def getBlocks(self):
+        '''download new blocks'''
+        return
+
+    def pickOnlinePeer(self):
+        '''randomly picks peer from pool without bias (using secrets module)'''
+        retData = ''
+        while True:
+            peerLength = len(self.onlinePeers)
+            try:
+                # get a random online peer, securely. May get stuck in loop if network is lost or if all peers in pool magically disconnect at once
+                retData = self.onlinePeers[self._core._crypto.secrets.randbelow(peerLength)]
+            except IndexError:
+                pass
+            else:
+                break
+        return retData
+
     def decrementThreadCount(self, threadName):
+        '''Decrement amount of a thread name if more than zero, called when a function meant to be run in a thread ends'''
         if self.threadCounts[threadName] > 0:
             self.threadCounts[threadName] -= 1
 
@@ -102,8 +142,25 @@ class OnionrCommunicatorDaemon:
                 logger.debug('failed to connect to ' + address)
         else:
             logger.warn('Could not connect to any peer')
-        return retData            
-        
+        return retData
+          
+    def printOnlinePeers(self):
+        '''logs online peer list'''
+        if len(self.onlinePeers) == 0:
+            logger.warn('No online peers')
+            return
+        for i in self.onlinePeers:
+            logger.info(self.onlinePeers[i])
+
+    def peerAction(self, peer, action, data=''):
+        '''Perform a get request to a peer'''
+        logger.info('Performing ' + action + ' with ' + peer + ' on port ' + str(self.proxyPort))
+        retData = self._core._utils.doGetRequest('http://' + peer + '/public/?action=' + action + '&data=' + data, port=self.proxyPort)
+        if retData == False:
+            self.onlinePeers.remove(peer)
+            self.getOnlinePeers() # Will only add a new peer to pool if needed
+        return retData
+
     def heartbeat(self):
         '''Show a heartbeat debug message'''
         logger.debug('Communicator heartbeat')
@@ -126,14 +183,6 @@ class OnionrCommunicatorDaemon:
             else:
                 logger.info('Recieved daemonQueue command:' + cmd[0])
         self.decrementThreadCount('daemonCommands')
-    
-    def printOnlinePeers(self):
-        '''logs online peer list'''
-        if len(self.onlinePeers) == 0:
-            logger.warn('No online peers')
-            return
-        for i in self.onlinePeers:
-            logger.info(self.onlinePeers[i])
 
     def announce(self, peer):
         '''Announce to peers'''
@@ -148,20 +197,11 @@ class OnionrCommunicatorDaemon:
                 if announceCount == announceAmount:
                     logger.warn('Could not introduce node. Try again soon')
                     break
-    
-    def peerAction(self, peer, action, data=''):
-        '''Perform a get request to a peer'''
-        logger.info('Performing ' + action + ' with ' + peer + ' on port ' + str(self.proxyPort))
-        retData = self._core._utils.doGetRequest('http://' + peer + '/public/?action=' + action + '&data=' + data, port=self.proxyPort)
-        if retData == False:
-            self.onlinePeers.remove(peer)
-            self.getOnlinePeers() # Will only add a new peer to pool if needed
-        return retData
 
     def detectAPICrash(self):
         '''exit if the api server crashes/stops'''
         if self._core._utils.localCommand('ping') != 'pong':
-            for i in range(4):
+            for i in range(5):
                 if self._core._utils.localCommand('ping') == 'pong':
                     break # break for loop
                 time.sleep(1)
