@@ -58,10 +58,10 @@ class OnionrCommunicatorDaemon:
 
         self.getOnlinePeers()
         OnionrCommunicatorTimers(self, self.daemonCommands, 5)
-        OnionrCommunicatorTimers(self, self.detectAPICrash, 12)
+        OnionrCommunicatorTimers(self, self.detectAPICrash, 5)
         OnionrCommunicatorTimers(self, self.getOnlinePeers, 60)
-        OnionrCommunicatorTimers(self, self.lookupBlocks, 120)
-        OnionrCommunicatorTimers(self, self.getBlocks, 30)
+        #OnionrCommunicatorTimers(self, self.lookupBlocks, 120)
+        #OnionrCommunicatorTimers(self, self.getBlocks, 30)
 
         # Main daemon loop, mainly for calling timers, do not do any complex operations here
         while not self.shutdown:
@@ -82,13 +82,18 @@ class OnionrCommunicatorDaemon:
                     if self._core.utils.validateHash(i):
                         # if newline seperated string is valid hash
                         if not os.path.exists('data/blocks/' + i + '.db'):
-                            # if block does not exist on disk
-                            self.blockQueue.append(i)
+                            # if block does not exist on disk and is not already in block queue
+                            if i not in self.blockQueue:
+                                self.blockQueue.append(i)
         self.decrementThreadCount('lookupBlocks')
         return
 
     def getBlocks(self):
         '''download new blocks'''
+        for blockHash in self.blockQueue:
+            content = self.peerAction(self.pickOnlinePeer(), 'getData', data=blockHash)
+            if content != False:
+                newBlock = block.Block()
         return
 
     def pickOnlinePeer(self):
@@ -159,8 +164,11 @@ class OnionrCommunicatorDaemon:
         logger.info('Performing ' + action + ' with ' + peer + ' on port ' + str(self.proxyPort))
         retData = self._core._utils.doGetRequest('http://' + peer + '/public/?action=' + action + '&data=' + data, port=self.proxyPort)
         if retData == False:
-            self.onlinePeers.remove(peer)
-            self.getOnlinePeers() # Will only add a new peer to pool if needed
+            try:
+                self.onlinePeers.remove(peer)
+                self.getOnlinePeers() # Will only add a new peer to pool if needed
+            except ValueError:
+                pass
         return retData
 
     def heartbeat(self):
@@ -202,7 +210,7 @@ class OnionrCommunicatorDaemon:
 
     def detectAPICrash(self):
         '''exit if the api server crashes/stops'''
-        if self._core._utils.localCommand('ping') != 'pong':
+        if self._core._utils.localCommand('ping', silent=False) != 'pong':
             for i in range(5):
                 if self._core._utils.localCommand('ping') == 'pong':
                     break # break for loop
