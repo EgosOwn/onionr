@@ -19,7 +19,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import sys, os, core, config, onionrblockapi as block, requests, time, logger, threading, onionrplugins as plugins
+import sys, os, core, config, onionrblockapi as block, requests, time, logger, threading, onionrplugins as plugins, base64
 import onionrexceptions
 from defusedxml import minidom
 
@@ -93,7 +93,16 @@ class OnionrCommunicatorDaemon:
         for blockHash in self.blockQueue:
             content = self.peerAction(self.pickOnlinePeer(), 'getData', data=blockHash)
             if content != False:
-                newBlock = block.Block()
+                try:
+                    content = content.encode()
+                except AttributeError:
+                    pass
+                content = base64.b64decode(content).decode()
+                if self._core._crypto.sha3Hash(content) == blockHash:
+                    metas = self._core._utils.getBlockMetadataFromData(content)
+                    metadata = metas[0]
+                    meta = metas[1]
+                    #if self._core._crypto.verifyPow(metas[2], metas[1])
         return
 
     def pickOnlinePeer(self):

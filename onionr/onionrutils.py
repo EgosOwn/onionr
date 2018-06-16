@@ -209,6 +209,22 @@ class OnionrUtils:
 
         return pass1
 
+    def getBlockMetadataFromData(self, blockData):
+        '''
+            accepts block contents as string and returns a tuple of metadata, meta (meta being internal metadata)
+        '''
+        try:
+            blockData = blockData.encode()
+        except AttributeError:
+            pass
+        metadata = json.loads(blockData[:blockData.find(b'\n')].decode())
+        data = blockData[blockData.find(b'\n'):].decode()
+        try:
+            meta = json.loads(metadata['meta'])
+        except KeyError:
+            meta = {}
+        return (metadata, meta, data)
+
     def checkPort(self, port, host=''):
         '''
             Checks if a port is available, returns bool

@@ -125,7 +125,7 @@ class API:
             except:
                 data = ''
             startTime = math.floor(time.time())
-            # we should keep a hash DB of requests (with hmac) to prevent replays
+
             action = request.args.get('action')
             #if not self.debug:
             token = request.args.get('token')
