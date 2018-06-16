@@ -35,6 +35,7 @@ class OnionrCommunicatorDaemon:
         self.proxyPort = sys.argv[2]
 
         self.onlinePeers = []
+        self.offlinePeers = []
 
         self.threadCounts = {}
 
@@ -60,8 +61,8 @@ class OnionrCommunicatorDaemon:
         OnionrCommunicatorTimers(self, self.daemonCommands, 5)
         OnionrCommunicatorTimers(self, self.detectAPICrash, 5)
         OnionrCommunicatorTimers(self, self.getOnlinePeers, 60)
-        #OnionrCommunicatorTimers(self, self.lookupBlocks, 120)
-        #OnionrCommunicatorTimers(self, self.getBlocks, 30)
+        OnionrCommunicatorTimers(self, self.lookupBlocks, 7)
+        OnionrCommunicatorTimers(self, self.getBlocks, 10)
 
         # Main daemon loop, mainly for calling timers, do not do any complex operations here
         while not self.shutdown:
@@ -72,37 +73,53 @@ class OnionrCommunicatorDaemon:
     
     def lookupBlocks(self):
         '''Lookup new blocks'''
+        logger.info('LOOKING UP NEW BLOCKS')
         tryAmount = 2
         newBlocks = ''
         for i in range(tryAmount):
-            newBlocks = self.peerAction(pickOnlinePeer(), 'getBlockHashes')
-            if newBlocks != False:
-                # if request was a success
-                for i in newBlocks.split('\n'):
-                    if self._core.utils.validateHash(i):
-                        # if newline seperated string is valid hash
-                        if not os.path.exists('data/blocks/' + i + '.db'):
-                            # if block does not exist on disk and is not already in block queue
-                            if i not in self.blockQueue:
-                                self.blockQueue.append(i)
+            peer = self.pickOnlinePeer()
+            newDBHash = self.peerAction(peer, 'getDBHash')
+            if newDBHash == False:
+                continue
+            if newDBHash != self._core.getAddressInfo(peer, 'DBHash'):
+                self._core.setAddressInfo(peer, 'DBHash', newDBHash)
+                newBlocks = self.peerAction(peer, 'getBlockHashes')
+                if newBlocks != False:
+                    # if request was a success
+                    for i in newBlocks.split('\n'):
+                        if self._core._utils.validateHash(i):
+                            # if newline seperated string is valid hash
+                            if not os.path.exists('data/blocks/' + i + '.db'):
+                                # if block does not exist on disk and is not already in block queue
+                                if i not in self.blockQueue:
+                                    self.blockQueue.append(i)
         self.decrementThreadCount('lookupBlocks')
         return
 
     def getBlocks(self):
         '''download new blocks'''
         for blockHash in self.blockQueue:
+            logger.info("ATTEMPTING TO DOWNLOAD " + blockHash)
             content = self.peerAction(self.pickOnlinePeer(), 'getData', data=blockHash)
             if content != False:
                 try:
                     content = content.encode()
                 except AttributeError:
                     pass
-                content = base64.b64decode(content).decode()
+                content = base64.b64decode(content)
                 if self._core._crypto.sha3Hash(content) == blockHash:
+                    content = content.decode() # decode here because sha3Hash needs bytes above
                     metas = self._core._utils.getBlockMetadataFromData(content)
                     metadata = metas[0]
                     meta = metas[1]
-                    #if self._core._crypto.verifyPow(metas[2], metas[1])
+                    if self._core._crypto.verifyPow(metas[2], metadata['meta']):
+                        logger.info('Block passed proof, saving.')
+                        self._core.setData(content)
+                        self.blockQueue.remove(blockHash)
+                    else:
+                        logger.warn('POW failed for block' + blockHash)
+                else:
+                    logger.warn('Block hash validation failed for ' + blockHash)
         return
 
     def pickOnlinePeer(self):
@@ -110,6 +127,8 @@ class OnionrCommunicatorDaemon:
         retData = ''
         while True:
             peerLength = len(self.onlinePeers)
+            if peerLength <= 0:
+                break
             try:
                 # get a random online peer, securely. May get stuck in loop if network is lost or if all peers in pool magically disconnect at once
                 retData = self.onlinePeers[self._core._crypto.secrets.randbelow(peerLength)]
@@ -121,8 +140,11 @@ class OnionrCommunicatorDaemon:
 
     def decrementThreadCount(self, threadName):
         '''Decrement amount of a thread name if more than zero, called when a function meant to be run in a thread ends'''
-        if self.threadCounts[threadName] > 0:
-            self.threadCounts[threadName] -= 1
+        try:
+            if self.threadCounts[threadName] > 0:
+                self.threadCounts[threadName] -= 1
+        except KeyError:
+            pass
 
     def getOnlinePeers(self):
         '''Manages the self.onlinePeers attribute list'''
@@ -137,6 +159,7 @@ class OnionrCommunicatorDaemon:
     def connectNewPeer(self, peer=''):
         '''Adds a new random online peer to self.onlinePeers'''
         retData = False
+        tried = self.offlinePeers
         if peer != '':
             if self._core._utils.validateID(peer):
                 peerList = [peer]
@@ -149,12 +172,15 @@ class OnionrCommunicatorDaemon:
             peerList.extend(self._core.bootstrapList)
 
         for address in peerList:
+            if len(address) == 0 or address in tried or address in self.onlinePeers:
+                continue
             if self.peerAction(address, 'ping') == 'pong!':
                 logger.info('connected to ' + address)
                 self.onlinePeers.append(address)
                 retData = address
                 break
             else:
+                tried.append(address)
                 logger.debug('failed to connect to ' + address)
         else:
             logger.warn('Could not connect to any peer')
@@ -171,7 +197,10 @@ class OnionrCommunicatorDaemon:
     def peerAction(self, peer, action, data=''):
         '''Perform a get request to a peer'''
         logger.info('Performing ' + action + ' with ' + peer + ' on port ' + str(self.proxyPort))
-        retData = self._core._utils.doGetRequest('http://' + peer + '/public/?action=' + action + '&data=' + data, port=self.proxyPort)
+        url = 'http://' + peer + '/public/?action=' + action
+        if len(data) > 0:
+            url += '&data=' + data
+        retData = self._core._utils.doGetRequest(url, port=self.proxyPort)
         if retData == False:
             try:
                 self.onlinePeers.remove(peer)

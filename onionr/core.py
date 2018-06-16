@@ -486,6 +486,7 @@ class Core:
             trust int           6
             pubkeyExchanged int 7
             hashID text         8
+            pow text            9
         '''
         conn = sqlite3.connect(self.peerDB)
         c = conn.cursor()
@@ -672,7 +673,6 @@ class Core:
                 if powToken == False:
                     time.sleep(0.3)
                     continue
-                powHash = powToken[0]
                 powToken = base64.b64encode(powToken[1])
                 try:
                     powToken = powToken.decode()
@@ -693,8 +693,7 @@ class Core:
         retData = ''
 
         metadata['type'] = header
-        metadata['powHash'] = powHash
-        metadata['powToken'] = powToken
+        metadata['powRandomToken'] = powToken
 
         sig = {}
 

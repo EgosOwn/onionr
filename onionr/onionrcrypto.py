@@ -255,29 +255,28 @@ class OnionrCrypto:
         '''
         retData = False
 
-        if not (('powToken' in metadata) and ('powHash' in metadata)):
+        if not 'powRandomToken' in metadata:
+            logger.warn('No powRandomToken')
             return False
 
         dataLen = len(blockContent)
 
-        expectedHash = self.blake2bHash(base64.b64decode(metadata['powToken']) + self.blake2bHash(blockContent.encode()))
+        expectedHash = self.blake2bHash(base64.b64decode(metadata['powRandomToken']) + self.blake2bHash(blockContent.encode()))
         difficulty = 0
         try:
             expectedHash = expectedHash.decode()
         except AttributeError:
             pass
-        if metadata['powHash'] == expectedHash:
-            difficulty = math.floor(dataLen / 1000000)
 
-            mainHash = '0000000000000000000000000000000000000000000000000000000000000000'#nacl.hash.blake2b(nacl.utils.random()).decode()
-            puzzle = mainHash[:difficulty]
+        difficulty = math.floor(dataLen / 1000000)
 
-            if metadata['powHash'][:difficulty] == puzzle:
-                # logger.debug('Validated block pow')
-                retData = True
-            else:
-                logger.debug("Invalid token (#1)")
+        mainHash = '0000000000000000000000000000000000000000000000000000000000000000'#nacl.hash.blake2b(nacl.utils.random()).decode()
+        puzzle = mainHash[:difficulty]
+
+        if metadata['powHash'][:difficulty] == puzzle:
+            # logger.debug('Validated block pow')
+            retData = True
         else:
-            logger.debug('Invalid token (#2): Expected hash %s, got hash %s...' % (metadata['powHash'], expectedHash))
+            logger.debug("Invalid token, bad proof")
 
         return retData
