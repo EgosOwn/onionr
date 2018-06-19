@@ -28,7 +28,7 @@ class OnionrCommunicatorDaemon:
         logger.warn('New (unstable) communicator is being used.')
 
         self.timers = []
-        self._core = core.Core()
+        self._core = core.Core(torPort=sys.argv[2])
         self.nistSaltTimestamp = 0
         self.powSalt = 0
         self.delay = 1

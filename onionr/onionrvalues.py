@@ -1,7 +1,7 @@
 '''
-    Onionr - P2P Microblogging Platform & Social network.
+    Onionr - P2P Microblogging Platform & Social network
 
-    This file contains exceptions for onionr
+    This file defines values and requirements used by Onionr
 '''
 '''
     This program is free software: you can redistribute it and/or modify
@@ -18,20 +18,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 
-# general exceptions
-class NotFound(Exception):
-    pass
-class Unknown(Exception):
-    pass
-class Invalid(Exception):
-    pass
-
-# block exceptions
-class InvalidMetadata(Exception):
-    pass
-
-# network level exceptions
-class MissingPort(Exception):
-    pass
-class InvalidAddress(Exception):
-    pass
+class OnionrValues:
+    def __init__(self):
+        self.passwordLength = 20
+        self.blockMetadataLengths = {'meta': 1000, 'sig': 88, 'signer': 64, 'time': 10, 'powRandomToken': '1000'}

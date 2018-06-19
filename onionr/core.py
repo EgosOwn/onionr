@@ -20,7 +20,7 @@
 import sqlite3, os, sys, time, math, base64, tarfile, getpass, simplecrypt, hashlib, nacl, logger, json, netcontroller, math, config
 from onionrblockapi import Block
 
-import onionrutils, onionrcrypto, onionrproofs, onionrevents as events
+import onionrutils, onionrcrypto, onionrproofs, onionrevents as events, onionrexceptions, onionrvalues
 
 if sys.version_info < (3, 6):
     try:
@@ -30,7 +30,7 @@ if sys.version_info < (3, 6):
         sys.exit(1)
 
 class Core:
-    def __init__(self):
+    def __init__(self, torPort=0):
         '''
             Initialize Core Onionr library
         '''
@@ -44,6 +44,7 @@ class Core:
 
             self.bootstrapFileLocation = 'static-data/bootstrap-nodes.txt'
             self.bootstrapList = []
+            self.requirements = onionrvalues.OnionrValues()
 
             if not os.path.exists('data/'):
                 os.mkdir('data/')
@@ -659,10 +660,48 @@ class Core:
         conn.close()
         return True
 
-    def insertBlock(self, data, header='txt', sign=False, metadata = {}):
+    def insertBlock(self, data, header='txt', sign=False, encryptType='', symKey='', asymPeer='', meta = {}):
         '''
             Inserts a block into the network
+            encryptType must be specified to encrypt a block
         '''
+
+        try:
+            data.decode()
+        except AttributeError:
+            data = data.encode()
+
+        retData = ''
+        signature = ''
+        signer = ''
+
+        # only use header if not set in provided meta
+        try:
+            meta['type']
+        except KeyError:
+            meta['type'] = header # block type
+
+        jsonMeta = json.dumps(meta)
+
+        if encryptType in ('asym', 'sym'):
+            metadata['encryptType'] = encryptType
+        else:
+            raise onionrexceptions.InvalidMetadata('encryptType must be asym or sym')
+
+        # sign before encrypt, as unauthenticated crypto should not be a problem here
+        if sign:
+            signature = self._crypto.edSign(jsonMeta + data, key=self._crypto.privKey, encodeResult=True)
+            signer = self._crypto.pubKeyHashID()
+
+        if len(jsonMeta) > 1000:
+            raise onionrexceptions.InvalidMetadata('meta in json encoded form must not exceed 1000 bytes')
+        
+        if encryptType == 'sym':
+            if len(symKey) < self.requirements.passwordLength:
+                raise onionrexceptions.SecurityError('Weak encryption key')
+            jsonMeta = self._crypto.symmetricEncrypt(jsonMeta, key=symKey, returnEncoded=True)
+
+        metadata['meta'] = jsonMeta
 
         powProof = onionrproofs.POW(data)
         powToken = ''
@@ -685,41 +724,7 @@ class Core:
             powProof.shutdown()
             return ''
 
-        try:
-            data.decode()
-        except AttributeError:
-            data = data.encode()
 
-        retData = ''
-
-        metadata['type'] = header
-        metadata['powRandomToken'] = powToken
-
-        sig = {}
-
-        metadata = json.dumps(metadata)
-        metadata = metadata.encode()
-        signature = ''
-
-        if sign:
-            signature = self._crypto.edSign(metadata + b'\n' + data, self._crypto.privKey, encodeResult=True)
-            ourID = self._crypto.pubKeyHashID()
-            # Convert from bytes on some py versions?
-            try:
-                ourID = ourID.decode()
-            except AttributeError:
-                pass
-        metadata = {'sig': signature, 'meta': metadata.decode()}
-        metadata = json.dumps(metadata)
-        metadata = metadata.encode()
-
-        if len(data) == 0:
-            logger.error('Will not insert empty block')
-        else:
-            addedHash = self.setData(metadata + b'\n' + data)
-            self.addToBlockDB(addedHash, selfInsert=True)
-            self.setBlockType(addedHash, header)
-            retData = addedHash
         return retData
 
     def introduceNode(self):
