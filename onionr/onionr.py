@@ -149,7 +149,7 @@ class Onionr:
                     randomPort = random.randint(1024, 65535)
                     if self.onionrUtils.checkPort(randomPort):
                         break
-            config.set('client', {'participate': 'true', 'hmac': base64.b16encode(os.urandom(32)).decode('utf-8'), 'port': randomPort, 'api_version': API_VERSION}, True)
+            config.set('client', {'participate': True, 'hmac': base64.b16encode(os.urandom(32)).decode('utf-8'), 'port': randomPort, 'api_version': API_VERSION}, True)
 
         self.cmds = {
             '': self.showHelpSuggestion,
@@ -426,7 +426,7 @@ class Onionr:
             except KeyboardInterrupt:
                 return
 
-        addedHash = Block('txt', messageToAdd).save()
+        addedHash = Block(type = 'txt', content = messageToAdd).save()
         if addedHash != None:
             logger.info("Message inserted as as block %s" % addedHash)
         else:
