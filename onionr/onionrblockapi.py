@@ -25,34 +25,16 @@ class Block:
     blockCacheOrder = list() # NEVER write your own code that writes to this!
     blockCache = dict() # should never be accessed directly, look at Block.getCache()
 
-    def __init__(self, hash = None, core = None):
-        '''
-            Initializes Onionr
+    def __init__(self, hash = None, core = None, type = None, content = None):
+        # take from arguments
+        self.hash = hash
+        self.core = core
+        self.btype = type
+        self.bcontent = content
 
-            Inputs:
-            - hash (str): the hash of the block to be imported, if any
-            - core (Core/str):
-              - if (Core): this is the Core instance to be used, don't create a new one
-              - if (str): treat `core` as the block content, and instead, treat `hash` as the block type
-
-            Outputs:
-            - (Block): the new Block instance
-        '''
-
-        # input from arguments
-        if (type(hash) == str) and (type(core) == str):
-            self.btype = hash
-            self.bcontent = core
-            self.hash = None
-            self.core = None
-        else:
-            if type(hash) == bytes:
-                hash = hash.decode()
-
-            self.btype = ''
-            self.bcontent = ''
-            self.hash = hash
-            self.core = core
+        # sometimes people input a bytes object instead of str in `hash`
+        if isinstance(hash, bytes):
+            hash = hash.decode()
 
         # initialize variables
         self.valid = True
@@ -70,6 +52,8 @@ class Block:
         # handle arguments
         if self.getCore() is None:
             self.core = onionrcore.Core()
+
+        # update the blocks' contents if it exists
         if not self.getHash() is None:
             if not self.update():
                 logger.debug('Failed to open block %s.' % self.getHash())
@@ -126,13 +110,13 @@ class Block:
             self.raw = str(blockdata)
             self.bheader = json.loads(self.getRaw()[:self.getRaw().index('\n')])
             self.bcontent = self.getRaw()[self.getRaw().index('\n') + 1:]
-            self.bmetadata = json.loads(self.getHeader('meta'))
-            self.parent = (None if not 'parent' in self.getMetadata() else self.getMetadata('parent'))
-            self.btype = self.getMetadata('type')
-            self.powHash = self.getMetadata('powHash')
-            self.powToken = self.getMetadata('powToken')
+            self.bmetadata = json.loads(self.getHeader('meta', None))
+            self.parent = self.getMetadata('parent', None)
+            self.btype = self.getMetadata('type', None)
+            self.powHash = self.getMetadata('powHash', None)
+            self.powToken = self.getMetadata('powToken', None)
             self.signed = ('sig' in self.getHeader() and self.getHeader('sig') != '')
-            self.signature = (None if not self.isSigned() else self.getHeader('sig'))
+            self.signature = self.getHeader('sig', None)
             self.signedData = (None if not self.isSigned() else self.getHeader('meta') + '\n' + self.getContent())
             self.date = self.getCore().getBlockDate(self.getHash())
 
@@ -235,7 +219,7 @@ class Block:
 
         return str(self.raw)
 
-    def getHeader(self, key = None):
+    def getHeader(self, key = None, default = None):
         '''
             Returns the header information
 
@@ -247,10 +231,12 @@ class Block:
         '''
 
         if not key is None:
-            return self.getHeader()[key]
+            if key in self.getHeader():
+                return self.getHeader()[key]
+            return default
         return self.bheader
 
-    def getMetadata(self, key = None):
+    def getMetadata(self, key = None, default = None):
         '''
             Returns the metadata information
 
@@ -262,7 +248,9 @@ class Block:
         '''
 
         if not key is None:
-            return self.getMetadata()[key]
+            if key in self.getMetadata():
+                return self.getMetadata()[key]
+            return default
         return self.bmetadata
 
     def getContent(self):
@@ -287,7 +275,7 @@ class Block:
             if self.parent == self.getHash():
                 self.parent = self
             elif Block.exists(self.parent):
-                self.parent = Block(self.getMetadata('parent'))
+                self.parent = Block(self.getMetadata('parent'), core = self.getCore())
             else:
                 self.parent = None
 

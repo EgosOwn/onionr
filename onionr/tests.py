@@ -124,7 +124,7 @@ class OnionrTests(unittest.TestCase):
         content = 'Onionr test block'
 
         from onionrblockapi import Block
-        hash = Block('test', content).save()
+        hash = Block(type = 'test', content = content).save()
         block = Block(hash) # test init
 
         if len(Block.getBlocks(type = 'test')) == 0:
