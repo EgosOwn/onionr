@@ -696,6 +696,7 @@ class Core:
         if len(jsonMeta) > 1000:
             raise onionrexceptions.InvalidMetadata('meta in json encoded form must not exceed 1000 bytes')
         
+        # encrypt block metadata/sig/content
         if encryptType == 'sym':
             if len(symKey) < self.requirements.passwordLength:
                 raise onionrexceptions.SecurityError('Weak encryption key')
@@ -711,31 +712,25 @@ class Core:
             else:
                 raise onionrexceptions.InvalidPubkey(asymPeer + ' is not a valid base32 encoded ed25519 key')
 
+        powProof = onionrproofs.POW(data)
+
+        # wait for proof to complete
+        powToken = powProof.waitForResult()
+
+        powToken = base64.b64encode(powToken[1])
+        try:
+            powToken = powToken.decode()
+        except AttributeError:
+            pass
+        finally:
+            break
+        
+        # compile metadata
         metadata['meta'] = jsonMeta
         metadata['sig'] = signature
         metadata['signer'] = signer
-
-        powProof = onionrproofs.POW(data)
-        powToken = ''
-        # wait for proof to complete
-        try:
-            while True:
-                powToken = powProof.getResult()
-                if powToken == False:
-                    time.sleep(0.3)
-                    continue
-                powToken = base64.b64encode(powToken[1])
-                try:
-                    powToken = powToken.decode()
-                except AttributeError:
-                    pass
-                finally:
-                    break
-        except KeyboardInterrupt:
-            logger.warn("Got keyboard interrupt while working on inserting block, stopping.")
-            powProof.shutdown()
-            return ''
-
+        metadata['powRandomToken'] = powToken
+        metadata['time'] = str(self._utils.getEpoch())
 
         return retData
 

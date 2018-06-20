@@ -22,31 +22,6 @@ import nacl.encoding, nacl.hash, nacl.utils, time, math, threading, binascii, lo
 import core
 
 class POW:
-    def pow(self, reporting = False, myCore = None):
-        startTime = math.floor(time.time())
-        self.hashing = True
-        self.reporting = reporting
-        iFound = False # if current thread is the one that found the answer
-        answer = ''
-        heartbeat = 200000
-        hbCount = 0
-        
-        while self.hashing:
-            rand = nacl.utils.random()
-            token = nacl.hash.blake2b(rand + self.data).decode()
-            #print(token)
-            if self.puzzle == token[0:self.difficulty]:
-                self.hashing = False
-                iFound = True
-                break
-                
-        if iFound:
-            endTime = math.floor(time.time())
-            if self.reporting:
-                logger.debug('Found token after %s seconds: %s' % (endTime - startTime, token), timestamp=True)
-                logger.debug('Random value was: %s' % base64.b64encode(rand).decode())
-            self.result = (token, rand)
-
     def __init__(self, data, threadCount = 5):
         self.foundHash = False
         self.difficulty = 0
@@ -77,6 +52,31 @@ class POW:
         
         return
 
+    def pow(self, reporting = False, myCore = None):
+        startTime = math.floor(time.time())
+        self.hashing = True
+        self.reporting = reporting
+        iFound = False # if current thread is the one that found the answer
+        answer = ''
+        heartbeat = 200000
+        hbCount = 0
+        
+        while self.hashing:
+            rand = nacl.utils.random()
+            token = nacl.hash.blake2b(rand + self.data).decode()
+            #print(token)
+            if self.puzzle == token[0:self.difficulty]:
+                self.hashing = False
+                iFound = True
+                break
+                
+        if iFound:
+            endTime = math.floor(time.time())
+            if self.reporting:
+                logger.debug('Found token after %s seconds: %s' % (endTime - startTime, token), timestamp=True)
+                logger.debug('Random value was: %s' % base64.b64encode(rand).decode())
+            self.result = (token, rand)
+
     def shutdown(self):
         self.hashing = False
         self.puzzle = ''
@@ -96,3 +96,20 @@ class POW:
             
         self.result = False
         return retVal
+
+    def waitForResult(self):
+        '''
+            Returns the result only when it has been found, False if not running and not found
+        '''
+        result = False
+        try:
+            while True:
+                result = self.getResult()
+                if not self.hashing:
+                    break
+                else:
+                    time.sleep(2)
+        except KeyboardInterrupt:
+            self.shutdown()
+            logger.warn('Got keyboard interrupt while waiting for POW result, stopping')
+        return result
