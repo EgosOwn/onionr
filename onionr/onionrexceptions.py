@@ -26,6 +26,10 @@ class Unknown(Exception):
 class Invalid(Exception):
     pass
 
+# crypto exceptions
+class InvalidPubkey(Exception):
+    pass
+
 # block exceptions
 class InvalidMetadata(Exception):
     pass

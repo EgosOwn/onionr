@@ -110,7 +110,7 @@ class OnionrCrypto:
             retData = key.sign(data).signature
         return retData
 
-    def pubKeyEncrypt(self, data, pubkey, anonymous=False, encodedData=False):
+    def pubKeyEncrypt(self, data, pubkey, anonymous=True, encodedData=False):
         '''Encrypt to a public key (Curve25519, taken from base32 Ed25519 pubkey)'''
         retVal = ''
 
