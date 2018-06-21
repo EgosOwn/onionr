@@ -731,6 +731,9 @@ class Core:
         metadata['powRandomToken'] = powToken
         metadata['time'] = str(self._utils.getEpoch())
 
+        payload = json.dumps(metadata) + '\n' + data
+        retData = self.setData(payload)
+
         return retData
 
     def introduceNode(self):
