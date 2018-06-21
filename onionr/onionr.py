@@ -426,7 +426,8 @@ class Onionr:
             except KeyboardInterrupt:
                 return
 
-        addedHash = Block(type = 'txt', content = messageToAdd).save()
+        #addedHash = Block(type = 'txt', content = messageToAdd).save()
+        addedHash = self.onionrCore.insertBlock(messageToAdd)
         if addedHash != None:
             logger.info("Message inserted as as block %s" % addedHash)
         else:
