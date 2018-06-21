@@ -731,7 +731,7 @@ class Core:
         metadata['powRandomToken'] = powToken
         metadata['time'] = str(self._utils.getEpoch())
 
-        payload = json.dumps(metadata) + '\n' + data
+        payload = json.dumps(metadata).encode() + b'\n' + data
         retData = self.setData(payload)
         self.addToBlockDB(retData, selfInsert=True, dataSaved=True)
 
