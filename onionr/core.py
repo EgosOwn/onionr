@@ -733,6 +733,7 @@ class Core:
 
         payload = json.dumps(metadata) + '\n' + data
         retData = self.setData(payload)
+        self.addToBlockDB(retData, selfInsert=True, dataSaved=True)
 
         return retData
 
