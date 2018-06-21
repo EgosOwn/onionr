@@ -197,6 +197,8 @@ class OnionrCommunicatorDaemon:
 
     def peerAction(self, peer, action, data=''):
         '''Perform a get request to a peer'''
+        if len(peer) == 0:
+            return False
         logger.info('Performing ' + action + ' with ' + peer + ' on port ' + str(self.proxyPort))
         url = 'http://' + peer + '/public/?action=' + action
         if len(data) > 0:

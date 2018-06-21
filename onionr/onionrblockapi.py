@@ -168,7 +168,7 @@ class Block:
                         blockFile.write(self.getRaw().encode())
                     self.update()
                 else:
-                    self.hash = self.getCore().insertBlock(self.getContent(), header = self.getType(), sign = sign, metadata = self.getMetadata())
+                    self.hash = self.getCore().insertBlock(self.getContent(), header = self.getType(), sign = sign)
                     self.update()
                 return self.getHash()
             else:
