@@ -63,6 +63,7 @@ class OnionrCommunicatorDaemon:
         OnionrCommunicatorTimers(self, self.getOnlinePeers, 60)
         OnionrCommunicatorTimers(self, self.lookupBlocks, 7)
         OnionrCommunicatorTimers(self, self.getBlocks, 10)
+        OnionrCommunicatorTimers(self, self.clearOfflinePeer, 120)
         #TODO: sync keys/peers
 
         # Main daemon loop, mainly for calling timers, do not do any complex operations here
@@ -146,6 +147,14 @@ class OnionrCommunicatorDaemon:
                 self.threadCounts[threadName] -= 1
         except KeyError:
             pass
+    
+    def clearOfflinePeer(self):
+        '''Removes the longest offline peer to retry later'''
+        try:
+            self.offlinePeers.pop(0)
+        except IndexError:
+            pass
+        self.decrementThreadCount('clearOfflinePeer')
 
     def getOnlinePeers(self):
         '''Manages the self.onlinePeers attribute list'''

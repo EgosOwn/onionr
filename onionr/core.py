@@ -683,10 +683,10 @@ class Core:
 
         jsonMeta = json.dumps(meta)
 
-        if encryptType in ('asym', 'sym'):
+        if encryptType in ('asym', 'sym', ''):
             metadata['encryptType'] = encryptType
         else:
-            raise onionrexceptions.InvalidMetadata('encryptType must be asym or sym')
+            raise onionrexceptions.InvalidMetadata('encryptType must be asym or sym, or blank')
 
         # sign before encrypt, as unauthenticated crypto should not be a problem here
         if sign:
