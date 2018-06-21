@@ -674,6 +674,7 @@ class Core:
         retData = ''
         signature = ''
         signer = ''
+        metadata = {}
 
         # only use header if not set in provided meta
         try:
