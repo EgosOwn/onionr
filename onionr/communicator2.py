@@ -63,6 +63,7 @@ class OnionrCommunicatorDaemon:
         OnionrCommunicatorTimers(self, self.getOnlinePeers, 60)
         OnionrCommunicatorTimers(self, self.lookupBlocks, 7)
         OnionrCommunicatorTimers(self, self.getBlocks, 10)
+        #TODO: sync keys/peers
 
         # Main daemon loop, mainly for calling timers, do not do any complex operations here
         while not self.shutdown:

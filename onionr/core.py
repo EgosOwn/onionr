@@ -722,8 +722,6 @@ class Core:
             powToken = powToken.decode()
         except AttributeError:
             pass
-        finally:
-            break
         
         # compile metadata
         metadata['meta'] = jsonMeta
