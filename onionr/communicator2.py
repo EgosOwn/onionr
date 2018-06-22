@@ -19,7 +19,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import sys, os, core, config, onionrblockapi as block, requests, time, logger, threading, onionrplugins as plugins, base64
+import sys, os, core, config, json, onionrblockapi as block, requests, time, logger, threading, onionrplugins as plugins, base64
 import onionrexceptions
 from defusedxml import minidom
 
@@ -114,12 +114,13 @@ class OnionrCommunicatorDaemon:
                     metas = self._core._utils.getBlockMetadataFromData(content)
                     metadata = metas[0]
                     meta = metas[1]
-                    if self._core._crypto.verifyPow(metas[2], metadata['meta']):
+                    if self._core._crypto.verifyPow(metas[2], metadata):
                         logger.info('Block passed proof, saving.')
                         self._core.setData(content)
+                        self._core.addToBlockDB(blockHash, dataSaved=True)
                         self.blockQueue.remove(blockHash)
                     else:
-                        logger.warn('POW failed for block' + blockHash)
+                        logger.warn('POW failed for block ' + blockHash)
                 else:
                     logger.warn('Block hash validation failed for ' + blockHash + ' got ' + self._core._crypto.sha3Hash(content))
         self.decrementThreadCount('getBlocks')
@@ -152,9 +153,11 @@ class OnionrCommunicatorDaemon:
     def clearOfflinePeer(self):
         '''Removes the longest offline peer to retry later'''
         try:
-            self.offlinePeers.pop(0)
+            removed = self.offlinePeers.pop(0)
         except IndexError:
             pass
+        else:
+            logger.debug('removed ' + removed + ' from offline list to try them again.')
         self.decrementThreadCount('clearOfflinePeer')
 
     def getOnlinePeers(self):

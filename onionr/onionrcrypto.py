@@ -273,7 +273,7 @@ class OnionrCrypto:
         mainHash = '0000000000000000000000000000000000000000000000000000000000000000'#nacl.hash.blake2b(nacl.utils.random()).decode()
         puzzle = mainHash[:difficulty]
 
-        if metadata['powHash'][:difficulty] == puzzle:
+        if metadata['powRandomToken'][:difficulty] == puzzle:
             # logger.debug('Validated block pow')
             retData = True
         else:
