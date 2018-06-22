@@ -121,7 +121,8 @@ class OnionrCommunicatorDaemon:
                     else:
                         logger.warn('POW failed for block' + blockHash)
                 else:
-                    logger.warn('Block hash validation failed for ' + blockHash)
+                    logger.warn('Block hash validation failed for ' + blockHash + ' got ' + self._core._crypto.sha3Hash(content))
+        self.decrementThreadCount('getBlocks')
         return
 
     def pickOnlinePeer(self):

@@ -27,14 +27,16 @@ class Block:
 
     def __init__(self, hash = None, core = None, type = None, content = None):
         # take from arguments
+        # sometimes people input a bytes object instead of str in `hash`
+        try:
+            hash = hash.decode()
+        except AttributeError:
+            pass
         self.hash = hash
         self.core = core
         self.btype = type
         self.bcontent = content
 
-        # sometimes people input a bytes object instead of str in `hash`
-        if isinstance(hash, bytes):
-            hash = hash.decode()
 
         # initialize variables
         self.valid = True
@@ -57,6 +59,8 @@ class Block:
         if not self.getHash() is None:
             if not self.update():
                 logger.debug('Failed to open block %s.' % self.getHash())
+        else:
+            logger.debug('Did not update block')
 
     # logic
 
