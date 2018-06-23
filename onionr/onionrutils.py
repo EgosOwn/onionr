@@ -105,7 +105,7 @@ class OnionrUtils:
 
     def mergeKeys(self, newKeyList):
         '''
-            Merge ed25519 key list to our database
+            Merge ed25519 key list to our database, comma seperated string
         '''
         try:
             retVal = False

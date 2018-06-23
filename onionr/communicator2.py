@@ -64,7 +64,9 @@ class OnionrCommunicatorDaemon:
         OnionrCommunicatorTimers(self, self.lookupBlocks, 7)
         OnionrCommunicatorTimers(self, self.getBlocks, 10)
         OnionrCommunicatorTimers(self, self.clearOfflinePeer, 120)
-        #TODO: sync keys/peers
+
+        OnionrCommunicatorTimers(self, self.lookupKeys, 125)
+        OnionrCommunicatorTimers(self, self.lookupAdders, 600)
 
         # Main daemon loop, mainly for calling timers, do not do any complex operations here
         while not self.shutdown:
@@ -73,6 +75,28 @@ class OnionrCommunicatorDaemon:
             time.sleep(self.delay)
         logger.info('Goodbye.')
     
+    def lookupKeys(self):
+        '''Lookup new keys'''
+        logger.info('LOOKING UP NEW KEYS')
+        tryAmount = 1
+        for i in range(tryAmount):
+            peer = self.pickOnlinePeer()
+            newKeys = self.peerAction(peer, action='kex')
+            self._core._utils.mergeKeys(newKeys)
+        
+        self.decrementThreadCount('lookupKeys')
+        return
+    
+    def lookupAdders(self):
+        '''Lookup new peer addresses'''
+        logger.info('LOOKING UP NEW ADDRESSES')
+        tryAmount = 1
+        for i in range(tryAmount):
+            peer = self.pickOnlinePeer()
+            newAdders = self.peerAction(peer, action='pex')
+            self._core._utils.mergeAdders(newAdders)
+        
+        self.decrementThreadCount('lookupKeys')  
     def lookupBlocks(self):
         '''Lookup new blocks'''
         logger.info('LOOKING UP NEW BLOCKS')
