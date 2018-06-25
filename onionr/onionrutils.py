@@ -309,6 +309,11 @@ class OnionrUtils:
                 retVal = False
 
         return retVal
+    
+    def validateMetadata(metadata):
+        '''Validate metadata meets onionr spec (does not validate proof value computation), take in either dictionary or json string'''
+        # TODO, make this check sane sizes
+        return True
 
     def validatePubKey(self, key):
         '''

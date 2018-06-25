@@ -64,7 +64,6 @@ class OnionrCommunicatorDaemon:
         OnionrCommunicatorTimers(self, self.lookupBlocks, 7)
         OnionrCommunicatorTimers(self, self.getBlocks, 10)
         OnionrCommunicatorTimers(self, self.clearOfflinePeer, 120)
-
         OnionrCommunicatorTimers(self, self.lookupKeys, 125)
         OnionrCommunicatorTimers(self, self.lookupAdders, 600)
 
@@ -138,13 +137,13 @@ class OnionrCommunicatorDaemon:
                     metas = self._core._utils.getBlockMetadataFromData(content)
                     metadata = metas[0]
                     meta = metas[1]
-                    if self._core._crypto.verifyPow(metas[2], metadata):
+                    if self._core._crypto.verifyPow(metas[2], metadata) and self._core._utils.validateMetadata(metadata):
                         logger.info('Block passed proof, saving.')
                         self._core.setData(content)
                         self._core.addToBlockDB(blockHash, dataSaved=True)
-                        self.blockQueue.remove(blockHash)
                     else:
                         logger.warn('POW failed for block ' + blockHash)
+                    self.blockQueue.remove(blockHash)
                 else:
                     logger.warn('Block hash validation failed for ' + blockHash + ' got ' + self._core._crypto.sha3Hash(content))
         self.decrementThreadCount('getBlocks')
