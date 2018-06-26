@@ -371,26 +371,35 @@ class Core:
         '''
         retData = False
         if not os.path.exists(self.queueDB):
-            conn = sqlite3.connect(self.queueDB)
-            c = conn.cursor()
-            # Create table
-            c.execute('''CREATE TABLE commands
-                        (id integer primary key autoincrement, command text, data text, date text)''')
-            conn.commit()
+            self.makeDaemonDB()
         else:
             conn = sqlite3.connect(self.queueDB)
             c = conn.cursor()
-            for row in c.execute('SELECT command, data, date, min(ID) FROM commands group by id'):
-                retData = row
-                break
-            if retData != False:
-                c.execute('DELETE FROM commands WHERE id=?;', (retData[3],))
+            try:
+                for row in c.execute('SELECT command, data, date, min(ID) FROM commands group by id'):
+                    retData = row
+                    break
+            except sqlite3.OperationalError:
+                self.makeDaemonDB()
+            else:
+                if retData != False:
+                    c.execute('DELETE FROM commands WHERE id=?;', (retData[3],))
         conn.commit()
         conn.close()
 
         events.event('queue_pop', data = {'data': retData}, onionr = None)
 
         return retData
+    
+    def makeDaemonDB(self):
+        '''generate the daemon queue db'''
+        conn = sqlite3.connect(self.queueDB)
+        c = conn.cursor()
+        # Create table
+        c.execute('''CREATE TABLE commands
+                    (id integer primary key autoincrement, command text, data text, date text)''')
+        conn.commit()
+        conn.close()
 
     def daemonQueueAdd(self, command, data=''):
         '''
