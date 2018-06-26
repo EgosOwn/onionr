@@ -134,15 +134,18 @@ class OnionrCommunicatorDaemon:
                 content = base64.b64decode(content)
                 if self._core._crypto.sha3Hash(content) == blockHash:
                     content = content.decode() # decode here because sha3Hash needs bytes above
-                    metas = self._core._utils.getBlockMetadataFromData(content)
+                    metas = self._core._utils.getBlockMetadataFromData(content) # returns tuple(metadata, meta), meta is also in metadata
                     metadata = metas[0]
                     meta = metas[1]
-                    if self._core._crypto.verifyPow(metas[2], metadata) and self._core._utils.validateMetadata(metadata):
-                        logger.info('Block passed proof, saving.')
-                        self._core.setData(content)
-                        self._core.addToBlockDB(blockHash, dataSaved=True)
+                    if self._core._utils.validateMetadata(metadata):
+                        if self._core._crypto.verifyPow(metas[2], metadata):
+                            logger.info('Block passed proof, saving.')
+                            self._core.setData(content)
+                            self._core.addToBlockDB(blockHash, dataSaved=True)
+                        else:
+                            logger.warn('POW failed for block ' + blockHash)
                     else:
-                        logger.warn('POW failed for block ' + blockHash)
+                        logger.warn('Metadata for ' + blockHash + ' is invalid.')
                     self.blockQueue.remove(blockHash)
                 else:
                     logger.warn('Block hash validation failed for ' + blockHash + ' got ' + self._core._crypto.sha3Hash(content))

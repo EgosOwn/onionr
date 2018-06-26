@@ -18,7 +18,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 # Misc functions that do not fit in the main api, but are useful
-import getpass, sys, requests, os, socket, hashlib, logger, sqlite3, config, binascii, time, base64, json, glob, shutil, math
+import getpass, sys, requests, os, socket, hashlib, logger, sqlite3, config, binascii, time, base64, json, glob, shutil, math, json
 import nacl.signing, nacl.encoding
 from onionrblockapi import Block
 import onionrexceptions
@@ -313,7 +313,34 @@ class OnionrUtils:
     def validateMetadata(metadata):
         '''Validate metadata meets onionr spec (does not validate proof value computation), take in either dictionary or json string'''
         # TODO, make this check sane sizes
-        return True
+        retData = False
+        
+        # convert to dict if it is json string
+        if type(metadata) is str:
+            try:
+                metadata = json.loads(metadata)
+            except json.JSONDecodeError:
+                pass
+
+        # Validate metadata dict for invalid keys to sizes that are too large
+        if type(metadata) is dict:
+            for i in metadata:
+                try:
+                    self._core.requirements.blockMetadataLengths[i]
+                except KeyError:
+                    logger.warn('Block has invalid metadata key ' + i)
+                    break
+                else:
+                    if self._core.requirements.blockMetadataLengths[i] < len(metadata[i]):
+                        logger.warn('Block metadata key ' + i + ' exceeded maximum size')
+                        break
+            else:
+                # if metadata loop gets no errors, it does not break, therefore metadata is valid
+                retData = True
+        else:
+            logger.warn('In call to utils.validateMetadata, metadata must be JSON string or a dictionary object')
+
+        return retData
 
     def validatePubKey(self, key):
         '''
