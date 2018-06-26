@@ -33,6 +33,7 @@ class OnionrCommunicatorDaemon:
         self.powSalt = 0
         self.delay = 1
         self.proxyPort = sys.argv[2]
+        self.startTime = self._core._utils.getEpoch()
 
         self.onlinePeers = []
         self.offlinePeers = []
@@ -223,7 +224,8 @@ class OnionrCommunicatorDaemon:
                 tried.append(address)
                 logger.debug('failed to connect to ' + address)
         else:
-            logger.warn('Could not connect to any peer')
+            if len(self.onlinePeers) == 0:
+                logger.warn('Could not connect to any peer')
         return retData
           
     def printOnlinePeers(self):
@@ -253,7 +255,8 @@ class OnionrCommunicatorDaemon:
 
     def heartbeat(self):
         '''Show a heartbeat debug message'''
-        logger.debug('Communicator heartbeat')
+        currentTime = self._core._utils.getEpoch() - self.startTime
+        logger.debug('heartbeat, running seconds: ' + str(currentTime))
         self.decrementThreadCount('heartbeat')
 
     def daemonCommands(self):
