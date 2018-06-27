@@ -17,7 +17,13 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import nacl.signing, nacl.encoding, nacl.public, nacl.hash, nacl.secret, os, binascii, base64, hashlib, logger, onionrproofs, time, math
+import nacl.signing, nacl.encoding, nacl.public, nacl.hash, nacl.secret, os, binascii, base64, hashlib, logger, onionrproofs, time, math, sys
+
+# secrets module was added into standard lib in 3.6+
+if sys.version_info[0] == 3 and sys.version_info[1] < 6:
+    from dependencies import secrets
+elif sys.version_info[0] == 3 and sys.version_info[1] >= 6:
+    import secrets
 
 class OnionrCrypto:
     def __init__(self, coreInstance):
@@ -26,6 +32,8 @@ class OnionrCrypto:
         self.keyPowFile = 'data/keyPow.txt'
         self.pubKey = None
         self.privKey = None
+
+        self.secrets = secrets
 
         self.pubKeyPowToken = None
         #self.pubKeyPowHash = None
@@ -102,7 +110,7 @@ class OnionrCrypto:
             retData = key.sign(data).signature
         return retData
 
-    def pubKeyEncrypt(self, data, pubkey, anonymous=False, encodedData=False):
+    def pubKeyEncrypt(self, data, pubkey, anonymous=True, encodedData=False):
         '''Encrypt to a public key (Curve25519, taken from base32 Ed25519 pubkey)'''
         retVal = ''
 
@@ -247,29 +255,28 @@ class OnionrCrypto:
         '''
         retData = False
 
-        if not (('powToken' in metadata) and ('powHash' in metadata)):
+        if not 'powRandomToken' in metadata:
+            logger.warn('No powRandomToken')
             return False
 
         dataLen = len(blockContent)
 
-        expectedHash = self.blake2bHash(base64.b64decode(metadata['powToken']) + self.blake2bHash(blockContent.encode()))
+        expectedHash = self.blake2bHash(base64.b64decode(metadata['powRandomToken']) + self.blake2bHash(blockContent.encode()))
         difficulty = 0
         try:
             expectedHash = expectedHash.decode()
         except AttributeError:
             pass
-        if metadata['powHash'] == expectedHash:
-            difficulty = math.floor(dataLen / 1000000)
 
-            mainHash = '0000000000000000000000000000000000000000000000000000000000000000'#nacl.hash.blake2b(nacl.utils.random()).decode()
-            puzzle = mainHash[:difficulty]
+        difficulty = math.floor(dataLen / 1000000)
 
-            if metadata['powHash'][:difficulty] == puzzle:
-                # logger.debug('Validated block pow')
-                retData = True
-            else:
-                logger.debug("Invalid token (#1)")
+        mainHash = '0000000000000000000000000000000000000000000000000000000000000000'#nacl.hash.blake2b(nacl.utils.random()).decode()
+        puzzle = mainHash[:difficulty]
+
+        if metadata['powRandomToken'][:difficulty] == puzzle:
+            # logger.debug('Validated block pow')
+            retData = True
         else:
-            logger.debug('Invalid token (#2): Expected hash %s, got hash %s...' % (metadata['powHash'], expectedHash))
+            logger.debug("Invalid token, bad proof")
 
         return retData

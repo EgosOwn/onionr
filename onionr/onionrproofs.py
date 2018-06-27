@@ -22,7 +22,37 @@ import nacl.encoding, nacl.hash, nacl.utils, time, math, threading, binascii, lo
 import core
 
 class POW:
-    def pow(self, reporting = False):
+    def __init__(self, data, threadCount = 5):
+        self.foundHash = False
+        self.difficulty = 0
+        self.data = data
+        self.threadCount = threadCount
+
+        dataLen = sys.getsizeof(data)
+        self.difficulty = math.floor(dataLen / 1000000)
+        if self.difficulty <= 2:
+            self.difficulty = 4
+
+        try:
+            self.data = self.data.encode()
+        except AttributeError:
+            pass
+        
+        self.data = nacl.hash.blake2b(self.data)
+
+        logger.info('Computing POW (difficulty: %s)...' % self.difficulty)
+
+        self.mainHash = '0' * 70
+        self.puzzle = self.mainHash[0:min(self.difficulty, len(self.mainHash))]
+        
+        myCore = core.Core()
+        for i in range(max(1, threadCount)):
+            t = threading.Thread(name = 'thread%s' % i, target = self.pow, args = (True,myCore))
+            t.start()
+        
+        return
+
+    def pow(self, reporting = False, myCore = None):
         startTime = math.floor(time.time())
         self.hashing = True
         self.reporting = reporting
@@ -30,7 +60,7 @@ class POW:
         answer = ''
         heartbeat = 200000
         hbCount = 0
-        myCore = core.Core()
+        
         while self.hashing:
             rand = nacl.utils.random()
             token = nacl.hash.blake2b(rand + self.data).decode()
@@ -39,44 +69,13 @@ class POW:
                 self.hashing = False
                 iFound = True
                 break
-        else:
-            logger.debug('POW thread exiting, another thread found result')
+                
         if iFound:
             endTime = math.floor(time.time())
             if self.reporting:
-                logger.info('Found token ' + token, timestamp=True)
-                logger.info('rand value: ' + base64.b64encode(rand).decode())
-                logger.info('took ' + str(endTime - startTime) + ' seconds', timestamp=True)
+                logger.debug('Found token after %s seconds: %s' % (endTime - startTime, token), timestamp=True)
+                logger.debug('Random value was: %s' % base64.b64encode(rand).decode())
             self.result = (token, rand)
-
-    def __init__(self, data):
-        self.foundHash = False
-        self.difficulty = 0
-        self.data = data
-
-        dataLen = sys.getsizeof(data)
-        self.difficulty = math.floor(dataLen/1000000)
-        if self.difficulty <= 2:
-            self.difficulty = 4
-
-        try:
-            self.data = self.data.encode()
-        except AttributeError:
-            pass
-        self.data = nacl.hash.blake2b(self.data)
-
-        logger.debug('Computing difficulty of ' + str(self.difficulty))
-
-        self.mainHash = '0000000000000000000000000000000000000000000000000000000000000000'#nacl.hash.blake2b(nacl.utils.random()).decode()
-        self.puzzle = self.mainHash[0:self.difficulty]
-        #logger.debug('trying to find ' + str(self.mainHash))
-        tOne = threading.Thread(name='one', target=self.pow, args=(True,))
-        tTwo = threading.Thread(name='two', target=self.pow, args=(True,))
-        tThree = threading.Thread(name='three', target=self.pow, args=(True,))
-        tOne.start()
-        tTwo.start()
-        tThree.start()
-        return
 
     def shutdown(self):
         self.hashing = False
@@ -89,9 +88,28 @@ class POW:
         '''
             Returns the result then sets to false, useful to automatically clear the result
         '''
+        
         try:
             retVal = self.result
         except AttributeError:
             retVal = False
+            
         self.result = False
         return retVal
+
+    def waitForResult(self):
+        '''
+            Returns the result only when it has been found, False if not running and not found
+        '''
+        result = False
+        try:
+            while True:
+                result = self.getResult()
+                if not self.hashing:
+                    break
+                else:
+                    time.sleep(2)
+        except KeyboardInterrupt:
+            self.shutdown()
+            logger.warn('Got keyboard interrupt while waiting for POW result, stopping')
+        return result

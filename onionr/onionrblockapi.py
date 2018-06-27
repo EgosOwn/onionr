@@ -18,35 +18,25 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 
-import core as onionrcore, logger
-import json, os, datetime
+import core as onionrcore, logger, config
+import json, os, sys, datetime, base64
 
 class Block:
-    def __init__(self, hash = None, core = None):
-        '''
-            Initializes Onionr
+    blockCacheOrder = list() # NEVER write your own code that writes to this!
+    blockCache = dict() # should never be accessed directly, look at Block.getCache()
 
-            Inputs:
-            - hash (str): the hash of the block to be imported, if any
-            - core (Core/str):
-              - if (Core): this is the Core instance to be used, don't create a new one
-              - if (str): treat `core` as the block content, and instead, treat `hash` as the block type
+    def __init__(self, hash = None, core = None, type = None, content = None):
+        # take from arguments
+        # sometimes people input a bytes object instead of str in `hash`
+        try:
+            hash = hash.decode()
+        except AttributeError:
+            pass
+        self.hash = hash
+        self.core = core
+        self.btype = type
+        self.bcontent = content
 
-            Outputs:
-            - (Block): the new Block instance
-        '''
-
-        # input from arguments
-        if (type(hash) == str) and (type(core) == str):
-            self.btype = hash
-            self.bcontent = core
-            self.hash = None
-            self.core = None
-        else:
-            self.btype = ''
-            self.bcontent = ''
-            self.hash = hash
-            self.core = core
 
         # initialize variables
         self.valid = True
@@ -57,14 +47,20 @@ class Block:
         self.signature = None
         self.signedData = None
         self.blockFile = None
+        self.parent = None
         self.bheader = {}
         self.bmetadata = {}
 
         # handle arguments
         if self.getCore() is None:
             self.core = onionrcore.Core()
+
+        # update the blocks' contents if it exists
         if not self.getHash() is None:
-            self.update()
+            if not self.update():
+                logger.debug('Failed to open block %s.' % self.getHash())
+        else:
+            logger.debug('Did not update block')
 
     # logic
 
@@ -92,13 +88,23 @@ class Block:
             if blockdata is None:
                 filelocation = file
 
+                readfile = True
+
                 if filelocation is None:
                     if self.getHash() is None:
                         return False
+                    elif self.getHash() in Block.getCache():
+                        # get the block from cache, if it's in it
+                        blockdata = Block.getCache(self.getHash())
+                        readfile = False
 
-                    filelocation = 'data/blocks/%s.dat' % self.getHash()
+                    # read from file if it's still None
+                    if blockdata is None:
+                        filelocation = 'data/blocks/%s.dat' % self.getHash()
 
-                blockdata = open(filelocation, 'rb').read().decode('utf-8')
+                if readfile:
+                    with open(filelocation, 'rb') as f:
+                        blockdata = f.read().decode()
 
                 self.blockFile = filelocation
             else:
@@ -108,12 +114,13 @@ class Block:
             self.raw = str(blockdata)
             self.bheader = json.loads(self.getRaw()[:self.getRaw().index('\n')])
             self.bcontent = self.getRaw()[self.getRaw().index('\n') + 1:]
-            self.bmetadata = json.loads(self.getHeader('meta'))
-            self.btype = self.getMetadata('type')
-            self.powHash = self.getMetadata('powHash')
-            self.powToken = self.getMetadata('powToken')
+            self.bmetadata = json.loads(self.getHeader('meta', None))
+            self.parent = self.getMetadata('parent', None)
+            self.btype = self.getMetadata('type', None)
+            self.powHash = self.getMetadata('powHash', None)
+            self.powToken = self.getMetadata('powToken', None)
             self.signed = ('sig' in self.getHeader() and self.getHeader('sig') != '')
-            self.signature = (None if not self.isSigned() else self.getHeader('sig'))
+            self.signature = self.getHeader('sig', None)
             self.signedData = (None if not self.isSigned() else self.getHeader('meta') + '\n' + self.getContent())
             self.date = self.getCore().getBlockDate(self.getHash())
 
@@ -121,6 +128,10 @@ class Block:
                 self.date = datetime.datetime.fromtimestamp(self.getDate())
 
             self.valid = True
+
+            if len(self.getRaw()) <= config.get('allocations.blockCache', 500000):
+                self.cache()
+
             return True
         except Exception as e:
             logger.error('Failed to update block data.', error = e, timestamp = False)
@@ -163,7 +174,7 @@ class Block:
                 else:
                     self.hash = self.getCore().insertBlock(self.getContent(), header = self.getType(), sign = sign)
                     self.update()
-                return True
+                return self.getHash()
             else:
                 logger.warn('Not writing block; it is invalid.')
         except Exception as e:
@@ -212,7 +223,7 @@ class Block:
 
         return str(self.raw)
 
-    def getHeader(self, key = None):
+    def getHeader(self, key = None, default = None):
         '''
             Returns the header information
 
@@ -224,11 +235,12 @@ class Block:
         '''
 
         if not key is None:
-            return self.getHeader()[key]
-        else:
-            return self.bheader
+            if key in self.getHeader():
+                return self.getHeader()[key]
+            return default
+        return self.bheader
 
-    def getMetadata(self, key = None):
+    def getMetadata(self, key = None, default = None):
         '''
             Returns the metadata information
 
@@ -240,9 +252,10 @@ class Block:
         '''
 
         if not key is None:
-            return self.getMetadata()[key]
-        else:
-            return self.bmetadata
+            if key in self.getMetadata():
+                return self.getMetadata()[key]
+            return default
+        return self.bmetadata
 
     def getContent(self):
         '''
@@ -253,6 +266,24 @@ class Block:
         '''
 
         return str(self.bcontent)
+
+    def getParent(self):
+        '''
+            Returns the Block's parent Block, or None
+
+            Outputs:
+            - (Block): the Block's parent
+        '''
+
+        if type(self.parent) == str:
+            if self.parent == self.getHash():
+                self.parent = self
+            elif Block.exists(self.parent):
+                self.parent = Block(self.getMetadata('parent'), core = self.getCore())
+            else:
+                self.parent = None
+
+        return self.parent
 
     def getDate(self):
         '''
@@ -344,10 +375,30 @@ class Block:
             - btype (str): the type of block to be set to
 
             Outputs:
-            - (Block): the block instance
+            - (Block): the Block instance
         '''
 
         self.btype = btype
+        return self
+
+    def setMetadata(self, key, val):
+        '''
+            Sets a custom metadata value
+
+            Metadata should not store block-specific data structures.
+
+            Inputs:
+            - key (str): the key
+            - val: the value (type is irrelevant)
+
+            Outputs:
+            - (Block): the Block instance
+        '''
+
+        if key == 'parent' and (not val is None) and (not val == self.getParent().getHash()):
+            self.setParent(val)
+        else:
+            self.bmetadata[key] = val
         return self
 
     def setContent(self, bcontent):
@@ -358,13 +409,31 @@ class Block:
             - bcontent (str): the contents to be set to
 
             Outputs:
-            - (Block): the block instance
+            - (Block): the Block instance
         '''
 
         self.bcontent = str(bcontent)
         return self
 
-    # static
+    def setParent(self, parent):
+        '''
+            Sets the Block's parent
+
+            Inputs:
+            - parent (Block/str): the Block's parent, to be stored in metadata
+
+            Outputs:
+            - (Block): the Block instance
+        '''
+
+        if type(parent) == str:
+            parent = Block(parent, core = self.getCore())
+
+        self.parent = parent
+        self.setMetadata('parent', (None if parent is None else self.getParent().getHash()))
+        return self
+
+    # static functions
 
     def getBlocks(type = None, signer = None, signed = None, reverse = False, core = None):
         '''
@@ -410,7 +479,6 @@ class Block:
 
                     if relevant:
                         relevant_blocks.append(block)
-
             if bool(reverse):
                 relevant_blocks.reverse()
 
@@ -419,6 +487,156 @@ class Block:
             logger.debug(('Failed to get blocks: %s' % str(e)) + logger.parse_error())
 
         return list()
+
+    def mergeChain(child, file = None, maximumFollows = 32, core = None):
+        '''
+            Follows a child Block to its root parent Block, merging content
+
+            Inputs:
+            - child (str/Block): the child Block to be followed
+            - file (str/file): the file to write the content to, instead of returning it
+            - maximumFollows (int): the maximum number of Blocks to follow
+
+        '''
+
+        # validate data and instantiate Core
+        core = (core if not core is None else onionrcore.Core())
+        maximumFollows = max(0, maximumFollows)
+
+        # type conversions
+        if type(child) == list:
+            child = child[-1]
+        if type(child) == str:
+            child = Block(child)
+        if (not file is None) and (type(file) == str):
+            file = open(file, 'ab')
+
+        # only store hashes to avoid intensive memory usage
+        blocks = [child.getHash()]
+
+        # generate a list of parent Blocks
+        while True:
+            # end if the maximum number of follows has been exceeded
+            if len(blocks) - 1 >= maximumFollows:
+                break
+
+            block = Block(blocks[-1], core = core).getParent()
+
+            # end if there is no parent Block
+            if block is None:
+                break
+
+            # end if the Block is pointing to a previously parsed Block
+            if block.getHash() in blocks:
+                break
+
+            # end if the block is not valid
+            if not block.isValid():
+                break
+
+            blocks.append(block.getHash())
+
+        buffer = ''
+
+        # combine block contents
+        for hash in blocks:
+            block = Block(hash, core = core)
+            contents = block.getContent()
+            contents = base64.b64decode(contents.encode())
+
+            if file is None:
+                buffer += contents.decode()
+            else:
+                file.write(contents)
+
+        return (None if not file is None else buffer)
+
+    def createChain(data = None, chunksize = 99800, file = None, type = 'chunk', sign = True, encrypt = False, verbose = False):
+        '''
+            Creates a chain of blocks to store larger amounts of data
+
+            The chunksize is set to 99800 because it provides the least amount of PoW for the most amount of data.
+
+            Inputs:
+            - data (*): if `file` is None, the data to be stored in blocks
+            - file (file/str): the filename or file object to read from (or None to read `data` instead)
+            - chunksize (int): the number of bytes per block chunk
+            - type (str): the type header for each of the blocks
+            - sign (bool): whether or not to sign each block
+            - encrypt (str): the public key to encrypt to, or False to disable encryption
+            - verbose (bool): whether or not to return a tuple containing more info
+
+            Outputs:
+            - if `verbose`:
+              - (tuple):
+                - (str): the child block hash
+                - (list): all block hashes associated with storing the file
+            - if not `verbose`:
+              - (str): the child block hash
+        '''
+
+        blocks = list()
+
+        # initial datatype checks
+        if data is None and file is None:
+            return blocks
+        elif not (file is None or (isinstance(file, str) and os.path.exists(file))):
+            return blocks
+        elif isinstance(file, str):
+            file = open(file, 'rb')
+        if not isinstance(data, str):
+            data = str(data)
+
+        if not file is None:
+            filesize = os.stat(file.name).st_size
+            offset = filesize % chunksize
+            maxtimes = int(filesize / chunksize)
+
+            for times in range(0, maxtimes + 1):
+                # read chunksize bytes from the file (end -> beginning)
+                if times < maxtimes:
+                    file.seek(- ((times + 1) * chunksize), 2)
+                    content = file.read(chunksize)
+                else:
+                    file.seek(0, 0)
+                    content = file.read(offset)
+
+                # encode it- python is really bad at handling certain bytes that
+                # are often present in binaries.
+                content = base64.b64encode(content).decode()
+
+                # if it is the end of the file, exit
+                if not content:
+                    break
+
+                # create block
+                block = Block()
+                block.setType(type)
+                block.setContent(content)
+                block.setParent((blocks[-1] if len(blocks) != 0 else None))
+                hash = block.save(sign = sign)
+
+                # remember the hash in cache
+                blocks.append(hash)
+        elif not data is None:
+            for content in reversed([data[n:n + chunksize] for n in range(0, len(data), chunksize)]):
+                # encode chunk with base64
+                content = base64.b64encode(content.encode()).decode()
+
+                # create block
+                block = Block()
+                block.setType(type)
+                block.setContent(content)
+                block.setParent((blocks[-1] if len(blocks) != 0 else None))
+                hash = block.save(sign = sign)
+
+                # remember the hash in cache
+                blocks.append(hash)
+
+        # return different things depending on verbosity
+        if verbose:
+            return (blocks[-1], blocks)
+        return blocks[-1]
 
     def exists(hash):
         '''
@@ -433,11 +651,54 @@ class Block:
             - (bool): whether or not the block file exists
         '''
 
+        # no input data? scrap it.
         if hash is None:
             return False
-        elif type(hash) == Block:
+
+        if type(hash) == Block:
             blockfile = hash.getBlockFile()
         else:
             blockfile = 'data/blocks/%s.dat' % hash
 
         return os.path.exists(blockfile) and os.path.isfile(blockfile)
+
+    def getCache(hash = None):
+        # give a list of the hashes of the cached blocks
+        if hash is None:
+            return list(Block.blockCache.keys())
+
+        # if they inputted self or a Block, convert to hash
+        if type(hash) == Block:
+            hash = hash.getHash()
+
+        # just to make sure someone didn't put in a bool or something lol
+        hash = str(hash)
+
+        # if it exists, return its content
+        if hash in Block.getCache():
+            return Block.blockCache[hash]
+
+        return None
+
+    def cache(block, override = False):
+        # why even bother if they're giving bad data?
+        if not type(block) == Block:
+            return False
+
+        # only cache if written to file
+        if block.getHash() is None:
+            return False
+
+        # if it's already cached, what are we here for?
+        if block.getHash() in Block.getCache() and not override:
+            return False
+
+        # dump old cached blocks if the size exeeds the maximum
+        if sys.getsizeof(Block.blockCacheOrder) >= config.get('allocations.blockCacheTotal', 50000000): # 50MB default cache size
+            del Block.blockCache[blockCacheOrder.pop(0)]
+
+        # cache block content
+        Block.blockCache[block.getHash()] = block.getRaw()
+        Block.blockCacheOrder.append(block.getHash())
+
+        return True

@@ -34,9 +34,9 @@ def writeKeys():
         Serializes and writes the keystore in memory to file
     '''
 
-    file = open(keys_file, 'w')
-    file.write(json.dumps(keys_data, indent=4, sort_keys=True))
-    file.close()
+    with open(keys_file, 'w') as file:
+        file.write(json.dumps(keys_data, indent=4, sort_keys=True))
+        file.close()
 
 def readKeys():
     '''
@@ -44,7 +44,8 @@ def readKeys():
     '''
 
     global keys_data
-    keys_data = json.loads(open(keys_file).read())
+    with open(keys_file) as file:
+        keys_data = json.loads(file.read())
     return keys_data
 
 def getKey(plugin):
@@ -106,26 +107,36 @@ def getRepositories():
     readKeys()
     return keys_data['repositories']
 
-def addRepository(repositories, data):
+def addRepository(blockhash, data):
     '''
         Saves the plugin name, to remember that it was installed by the pluginmanager
     '''
 
     global keys_data
     readKeys()
-    keys_data['repositories'][repositories] = data
+    keys_data['repositories'][blockhash] = data
     writeKeys()
 
-def removeRepository(repositories):
+def removeRepository(blockhash):
     '''
         Removes the plugin name from the pluginmanager's records
     '''
 
     global keys_data
     readKeys()
-    if plugin in keys_data['repositories']:
-        del keys_data['repositories'][repositories]
+    if blockhash in keys_data['repositories']:
+        del keys_data['repositories'][blockhash]
         writeKeys()
+
+def createRepository(plugins):
+    contents = {'plugins' : plugins, 'author' : getpass.getuser(), 'compiled-by' : plugin_name}
+
+    block = Block(core = pluginapi.get_core())
+    
+    block.setType('repository')
+    block.setContent(json.dumps(contents))
+    
+    return block.save(True)
 
 def check():
     '''
@@ -144,7 +155,7 @@ def sanitize(name):
 
 def blockToPlugin(block):
     try:
-        block = Block(block)
+        block = Block(block, core = pluginapi.get_core())
         blockContent = json.loads(block.getContent())
 
         name = sanitize(blockContent['name'])
@@ -194,14 +205,19 @@ def pluginToBlock(plugin, import_block = True):
                 shutil.rmtree(directory + '__pycache__')
 
             shutil.make_archive(zipfile[:-4], 'zip', directory)
-            data = base64.b64encode(open(zipfile, 'rb').read())
+            data = ''
+            with open(zipfile, 'rb') as file:
+                data = base64.b64encode(file.read())
 
             author = getpass.getuser()
             description = 'Default plugin description'
             info = {"name" : plugin}
             try:
                 if os.path.exists(directory + 'info.json'):
-                    info = json.loads(open(directory + 'info.json').read())
+                    info = ''
+                    with open(directory + 'info.json').read() as file:
+                        info = json.loads(file.read())
+                    
                     if 'author' in info:
                         author = info['author']
                     if 'description' in info:
@@ -211,7 +227,13 @@ def pluginToBlock(plugin, import_block = True):
 
             metadata = {'author' : author, 'date' : str(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')), 'name' : plugin, 'info' : info, 'compiled-by' : plugin_name, 'content' : data.decode('utf-8'), 'description' : description}
 
-            hash = pluginapi.get_core().insertBlock(json.dumps(metadata), header = 'plugin', sign = True)
+            block = Block(core = pluginapi.get_core())
+            
+            block.setType('plugin')
+            block.setContent(json.dumps(metadata))
+            
+            hash = block.save(True)
+            # hash = pluginapi.get_core().insertBlock(, header = 'plugin', sign = True)
 
             if import_block:
                 pluginapi.get_utils().importNewBlocks()
@@ -226,7 +248,7 @@ def pluginToBlock(plugin, import_block = True):
 
 def installBlock(block):
     try:
-        block = Block(block)
+        block = Block(block, core = pluginapi.get_core())
         blockContent = json.loads(block.getContent())
 
         name = sanitize(blockContent['name'])
@@ -353,7 +375,8 @@ def commandInstallPlugin():
                             choice = logger.readline('Select the number of the key to use, from 1 to %s, or press Ctrl+C to cancel:' % (index - 1))
 
                             try:
-                                if int(choice) < index and int(choice) >= 1:
+                                choice = int(choice)
+                                if choice <= index and choice >= 1:
                                     distributor = distributors[int(choice)]
                                     valid = True
                             except KeyboardInterrupt:
@@ -367,10 +390,12 @@ def commandInstallPlugin():
             except Exception as e:
                 logger.warn('Failed to lookup plugin in repositories.', timestamp = False)
                 logger.error('asdf', error = e, timestamp = False)
+                
+                return True
 
         if pkobh is None:
-            logger.error('No key for this plugin found in keystore or repositories, please specify.')
-            help()
+            logger.error('No key for this plugin found in keystore or repositories, please specify.', timestamp = False)
+            
             return True
 
         valid_hash = pluginapi.get_utils().validateHash(pkobh)
@@ -386,7 +411,7 @@ def commandInstallPlugin():
         blockhash = None
 
         if valid_hash and not real_block:
-            logger.error('Block hash not found. Perhaps it has not been synced yet?')
+            logger.error('Block hash not found. Perhaps it has not been synced yet?', timestamp = False)
             logger.debug('Is valid hash, but does not belong to a known block.')
 
             return True
@@ -396,7 +421,7 @@ def commandInstallPlugin():
 
             installBlock(blockhash)
         elif valid_key and not real_key:
-            logger.error('Public key not found. Try adding the node by address manually, if possible.')
+            logger.error('Public key not found. Try adding the node by address manually, if possible.', timestamp = False)
             logger.debug('Is valid key, but the key is not a known one.')
         elif valid_key and real_key:
             publickey = str(pkobh)
@@ -432,10 +457,11 @@ def commandInstallPlugin():
                 except Exception as e:
                     pass
 
-            logger.warn('Only continue the installation is you are absolutely certain that you trust the plugin distributor. Public key of plugin distributor: %s' % publickey, timestamp = False)
+            logger.warn('Only continue the installation if you are absolutely certain that you trust the plugin distributor. Public key of plugin distributor: %s' % publickey, timestamp = False)
+            logger.debug('Most recent block matching parameters is %s' % mostRecentVersionBlock)
             installBlock(mostRecentVersionBlock)
         else:
-            logger.error('Unknown data "%s"; must be public key or block hash.' % str(pkobh))
+            logger.error('Unknown data "%s"; must be public key or block hash.' % str(pkobh), timestamp = False)
             return
     else:
         logger.info(sys.argv[0] + ' ' + sys.argv[1] + ' <plugin> [public key/block hash]')
@@ -463,11 +489,11 @@ def commandAddRepository():
         if pluginapi.get_utils().validateHash(blockhash):
             if Block.exists(blockhash):
                 try:
-                    blockContent = json.loads(Block(blockhash).getContent())
+                    blockContent = json.loads(Block(blockhash, core = pluginapi.get_core()).getContent())
 
                     pluginslist = dict()
 
-                    for pluginname, distributor in blockContent['plugins'].items():
+                    for pluginname, distributor in blockContent['plugins']:
                         if pluginapi.get_utils().validatePubKey(distributor):
                             pluginslist[pluginname] = distributor
 
@@ -477,14 +503,14 @@ def commandAddRepository():
                         addRepository(blockhash, pluginslist)
                         logger.info('Successfully added repository.')
                     else:
-                        logger.error('Repository contains no records, not importing.')
+                        logger.error('Repository contains no records, not importing.', timestamp = False)
                 except Exception as e:
                     logger.error('Failed to parse block.', error = e)
             else:
-                logger.error('Block hash not found. Perhaps it has not been synced yet?')
+                logger.error('Block hash not found. Perhaps it has not been synced yet?', timestamp = False)
                 logger.debug('Is valid hash, but does not belong to a known block.')
         else:
-            logger.error('Unknown data "%s"; must be block hash.' % str(pkobh))
+            logger.error('Unknown data "%s"; must be block hash.' % str(pkobh), timestamp = False)
     else:
         logger.info(sys.argv[0] + ' ' + sys.argv[1] + ' [block hash]')
 
@@ -500,10 +526,11 @@ def commandRemoveRepository():
             if blockhash in getRepositories():
                 try:
                     removeRepository(blockhash)
+                    logger.info('Successfully removed repository.')
                 except Exception as e:
                     logger.error('Failed to parse block.', error = e)
             else:
-                logger.error('Repository has not been imported, nothing to remove.')
+                logger.error('Repository has not been imported, nothing to remove.', timestamp = False)
         else:
             logger.error('Unknown data "%s"; must be block hash.' % str(pkobh))
     else:
@@ -525,7 +552,49 @@ def commandPublishPlugin():
             logger.error('Plugin %s does not exist.' % pluginname, timestamp = False)
     else:
         logger.info(sys.argv[0] + ' ' + sys.argv[1] + ' <plugin>')
-
+        
+def commandCreateRepository():
+    if len(sys.argv) >= 3:
+        check()
+        
+        plugins = list()
+        script = sys.argv[0]
+        
+        del sys.argv[:2]
+        success = True
+        for pluginname in sys.argv:
+            distributor = None
+            
+            if ':' in pluginname:
+                split = pluginname.split(':')
+                pluginname = split[0]
+                distributor = split[1]
+            
+            pluginname = sanitize(pluginname)
+            
+            if distributor is None:
+                distributor = getKey(pluginname)
+            if distributor is None:
+                logger.error('No distributor key was found for the plugin %s.' % pluginname, timestamp = False)
+                success = False
+            
+            plugins.append([pluginname, distributor])
+            
+        if not success:
+            logger.error('Please correct the above errors, then recreate the repository.')
+            return True
+        
+        blockhash = createRepository(plugins)
+        print(blockhash)
+        if not blockhash is None:
+            logger.info('Successfully created repository. Execute the following command to add the repository:\n    ' + logger.colors.underline + '%s --add-repository %s' % (script, blockhash))
+        else:
+            logger.error('Failed to create repository, an unknown error occurred.')
+    else:
+        logger.info(sys.argv[0] + ' ' + sys.argv[1] + ' [plugins...]')
+        
+    return True
+    
 # event listeners
 
 def on_init(api, data = None):
@@ -540,6 +609,7 @@ def on_init(api, data = None):
     api.commands.register(['add-repo', 'add-repository', 'addrepo', 'addrepository', 'repository-add', 'repo-add', 'repoadd', 'addrepository', 'add-plugin-repository', 'add-plugin-repo', 'add-pluginrepo', 'add-pluginrepository', 'addpluginrepo', 'addpluginrepository'], commandAddRepository)
     api.commands.register(['remove-repo', 'remove-repository', 'removerepo', 'removerepository', 'repository-remove', 'repo-remove', 'reporemove', 'removerepository', 'remove-plugin-repository', 'remove-plugin-repo', 'remove-pluginrepo', 'remove-pluginrepository', 'removepluginrepo', 'removepluginrepository', 'rm-repo', 'rm-repository', 'rmrepo', 'rmrepository', 'repository-rm', 'repo-rm', 'reporm', 'rmrepository', 'rm-plugin-repository', 'rm-plugin-repo', 'rm-pluginrepo', 'rm-pluginrepository', 'rmpluginrepo', 'rmpluginrepository'], commandRemoveRepository)
     api.commands.register(['publish-plugin', 'plugin-publish', 'publishplugin', 'pluginpublish', 'publish'], commandPublishPlugin)
+    api.commands.register(['create-repository', 'create-repo', 'createrepo', 'createrepository', 'repocreate'], commandCreateRepository)
 
     # add help menus once the features are actually implemented
 
