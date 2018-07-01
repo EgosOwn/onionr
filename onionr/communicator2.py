@@ -27,22 +27,35 @@ class OnionrCommunicatorDaemon:
     def __init__(self, debug, developmentMode):
         logger.warn('New (unstable) communicator is being used.')
 
+        # list of timer instances
         self.timers = []
-        self._core = core.Core(torPort=sys.argv[2])
+
+        # initalize core with Tor socks port being 3rd argument
+        self.proxyPort = sys.argv[2]
+        self._core = core.Core(torPort=self.proxyPort)
+
+        # intalize NIST beacon salt and time
         self.nistSaltTimestamp = 0
         self.powSalt = 0
+
+        # loop time.sleep delay in seconds
         self.delay = 1
-        self.proxyPort = sys.argv[2]
+
+        # time app started running for info/statistics purposes
         self.startTime = self._core._utils.getEpoch()
 
+        # lists of connected peers and peers we know we can't reach currently
         self.onlinePeers = []
         self.offlinePeers = []
 
+        # amount of threads running by name, used to prevent too many
         self.threadCounts = {}
-
+        
+        # set true when shutdown command recieved
         self.shutdown = False
 
-        self.blockQueue = [] # list of new blocks to download
+        # list of new blocks to download, added to when new block lists are fetched from peers
+        self.blockQueue = []
         
         # Clear the daemon queue for any dead messages
         if os.path.exists(self._core.queueDB):
@@ -195,7 +208,15 @@ class OnionrCommunicatorDaemon:
 
         for i in range(needed):
             self.connectNewPeer()
+        if len(self.onlinePeers) == 0:
+            self.addBootstrapListToPeerList()
         self.decrementThreadCount('getOnlinePeers')
+
+    def addBootstrapListToPeerList(self):
+        '''Add the bootstrap list to the peer list (no duplicates)'''
+        for i in self._core.bootstrapList:
+            if i not in peerList:
+                peerList.append(i)
 
     def connectNewPeer(self, peer=''):
         '''Adds a new random online peer to self.onlinePeers'''
@@ -210,19 +231,20 @@ class OnionrCommunicatorDaemon:
             peerList = self._core.listAdders()
 
         if len(peerList) == 0:
-            peerList.extend(self._core.bootstrapList)
+            # Avoid duplicating bootstrap addresses in peerList
+            self.addBootstrapListToPeerList()
 
         for address in peerList:
             if len(address) == 0 or address in tried or address in self.onlinePeers:
                 continue
             if self.peerAction(address, 'ping') == 'pong!':
-                logger.info('connected to ' + address)
+                logger.info('Connected to ' + address)
                 self.onlinePeers.append(address)
                 retData = address
                 break
             else:
                 tried.append(address)
-                logger.debug('failed to connect to ' + address)
+                logger.debug('Failed to connect to ' + address)
         else:
             if len(self.onlinePeers) == 0:
                 logger.warn('Could not connect to any peer')
@@ -273,6 +295,8 @@ class OnionrCommunicatorDaemon:
                 open('data/.runcheck', 'w+').close()
             elif cmd[0] == 'connectedPeers':
                 self.printOnlinePeers()
+            elif cmd[0] == 'kex':
+                self.timers['lookupKeys'].count = (self.timers['lookupKeys'].frequency - 1)
             else:
                 logger.info('Recieved daemonQueue command:' + cmd[0])
         self.decrementThreadCount('daemonCommands')

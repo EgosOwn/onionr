@@ -196,6 +196,7 @@ class Onionr:
             'add-addr': self.addAddress,
             'addaddr': self.addAddress,
             'addaddress': self.addAddress,
+            'list-peers': self.listPeers,
 
             'add-file': self.addFile,
             'addfile': self.addFile,
@@ -260,6 +261,11 @@ class Onionr:
 
     def listConn(self):
         self.onionrCore.daemonQueueAdd('connectedPeers')
+    
+    def listPeers(self):
+        logger.info('Peer transport address list:')
+        for i in self.onionrCore.listAdders():
+            logger.info(i)
 
     def getWebPassword(self):
         return config.get('client.hmac')
