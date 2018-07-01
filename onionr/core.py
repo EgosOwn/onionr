@@ -384,8 +384,8 @@ class Core:
             else:
                 if retData != False:
                     c.execute('DELETE FROM commands WHERE id=?;', (retData[3],))
-        conn.commit()
-        conn.close()
+            conn.commit()
+            conn.close()
 
         events.event('queue_pop', data = {'data': retData}, onionr = None)
 
