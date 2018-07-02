@@ -1,0 +1,6 @@
+before_script:
+        - apt-get update -qq && apt-get install -y -qq tor
+        - pip install -r requirements.txt
+test_onionr:
+        script:
+                - make test
