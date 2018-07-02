@@ -176,8 +176,11 @@ class OnionrUtils:
         config.reload()
         self.getTimeBypassToken()
         # TODO: URL encode parameters, just as an extra measure. May not be needed, but should be added regardless.
-        with open('data/host.txt', 'r') as host:
-            hostname = host.read()
+        try:
+            with open('data/host.txt', 'r') as host:
+                hostname = host.read()
+        except FileNotFoundError:
+            return False
         payload = 'http://%s:%s/client/?action=%s&token=%s&timingToken=%s' % (hostname, config.get('client.port'), command, config.get('client.hmac'), self.timingToken)
         try:
             retData = requests.get(payload).text
