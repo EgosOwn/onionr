@@ -698,9 +698,13 @@ class Core:
         else:
             raise onionrexceptions.InvalidMetadata('encryptType must be asym or sym, or blank')
 
+        try:
+            data = data.encode()
+        except AttributeError:
+            pass
         # sign before encrypt, as unauthenticated crypto should not be a problem here
         if sign:
-            signature = self._crypto.edSign(jsonMeta + data, key=self._crypto.privKey, encodeResult=True)
+            signature = self._crypto.edSign(jsonMeta.encode() + data, key=self._crypto.privKey, encodeResult=True)
             signer = self._crypto.pubKeyHashID()
 
         if len(jsonMeta) > 1000:
@@ -743,6 +747,7 @@ class Core:
         payload = json.dumps(metadata).encode() + b'\n' + data
         retData = self.setData(payload)
         self.addToBlockDB(retData, selfInsert=True, dataSaved=True)
+        self.setBlockType(retData, meta['type'])
 
         return retData
 

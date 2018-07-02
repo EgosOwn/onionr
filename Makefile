@@ -20,7 +20,7 @@ test:
 	@sleep 1
 	@rm -rf onionr/data-backup
 	@mv onionr/data onionr/data-backup | true > /dev/null 2>&1
-	-@cd onionr; ./tests.py; ./cryptotests.py;
+	-@cd onionr; ./tests.py;
 	@rm -rf onionr/data
 	@mv onionr/data-backup onionr/data | true > /dev/null 2>&1
 

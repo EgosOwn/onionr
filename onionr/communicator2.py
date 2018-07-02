@@ -378,7 +378,6 @@ class OnionrCommunicatorTimers:
                 self.timerFunction()
             self.count = 0
 
-
 shouldRun = False
 debug = True
 developmentMode = False
