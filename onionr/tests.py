@@ -116,7 +116,7 @@ class OnionrTests(unittest.TestCase):
             self.assertTrue(False)
 
         self.assertTrue(True)
-'''
+    '''
     def testBlockAPI(self):
         logger.debug('-'*26 + '\n')
         logger.info('Running BlockAPI test #1...')
@@ -215,7 +215,7 @@ class OnionrTests(unittest.TestCase):
         logger.debug('thread finished.', timestamp = False)
 
         self.assertTrue(True)
-'''
+    '''
     def testQueue(self):
         logger.debug('-'*26 + '\n')
         logger.info('Running daemon queue test...')
@@ -252,7 +252,6 @@ class OnionrTests(unittest.TestCase):
     def testAddAdder(self):
         logger.debug('-'*26 + '\n')
         logger.info('Running address add+remove test')
-
         import core
         myCore = core.Core()
         if not os.path.exists('data/address.db'):
