@@ -313,7 +313,7 @@ class OnionrCommunicatorDaemon:
         '''Announce to peers our address'''
         announceCount = 0
         announceAmount = 2
-        for peer in self._core.listAdders():
+        for peer in self.onlinePeers:
             announceCount += 1
             if self.peerAction(peer, 'announce', self._core.hsAdder) == 'Success':
                 logger.info('Successfully introduced node to ' + peer)
