@@ -248,7 +248,9 @@ class OnionrCommunicatorDaemon:
                 continue
             if self.peerAction(address, 'ping') == 'pong!':
                 logger.info('Connected to ' + address)
-                self.onlinePeers.append(address)
+                time.sleep(0.1)
+                if address not in self.onlinePeers:
+                    self.onlinePeers.append(address)
                 retData = address
                 break
             else:
@@ -307,7 +309,9 @@ class OnionrCommunicatorDaemon:
             elif cmd[0] == 'connectedPeers':
                 self.printOnlinePeers()
             elif cmd[0] == 'kex':
-                self.timers['lookupKeys'].count = (self.timers['lookupKeys'].frequency - 1)
+                for i in self.timers:
+                    if i.timerFunction.__name__ == 'lookupKeys':
+                        i.count = (i.frequency - 1)
             else:
                 logger.info('Recieved daemonQueue command:' + cmd[0])
         self.decrementThreadCount('daemonCommands')

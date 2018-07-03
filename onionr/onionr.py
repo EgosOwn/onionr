@@ -207,6 +207,7 @@ class Onionr:
 
             'introduce': self.onionrCore.introduceNode,
             'connect': self.addAddress,
+            'kex': self.doKEX,
 
             'getpassword': self.getWebPassword
         }
@@ -231,6 +232,7 @@ class Onionr:
             'add-file': 'Create an Onionr block from a file',
             'import-blocks': 'import blocks from the disk (Onionr is transport-agnostic!)',
             'listconn': 'list connected peers',
+            'kex': 'exchange keys with peers (done automatically)',
             'introduce': 'Introduce your node to the public Onionr network',
         }
 
@@ -333,6 +335,11 @@ class Onionr:
             logger.info('Running on %s %s' % (platform.platform(), platform.release()))
 
         return
+    
+    def doKEX(self):
+        '''make communicator do kex'''
+        logger.info('Sending kex to command queue...')
+        self.onionrCore.daemonQueueAdd('kex')
 
     def sendEncrypt(self):
         '''
