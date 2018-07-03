@@ -33,13 +33,16 @@ if sys.version_info < (3, 6):
 
 class OnionrUtils:
     '''
-        Various useful function
+        Various useful functions for validating things, etc functions, connectivity
     '''
     def __init__(self, coreInstance):
         self.fingerprintFile = 'data/own-fingerprint.txt'
         self._core = coreInstance
 
         self.timingToken = ''
+
+        self.avoidDupe = [] # list used to prevent duplicate requests per peer for certain actions
+        self.peerProcessing = {} # dict of current peer actions: peer, actionList
 
         return
 

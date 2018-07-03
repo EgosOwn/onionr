@@ -72,7 +72,9 @@ class OnionrCommunicatorDaemon:
             OnionrCommunicatorTimers(self, self.heartbeat, 10)
         
         # Initalize peer online list
+        logger.warn('Onionr is not yet ready to recieve commands.')
         self.getOnlinePeers()
+        logger.info('\033[4mOnionr is ready\033[0m.')
 
         # Set timers, function reference, seconds
         OnionrCommunicatorTimers(self, self.daemonCommands, 5)
@@ -222,7 +224,7 @@ class OnionrCommunicatorDaemon:
     def addBootstrapListToPeerList(self, peerList):
         '''Add the bootstrap list to the peer list (no duplicates)'''
         for i in self._core.bootstrapList:
-            if i not in peerList:
+            if i not in peerList and i not in self.offlinePeers and i != self._core.hsAdder:
                 peerList.append(i)
 
     def connectNewPeer(self, peer='', useBootstrap=False):
@@ -261,9 +263,10 @@ class OnionrCommunicatorDaemon:
         '''logs online peer list'''
         if len(self.onlinePeers) == 0:
             logger.warn('No online peers')
-            return
-        for i in self.onlinePeers:
-            logger.info(self.onlinePeers[i])
+        else:
+            logger.info('Online peers:')
+            for i in self.onlinePeers:
+                logger.info(i)
 
     def peerAction(self, peer, action, data=''):
         '''Perform a get request to a peer'''
