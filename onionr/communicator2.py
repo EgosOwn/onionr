@@ -215,18 +215,17 @@ class OnionrCommunicatorDaemon:
         needed = maxPeers - len(self.onlinePeers)
 
         for i in range(needed):
-            self.connectNewPeer()
-        if len(self.onlinePeers) == 0:
-            self.addBootstrapListToPeerList()
+            if len(self.onlinePeers) == 0:
+                self.connectNewPeer(useBootstrap=True)
         self.decrementThreadCount('getOnlinePeers')
 
-    def addBootstrapListToPeerList(self):
+    def addBootstrapListToPeerList(self, peerList):
         '''Add the bootstrap list to the peer list (no duplicates)'''
         for i in self._core.bootstrapList:
             if i not in peerList:
                 peerList.append(i)
 
-    def connectNewPeer(self, peer=''):
+    def connectNewPeer(self, peer='', useBootstrap=False):
         '''Adds a new random online peer to self.onlinePeers'''
         retData = False
         tried = self.offlinePeers
@@ -238,9 +237,9 @@ class OnionrCommunicatorDaemon:
         else:
             peerList = self._core.listAdders()
 
-        if len(peerList) == 0:
+        if len(peerList) == 0 or useBootstrap:
             # Avoid duplicating bootstrap addresses in peerList
-            self.addBootstrapListToPeerList()
+            self.addBootstrapListToPeerList(peerList)
 
         for address in peerList:
             if len(address) == 0 or address in tried or address in self.onlinePeers:

@@ -23,7 +23,7 @@ import nacl.signing, nacl.encoding
 from onionrblockapi import Block
 import onionrexceptions
 from defusedxml import minidom
-
+import pgpwords
 if sys.version_info < (3, 6):
     try:
         import sha3
@@ -211,6 +211,12 @@ class OnionrUtils:
                 break
 
         return pass1
+    def getHumanReadableID(self, pub=''):
+        '''gets a human readable ID from a public key'''
+        if pub == '':
+            pub = self._core._crypto.pubKey
+        pub = base64.b16encode(base64.b32decode(pub)).decode()
+        return '-'.join(pgpwords.wordify(pub))
 
     def getBlockMetadataFromData(self, blockData):
         '''

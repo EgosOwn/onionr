@@ -623,6 +623,7 @@ class Onionr:
                 'Onionr Daemon Status' : ((logger.colors.fg.green + 'Online') if self.onionrUtils.isCommunicatorRunning(timeout = 2) else logger.colors.fg.red + 'Offline'),
                 'Public Key' : self.onionrCore._crypto.pubKey,
                 'POW Token' : powToken,
+                'Human readable public key' : self.onionrCore._utils.getHumanReadableID(),
                 'Combined' : self.onionrCore._crypto.pubKey + '-' + powToken,
                 'Node Address' : self.get_hostname(),
 
