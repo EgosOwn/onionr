@@ -55,7 +55,7 @@ class Core:
 
             if os.path.exists('data/hs/hostname'):
                 with open('data/hs/hostname', 'r') as hs:
-                    self.hsAdder = hs.read()
+                    self.hsAdder = hs.read().strip()
 
             # Load bootstrap address list
             if os.path.exists(self.bootstrapFileLocation):
