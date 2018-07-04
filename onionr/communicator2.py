@@ -219,6 +219,8 @@ class OnionrCommunicatorDaemon:
         for i in range(needed):
             if len(self.onlinePeers) == 0:
                 self.connectNewPeer(useBootstrap=True)
+        if len(self.onlinePeers) == 0:
+            logger.warn('Could not connect to any peer.')
         self.decrementThreadCount('getOnlinePeers')
 
     def addBootstrapListToPeerList(self, peerList):
@@ -256,9 +258,6 @@ class OnionrCommunicatorDaemon:
             else:
                 tried.append(address)
                 logger.debug('Failed to connect to ' + address)
-        else:
-            if len(self.onlinePeers) == 0:
-                logger.warn('Could not connect to any peer')
         return retData
           
     def printOnlinePeers(self):

@@ -59,27 +59,7 @@ class OnionrUtils:
             High level function to encrypt a message to a peer and insert it as a block
         '''
 
-        try:
-            # We sign PMs here rather than in core.insertBlock in order to mask the sender's pubkey
-            payload = {'sig': '', 'msg': '', 'id': self._core._crypto.pubKey}
-
-            sign = self._core._crypto.edSign(message, self._core._crypto.privKey, encodeResult=True)
-            #encrypted = self._core._crypto.pubKeyEncrypt(message, pubkey, anonymous=True, encodedData=True).decode()
-
-            payload['sig'] = sign
-            payload['msg'] = message
-            payload = json.dumps(payload)
-            message = payload
-            encrypted = self._core._crypto.pubKeyEncrypt(message, pubkey, anonymous=True, encodedData=True).decode()
-
-
-            block = self._core.insertBlock(encrypted, header='pm', sign=False)
-            if block == '':
-                logger.error('Could not send PM')
-            else:
-                logger.info('Sent PM, hash: %s' % block)
-        except Exception as error:
-            logger.error('Failed to send PM.', error=error)
+        self._core.insertBlock(message, header='pm', sign=True, encryptType='sym', symKey=pubkey)
 
         return
 
@@ -214,6 +194,7 @@ class OnionrUtils:
                 break
 
         return pass1
+
     def getHumanReadableID(self, pub=''):
         '''gets a human readable ID from a public key'''
         if pub == '':
@@ -322,7 +303,7 @@ class OnionrUtils:
 
         return retVal
     
-    def validateMetadata(metadata):
+    def validateMetadata(self, metadata):
         '''Validate metadata meets onionr spec (does not validate proof value computation), take in either dictionary or json string'''
         # TODO, make this check sane sizes
         retData = False
@@ -346,6 +327,9 @@ class OnionrUtils:
                     if self._core.requirements.blockMetadataLengths[i] < len(metadata[i]):
                         logger.warn('Block metadata key ' + i + ' exceeded maximum size')
                         break
+                if i == 'time':
+                    if not self.isIntegerString(metadata[i]):
+                        break
             else:
                 # if metadata loop gets no errors, it does not break, therefore metadata is valid
                 retData = True
@@ -368,7 +352,15 @@ class OnionrUtils:
         else:
             retVal = True
         return retVal
-
+    
+    def isIntegerString(self, data):
+        '''Check if a string is a valid base10 integer'''
+        try:
+            int(data)
+        except ValueError:
+            return True
+        else:
+            return False
 
     def validateID(self, id):
         '''
@@ -565,6 +557,8 @@ class OnionrUtils:
             proxies = {'http': 'socks5h://127.0.0.1:' + str(port), 'https': 'socks5h://127.0.0.1:' + str(port)}
             r = requests.get(url, headers=headers, proxies=proxies, allow_redirects=False, timeout=(15, 30))
             retData = r.text
+        except KeyboardInterrupt:
+            raise KeyboardInterrupt
         except requests.exceptions.RequestException as e:
             logger.debug('Error: %s' % str(e))
             retData = False
