@@ -390,7 +390,7 @@ class Core:
         events.event('queue_pop', data = {'data': retData}, onionr = None)
 
         return retData
-    
+
     def makeDaemonDB(self):
         '''generate the daemon queue db'''
         conn = sqlite3.connect(self.queueDB)
@@ -669,16 +669,18 @@ class Core:
         conn.close()
         return True
 
-    def insertBlock(self, data, header='txt', sign=False, encryptType='', symKey='', asymPeer='', meta = {}):
+    def insertBlock(self, data, header='txt', sign=False, encryptType='', symKey='', asymPeer='', meta = None):
         '''
             Inserts a block into the network
             encryptType must be specified to encrypt a block
         '''
 
-        try:
-            data.decode()
-        except AttributeError:
-            data = data.encode()
+        if meta is None:
+            meta = dict()
+
+        if type(data) is bytes:
+            data = data.decode()
+        data = str(data)
 
         retData = ''
         signature = ''
@@ -686,10 +688,9 @@ class Core:
         metadata = {}
 
         # only use header if not set in provided meta
-        try:
-            meta['type']
-        except KeyError:
-            meta['type'] = header # block type
+        if not header is None:
+            meta['type'] = header
+        meta['type'] = str(meta['type'])
 
         jsonMeta = json.dumps(meta)
 
@@ -709,7 +710,7 @@ class Core:
 
         if len(jsonMeta) > 1000:
             raise onionrexceptions.InvalidMetadata('meta in json encoded form must not exceed 1000 bytes')
-        
+
         # encrypt block metadata/sig/content
         if encryptType == 'sym':
             if len(symKey) < self.requirements.passwordLength:
@@ -736,7 +737,7 @@ class Core:
             powToken = powToken.decode()
         except AttributeError:
             pass
-        
+
         # compile metadata
         metadata['meta'] = jsonMeta
         metadata['sig'] = signature
