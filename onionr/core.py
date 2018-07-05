@@ -725,26 +725,15 @@ class Core:
                 signature = self._crypto.pubKeyEncrypt(signature, asymPeer, encodedData=True)
             else:
                 raise onionrexceptions.InvalidPubkey(asymPeer + ' is not a valid base32 encoded ed25519 key')
-
-        powProof = onionrproofs.POW(data)
-
-        # wait for proof to complete
-        powToken = powProof.waitForResult()
-
-        powToken = base64.b64encode(powToken[1])
-        try:
-            powToken = powToken.decode()
-        except AttributeError:
-            pass
         
         # compile metadata
         metadata['meta'] = jsonMeta
         metadata['sig'] = signature
         metadata['signer'] = signer
-        metadata['powRandomToken'] = powToken
         metadata['time'] = str(self._utils.getEpoch())
 
-        payload = json.dumps(metadata).encode() + b'\n' + data
+        payload  = onionrproofs.POW(metadata, data)
+        
         retData = self.setData(payload)
         self.addToBlockDB(retData, selfInsert=True, dataSaved=True)
         self.setBlockType(retData, meta['type'])

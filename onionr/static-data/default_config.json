@@ -3,7 +3,7 @@
         "dev_mode": true,
         "display_header" : true,
 
-        "newCommunicator": false,
+        "newCommunicator": true,
 
         "dc_response": true,
         "dc_execcallbacks" : true

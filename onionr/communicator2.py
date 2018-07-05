@@ -89,9 +89,12 @@ class OnionrCommunicatorDaemon:
         # Main daemon loop, mainly for calling timers, don't do any complex operations here to avoid locking
         while not self.shutdown:
             for i in self.timers:
+                if self.shutdown:
+                    break
                 i.processTimer()
             time.sleep(self.delay)
         logger.info('Goodbye.')
+        self._core._utils.localCommand('shutdown')
     
     def lookupKeys(self):
         '''Lookup new keys'''
