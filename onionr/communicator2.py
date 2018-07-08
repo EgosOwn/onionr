@@ -68,7 +68,7 @@ class OnionrCommunicatorDaemon:
             OnionrCommunicatorTimers(self, self.heartbeat, 10)
 
         # Initalize peer online list
-        logger.debug('Onionr is not yet ready to recieve commands.')
+        logger.warn('Onionr is starting up and is not yet ready to recieve commands.')
         self.getOnlinePeers()
 
         # Print nice header thing :)
@@ -86,15 +86,20 @@ class OnionrCommunicatorDaemon:
         OnionrCommunicatorTimers(self, self.lookupAdders, 600)
 
         # Main daemon loop, mainly for calling timers, don't do any complex operations here to avoid locking
-        while not self.shutdown:
-            for i in self.timers:
-                if self.shutdown:
-                    break
-                i.processTimer()
-            time.sleep(self.delay)
+        try:
+            while not self.shutdown:
+                for i in self.timers:
+                    if self.shutdown:
+                        break
+                    i.processTimer()
+                time.sleep(self.delay)
+        except KeyboardInterrupt:
+            self.shutdown = True
+            pass
 
         logger.info('Goodbye.')
         self._core._utils.localCommand('shutdown')
+        time.sleep(0.5)
     
     def lookupKeys(self):
         '''Lookup new keys'''
@@ -399,8 +404,5 @@ except IndexError:
 if shouldRun:
     try:
         OnionrCommunicatorDaemon(debug, developmentMode)
-    except KeyboardInterrupt:
-        sys.exit(1)
-        pass
     except Exception as e:
         logger.error('Error occured in Communicator', error = e, timestamp = False)
