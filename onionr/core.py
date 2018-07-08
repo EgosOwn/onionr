@@ -733,7 +733,9 @@ class Core:
         metadata['signer'] = signer
         metadata['time'] = str(self._utils.getEpoch())
 
-        payload  = onionrproofs.POW(metadata, data)
+        # send block data (and metadata) to POW module to get tokenized block data
+        proof = onionrproofs.POW(metadata, data)
+        payload = proof.waitForResult()
         
         retData = self.setData(payload)
         self.addToBlockDB(retData, selfInsert=True, dataSaved=True)

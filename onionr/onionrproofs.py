@@ -18,17 +18,18 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 
-import nacl.encoding, nacl.hash, nacl.utils, time, math, threading, binascii, logger, sys, base64
+import nacl.encoding, nacl.hash, nacl.utils, time, math, threading, binascii, logger, sys, base64, json
 import core
 
 class POW:
-    def __init__(self, data, threadCount = 5):
+    def __init__(self, metadata, data, threadCount = 5):
         self.foundHash = False
         self.difficulty = 0
         self.data = data
+        self.metadata = metadata
         self.threadCount = threadCount
 
-        dataLen = sys.getsizeof(data)
+        dataLen = len(data) + len(json.dumps(metadata))
         self.difficulty = math.floor(dataLen / 1000000)
         if self.difficulty <= 2:
             self.difficulty = 4
@@ -38,11 +39,9 @@ class POW:
         except AttributeError:
             pass
         
-        self.data = nacl.hash.blake2b(self.data)
-
         logger.info('Computing POW (difficulty: %s)...' % self.difficulty)
 
-        self.mainHash = '0' * 70
+        self.mainHash = '0' * 64
         self.puzzle = self.mainHash[0:min(self.difficulty, len(self.mainHash))]
         
         myCore = core.Core()
@@ -63,11 +62,15 @@ class POW:
         
         while self.hashing:
             rand = nacl.utils.random()
-            token = nacl.hash.blake2b(rand + self.data).decode()
+            #token = nacl.hash.blake2b(rand + self.data).decode()
+            self.metadata['powRandomToken'] = base64.b64encode(rand).decode()
+            payload = json.dumps(self.metadata).encode() + b'\n' + self.data
+            token = myCore._crypto.sha3Hash(payload)
             #print(token)
             if self.puzzle == token[0:self.difficulty]:
                 self.hashing = False
                 iFound = True
+                self.result = payload
                 break
                 
         if iFound:
@@ -75,7 +78,6 @@ class POW:
             if self.reporting:
                 logger.debug('Found token after %s seconds: %s' % (endTime - startTime, token), timestamp=True)
                 logger.debug('Random value was: %s' % base64.b64encode(rand).decode())
-            self.result = (token, rand)
 
     def shutdown(self):
         self.hashing = False

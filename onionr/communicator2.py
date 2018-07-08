@@ -168,7 +168,7 @@ class OnionrCommunicatorDaemon:
                     metadata = metas[0]
                     meta = metas[1]
                     if self._core._utils.validateMetadata(metadata): # check if metadata is valid
-                        if self._core._crypto.verifyPow(metas[2], metadata): # check if POW is enough/correct
+                        if self._core._crypto.verifyPow(content): # check if POW is enough/correct
                             logger.info('Block passed proof, saving.')
                             self._core.setData(content)
                             self._core.addToBlockDB(blockHash, dataSaved=True)

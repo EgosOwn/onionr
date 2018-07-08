@@ -249,31 +249,27 @@ class OnionrCrypto:
             pass
         return nacl.hash.blake2b(data)
 
-    def verifyPow(self, blockContent, metadata):
+    def verifyPow(self, blockContent):
         '''
             Verifies the proof of work associated with a block
         '''
         retData = False
 
-        if not 'powRandomToken' in metadata:
-            logger.warn('No powRandomToken')
-            return False
-
         dataLen = len(blockContent)
 
-        expectedHash = self.blake2bHash(base64.b64decode(metadata['powRandomToken']) + self.blake2bHash(blockContent.encode()))
-        difficulty = 0
         try:
-            expectedHash = expectedHash.decode()
+            blockContent = blockContent.encode()
         except AttributeError:
             pass
+
+        blockHash = self.sha3Hash(blockContent)
 
         difficulty = math.floor(dataLen / 1000000)
 
         mainHash = '0000000000000000000000000000000000000000000000000000000000000000'#nacl.hash.blake2b(nacl.utils.random()).decode()
         puzzle = mainHash[:difficulty]
 
-        if metadata['powRandomToken'][:difficulty] == puzzle:
+        if blockHash[:difficulty] == puzzle:
             # logger.debug('Validated block pow')
             retData = True
         else:
