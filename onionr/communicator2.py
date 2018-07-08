@@ -19,7 +19,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import sys, os, core, config, json, onionrblockapi as block, requests, time, logger, threading, onionrplugins as plugins, base64
+import sys, os, core, config, json, onionrblockapi as block, requests, time, logger, threading, onionrplugins as plugins, base64, onionr
 import onionrexceptions
 from defusedxml import minidom
 
@@ -50,13 +50,13 @@ class OnionrCommunicatorDaemon:
 
         # amount of threads running by name, used to prevent too many
         self.threadCounts = {}
-        
+
         # set true when shutdown command recieved
         self.shutdown = False
 
         # list of new blocks to download, added to when new block lists are fetched from peers
         self.blockQueue = []
-        
+
         # Clear the daemon queue for any dead messages
         if os.path.exists(self._core.queueDB):
             self._core.clearDaemonQueue()
@@ -64,17 +64,16 @@ class OnionrCommunicatorDaemon:
         # Loads in and starts the enabled plugins
         plugins.reload()
 
+        if debug or developmentMode:
+            OnionrCommunicatorTimers(self, self.heartbeat, 10)
+
+        # Initalize peer online list
+        logger.debug('Onionr is not yet ready to recieve commands.')
+        self.getOnlinePeers()
+
         # Print nice header thing :)
         if config.get('general.display_header', True):
             self.header()
-
-        if debug or developmentMode:
-            OnionrCommunicatorTimers(self, self.heartbeat, 10)
-        
-        # Initalize peer online list
-        logger.warn('Onionr is not yet ready to recieve commands.')
-        self.getOnlinePeers()
-        logger.info('\033[4mOnionr is ready\033[0m.')
 
         # Set timers, function reference, seconds
         OnionrCommunicatorTimers(self, self.daemonCommands, 5)
@@ -93,22 +92,23 @@ class OnionrCommunicatorDaemon:
                     break
                 i.processTimer()
             time.sleep(self.delay)
+
         logger.info('Goodbye.')
         self._core._utils.localCommand('shutdown')
     
     def lookupKeys(self):
         '''Lookup new keys'''
-        logger.info('LOOKING UP NEW KEYS')
+        logger.debug('Looking up new keys...')
         tryAmount = 1
         for i in range(tryAmount):
             # Download new key list from random online peers
             peer = self.pickOnlinePeer()
             newKeys = self.peerAction(peer, action='kex')
             self._core._utils.mergeKeys(newKeys)
-        
+
         self.decrementThreadCount('lookupKeys')
         return
-    
+
     def lookupAdders(self):
         '''Lookup new peer addresses'''
         logger.info('LOOKING UP NEW ADDRESSES')
@@ -118,7 +118,7 @@ class OnionrCommunicatorDaemon:
             peer = self.pickOnlinePeer()
             newAdders = self.peerAction(peer, action='pex')
             self._core._utils.mergeAdders(newAdders)
-        
+
         self.decrementThreadCount('lookupKeys')
 
     def lookupBlocks(self):
@@ -149,7 +149,7 @@ class OnionrCommunicatorDaemon:
     def getBlocks(self):
         '''download new blocks in queue'''
         for blockHash in self.blockQueue:
-            logger.info("ATTEMPTING TO DOWNLOAD " + blockHash)
+            logger.info("Attempting to download %s..." % blockHash)
             content = self.peerAction(self.pickOnlinePeer(), 'getData', data=blockHash) # block content from random peer (includes metadata)
             if content != False:
                 try:
@@ -201,7 +201,7 @@ class OnionrCommunicatorDaemon:
                 self.threadCounts[threadName] -= 1
         except KeyError:
             pass
-    
+
     def clearOfflinePeer(self):
         '''Removes the longest offline peer to retry later'''
         try:
@@ -209,7 +209,7 @@ class OnionrCommunicatorDaemon:
         except IndexError:
             pass
         else:
-            logger.debug('removed ' + removed + ' from offline list to try them again.')
+            logger.debug('Removed ' + removed + ' from offline list, will try them again.')
         self.decrementThreadCount('clearOfflinePeer')
 
     def getOnlinePeers(self):
@@ -262,7 +262,7 @@ class OnionrCommunicatorDaemon:
                 tried.append(address)
                 logger.debug('Failed to connect to ' + address)
         return retData
-          
+
     def printOnlinePeers(self):
         '''logs online peer list'''
         if len(self.onlinePeers) == 0:
@@ -349,7 +349,7 @@ class OnionrCommunicatorDaemon:
         if os.path.exists('static-data/header.txt'):
             with open('static-data/header.txt', 'rb') as file:
                 # only to stdout, not file or log or anything
-                print(file.read().decode().replace('P', logger.colors.fg.pink).replace('W', logger.colors.reset + logger.colors.bold).replace('G', logger.colors.fg.green).replace('\n', logger.colors.reset + '\n'))
+                sys.stderr.write(file.read().decode().replace('P', logger.colors.fg.pink).replace('W', logger.colors.reset + logger.colors.bold).replace('G', logger.colors.fg.green).replace('\n', logger.colors.reset + '\n').replace('B', logger.colors.bold).replace('V', onionr.ONIONR_VERSION))
                 logger.info(logger.colors.fg.lightgreen + '-> ' + str(message) + logger.colors.reset + logger.colors.fg.lightgreen + ' <-\n')
 
 class OnionrCommunicatorTimers:

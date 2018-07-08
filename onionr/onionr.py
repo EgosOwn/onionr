@@ -263,7 +263,7 @@ class Onionr:
 
     def listConn(self):
         self.onionrCore.daemonQueueAdd('connectedPeers')
-    
+
     def listPeers(self):
         logger.info('Peer transport address list:')
         for i in self.onionrCore.listAdders():
@@ -335,7 +335,7 @@ class Onionr:
             logger.info('Running on %s %s' % (platform.platform(), platform.release()))
 
         return
-    
+
     def doKEX(self):
         '''make communicator do kex'''
         logger.info('Sending kex to command queue...')
@@ -745,5 +745,5 @@ class Onionr:
         else:
             logger.error('%s add-file <filename>' % sys.argv[0], timestamp = False)
 
-
-Onionr()
+if __name__ == "__main__":
+    Onionr()

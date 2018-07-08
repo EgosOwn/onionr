@@ -496,7 +496,6 @@ class Block:
             - child (str/Block): the child Block to be followed
             - file (str/file): the file to write the content to, instead of returning it
             - maximumFollows (int): the maximum number of Blocks to follow
-
         '''
 
         # validate data and instantiate Core
