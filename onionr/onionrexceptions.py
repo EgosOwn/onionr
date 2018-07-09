@@ -26,6 +26,10 @@ class Unknown(Exception):
 class Invalid(Exception):
     pass
 
+# communicator exceptions
+class OnlinePeerNeeded(Exception):
+    pass
+
 # crypto exceptions
 class InvalidPubkey(Exception):
     pass

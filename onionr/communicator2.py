@@ -67,23 +67,22 @@ class OnionrCommunicatorDaemon:
         if debug or developmentMode:
             OnionrCommunicatorTimers(self, self.heartbeat, 10)
 
-        # Initalize peer online list
-        logger.warn('Onionr is starting up and is not yet ready to recieve commands.')
-        self.getOnlinePeers()
-
         # Print nice header thing :)
-        if config.get('general.display_header', True):
+        if config.get('general.display_header', True) and not self.shutdown:
             self.header()
 
         # Set timers, function reference, seconds
         OnionrCommunicatorTimers(self, self.daemonCommands, 5)
         OnionrCommunicatorTimers(self, self.detectAPICrash, 5)
-        OnionrCommunicatorTimers(self, self.getOnlinePeers, 60)
-        OnionrCommunicatorTimers(self, self.lookupBlocks, 7)
-        OnionrCommunicatorTimers(self, self.getBlocks, 10)
+        peerPoolTimer = OnionrCommunicatorTimers(self, self.getOnlinePeers, 60)
+        OnionrCommunicatorTimers(self, self.lookupBlocks, 7, requiresPeer=True)
+        OnionrCommunicatorTimers(self, self.getBlocks, 10, requiresPeer=True)
         OnionrCommunicatorTimers(self, self.clearOfflinePeer, 120)
-        OnionrCommunicatorTimers(self, self.lookupKeys, 125)
-        OnionrCommunicatorTimers(self, self.lookupAdders, 600)
+        OnionrCommunicatorTimers(self, self.lookupKeys, 125, requiresPeer=True)
+        OnionrCommunicatorTimers(self, self.lookupAdders, 600, requiresPeer=True)
+
+        # set loop to execute instantly to load up peer pool (replaced old pool init wait)
+        peerPoolTimer.count = (peerPoolTimer.frequency - 1) 
 
         # Main daemon loop, mainly for calling timers, don't do any complex operations here to avoid locking
         try:
@@ -227,8 +226,11 @@ class OnionrCommunicatorDaemon:
         for i in range(needed):
             if len(self.onlinePeers) == 0:
                 self.connectNewPeer(useBootstrap=True)
-        if len(self.onlinePeers) == 0:
-            logger.warn('Could not connect to any peer.')
+            if self.shutdown:
+                break
+        else:
+            if len(self.onlinePeers) == 0:
+                logger.warn('Could not connect to any peer.')
         self.decrementThreadCount('getOnlinePeers')
 
     def addBootstrapListToPeerList(self, peerList):
@@ -358,11 +360,12 @@ class OnionrCommunicatorDaemon:
                 logger.info(logger.colors.fg.lightgreen + '-> ' + str(message) + logger.colors.reset + logger.colors.fg.lightgreen + ' <-\n')
 
 class OnionrCommunicatorTimers:
-    def __init__(self, daemonInstance, timerFunction, frequency, makeThread=True, threadAmount=1, maxThreads=5):
+    def __init__(self, daemonInstance, timerFunction, frequency, makeThread=True, threadAmount=1, maxThreads=5, requiresPeer=False):
         self.timerFunction = timerFunction
         self.frequency = frequency
         self.threadAmount = threadAmount
         self.makeThread = makeThread
+        self.requiresPeer = requiresPeer
         self.daemonInstance = daemonInstance
         self.maxThreads = maxThreads
         self._core = self.daemonInstance._core
@@ -371,25 +374,33 @@ class OnionrCommunicatorTimers:
         self.count = 0
 
     def processTimer(self):
+
         # mark how many instances of a thread we have (decremented at thread end)
-        self.count += 1
         try:
             self.daemonInstance.threadCounts[self.timerFunction.__name__]
         except KeyError:
             self.daemonInstance.threadCounts[self.timerFunction.__name__] = 0
-        # execute thread if it is time
+
+        # execute thread if it is time, and we are not missing *required* online peer
         if self.count == self.frequency:
-            if self.makeThread:
-                for i in range(self.threadAmount):
-                    if self.daemonInstance.threadCounts[self.timerFunction.__name__] >= self.maxThreads:
-                        logger.warn(self.timerFunction.__name__ + ' has too many current threads to start anymore.')
-                    else:
-                        self.daemonInstance.threadCounts[self.timerFunction.__name__] += 1
-                        newThread = threading.Thread(target=self.timerFunction)
-                        newThread.start()
+            try:
+                if self.requiresPeer and len(self.daemonInstance.onlinePeers) == 0:
+                    raise onionrexceptions.OnlinePeerNeeded
+            except onionrexceptions.OnlinePeerNeeded:
+                pass
             else:
-                self.timerFunction()
-            self.count = 0
+                if self.makeThread:
+                    for i in range(self.threadAmount):
+                        if self.daemonInstance.threadCounts[self.timerFunction.__name__] >= self.maxThreads:
+                            logger.warn(self.timerFunction.__name__ + ' has too many current threads to start anymore.')
+                        else:
+                            self.daemonInstance.threadCounts[self.timerFunction.__name__] += 1
+                            newThread = threading.Thread(target=self.timerFunction)
+                            newThread.start()
+                else:
+                    self.timerFunction()
+            self.count = -1 # negative 1 because its incremented at bottom
+        self.count += 1
 
 shouldRun = False
 debug = True

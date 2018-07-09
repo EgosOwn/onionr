@@ -59,7 +59,7 @@ class OnionrCrypto:
             with open(self._keyFile, 'w') as keyfile:
                 keyfile.write(self.pubKey + ',' + self.privKey)
             with open(self.keyPowFile, 'w') as keyPowFile:
-                proof = onionrproofs.POW(self.pubKey)
+                proof = onionrproofs.DataPOW(self.pubKey)
                 logger.info('Doing necessary work to insert our public key')
                 while True:
                     time.sleep(0.2)

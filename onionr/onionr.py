@@ -25,7 +25,7 @@ import sys
 if sys.version_info[0] == 2 or sys.version_info[1] < 5:
     print('Error, Onionr requires Python 3.4+')
     sys.exit(1)
-import os, base64, random, getpass, shutil, subprocess, requests, time, platform, datetime, re, json, getpass
+import os, base64, random, getpass, shutil, subprocess, requests, time, platform, datetime, re, json, getpass, sqlite3
 from threading import Thread
 import api, core, config, logger, onionrplugins as plugins, onionrevents as events
 import onionrutils
@@ -604,7 +604,11 @@ class Onionr:
         try:
             events.event('daemon_stop', onionr = self)
             net = NetController(config.get('client.port', 59496))
-            self.onionrCore.daemonQueueAdd('shutdown')
+            try:
+                self.onionrCore.daemonQueueAdd('shutdown')
+            except sqlite3.OperationalError:
+                pass
+
             net.killTor()
         except Exception as e:
             logger.error('Failed to shutdown daemon.', error = e, timestamp = False)
