@@ -161,7 +161,12 @@ class OnionrCommunicatorDaemon:
                 except AttributeError:
                     pass
                 content = base64.b64decode(content) # content is base64 encoded in transport
-                if self._core._crypto.sha3Hash(content) == blockHash:
+                realHash = self._core._crypto.sha3Hash(content)
+                try:
+                    realHash = realHash.decode() # bytes on some versions for some reason
+                except AttributeError:
+                    pass
+                if realHash == blockHash:
                     content = content.decode() # decode here because sha3Hash needs bytes above
                     metas = self._core._utils.getBlockMetadataFromData(content) # returns tuple(metadata, meta), meta is also in metadata
                     metadata = metas[0]
