@@ -329,6 +329,7 @@ class OnionrUtils:
                         break
                 if i == 'time':
                     if not self.isIntegerString(metadata[i]):
+                        logger.warn('Block metadata time stamp is not integer string')
                         break
             else:
                 # if metadata loop gets no errors, it does not break, therefore metadata is valid
@@ -358,9 +359,9 @@ class OnionrUtils:
         try:
             int(data)
         except ValueError:
-            return True
-        else:
             return False
+        else:
+            return True
 
     def validateID(self, id):
         '''
