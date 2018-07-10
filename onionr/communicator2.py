@@ -177,7 +177,12 @@ class OnionrCommunicatorDaemon:
                         logger.warn('Metadata for ' + blockHash + ' is invalid.')
                 else:
                     # if block didn't meet expected hash
-                    logger.warn('Block hash validation failed for ' + blockHash + ' got ' + self._core._crypto.sha3Hash(content))
+                    tempHash = self._core._crypto.sha3Hash(content) # lazy hack, TODO use var
+                    try:
+                        tempHash = tempHash.decode()
+                    except AttributeError:
+                        pass
+                    logger.warn('Block hash validation failed for ' + blockHash + ' got ' + tempHash)
                 self.blockQueue.remove(blockHash) # remove from block queue both if success or false
         self.decrementThreadCount('getBlocks')
         return
