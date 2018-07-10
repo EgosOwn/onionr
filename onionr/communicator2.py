@@ -130,6 +130,7 @@ class OnionrCommunicatorDaemon:
         logger.info('LOOKING UP NEW BLOCKS')
         tryAmount = 2
         newBlocks = ''
+        existingBlocks = self._core.getBlockList()
         for i in range(tryAmount):
             peer = self.pickOnlinePeer() # select random online peer
             newDBHash = self.peerAction(peer, 'getDBHash') # get their db hash
@@ -143,7 +144,7 @@ class OnionrCommunicatorDaemon:
                     for i in newBlocks.split('\n'):
                         if self._core._utils.validateHash(i):
                             # if newline seperated string is valid hash
-                            if not os.path.exists('data/blocks/' + i + '.db'):
+                            if not i in existingBlocks:
                                 # if block does not exist on disk and is not already in block queue
                                 if i not in self.blockQueue:
                                     self.blockQueue.append(i)
