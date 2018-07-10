@@ -263,6 +263,10 @@ class OnionrCrypto:
             pass
 
         blockHash = self.sha3Hash(blockContent)
+        try:
+            blockHash = blockHash.decode() # bytes on some versions for some reason
+        except AttributeError:
+            pass
 
         difficulty = math.floor(dataLen / 1000000)
 
