@@ -169,7 +169,7 @@ class OnionrUtils:
             retData = requests.get(payload).text
         except Exception as error:
             if not silent:
-                logger.debug('Failed to make local request (command: %s).' % command, error=error)
+                logger.error('Failed to make local request (command: %s):%s' % (command, error))
             retData = False
 
         return retData

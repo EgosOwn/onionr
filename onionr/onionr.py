@@ -441,7 +441,7 @@ class Onionr:
 
         #addedHash = Block(type = 'txt', content = messageToAdd).save()
         addedHash = self.onionrCore.insertBlock(messageToAdd)
-        if addedHash != None:
+        if addedHash != None and addedHash != False and addedHash != "":
             logger.info("Message inserted as as block %s" % addedHash)
         else:
             logger.error('Failed to insert block.', timestamp = False)

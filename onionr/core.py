@@ -674,6 +674,7 @@ class Core:
             Inserts a block into the network
             encryptType must be specified to encrypt a block
         '''
+        retData = False
 
         if meta is None:
             meta = dict()
@@ -736,10 +737,10 @@ class Core:
         # send block data (and metadata) to POW module to get tokenized block data
         proof = onionrproofs.POW(metadata, data)
         payload = proof.waitForResult()
-        
-        retData = self.setData(payload)
-        self.addToBlockDB(retData, selfInsert=True, dataSaved=True)
-        self.setBlockType(retData, meta['type'])
+        if payload != False:
+            retData = self.setData(payload)
+            self.addToBlockDB(retData, selfInsert=True, dataSaved=True)
+            self.setBlockType(retData, meta['type'])
 
         return retData
 
