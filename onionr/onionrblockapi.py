@@ -18,7 +18,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 
-import core as onionrcore, logger, config
+import core as onionrcore, logger, config, onionrexceptions
 import json, os, sys, datetime, base64
 
 class Block:
@@ -32,6 +32,7 @@ class Block:
             hash = hash.decode()
         except AttributeError:
             pass
+
         self.hash = hash
         self.core = core
         self.btype = type
@@ -54,6 +55,9 @@ class Block:
         # handle arguments
         if self.getCore() is None:
             self.core = onionrcore.Core()
+        
+        if not self.core._utils.validateHash(self.hash):
+            raise onionrexceptions.InvalidHexHash('specified block hash is not valid')
 
         # update the blocks' contents if it exists
         if not self.getHash() is None:

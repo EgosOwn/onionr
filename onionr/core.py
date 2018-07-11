@@ -597,7 +597,7 @@ class Core:
 
         return
 
-    def getBlockList(self, unsaved = False): # TODO: Use unsaved
+    def getBlockList(self, unsaved = False): # TODO: Use unsaved??
         '''
             Get list of our blocks
         '''
@@ -658,6 +658,16 @@ class Core:
     def updateBlockInfo(self, hash, key, data):
         '''
             sets info associated with a block
+            
+            hash         - the hash of a block
+            dateReceived - the date the block was recieved, not necessarily when it was created
+            decrypted    - if we can successfully decrypt the block (does not describe its current state)
+            dataType     - data type of the block
+            dataFound    - if the data has been found for the block
+            dataSaved    - if the data has been saved for the block
+            sig    - optional signature by the author (not optional if author is specified)
+            author       - multi-round partial sha3-256 hash of authors public key
+            dateClaimed  - timestamp claimed inside the block, only as trustworthy as the block author is
         '''
 
         if key not in ('dateReceived', 'decrypted', 'dataType', 'dataFound', 'dataSaved', 'sig', 'author', 'dateClaimed'):

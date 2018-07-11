@@ -251,6 +251,7 @@ class OnionrUtils:
             Read metadata from a block and cache it to the block database
         '''
         myBlock = Block(myBlock, self._core)
+        self._core.updateBlockInfo(blockHash, 'dataType', myBlock.getType())
 
 
     def getBlockDBHash(self):
