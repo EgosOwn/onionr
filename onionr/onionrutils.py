@@ -245,6 +245,13 @@ class OnionrUtils:
             return False
         else:
             return True
+    
+    def processBlockMetadata(self, blockHash):
+        '''
+            Read metadata from a block and cache it to the block database
+        '''
+        myBlock = Block(myBlock, self._core)
+
 
     def getBlockDBHash(self):
         '''

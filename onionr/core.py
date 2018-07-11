@@ -239,6 +239,7 @@ class Core:
             dataSaved    - if the data has been saved for the block
             sig    - optional signature by the author (not optional if author is specified)
             author       - multi-round partial sha3-256 hash of authors public key
+            dateClaimed  - timestamp claimed inside the block, only as trustworthy as the block author is
         '''
         if os.path.exists(self.blockDB):
             raise Exception("Block database already exists")
@@ -252,7 +253,8 @@ class Core:
             dataFound int,
             dataSaved int,
             sig text,
-            author text
+            author text,
+            dateClaimed int
             );
         ''')
         conn.commit()
@@ -658,7 +660,7 @@ class Core:
             sets info associated with a block
         '''
 
-        if key not in ('dateReceived', 'decrypted', 'dataType', 'dataFound', 'dataSaved', 'sig', 'author'):
+        if key not in ('dateReceived', 'decrypted', 'dataType', 'dataFound', 'dataSaved', 'sig', 'author', 'dateClaimed'):
             return False
 
         conn = sqlite3.connect(self.blockDB)
@@ -742,6 +744,8 @@ class Core:
             self.addToBlockDB(retData, selfInsert=True, dataSaved=True)
             self.setBlockType(retData, meta['type'])
 
+        if retData != False:
+            events.event('insertBlock', onionr = None, threaded = False)
         return retData
 
     def introduceNode(self):
