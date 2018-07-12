@@ -66,7 +66,11 @@ class OnionrFlow:
                 content = self.myCore._utils.escapeAnsi(content.replace('\n', '\\n').replace('\r', '\\r').strip())
                 logger.info("\n" + block.getDate().strftime("%m/%d %H:%M") + ' - ' + '\033[0;0m' + content)
                 self.alreadyOutputed.append(blockHash)
-            time.sleep(5)
+            try:
+                time.sleep(5)
+            except KeyboardInterrupt:
+                self.flowRunning = False
+                pass
 
 def on_init(api, data = None):
     '''
