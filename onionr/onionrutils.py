@@ -18,7 +18,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 # Misc functions that do not fit in the main api, but are useful
-import getpass, sys, requests, os, socket, hashlib, logger, sqlite3, config, binascii, time, base64, json, glob, shutil, math, json
+import getpass, sys, requests, os, socket, hashlib, logger, sqlite3, config, binascii, time, base64, json, glob, shutil, math, json, re
 import nacl.signing, nacl.encoding
 from onionrblockapi import Block
 import onionrexceptions
@@ -250,9 +250,17 @@ class OnionrUtils:
         '''
             Read metadata from a block and cache it to the block database
         '''
-        myBlock = Block(myBlock, self._core)
+        myBlock = Block(blockHash, self._core)
         self._core.updateBlockInfo(blockHash, 'dataType', myBlock.getType())
 
+    def escapeAnsi(self, line):
+        '''
+            Remove ANSI escape codes from a string with regex
+            
+            taken or adapted from: https://stackoverflow.com/a/38662876
+        '''
+        ansi_escape = re.compile(r'(\x9B|\x1B\[)[0-?]*[ -/]*[@-~]')
+        return ansi_escape.sub('', line)
 
     def getBlockDBHash(self):
         '''

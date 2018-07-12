@@ -177,7 +177,7 @@ class OnionrCommunicatorDaemon:
                             logger.info('Block passed proof, saving.')
                             self._core.setData(content)
                             self._core.addToBlockDB(blockHash, dataSaved=True)
-                            self._core.utils.processBlockMetadata(blockHash) # caches block metadata values to block database
+                            self._core._utils.processBlockMetadata(blockHash) # caches block metadata values to block database
                         else:
                             logger.warn('POW failed for block ' + blockHash)
                     else:

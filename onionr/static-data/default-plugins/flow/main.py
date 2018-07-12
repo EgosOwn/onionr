@@ -19,17 +19,54 @@
 '''
 
 # Imports some useful libraries
-import logger, config
+import logger, config, threading, time
 from onionrblockapi import Block
 
 plugin_name = 'flow'
 
 class OnionrFlow:
     def __init__(self):
-        logger.info("HELLO")
+        self.myCore = pluginapi.get_core()
+        self.alreadyOutputed = []
+        self.flowRunning = False
         return
 
+    def start(self):
+        message = ""
+        self.flowRunning = True
+        newThread = threading.Thread(target=self.showOutput)
+        newThread.start()
+        while self.flowRunning:
+            try:
+                message = logger.readline('\nInsert message into flow:').strip().replace('\n', '\\n').replace('\r', '\\r')
+            except EOFError:
+                pass
+            except KeyboardInterrupt:
+                self.flowRunning = False
+            if message == "q":
+                self.flowRunning = False
 
+            if len(message) > 0:
+                self.myCore.insertBlock(message)
+
+        logger.info("Flow is exiting, goodbye")
+        return
+
+    def showOutput(self):
+        while self.flowRunning:
+            for blockHash in self.myCore.getBlocksByType('txt'):
+                if blockHash in self.alreadyOutputed:
+                    continue
+                if not self.flowRunning:
+                    break
+                logger.info('\n------------------------')
+                block = Block(blockHash, self.myCore)
+                content = block.getContent()
+                # Escape new lines, remove trailing whitespace, and escape ansi sequences
+                content = self.myCore._utils.escapeAnsi(content.replace('\n', '\\n').replace('\r', '\\r').strip())
+                logger.info("\n" + block.getDate().strftime("%m/%d %H:%M") + ' - ' + '\033[0;0m' + content)
+                self.alreadyOutputed.append(blockHash)
+            time.sleep(5)
 
 def on_init(api, data = None):
     '''
@@ -42,6 +79,7 @@ def on_init(api, data = None):
     # by simply referencing the variable `pluginapi`.
     global pluginapi
     pluginapi = api
-    api.commands.register(['flow'], OnionrFlow)
+    flow = OnionrFlow()
+    api.commands.register(['flow'], flow.start)
     api.commands.register_help('flow', 'Open the flow messaging interface')
     return
