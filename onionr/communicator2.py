@@ -25,7 +25,6 @@ from defusedxml import minidom
 
 class OnionrCommunicatorDaemon:
     def __init__(self, debug, developmentMode):
-        logger.warn('New (unstable) communicator is being used.')
 
         # list of timer instances
         self.timers = []
@@ -56,6 +55,9 @@ class OnionrCommunicatorDaemon:
 
         # list of new blocks to download, added to when new block lists are fetched from peers
         self.blockQueue = []
+
+        # list of blocks currently downloading, avoid s
+        self.currentDownloading = []
 
         # Clear the daemon queue for any dead messages
         if os.path.exists(self._core.queueDB):
@@ -154,6 +156,10 @@ class OnionrCommunicatorDaemon:
     def getBlocks(self):
         '''download new blocks in queue'''
         for blockHash in self.blockQueue:
+            if blockHash in self.currentDownloading:
+                logger.debug('ALREADY DOWNLOADING ' + blockHash)
+                continue
+            self.currentDownloading.append(blockHash)
             logger.info("Attempting to download %s..." % blockHash)
             content = self.peerAction(self.pickOnlinePeer(), 'getData', data=blockHash) # block content from random peer (includes metadata)
             if content != False:
@@ -171,7 +177,7 @@ class OnionrCommunicatorDaemon:
                     content = content.decode() # decode here because sha3Hash needs bytes above
                     metas = self._core._utils.getBlockMetadataFromData(content) # returns tuple(metadata, meta), meta is also in metadata
                     metadata = metas[0]
-                    meta = metas[1]
+                    #meta = metas[1]
                     if self._core._utils.validateMetadata(metadata): # check if metadata is valid
                         if self._core._crypto.verifyPow(content): # check if POW is enough/correct
                             logger.info('Block passed proof, saving.')
@@ -191,6 +197,7 @@ class OnionrCommunicatorDaemon:
                         pass
                     logger.warn('Block hash validation failed for ' + blockHash + ' got ' + tempHash)
                 self.blockQueue.remove(blockHash) # remove from block queue both if success or false
+                self.currentDownloading.remove(blockHash)
         self.decrementThreadCount('getBlocks')
         return
 

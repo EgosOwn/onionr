@@ -51,6 +51,7 @@ class Block:
         self.parent = None
         self.bheader = {}
         self.bmetadata = {}
+        self.isEncrypted = False
 
         # handle arguments
         if self.getCore() is None:
@@ -118,7 +119,11 @@ class Block:
             self.raw = str(blockdata)
             self.bheader = json.loads(self.getRaw()[:self.getRaw().index('\n')])
             self.bcontent = self.getRaw()[self.getRaw().index('\n') + 1:]
-            self.bmetadata = json.loads(self.getHeader('meta', None))
+            if self.bheader['encryptType'] in ('asym', 'sym'):
+                self.bmetadata = self.getHeader('meta', None)
+                self.isEncrypted = True
+            else:
+                self.bmetadata = json.loads(self.getHeader('meta', None))
             self.parent = self.getMetadata('parent', None)
             self.btype = self.getMetadata('type', None)
             self.powHash = self.getMetadata('powHash', None)

@@ -59,7 +59,7 @@ class OnionrUtils:
             High level function to encrypt a message to a peer and insert it as a block
         '''
 
-        self._core.insertBlock(message, header='pm', sign=True, encryptType='sym', symKey=pubkey)
+        self._core.insertBlock(message, header='pm', sign=True, encryptType='asym', asymPeer=pubkey)
 
         return
 
@@ -117,7 +117,7 @@ class OnionrUtils:
                             else:
                                 logger.warn("Failed to add key")
                     else:
-                        logger.warn('%s pow failed' % key[0])
+                        logger.debug('%s pow failed' % key[0])
             return retVal
         except Exception as error:
             logger.error('Failed to merge keys.', error=error)
@@ -204,18 +204,23 @@ class OnionrUtils:
 
     def getBlockMetadataFromData(self, blockData):
         '''
-            accepts block contents as string and returns a tuple of metadata, meta (meta being internal metadata)
+            accepts block contents as string, returns a tuple of metadata, meta (meta being internal metadata, which will be returned as an encrypted base64 string if it is encrypted, dict if not).
+            
         '''
+        meta = {}
         try:
             blockData = blockData.encode()
         except AttributeError:
             pass
         metadata = json.loads(blockData[:blockData.find(b'\n')].decode())
         data = blockData[blockData.find(b'\n'):].decode()
-        try:
-            meta = json.loads(metadata['meta'])
-        except KeyError:
-            meta = {}
+
+        if not metadata['encryptType'] in ('asym', 'sym'):
+            try:
+                meta = json.loads(metadata['meta'])
+            except KeyError:
+                pass
+        meta = metadata['meta']       
         return (metadata, meta, data)
 
     def checkPort(self, port, host=''):

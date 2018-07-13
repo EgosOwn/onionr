@@ -727,15 +727,15 @@ class Core:
         if encryptType == 'sym':
             if len(symKey) < self.requirements.passwordLength:
                 raise onionrexceptions.SecurityError('Weak encryption key')
-            jsonMeta = self._crypto.symmetricEncrypt(jsonMeta, key=symKey, returnEncoded=True)
-            data = self._crypto.symmetricEncrypt(data, key=symKey, returnEncoded=True)
-            signature = self._crypto.symmetricEncrypt(signature, key=symKey, returnEncoded=True)
-            signer = self._crypto.symmetricEncrypt(signer, key=symKey, returnEncoded=True)
+            jsonMeta = self._crypto.symmetricEncrypt(jsonMeta, key=symKey, returnEncoded=True).decode()
+            data = self._crypto.symmetricEncrypt(data, key=symKey, returnEncoded=True).decode()
+            signature = self._crypto.symmetricEncrypt(signature, key=symKey, returnEncoded=True).decode()
+            signer = self._crypto.symmetricEncrypt(signer, key=symKey, returnEncoded=True).decode()
         elif encryptType == 'asym':
             if self._utils.validatePubKey(asymPeer):
-                jsonMeta = self._crypto.pubKeyEncrypt(jsonMeta, asymPeer, encodedData=True)
-                data = self._crypto.pubKeyEncrypt(data, asymPeer, encodedData=True)
-                signature = self._crypto.pubKeyEncrypt(signature, asymPeer, encodedData=True)
+                jsonMeta = self._crypto.pubKeyEncrypt(jsonMeta, asymPeer, encodedData=True).decode()
+                data = self._crypto.pubKeyEncrypt(data, asymPeer, encodedData=True).decode()
+                signature = self._crypto.pubKeyEncrypt(signature, asymPeer, encodedData=True).decode()
             else:
                 raise onionrexceptions.InvalidPubkey(asymPeer + ' is not a valid base32 encoded ed25519 key')
         
