@@ -390,7 +390,7 @@ class Onionr:
                 return
             if not '-' in newPeer:
                 logger.info('Since no POW token was supplied for that key, one is being generated')
-                proof = onionrproofs.POW(newPeer)
+                proof = onionrproofs.DataPOW(newPeer)
                 while True:
                     result = proof.getResult()
                     if result == False:
