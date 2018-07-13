@@ -1,6 +1,5 @@
 ![Onionr logo](./docs/onionr-logo.png)
 
-[![Build Status](https://travis-ci.org/beardog108/onionr.svg?branch=master)](https://travis-ci.org/beardog108/onionr)
 [![Open Source Love](https://badges.frapsoft.com/os/v3/open-source.png?v=103)](https://github.com/ellerbrock/open-source-badges/)
 
 
@@ -10,10 +9,11 @@ Major work in progress.
 
 ***THIS SOFTWARE IS NOT USABLE OR SECURE YET.***
 
+**The main repo for this software is at https://gitlab.com/beardog/Onionr/**
 
 **Roadmap/features:**
 
-Check the [GitHub Project](https://github.com/beardog108/onionr/projects/1) to see progress towards the alpha release.
+Check the [Gitlab Project](https://gitlab.com/beardog/Onionr/milestones/1) to see progress towards the alpha release.
 
 * [X] Fully p2p/decentralized, no trackers or other single points of failure
 * [X] High level of anonymity
