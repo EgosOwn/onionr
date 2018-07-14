@@ -50,7 +50,6 @@ class Onionr:
             Main Onionr class. This is for the CLI program, and does not handle much of the logic.
             In general, external programs and plugins should not use this class.
         '''
-
         try:
             os.chdir(sys.path[0])
         except FileNotFoundError:
@@ -181,15 +180,6 @@ class Onionr:
             'listkeys': self.listKeys,
             'list-keys': self.listKeys,
 
-            'addmsg': self.addMessage,
-            'addmessage': self.addMessage,
-            'add-msg': self.addMessage,
-            'add-message': self.addMessage,
-            'pm': self.sendEncrypt,
-
-            'getpms': self.getPMs,
-            'get-pms': self.getPMs,
-
             'addpeer': self.addPeer,
             'add-peer': self.addPeer,
             'add-address': self.addAddress,
@@ -226,9 +216,6 @@ class Onionr:
             'create-plugin': 'Creates directory structure for a plugin',
             'add-peer': 'Adds a peer to database',
             'list-peers': 'Displays a list of peers',
-            'add-msg': 'Broadcasts a message to the Onionr network',
-            'pm': 'Adds a private message to block',
-            'get-pms': 'Shows private messages sent to you',
             'add-file': 'Create an Onionr block from a file',
             'import-blocks': 'import blocks from the disk (Onionr is transport-agnostic!)',
             'listconn': 'list connected peers',
@@ -341,32 +328,6 @@ class Onionr:
         logger.info('Sending kex to command queue...')
         self.onionrCore.daemonQueueAdd('kex')
 
-    def sendEncrypt(self):
-        '''
-            Create a private message and send it
-        '''
-
-        invalidID = True
-        while invalidID:
-            try:
-                peer = logger.readline('Peer to send to: ')
-            except KeyboardInterrupt:
-                break
-            else:
-                if self.onionrUtils.validatePubKey(peer):
-                    invalidID = False
-                else:
-                    logger.error('Invalid peer ID')
-        else:
-            try:
-                message = logger.readline("Enter a message: ")
-            except KeyboardInterrupt:
-                pass
-            else:
-                logger.info("Sending message to: " + logger.colors.underline + peer)
-                self.onionrUtils.sendPM(peer, message)
-
-
     def listKeys(self):
         '''
             Displays a list of keys (used to be called peers) (?)
@@ -446,13 +407,6 @@ class Onionr:
         else:
             logger.error('Failed to insert block.', timestamp = False)
         return
-
-    def getPMs(self):
-        '''
-            display PMs sent to us
-        '''
-
-        self.onionrUtils.loadPMs()
 
     def enablePlugin(self):
         '''

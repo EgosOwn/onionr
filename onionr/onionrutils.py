@@ -431,52 +431,6 @@ class OnionrUtils:
         except:
             return False
 
-    def loadPMs(self):
-        '''
-            Find, decrypt, and return array of PMs (array of dictionary, {from, text})
-        '''
-        blocks = Block.getBlocks(type = 'pm', core = self._core)
-        message = ''
-        sender = ''
-        for i in blocks:
-            try:
-                blockContent = i.getContent()
-
-                try:
-                    message = self._core._crypto.pubKeyDecrypt(blockContent, encodedData=True, anonymous=True)
-                except nacl.exceptions.CryptoError as e:
-                    pass
-                else:
-                    try:
-                        message = message.decode()
-                    except AttributeError:
-                        pass
-
-                    try:
-                        message = json.loads(message)
-                    except json.decoder.JSONDecodeError:
-                        pass
-                    else:
-                        logger.debug('Decrypted %s:' % i.getHash())
-                        logger.info(message["msg"])
-
-                        signer = message["id"]
-                        sig = message["sig"]
-
-                        if self.validatePubKey(signer):
-                            if self._core._crypto.edVerify(message["msg"], signer, sig, encodedData=True):
-                                logger.info("Good signature by %s" % signer)
-                            else:
-                                logger.warn("Bad signature by %s" % signer)
-                        else:
-                            logger.warn('Bad sender id: %s' % signer)
-
-            except FileNotFoundError:
-                pass
-            except Exception as error:
-                logger.error('Failed to open block %s.' % i, error=error)
-        return
-
     def getPeerByHashId(self, hash):
         '''
             Return the pubkey of the user if known from the hash

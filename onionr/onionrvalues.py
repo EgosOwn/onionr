@@ -21,4 +21,4 @@
 class OnionrValues:
     def __init__(self):
         self.passwordLength = 20
-        self.blockMetadataLengths = {'meta': 1000, 'sig': 88, 'signer': 64, 'time': 10, 'powRandomToken': 1000, 'encryptType': 4}
+        self.blockMetadataLengths = {'meta': 1000, 'sig': 200, 'signer': 200, 'time': 10, 'powRandomToken': 1000, 'encryptType': 4} #TODO properly refine values to minimum needed
