@@ -17,7 +17,13 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import nacl.signing, nacl.encoding, nacl.public, nacl.hash, nacl.secret, os, binascii, base64, hashlib, logger, onionrproofs, time, math
+import nacl.signing, nacl.encoding, nacl.public, nacl.hash, nacl.secret, os, binascii, base64, hashlib, logger, onionrproofs, time, math, sys
+
+# secrets module was added into standard lib in 3.6+
+if sys.version_info[0] == 3 and sys.version_info[1] < 6:
+    from dependencies import secrets
+elif sys.version_info[0] == 3 and sys.version_info[1] >= 6:
+    import secrets
 
 class OnionrCrypto:
     def __init__(self, coreInstance):
@@ -26,6 +32,8 @@ class OnionrCrypto:
         self.keyPowFile = 'data/keyPow.txt'
         self.pubKey = None
         self.privKey = None
+
+        self.secrets = secrets
 
         self.pubKeyPowToken = None
         #self.pubKeyPowHash = None
@@ -51,7 +59,7 @@ class OnionrCrypto:
             with open(self._keyFile, 'w') as keyfile:
                 keyfile.write(self.pubKey + ',' + self.privKey)
             with open(self.keyPowFile, 'w') as keyPowFile:
-                proof = onionrproofs.POW(self.pubKey)
+                proof = onionrproofs.DataPOW(self.pubKey)
                 logger.info('Doing necessary work to insert our public key')
                 while True:
                     time.sleep(0.2)
@@ -102,7 +110,7 @@ class OnionrCrypto:
             retData = key.sign(data).signature
         return retData
 
-    def pubKeyEncrypt(self, data, pubkey, anonymous=False, encodedData=False):
+    def pubKeyEncrypt(self, data, pubkey, anonymous=True, encodedData=False):
         '''Encrypt to a public key (Curve25519, taken from base32 Ed25519 pubkey)'''
         retVal = ''
 
@@ -241,35 +249,34 @@ class OnionrCrypto:
             pass
         return nacl.hash.blake2b(data)
 
-    def verifyPow(self, blockContent, metadata):
+    def verifyPow(self, blockContent):
         '''
             Verifies the proof of work associated with a block
         '''
         retData = False
 
-        if not (('powToken' in metadata) and ('powHash' in metadata)):
-            return False
-
         dataLen = len(blockContent)
 
-        expectedHash = self.blake2bHash(base64.b64decode(metadata['powToken']) + self.blake2bHash(blockContent.encode()))
-        difficulty = 0
         try:
-            expectedHash = expectedHash.decode()
+            blockContent = blockContent.encode()
         except AttributeError:
             pass
-        if metadata['powHash'] == expectedHash:
-            difficulty = math.floor(dataLen / 1000000)
 
-            mainHash = '0000000000000000000000000000000000000000000000000000000000000000'#nacl.hash.blake2b(nacl.utils.random()).decode()
-            puzzle = mainHash[:difficulty]
+        blockHash = self.sha3Hash(blockContent)
+        try:
+            blockHash = blockHash.decode() # bytes on some versions for some reason
+        except AttributeError:
+            pass
 
-            if metadata['powHash'][:difficulty] == puzzle:
-                # logger.debug('Validated block pow')
-                retData = True
-            else:
-                logger.debug("Invalid token (#1)")
+        difficulty = math.floor(dataLen / 1000000)
+
+        mainHash = '0000000000000000000000000000000000000000000000000000000000000000'#nacl.hash.blake2b(nacl.utils.random()).decode()
+        puzzle = mainHash[:difficulty]
+
+        if blockHash[:difficulty] == puzzle:
+            # logger.debug('Validated block pow')
+            retData = True
         else:
-            logger.debug('Invalid token (#2): Expected hash %s, got hash %s...' % (metadata['powHash'], expectedHash))
+            logger.debug("Invalid token, bad proof")
 
         return retData

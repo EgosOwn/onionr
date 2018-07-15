@@ -25,12 +25,14 @@ import sys
 if sys.version_info[0] == 2 or sys.version_info[1] < 5:
     print('Error, Onionr requires Python 3.4+')
     sys.exit(1)
-import os, base64, random, getpass, shutil, subprocess, requests, time, platform, datetime, re, json, getpass
+import os, base64, random, getpass, shutil, subprocess, requests, time, platform, datetime, re, json, getpass, sqlite3
 from threading import Thread
 import api, core, config, logger, onionrplugins as plugins, onionrevents as events
 import onionrutils
 from onionrutils import OnionrUtils
 from netcontroller import NetController
+from onionrblockapi import Block
+import onionrproofs
 
 try:
     from urllib3.contrib.socks import SOCKSProxyManager
@@ -38,8 +40,9 @@ except ImportError:
     raise Exception("You need the PySocks module (for use with socks5 proxy to use Tor)")
 
 ONIONR_TAGLINE = 'Anonymous P2P Platform - GPLv3 - https://Onionr.VoidNet.Tech'
-ONIONR_VERSION = '0.0.0' # for debugging and stuff
-API_VERSION = '2' # increments of 1; only change when something fundemental about how the API works changes. This way other nodes knows how to communicate without learning too much information about you.
+ONIONR_VERSION = '0.1.0' # for debugging and stuff
+ONIONR_VERSION_TUPLE = tuple(ONIONR_VERSION.split('.')) # (MAJOR, MINOR, VERSION)
+API_VERSION = '4' # increments of 1; only change when something fundemental about how the API works changes. This way other nodes knows how to communicate without learning too much information about you.
 
 class Onionr:
     def __init__(self):
@@ -64,22 +67,22 @@ class Onionr:
             config.set_config(json.loads(open('static-data/default_config.json').read())) # this is the default config, it will be overwritten if a config file already exists. Else, it saves it
         else:
             # the default config file doesn't exist, try hardcoded config
-            config.set_config({'devmode': True, 'log': {'file': {'output': True, 'path': 'data/output.log'}, 'console': {'output': True, 'color': True}}})
+            config.set_config({'dev_mode': True, 'log': {'file': {'output': True, 'path': 'data/output.log'}, 'console': {'output': True, 'color': True}}})
         if not data_exists:
             config.save()
         config.reload() # this will read the configuration file into memory
 
         settings = 0b000
-        if config.get('log', {'console': {'color': True}})['console']['color']:
+        if config.get('log.console.color', True):
             settings = settings | logger.USE_ANSI
-        if config.get('log', {'console': {'output': True}})['console']['output']:
+        if config.get('log.console.output', True):
             settings = settings | logger.OUTPUT_TO_CONSOLE
-        if config.get('log', {'file': {'output': True}})['file']['output']:
+        if config.get('log.file.output', True):
             settings = settings | logger.OUTPUT_TO_FILE
-            logger.set_file(config.get('log', {'file': {'path': 'data/output.log'}})['file']['path'])
+            logger.set_file(config.get('log.file.path', '/tmp/onionr.log'))
         logger.set_settings(settings)
 
-        if str(config.get('devmode', True)).lower() == 'true':
+        if str(config.get('general.dev_mode', True)).lower() == 'true':
             self._developmentMode = True
             logger.set_level(logger.LEVEL_DEBUG)
         else:
@@ -88,6 +91,8 @@ class Onionr:
 
         self.onionrCore = core.Core()
         self.onionrUtils = OnionrUtils(self.onionrCore)
+
+        self.userOS = platform.system()
 
         # Handle commands
 
@@ -144,7 +149,7 @@ class Onionr:
                     randomPort = random.randint(1024, 65535)
                     if self.onionrUtils.checkPort(randomPort):
                         break
-            config.set('client', {'participate': 'true', 'client_hmac': base64.b16encode(os.urandom(32)).decode('utf-8'), 'port': randomPort, 'api_version': API_VERSION}, True)
+            config.set('client', {'participate': True, 'hmac': base64.b16encode(os.urandom(32)).decode('utf-8'), 'port': randomPort, 'api_version': API_VERSION}, True)
 
         self.cmds = {
             '': self.showHelpSuggestion,
@@ -191,12 +196,20 @@ class Onionr:
             'add-addr': self.addAddress,
             'addaddr': self.addAddress,
             'addaddress': self.addAddress,
-            'addfile': self.addFile,
+            'list-peers': self.listPeers,
 
+            'add-file': self.addFile,
+            'addfile': self.addFile,
+            'listconn': self.listConn,
+
+            'import-blocks': self.onionrUtils.importNewBlocks,
             'importblocks': self.onionrUtils.importNewBlocks,
 
             'introduce': self.onionrCore.introduceNode,
-            'connect': self.addAddress
+            'connect': self.addAddress,
+            'kex': self.doKEX,
+
+            'getpassword': self.getWebPassword
         }
 
         self.cmdhelp = {
@@ -206,6 +219,7 @@ class Onionr:
             'start': 'Starts the Onionr daemon',
             'stop': 'Stops the Onionr daemon',
             'stats': 'Displays node statistics',
+            'getpassword': 'Displays the web password',
             'enable-plugin': 'Enables and starts a plugin',
             'disable-plugin': 'Disables and stops a plugin',
             'reload-plugin': 'Reloads a plugin',
@@ -215,8 +229,10 @@ class Onionr:
             'add-msg': 'Broadcasts a message to the Onionr network',
             'pm': 'Adds a private message to block',
             'get-pms': 'Shows private messages sent to you',
-            'addfile': 'Create an Onionr block from a file',
-            'importblocks': 'import blocks from the disk (Onionr is transport-agnostic!)',
+            'add-file': 'Create an Onionr block from a file',
+            'import-blocks': 'import blocks from the disk (Onionr is transport-agnostic!)',
+            'listconn': 'list connected peers',
+            'kex': 'exchange keys with peers (done automatically)',
             'introduce': 'Introduce your node to the public Onionr network',
         }
 
@@ -244,6 +260,17 @@ class Onionr:
 
     def getCommands(self):
         return self.cmds
+
+    def listConn(self):
+        self.onionrCore.daemonQueueAdd('connectedPeers')
+
+    def listPeers(self):
+        logger.info('Peer transport address list:')
+        for i in self.onionrCore.listAdders():
+            logger.info(i)
+
+    def getWebPassword(self):
+        return config.get('client.hmac')
 
     def getHelp(self):
         return self.cmdhelp
@@ -309,6 +336,11 @@ class Onionr:
 
         return
 
+    def doKEX(self):
+        '''make communicator do kex'''
+        logger.info('Sending kex to command queue...')
+        self.onionrCore.daemonQueueAdd('kex')
+
     def sendEncrypt(self):
         '''
             Create a private message and send it
@@ -348,14 +380,31 @@ class Onionr:
         '''
             Adds a peer (?)
         '''
-
         try:
             newPeer = sys.argv[2]
         except:
             pass
         else:
+            if self.onionrUtils.hasKey(newPeer):
+                logger.info('We already have that key')
+                return
+            if not '-' in newPeer:
+                logger.info('Since no POW token was supplied for that key, one is being generated')
+                proof = onionrproofs.DataPOW(newPeer)
+                while True:
+                    result = proof.getResult()
+                    if result == False:
+                        time.sleep(0.5)
+                    else:
+                        break
+                newPeer += '-' + base64.b64encode(result[1]).decode()
+                logger.info(newPeer)
+
             logger.info("Adding peer: " + logger.colors.underline + newPeer)
-            self.onionrCore.addPeer(newPeer)
+            if self.onionrUtils.mergeKeys(newPeer):
+                logger.info('Successfully added key')
+            else:
+                logger.error('Failed to add key')
 
         return
 
@@ -390,12 +439,12 @@ class Onionr:
             except KeyboardInterrupt:
                 return
 
-        #addedHash = self.onionrCore.setData(messageToAdd)
-        addedHash = self.onionrCore.insertBlock(messageToAdd, header='txt')
-        #self.onionrCore.addToBlockDB(addedHash, selfInsert=True)
-        #self.onionrCore.setBlockType(addedHash, 'txt')
-        if addedHash != '':
+        #addedHash = Block(type = 'txt', content = messageToAdd).save()
+        addedHash = self.onionrCore.insertBlock(messageToAdd)
+        if addedHash != None and addedHash != False and addedHash != "":
             logger.info("Message inserted as as block %s" % addedHash)
+        else:
+            logger.error('Failed to insert block.', timestamp = False)
         return
 
     def getPMs(self):
@@ -463,7 +512,12 @@ class Onionr:
 
                     os.makedirs(plugins.get_plugins_folder(plugin_name))
                     with open(plugins.get_plugins_folder(plugin_name) + '/main.py', 'a') as main:
-                        main.write(open('static-data/default_plugin.py').read().replace('$user', os.getlogin()).replace('$date', datetime.datetime.now().strftime('%Y-%m-%d')).replace('$name', plugin_name))
+                        contents = ''
+                        with open('static-data/default_plugin.py', 'rb') as file:
+                            contents = file.read().decode()
+
+                        # TODO: Fix $user. os.getlogin() is   B U G G Y
+                        main.write(contents.replace('$user', 'some random developer').replace('$date', datetime.datetime.now().strftime('%Y-%m-%d')).replace('$name', plugin_name))
 
                     with open(plugins.get_plugins_folder(plugin_name) + '/info.json', 'a') as main:
                         main.write(json.dumps({'author' : 'anonymous', 'description' : 'the default description of the plugin', 'version' : '1.0'}))
@@ -494,12 +548,12 @@ class Onionr:
 
         logger.info('Do ' + logger.colors.bold + sys.argv[0] + ' --help' + logger.colors.reset + logger.colors.fg.green + ' for Onionr help.')
 
-    def start(self, input = False):
+    def start(self, input = False, override = False):
         '''
             Starts the Onionr daemon
         '''
 
-        if os.path.exists('.onionr-lock'):
+        if os.path.exists('.onionr-lock') and not override:
             logger.fatal('Cannot start. Daemon is already running, or it did not exit cleanly.\n(if you are sure that there is not a daemon running, delete .onionr-lock & try again).')
         else:
             if not self.debug and not self._developmentMode:
@@ -516,18 +570,19 @@ class Onionr:
         '''
             Starts the Onionr communication daemon
         '''
-
+        communicatorDaemon = './communicator2.py'
         if not os.environ.get("WERKZEUG_RUN_MAIN") == "true":
             if self._developmentMode:
-                logger.warn('DEVELOPMENT MODE ENABLED (THIS IS LESS SECURE!)')
-            net = NetController(config.get('client')['port'])
+                logger.warn('DEVELOPMENT MODE ENABLED (THIS IS LESS SECURE!)', timestamp = False)
+            net = NetController(config.get('client.port', 59496))
             logger.info('Tor is starting...')
             if not net.startTor():
                 sys.exit(1)
-            logger.info('Started Tor .onion service: ' + logger.colors.underline + net.myID)
+            logger.info('Started .onion service: ' + logger.colors.underline + net.myID)
             logger.info('Our Public key: ' + self.onionrCore._crypto.pubKey)
             time.sleep(1)
-            subprocess.Popen(["./communicator.py", "run", str(net.socksPort)])
+            #TODO make runable on windows
+            subprocess.Popen([communicatorDaemon, "run", str(net.socksPort)])
             logger.debug('Started communicator')
             events.event('daemon_start', onionr = self)
         api.API(self.debug)
@@ -542,12 +597,12 @@ class Onionr:
         logger.warn('Killing the running daemon...', timestamp = False)
         try:
             events.event('daemon_stop', onionr = self)
-            net = NetController(config.get('client')['port'])
+            net = NetController(config.get('client.port', 59496))
             try:
-                self.onionrUtils.localCommand('shutdown')
-            except requests.exceptions.ConnectionError:
+                self.onionrCore.daemonQueueAdd('shutdown')
+            except sqlite3.OperationalError:
                 pass
-            self.onionrCore.daemonQueueAdd('shutdown')
+
             net.killTor()
         except Exception as e:
             logger.error('Failed to shutdown daemon.', error = e, timestamp = False)
@@ -561,11 +616,17 @@ class Onionr:
 
         try:
             # define stats messages here
+            totalBlocks = len(Block.getBlocks())
+            signedBlocks = len(Block.getBlocks(signed = True))
+            powToken = self.onionrCore._crypto.pubKeyPowToken
             messages = {
                 # info about local client
                 'Onionr Daemon Status' : ((logger.colors.fg.green + 'Online') if self.onionrUtils.isCommunicatorRunning(timeout = 2) else logger.colors.fg.red + 'Offline'),
                 'Public Key' : self.onionrCore._crypto.pubKey,
-                'Address' : self.get_hostname(),
+                'POW Token' : powToken,
+                'Combined' : self.onionrCore._crypto.pubKey + '-' + powToken,
+                'Human readable public key' : self.onionrCore._utils.getHumanReadableID(),
+                'Node Address' : self.get_hostname(),
 
                 # file and folder size stats
                 'div1' : True, # this creates a solid line across the screen, a div
@@ -576,7 +637,9 @@ class Onionr:
                 # count stats
                 'div2' : True,
                 'Known Peers Count' : str(len(self.onionrCore.listPeers()) - 1),
-                'Enabled Plugins Count' : str(len(config.get('plugins')['enabled'])) + ' / ' + str(len(os.listdir('data/plugins/')))
+                'Enabled Plugins Count' : str(len(config.get('plugins.enabled', list()))) + ' / ' + str(len(os.listdir('data/plugins/'))),
+                'Known Blocks Count' : str(totalBlocks),
+                'Percent Blocks Signed' : str(round(100 * signedBlocks / max(totalBlocks, 1), 2)) + '%'
             }
 
             # color configuration
@@ -591,19 +654,27 @@ class Onionr:
 
             # pre-processing
             maxlength = 0
+            width = self.getConsoleWidth()
             for key, val in messages.items():
                 if not (type(val) is bool and val is True):
                     maxlength = max(len(key), maxlength)
+            prewidth = maxlength + len(' | ')
+            groupsize = width - prewidth - len('[+] ')
 
             # generate stats table
             logger.info(colors['title'] + 'Onionr v%s Statistics' % ONIONR_VERSION + colors['reset'])
-            logger.info(colors['border'] + '─' * (maxlength + 1) + '┐' + colors['reset'])
+            logger.info(colors['border'] + '-' * (maxlength + 1) + '+' + colors['reset'])
             for key, val in messages.items():
                 if not (type(val) is bool and val is True):
-                    logger.info(colors['key'] + str(key).rjust(maxlength) + colors['reset'] + colors['border'] + ' │ ' + colors['reset'] + colors['val'] + str(val) + colors['reset'])
+                    val = [str(val)[i:i + groupsize] for i in range(0, len(str(val)), groupsize)]
+
+                    logger.info(colors['key'] + str(key).rjust(maxlength) + colors['reset'] + colors['border'] + ' | ' + colors['reset'] + colors['val'] + str(val.pop(0)) + colors['reset'])
+
+                    for value in val:
+                        logger.info(' ' * maxlength + colors['border'] + ' | ' + colors['reset'] + colors['val'] + str(value) + colors['reset'])
                 else:
-                    logger.info(colors['border'] + '─' * (maxlength + 1) + '┤' + colors['reset'])
-            logger.info(colors['border'] + '─' * (maxlength + 1) + '┘' + colors['reset'])
+                    logger.info(colors['border'] + '-' * (maxlength + 1) + '+' + colors['reset'])
+            logger.info(colors['border'] + '-' * (maxlength + 1) + '+' + colors['reset'])
         except Exception as e:
             logger.error('Failed to generate statistics table.', error = e, timestamp = False)
 
@@ -637,19 +708,40 @@ class Onionr:
         except Exception:
             return None
 
+    def getConsoleWidth(self):
+        '''
+            Returns an integer, the width of the terminal/cmd window
+        '''
+
+        columns = 80
+
+        try:
+            columns = int(os.popen('stty size', 'r').read().split()[1])
+        except:
+            # if it errors, it's probably windows, so default to 80.
+            pass
+
+        return columns
+
     def addFile(self):
-        '''command to add a file to the onionr network'''
-        if len(sys.argv) >= 2:
-            newFile = sys.argv[2]
-            logger.info('Attempting to add file...')
-            try:
-                with open(newFile, 'rb') as new:
-                    new = new.read()
-            except FileNotFoundError:
+        '''
+            Adds a file to the onionr network
+        '''
+
+        if len(sys.argv) >= 3:
+            filename = sys.argv[2]
+            contents = None
+
+            if not os.path.exists(filename):
                 logger.warn('That file does not exist. Improper path?')
-            else:
-                logger.debug(new)
-                logger.info(self.onionrCore.insertBlock(new, header='bin'))
 
+            try:
+                blockhash = Block.createChain(file = filename)
+                logger.info('File %s saved in block %s.' % (filename, blockhash))
+            except:
+                logger.error('Failed to save file in block.', timestamp = False)
+        else:
+            logger.error('%s add-file <filename>' % sys.argv[0], timestamp = False)
 
-Onionr()
+if __name__ == "__main__":
+    Onionr()

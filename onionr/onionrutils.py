@@ -18,9 +18,12 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 # Misc functions that do not fit in the main api, but are useful
-import getpass, sys, requests, os, socket, hashlib, logger, sqlite3, config, binascii, time, base64, json, glob, shutil, math
+import getpass, sys, requests, os, socket, hashlib, logger, sqlite3, config, binascii, time, base64, json, glob, shutil, math, json, re
 import nacl.signing, nacl.encoding
-
+from onionrblockapi import Block
+import onionrexceptions
+from defusedxml import minidom
+import pgpwords
 if sys.version_info < (3, 6):
     try:
         import sha3
@@ -30,13 +33,16 @@ if sys.version_info < (3, 6):
 
 class OnionrUtils:
     '''
-        Various useful function
+        Various useful functions for validating things, etc functions, connectivity
     '''
     def __init__(self, coreInstance):
         self.fingerprintFile = 'data/own-fingerprint.txt'
         self._core = coreInstance
 
         self.timingToken = ''
+
+        self.avoidDupe = [] # list used to prevent duplicate requests per peer for certain actions
+        self.peerProcessing = {} # dict of current peer actions: peer, actionList
 
         return
 
@@ -53,29 +59,16 @@ class OnionrUtils:
             High level function to encrypt a message to a peer and insert it as a block
         '''
 
-        try:
-            # We sign PMs here rather than in core.insertBlock in order to mask the sender's pubkey
-            payload = {'sig': '', 'msg': '', 'id': self._core._crypto.pubKey}
-
-            sign = self._core._crypto.edSign(message, self._core._crypto.privKey, encodeResult=True)
-            #encrypted = self._core._crypto.pubKeyEncrypt(message, pubkey, anonymous=True, encodedData=True).decode()
-
-            payload['sig'] = sign
-            payload['msg'] = message
-            payload = json.dumps(payload)
-            message = payload
-            encrypted = self._core._crypto.pubKeyEncrypt(message, pubkey, anonymous=True, encodedData=True).decode()
-
-
-            block = self._core.insertBlock(encrypted, header='pm', sign=False)
-            if block == '':
-                logger.error('Could not send PM')
-            else:
-                logger.info('Sent PM, hash: %s' % block)
-        except Exception as error:
-            logger.error('Failed to send PM.', error=error)
+        self._core.insertBlock(message, header='pm', sign=True, encryptType='sym', symKey=pubkey)
 
         return
+
+    def getCurrentHourEpoch(self):
+        '''
+            Returns the current epoch, rounded down to the hour
+        '''
+        epoch = self.getEpoch()
+        return epoch - (epoch % 3600)
 
     def incrementAddressSuccess(self, address):
         '''
@@ -95,7 +88,7 @@ class OnionrUtils:
 
     def mergeKeys(self, newKeyList):
         '''
-            Merge ed25519 key list to our database
+            Merge ed25519 key list to our database, comma seperated string
         '''
         try:
             retVal = False
@@ -121,8 +114,9 @@ class OnionrUtils:
                         if not key[0] in self._core.listPeers(randomOrder=False) and type(key) != None and key[0] != self._core._crypto.pubKey:
                             if self._core.addPeer(key[0], key[1]):
                                 retVal = True
+                            else:
+                                logger.warn("Failed to add key")
                     else:
-                        logger.warn(powHash)
                         logger.warn('%s pow failed' % key[0])
             return retVal
         except Exception as error:
@@ -166,10 +160,16 @@ class OnionrUtils:
         self.getTimeBypassToken()
         # TODO: URL encode parameters, just as an extra measure. May not be needed, but should be added regardless.
         try:
-            retData = requests.get('http://' + open('data/host.txt', 'r').read() + ':' + str(config.get('client')['port']) + '/client/?action=' + command + '&token=' + str(config.get('client')['client_hmac']) + '&timingToken=' + self.timingToken).text
+            with open('data/host.txt', 'r') as host:
+                hostname = host.read()
+        except FileNotFoundError:
+            return False
+        payload = 'http://%s:%s/client/?action=%s&token=%s&timingToken=%s' % (hostname, config.get('client.port'), command, config.get('client.hmac'), self.timingToken)
+        try:
+            retData = requests.get(payload).text
         except Exception as error:
             if not silent:
-                logger.error('Failed to make local request (command: %s).' % command, error=error)
+                logger.error('Failed to make local request (command: %s):%s' % (command, error))
             retData = False
 
         return retData
@@ -194,6 +194,29 @@ class OnionrUtils:
                 break
 
         return pass1
+
+    def getHumanReadableID(self, pub=''):
+        '''gets a human readable ID from a public key'''
+        if pub == '':
+            pub = self._core._crypto.pubKey
+        pub = base64.b16encode(base64.b32decode(pub)).decode()
+        return '-'.join(pgpwords.wordify(pub))
+
+    def getBlockMetadataFromData(self, blockData):
+        '''
+            accepts block contents as string and returns a tuple of metadata, meta (meta being internal metadata)
+        '''
+        try:
+            blockData = blockData.encode()
+        except AttributeError:
+            pass
+        metadata = json.loads(blockData[:blockData.find(b'\n')].decode())
+        data = blockData[blockData.find(b'\n'):].decode()
+        try:
+            meta = json.loads(metadata['meta'])
+        except KeyError:
+            meta = {}
+        return (metadata, meta, data)
 
     def checkPort(self, port, host=''):
         '''
@@ -222,6 +245,22 @@ class OnionrUtils:
             return False
         else:
             return True
+    
+    def processBlockMetadata(self, blockHash):
+        '''
+            Read metadata from a block and cache it to the block database
+        '''
+        myBlock = Block(blockHash, self._core)
+        self._core.updateBlockInfo(blockHash, 'dataType', myBlock.getType())
+
+    def escapeAnsi(self, line):
+        '''
+            Remove ANSI escape codes from a string with regex
+            
+            taken or adapted from: https://stackoverflow.com/a/38662876
+        '''
+        ansi_escape = re.compile(r'(\x9B|\x1B\[)[0-?]*[ -/]*[@-~]')
+        return ansi_escape.sub('', line)
 
     def getBlockDBHash(self):
         '''
@@ -279,6 +318,42 @@ class OnionrUtils:
                 retVal = False
 
         return retVal
+    
+    def validateMetadata(self, metadata):
+        '''Validate metadata meets onionr spec (does not validate proof value computation), take in either dictionary or json string'''
+        # TODO, make this check sane sizes
+        retData = False
+        
+        # convert to dict if it is json string
+        if type(metadata) is str:
+            try:
+                metadata = json.loads(metadata)
+            except json.JSONDecodeError:
+                pass
+
+        # Validate metadata dict for invalid keys to sizes that are too large
+        if type(metadata) is dict:
+            for i in metadata:
+                try:
+                    self._core.requirements.blockMetadataLengths[i]
+                except KeyError:
+                    logger.warn('Block has invalid metadata key ' + i)
+                    break
+                else:
+                    if self._core.requirements.blockMetadataLengths[i] < len(metadata[i]):
+                        logger.warn('Block metadata key ' + i + ' exceeded maximum size')
+                        break
+                if i == 'time':
+                    if not self.isIntegerString(metadata[i]):
+                        logger.warn('Block metadata time stamp is not integer string')
+                        break
+            else:
+                # if metadata loop gets no errors, it does not break, therefore metadata is valid
+                retData = True
+        else:
+            logger.warn('In call to utils.validateMetadata, metadata must be JSON string or a dictionary object')
+
+        return retData
 
     def validatePubKey(self, key):
         '''
@@ -294,7 +369,15 @@ class OnionrUtils:
         else:
             retVal = True
         return retVal
-
+    
+    def isIntegerString(self, data):
+        '''Check if a string is a valid base10 integer'''
+        try:
+            int(data)
+        except ValueError:
+            return False
+        else:
+            return True
 
     def validateID(self, id):
         '''
@@ -347,47 +430,41 @@ class OnionrUtils:
         '''
             Find, decrypt, and return array of PMs (array of dictionary, {from, text})
         '''
-        #blocks = self._core.getBlockList()
-        blocks = self._core.getBlocksByType('pm')
+        blocks = Block.getBlocks(type = 'pm', core = self._core)
         message = ''
         sender = ''
         for i in blocks:
-            if len (i) == 0:
-                continue
             try:
-                with open('data/blocks/' + i + '.dat', 'r') as potentialMessage:
-                    potentialMessage = potentialMessage.read()
-                    blockMetadata = json.loads(potentialMessage[:potentialMessage.find('\n')])
-                    blockContent = potentialMessage[potentialMessage.find('\n') + 1:]
+                blockContent = i.getContent()
+
+                try:
+                    message = self._core._crypto.pubKeyDecrypt(blockContent, encodedData=True, anonymous=True)
+                except nacl.exceptions.CryptoError as e:
+                    pass
+                else:
+                    try:
+                        message = message.decode()
+                    except AttributeError:
+                        pass
 
                     try:
-                        message = self._core._crypto.pubKeyDecrypt(blockContent, encodedData=True, anonymous=True)
-                    except nacl.exceptions.CryptoError as e:
+                        message = json.loads(message)
+                    except json.decoder.JSONDecodeError:
                         pass
                     else:
-                        try:
-                            message = message.decode()
-                        except AttributeError:
-                            pass
+                        logger.debug('Decrypted %s:' % i.getHash())
+                        logger.info(message["msg"])
 
-                        try:
-                            message = json.loads(message)
-                        except json.decoder.JSONDecodeError:
-                            pass
-                        else:
-                            logger.info('Decrypted %s:' % i)
-                            logger.info(message["msg"])
+                        signer = message["id"]
+                        sig = message["sig"]
 
-                            signer = message["id"]
-                            sig = message["sig"]
-
-                            if self.validatePubKey(signer):
-                                if self._core._crypto.edVerify(message["msg"], signer, sig, encodedData=True):
-                                    logger.info("Good signature by %s" % signer)
-                                else:
-                                    logger.warn("Bad signature by %s" % signer)
+                        if self.validatePubKey(signer):
+                            if self._core._crypto.edVerify(message["msg"], signer, sig, encodedData=True):
+                                logger.info("Good signature by %s" % signer)
                             else:
-                                logger.warn('Bad sender id: %s' % signer)
+                                logger.warn("Bad signature by %s" % signer)
+                        else:
+                            logger.warn('Bad sender id: %s' % signer)
 
             except FileNotFoundError:
                 pass
@@ -475,10 +552,56 @@ class OnionrUtils:
 
         sys.stdout.write("\r┣{0}┫ {1}%".format(arrow + spaces, int(round(percent * 100))))
         sys.stdout.flush()
-    
+
     def getEpoch(self):
         '''returns epoch'''
         return math.floor(time.time())
+
+    def doGetRequest(self, url, port=0, proxyType='tor'):
+        '''
+        Do a get request through a local tor or i2p instance
+        '''
+        if proxyType == 'tor':
+            if port == 0:
+                raise onionrexceptions.MissingPort('Socks port required for Tor HTTP get request')
+            proxies = {'http': 'socks5://127.0.0.1:' + str(port), 'https': 'socks5://127.0.0.1:' + str(port)}
+        elif proxyType == 'i2p':
+            proxies = {'http': 'http://127.0.0.1:4444'}
+        else:
+            return
+        headers = {'user-agent': 'PyOnionr'}
+        try:
+            proxies = {'http': 'socks5h://127.0.0.1:' + str(port), 'https': 'socks5h://127.0.0.1:' + str(port)}
+            r = requests.get(url, headers=headers, proxies=proxies, allow_redirects=False, timeout=(15, 30))
+            retData = r.text
+        except KeyboardInterrupt:
+            raise KeyboardInterrupt
+        except requests.exceptions.RequestException as e:
+            logger.debug('Error: %s' % str(e))
+            retData = False
+        return retData
+
+    def getNistBeaconSalt(self, torPort=0):
+        '''
+            Get the token for the current hour from the NIST randomness beacon
+        '''
+        if torPort == 0:
+            try:
+                sys.argv[2]
+            except IndexError:
+                raise onionrexceptions.MissingPort('Missing Tor socks port')
+        retData = ''
+        curTime = self._core._utils.getCurrentHourEpoch
+        self.nistSaltTimestamp = curTime
+        data = self.doGetRequest('https://beacon.nist.gov/rest/record/' + str(curTime), port=torPort)
+        dataXML = minidom.parseString(data, forbid_dtd=True, forbid_entities=True, forbid_external=True)
+        try:
+            retData = dataXML.getElementsByTagName('outputValue')[0].childNodes[0].data
+        except ValueError:
+            logger.warn('Could not get NIST beacon value')
+        else:
+            self.powSalt = retData
+        return retData
 
 def size(path='.'):
     '''

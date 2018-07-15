@@ -22,16 +22,17 @@ from flask import request, Response, abort
 from multiprocessing import Process
 from gevent.wsgi import WSGIServer
 import sys, random, threading, hmac, hashlib, base64, time, math, os, logger, config
-
 from core import Core
+from onionrblockapi import Block
 import onionrutils, onionrcrypto
+
 class API:
     '''
         Main HTTP API (Flask)
     '''
     def validateToken(self, token):
         '''
-            Validate that the client token (hmac) matches the given token
+            Validate that the client token matches the given token
         '''
         try:
             if not hmac.compare_digest(self.clientToken, token):
@@ -50,8 +51,8 @@ class API:
         '''
 
         config.reload()
-        
-        if config.get('devmode', True):
+
+        if config.get('dev_mode', True):
             self._developmentMode = True
             logger.set_level(logger.LEVEL_DEBUG)
         else:
@@ -64,29 +65,26 @@ class API:
         self._crypto = onionrcrypto.OnionrCrypto(self._core)
         self._utils = onionrutils.OnionrUtils(self._core)
         app = flask.Flask(__name__)
-        bindPort = int(config.get('client')['port'])
+        bindPort = int(config.get('client.port', 59496))
         self.bindPort = bindPort
-        self.clientToken = config.get('client')['client_hmac']
+        self.clientToken = config.get('client.hmac')
         self.timeBypassToken = base64.b16encode(os.urandom(32)).decode()
 
-        self.i2pEnabled = config.get('i2p')['host']
+        self.i2pEnabled = config.get('i2p.host', False)
 
         self.mimeType = 'text/plain'
 
         with open('data/time-bypass.txt', 'w') as bypass:
             bypass.write(self.timeBypassToken)
 
-        if not os.environ.get("WERKZEUG_RUN_MAIN") == "true":
-            logger.debug('Your web password (KEEP SECRET): ' + logger.colors.underline + self.clientToken)
-
         if not debug and not self._developmentMode:
-            hostNums = [random.randint(1, 255), random.randint(1, 255), random.randint(1, 255)]
-            self.host = '127.' + str(hostNums[0]) + '.' + str(hostNums[1]) + '.' + str(hostNums[2])
+            hostOctets = [127, random.randint(0x02, 0xFF), random.randint(0x02, 0xFF), random.randint(0x02, 0xFF)]
+            self.host = '.'.join(hostOctets)
         else:
             self.host = '127.0.0.1'
-        hostFile = open('data/host.txt', 'w')
-        hostFile.write(self.host)
-        hostFile.close()
+
+        with open('data/host.txt', 'w') as file:
+            file.write(self.host)
 
         @app.before_request
         def beforeReq():
@@ -127,7 +125,7 @@ class API:
             except:
                 data = ''
             startTime = math.floor(time.time())
-            # we should keep a hash DB of requests (with hmac) to prevent replays
+
             action = request.args.get('action')
             #if not self.debug:
             token = request.args.get('token')
@@ -192,8 +190,6 @@ class API:
                 pass
             elif action == 'ping':
                 resp = Response("pong!")
-            elif action == 'getHMAC':
-                resp = Response(self._crypto.generateSymmetric())
             elif action == 'getSymmetric':
                 resp = Response(self._crypto.generateSymmetric())
             elif action == 'getDBHash':
@@ -213,13 +209,12 @@ class API:
                     resp = Response('')
             # setData should be something the communicator initiates, not this api
             elif action == 'getData':
+                resp = ''
                 if self._utils.validateHash(data):
                     if not os.path.exists('data/blocks/' + data + '.db'):
-                        try:
-                            resp = base64.b64encode(self._core.getData(data))
-                        except TypeError:
-                            resp = ""
-                if resp == False:
+                        block = Block(hash=data.encode(), core=self._core)
+                        resp = base64.b64encode(block.getRaw().encode()).decode()
+                if len(resp) == 0:
                     abort(404)
                     resp = ""
                 resp = Response(resp)
@@ -258,7 +253,7 @@ class API:
 
             return resp
         if not os.environ.get("WERKZEUG_RUN_MAIN") == "true":
-            logger.info('Starting client on ' + self.host + ':' + str(bindPort) + '...', timestamp=True)
+            logger.info('Starting client on ' + self.host + ':' + str(bindPort) + '...', timestamp=False)
 
         try:
             self.http_server = WSGIServer((self.host, bindPort), app)

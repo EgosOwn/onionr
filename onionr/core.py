@@ -18,8 +18,9 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 import sqlite3, os, sys, time, math, base64, tarfile, getpass, simplecrypt, hashlib, nacl, logger, json, netcontroller, math, config
+from onionrblockapi import Block
 
-import onionrutils, onionrcrypto, onionrproofs, onionrevents as events
+import onionrutils, onionrcrypto, onionrproofs, onionrevents as events, onionrexceptions, onionrvalues
 
 if sys.version_info < (3, 6):
     try:
@@ -29,7 +30,7 @@ if sys.version_info < (3, 6):
         sys.exit(1)
 
 class Core:
-    def __init__(self):
+    def __init__(self, torPort=0):
         '''
             Initialize Core Onionr library
         '''
@@ -43,6 +44,7 @@ class Core:
 
             self.bootstrapFileLocation = 'static-data/bootstrap-nodes.txt'
             self.bootstrapList = []
+            self.requirements = onionrvalues.OnionrValues()
 
             if not os.path.exists('data/'):
                 os.mkdir('data/')
@@ -53,7 +55,7 @@ class Core:
 
             if os.path.exists('data/hs/hostname'):
                 with open('data/hs/hostname', 'r') as hs:
-                    self.hsAdder = hs.read()
+                    self.hsAdder = hs.read().strip()
 
             # Load bootstrap address list
             if os.path.exists(self.bootstrapFileLocation):
@@ -109,7 +111,8 @@ class Core:
         '''
             Add an address to the address database (only tor currently)
         '''
-        if address == config.get('i2p')['ownAddr']:
+        if address == config.get('i2p.ownAddr', None):
+
             return False
         if self._utils.validateID(address):
             conn = sqlite3.connect(self.addressDB)
@@ -137,6 +140,7 @@ class Core:
 
             return True
         else:
+            logger.debug('Invalid ID')
             return False
 
     def removeAddress(self, address):
@@ -191,6 +195,7 @@ class Core:
             speed int,
             success int,
             DBHash text,
+            powValue text,
             failure int,
             lastConnect int
             );
@@ -234,6 +239,7 @@ class Core:
             dataSaved    - if the data has been saved for the block
             sig    - optional signature by the author (not optional if author is specified)
             author       - multi-round partial sha3-256 hash of authors public key
+            dateClaimed  - timestamp claimed inside the block, only as trustworthy as the block author is
         '''
         if os.path.exists(self.blockDB):
             raise Exception("Block database already exists")
@@ -247,7 +253,8 @@ class Core:
             dataFound int,
             dataSaved int,
             sig text,
-            author text
+            author text,
+            dateClaimed int
             );
         ''')
         conn.commit()
@@ -366,26 +373,35 @@ class Core:
         '''
         retData = False
         if not os.path.exists(self.queueDB):
-            conn = sqlite3.connect(self.queueDB)
-            c = conn.cursor()
-            # Create table
-            c.execute('''CREATE TABLE commands
-                        (id integer primary key autoincrement, command text, data text, date text)''')
-            conn.commit()
+            self.makeDaemonDB()
         else:
             conn = sqlite3.connect(self.queueDB)
             c = conn.cursor()
-            for row in c.execute('SELECT command, data, date, min(ID) FROM commands group by id'):
-                retData = row
-                break
-            if retData != False:
-                c.execute('DELETE FROM commands WHERE id=?;', (retData[3],))
-        conn.commit()
-        conn.close()
+            try:
+                for row in c.execute('SELECT command, data, date, min(ID) FROM commands group by id'):
+                    retData = row
+                    break
+            except sqlite3.OperationalError:
+                self.makeDaemonDB()
+            else:
+                if retData != False:
+                    c.execute('DELETE FROM commands WHERE id=?;', (retData[3],))
+            conn.commit()
+            conn.close()
 
         events.event('queue_pop', data = {'data': retData}, onionr = None)
 
         return retData
+
+    def makeDaemonDB(self):
+        '''generate the daemon queue db'''
+        conn = sqlite3.connect(self.queueDB)
+        c = conn.cursor()
+        # Create table
+        c.execute('''CREATE TABLE commands
+                    (id integer primary key autoincrement, command text, data text, date text)''')
+        conn.commit()
+        conn.close()
 
     def daemonQueueAdd(self, command, data=''):
         '''
@@ -482,6 +498,7 @@ class Core:
             trust int           6
             pubkeyExchanged int 7
             hashID text         8
+            pow text            9
         '''
         conn = sqlite3.connect(self.peerDB)
         c = conn.cursor()
@@ -580,7 +597,7 @@ class Core:
 
         return
 
-    def getBlockList(self, unsaved = False): # TODO: Use unsaved
+    def getBlockList(self, unsaved = False): # TODO: Use unsaved??
         '''
             Get list of our blocks
         '''
@@ -641,9 +658,19 @@ class Core:
     def updateBlockInfo(self, hash, key, data):
         '''
             sets info associated with a block
+            
+            hash         - the hash of a block
+            dateReceived - the date the block was recieved, not necessarily when it was created
+            decrypted    - if we can successfully decrypt the block (does not describe its current state)
+            dataType     - data type of the block
+            dataFound    - if the data has been found for the block
+            dataSaved    - if the data has been saved for the block
+            sig    - optional signature by the author (not optional if author is specified)
+            author       - multi-round partial sha3-256 hash of authors public key
+            dateClaimed  - timestamp claimed inside the block, only as trustworthy as the block author is
         '''
 
-        if key not in ('dateReceived', 'decrypted', 'dataType', 'dataFound', 'dataSaved', 'sig', 'author'):
+        if key not in ('dateReceived', 'decrypted', 'dataType', 'dataFound', 'dataSaved', 'sig', 'author', 'dateClaimed'):
             return False
 
         conn = sqlite3.connect(self.blockDB)
@@ -654,65 +681,81 @@ class Core:
         conn.close()
         return True
 
-    def insertBlock(self, data, header='txt', sign=False):
+    def insertBlock(self, data, header='txt', sign=False, encryptType='', symKey='', asymPeer='', meta = None):
         '''
             Inserts a block into the network
+            encryptType must be specified to encrypt a block
         '''
+        retData = False
 
-        powProof = onionrproofs.POW(data)
-        powToken = ''
-        # wait for proof to complete
-        try:
-            while True:
-                powToken = powProof.getResult()
-                if powToken == False:
-                    time.sleep(0.3)
-                    continue
-                powHash = powToken[0]
-                powToken = base64.b64encode(powToken[1])
-                try:
-                    powToken = powToken.decode()
-                except AttributeError:
-                    pass
-                finally:
-                    break
-        except KeyboardInterrupt:
-            logger.warn("Got keyboard interrupt while working on inserting block, stopping.")
-            powProof.shutdown()
-            return ''
+        if meta is None:
+            meta = dict()
 
-        try:
-            data.decode()
-        except AttributeError:
-            data = data.encode()
+        if type(data) is bytes:
+            data = data.decode()
+        data = str(data)
 
         retData = ''
-        metadata = {'type': header, 'powHash': powHash, 'powToken': powToken}
-        sig = {}
-
-        metadata = json.dumps(metadata)
-        metadata = metadata.encode()
         signature = ''
+        signer = ''
+        metadata = {}
 
-        if sign:
-            signature = self._crypto.edSign(metadata + b'\n' + data, self._crypto.privKey, encodeResult=True)
-            ourID = self._crypto.pubKeyHashID()
-            # Convert from bytes on some py versions?
-            try:
-                ourID = ourID.decode()
-            except AttributeError:
-                pass
-        metadata = {'sig': signature, 'meta': metadata.decode()}
-        metadata = json.dumps(metadata)
-        metadata = metadata.encode()
+        # only use header if not set in provided meta
+        if not header is None:
+            meta['type'] = header
+        meta['type'] = str(meta['type'])
 
-        if len(data) == 0:
-            logger.error('Will not insert empty block')
+        jsonMeta = json.dumps(meta)
+
+        if encryptType in ('asym', 'sym', ''):
+            metadata['encryptType'] = encryptType
         else:
-            addedHash = self.setData(metadata + b'\n' + data)
-            self.addToBlockDB(addedHash, selfInsert=True)
-            self.setBlockType(addedHash, header)
-            retData = addedHash
+            raise onionrexceptions.InvalidMetadata('encryptType must be asym or sym, or blank')
+
+        try:
+            data = data.encode()
+        except AttributeError:
+            pass
+        # sign before encrypt, as unauthenticated crypto should not be a problem here
+        if sign:
+            signature = self._crypto.edSign(jsonMeta.encode() + data, key=self._crypto.privKey, encodeResult=True)
+            signer = self._crypto.pubKeyHashID()
+
+        if len(jsonMeta) > 1000:
+            raise onionrexceptions.InvalidMetadata('meta in json encoded form must not exceed 1000 bytes')
+
+        # encrypt block metadata/sig/content
+        if encryptType == 'sym':
+            if len(symKey) < self.requirements.passwordLength:
+                raise onionrexceptions.SecurityError('Weak encryption key')
+            jsonMeta = self._crypto.symmetricEncrypt(jsonMeta, key=symKey, returnEncoded=True)
+            data = self._crypto.symmetricEncrypt(data, key=symKey, returnEncoded=True)
+            signature = self._crypto.symmetricEncrypt(signature, key=symKey, returnEncoded=True)
+            signer = self._crypto.symmetricEncrypt(signer, key=symKey, returnEncoded=True)
+        elif encryptType == 'asym':
+            if self._utils.validatePubKey(asymPeer):
+                jsonMeta = self._crypto.pubKeyEncrypt(jsonMeta, asymPeer, encodedData=True)
+                data = self._crypto.pubKeyEncrypt(data, asymPeer, encodedData=True)
+                signature = self._crypto.pubKeyEncrypt(signature, asymPeer, encodedData=True)
+            else:
+                raise onionrexceptions.InvalidPubkey(asymPeer + ' is not a valid base32 encoded ed25519 key')
+        
+        # compile metadata
+        metadata['meta'] = jsonMeta
+        metadata['sig'] = signature
+        metadata['signer'] = signer
+        metadata['time'] = str(self._utils.getEpoch())
+
+        # send block data (and metadata) to POW module to get tokenized block data
+        proof = onionrproofs.POW(metadata, data)
+        payload = proof.waitForResult()
+        if payload != False:
+            retData = self.setData(payload)
+            self.addToBlockDB(retData, selfInsert=True, dataSaved=True)
+            self.setBlockType(retData, meta['type'])
+
+        if retData != False:
+            events.event('insertBlock', onionr = None, threaded = False)
         return retData
 
     def introduceNode(self):

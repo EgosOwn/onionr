@@ -123,18 +123,18 @@ def get_file():
 
     return _outputfile
 
-def raw(data):
+def raw(data, fd = sys.stdout):
     '''
         Outputs raw data to console without formatting
     '''
 
     if get_settings() & OUTPUT_TO_CONSOLE:
-        print(data)
+        ts = fd.write('%s\n' % data)
     if get_settings() & OUTPUT_TO_FILE:
         with open(_outputfile, "a+") as f:
             f.write(colors.filter(data) + '\n')
 
-def log(prefix, data, color = '', timestamp=True):
+def log(prefix, data, color = '', timestamp=True, fd = sys.stdout):
     '''
         Logs the data
         prefix : The prefix to the output
@@ -149,7 +149,7 @@ def log(prefix, data, color = '', timestamp=True):
     if not get_settings() & USE_ANSI:
         output = colors.filter(output)
 
-    raw(output)
+    raw(output, fd = fd)
 
 def readline(message = ''):
     '''
@@ -218,14 +218,14 @@ def warn(data, timestamp=True):
 # error: when only one function, module, or process of the program encountered a problem and must stop
 def error(data, error=None, timestamp=True):
     if get_level() <= LEVEL_ERROR:
-        log('-', data, colors.fg.red, timestamp=timestamp)
+        log('-', data, colors.fg.red, timestamp=timestamp, fd = sys.stderr)
     if not error is None:
         debug('Error: ' + str(error) + parse_error())
 
 # fatal: when the something so bad has happened that the program must stop
 def fatal(data, timestamp=True):
     if get_level() <= LEVEL_FATAL:
-        log('#', data, colors.bg.red + colors.fg.green + colors.bold, timestamp=timestamp)
+        log('#', data, colors.bg.red + colors.fg.green + colors.bold, timestamp=timestamp, fd = sys.stderr)
 
 # returns a formatted error message
 def parse_error():
