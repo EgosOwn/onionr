@@ -256,7 +256,9 @@ class OnionrUtils:
             Read metadata from a block and cache it to the block database
         '''
         myBlock = Block(blockHash, self._core)
-        self._core.updateBlockInfo(blockHash, 'dataType', myBlock.getType())
+        blockType = myBlock.getType()
+        if len(blockType) <= 10:
+            self._core.updateBlockInfo(blockHash, 'dataType', blockType)
 
     def escapeAnsi(self, line):
         '''
