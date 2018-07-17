@@ -718,7 +718,7 @@ class Core:
         # sign before encrypt, as unauthenticated crypto should not be a problem here
         if sign:
             signature = self._crypto.edSign(jsonMeta.encode() + data, key=self._crypto.privKey, encodeResult=True)
-            signer = self._crypto.pubKeyHashID()
+            signer = self._crypto.pubKey
 
         if len(jsonMeta) > 1000:
             raise onionrexceptions.InvalidMetadata('meta in json encoded form must not exceed 1000 bytes')

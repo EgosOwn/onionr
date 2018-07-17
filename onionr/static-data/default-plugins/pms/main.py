@@ -49,9 +49,15 @@ class OnionrMail:
         return
     
     def inbox(self):
-        print('PM Blocks:')
+        blockCount = 0
+        pmBlockMap = {}
+
+        print('Private Messages:')
+
         for blockHash in self.myCore.getBlocksByType('pm'):
-            print(blockHash)
+            blockCount += 1
+            pmBlockMap[blockCount] = blockHash
+            print('%s: %s' % (blockCount, blockHash))
 
         return
     
@@ -88,10 +94,10 @@ class OnionrMail:
                 continue
             newLine += '\n'
             message += newLine
-        
+
         print('Inserting encrypted message as Onionr block....')
 
-        self.myCore.insertBlock(message, header='pm', encryptType='asym', asymPeer=recip)
+        self.myCore.insertBlock(message, header='pm', encryptType='asym', asymPeer=recip, sign=True)
 
     def menu(self):
         choice = ''
@@ -100,7 +106,7 @@ class OnionrMail:
             print(self.strings.programTag + self.strings.mainMenu.title()) # print out main menu
 
             try:
-                choice = logger.readline('Enter 1-%s:\n' % (len(self.strings.mainMenuChoices))).lower()
+                choice = logger.readline('Enter 1-%s:\n' % (len(self.strings.mainMenuChoices))).lower().strip()
             except (KeyboardInterrupt, EOFError):
                 choice = '5'
 
@@ -111,6 +117,8 @@ class OnionrMail:
             elif choice in (self.strings.mainMenuChoices[4], '5'):
                 logger.info('Goodbye.')
                 break
+            elif choice == '':
+                pass
             else:
                 logger.warn('Invalid choice.')
         return

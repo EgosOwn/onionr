@@ -42,8 +42,6 @@ class Block:
         # initialize variables
         self.valid = True
         self.raw = None
-        self.powHash = None
-        self.powToken = None
         self.signed = False
         self.signature = None
         self.signedData = None
@@ -68,6 +66,14 @@ class Block:
             logger.debug('Did not update block')
 
     # logic
+
+    def decrypt(self, anonymous=True, encodedData=True):
+        '''Decrypt a block, loading decrypted data into their vars'''
+        
+        # decrypt data
+        self.getCore()._crypto.pubKeyDecrypt(self.bcontent, anonymous=anonymous, encodedData=encodedData)
+
+        return
 
     def update(self, data = None, file = None):
         '''
@@ -126,8 +132,6 @@ class Block:
                 self.bmetadata = json.loads(self.getHeader('meta', None))
             self.parent = self.getMetadata('parent', None)
             self.btype = self.getMetadata('type', None)
-            self.powHash = self.getMetadata('powHash', None)
-            self.powToken = self.getMetadata('powToken', None)
             self.signed = ('sig' in self.getHeader() and self.getHeader('sig') != '')
             self.signature = self.getHeader('sig', None)
             self.signedData = (None if not self.isSigned() else self.getHeader('meta') + '\n' + self.getContent())
