@@ -47,25 +47,24 @@ class OnionrFlow:
                 self.flowRunning = False
 
             if len(message) > 0:
-                self.myCore.insertBlock(message)
+                Block(content = message, type = 'txt', core = self.myCore).save()
 
         logger.info("Flow is exiting, goodbye")
         return
 
     def showOutput(self):
         while self.flowRunning:
-            for blockHash in self.myCore.getBlocksByType('txt'):
-                if blockHash in self.alreadyOutputed:
+            for block in Block.getBlocks(type = 'txt', core = self.myCore):
+                if block.getHash() in self.alreadyOutputed:
                     continue
                 if not self.flowRunning:
                     break
-                logger.info('\n------------------------')
-                block = Block(blockHash, self.myCore)
+                logger.info('\n------------------------', prompt = False)
                 content = block.getContent()
                 # Escape new lines, remove trailing whitespace, and escape ansi sequences
                 content = self.myCore._utils.escapeAnsi(content.replace('\n', '\\n').replace('\r', '\\r').strip())
-                logger.info("\n" + block.getDate().strftime("%m/%d %H:%M") + ' - ' + '\033[0;0m' + content)
-                self.alreadyOutputed.append(blockHash)
+                logger.info(block.getDate().strftime("%m/%d %H:%M") + ' - ' + logger.colors.reset + content, prompt = False)
+                self.alreadyOutputed.append(block.getHash())
             try:
                 time.sleep(5)
             except KeyboardInterrupt:
@@ -84,6 +83,6 @@ def on_init(api, data = None):
     global pluginapi
     pluginapi = api
     flow = OnionrFlow()
-    api.commands.register(['flow'], flow.start)
+    api.commands.register('flow', flow.start)
     api.commands.register_help('flow', 'Open the flow messaging interface')
     return
