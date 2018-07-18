@@ -18,6 +18,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 import sqlite3, os, sys, time, math, base64, tarfile, getpass, simplecrypt, hashlib, nacl, logger, json, netcontroller, math, config
+from onionrblockapi import Block
 
 import onionrutils, onionrcrypto, onionrproofs, onionrevents as events, onionrexceptions, onionrvalues
 
