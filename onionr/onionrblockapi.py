@@ -18,7 +18,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 
-import core as onionrcore, logger, config, onionrexceptions
+import core as onionrcore, logger, config, onionrexceptions, nacl.exceptions
 import json, os, sys, datetime, base64
 
 class Block:
@@ -50,6 +50,9 @@ class Block:
         self.bheader = {}
         self.bmetadata = {}
         self.isEncrypted = False
+        self.decrypted = False
+        self.signer = None
+        self.validSig = False
 
         # handle arguments
         if self.getCore() is None:
@@ -69,11 +72,39 @@ class Block:
 
     def decrypt(self, anonymous=True, encodedData=True):
         '''Decrypt a block, loading decrypted data into their vars'''
-        
+        if self.decrypted:
+            return True
+        retData = False
+        core = self.getCore()
         # decrypt data
-        self.getCore()._crypto.pubKeyDecrypt(self.bcontent, anonymous=anonymous, encodedData=encodedData)
+        if self.getHeader('encryptType') == 'asym':
+            try:
+                self.bcontent = core._crypto.pubKeyDecrypt(self.bcontent, anonymous=anonymous, encodedData=encodedData)
+                self.bmetadata = json.loads(core._crypto.pubKeyDecrypt(self.bmetadata, anonymous=anonymous, encodedData=encodedData))
+                self.signature = core._crypto.pubKeyDecrypt(self.signature, anonymous=anonymous, encodedData=encodedData)
+                self.signer = core._crypto.pubKeyDecrypt(self.signer, anonymous=anonymous, encodedData=encodedData)
+                self.signedData =  json.dumps(self.bmetadata) + self.bcontent.decode()
+            except nacl.exceptions.CryptoError:
+                pass
+                #logger.debug('Could not decrypt block. Either invalid key or corrupted data')
+            else:
+                retData = True
+                self.decrypted = True
+        else:
+            logger.warn('symmetric decryption is not yet supported by this API')
+        return retData
+    
+    def verifySig(self):
+        '''Verify if a block's signature is signed by its claimed signer'''
+        core = self.getCore()
 
-        return
+        if core._crypto.edVerify(data=self.signedData, key=self.signer, sig=self.signature, encodedData=True):
+            self.validSig = True
+            print('ded')
+        else:
+            self.validSig = False
+        return self.validSig
+
 
     def update(self, data = None, file = None):
         '''
@@ -133,8 +164,11 @@ class Block:
             self.parent = self.getMetadata('parent', None)
             self.btype = self.getMetadata('type', None)
             self.signed = ('sig' in self.getHeader() and self.getHeader('sig') != '')
+            # TODO: detect if signer is hash of pubkey or not
+            self.signer = self.getHeader('signer', None)
             self.signature = self.getHeader('sig', None)
-            self.signedData = (None if not self.isSigned() else self.getHeader('meta') + '\n' + self.getContent())
+            # signed data is jsonMeta + block content (no linebreak)
+            self.signedData = (None if not self.isSigned() else self.getHeader('meta') + self.getContent())
             self.date = self.getCore().getBlockDate(self.getHash())
 
             if not self.getDate() is None:

@@ -19,7 +19,7 @@
 '''
 
 # Imports some useful libraries
-import logger, config, threading, time, readline
+import logger, config, threading, time, readline, datetime
 from onionrblockapi import Block
 import onionrexceptions
 
@@ -51,13 +51,53 @@ class OnionrMail:
     def inbox(self):
         blockCount = 0
         pmBlockMap = {}
+        pmBlocks = {}
+        logger.info('Decrypting messages...')
+        choice = ''
 
-        print('Private Messages:')
-
+        # this could use a lot of memory if someone has recieved a lot of messages
         for blockHash in self.myCore.getBlocksByType('pm'):
-            blockCount += 1
-            pmBlockMap[blockCount] = blockHash
-            print('%s: %s' % (blockCount, blockHash))
+            pmBlocks[blockHash] = Block(blockHash, core=self.myCore)
+            pmBlocks[blockHash].decrypt()
+
+        while choice not in ('-q', 'q', 'quit'):
+            blockCount = 0
+            for blockHash in pmBlocks:
+                if not pmBlocks[blockHash].decrypted:
+                    continue
+                blockCount += 1
+                pmBlockMap[blockCount] = blockHash
+                blockDate = pmBlocks[blockHash].getDate().strftime("%m/%d %H:%M")
+                print('%s. %s: %s' % (blockCount, blockDate, blockHash))
+
+            try:
+                choice = logger.readline('Enter a block number, -r to refresh, or -q to stop: ').strip().lower()
+            except (EOFError, KeyboardInterrupt):
+                choice = '-q'
+
+            if choice in ('-q', 'q', 'quit'):
+                continue
+
+            if choice in ('-r', 'r', 'refresh'):
+                # dirty hack
+                self.inbox()
+                return
+
+            try:
+                choice = int(choice)
+            except ValueError:
+                pass
+            else:
+                try:
+                    pmBlockMap[choice]
+                    readBlock = pmBlocks[pmBlockMap[choice]]
+                except KeyError:
+                    pass
+                else:
+                    readBlock.verifySig()
+                    print('Message recieved from', readBlock.signer)
+                    print('Valid signature:', readBlock.validSig)
+                    print(self.myCore._utils.escapeAnsi(readBlock.bcontent.decode()))
 
         return
     

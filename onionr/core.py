@@ -627,13 +627,16 @@ class Core:
 
         return None
 
-    def getBlocksByType(self, blockType):
+    def getBlocksByType(self, blockType, orderDate=True):
         '''
             Returns a list of blocks by the type
         '''
         conn = sqlite3.connect(self.blockDB)
         c = conn.cursor()
-        execute = 'SELECT hash FROM hashes WHERE dataType=?;'
+        if orderDate:
+            execute = 'SELECT hash FROM hashes WHERE dataType=? ORDER BY dateReceived;'
+        else:
+            execute = 'SELECT hash FROM hashes WHERE dataType=?;'
         args = (blockType,)
         rows = list()
         for row in c.execute(execute, args):
@@ -733,9 +736,10 @@ class Core:
             signer = self._crypto.symmetricEncrypt(signer, key=symKey, returnEncoded=True).decode()
         elif encryptType == 'asym':
             if self._utils.validatePubKey(asymPeer):
-                jsonMeta = self._crypto.pubKeyEncrypt(jsonMeta, asymPeer, encodedData=True).decode()
-                data = self._crypto.pubKeyEncrypt(data, asymPeer, encodedData=True).decode()
-                signature = self._crypto.pubKeyEncrypt(signature, asymPeer, encodedData=True).decode()
+                jsonMeta = self._crypto.pubKeyEncrypt(jsonMeta, asymPeer, encodedData=True, anonymous=True).decode()
+                data = self._crypto.pubKeyEncrypt(data, asymPeer, encodedData=True, anonymous=True).decode()
+                signature = self._crypto.pubKeyEncrypt(signature, asymPeer, encodedData=True, anonymous=True).decode()
+                signer = self._crypto.pubKeyEncrypt(signer, asymPeer, encodedData=True, anonymous=True).decode()
             else:
                 raise onionrexceptions.InvalidPubkey(asymPeer + ' is not a valid base32 encoded ed25519 key')
         
