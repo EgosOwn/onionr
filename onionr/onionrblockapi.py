@@ -55,16 +55,16 @@ class Block:
         # handle arguments
         if self.getCore() is None:
             self.core = onionrcore.Core()
-        
-        if not self.core._utils.validateHash(self.hash):
-            raise onionrexceptions.InvalidHexHash('specified block hash is not valid')
 
         # update the blocks' contents if it exists
         if not self.getHash() is None:
-            if not self.update():
+            if not self.core._utils.validateHash(self.hash):
+                logger.debug('Block hash %s is invalid.' % self.getHash())
+                raise onionrexceptions.InvalidHexHash('Block hash is invalid.')
+            elif not self.update():
                 logger.debug('Failed to open block %s.' % self.getHash())
         else:
-            logger.debug('Did not update block')
+            logger.debug('Did not update block.')
 
     # logic
 
@@ -471,6 +471,8 @@ class Block:
                     if not signer is None:
                         if isinstance(signer, (str,)):
                             signer = [signer]
+                        if isinstance(signer, (bytes,)):
+                            signer = [signer.decode()]
 
                         isSigner = False
                         for key in signer:
@@ -483,12 +485,13 @@ class Block:
 
                     if relevant:
                         relevant_blocks.append(block)
+            
             if bool(reverse):
                 relevant_blocks.reverse()
 
             return relevant_blocks
         except Exception as e:
-            logger.debug(('Failed to get blocks: %s' % str(e)) + logger.parse_error())
+            logger.debug('Failed to get blocks.', error = e)
 
         return list()
 
