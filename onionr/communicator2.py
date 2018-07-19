@@ -79,9 +79,9 @@ class OnionrCommunicatorDaemon:
         peerPoolTimer = OnionrCommunicatorTimers(self, self.getOnlinePeers, 60)
         OnionrCommunicatorTimers(self, self.lookupBlocks, 7, requiresPeer=True)
         OnionrCommunicatorTimers(self, self.getBlocks, 10, requiresPeer=True)
-        OnionrCommunicatorTimers(self, self.clearOfflinePeer, 120)
-        OnionrCommunicatorTimers(self, self.lookupKeys, 125, requiresPeer=True)
-        OnionrCommunicatorTimers(self, self.lookupAdders, 600, requiresPeer=True)
+        OnionrCommunicatorTimers(self, self.clearOfflinePeer, 58)
+        OnionrCommunicatorTimers(self, self.lookupKeys, 60, requiresPeer=True)
+        OnionrCommunicatorTimers(self, self.lookupAdders, 60, requiresPeer=True)
 
         # set loop to execute instantly to load up peer pool (replaced old pool init wait)
         peerPoolTimer.count = (peerPoolTimer.frequency - 1) 
@@ -124,8 +124,7 @@ class OnionrCommunicatorDaemon:
             peer = self.pickOnlinePeer()
             newAdders = self.peerAction(peer, action='pex')
             self._core._utils.mergeAdders(newAdders)
-
-        self.decrementThreadCount('lookupKeys')
+        self.decrementThreadCount('lookupAdders')
 
     def lookupBlocks(self):
         '''Lookup new blocks & add them to download queue'''
