@@ -159,10 +159,11 @@ class POW:
             self.metadata['powRandomToken'] = base64.b64encode(rand).decode()
             payload = json.dumps(self.metadata).encode() + b'\n' + self.data
             token = myCore._crypto.sha3Hash(payload)
-            if type(token) is bytes:
-                # crypto.sha3Hash returns bytes on some older python versions
-                self.puzzle = self.puzzle.encode()
-            #print(token)
+            try:
+                # on some versions, token is bytes
+                token = token.decode()
+            except AttributeError:
+                pass
             if self.puzzle == token[0:self.difficulty]:
                 self.hashing = False
                 iFound = True
