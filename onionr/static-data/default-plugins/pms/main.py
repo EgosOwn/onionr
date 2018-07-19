@@ -26,6 +26,17 @@ import onionrexceptions
 plugin_name = 'pms'
 PLUGIN_VERSION = '0.0.1'
 
+def draw_border(text):
+    #https://stackoverflow.com/a/20757491
+    lines = text.splitlines()
+    width = max(len(s) for s in lines)
+    res = ['┌' + '─' * width + '┐']
+    for s in lines:
+        res.append('│' + (s + ' ' * width)[:width] + '│')
+    res.append('└' + '─' * width + '┘')
+    return '\n'.join(res)
+
+
 class MailStrings:
     def __init__(self, mailInstance):
         self.mailInstance = mailInstance
@@ -44,6 +55,7 @@ class MailStrings:
 class OnionrMail:
     def __init__(self, pluginapi):
         self.myCore = pluginapi.get_core()
+        #self.dataFolder = pluginapi.get_data_folder()
         self.strings = MailStrings(self)
 
         return
@@ -97,7 +109,11 @@ class OnionrMail:
                     readBlock.verifySig()
                     print('Message recieved from', readBlock.signer)
                     print('Valid signature:', readBlock.validSig)
-                    print(self.myCore._utils.escapeAnsi(readBlock.bcontent.decode()))
+                    if not readBlock.validSig:
+                        logger.warn('This message has an INVALID signature. Anyone could have sent this message.')
+                        logger.readline('Press enter to continue to message.')
+
+                    print(draw_border(self.myCore._utils.escapeAnsi(readBlock.bcontent.decode().strip())))
 
         return
     
@@ -143,7 +159,7 @@ class OnionrMail:
         choice = ''
         while True:
 
-            print(self.strings.programTag + self.strings.mainMenu.title()) # print out main menu
+            print(self.strings.programTag + '\n\nOur ID: ' + self.myCore._crypto.pubKey + self.strings.mainMenu.title()) # print out main menu
 
             try:
                 choice = logger.readline('Enter 1-%s:\n' % (len(self.strings.mainMenuChoices))).lower().strip()
@@ -152,8 +168,12 @@ class OnionrMail:
 
             if choice in (self.strings.mainMenuChoices[0], '1'):
                 self.inbox()
+            elif choice in (self.strings.mainMenuChoices[1], '2'):
+                logger.warn('not implemented yet')
             elif choice in (self.strings.mainMenuChoices[2], '3'):
                 self.draftMessage()
+            elif choice in (self.strings.mainMenuChoices[3], '4'):
+                logger.warn('not implemented yet')
             elif choice in (self.strings.mainMenuChoices[4], '5'):
                 logger.info('Goodbye.')
                 break

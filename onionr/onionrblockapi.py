@@ -66,7 +66,8 @@ class Block:
             elif not self.update():
                 logger.debug('Failed to open block %s.' % self.getHash())
         else:
-            logger.debug('Did not update block.')
+            pass
+            #logger.debug('Did not update block.')
 
     # logic
 
@@ -257,7 +258,6 @@ class Block:
             Outputs:
             - (str): the type of the block
         '''
-
         return self.btype
 
     def getRaw(self):
