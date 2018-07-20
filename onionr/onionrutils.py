@@ -59,7 +59,7 @@ class OnionrUtils:
             High level function to encrypt a message to a peer and insert it as a block
         '''
 
-        self._core.insertBlock(message, header='pm', sign=True, encryptType='sym', symKey=pubkey)
+        self._core.insertBlock(message, header='pm', sign=True, encryptType='asym', asymPeer=pubkey)
 
         return
 
@@ -117,7 +117,8 @@ class OnionrUtils:
                             else:
                                 logger.warn("Failed to add key")
                     else:
-                        logger.warn('%s pow failed' % key[0])
+                        pass
+                        #logger.debug('%s pow failed' % key[0])
             return retVal
         except Exception as error:
             logger.error('Failed to merge keys.', error=error)
@@ -137,7 +138,8 @@ class OnionrUtils:
                             logger.info('Added %s to db.' % adder, timestamp = True)
                             retVal = True
                     else:
-                        logger.debug('%s is either our address or already in our DB' % adder)
+                        pass
+                        #logger.debug('%s is either our address or already in our DB' % adder)
             return retVal
         except Exception as error:
             logger.error('Failed to merge adders.', error = error)
@@ -204,18 +206,23 @@ class OnionrUtils:
 
     def getBlockMetadataFromData(self, blockData):
         '''
-            accepts block contents as string and returns a tuple of metadata, meta (meta being internal metadata)
+            accepts block contents as string, returns a tuple of metadata, meta (meta being internal metadata, which will be returned as an encrypted base64 string if it is encrypted, dict if not).
+            
         '''
+        meta = {}
         try:
             blockData = blockData.encode()
         except AttributeError:
             pass
         metadata = json.loads(blockData[:blockData.find(b'\n')].decode())
         data = blockData[blockData.find(b'\n'):].decode()
-        try:
-            meta = json.loads(metadata['meta'])
-        except KeyError:
-            meta = {}
+
+        if not metadata['encryptType'] in ('asym', 'sym'):
+            try:
+                meta = json.loads(metadata['meta'])
+            except KeyError:
+                pass
+        meta = metadata['meta']       
         return (metadata, meta, data)
 
     def checkPort(self, port, host=''):
@@ -251,7 +258,14 @@ class OnionrUtils:
             Read metadata from a block and cache it to the block database
         '''
         myBlock = Block(blockHash, self._core)
-        self._core.updateBlockInfo(blockHash, 'dataType', myBlock.getType())
+        if myBlock.isEncrypted:
+            myBlock.decrypt()
+        blockType = myBlock.getMetadata('type') # we would use myBlock.getType() here, but it is bugged with encrypted blocks
+        try:
+            if len(blockType) <= 10:
+                self._core.updateBlockInfo(blockHash, 'dataType', blockType)
+        except TypeError:
+            pass
 
     def escapeAnsi(self, line):
         '''
@@ -425,52 +439,6 @@ class OnionrUtils:
             return retVal
         except:
             return False
-
-    def loadPMs(self):
-        '''
-            Find, decrypt, and return array of PMs (array of dictionary, {from, text})
-        '''
-        blocks = Block.getBlocks(type = 'pm', core = self._core)
-        message = ''
-        sender = ''
-        for i in blocks:
-            try:
-                blockContent = i.getContent()
-
-                try:
-                    message = self._core._crypto.pubKeyDecrypt(blockContent, encodedData=True, anonymous=True)
-                except nacl.exceptions.CryptoError as e:
-                    pass
-                else:
-                    try:
-                        message = message.decode()
-                    except AttributeError:
-                        pass
-
-                    try:
-                        message = json.loads(message)
-                    except json.decoder.JSONDecodeError:
-                        pass
-                    else:
-                        logger.debug('Decrypted %s:' % i.getHash())
-                        logger.info(message["msg"])
-
-                        signer = message["id"]
-                        sig = message["sig"]
-
-                        if self.validatePubKey(signer):
-                            if self._core._crypto.edVerify(message["msg"], signer, sig, encodedData=True):
-                                logger.info("Good signature by %s" % signer)
-                            else:
-                                logger.warn("Bad signature by %s" % signer)
-                        else:
-                            logger.warn('Bad sender id: %s' % signer)
-
-            except FileNotFoundError:
-                pass
-            except Exception as error:
-                logger.error('Failed to open block %s.' % i, error=error)
-        return
 
     def getPeerByHashId(self, hash):
         '''

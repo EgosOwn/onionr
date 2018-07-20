@@ -18,7 +18,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 
-import core as onionrcore, logger, config, onionrexceptions
+import core as onionrcore, logger, config, onionrexceptions, nacl.exceptions
 import json, os, sys, datetime, base64
 
 class Block:
@@ -42,8 +42,6 @@ class Block:
         # initialize variables
         self.valid = True
         self.raw = None
-        self.powHash = None
-        self.powToken = None
         self.signed = False
         self.signature = None
         self.signedData = None
@@ -51,22 +49,68 @@ class Block:
         self.parent = None
         self.bheader = {}
         self.bmetadata = {}
+        self.isEncrypted = False
+        self.decrypted = False
+        self.signer = None
+        self.validSig = False
 
         # handle arguments
         if self.getCore() is None:
             self.core = onionrcore.Core()
-        
-        if not self.core._utils.validateHash(self.hash):
-            raise onionrexceptions.InvalidHexHash('specified block hash is not valid')
 
         # update the blocks' contents if it exists
         if not self.getHash() is None:
-            if not self.update():
+            if not self.core._utils.validateHash(self.hash):
+                logger.debug('Block hash %s is invalid.' % self.getHash())
+                raise onionrexceptions.InvalidHexHash('Block hash is invalid.')
+            elif not self.update():
                 logger.debug('Failed to open block %s.' % self.getHash())
         else:
-            logger.debug('Did not update block')
+            pass
+            #logger.debug('Did not update block.')
 
     # logic
+
+    def decrypt(self, anonymous=True, encodedData=True):
+        '''Decrypt a block, loading decrypted data into their vars'''
+        if self.decrypted:
+            return True
+        retData = False
+        core = self.getCore()
+        # decrypt data
+        if self.getHeader('encryptType') == 'asym':
+            try:
+                self.bcontent = core._crypto.pubKeyDecrypt(self.bcontent, anonymous=anonymous, encodedData=encodedData)
+                bmeta = core._crypto.pubKeyDecrypt(self.bmetadata, anonymous=anonymous, encodedData=encodedData)
+                try:
+                    bmeta = bmeta.decode()
+                except AttributeError:
+                    # yet another bytes fix
+                    pass
+                self.bmetadata = json.loads(bmeta)
+                self.signature = core._crypto.pubKeyDecrypt(self.signature, anonymous=anonymous, encodedData=encodedData)
+                self.signer = core._crypto.pubKeyDecrypt(self.signer, anonymous=anonymous, encodedData=encodedData)
+                self.signedData =  json.dumps(self.bmetadata) + self.bcontent.decode()
+            except nacl.exceptions.CryptoError:
+                pass
+                #logger.debug('Could not decrypt block. Either invalid key or corrupted data')
+            else:
+                retData = True
+                self.decrypted = True
+        else:
+            logger.warn('symmetric decryption is not yet supported by this API')
+        return retData
+    
+    def verifySig(self):
+        '''Verify if a block's signature is signed by its claimed signer'''
+        core = self.getCore()
+
+        if core._crypto.edVerify(data=self.signedData, key=self.signer, sig=self.signature, encodedData=True):
+            self.validSig = True
+        else:
+            self.validSig = False
+        return self.validSig
+
 
     def update(self, data = None, file = None):
         '''
@@ -118,14 +162,19 @@ class Block:
             self.raw = str(blockdata)
             self.bheader = json.loads(self.getRaw()[:self.getRaw().index('\n')])
             self.bcontent = self.getRaw()[self.getRaw().index('\n') + 1:]
-            self.bmetadata = json.loads(self.getHeader('meta', None))
+            if self.bheader['encryptType'] in ('asym', 'sym'):
+                self.bmetadata = self.getHeader('meta', None)
+                self.isEncrypted = True
+            else:
+                self.bmetadata = json.loads(self.getHeader('meta', None))
             self.parent = self.getMetadata('parent', None)
             self.btype = self.getMetadata('type', None)
-            self.powHash = self.getMetadata('powHash', None)
-            self.powToken = self.getMetadata('powToken', None)
             self.signed = ('sig' in self.getHeader() and self.getHeader('sig') != '')
+            # TODO: detect if signer is hash of pubkey or not
+            self.signer = self.getHeader('signer', None)
             self.signature = self.getHeader('sig', None)
-            self.signedData = (None if not self.isSigned() else self.getHeader('meta') + '\n' + self.getContent())
+            # signed data is jsonMeta + block content (no linebreak)
+            self.signedData = (None if not self.isSigned() else self.getHeader('meta') + self.getContent())
             self.date = self.getCore().getBlockDate(self.getHash())
 
             if not self.getDate() is None:
@@ -214,7 +263,6 @@ class Block:
             Outputs:
             - (str): the type of the block
         '''
-
         return self.btype
 
     def getRaw(self):
@@ -471,6 +519,8 @@ class Block:
                     if not signer is None:
                         if isinstance(signer, (str,)):
                             signer = [signer]
+                        if isinstance(signer, (bytes,)):
+                            signer = [signer.decode()]
 
                         isSigner = False
                         for key in signer:
@@ -483,12 +533,13 @@ class Block:
 
                     if relevant:
                         relevant_blocks.append(block)
+            
             if bool(reverse):
                 relevant_blocks.reverse()
 
             return relevant_blocks
         except Exception as e:
-            logger.debug(('Failed to get blocks: %s' % str(e)) + logger.parse_error())
+            logger.debug('Failed to get blocks.', error = e)
 
         return list()
 

@@ -628,13 +628,16 @@ class Core:
 
         return None
 
-    def getBlocksByType(self, blockType):
+    def getBlocksByType(self, blockType, orderDate=True):
         '''
             Returns a list of blocks by the type
         '''
         conn = sqlite3.connect(self.blockDB)
         c = conn.cursor()
-        execute = 'SELECT hash FROM hashes WHERE dataType=?;'
+        if orderDate:
+            execute = 'SELECT hash FROM hashes WHERE dataType=? ORDER BY dateReceived;'
+        else:
+            execute = 'SELECT hash FROM hashes WHERE dataType=?;'
         args = (blockType,)
         rows = list()
         for row in c.execute(execute, args):
@@ -719,7 +722,7 @@ class Core:
         # sign before encrypt, as unauthenticated crypto should not be a problem here
         if sign:
             signature = self._crypto.edSign(jsonMeta.encode() + data, key=self._crypto.privKey, encodeResult=True)
-            signer = self._crypto.pubKeyHashID()
+            signer = self._crypto.pubKey
 
         if len(jsonMeta) > 1000:
             raise onionrexceptions.InvalidMetadata('meta in json encoded form must not exceed 1000 bytes')
@@ -728,15 +731,16 @@ class Core:
         if encryptType == 'sym':
             if len(symKey) < self.requirements.passwordLength:
                 raise onionrexceptions.SecurityError('Weak encryption key')
-            jsonMeta = self._crypto.symmetricEncrypt(jsonMeta, key=symKey, returnEncoded=True)
-            data = self._crypto.symmetricEncrypt(data, key=symKey, returnEncoded=True)
-            signature = self._crypto.symmetricEncrypt(signature, key=symKey, returnEncoded=True)
-            signer = self._crypto.symmetricEncrypt(signer, key=symKey, returnEncoded=True)
+            jsonMeta = self._crypto.symmetricEncrypt(jsonMeta, key=symKey, returnEncoded=True).decode()
+            data = self._crypto.symmetricEncrypt(data, key=symKey, returnEncoded=True).decode()
+            signature = self._crypto.symmetricEncrypt(signature, key=symKey, returnEncoded=True).decode()
+            signer = self._crypto.symmetricEncrypt(signer, key=symKey, returnEncoded=True).decode()
         elif encryptType == 'asym':
             if self._utils.validatePubKey(asymPeer):
-                jsonMeta = self._crypto.pubKeyEncrypt(jsonMeta, asymPeer, encodedData=True)
-                data = self._crypto.pubKeyEncrypt(data, asymPeer, encodedData=True)
-                signature = self._crypto.pubKeyEncrypt(signature, asymPeer, encodedData=True)
+                jsonMeta = self._crypto.pubKeyEncrypt(jsonMeta, asymPeer, encodedData=True, anonymous=True).decode()
+                data = self._crypto.pubKeyEncrypt(data, asymPeer, encodedData=True, anonymous=True).decode()
+                signature = self._crypto.pubKeyEncrypt(signature, asymPeer, encodedData=True, anonymous=True).decode()
+                signer = self._crypto.pubKeyEncrypt(signer, asymPeer, encodedData=True, anonymous=True).decode()
             else:
                 raise onionrexceptions.InvalidPubkey(asymPeer + ' is not a valid base32 encoded ed25519 key')
         

@@ -114,6 +114,11 @@ class OnionrCrypto:
         '''Encrypt to a public key (Curve25519, taken from base32 Ed25519 pubkey)'''
         retVal = ''
 
+        try:
+            pubkey = pubkey.encode()
+        except AttributeError:
+            pass
+
         if encodedData:
             encoding = nacl.encoding.Base64Encoder
         else:
@@ -127,7 +132,11 @@ class OnionrCrypto:
         elif anonymous:
             key = nacl.signing.VerifyKey(key=pubkey, encoder=nacl.encoding.Base32Encoder).to_curve25519_public_key()
             anonBox = nacl.public.SealedBox(key)
-            retVal = anonBox.encrypt(data.encode(), encoder=encoding)
+            try:
+                data = data.encode()
+            except AttributeError:
+                pass
+            retVal = anonBox.encrypt(data, encoder=encoding)
         return retVal
 
     def pubKeyDecrypt(self, data, pubkey='', anonymous=False, encodedData=False):
