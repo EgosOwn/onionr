@@ -81,7 +81,13 @@ class Block:
         if self.getHeader('encryptType') == 'asym':
             try:
                 self.bcontent = core._crypto.pubKeyDecrypt(self.bcontent, anonymous=anonymous, encodedData=encodedData)
-                self.bmetadata = json.loads(core._crypto.pubKeyDecrypt(self.bmetadata, anonymous=anonymous, encodedData=encodedData))
+                bmeta = core._crypto.pubKeyDecrypt(self.bmetadata, anonymous=anonymous, encodedData=encodedData)
+                try:
+                    bmeta = bmeta.decode()
+                except AttributeError:
+                    # yet another bytes fix
+                    pass
+                self.bmetadata = json.loads(bmeta)
                 self.signature = core._crypto.pubKeyDecrypt(self.signature, anonymous=anonymous, encodedData=encodedData)
                 self.signer = core._crypto.pubKeyDecrypt(self.signer, anonymous=anonymous, encodedData=encodedData)
                 self.signedData =  json.dumps(self.bmetadata) + self.bcontent.decode()
@@ -101,7 +107,6 @@ class Block:
 
         if core._crypto.edVerify(data=self.signedData, key=self.signer, sig=self.signature, encodedData=True):
             self.validSig = True
-            print('ded')
         else:
             self.validSig = False
         return self.validSig

@@ -117,7 +117,8 @@ class OnionrUtils:
                             else:
                                 logger.warn("Failed to add key")
                     else:
-                        logger.debug('%s pow failed' % key[0])
+                        pass
+                        #logger.debug('%s pow failed' % key[0])
             return retVal
         except Exception as error:
             logger.error('Failed to merge keys.', error=error)
@@ -137,7 +138,8 @@ class OnionrUtils:
                             logger.info('Added %s to db.' % adder, timestamp = True)
                             retVal = True
                     else:
-                        logger.debug('%s is either our address or already in our DB' % adder)
+                        pass
+                        #logger.debug('%s is either our address or already in our DB' % adder)
             return retVal
         except Exception as error:
             logger.error('Failed to merge adders.', error = error)
