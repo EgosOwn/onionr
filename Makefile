@@ -9,7 +9,7 @@ install:
 	cp -rfp ./onionr $(DESTDIR)$(PREFIX)/share/onionr
 	echo '#!/bin/sh' > $(DESTDIR)$(PREFIX)/bin/onionr
 	echo 'cd $(DESTDIR)$(PREFIX)/share/onionr' > $(DESTDIR)$(PREFIX)/bin/onionr
-	echo './onionr \\\"\\\$$@\\\"\"' > $(DESTDIR)$(PREFIX)/bin/onionr
+	echo './onionr "$$@"' > $(DESTDIR)$(PREFIX)/bin/onionr
 	chmod +x $(DESTDIR)$(PREFIX)/bin/onionr
 
 uninstall:
