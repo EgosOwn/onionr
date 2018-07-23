@@ -352,7 +352,7 @@ class OnionrCommunicatorDaemon:
         if not self._core._utils.validateHash(self.blockToUpload):
             logger.warn('Requested to upload invalid block')
             return
-        for i in max(len(self.onlinePeers), 2):
+        for i in range(max(len(self.onlinePeers), 2)):
             peer = self.pickOnlinePeer()
             if peer in triedPeers:
                 continue
