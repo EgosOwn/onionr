@@ -348,14 +348,15 @@ class OnionrCommunicatorDaemon:
         self.decrementThreadCount('daemonCommands')
 
     def uploadBlock(self):
-        tiredPeers = []
+        triedPeers = []
         if not self._core._utils.validateHash(self.blockToUpload):
             logger.warn('Requested to upload invalid block')
             return
         for i in max(len(self.onlinePeers), 2):
-            while True:
-                peer = self.pickOnlinePeer()
-                if peer 
+            peer = self.pickOnlinePeer()
+            if peer in triedPeers:
+                continue
+            triedPeers.append(peer)
             url = 'http://' + peer + '/public/upload/'
             data = {'block': block.Block(self.blockToUpload).getRaw()}
             if peer.endswith('.onion'):
