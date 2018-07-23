@@ -580,25 +580,6 @@ class Core:
         conn.close()
         return
 
-    def handle_direct_connection(self, data):
-        '''
-            Handles direct messages
-        '''
-        try:
-            data = json.loads(data)
-
-            # TODO: Determine the sender, verify, etc
-            if ('callback' in data) and (data['callback'] is True):
-                # then this is a response to the message we sent earlier
-                self.daemonQueueAdd('checkCallbacks', json.dumps(data))
-            else:
-                # then we should handle it and respond accordingly
-                self.daemonQueueAdd('incomingDirectConnection', json.dumps(data))
-        except Exception as e:
-            logger.warn('Failed to handle incoming direct message: %s' % str(e))
-
-        return
-
     def getBlockList(self, unsaved = False): # TODO: Use unsaved??
         '''
             Get list of our blocks
