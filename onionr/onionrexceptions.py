@@ -42,6 +42,10 @@ class InvalidHexHash(Exception):
     '''When a string is not a valid hex string of appropriate length for a hash value'''
     pass
 
+class InvalidProof(Exception):
+    '''When a proof is invalid or inadequate'''
+    pass
+
 # network level exceptions
 class MissingPort(Exception):
     pass

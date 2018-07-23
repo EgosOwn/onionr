@@ -36,6 +36,8 @@ class OnionrCommunicatorDaemon:
         # intalize NIST beacon salt and time
         self.nistSaltTimestamp = 0
         self.powSalt = 0
+        
+        self.blockToUpload = ''
 
         # loop time.sleep delay in seconds
         self.delay = 1
@@ -84,7 +86,7 @@ class OnionrCommunicatorDaemon:
         OnionrCommunicatorTimers(self, self.lookupAdders, 60, requiresPeer=True)
 
         # set loop to execute instantly to load up peer pool (replaced old pool init wait)
-        peerPoolTimer.count = (peerPoolTimer.frequency - 1) 
+        peerPoolTimer.count = (peerPoolTimer.frequency - 1)
 
         # Main daemon loop, mainly for calling timers, don't do any complex operations here to avoid locking
         try:
@@ -101,7 +103,7 @@ class OnionrCommunicatorDaemon:
         logger.info('Goodbye.')
         self._core._utils.localCommand('shutdown')
         time.sleep(0.5)
-    
+
     def lookupKeys(self):
         '''Lookup new keys'''
         logger.debug('Looking up new keys...')
@@ -111,7 +113,6 @@ class OnionrCommunicatorDaemon:
             peer = self.pickOnlinePeer()
             newKeys = self.peerAction(peer, action='kex')
             self._core._utils.mergeKeys(newKeys)
-
         self.decrementThreadCount('lookupKeys')
         return
 
@@ -196,7 +197,7 @@ class OnionrCommunicatorDaemon:
                         pass
                     logger.warn('Block hash validation failed for ' + blockHash + ' got ' + tempHash)
                 self.blockQueue.remove(blockHash) # remove from block queue both if success or false
-                self.currentDownloading.remove(blockHash)
+            self.currentDownloading.remove(blockHash)
         self.decrementThreadCount('getBlocks')
         return
 
@@ -339,9 +340,30 @@ class OnionrCommunicatorDaemon:
                 for i in self.timers:
                     if i.timerFunction.__name__ == 'lookupKeys':
                         i.count = (i.frequency - 1)
+            elif cmd[0] == 'uploadBlock':
+                self.blockToUpload = cmd[1]
+                threading.Thread(target=self.uploadBlock).start()
             else:
                 logger.info('Recieved daemonQueue command:' + cmd[0])
         self.decrementThreadCount('daemonCommands')
+
+    def uploadBlock(self):
+        tiredPeers = []
+        if not self._core._utils.validateHash(self.blockToUpload):
+            logger.warn('Requested to upload invalid block')
+            return
+        for i in max(len(self.onlinePeers), 2):
+            while True:
+                peer = self.pickOnlinePeer()
+                if peer 
+            url = 'http://' + peer + '/public/upload/'
+            data = {'block': block.Block(self.blockToUpload).getRaw()}
+            if peer.endswith('.onion'):
+                proxyType = 'tor'
+            elif peer.endswith('.i2p'):
+                proxyType = 'i2p'
+            logger.info("Uploading block")
+            self._core._utils.doPostRequest(url, data=data, proxyType=proxyType)
 
     def announce(self, peer):
         '''Announce to peers our address'''

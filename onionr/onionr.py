@@ -199,7 +199,7 @@ class Onionr:
             'connect': self.addAddress,
             'kex': self.doKEX,
 
-            'getpassword': self.getWebPassword
+            'getpassword': self.printWebPassword
         }
 
         self.cmdhelp = {
@@ -258,6 +258,9 @@ class Onionr:
 
     def getWebPassword(self):
         return config.get('client.hmac')
+        
+    def printWebPassword(self):
+        print(self.getWebPassword())
 
     def getHelp(self):
         return self.cmdhelp

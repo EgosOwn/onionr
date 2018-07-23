@@ -41,10 +41,12 @@ class Core:
             self.blockDataLocation = 'data/blocks/'
             self.addressDB = 'data/address.db'
             self.hsAdder = ''
-
             self.bootstrapFileLocation = 'static-data/bootstrap-nodes.txt'
             self.bootstrapList = []
             self.requirements = onionrvalues.OnionrValues()
+            self.torPort = torPort
+
+            self.usageFile = 'data/disk-usage.txt'
 
             if not os.path.exists('data/'):
                 os.mkdir('data/')
@@ -757,6 +759,7 @@ class Core:
             retData = self.setData(payload)
             self.addToBlockDB(retData, selfInsert=True, dataSaved=True)
             self.setBlockType(retData, meta['type'])
+            self.daemonQueueAdd('uploadBlock', retData)
 
         if retData != False:
             events.event('insertBlock', onionr = None, threaded = False)

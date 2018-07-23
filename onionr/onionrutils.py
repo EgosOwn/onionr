@@ -54,21 +54,12 @@ class OnionrUtils:
         except Exception as error:
             logger.error('Failed to fetch time bypass token.', error=error)
 
-    def sendPM(self, pubkey, message):
+    def getRoundedEpoch(self, roundS=60):
         '''
-            High level function to encrypt a message to a peer and insert it as a block
-        '''
-
-        self._core.insertBlock(message, header='pm', sign=True, encryptType='asym', asymPeer=pubkey)
-
-        return
-
-    def getCurrentHourEpoch(self):
-        '''
-            Returns the current epoch, rounded down to the hour
+            Returns the epoch, rounded down to given seconds (Default 60)
         '''
         epoch = self.getEpoch()
-        return epoch - (epoch % 3600)
+        return epoch - (epoch % roundS)
 
     def incrementAddressSuccess(self, address):
         '''
@@ -134,9 +125,10 @@ class OnionrUtils:
             if newAdderList != False:
                 for adder in newAdderList.split(','):
                     if not adder in self._core.listAdders(randomOrder = False) and adder.strip() != self.getMyAddress():
-                        if self._core.addAddress(adder):
-                            logger.info('Added %s to db.' % adder, timestamp = True)
-                            retVal = True
+                        if adder[:4] == '0000':
+                            if self._core.addAddress(adder):
+                                logger.info('Added %s to db.' % adder, timestamp = True)
+                                retVal = True
                     else:
                         pass
                         #logger.debug('%s is either our address or already in our DB' % adder)
@@ -210,19 +202,26 @@ class OnionrUtils:
             
         '''
         meta = {}
+        metadata = {}
+        data = blockData
         try:
             blockData = blockData.encode()
         except AttributeError:
             pass
-        metadata = json.loads(blockData[:blockData.find(b'\n')].decode())
-        data = blockData[blockData.find(b'\n'):].decode()
+        
+        try:
+            metadata = json.loads(blockData[:blockData.find(b'\n')].decode())
+        except json.decoder.JSONDecodeError:
+            pass
+        else:
+            data = blockData[blockData.find(b'\n'):].decode()
 
-        if not metadata['encryptType'] in ('asym', 'sym'):
-            try:
-                meta = json.loads(metadata['meta'])
-            except KeyError:
-                pass
-        meta = metadata['meta']       
+            if not metadata['encryptType'] in ('asym', 'sym'):
+                try:
+                    meta = json.loads(metadata['meta'])
+                except KeyError:
+                    pass
+            meta = metadata['meta']       
         return (metadata, meta, data)
 
     def checkPort(self, port, host=''):
@@ -525,6 +524,30 @@ class OnionrUtils:
         '''returns epoch'''
         return math.floor(time.time())
 
+    def doPostRequest(self, url, data={}, port=0, proxyType='tor'):
+        '''
+        Do a POST request through a local tor or i2p instance
+        '''
+        if proxyType == 'tor':
+            if port == 0:
+                port = self._core.torPort
+            proxies = {'http': 'socks5://127.0.0.1:' + str(port), 'https': 'socks5://127.0.0.1:' + str(port)}
+        elif proxyType == 'i2p':
+            proxies = {'http': 'http://127.0.0.1:4444'}
+        else:
+            return
+        headers = {'user-agent': 'PyOnionr'}
+        try:
+            proxies = {'http': 'socks5h://127.0.0.1:' + str(port), 'https': 'socks5h://127.0.0.1:' + str(port)}
+            r = requests.post(url, data=data, headers=headers, proxies=proxies, allow_redirects=False, timeout=(15, 30))
+            retData = r.text
+        except KeyboardInterrupt:
+            raise KeyboardInterrupt
+        except requests.exceptions.RequestException as e:
+            logger.debug('Error: %s' % str(e))
+            retData = False
+        return retData
+
     def doGetRequest(self, url, port=0, proxyType='tor'):
         '''
         Do a get request through a local tor or i2p instance
@@ -549,7 +572,7 @@ class OnionrUtils:
             retData = False
         return retData
 
-    def getNistBeaconSalt(self, torPort=0):
+    def getNistBeaconSalt(self, torPort=0, rounding=3600):
         '''
             Get the token for the current hour from the NIST randomness beacon
         '''
@@ -559,7 +582,7 @@ class OnionrUtils:
             except IndexError:
                 raise onionrexceptions.MissingPort('Missing Tor socks port')
         retData = ''
-        curTime = self._core._utils.getCurrentHourEpoch
+        curTime = self.getRoundedEpoch(rounding)
         self.nistSaltTimestamp = curTime
         data = self.doGetRequest('https://beacon.nist.gov/rest/record/' + str(curTime), port=torPort)
         dataXML = minidom.parseString(data, forbid_dtd=True, forbid_entities=True, forbid_external=True)
