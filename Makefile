@@ -1,19 +1,20 @@
+PREFIX = /usr/local
+
 .DEFAULT_GOAL := setup
 
 setup:
-	sudo pip3 install -r requirements.txt
+	pip3 install -r requirements.txt
 
 install:
-	sudo rm -rf /usr/share/onionr/
-	sudo rm -f /usr/bin/onionr
-	sudo cp -rp ./onionr /usr/share/onionr
-	sudo sh -c "echo \"#!/bin/sh\ncd /usr/share/onionr/\n./onionr.py \\\"\\\$$@\\\"\" > /usr/bin/onionr"
-	sudo chmod +x /usr/bin/onionr
-	sudo chown -R `whoami` /usr/share/onionr/
+	cp -rfp ./onionr $(DESTDIR)$(PREFIX)/share/onionr
+	echo '#!/bin/sh' > $(DESTDIR)$(PREFIX)/bin/onionr
+	echo 'cd $(DESTDIR)$(PREFIX)/share/onionr' > $(DESTDIR)$(PREFIX)/bin/onionr
+	echo './onionr "$$@"' > $(DESTDIR)$(PREFIX)/bin/onionr
+	chmod +x $(DESTDIR)$(PREFIX)/bin/onionr
 
 uninstall:
-	sudo rm -rf /usr/share/onionr
-	sudo rm -f /usr/bin/onionr
+	rm -rf $(DESTDIR)$(PREFIX)/share/onionr
+	rm -f $(DESTDIR)$(PREFIX)/bin/onionr
 
 test:
 	@./RUN-LINUX.sh stop
