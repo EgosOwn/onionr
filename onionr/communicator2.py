@@ -20,7 +20,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 import sys, os, core, config, json, onionrblockapi as block, requests, time, logger, threading, onionrplugins as plugins, base64, onionr
-import onionrexceptions
+import onionrexceptions, onionrpeers
 from defusedxml import minidom
 
 class OnionrCommunicatorDaemon:
@@ -48,6 +48,7 @@ class OnionrCommunicatorDaemon:
         # lists of connected peers and peers we know we can't reach currently
         self.onlinePeers = []
         self.offlinePeers = []
+        self.peerProfiles = [] # list of peer's profiles (onionrpeers.PeerProfile instances)
 
         # amount of threads running by name, used to prevent too many
         self.threadCounts = {}
@@ -262,6 +263,7 @@ class OnionrCommunicatorDaemon:
         '''Adds a new random online peer to self.onlinePeers'''
         retData = False
         tried = self.offlinePeers
+        peerScores = {}
         if peer != '':
             if self._core._utils.validateID(peer):
                 peerList = [peer]
@@ -273,6 +275,14 @@ class OnionrCommunicatorDaemon:
         if len(peerList) == 0 or useBootstrap:
             # Avoid duplicating bootstrap addresses in peerList
             self.addBootstrapListToPeerList(peerList)
+
+        for address in peerList:
+            # Load peer's profiles into a list
+            profile = onionrpeers.PeerProfiles(address, self._core)
+            peerScores[address] = profile.score
+
+        # Sort peers by their score, greatest to least
+        peerList = sorted(peerScores, key=peerScores.get, reverse=True)
 
         for address in peerList:
             if len(address) == 0 or address in tried or address in self.onlinePeers:
@@ -299,7 +309,7 @@ class OnionrCommunicatorDaemon:
                 logger.info(i)
 
     def peerAction(self, peer, action, data=''):
-        '''Perform a get request to a peer'''
+        '''Perform a get request to a peer'''        
         if len(peer) == 0:
             return False
         logger.info('Performing ' + action + ' with ' + peer + ' on port ' + str(self.proxyPort))
@@ -348,6 +358,8 @@ class OnionrCommunicatorDaemon:
         self.decrementThreadCount('daemonCommands')
 
     def uploadBlock(self):
+        '''Upload our block to a few peers'''
+        # when inserting a block, we try to upload it to a few peers to add some deniability
         triedPeers = []
         if not self._core._utils.validateHash(self.blockToUpload):
             logger.warn('Requested to upload invalid block')

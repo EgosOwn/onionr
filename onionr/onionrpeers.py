@@ -1,7 +1,7 @@
 '''
     Onionr - P2P Microblogging Platform & Social network.
 
-    This file contains both the OnionrCommunicate class for communcating with peers
+    This file contains both the PeerProfiles class for network profiling of Onionr nodes
 '''
 '''
     This program is free software: you can redistribute it and/or modify
@@ -17,3 +17,56 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
+import core
+class PeerProfiles:
+    '''
+        PeerProfiles
+    '''
+    def __init__(self, address, coreInst):
+        self.address = address # node address
+        self.score = None
+        self.friendSigCount = 0
+        self.success = 0
+        self.failure = 0
+
+        if not isinstance(coreInst, core.Core):
+            raise TypeError("coreInst must be a type of core.Core")
+        self.coreInst = coreInst
+        assert isinstance(self.coreInst, core.Core)
+
+        self.loadScore()
+        return
+
+    def loadScore(self):
+        '''Load the node's score from the database'''
+        try:
+            self.success = int(self.coreInst.getAddressInfo('success'))
+        except TypeError:
+            self.success = 0
+        try:
+            self.failure = int(self.coreInst.getAddressInfo('failure'))
+        except TypeError:
+            self.failure = 0
+        self.score = self.success - self.failure
+    
+    def saveScore(self):
+        '''Save the node's score to the database'''
+        self.coreInst.setAddressInfo(self.address, 'success', self.success)
+        self.coreInst.setAddressInfo(self.address, 'failure', self.failure)
+        return
+
+def getScoreSortedPeerList(coreInst):
+    if not type(coreInst is core.Core):
+        raise TypeError('coreInst must be instance of core.Core')
+
+    peerList = coreInst.listAdders()
+    peerScores = {}
+
+    for address in peerList:
+        # Load peer's profiles into a list
+        profile = PeerProfiles(address, coreInst)
+        peerScores[address] = profile.score
+
+    # Sort peers by their score, greatest to least
+    peerList = sorted(peerScores, key=peerScores.get, reverse=True)
+    return peerList
