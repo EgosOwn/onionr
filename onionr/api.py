@@ -18,7 +18,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 import flask
-from flask import request, Response, abort
+from flask import request, Response, abort, send_from_directory
 from multiprocessing import Process
 from gevent.wsgi import WSGIServer
 import sys, random, threading, hmac, hashlib, base64, time, math, os, logger, config
@@ -112,6 +112,21 @@ class API:
                 self.mimeType = 'text/plain'
 
             return resp
+
+        @app.route('/client/ui/<path:path>')
+        def webUI(path):
+            startTime = math.floor(time.time())
+            if request.args.get('timingToken') is None:
+                timingToken = ''
+            else:
+                timingToken = request.args.get('timingToken')
+            self.validateHost('private')
+            endTime = math.floor(time.time())
+            elapsed = endTime - startTime
+            if not hmac.compare_digest(timingToken, self.timeBypassToken):
+                if elapsed < self._privateDelayTime:
+                    time.sleep(self._privateDelayTime - elapsed)
+            return send_from_directory('static-data/ui/', path)
 
         @app.route('/client/')
         def private_handler():
