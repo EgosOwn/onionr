@@ -23,3 +23,7 @@ To prevent censorship or loss of information, these measures must be in place:
 # Issues With Existing Software
 
 There are many great projects that tackle decentralization and privacy issues, but there are none which tackle all of the above issues.
+
+## Tor/I2P
+
+Tor and I2P are both great "onion routers" that protect privacy, however these are mainly transport projects. Tor and I2P do not provide decentralization of data on their own, as they only transport data and provide a rendevous. "Hidden services", being hosted on central servers, often do not last long, as they are reliant on only 1 machine being online, which also increases an attacker's ability to unmask them.
