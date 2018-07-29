@@ -33,7 +33,7 @@
      },
 
     "allocations":{
-        "disk": 1000000000,
+        "disk": 9000000000,
         "netTotal": 1000000000,
         "blockCache" : 5000000,
         "blockCacheTotal" : 50000000

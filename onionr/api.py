@@ -24,7 +24,7 @@ from gevent.wsgi import WSGIServer
 import sys, random, threading, hmac, hashlib, base64, time, math, os, logger, config
 from core import Core
 from onionrblockapi import Block
-import onionrutils, onionrcrypto
+import onionrutils, onionrcrypto, blockimporter
 
 class API:
     '''
@@ -141,9 +141,6 @@ class API:
                 resp = Response('Goodbye')
             elif action == 'ping':
                 resp = Response('pong')
-            elif action == 'stats':
-                resp = Response('me_irl')
-                raise Exception
             elif action == 'site':
                 block = data
                 siteData = self._core.getData(data)
@@ -175,6 +172,24 @@ class API:
                 resp = Response("")
             return resp
 
+        @app.route('/public/upload/', methods=['POST'])
+        def blockUpload():
+            self.validateHost('public')
+            resp = 'failure'
+            try:
+                data = request.form['block']
+            except KeyError:
+                logger.warn('No block specified for upload')
+                pass
+            else:
+                if sys.getsizeof(data) < 100000000:
+                    if blockimporter.importBlockFromData(data, self._core):
+                        resp = 'success'
+                    else:
+                        logger.warn('Error encountered importing uploaded block')
+
+            resp = Response(resp)
+            return resp
         @app.route('/public/')
         def public_handler():
             # Public means it is publicly network accessible
@@ -198,6 +213,7 @@ class API:
                 resp = Response('\n'.join(self._core.getBlockList()))
             elif action == 'directMessage':
                 resp = Response(self._core.handle_direct_connection(data))
+
             elif action == 'announce':
                 if data != '':
                     # TODO: require POW for this
