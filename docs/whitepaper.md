@@ -16,9 +16,9 @@ To prevent censorship or loss of information, these measures must be in place:
 * Anonymization of users by default
    * The Inability to violently coerce human users (personal threats/"doxxing", or totalitarian regime censorship)
 
-* Economic availability. A system should not rely on a single device to be constantly online, and should not be overtly expensive to use. The majority of people in the world own cell phones, but comparatively few own personal computers, particularly in developing countries.
+* Economic availability. A system should not rely on a single device to be constantly online, and should not be overly expensive to use. The majority of people in the world own cell phones, but comparatively few own personal computers, particularly in developing countries.
 
-There are many great projects that tackle decentralization and privacy issues, but there are none which tackle all of the above issue. Some of the existing networks have also not worked well in practice, or are more complicated than they need to be.
+There are many great projects that tackle decentralization and privacy issues, but there are none which tackle all of the above issues. Some of the existing networks have also not worked well in practice, or are more complicated than they need to be.
 
 # Onionr Design Goals
 
