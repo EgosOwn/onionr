@@ -30,6 +30,9 @@ class API:
     '''
         Main HTTP API (Flask)
     '''
+
+    callbacks = {'public' : {}, 'private' : {}, 'ui' : {}}
+
     def validateToken(self, token):
         '''
             Validate that the client token matches the given token
@@ -126,7 +129,7 @@ class API:
             if not hmac.compare_digest(timingToken, self.timeBypassToken):
                 if elapsed < self._privateDelayTime:
                     time.sleep(self._privateDelayTime - elapsed)
-            return send_from_directory('static-data/ui/', path)
+            return send_from_directory('static-data/ui/dist/', path)
 
         @app.route('/client/')
         def private_handler():
@@ -164,6 +167,44 @@ class API:
                     self.mimeType = 'text/html'
                     response = siteData.split(b'-', 2)[-1]
                 resp = Response(response)
+            elif action == "insertBlock":
+                response = {'success' : False, 'reason' : 'An unknown error occurred'}
+
+                try:
+                    decoded = json.loads(data)
+
+                    block = Block()
+
+                    sign = False
+
+                    for key in decoded:
+                        val = decoded[key]
+
+                        key = key.lower()
+
+                        if key == 'type':
+                            block.setType(val)
+                        elif key in ['body', 'content']:
+                            block.setContent(val)
+                        elif key == 'parent':
+                            block.setParent(val)
+                        elif key == 'sign':
+                            sign = (str(val).lower() == 'true')
+
+                    hash = block.save(sign = sign)
+
+                    if not hash is False:
+                        response['success'] = true
+                        response['hash'] = hash
+                        response['reason'] = 'Successfully wrote block to file'
+                    else:
+                        response['reason'] = 'Faield to save the block'
+                except Exception as e:
+                    logger.debug('insertBlock api request failed', error = e)
+
+                resp = Response(json.dumps(response))
+            elif action in callbacks['private']:
+                resp = Response(str(getCallback(action, scope = 'private')(request)))
             else:
                 resp = Response('(O_o) Dude what? (invalid command)')
             endTime = math.floor(time.time())
@@ -258,6 +299,8 @@ class API:
                 peers = self._core.listPeers(getPow=True)
                 response = ','.join(peers)
                 resp = Response(response)
+            elif action in callbacks['public']:
+                resp = Response(str(getCallback(action, scope = 'public')(request)))
             else:
                 resp = Response("")
 
@@ -328,3 +371,31 @@ class API:
                 # we exit rather than abort to avoid fingerprinting
                 logger.debug('Avoiding fingerprinting, exiting...')
                 sys.exit(1)
+
+    def setCallback(action, callback, scope = 'public'):
+        if not scope in callbacks:
+            return False
+
+        callbacks[scope][action] = callback
+
+        return True
+
+    def removeCallback(action, scope = 'public'):
+        if (not scope in callbacks) or (not action in callbacks[scope]):
+            return False
+
+        del callbacks[scope][action]
+
+        return True
+
+    def getCallback(action, scope = 'public'):
+        if (not scope in callbacks) or (not action in callbacks[scope]):
+            return None
+
+        return callbacks[scope][action]
+
+    def getCallbacks(scope = None):
+        if (not scope is None) and (scope in callbacks):
+            return callbacks[scope]
+
+        return callbacks

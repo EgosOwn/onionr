@@ -1,0 +1,31 @@
+{
+    "eng" : {
+        "ONIONR_TITLE" : "Onionr UI",
+        
+        "TIMELINE" : "Timeline",
+        "NOTIFICATIONS" : "Notifications",
+        "MESSAGES" : "Messages",
+        
+        "TRENDING" : "Trending"
+    },
+    
+    "spa" : {
+        "ONIONR_TITLE" : "Onionr UI",
+        
+        "TIMELINE" : "Linea de Tiempo",
+        "NOTIFICATIONS" : "Notificaciones",
+        "MESSAGES" : "Mensaje",
+        
+        "TRENDING" : "Trending"
+    },
+    
+    "zho" : {
+        "ONIONR_TITLE" : "洋葱 用户界面",
+        
+        "TIMELINE" : "时间线",
+        "NOTIFICATIONS" : "通知",
+        "MESSAGES" : "消息",
+        
+        "TRENDING" : "趋势"
+    }
+}

@@ -2,6 +2,7 @@
 
 setup:
 	sudo pip3 install -r requirements.txt
+	-@cd onionr/static-data/ui/; ./compile.py
 
 install:
 	sudo rm -rf /usr/share/onionr/

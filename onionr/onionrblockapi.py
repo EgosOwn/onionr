@@ -38,7 +38,6 @@ class Block:
         self.btype = type
         self.bcontent = content
 
-
         # initialize variables
         self.valid = True
         self.raw = None
@@ -71,8 +70,10 @@ class Block:
 
     # logic
 
-    def decrypt(self, anonymous=True, encodedData=True):
-        '''Decrypt a block, loading decrypted data into their vars'''
+    def decrypt(self, anonymous = True, encodedData = True):
+        '''
+            Decrypt a block, loading decrypted data into their vars
+        '''
         if self.decrypted:
             return True
         retData = False
@@ -100,9 +101,11 @@ class Block:
         else:
             logger.warn('symmetric decryption is not yet supported by this API')
         return retData
-    
+
     def verifySig(self):
-        '''Verify if a block's signature is signed by its claimed signer'''
+        '''
+            Verify if a block's signature is signed by its claimed signer
+        '''
         core = self.getCore()
 
         if core._crypto.edVerify(data=self.signedData, key=self.signer, sig=self.signature, encodedData=True):
@@ -227,12 +230,14 @@ class Block:
                 else:
                     self.hash = self.getCore().insertBlock(self.getContent(), header = self.getType(), sign = sign)
                     self.update()
+
                 return self.getHash()
             else:
                 logger.warn('Not writing block; it is invalid.')
         except Exception as e:
             logger.error('Failed to save block.', error = e, timestamp = False)
-            return False
+
+        return False
 
     # getters
 
@@ -533,7 +538,7 @@ class Block:
 
                     if relevant:
                         relevant_blocks.append(block)
-            
+
             if bool(reverse):
                 relevant_blocks.reverse()
 
