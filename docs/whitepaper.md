@@ -44,10 +44,48 @@ At its core, Onionr is merely a description for storing data in self-verifying p
 
 Onionr exchanges a list of blocks between all nodes. By default, all nodes download and share all other blocks, however this is configurable.
 
-## Blocks
+## User IDs
 
-Onionr blocks are very simple. They are structured in two main parts: a metadata section and a data section, with a line feed delimiting where metadata ends and data begins. Metadata defines what kind of data is in a block, signature data, encryption settings, and other arbitrary information.
+User IDs are simply Ed25519 public keys. They are represented in Base32 format, or encoded using the [PGP Word List](https://en.wikipedia.org/wiki/PGP_word_list).
 
-For encryption, Onionr uses ephemeral Curve25519 keys for key exchange and XSalsa20-Poly1305 as a symmetric cipher, or optionally using only XSalsa20-Poly1305.
+Public keys can be generated deterministicly with a password using a key derivation function (Argon2id). This password can be shared between many users in order to share data anonymously among a group, using only 1 password. This is useful in some cases, but is risky, as if one user causes the key to be compromised and does not notify the group or revoke the key, there is no way to know.
 
+## Nodes
 
+Although Onionr is transport agnostic, the only supported transports in the reference implemetation are Tor .onion services and I2P hidden services. Nodes announce their address on creation.
+
+### Node Profiling
+
+To mitigate maliciously slow or unreliable nodes, Onionr builds a profile on nodes it connects to. Nodes are assigned a score, which raises based on the amount of successful block transfers, speed, and reliabilty of a node, and reduces based on how unreliable a node is. If a node is unreachable for over 24 hours after contact, it is forgotten. Onionr can also prioritize connection to 'friend' nodes.
+
+## Block Format
+
+Onionr blocks are very simple. They are structured in two main parts: a metadata section and a data section, with a line feed delimiting where metadata ends and data begins. 
+
+Metadata defines what kind of data is in a block, signature data, encryption settings, and other arbitrary information.
+
+Optionally, a random token can be inserted into the metadata for use in Proof of Work.
+
+### Block Encryption
+
+For encryption, Onionr uses ephemeral Curve25519 keys for key exchange and XSalsa20-Poly1305 as a symmetric cipher, or optionally using only XSalsa20-Poly1305 with a pre-shared key.
+
+Regardless of encryption, blocks can be signed internally using Ed25519.
+
+## Block Exchange
+
+Blocks can be exchanged using any method, as they are not reliant on any other blocks.
+
+By default, every node shares a list of the blocks it is sharing, and will download any blocks it does not yet have.
+
+## Spam mitigation and block storage time
+
+By default, an Onionr node adjusts the target difficulty for blocks to be accepted based on the percent of disk usage allocated to Onionr.
+
+Blocks are stored indefinitely until the allocated space is filled, at which point Onionr will remove the oldest blocks as needed, save for "pinned" blocks, which are permanently stored.
+
+## Block Timestamping
+
+Onionr can provide evidence when a block was inserted by requesting other users to sign a hash of the current time with the block data hash: sha3_256(time + sha3_256(block data)).
+
+This can be done either by the creator of the block prior to generation, or by any node after insertion.
