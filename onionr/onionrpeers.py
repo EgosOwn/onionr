@@ -40,20 +40,20 @@ class PeerProfiles:
     def loadScore(self):
         '''Load the node's score from the database'''
         try:
-            self.success = int(self.coreInst.getAddressInfo('success'))
+            self.success = int(self.coreInst.getAddressInfo('vd33hdxlp342nnzc.onion', 'success'))
         except TypeError:
             self.success = 0
-        try:
-            self.failure = int(self.coreInst.getAddressInfo('failure'))
-        except TypeError:
-            self.failure = 0
-        self.score = self.success - self.failure
+        self.score = self.success
     
     def saveScore(self):
         '''Save the node's score to the database'''
-        self.coreInst.setAddressInfo(self.address, 'success', self.success)
-        self.coreInst.setAddressInfo(self.address, 'failure', self.failure)
+        self.coreInst.setAddressInfo(self.address, 'success', self.score)
         return
+
+    def addScore(self, toAdd):
+        '''Add to the peer's score (can add negative)'''
+        self.score += toAdd
+        self.saveScore()
 
 def getScoreSortedPeerList(coreInst):
     if not type(coreInst is core.Core):

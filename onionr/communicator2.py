@@ -293,6 +293,14 @@ class OnionrCommunicatorDaemon:
                 if address not in self.onlinePeers:
                     self.onlinePeers.append(address)
                 retData = address
+                
+                # add peer to profile list if they're not in it
+                for profile in self.peerProfiles:
+                    if profile.address == address:
+                        break
+                else:
+                    self.peerProfiles.append(onionrpeers.PeerProfiles(address, self._core))
+                    self.getPeerProfileInstance(address).addScore(1)
                 break
             else:
                 tried.append(address)
@@ -306,7 +314,8 @@ class OnionrCommunicatorDaemon:
         else:
             logger.info('Online peers:')
             for i in self.onlinePeers:
-                logger.info(i)
+                score = str(self.getPeerProfileInstance(i).score)
+                logger.info(i + ', score: ' + score)
 
     def peerAction(self, peer, action, data=''):
         '''Perform a get request to a peer'''
@@ -320,10 +329,25 @@ class OnionrCommunicatorDaemon:
         # if request failed, (error), mark peer offline
         if retData == False:
             try:
+                self.getPeerProfileInstance(peer).addScore(-1)
                 self.onlinePeers.remove(peer)
                 self.getOnlinePeers() # Will only add a new peer to pool if needed
             except ValueError:
                 pass
+        else:
+            self.getPeerProfileInstance(peer).addScore(1)
+        return retData
+    
+    def getPeerProfileInstance(self, peer):
+        '''Gets a peer profile instance from the list of profiles, by address name'''
+        for i in self.peerProfiles:
+            # if the peer's profile is already loaded, return that
+            if i.address == peer:
+                retData = i
+                break
+        else:
+            # if the peer's profile is not loaded, return a new one. connectNewPeer adds it the list on connect
+            retData = onionrpeers.PeerProfiles(peer, self._core)
         return retData
 
     def heartbeat(self):
