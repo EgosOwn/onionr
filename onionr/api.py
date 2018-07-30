@@ -129,7 +129,7 @@ class API:
             if not hmac.compare_digest(timingToken, self.timeBypassToken):
                 if elapsed < self._privateDelayTime:
                     time.sleep(self._privateDelayTime - elapsed)
-            return send_from_directory('static-data/ui/', path)
+            return send_from_directory('static-data/ui/dist/', path)
 
         @app.route('/client/')
         def private_handler():
