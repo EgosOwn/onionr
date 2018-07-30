@@ -36,7 +36,7 @@ class OnionrCommunicatorDaemon:
         # intalize NIST beacon salt and time
         self.nistSaltTimestamp = 0
         self.powSalt = 0
-        
+
         self.blockToUpload = ''
 
         # loop time.sleep delay in seconds
@@ -309,7 +309,7 @@ class OnionrCommunicatorDaemon:
                 logger.info(i)
 
     def peerAction(self, peer, action, data=''):
-        '''Perform a get request to a peer'''        
+        '''Perform a get request to a peer'''
         if len(peer) == 0:
             return False
         logger.info('Performing ' + action + ' with ' + peer + ' on port ' + str(self.proxyPort))

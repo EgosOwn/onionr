@@ -91,8 +91,6 @@ class Onionr:
         self.onionrCore = core.Core()
         self.onionrUtils = OnionrUtils(self.onionrCore)
 
-        self.userOS = platform.system()
-
         # Handle commands
 
         self.debug = False # Whole application debugging
@@ -258,7 +256,7 @@ class Onionr:
 
     def getWebPassword(self):
         return config.get('client.hmac')
-        
+
     def printWebPassword(self):
         print(self.getWebPassword())
 
@@ -542,7 +540,7 @@ class Onionr:
             subprocess.Popen([communicatorDaemon, "run", str(net.socksPort)])
             logger.debug('Started communicator')
             events.event('daemon_start', onionr = self)
-        api.API(self.debug)
+        self.api = api.API(self.debug)
 
         return
 
