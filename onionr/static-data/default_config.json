@@ -2,8 +2,16 @@
     "general" : {
         "dev_mode": true,
         "display_header" : true,
-        "dc_response": true,
-        "dc_execcallbacks" : true
+
+        "direct_connect" : {
+            "respond" : true,
+            "execute_callbacks" : true
+        }
+    },
+
+    "onionr_ui" : {
+        "run" : true,
+        "private_only" : true
     },
 
     "client" : {

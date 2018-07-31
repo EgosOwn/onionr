@@ -100,7 +100,7 @@ DataDirectory data/tordata/
                 logger.fatal('Failed to start Tor. Try killing any other Tor processes owned by this user.')
                 return False
         except KeyboardInterrupt:
-            logger.fatal("Got keyboard interrupt")
+            logger.fatal("Got keyboard interrupt.")
             return False
 
         logger.debug('Finished starting Tor.', timestamp=True)
