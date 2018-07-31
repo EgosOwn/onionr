@@ -149,7 +149,7 @@ class API:
 
             return send_from_directory('static-data/www/public/', path)
 
-        @app.route('/www/ui/<path:path>')
+        @app.route('/ui/<path:path>')
         def ui_private(path):
             startTime = math.floor(time.time())
 
