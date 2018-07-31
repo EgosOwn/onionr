@@ -80,7 +80,7 @@ class OnionrCommunicatorDaemon:
         OnionrCommunicatorTimers(self, self.daemonCommands, 5)
         OnionrCommunicatorTimers(self, self.detectAPICrash, 5)
         peerPoolTimer = OnionrCommunicatorTimers(self, self.getOnlinePeers, 60)
-        OnionrCommunicatorTimers(self, self.lookupBlocks, 7, requiresPeer=True)
+        OnionrCommunicatorTimers(self, self.lookupBlocks, 7, requiresPeer=True, maxThreads=1)
         OnionrCommunicatorTimers(self, self.getBlocks, 10, requiresPeer=True)
         OnionrCommunicatorTimers(self, self.clearOfflinePeer, 58)
         OnionrCommunicatorTimers(self, self.lookupKeys, 60, requiresPeer=True)
@@ -134,11 +134,19 @@ class OnionrCommunicatorDaemon:
         tryAmount = 2
         newBlocks = ''
         existingBlocks = self._core.getBlockList()
+        triedPeers = [] # list of peers we've tried this time around
         for i in range(tryAmount):
             peer = self.pickOnlinePeer() # select random online peer
+            # if we've already tried all the online peers this time around, stop
+            if peer in triedPeers:
+                if len(self.onlinePeers) == len(triedPeers):
+                    break
+                else:
+                    continue
             newDBHash = self.peerAction(peer, 'getDBHash') # get their db hash
             if newDBHash == False:
                 continue # if request failed, restart loop (peer is added to offline peers automatically)
+            triedPeers.append(peer)
             if newDBHash != self._core.getAddressInfo(peer, 'DBHash'):
                 self._core.setAddressInfo(peer, 'DBHash', newDBHash)
                 newBlocks = self.peerAction(peer, 'getBlockHashes')
@@ -263,7 +271,6 @@ class OnionrCommunicatorDaemon:
         '''Adds a new random online peer to self.onlinePeers'''
         retData = False
         tried = self.offlinePeers
-        peerScores = {}
         if peer != '':
             if self._core._utils.validateID(peer):
                 peerList = [peer]
@@ -276,17 +283,13 @@ class OnionrCommunicatorDaemon:
             # Avoid duplicating bootstrap addresses in peerList
             self.addBootstrapListToPeerList(peerList)
 
-        for address in peerList:
-            # Load peer's profiles into a list
-            profile = onionrpeers.PeerProfiles(address, self._core)
-            peerScores[address] = profile.score
-
-        # Sort peers by their score, greatest to least
-        peerList = sorted(peerScores, key=peerScores.get, reverse=True)
+        peerList = onionrpeers.getScoreSortedPeerList(self._core)
 
         for address in peerList:
             if len(address) == 0 or address in tried or address in self.onlinePeers:
                 continue
+            if self.shutdown:
+                return
             if self.peerAction(address, 'ping') == 'pong!':
                 logger.info('Connected to ' + address)
                 time.sleep(0.1)
@@ -300,7 +303,6 @@ class OnionrCommunicatorDaemon:
                         break
                 else:
                     self.peerProfiles.append(onionrpeers.PeerProfiles(address, self._core))
-                    self.getPeerProfileInstance(address).addScore(1)
                 break
             else:
                 tried.append(address)
@@ -329,7 +331,7 @@ class OnionrCommunicatorDaemon:
         # if request failed, (error), mark peer offline
         if retData == False:
             try:
-                self.getPeerProfileInstance(peer).addScore(-1)
+                self.getPeerProfileInstance(peer).addScore(-2)
                 self.onlinePeers.remove(peer)
                 self.getOnlinePeers() # Will only add a new peer to pool if needed
             except ValueError:
