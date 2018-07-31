@@ -19,8 +19,8 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import sys, os, core, config, json, onionrblockapi as block, requests, time, logger, threading, onionrplugins as plugins, base64, onionr
-import onionrexceptions, onionrpeers
+import sys, os, core, config, json, requests, time, logger, threading, base64, onionr
+import onionrexceptions, onionrpeers, onionrevents as events, onionrplugins as plugins, onionrblockapi as block
 from defusedxml import minidom
 
 class OnionrCommunicatorDaemon:
@@ -363,6 +363,8 @@ class OnionrCommunicatorDaemon:
         cmd = self._core.daemonQueue()
 
         if cmd is not False:
+            events.event('daemon_command', onionr = None, data = {'cmd' : cmd})
+
             if cmd[0] == 'shutdown':
                 self.shutdown = True
             elif cmd[0] == 'announceNode':
@@ -381,6 +383,7 @@ class OnionrCommunicatorDaemon:
                 threading.Thread(target=self.uploadBlock).start()
             else:
                 logger.info('Recieved daemonQueue command:' + cmd[0])
+
         self.decrementThreadCount('daemonCommands')
 
     def uploadBlock(self):
@@ -427,6 +430,7 @@ class OnionrCommunicatorDaemon:
                 time.sleep(1)
             else:
                 # This executes if the api is NOT detected to be running
+                events.event('daemon_crash', onionr = None, data = {})
                 logger.error('Daemon detected API crash (or otherwise unable to reach API after long time), stopping...')
                 self.shutdown = True
         self.decrementThreadCount('detectAPICrash')

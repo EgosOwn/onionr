@@ -199,7 +199,7 @@ class OnionrUtils:
     def getBlockMetadataFromData(self, blockData):
         '''
             accepts block contents as string, returns a tuple of metadata, meta (meta being internal metadata, which will be returned as an encrypted base64 string if it is encrypted, dict if not).
-            
+
         '''
         meta = {}
         metadata = {}
@@ -208,7 +208,7 @@ class OnionrUtils:
             blockData = blockData.encode()
         except AttributeError:
             pass
-        
+
         try:
             metadata = json.loads(blockData[:blockData.find(b'\n')].decode())
         except json.decoder.JSONDecodeError:
@@ -221,7 +221,7 @@ class OnionrUtils:
                     meta = json.loads(metadata['meta'])
                 except KeyError:
                     pass
-            meta = metadata['meta']       
+            meta = metadata['meta']
         return (metadata, meta, data)
 
     def checkPort(self, port, host=''):
@@ -251,7 +251,7 @@ class OnionrUtils:
             return False
         else:
             return True
-    
+
     def processBlockMetadata(self, blockHash):
         '''
             Read metadata from a block and cache it to the block database
@@ -269,7 +269,7 @@ class OnionrUtils:
     def escapeAnsi(self, line):
         '''
             Remove ANSI escape codes from a string with regex
-            
+
             taken or adapted from: https://stackoverflow.com/a/38662876
         '''
         ansi_escape = re.compile(r'(\x9B|\x1B\[)[0-?]*[ -/]*[@-~]')
@@ -331,12 +331,12 @@ class OnionrUtils:
                 retVal = False
 
         return retVal
-    
+
     def validateMetadata(self, metadata):
         '''Validate metadata meets onionr spec (does not validate proof value computation), take in either dictionary or json string'''
         # TODO, make this check sane sizes
         retData = False
-        
+
         # convert to dict if it is json string
         if type(metadata) is str:
             try:
@@ -382,7 +382,7 @@ class OnionrUtils:
         else:
             retVal = True
         return retVal
-    
+
     def isIntegerString(self, data):
         '''Check if a string is a valid base10 integer'''
         try:

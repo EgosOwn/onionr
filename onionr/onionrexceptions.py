@@ -49,5 +49,6 @@ class InvalidProof(Exception):
 # network level exceptions
 class MissingPort(Exception):
     pass
+
 class InvalidAddress(Exception):
     pass

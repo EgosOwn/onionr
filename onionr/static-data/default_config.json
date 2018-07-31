@@ -2,8 +2,26 @@
     "general" : {
         "dev_mode": true,
         "display_header" : true,
-        "dc_response": true,
-        "dc_execcallbacks" : true
+
+        "direct_connect" : {
+            "respond" : true,
+            "execute_callbacks" : true
+        }
+    },
+
+    "www" : {
+        "public" : {
+            "run" : true
+        },
+
+        "private" : {
+            "run" : true
+        },
+
+        "ui" : {
+            "run" : true,
+            "private" : true
+        }
     },
 
     "client" : {

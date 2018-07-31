@@ -24,7 +24,7 @@ from gevent.wsgi import WSGIServer
 import sys, random, threading, hmac, hashlib, base64, time, math, os, logger, config
 from core import Core
 from onionrblockapi import Block
-import onionrutils, onionrcrypto, blockimporter
+import onionrutils, onionrcrypto, blockimporter, onionrevents as events
 
 class API:
     '''
@@ -94,6 +94,7 @@ class API:
             '''
                 Simply define the request as not having yet failed, before every request.
             '''
+
             self.requestFailed = False
 
             return
@@ -116,20 +117,63 @@ class API:
 
             return resp
 
-        @app.route('/client/ui/<path:path>')
-        def webUI(path):
+        @app.route('/www/private/<path:path>')
+        def www_private(path):
             startTime = math.floor(time.time())
+
             if request.args.get('timingToken') is None:
                 timingToken = ''
             else:
                 timingToken = request.args.get('timingToken')
+
+            if not config.get("www.private.run", True):
+                abort(403)
+
             self.validateHost('private')
+
             endTime = math.floor(time.time())
             elapsed = endTime - startTime
+
             if not hmac.compare_digest(timingToken, self.timeBypassToken):
                 if elapsed < self._privateDelayTime:
                     time.sleep(self._privateDelayTime - elapsed)
-            return send_from_directory('static-data/ui/dist/', path)
+
+            return send_from_directory('static-data/www/private/', path)
+
+        @app.route('/www/public/<path:path>')
+        def www_public(path):
+            if not config.get("www.public.run", True):
+                abort(403)
+
+            self.validateHost('public')
+
+            return send_from_directory('static-data/www/public/', path)
+
+        @app.route('/ui/<path:path>')
+        def ui_private(path):
+            startTime = math.floor(time.time())
+
+            if request.args.get('timingToken') is None:
+                timingToken = ''
+            else:
+                timingToken = request.args.get('timingToken')
+
+            if not config.get("www.ui.run", True):
+                abort(403)
+
+            if config.get("www.ui.private", True):
+                self.validateHost('private')
+            else:
+                self.validateHost('public')
+
+            endTime = math.floor(time.time())
+            elapsed = endTime - startTime
+
+            if not hmac.compare_digest(timingToken, self.timeBypassToken):
+                if elapsed < self._privateDelayTime:
+                    time.sleep(self._privateDelayTime - elapsed)
+
+            return send_from_directory('static-data/www/ui/dist/', path)
 
         @app.route('/client/')
         def private_handler():
@@ -150,6 +194,9 @@ class API:
 
             if not self.validateToken(token):
                 abort(403)
+
+            events.event('webapi_private', onionr = None, data = {'action' : action, 'data' : data, 'timingToken' : timingToken, 'token' : token})
+
             self.validateHost('private')
             if action == 'hello':
                 resp = Response('Hello, World! ' + request.host)
@@ -198,12 +245,12 @@ class API:
                         response['hash'] = hash
                         response['reason'] = 'Successfully wrote block to file'
                     else:
-                        response['reason'] = 'Faield to save the block'
+                        response['reason'] = 'Failed to save the block'
                 except Exception as e:
                     logger.debug('insertBlock api request failed', error = e)
 
                 resp = Response(json.dumps(response))
-            elif action in callbacks['private']:
+            elif action in API.callbacks['private']:
                 resp = Response(str(getCallback(action, scope = 'private')(request)))
             else:
                 resp = Response('(O_o) Dude what? (invalid command)')
@@ -257,6 +304,9 @@ class API:
                 data = data
             except:
                 data = ''
+
+            events.event('webapi_public', onionr = None, data = {'action' : action, 'data' : data, 'requestingPeer' : requestingPeer, 'request' : request})
+
             if action == 'firstConnect':
                 pass
             elif action == 'ping':
@@ -299,7 +349,7 @@ class API:
                 peers = self._core.listPeers(getPow=True)
                 response = ','.join(peers)
                 resp = Response(response)
-            elif action in callbacks['public']:
+            elif action in API.callbacks['public']:
                 resp = Response(str(getCallback(action, scope = 'public')(request)))
             else:
                 resp = Response("")
@@ -373,29 +423,29 @@ class API:
                 sys.exit(1)
 
     def setCallback(action, callback, scope = 'public'):
-        if not scope in callbacks:
+        if not scope in API.callbacks:
             return False
 
-        callbacks[scope][action] = callback
+        API.callbacks[scope][action] = callback
 
         return True
 
     def removeCallback(action, scope = 'public'):
-        if (not scope in callbacks) or (not action in callbacks[scope]):
+        if (not scope in API.callbacks) or (not action in API.callbacks[scope]):
             return False
 
-        del callbacks[scope][action]
+        del API.callbacks[scope][action]
 
         return True
 
     def getCallback(action, scope = 'public'):
-        if (not scope in callbacks) or (not action in callbacks[scope]):
+        if (not scope in API.callbacks) or (not action in API.callbacks[scope]):
             return None
 
-        return callbacks[scope][action]
+        return API.callbacks[scope][action]
 
     def getCallbacks(scope = None):
-        if (not scope is None) and (scope in callbacks):
-            return callbacks[scope]
+        if (not scope is None) and (scope in API.callbacks):
+            return API.callbacks[scope]
 
-        return callbacks
+        return API.callbacks
