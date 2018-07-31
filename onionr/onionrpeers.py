@@ -40,7 +40,7 @@ class PeerProfiles:
     def loadScore(self):
         '''Load the node's score from the database'''
         try:
-            self.success = int(self.coreInst.getAddressInfo('vd33hdxlp342nnzc.onion', 'success'))
+            self.success = int(self.coreInst.getAddressInfo(self.address, 'success'))
         except TypeError:
             self.success = 0
         self.score = self.success
