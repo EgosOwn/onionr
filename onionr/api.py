@@ -117,8 +117,8 @@ class API:
 
             return resp
 
-        @app.route('/client/ui/<path:path>')
-        def webUI(path):
+        @app.route('/www/private/<path:path>')
+        def www_private(path):
             startTime = math.floor(time.time())
 
             if request.args.get('timingToken') is None:
@@ -126,10 +126,10 @@ class API:
             else:
                 timingToken = request.args.get('timingToken')
 
-            if not config.get("onionr_ui.run", True):
+            if not config.get("www.private.run", True):
                 abort(403)
-            if config.get("onionr_ui.private_only", True):
-                self.validateHost('private')
+
+            self.validateHost('private')
 
             endTime = math.floor(time.time())
             elapsed = endTime - startTime
@@ -138,7 +138,42 @@ class API:
                 if elapsed < self._privateDelayTime:
                     time.sleep(self._privateDelayTime - elapsed)
 
-            return send_from_directory('static-data/ui/dist/', path)
+            return send_from_directory('static-data/www/private/', path)
+
+        @app.route('/www/public/<path:path>')
+        def www_public(path):
+            if not config.get("www.public.run", True):
+                abort(403)
+
+            self.validateHost('public')
+
+            return send_from_directory('static-data/www/public/', path)
+
+        @app.route('/www/ui/<path:path>')
+        def ui_private(path):
+            startTime = math.floor(time.time())
+
+            if request.args.get('timingToken') is None:
+                timingToken = ''
+            else:
+                timingToken = request.args.get('timingToken')
+
+            if not config.get("www.ui.run", True):
+                abort(403)
+
+            if config.get("www.ui.private", True):
+                self.validateHost('private')
+            else:
+                self.validateHost('public')
+
+            endTime = math.floor(time.time())
+            elapsed = endTime - startTime
+
+            if not hmac.compare_digest(timingToken, self.timeBypassToken):
+                if elapsed < self._privateDelayTime:
+                    time.sleep(self._privateDelayTime - elapsed)
+
+            return send_from_directory('static-data/www/ui/dist/', path)
 
         @app.route('/client/')
         def private_handler():
@@ -269,7 +304,6 @@ class API:
                 data = data
             except:
                 data = ''
-
 
             events.event('webapi_public', onionr = None, data = {'action' : action, 'data' : data, 'requestingPeer' : requestingPeer, 'request' : request})
 

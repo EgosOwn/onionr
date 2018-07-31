@@ -9,9 +9,19 @@
         }
     },
 
-    "onionr_ui" : {
-        "run" : true,
-        "private_only" : true
+    "www" : {
+        "public" : {
+            "run" : true
+        },
+
+        "private" : {
+            "run" : true
+        },
+
+        "ui" : {
+            "run" : true,
+            "private" : true
+        }
     },
 
     "client" : {
