@@ -70,3 +70,7 @@ def getScoreSortedPeerList(coreInst):
     # Sort peers by their score, greatest to least
     peerList = sorted(peerScores, key=peerScores.get, reverse=True)
     return peerList
+
+def peerCleanup():
+    # TODO, remove peers that have been offline for too long
+    return

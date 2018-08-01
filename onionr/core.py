@@ -590,7 +590,7 @@ class Core:
         if unsaved:
             execute = 'SELECT hash FROM hashes WHERE dataSaved != 1 ORDER BY RANDOM();'
         else:
-            execute = 'SELECT hash FROM hashes ORDER BY RANDOM();'
+            execute = 'SELECT hash FROM hashes ORDER BY dateReceived DESC;'
         rows = list()
         for row in c.execute(execute):
             for i in row:
