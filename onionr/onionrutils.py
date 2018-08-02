@@ -125,10 +125,9 @@ class OnionrUtils:
             if newAdderList != False:
                 for adder in newAdderList.split(','):
                     if not adder in self._core.listAdders(randomOrder = False) and adder.strip() != self.getMyAddress():
-                        if adder[:4] == '0000':
-                            if self._core.addAddress(adder):
-                                logger.info('Added %s to db.' % adder, timestamp = True)
-                                retVal = True
+                        if self._core.addAddress(adder):
+                            logger.info('Added %s to db.' % adder, timestamp = True)
+                            retVal = True
                     else:
                         pass
                         #logger.debug('%s is either our address or already in our DB' % adder)

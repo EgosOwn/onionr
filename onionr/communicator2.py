@@ -260,6 +260,8 @@ class OnionrCommunicatorDaemon:
         for i in range(needed):
             if len(self.onlinePeers) == 0:
                 self.connectNewPeer(useBootstrap=True)
+            else:
+                self.connectNewPeer()
             if self.shutdown:
                 break
         else:
@@ -338,6 +340,9 @@ class OnionrCommunicatorDaemon:
         url = 'http://' + peer + '/public/?action=' + action
         if len(data) > 0:
             url += '&data=' + data
+
+        self._core.setAddressInfo(peer, 'lastConnectAttempt', self._core._utils.getEpoch()) # mark the time we're trying to request this peer
+
         retData = self._core._utils.doGetRequest(url, port=self.proxyPort)
         # if request failed, (error), mark peer offline
         if retData == False:
@@ -389,6 +394,10 @@ class OnionrCommunicatorDaemon:
             elif cmd[0] == 'kex':
                 for i in self.timers:
                     if i.timerFunction.__name__ == 'lookupKeys':
+                        i.count = (i.frequency - 1)
+            elif cmd[0] == 'pex':
+                for i in self.timers:
+                    if i.timerFunction.__name__ == 'lookupAdders':
                         i.count = (i.frequency - 1)
             elif cmd[0] == 'uploadBlock':
                 self.blockToUpload = cmd[1]

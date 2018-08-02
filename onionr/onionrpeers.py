@@ -41,7 +41,7 @@ class PeerProfiles:
         '''Load the node's score from the database'''
         try:
             self.success = int(self.coreInst.getAddressInfo(self.address, 'success'))
-        except TypeError:
+        except (TypeError, ValueError) as e:
             self.success = 0
         self.score = self.success
     

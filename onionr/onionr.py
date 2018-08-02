@@ -196,6 +196,7 @@ class Onionr:
             'introduce': self.onionrCore.introduceNode,
             'connect': self.addAddress,
             'kex': self.doKEX,
+            'pex': self.doPEX,
 
             'getpassword': self.printWebPassword
         }
@@ -218,6 +219,7 @@ class Onionr:
             'import-blocks': 'import blocks from the disk (Onionr is transport-agnostic!)',
             'listconn': 'list connected peers',
             'kex': 'exchange keys with peers (done automatically)',
+            'pex': 'exchange addresses with peers (done automatically)',
             'introduce': 'Introduce your node to the public Onionr network',
         }
 
@@ -328,6 +330,11 @@ class Onionr:
         '''make communicator do kex'''
         logger.info('Sending kex to command queue...')
         self.onionrCore.daemonQueueAdd('kex')
+
+    def doPEX(self):
+        '''make communicator do pex'''
+        logger.info('Sending pex to command queue...')
+        self.onionrCore.daemonQueueAdd('pex')
 
     def listKeys(self):
         '''
