@@ -199,7 +199,8 @@ class Core:
             DBHash text,
             powValue text,
             failure int,
-            lastConnect int
+            lastConnect int,
+            lastConnectAttempt int
             );
         ''')
         conn.commit()
@@ -573,7 +574,7 @@ class Core:
         c = conn.cursor()
         command = (data, address)
         # TODO: validate key on whitelist
-        if key not in ('address', 'type', 'knownPeer', 'speed', 'success', 'DBHash', 'failure', 'lastConnect'):
+        if key not in ('address', 'type', 'knownPeer', 'speed', 'success', 'DBHash', 'failure', 'lastConnect', 'lastConnectAttempt'):
             raise Exception("Got invalid database key when setting address info")
         else:
             c.execute('UPDATE adders SET ' + key + ' = ? WHERE address=?', command)

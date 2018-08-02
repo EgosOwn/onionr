@@ -71,6 +71,9 @@ def getScoreSortedPeerList(coreInst):
     peerList = sorted(peerScores, key=peerScores.get, reverse=True)
     return peerList
 
-def peerCleanup():
+def peerCleanup(coreInst):
     # TODO, remove peers that have been offline for too long
-    return
+    if not type(coreInst is core.Core):
+        raise TypeError('coreInst must be instance of core.Core')
+    
+    

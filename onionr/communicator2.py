@@ -85,7 +85,7 @@ class OnionrCommunicatorDaemon:
         OnionrCommunicatorTimers(self, self.clearOfflinePeer, 58)
         OnionrCommunicatorTimers(self, self.lookupKeys, 60, requiresPeer=True)
         OnionrCommunicatorTimers(self, self.lookupAdders, 60, requiresPeer=True)
-        cleanupTimer = OnionrCommunicatorTimers(self, onionrpeers.peerCleanup, 300)
+        cleanupTimer = OnionrCommunicatorTimers(self, self.peerCleanup, 300)
 
         # set loop to execute instantly to load up peer pool (replaced old pool init wait)
         peerPoolTimer.count = (peerPoolTimer.frequency - 1)
@@ -314,6 +314,11 @@ class OnionrCommunicatorDaemon:
                 tried.append(address)
                 logger.debug('Failed to connect to ' + address)
         return retData
+
+    def peerCleanup(self):
+        '''This just calls onionrpeers.cleanupPeers, which removes dead or bad peers (offline too long, too slow)'''
+        onionrpeers.peerCleanup(self._core)
+        self.decrementThreadCount('getOnlinePeers')
 
     def printOnlinePeers(self):
         '''logs online peer list'''
