@@ -77,6 +77,7 @@ def peerCleanup(coreInst):
         raise TypeError('coreInst must be instance of core.Core')
 
     logger.info('Cleaning peers...')
+    config.reload()
 
     minScore = int(config.get('peers.minimumScore'))
     maxPeers = int(config.get('peers.maxStoredPeers'))

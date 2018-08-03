@@ -179,7 +179,8 @@ class OnionrCommunicatorDaemon:
                 continue
             self.currentDownloading.append(blockHash)
             logger.info("Attempting to download %s..." % blockHash)
-            content = self.peerAction(self.pickOnlinePeer(), 'getData', data=blockHash) # block content from random peer (includes metadata)
+            peerUsed = self.pickOnlinePeer()
+            content = self.peerAction(peerUsed, 'getData', data=blockHash) # block content from random peer (includes metadata)
             if content != False:
                 try:
                     content = content.encode()
@@ -213,6 +214,8 @@ class OnionrCommunicatorDaemon:
                         tempHash = tempHash.decode()
                     except AttributeError:
                         pass
+                    # Punish peer for sharing invalid block (not always malicious, but is bad regardless)
+                    onionrpeers.PeerProfiles(peerUsed, self._core).addScore(-50)  
                     logger.warn('Block hash validation failed for ' + blockHash + ' got ' + tempHash)
                 self.blockQueue.remove(blockHash) # remove from block queue both if success or false
             self.currentDownloading.remove(blockHash)
@@ -424,6 +427,7 @@ class OnionrCommunicatorDaemon:
             triedPeers.append(peer)
             url = 'http://' + peer + '/public/upload/'
             data = {'block': block.Block(self.blockToUpload).getRaw()}
+            proxyType = ''
             if peer.endswith('.onion'):
                 proxyType = 'tor'
             elif peer.endswith('.i2p'):
