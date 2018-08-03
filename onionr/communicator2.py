@@ -77,6 +77,7 @@ class OnionrCommunicatorDaemon:
             self.header()
 
         # Set timers, function reference, seconds
+        # requiresPeer True means the timer function won't fire if we have no connected peers
         OnionrCommunicatorTimers(self, self.daemonCommands, 5)
         OnionrCommunicatorTimers(self, self.detectAPICrash, 5)
         peerPoolTimer = OnionrCommunicatorTimers(self, self.getOnlinePeers, 60)
@@ -85,11 +86,11 @@ class OnionrCommunicatorDaemon:
         OnionrCommunicatorTimers(self, self.clearOfflinePeer, 58)
         OnionrCommunicatorTimers(self, self.lookupKeys, 60, requiresPeer=True)
         OnionrCommunicatorTimers(self, self.lookupAdders, 60, requiresPeer=True)
-        cleanupTimer = OnionrCommunicatorTimers(self, self.peerCleanup, 300)
+        cleanupTimer = OnionrCommunicatorTimers(self, self.peerCleanup, 300, requiresPeer=True)
 
         # set loop to execute instantly to load up peer pool (replaced old pool init wait)
         peerPoolTimer.count = (peerPoolTimer.frequency - 1)
-        cleanupTimer = (cleanupTimer.frequency - 200)
+        cleanupTimer.count = (cleanupTimer.frequency - 60)
 
         # Main daemon loop, mainly for calling timers, don't do any complex operations here to avoid locking
         try:
@@ -171,6 +172,8 @@ class OnionrCommunicatorDaemon:
     def getBlocks(self):
         '''download new blocks in queue'''
         for blockHash in self.blockQueue:
+            if self.shutdown:
+                break
             if blockHash in self.currentDownloading:
                 logger.debug('ALREADY DOWNLOADING ' + blockHash)
                 continue
@@ -320,7 +323,7 @@ class OnionrCommunicatorDaemon:
     def peerCleanup(self):
         '''This just calls onionrpeers.cleanupPeers, which removes dead or bad peers (offline too long, too slow)'''
         onionrpeers.peerCleanup(self._core)
-        self.decrementThreadCount('getOnlinePeers')
+        self.decrementThreadCount('peerCleanup')
 
     def printOnlinePeers(self):
         '''logs online peer list'''

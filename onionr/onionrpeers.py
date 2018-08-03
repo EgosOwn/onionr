@@ -17,7 +17,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import core
+import core, config, logger
 class PeerProfiles:
     '''
         PeerProfiles
@@ -72,8 +72,20 @@ def getScoreSortedPeerList(coreInst):
     return peerList
 
 def peerCleanup(coreInst):
-    # TODO, remove peers that have been offline for too long
+    '''Removes peers who have been offline too long'''
     if not type(coreInst is core.Core):
         raise TypeError('coreInst must be instance of core.Core')
-    
-    
+
+    logger.info('Cleaning peers...')
+
+    minScore = int(config.get('peers.minimumScore'))
+    maxPeers = int(config.get('peers.maxStoredPeers'))
+
+    adders = getScoreSortedPeerList(coreInst)
+    adders.reverse()
+
+    for address in adders:
+        # Remove peers that go below the negative score
+        if PeerProfiles(address, coreInst).score < minScore:
+            coreInst.removeAddress(address)
+            logger.warn('Removed address ' + address + '.')

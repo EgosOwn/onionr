@@ -200,7 +200,8 @@ class Core:
             powValue text,
             failure int,
             lastConnect int,
-            lastConnectAttempt int
+            lastConnectAttempt int,
+            trust int
             );
         ''')
         conn.commit()
