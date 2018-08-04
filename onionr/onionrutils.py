@@ -532,14 +532,14 @@ class OnionrUtils:
         if proxyType == 'tor':
             if port == 0:
                 port = self._core.torPort
-            proxies = {'http': 'socks5://127.0.0.1:' + str(port), 'https': 'socks5://127.0.0.1:' + str(port)}
+            proxies = {'http': 'socks4a://127.0.0.1:' + str(port), 'https': 'socks4a://127.0.0.1:' + str(port)}
         elif proxyType == 'i2p':
             proxies = {'http': 'http://127.0.0.1:4444'}
         else:
             return
         headers = {'user-agent': 'PyOnionr'}
         try:
-            proxies = {'http': 'socks5://127.0.0.1:' + str(port), 'https': 'socks5://127.0.0.1:' + str(port)}
+            proxies = {'http': 'socks4a://127.0.0.1:' + str(port), 'https': 'socks4a://127.0.0.1:' + str(port)}
             r = requests.post(url, data=data, headers=headers, proxies=proxies, allow_redirects=False, timeout=(15, 30))
             retData = r.text
         except KeyboardInterrupt:
@@ -556,14 +556,14 @@ class OnionrUtils:
         if proxyType == 'tor':
             if port == 0:
                 raise onionrexceptions.MissingPort('Socks port required for Tor HTTP get request')
-            proxies = {'http': 'socks5://127.0.0.1:' + str(port), 'https': 'socks5://127.0.0.1:' + str(port)}
+            proxies = {'http': 'socks4a://127.0.0.1:' + str(port), 'https': 'socks4a://127.0.0.1:' + str(port)}
         elif proxyType == 'i2p':
             proxies = {'http': 'http://127.0.0.1:4444'}
         else:
             return
         headers = {'user-agent': 'PyOnionr'}
         try:
-            proxies = {'http': 'socks5://127.0.0.1:' + str(port), 'https': 'socks5://127.0.0.1:' + str(port)}
+            proxies = {'http': 'socks4a://127.0.0.1:' + str(port), 'https': 'socks4a://127.0.0.1:' + str(port)}
             r = requests.get(url, headers=headers, proxies=proxies, allow_redirects=False, timeout=(15, 30))
             retData = r.text
         except KeyboardInterrupt:
