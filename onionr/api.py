@@ -21,10 +21,10 @@ import flask
 from flask import request, Response, abort, send_from_directory
 from multiprocessing import Process
 from gevent.wsgi import WSGIServer
-import sys, random, threading, hmac, hashlib, base64, time, math, os, logger, config
+import sys, random, threading, hmac, hashlib, base64, time, math, os, json
 from core import Core
 from onionrblockapi import Block
-import onionrutils, onionrcrypto, blockimporter, onionrevents as events
+import onionrutils, onionrcrypto, blockimporter, onionrevents as events, logger, config
 
 class API:
     '''
@@ -252,39 +252,115 @@ class API:
             elif action == "insertBlock":
                 response = {'success' : False, 'reason' : 'An unknown error occurred'}
 
-                try:
-                    decoded = json.loads(data)
+                if not ((data is None) or (len(str(data).strip()) == 0)):
+                    try:
+                        decoded = json.loads(data)
 
-                    block = Block()
+                        block = Block()
 
-                    sign = False
+                        sign = False
 
-                    for key in decoded:
-                        val = decoded[key]
+                        for key in decoded:
+                            val = decoded[key]
 
-                        key = key.lower()
+                            key = key.lower()
 
-                        if key == 'type':
-                            block.setType(val)
-                        elif key in ['body', 'content']:
-                            block.setContent(val)
-                        elif key == 'parent':
-                            block.setParent(val)
-                        elif key == 'sign':
-                            sign = (str(val).lower() == 'true')
+                            if key == 'type':
+                                block.setType(val)
+                            elif key in ['body', 'content']:
+                                block.setContent(val)
+                            elif key == 'parent':
+                                block.setParent(val)
+                            elif key == 'sign':
+                                sign = (str(val).lower() == 'true')
 
-                    hash = block.save(sign = sign)
+                        hash = block.save(sign = sign)
 
-                    if not hash is False:
-                        response['success'] = true
-                        response['hash'] = hash
-                        response['reason'] = 'Successfully wrote block to file'
-                    else:
-                        response['reason'] = 'Failed to save the block'
-                except Exception as e:
-                    logger.debug('insertBlock api request failed', error = e)
+                        if not hash is False:
+                            response['success'] = True
+                            response['hash'] = hash
+                            response['reason'] = 'Successfully wrote block to file'
+                        else:
+                            response['reason'] = 'Failed to save the block'
+                    except Exception as e:
+                        logger.warn('insertBlock api request failed', error = e)
+                        logger.debug('Here\'s the request: %s' % data)
+                else:
+                    response = {'success' : False, 'reason' : 'Missing `data` parameter.', 'blocks' : {}}
 
                 resp = Response(json.dumps(response))
+            elif action == 'searchBlocks':
+                response = {'success' : False, 'reason' : 'An unknown error occurred', 'blocks' : {}}
+
+                if not ((data is None) or (len(str(data).strip()) == 0)):
+                    try:
+                        decoded = json.loads(data)
+
+                        type = None
+                        signer = None
+                        signed = None
+                        parent = None
+                        reverse = False
+                        limit = None
+
+                        for key in decoded:
+                            val = decoded[key]
+
+                            key = key.lower()
+
+                            if key == 'type':
+                                type = str(val)
+                            elif key == 'signer':
+                                if isinstance(val, list):
+                                    signer = val
+                                else:
+                                    signer = str(val)
+                            elif key == 'signed':
+                                signed = (str(val).lower() == 'true')
+                            elif key == 'parent':
+                                parent = str(val)
+                            elif key == 'reverse':
+                                reverse = (str(val).lower() == 'true')
+                            elif key == 'limit':
+                                limit = 10000
+
+                                if val is None:
+                                    val = limit
+
+                                limit = min(limit, int(val))
+
+                        blockObjects = Block.getBlocks(type = type, signer = signer, signed = signed, parent = parent, reverse = reverse, limit = limit)
+
+                        logger.debug('%s results for query %s' % (len(blockObjects), decoded))
+
+                        blocks = list()
+
+                        for block in blockObjects:
+                            blocks.append({
+                                'hash' : block.getHash(),
+                                'type' : block.getType(),
+                                'content' : block.getContent(),
+                                'signature' : block.getSignature(),
+                                'signedData' : block.getSignedData(),
+                                'signed' : block.isSigned(),
+                                'valid' : block.isValid(),
+                                'date' : (int(block.getDate().strftime("%s")) if not block.getDate() is None else None),
+                                'parent' : (block.getParent().getHash() if not block.getParent() is None else None),
+                                'metadata' : block.getMetadata(),
+                                'header' : block.getHeader()
+                            })
+
+                        response['success'] = True
+                        response['blocks'] = blocks
+                        response['reason'] = 'Success'
+                    except Exception as e:
+                        logger.warn('searchBlock api request failed', error = e)
+                        logger.debug('Here\'s the request: %s' % data)
+                else:
+                    response = {'success' : False, 'reason' : 'Missing `data` parameter.', 'blocks' : {}}
+
+                resp = Response(json.dumps(response))
+
             elif action in API.callbacks['private']:
                 resp = Response(str(getCallback(action, scope = 'private')(request)))
             else:

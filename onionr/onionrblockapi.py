@@ -28,10 +28,8 @@ class Block:
     def __init__(self, hash = None, core = None, type = None, content = None):
         # take from arguments
         # sometimes people input a bytes object instead of str in `hash`
-        try:
+        if (not hash is None) and isinstance(hash, bytes):
             hash = hash.decode()
-        except AttributeError:
-            pass
 
         self.hash = hash
         self.core = core
@@ -492,7 +490,7 @@ class Block:
 
     # static functions
 
-    def getBlocks(type = None, signer = None, signed = None, reverse = False, core = None):
+    def getBlocks(type = None, signer = None, signed = None, parent = None, reverse = False, limit = None, core = None):
         '''
             Returns a list of Block objects based on supplied filters
 
@@ -509,6 +507,9 @@ class Block:
 
         try:
             core = (core if not core is None else onionrcore.Core())
+
+            if (not parent is None) and (not isinstance(parent, Block)):
+                parent = Block(hash = parent, core = core)
 
             relevant_blocks = list()
             blocks = (core.getBlockList() if type is None else core.getBlocksByType(type))
@@ -536,7 +537,15 @@ class Block:
                         if not isSigner:
                             relevant = False
 
-                    if relevant:
+                    if not parent is None:
+                        blockParent = block.getParent()
+
+                        if blockParent is None:
+                            relevant = False
+                        else:
+                            relevant = parent.getHash() == blockParent.getHash()
+
+                    if relevant and (limit is None or len(relevant_Blocks) <= int(limit)):
                         relevant_blocks.append(block)
 
             if bool(reverse):
