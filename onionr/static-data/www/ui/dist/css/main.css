@@ -60,6 +60,12 @@ body {
     width: 100%;
 }
 
+.h-divider {
+    margin: 5px 15px;
+    height: 1px;
+    width: 100%;
+}
+
 /* profile */
 
 .onionr-profile-user-icon {
@@ -68,7 +74,6 @@ body {
     margin-bottom: 1rem;
 }
 
-.onionr-profile-username {    
+.onionr-profile-username {
     text-align: center;
 }
-

@@ -52,7 +52,9 @@ class OnionrUtils:
                 with open('data/time-bypass.txt', 'r') as bypass:
                     self.timingToken = bypass.read()
         except Exception as error:
-            logger.error('Failed to fetch time bypass token.', error=error)
+            logger.error('Failed to fetch time bypass token.', error = error)
+
+        return self.timingToken
 
     def getRoundedEpoch(self, roundS=60):
         '''

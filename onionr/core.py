@@ -647,7 +647,7 @@ class Core:
     def updateBlockInfo(self, hash, key, data):
         '''
             sets info associated with a block
-            
+
             hash         - the hash of a block
             dateReceived - the date the block was recieved, not necessarily when it was created
             decrypted    - if we can successfully decrypt the block (does not describe its current state)
@@ -729,7 +729,7 @@ class Core:
                 signer = self._crypto.pubKeyEncrypt(signer, asymPeer, encodedData=True, anonymous=True).decode()
             else:
                 raise onionrexceptions.InvalidPubkey(asymPeer + ' is not a valid base32 encoded ed25519 key')
-        
+
         # compile metadata
         metadata['meta'] = jsonMeta
         metadata['sig'] = signature

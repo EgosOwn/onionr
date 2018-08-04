@@ -31,7 +31,7 @@ class API:
         Main HTTP API (Flask)
     '''
 
-    callbacks = {'public' : {}, 'private' : {}, 'ui' : {}}
+    callbacks = {'public' : {}, 'private' : {}}
 
     def validateToken(self, token):
         '''
@@ -44,6 +44,30 @@ class API:
                 return True
         except TypeError:
             return False
+
+    def guessMime(path):
+        '''
+            Guesses the mime type from the input filename
+        '''
+
+        mimetypes = {
+            'html' : 'text/html',
+            'js' : 'application/javascript',
+            'css' : 'text/css',
+            'png' : 'image/png',
+            'jpg' : 'image/jpeg'
+        }
+
+        for mimetype in mimetypes:
+            logger.debug(path + ' endswith .' + mimetype + '?')
+            if path.endswith('.%s' % mimetype):
+                logger.debug('- True!')
+                return mimetypes[mimetype]
+            else:
+                logger.debug('- no')
+
+        logger.debug('%s not in %s' % (path, mimetypes))
+        return 'text/plain'
 
     def __init__(self, debug):
         '''
@@ -76,6 +100,7 @@ class API:
         self.i2pEnabled = config.get('i2p.host', False)
 
         self.mimeType = 'text/plain'
+        self.overrideCSP = False
 
         with open('data/time-bypass.txt', 'w') as bypass:
             bypass.write(self.timeBypassToken)
@@ -106,14 +131,15 @@ class API:
             #else:
             #    resp.headers['server'] = 'Onionr'
             resp.headers['Content-Type'] = self.mimeType
-            resp.headers["Content-Security-Policy"] =  "default-src 'none'; script-src 'none'; object-src 'none'; style-src data: 'unsafe-inline'; img-src data:; media-src 'none'; frame-src 'none'; font-src 'none'; connect-src 'none'"
+            if not self.overrideCSP:
+                resp.headers["Content-Security-Policy"] =  "default-src 'none'; script-src 'none'; object-src 'none'; style-src data: 'unsafe-inline'; img-src data:; media-src 'none'; frame-src 'none'; font-src 'none'; connect-src 'none'"
             resp.headers['X-Frame-Options'] = 'deny'
             resp.headers['X-Content-Type-Options'] = "nosniff"
             resp.headers['server'] = 'Onionr'
 
             # reset to text/plain to help prevent browser attacks
-            if self.mimeType != 'text/plain':
-                self.mimeType = 'text/plain'
+            self.mimeType = 'text/plain'
+            self.overrideCSP = False
 
             return resp
 
@@ -153,10 +179,12 @@ class API:
         def ui_private(path):
             startTime = math.floor(time.time())
 
+            '''
             if request.args.get('timingToken') is None:
                 timingToken = ''
             else:
                 timingToken = request.args.get('timingToken')
+            '''
 
             if not config.get("www.ui.run", True):
                 abort(403)
@@ -166,14 +194,21 @@ class API:
             else:
                 self.validateHost('public')
 
+            '''
             endTime = math.floor(time.time())
             elapsed = endTime - startTime
 
             if not hmac.compare_digest(timingToken, self.timeBypassToken):
                 if elapsed < self._privateDelayTime:
                     time.sleep(self._privateDelayTime - elapsed)
+            '''
 
-            return send_from_directory('static-data/www/ui/dist/', path)
+            logger.debug('Serving %s' % path)
+
+            self.mimeType = API.guessMime(path)
+            self.overrideCSP = True
+
+            return send_from_directory('static-data/www/ui/dist/', path, mimetype = API.guessMime(path))
 
         @app.route('/client/')
         def private_handler():

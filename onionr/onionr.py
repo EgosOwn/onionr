@@ -198,6 +198,9 @@ class Onionr:
             'kex': self.doKEX,
             'pex': self.doPEX,
 
+            'ui' : self.openUI,
+            'gui' : self.openUI,
+
             'getpassword': self.printWebPassword
         }
 
@@ -704,6 +707,13 @@ class Onionr:
                 logger.error('Failed to save file in block.', timestamp = False)
         else:
             logger.error('%s add-file <filename>' % sys.argv[0], timestamp = False)
+
+    def openUI(self):
+        import webbrowser
+        url = 'http://127.0.0.1:%s/ui/index.html?timingToken=%s' % (config.get('client.port', 59496), self.onionrUtils.getTimeBypassToken())
+
+        print('Opening %s ...' % url)
+        webbrowser.open(url, new = 1, autoraise = True)
 
 if __name__ == "__main__":
     Onionr()
