@@ -539,7 +539,7 @@ class OnionrUtils:
             return
         headers = {'user-agent': 'PyOnionr'}
         try:
-            proxies = {'http': 'socks5h://127.0.0.1:' + str(port), 'https': 'socks5h://127.0.0.1:' + str(port)}
+            proxies = {'http': 'socks5://127.0.0.1:' + str(port), 'https': 'socks5://127.0.0.1:' + str(port)}
             r = requests.post(url, data=data, headers=headers, proxies=proxies, allow_redirects=False, timeout=(15, 30))
             retData = r.text
         except KeyboardInterrupt:
@@ -563,11 +563,13 @@ class OnionrUtils:
             return
         headers = {'user-agent': 'PyOnionr'}
         try:
-            proxies = {'http': 'socks5h://127.0.0.1:' + str(port), 'https': 'socks5h://127.0.0.1:' + str(port)}
+            proxies = {'http': 'socks5://127.0.0.1:' + str(port), 'https': 'socks5://127.0.0.1:' + str(port)}
             r = requests.get(url, headers=headers, proxies=proxies, allow_redirects=False, timeout=(15, 30))
             retData = r.text
         except KeyboardInterrupt:
             raise KeyboardInterrupt
+        except ValueError as e:
+            logger.debug('Failed to make request', error = e)
         except requests.exceptions.RequestException as e:
             logger.debug('Error: %s' % str(e))
             retData = False
