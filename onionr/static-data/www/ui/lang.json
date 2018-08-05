@@ -1,31 +1,40 @@
 {
     "eng" : {
         "ONIONR_TITLE" : "Onionr UI",
-        
+
         "TIMELINE" : "Timeline",
         "NOTIFICATIONS" : "Notifications",
         "MESSAGES" : "Messages",
-        
-        "TRENDING" : "Trending"
+
+        "TRENDING" : "Trending",
+
+        "POST_LIKE" : "like",
+        "POST_REPLY" : "reply"
     },
-    
+
     "spa" : {
         "ONIONR_TITLE" : "Onionr UI",
-        
+
         "TIMELINE" : "Linea de Tiempo",
         "NOTIFICATIONS" : "Notificaciones",
         "MESSAGES" : "Mensaje",
-        
-        "TRENDING" : "Trending"
+
+        "TRENDING" : "Trending",
+
+        "POST_LIKE" : "me gusta",
+        "POST_REPLY" : "comentario"
     },
-    
+
     "zho" : {
         "ONIONR_TITLE" : "洋葱 用户界面",
-        
+
         "TIMELINE" : "时间线",
         "NOTIFICATIONS" : "通知",
         "MESSAGES" : "消息",
-        
-        "TRENDING" : "趋势"
+
+        "TRENDING" : "趋势",
+
+        "POST_LIKE" : "喜欢",
+        "POST_REPLY" : "回复"
     }
 }

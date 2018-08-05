@@ -40,53 +40,60 @@ with open('lang.json', 'r') as file:
 LANG = type('LANG', (), langmap)
 
 # templating
-def jsTemplate(template):
-    with open('common/%s.html' % template, 'r') as file:
-        return file.read().replace('\\', '\\\\').replace('\'', '\\\'').replace('\n', "\\\n")
+class Template:
+    def jsTemplate(template):
+        with open('common/%s.html' % template, 'r') as file:
+            return Template.parseTags(file.read().replace('\\', '\\\\').replace('\'', '\\\'').replace('\n', "\\\n"))
 
-def htmlTemplate(template):
-    with open('common/%s.html' % template, 'r') as file:
-        return file.read()
+    def htmlTemplate(template):
+        with open('common/%s.html' % template, 'r') as file:
+            return Template.parseTags(file.read())
 
-# tag parser
-def parseTags(contents):
-    # <$ logic $>
-    for match in re.findall(r'(<\$(?!=)(.*?)\$>)', contents):
-        try:
-            out = exec(match[1].strip())
-            contents = contents.replace(match[0], '' if out is None else str(out))
-        except Exception as e:
-            print('Error: Failed to execute python tag (%s): %s\n' % (filename, match[1]))
-            traceback.print_exc()
-            print('\nIgnoring this error, continuing to compile...\n')
+    # tag parser
+    def parseTags(contents):
+        # <$ logic $>
+        for match in re.findall(r'(<\$(?!=)(.*?)\$>)', contents):
+            try:
+                out = exec(match[1].strip())
+                contents = contents.replace(match[0], '' if out is None else str(out))
+            except Exception as e:
+                print('Error: Failed to execute python tag (%s): %s\n' % (filename, match[1]))
+                traceback.print_exc()
+                print('\nIgnoring this error, continuing to compile...\n')
 
-    # <$= data $>
-    for match in re.findall(r'(<\$=(.*?)\$>)', contents):
-        try:
-            out = eval(match[1].strip())
-            contents = contents.replace(match[0], '' if out is None else str(out))
-        except NameError as e:
-            name = match[1].strip()
-            print('Warning: %s does not exist, treating as an str' % name)
-            contents = contents.replace(match[0], name)
-        except Exception as e:
-            print('Error: Failed to execute python tag (%s): %s\n' % (filename, match[1]))
-            traceback.print_exc()
-            print('\nIgnoring this error, continuing to compile...\n')
+        # <$= data $>
+        for match in re.findall(r'(<\$=(.*?)\$>)', contents):
+            try:
+                out = eval(match[1].strip())
+                contents = contents.replace(match[0], '' if out is None else str(out))
+            except NameError as e:
+                name = match[1].strip()
+                print('Warning: %s does not exist, treating as an str' % name)
+                contents = contents.replace(match[0], name)
+            except Exception as e:
+                print('Error: Failed to execute python tag (%s): %s\n' % (filename, match[1]))
+                traceback.print_exc()
+                print('\nIgnoring this error, continuing to compile...\n')
 
-    return contents
+        return contents
+
+def jsTemplate(contents):
+    return Template.jsTemplate(contents)
+
+def htmlTemplate(contents):
+    return Template.htmlTemplate(contents)
 
 # get header file
 with open(HEADER_FILE, 'r') as file:
     HEADER_FILE = file.read()
     if settings['python_tags']:
-        HEADER_FILE = parseTags(HEADER_FILE)
+        HEADER_FILE = Template.parseTags(HEADER_FILE)
 
 # get footer file
 with open(FOOTER_FILE, 'r') as file:
     FOOTER_FILE = file.read()
     if settings['python_tags']:
-        FOOTER_FILE = parseTags(FOOTER_FILE)
+        FOOTER_FILE = Template.parseTags(FOOTER_FILE)
 
 # iterate dst, replace files
 def iterate(directory):
@@ -111,7 +118,7 @@ def iterate(directory):
 
                         # do python tags
                         if settings['python_tags']:
-                            contents = parseTags(contents)
+                            contents = Template.parseTags(contents)
 
                         # write file
                         file.write(contents)

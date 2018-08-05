@@ -22,8 +22,8 @@
                 </div>
 
                 <div class="onionr-post-controls pt-2">
-                    <a href="#!" class="glyphicon glyphicon-heart mr-2">like</a>
-                    <a href="#!" class="glyphicon glyphicon-comment mr-2">comment</a>
+                    <a href="#!" onclick="toggleLike('$post-id')" class="glyphicon glyphicon-heart mr-2"><$= LANG.POST_LIKE $></a>
+                    <a href="#!" onclick="reply('$post-id')" class="glyphicon glyphicon-comment mr-2"><$= LANG.POST_REPLY $></a>
                 </div>
             </div>
         </div>
