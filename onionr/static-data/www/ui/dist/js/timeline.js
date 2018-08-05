@@ -1,4 +1,3 @@
-
 /* just for testing rn */
 Block.getBlocks({'type' : 'onionr-post', 'signed' : true, 'reverse' : true}, function(data) {
     for(var i = 0; i < data.length; i++) {
@@ -24,5 +23,5 @@ Block.getBlocks({'type' : 'onionr-post', 'signed' : true, 'reverse' : true}, fun
 });
 
 function viewProfile(id, name) {
-    document.getElementById("onionr-profile-username").innerHTML = encodeHTML(decodeURIComponent(name));
+    document.getElementById("onionr-profile-username").innerHTML = Sanitize.html(decodeURIComponent(name));
 }
