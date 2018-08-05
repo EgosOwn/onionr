@@ -135,18 +135,19 @@ class Onionr:
             self.onionrCore.createAddressDB()
 
         # Get configuration
-
-        if not data_exists:
-            # Generate default config
-            # Hostname should only be set if different from 127.x.x.x. Important for DNS rebinding attack prevention.
-            if self.debug:
-                randomPort = 8080
-            else:
-                while True:
-                    randomPort = random.randint(1024, 65535)
-                    if self.onionrUtils.checkPort(randomPort):
-                        break
-            config.set('client', {'participate': True, 'hmac': base64.b16encode(os.urandom(32)).decode('utf-8'), 'port': randomPort, 'api_version': API_VERSION}, True)
+        if type(config.get('client.hmac')) is type(None):
+            config.set('client.hmac', base64.b16encode(os.urandom(32)).decode('utf-8'), savefile=True)
+        if type(config.get('client.port')) is type(None):
+            #while True:
+            randomPort = random.randint(1024, 65535)
+            #    if self.onionrUtils.checkPort(randomPort):
+            #        break
+            config.set('client.port', randomPort, savefile=True)
+        if type(config.get('client.participate')) is type(None):
+            config.set('client.participate', True, savefile=True)
+        if type(config.get('client.api_version')) is type(None):
+            config.set('client.api_version', API_VERSION, savefile=True)
+    
 
         self.cmds = {
             '': self.showHelpSuggestion,
