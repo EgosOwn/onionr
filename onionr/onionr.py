@@ -201,7 +201,14 @@ class Onionr:
             'ui' : self.openUI,
             'gui' : self.openUI,
 
-            'getpassword': self.printWebPassword
+            'getpassword': self.printWebPassword,
+            'get-password': self.printWebPassword,
+            'getpwd': self.printWebPassword,
+            'get-pwd': self.printWebPassword,
+            'getpass': self.printWebPassword,
+            'get-pass': self.printWebPassword,
+            'getpasswd': self.printWebPassword,
+            'get-passwd': self.printWebPassword
         }
 
         self.cmdhelp = {
@@ -211,7 +218,7 @@ class Onionr:
             'start': 'Starts the Onionr daemon',
             'stop': 'Stops the Onionr daemon',
             'stats': 'Displays node statistics',
-            'getpassword': 'Displays the web password',
+            'get-password': 'Displays the web password',
             'enable-plugin': 'Enables and starts a plugin',
             'disable-plugin': 'Disables and stops a plugin',
             'reload-plugin': 'Reloads a plugin',
