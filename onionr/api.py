@@ -492,7 +492,6 @@ class API:
             self.http_server.serve_forever()
         except KeyboardInterrupt:
             pass
-            #app.run(host=self.host, port=bindPort, debug=False, threaded=True)
         except Exception as e:
             logger.error(str(e))
             logger.fatal('Failed to start client on ' + self.host + ':' + str(bindPort) + ', exiting...')

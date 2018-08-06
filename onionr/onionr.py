@@ -138,10 +138,9 @@ class Onionr:
         if type(config.get('client.hmac')) is type(None):
             config.set('client.hmac', base64.b16encode(os.urandom(32)).decode('utf-8'), savefile=True)
         if type(config.get('client.port')) is type(None):
-            #while True:
-            randomPort = random.randint(1024, 65535)
-            #    if self.onionrUtils.checkPort(randomPort):
-            #        break
+            randomPort = 0
+            while randomPort < 1024:
+                randomPort = self.onionrCore._crypto.secrets.randbelow(65535)
             config.set('client.port', randomPort, savefile=True)
         if type(config.get('client.participate')) is type(None):
             config.set('client.participate', True, savefile=True)
@@ -544,22 +543,36 @@ class Onionr:
             Starts the Onionr communication daemon
         '''
         communicatorDaemon = './communicator2.py'
-        if not os.environ.get("WERKZEUG_RUN_MAIN") == "true":
-            if self._developmentMode:
-                logger.warn('DEVELOPMENT MODE ENABLED (THIS IS LESS SECURE!)', timestamp = False)
-            net = NetController(config.get('client.port', 59496))
-            logger.info('Tor is starting...')
-            if not net.startTor():
-                sys.exit(1)
-            logger.info('Started .onion service: ' + logger.colors.underline + net.myID)
-            logger.info('Our Public key: ' + self.onionrCore._crypto.pubKey)
-            time.sleep(1)
-            #TODO make runable on windows
-            subprocess.Popen([communicatorDaemon, "run", str(net.socksPort)])
-            logger.debug('Started communicator')
-            events.event('daemon_start', onionr = self)
-        self.api = api.API(self.debug)
 
+        apiThread = Thread(target=api.API, args=(self.debug,))
+        apiThread.start()
+        try:
+            time.sleep(3)
+        except KeyboardInterrupt:
+            logger.info('Got keyboard interrupt')
+            time.sleep(1)
+            self.onionrUtils.localCommand('shutdown')
+        else:
+            if apiThread.isAlive():
+                if self._developmentMode:
+                    logger.warn('DEVELOPMENT MODE ENABLED (THIS IS LESS SECURE!)', timestamp = False)
+                net = NetController(config.get('client.port', 59496))
+                logger.info('Tor is starting...')
+                if not net.startTor():
+                    sys.exit(1)
+                logger.info('Started .onion service: ' + logger.colors.underline + net.myID)
+                logger.info('Our Public key: ' + self.onionrCore._crypto.pubKey)
+                time.sleep(1)
+                #TODO make runable on windows
+                subprocess.Popen([communicatorDaemon, "run", str(net.socksPort)])
+                logger.debug('Started communicator')
+                events.event('daemon_start', onionr = self)
+                try:
+                    while True:
+                        time.sleep(5)
+                except KeyboardInterrupt:
+                    self.onionrCore.daemonQueueAdd('shutdown')
+                    self.onionrUtils.localCommand('shutdown')
         return
 
     def killDaemon(self):

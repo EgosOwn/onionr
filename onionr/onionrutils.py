@@ -553,6 +553,7 @@ class OnionrUtils:
         '''
         Do a get request through a local tor or i2p instance
         '''
+        retData = False
         if proxyType == 'tor':
             if port == 0:
                 raise onionrexceptions.MissingPort('Socks port required for Tor HTTP get request')
