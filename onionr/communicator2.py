@@ -21,6 +21,7 @@
 '''
 import sys, os, core, config, json, requests, time, logger, threading, base64, onionr
 import onionrexceptions, onionrpeers, onionrevents as events, onionrplugins as plugins, onionrblockapi as block
+import onionrdaemontools
 from defusedxml import minidom
 
 class OnionrCommunicatorDaemon:
@@ -69,6 +70,11 @@ class OnionrCommunicatorDaemon:
         # Loads in and starts the enabled plugins
         plugins.reload()
 
+        # daemon tools are misc daemon functions, e.g. announce to online peers
+        # intended only for use by OnionrCommunicatorDaemon
+        #self.daemonTools = onionrdaemontools.DaemonTools(self)
+        self.daemonTools = onionrdaemontools.DaemonTools(self)
+
         if debug or developmentMode:
             OnionrCommunicatorTimers(self, self.heartbeat, 10)
 
@@ -78,6 +84,7 @@ class OnionrCommunicatorDaemon:
 
         # Set timers, function reference, seconds
         # requiresPeer True means the timer function won't fire if we have no connected peers
+        # TODO: make some of these timer counts configurable
         OnionrCommunicatorTimers(self, self.daemonCommands, 5)
         OnionrCommunicatorTimers(self, self.detectAPICrash, 5)
         peerPoolTimer = OnionrCommunicatorTimers(self, self.getOnlinePeers, 60)
@@ -86,11 +93,13 @@ class OnionrCommunicatorDaemon:
         OnionrCommunicatorTimers(self, self.clearOfflinePeer, 58)
         OnionrCommunicatorTimers(self, self.lookupKeys, 60, requiresPeer=True)
         OnionrCommunicatorTimers(self, self.lookupAdders, 60, requiresPeer=True)
+        announceTimer = OnionrCommunicatorTimers(self, self.daemonTools.announceNode, 305, requiresPeer=True)
         cleanupTimer = OnionrCommunicatorTimers(self, self.peerCleanup, 300, requiresPeer=True)
 
         # set loop to execute instantly to load up peer pool (replaced old pool init wait)
         peerPoolTimer.count = (peerPoolTimer.frequency - 1)
         cleanupTimer.count = (cleanupTimer.frequency - 60)
+        announceTimer.count = (cleanupTimer.frequency - 60)
 
         # Main daemon loop, mainly for calling timers, don't do any complex operations here to avoid locking
         try:
@@ -278,7 +287,7 @@ class OnionrCommunicatorDaemon:
     def addBootstrapListToPeerList(self, peerList):
         '''Add the bootstrap list to the peer list (no duplicates)'''
         for i in self._core.bootstrapList:
-            if i not in peerList and i not in self.offlinePeers and i != self._core.hsAdder:
+            if i not in peerList and i not in self.offlinePeers and i != self._core.hsAddress:
                 peerList.append(i)
 
     def connectNewPeer(self, peer='', useBootstrap=False):
@@ -441,7 +450,7 @@ class OnionrCommunicatorDaemon:
         announceAmount = 2
         for peer in self.onlinePeers:
             announceCount += 1
-            if self.peerAction(peer, 'announce', self._core.hsAdder) == 'Success':
+            if self.peerAction(peer, 'announce', self._core.hsAddress) == 'Success':
                 logger.info('Successfully introduced node to ' + peer)
                 break
             else:

@@ -40,7 +40,7 @@ class Core:
             self.blockDB = 'data/blocks.db'
             self.blockDataLocation = 'data/blocks/'
             self.addressDB = 'data/address.db'
-            self.hsAdder = ''
+            self.hsAddress = ''
             self.bootstrapFileLocation = 'static-data/bootstrap-nodes.txt'
             self.bootstrapList = []
             self.requirements = onionrvalues.OnionrValues()
@@ -57,7 +57,7 @@ class Core:
 
             if os.path.exists('data/hs/hostname'):
                 with open('data/hs/hostname', 'r') as hs:
-                    self.hsAdder = hs.read().strip()
+                    self.hsAddress = hs.read().strip()
 
             # Load bootstrap address list
             if os.path.exists(self.bootstrapFileLocation):
@@ -158,7 +158,6 @@ class Core:
             conn.close()
 
             events.event('address_remove', data = {'address': address}, onionr = None)
-
             return True
         else:
             return False
