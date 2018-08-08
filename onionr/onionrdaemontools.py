@@ -17,13 +17,40 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import onionrexceptions, onionrpeers
+import onionrexceptions, onionrpeers, onionrproofs, base64
 class DaemonTools:
     def __init__(self, daemon):
             self.daemon = daemon
+            self.announceCache = {}
 
     def announceNode(self):
         '''Announce our node to our peers'''
-        peer = self.daemon.pickOnlinePeer()
-        self.daemon.peerAction(peer, 'announce', self.daemon._core.hsAddress)
+        retData = False
+
+        # Announce to random online peers
+        for i in self.daemon.onlinePeers:
+            if not i in self.announceCache:
+                peer = i
+                break
+        else:
+            peer = self.daemon.pickOnlinePeer()
+
+        ourID = self.daemon._core.hsAddress.strip()
+
+        url = 'http://' + peer + '/public/announce/'
+        data = {'node': ourID}
+
+        combinedNodes = ourID + peer
+
+        if peer in self.announceCache:
+            data['random'] = self.announceCache[peer]
+        else:
+            proof = onionrproofs.DataPOW(combinedNodes, forceDifficulty=4)
+            data['random'] = base64.b64encode(proof.waitForResult()[1])
+            self.announceCache[peer] = data['random']
+
+        logger.info('Announcing node to ' + url)
+        if self.daemon._core._utils.doPostRequest(url, data) == 'Success':
+            retData = True
         self.daemon.decrementThreadCount('announceNode')
+        return retData

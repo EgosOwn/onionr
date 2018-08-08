@@ -93,7 +93,7 @@ class OnionrCommunicatorDaemon:
         OnionrCommunicatorTimers(self, self.clearOfflinePeer, 58)
         OnionrCommunicatorTimers(self, self.lookupKeys, 60, requiresPeer=True)
         OnionrCommunicatorTimers(self, self.lookupAdders, 60, requiresPeer=True)
-        announceTimer = OnionrCommunicatorTimers(self, self.daemonTools.announceNode, 305, requiresPeer=True)
+        announceTimer = OnionrCommunicatorTimers(self, self.daemonTools.announceNode, 305, requiresPeer=True, maxThreads=1)
         cleanupTimer = OnionrCommunicatorTimers(self, self.peerCleanup, 300, requiresPeer=True)
 
         # set loop to execute instantly to load up peer pool (replaced old pool init wait)
@@ -446,17 +446,10 @@ class OnionrCommunicatorDaemon:
 
     def announce(self, peer):
         '''Announce to peers our address'''
-        announceCount = 0
-        announceAmount = 2
-        for peer in self.onlinePeers:
-            announceCount += 1
-            if self.peerAction(peer, 'announce', self._core.hsAddress) == 'Success':
-                logger.info('Successfully introduced node to ' + peer)
-                break
-            else:
-                if announceCount == announceAmount:
-                    logger.warn('Could not introduce node. Try again soon')
-                    break
+        if self.daemonTools.announceNode():
+            logger.info('Successfully introduced node to ' + peer)
+        else:
+            logger.warn('Could not introduce node.')
 
     def detectAPICrash(self):
         '''exit if the api server crashes/stops'''

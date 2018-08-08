@@ -404,6 +404,46 @@ class API:
 
             resp = Response(resp)
             return resp
+
+        @app.route('/public/announce/', methods=['POST'])
+        def acceptAnnounce():
+            self.validateHost('public')
+            resp = 'failure'
+            powHash = ''
+            randomData = ''
+            newNode = ''
+            ourAdder = self._core.hsAddress.encode()
+            try:
+                newNode = request.form['node'].encode()
+            except KeyError:
+                logger.warn('No block specified for upload')
+                pass
+            else:
+                try:
+                    randomData = request.form['random']
+                    randomData = base64.b64decode(randomData)
+                except KeyError:
+                    logger.warn('No random data specified for upload')
+                else:
+                    nodes = newNode + self._core.hsAddress.encode()
+                    nodes = self._core._crypto.blake2bHash(nodes)
+                    powHash = self._core._crypto.blake2bHash(randomData + nodes)
+                    try:
+                        powHash = powHash.decode()
+                    except AttributeError:
+                        pass
+                    if powHash.startswith('0000'):
+                        try:
+                            newNode = newNode.decode()
+                        except AttributeError:
+                            pass
+                        if self._core.addAddress(newNode):
+                            resp = 'Success'
+                    else:
+                        logger.warn(newNode.decode() + ' failed to meet POW: ' + powHash)
+            resp = Response(resp)
+            return resp   
+
         @app.route('/public/')
         def public_handler():
             # Public means it is publicly network accessible
@@ -428,15 +468,6 @@ class API:
                 resp = Response(self._utils.getBlockDBHash())
             elif action == 'getBlockHashes':
                 resp = Response('\n'.join(self._core.getBlockList()))
-            elif action == 'announce':
-                if data != '':
-                    # TODO: require POW for this
-                    if self._core.addAddress(data):
-                        resp = Response('Success')
-                    else:
-                        resp = Response('')
-                else:
-                    resp = Response('')
             # setData should be something the communicator initiates, not this api
             elif action == 'getData':
                 resp = ''
@@ -488,6 +519,9 @@ class API:
             logger.info('Starting client on ' + self.host + ':' + str(bindPort) + '...', timestamp=False)
 
         try:
+            while len(self._core.hsAddress) == 0:
+                self._core.refreshFirstStartVars()
+                time.sleep(0.5)
             self.http_server = WSGIServer((self.host, bindPort), app)
             self.http_server.serve_forever()
         except KeyboardInterrupt:

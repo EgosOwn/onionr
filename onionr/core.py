@@ -78,6 +78,12 @@ class Core:
             sys.exit(1)
         return
 
+    def refreshFirstStartVars(self):
+        '''Hack to refresh some vars which may not be set on first start'''
+        if os.path.exists('data/hs/hostname'):
+            with open('data/hs/hostname', 'r') as hs:
+                self.hsAddress = hs.read().strip()
+
     def addPeer(self, peerID, powID, name=''):
         '''
             Adds a public key to the key database (misleading function name)
