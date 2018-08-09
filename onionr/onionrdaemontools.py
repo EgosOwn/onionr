@@ -17,7 +17,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import onionrexceptions, onionrpeers, onionrproofs, base64
+import onionrexceptions, onionrpeers, onionrproofs, base64, logger
 class DaemonTools:
     def __init__(self, daemon):
             self.daemon = daemon
