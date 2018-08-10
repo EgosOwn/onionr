@@ -597,6 +597,19 @@ class OnionrUtils:
         else:
             self.powSalt = retData
         return retData
+    
+    def strToBytes(self, data):
+        try:
+            data = data.encode()
+        except AttributeError:
+            pass
+        return data
+    def bytesToStr(self, data):
+        try:
+            data = data.decode()
+        except AttributeError:
+            pass
+        return data
 
 def size(path='.'):
     '''
