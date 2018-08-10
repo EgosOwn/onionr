@@ -21,6 +21,7 @@ import sqlite3, os, sys, time, math, base64, tarfile, getpass, simplecrypt, hash
 from onionrblockapi import Block
 
 import onionrutils, onionrcrypto, onionrproofs, onionrevents as events, onionrexceptions, onionrvalues
+import onionrblacklist
 
 if sys.version_info < (3, 6):
     try:
@@ -71,6 +72,7 @@ class Core:
             self._utils = onionrutils.OnionrUtils(self)
             # Initialize the crypto object
             self._crypto = onionrcrypto.OnionrCrypto(self)
+            self._blacklist = onionrblacklist.OnionrBlackList(self)
 
         except Exception as error:
             logger.error('Failed to initialize core Onionr library.', error=error)

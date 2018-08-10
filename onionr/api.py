@@ -506,7 +506,6 @@ class API:
         def authFail(err):
             self.requestFailed = True
             resp = Response("403")
-
             return resp
 
         @app.errorhandler(401)

@@ -1,2 +1,4 @@
 onionr/data/**/*
 onionr/data
+RUN-WINDOWS.bat
+MY-RUN.sh

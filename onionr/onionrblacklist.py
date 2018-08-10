@@ -29,21 +29,29 @@ class OnionrBlackList:
         return
     
     def inBlacklist(self, data):
-        return
+        hashed = self._core._utils.bytesToStr(self._core._crypto.sha3Hash(data))
+        retData = False
+        if not hashed.isalnum():
+            raise Exception("Hashed data is not alpha numeric")
+
+        for i in self._dbExecute("select * from blacklist where hash='%s'" % (hashed,)):
+            retData = True # this only executes if an entry is present by that hash
+            break
+        return retData
 
     def _dbExecute(self, toExec):
         conn = sqlite3.connect(self.blacklistDB)
         c = conn.cursor()
-        c.execute(toExec)
+        retData = c.execute(toExec)
         conn.commit()
-        conn.close()
+        return retData
     
     def deleteBeforeDate(self, date):
         # TODO, delete blacklist entries before date
         return
 
     def generateDB(self):
-        self._dbExecute'''CREATE TABLE blacklist(
+        self._dbExecute('''CREATE TABLE blacklist(
             hash text primary key not null,
             type text
             );
@@ -53,10 +61,18 @@ class OnionrBlackList:
     def clearDB(self):
         self._dbExecute('''delete from blacklist;);''')
 
-    
+    def getList(self):
+        data = self._dbExecute('select * from blacklist')
+        myList = []
+        for i in data:
+            myList.append(i[0])
+        return myList
+
     def addToDB(self, data):
-        hashed = self._core._crypto.sha3Hash(data)
+        '''Add to the blacklist. Intended to be block hash, block data, peers, or transport addresses'''
+        # we hash the data so we can remove data entirely from our node's disk
+        hashed = self._core._utils.bytesToStr(self._core._crypto.sha3Hash(data))
         if not hashed.isalnum():
             raise Exception("Hashed data is not alpha numeric")
         insert = (hashed,)
-        self._dbExecute('insert into blacklist (hash) VALUES(' + data + ');')
+        self._dbExecute("insert into blacklist (hash) VALUES('%s');" % (hashed,))

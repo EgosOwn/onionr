@@ -186,6 +186,8 @@ class Onionr:
             'addaddress': self.addAddress,
             'list-peers': self.listPeers,
 
+            'blacklist-block': self.banBlock,
+
             'add-file': self.addFile,
             'addfile': self.addFile,
             'listconn': self.listConn,
@@ -257,6 +259,19 @@ class Onionr:
 
     def getCommands(self):
         return self.cmds
+
+    def banBlock(self):
+        try:
+            ban = sys.argv[2]
+        except IndexError:
+            while True:
+                ban = logger.readline('Enter a block hash:')
+                if self.onionrUtils.validateHash(ban):
+                    if not self.onionrCore._blacklist.inBlacklist(ban):
+                        self.onionrCore._blacklist.addToDB(ban)
+
+        return
+
 
     def listConn(self):
         self.onionrCore.daemonQueueAdd('connectedPeers')
