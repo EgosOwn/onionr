@@ -25,7 +25,6 @@ class OnionrBlackList:
         
         if not os.path.exists(self.blacklistDB):
             self.generateDB()
-
         return
     
     def inBlacklist(self, data):

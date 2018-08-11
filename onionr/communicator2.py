@@ -173,7 +173,7 @@ class OnionrCommunicatorDaemon:
                             # if newline seperated string is valid hash
                             if not i in existingBlocks:
                                 # if block does not exist on disk and is not already in block queue
-                                if i not in self.blockQueue:
+                                if i not in self.blockQueue and not self._core._blacklist.inBlacklist(i):
                                     self.blockQueue.append(i)
         self.decrementThreadCount('lookupBlocks')
         return
@@ -289,6 +289,7 @@ class OnionrCommunicatorDaemon:
         for i in self._core.bootstrapList:
             if i not in peerList and i not in self.offlinePeers and i != self._core.hsAddress:
                 peerList.append(i)
+                self._core.addAddress(i)
 
     def connectNewPeer(self, peer='', useBootstrap=False):
         '''Adds a new random online peer to self.onlinePeers'''

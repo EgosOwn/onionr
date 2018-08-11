@@ -172,7 +172,7 @@ class Core:
 
     def removeBlock(self, block):
         '''
-            remove a block from this node
+            remove a block from this node (does not automatically blacklist)
         '''
         if self._utils.validateHash(block):
             conn = sqlite3.connect(self.blockDB)

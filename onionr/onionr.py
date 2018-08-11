@@ -232,6 +232,7 @@ class Onionr:
             'listconn': 'list connected peers',
             'kex': 'exchange keys with peers (done automatically)',
             'pex': 'exchange addresses with peers (done automatically)',
+            'blacklist-block': 'deletes a block by hash and permanently removes it from your node',
             'introduce': 'Introduce your node to the public Onionr network',
         }
 
@@ -264,14 +265,21 @@ class Onionr:
         try:
             ban = sys.argv[2]
         except IndexError:
-            while True:
-                ban = logger.readline('Enter a block hash:')
-                if self.onionrUtils.validateHash(ban):
-                    if not self.onionrCore._blacklist.inBlacklist(ban):
-                        self.onionrCore._blacklist.addToDB(ban)
-
+            ban = logger.readline('Enter a block hash:')
+        if self.onionrUtils.validateHash(ban):
+            if not self.onionrCore._blacklist.inBlacklist(ban):
+                try:
+                    self.onionrCore._blacklist.addToDB(ban)
+                    self.onionrCore.removeBlock(ban)
+                except Exception as error:
+                    logger.error('Could not blacklist block', error=error)
+                else:
+                    logger.info('Block blacklisted')
+            else:
+                logger.warn('That block is already blacklisted')
+        else:
+            logger.error('Invalid block hash')
         return
-
 
     def listConn(self):
         self.onionrCore.daemonQueueAdd('connectedPeers')
