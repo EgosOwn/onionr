@@ -24,7 +24,7 @@ from gevent.wsgi import WSGIServer
 import sys, random, threading, hmac, hashlib, base64, time, math, os, json
 from core import Core
 from onionrblockapi import Block
-import onionrutils, onionrcrypto, blockimporter, onionrevents as events, logger, config
+import onionrutils, onionrexceptions, onionrcrypto, blockimporter, onionrevents as events, logger, config
 
 class API:
     '''
@@ -119,9 +119,7 @@ class API:
             '''
                 Simply define the request as not having yet failed, before every request.
             '''
-
             self.requestFailed = False
-
             return
 
         @app.after_request
@@ -397,10 +395,14 @@ class API:
                 pass
             else:
                 if sys.getsizeof(data) < 100000000:
-                    if blockimporter.importBlockFromData(data, self._core):
-                        resp = 'success'
-                    else:
-                        logger.warn('Error encountered importing uploaded block')
+                    try:
+                        if blockimporter.importBlockFromData(data, self._core):
+                            resp = 'success'
+                        else:
+                            logger.warn('Error encountered importing uploaded block')
+                    except onionrexceptions.BlacklistedBlock:
+                        logger.debug('uploaded block is blacklisted')
+                        pass
 
             resp = Response(resp)
             return resp

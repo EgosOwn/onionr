@@ -20,6 +20,12 @@
 import core, onionrexceptions, logger
 def importBlockFromData(content, coreInst):
     retData = False
+
+    dataHash = coreInst._getSha3Hash(content)
+
+    if coreInst._blacklist.inBlacklist(dataHash):
+        raise onionrexceptions.BlacklistedBlock('%s is a blacklisted block' % (dataHash,))
+
     if not isinstance(coreInst, core.Core):
         raise Exception("coreInst must be an Onionr core instance")
 

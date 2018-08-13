@@ -72,7 +72,7 @@ def getScoreSortedPeerList(coreInst):
     return peerList
 
 def peerCleanup(coreInst):
-    '''Removes peers who have been offline too long'''
+    '''Removes peers who have been offline too long or score too low'''
     if not type(coreInst is core.Core):
         raise TypeError('coreInst must be instance of core.Core')
 

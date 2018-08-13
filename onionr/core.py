@@ -133,7 +133,6 @@ class Core:
             for i in c.execute("SELECT * FROM adders where address = '" + address + "';"):
                 try:
                     if i[0] == address:
-                        logger.warn('Not adding existing address')
                         conn.close()
                         return False
                 except ValueError:
@@ -311,16 +310,24 @@ class Core:
 
         return data
 
-    def setData(self, data):
-        '''
-            Set the data assciated with a hash
-        '''
-        data = data
+    def _getSha3Hash(self, data):
         hasher = hashlib.sha3_256()
         if not type(data) is bytes:
             data = data.encode()
         hasher.update(data)
         dataHash = hasher.hexdigest()
+        return dataHash
+
+    def setData(self, data):
+        '''
+            Set the data assciated with a hash
+        '''
+        data = data
+        if not type(data) is bytes:
+            data = data.encode()
+            
+        dataHash = self._getSha3Hash(data)
+
         if type(dataHash) is bytes:
             dataHash = dataHash.decode()
         blockFileName = self.blockDataLocation + dataHash + '.dat'
