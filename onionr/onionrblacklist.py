@@ -52,7 +52,9 @@ class OnionrBlackList:
     def generateDB(self):
         self._dbExecute('''CREATE TABLE blacklist(
             hash text primary key not null,
-            type text
+            dataType text,
+            blacklistDate int,
+            expire int
             );
         ''')
         return
@@ -67,11 +69,20 @@ class OnionrBlackList:
             myList.append(i[0])
         return myList
 
-    def addToDB(self, data):
+    def addToDB(self, data, dataType=0, expire=0):
         '''Add to the blacklist. Intended to be block hash, block data, peers, or transport addresses'''
         # we hash the data so we can remove data entirely from our node's disk
         hashed = self._core._utils.bytesToStr(self._core._crypto.sha3Hash(data))
         if not hashed.isalnum():
             raise Exception("Hashed data is not alpha numeric")
+        try:
+            int(dataType)
+        except ValueError:
+            raise Exception("dataType is not int")
+        try:
+            int(expire)
+        except ValueError:
+            raise Exception("expire is not int")
+        #TODO check for length sanity
         insert = (hashed,)
-        self._dbExecute("insert into blacklist (hash) VALUES('%s');" % (hashed,))
+        self._dbExecute("insert into blacklist (hash, dataType, expire) VALUES('%s', %s, %s);" % (hashed, dataType, expire))

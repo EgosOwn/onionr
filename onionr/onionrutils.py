@@ -126,7 +126,8 @@ class OnionrUtils:
             retVal = False
             if newAdderList != False:
                 for adder in newAdderList.split(','):
-                    if not adder in self._core.listAdders(randomOrder = False) and adder.strip() != self.getMyAddress():
+                    adder = adder.strip()
+                    if not adder in self._core.listAdders(randomOrder = False) and adder != self.getMyAddress() and not self._core._blacklist.inBlacklist(adder):
                         if self._core.addAddress(adder):
                             logger.info('Added %s to db.' % adder, timestamp = True)
                             retVal = True
