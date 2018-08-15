@@ -17,7 +17,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import sqlite3, os
+import sqlite3, os, logger
 class OnionrBlackList:
     def __init__(self, coreInst):
         self.blacklistDB = 'data/blacklist.db'
@@ -48,11 +48,29 @@ class OnionrBlackList:
     def deleteBeforeDate(self, date):
         # TODO, delete blacklist entries before date
         return
+    
+    def deleteExpired(self, dataType=0):
+        '''Delete expired entries'''
+        deleteList = []
+        curTime = self._core._utils.getEpoch()
+
+        try:
+            int(dataType)
+        except AttributeError:
+            raise TypeError("dataType must be int")
+
+        for i in self._dbExecute('select * from blacklist where dataType=%s' % (dataType,)):
+            if i[1] == dataType:
+                if (curTime - i[2]) >= i[3]:
+                    deleteList.append(i[0])
+        
+        for thing in deleteList:
+            self._dbExecute("delete from blacklist where hash='%s'" % (thing,))
 
     def generateDB(self):
         self._dbExecute('''CREATE TABLE blacklist(
             hash text primary key not null,
-            dataType text,
+            dataType int,
             blacklistDate int,
             expire int
             );
@@ -70,7 +88,11 @@ class OnionrBlackList:
         return myList
 
     def addToDB(self, data, dataType=0, expire=0):
-        '''Add to the blacklist. Intended to be block hash, block data, peers, or transport addresses'''
+        '''Add to the blacklist. Intended to be block hash, block data, peers, or transport addresses
+        0=block
+        1=peer
+        2=pubkey
+        '''
         # we hash the data so we can remove data entirely from our node's disk
         hashed = self._core._utils.bytesToStr(self._core._crypto.sha3Hash(data))
         if not hashed.isalnum():
@@ -85,4 +107,5 @@ class OnionrBlackList:
             raise Exception("expire is not int")
         #TODO check for length sanity
         insert = (hashed,)
-        self._dbExecute("insert into blacklist (hash, dataType, expire) VALUES('%s', %s, %s);" % (hashed, dataType, expire))
+        blacklistDate = self._core._utils.getEpoch()
+        self._dbExecute("insert into blacklist (hash, dataType, blacklistDate, expire) VALUES('%s', %s, %s, %s);" % (hashed, dataType, blacklistDate, expire))

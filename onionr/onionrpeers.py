@@ -89,5 +89,8 @@ def peerCleanup(coreInst):
         # Remove peers that go below the negative score
         if PeerProfiles(address, coreInst).score < minScore:
             coreInst.removeAddress(address)
-            coreInst._blacklist.addToDB(address)
+            coreInst._blacklist.addToDB(address, dataType=1, expire=300)
             logger.warn('Removed address ' + address + '.')
+
+    # Unban probably not malicious peers TODO improve
+    coreInst._blacklist.deleteExpired(dataType=1)
