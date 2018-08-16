@@ -22,7 +22,7 @@ from onionrblockapi import Block
 
 import onionrutils, onionrcrypto, onionrproofs, onionrevents as events, onionrexceptions, onionrvalues
 import onionrblacklist
-
+import dbcreator
 if sys.version_info < (3, 6):
     try:
         import sha3
@@ -46,6 +46,8 @@ class Core:
             self.bootstrapList = []
             self.requirements = onionrvalues.OnionrValues()
             self.torPort = torPort
+            self.dataNonceFile = 'data/block-nonces.dat'
+            self.dbCreate = dbcreator.DBCreator(self)
 
             self.usageFile = 'data/disk-usage.txt'
 
@@ -188,89 +190,20 @@ class Core:
     def createAddressDB(self):
         '''
             Generate the address database
-
-            types:
-                1: I2P b32 address
-                2: Tor v2 (like facebookcorewwwi.onion)
-                3: Tor v3
         '''
-        conn = sqlite3.connect(self.addressDB)
-        c = conn.cursor()
-        c.execute('''CREATE TABLE adders(
-            address text,
-            type int,
-            knownPeer text,
-            speed int,
-            success int,
-            DBHash text,
-            powValue text,
-            failure int,
-            lastConnect int,
-            lastConnectAttempt int,
-            trust int
-            );
-        ''')
-        conn.commit()
-        conn.close()
+        self.dbCreate.createAddressDB()
 
     def createPeerDB(self):
         '''
             Generate the peer sqlite3 database and populate it with the peers table.
         '''
-        # generate the peer database
-        conn = sqlite3.connect(self.peerDB)
-        c = conn.cursor()
-        c.execute('''CREATE TABLE peers(
-            ID text not null,
-            name text,
-            adders text,
-            blockDBHash text,
-            forwardKey text,
-            dateSeen not null,
-            bytesStored int,
-            trust int,
-            pubkeyExchanged int,
-            hashID text,
-            pow text not null);
-        ''')
-        conn.commit()
-        conn.close()
-        return
+        self.dbCreate.createPeerDB()
 
     def createBlockDB(self):
         '''
             Create a database for blocks
-
-            hash         - the hash of a block
-            dateReceived - the date the block was recieved, not necessarily when it was created
-            decrypted    - if we can successfully decrypt the block (does not describe its current state)
-            dataType     - data type of the block
-            dataFound    - if the data has been found for the block
-            dataSaved    - if the data has been saved for the block
-            sig    - optional signature by the author (not optional if author is specified)
-            author       - multi-round partial sha3-256 hash of authors public key
-            dateClaimed  - timestamp claimed inside the block, only as trustworthy as the block author is
         '''
-        if os.path.exists(self.blockDB):
-            raise Exception("Block database already exists")
-        conn = sqlite3.connect(self.blockDB)
-        c = conn.cursor()
-        c.execute('''CREATE TABLE hashes(
-            hash text not null,
-            dateReceived int,
-            decrypted int,
-            dataType text,
-            dataFound int,
-            dataSaved int,
-            sig text,
-            author text,
-            dateClaimed int
-            );
-        ''')
-        conn.commit()
-        conn.close()
-
-        return
+        self.dbCreate.createBlockDB()
 
     def addToBlockDB(self, newHash, selfInsert=False, dataSaved=False):
         '''
@@ -702,6 +635,7 @@ class Core:
         signature = ''
         signer = ''
         metadata = {}
+        # metadata is full block metadata, meta is internal, user specified metadata
 
         # only use header if not set in provided meta
         if not header is None:
@@ -749,6 +683,12 @@ class Core:
         metadata['sig'] = signature
         metadata['signer'] = signer
         metadata['time'] = str(self._utils.getEpoch())
+        
+        nonce = self._utils.bytesToStr(self._crypto.sha3Hash(data))
+
+        # TODO check in advance
+        with open(self.dataNonceFile, 'a') as nonceFile:
+            nonceFile.write(nonce + '\n')
 
         # send block data (and metadata) to POW module to get tokenized block data
         proof = onionrproofs.POW(metadata, data)

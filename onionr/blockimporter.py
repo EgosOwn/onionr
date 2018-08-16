@@ -36,7 +36,7 @@ def importBlockFromData(content, coreInst):
 
     metas = coreInst._utils.getBlockMetadataFromData(content) # returns tuple(metadata, meta), meta is also in metadata
     metadata = metas[0]
-    if coreInst._utils.validateMetadata(metadata): # check if metadata is valid
+    if coreInst._utils.validateMetadata(metadata, metas[2]): # check if metadata is valid
         if coreInst._crypto.verifyPow(content): # check if POW is enough/correct
             logger.info('Block passed proof, saving.')
             blockHash = coreInst.setData(content)

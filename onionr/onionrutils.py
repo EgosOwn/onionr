@@ -334,7 +334,7 @@ class OnionrUtils:
 
         return retVal
 
-    def validateMetadata(self, metadata):
+    def validateMetadata(self, metadata, blockData):
         '''Validate metadata meets onionr spec (does not validate proof value computation), take in either dictionary or json string'''
         # TODO, make this check sane sizes
         retData = False
@@ -364,7 +364,24 @@ class OnionrUtils:
                         break
             else:
                 # if metadata loop gets no errors, it does not break, therefore metadata is valid
-                retData = True
+                # make sure we do not have another block with the same data content (prevent data duplication and replay attacks)
+                try:
+                    with open(self._core.dataNonceFile, 'r') as nonceFile:
+                        nonce = self._core._utils.bytesToStr(self._core._crypto.sha3Hash(blockData))
+                        if nonce in nonceFile.read():
+                            retData = False # we've seen that nonce before, so we can't pass metadata
+                            raise onionrexceptions.DataExists
+                except FileNotFoundError:
+                    retData = True
+                except onionrexceptions.DataExists:
+                    # do not set retData to True, because nonce has been seen before
+                    pass
+                else:
+                    retData = True
+                if retData:
+                    # Executes if data not seen
+                    with open(self._core.dataNonceFile, 'a') as nonceFile:
+                        nonceFile.write(nonce + '\n')
         else:
             logger.warn('In call to utils.validateMetadata, metadata must be JSON string or a dictionary object')
 

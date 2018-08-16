@@ -41,6 +41,9 @@ class InvalidMetadata(Exception):
 class BlacklistedBlock(Exception):
     pass
 
+class DataExists(Exception):
+    pass
+
 class InvalidHexHash(Exception):
     '''When a string is not a valid hex string of appropriate length for a hash value'''
     pass
