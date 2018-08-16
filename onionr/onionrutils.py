@@ -365,9 +365,9 @@ class OnionrUtils:
             else:
                 # if metadata loop gets no errors, it does not break, therefore metadata is valid
                 # make sure we do not have another block with the same data content (prevent data duplication and replay attacks)
+                nonce = self._core._utils.bytesToStr(self._core._crypto.sha3Hash(blockData))
                 try:
                     with open(self._core.dataNonceFile, 'r') as nonceFile:
-                        nonce = self._core._utils.bytesToStr(self._core._crypto.sha3Hash(blockData))
                         if nonce in nonceFile.read():
                             retData = False # we've seen that nonce before, so we can't pass metadata
                             raise onionrexceptions.DataExists
