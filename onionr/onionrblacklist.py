@@ -95,6 +95,10 @@ class OnionrBlackList:
         '''
         # we hash the data so we can remove data entirely from our node's disk
         hashed = self._core._utils.bytesToStr(self._core._crypto.sha3Hash(data))
+
+        if self.inBlacklist(hashed):
+            return
+
         if not hashed.isalnum():
             raise Exception("Hashed data is not alpha numeric")
         try:
