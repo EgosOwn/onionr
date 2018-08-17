@@ -22,6 +22,8 @@
 import logger, config, threading, time, readline, datetime
 from onionrblockapi import Block
 import onionrexceptions
+import locale
+locale.setlocale(locale.LC_ALL, '')
 
 plugin_name = 'pms'
 PLUGIN_VERSION = '0.0.1'
