@@ -474,7 +474,7 @@ class API:
             elif action == 'getData':
                 resp = ''
                 if self._utils.validateHash(data):
-                    if not os.path.exists('data/blocks/' + data + '.db'):
+                    if os.path.exists('data/blocks/' + data + '.dat'):
                         block = Block(hash=data.encode(), core=self._core)
                         resp = base64.b64encode(block.getRaw().encode()).decode()
                 if len(resp) == 0:

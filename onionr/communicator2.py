@@ -216,6 +216,7 @@ class OnionrCommunicatorDaemon:
                             logger.warn('POW failed for block ' + blockHash)
                     else:
                         logger.warn('Metadata for ' + blockHash + ' is invalid.')
+                        self._core._blacklist.addToDB(blockHash)
                 else:
                     # if block didn't meet expected hash
                     tempHash = self._core._crypto.sha3Hash(content) # lazy hack, TODO use var
