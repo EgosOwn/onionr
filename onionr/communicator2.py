@@ -186,6 +186,10 @@ class OnionrCommunicatorDaemon:
             if blockHash in self.currentDownloading:
                 logger.debug('ALREADY DOWNLOADING ' + blockHash)
                 continue
+            if blockHash in self._core.getBlockList():
+                logger.debug('%s is already saved' % (blockHash,))
+                self.blockQueue.remove(blockHash)
+                continue
             self.currentDownloading.append(blockHash)
             logger.info("Attempting to download %s..." % blockHash)
             peerUsed = self.pickOnlinePeer()
