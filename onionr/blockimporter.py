@@ -20,6 +20,12 @@
 import core, onionrexceptions, logger
 def importBlockFromData(content, coreInst):
     retData = False
+
+    dataHash = coreInst._crypto.sha3Hash(content)
+
+    if coreInst._blacklist.inBlacklist(dataHash):
+        raise onionrexceptions.BlacklistedBlock('%s is a blacklisted block' % (dataHash,))
+
     if not isinstance(coreInst, core.Core):
         raise Exception("coreInst must be an Onionr core instance")
 
@@ -30,11 +36,11 @@ def importBlockFromData(content, coreInst):
 
     metas = coreInst._utils.getBlockMetadataFromData(content) # returns tuple(metadata, meta), meta is also in metadata
     metadata = metas[0]
-    if coreInst._utils.validateMetadata(metadata): # check if metadata is valid
+    if coreInst._utils.validateMetadata(metadata, metas[2]): # check if metadata is valid
         if coreInst._crypto.verifyPow(content): # check if POW is enough/correct
             logger.info('Block passed proof, saving.')
             blockHash = coreInst.setData(content)
-            blockHash = coreInst.addToBlockDB(blockHash, dataSaved=True)
+            coreInst.addToBlockDB(blockHash, dataSaved=True)
             coreInst._utils.processBlockMetadata(blockHash) # caches block metadata values to block database
             retData = True
     return retData

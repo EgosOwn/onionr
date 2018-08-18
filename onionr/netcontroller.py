@@ -97,10 +97,10 @@ DataDirectory data/tordata/
                 elif 'Opening Socks listener' in line.decode():
                     logger.debug(line.decode().replace('\n', ''))
             else:
-                logger.fatal('Failed to start Tor. Try killing any other Tor processes owned by this user.')
+                logger.fatal('Failed to start Tor. Maybe a stray instance of Tor used by Onionr is still running?')
                 return False
         except KeyboardInterrupt:
-            logger.fatal("Got keyboard interrupt")
+            logger.fatal("Got keyboard interrupt.")
             return False
 
         logger.debug('Finished starting Tor.', timestamp=True)

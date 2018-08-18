@@ -2,8 +2,26 @@
     "general" : {
         "dev_mode": true,
         "display_header" : true,
-        "dc_response": true,
-        "dc_execcallbacks" : true
+
+        "direct_connect" : {
+            "respond" : true,
+            "execute_callbacks" : true
+        }
+    },
+
+    "www" : {
+        "public" : {
+            "run" : true
+        },
+
+        "private" : {
+            "run" : true
+        },
+
+        "ui" : {
+            "run" : true,
+            "private" : true
+        }
     },
 
     "client" : {
@@ -35,7 +53,12 @@
     "allocations":{
         "disk": 9000000000,
         "netTotal": 1000000000,
-        "blockCache" : 5000000,
-        "blockCacheTotal" : 50000000
+        "blockCache": 5000000,
+        "blockCacheTotal": 50000000
+    },
+    "peers":{
+        "minimumScore": -100,
+        "maxStoredPeers": 500,
+        "maxConnect": 5
     }
 }

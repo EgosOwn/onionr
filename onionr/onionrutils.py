@@ -52,7 +52,9 @@ class OnionrUtils:
                 with open('data/time-bypass.txt', 'r') as bypass:
                     self.timingToken = bypass.read()
         except Exception as error:
-            logger.error('Failed to fetch time bypass token.', error=error)
+            logger.error('Failed to fetch time bypass token.', error = error)
+
+        return self.timingToken
 
     def getRoundedEpoch(self, roundS=60):
         '''
@@ -124,11 +126,11 @@ class OnionrUtils:
             retVal = False
             if newAdderList != False:
                 for adder in newAdderList.split(','):
-                    if not adder in self._core.listAdders(randomOrder = False) and adder.strip() != self.getMyAddress():
-                        if adder[:4] == '0000':
-                            if self._core.addAddress(adder):
-                                logger.info('Added %s to db.' % adder, timestamp = True)
-                                retVal = True
+                    adder = adder.strip()
+                    if not adder in self._core.listAdders(randomOrder = False) and adder != self.getMyAddress() and not self._core._blacklist.inBlacklist(adder):
+                        if self._core.addAddress(adder):
+                            logger.info('Added %s to db.' % adder, timestamp = True)
+                            retVal = True
                     else:
                         pass
                         #logger.debug('%s is either our address or already in our DB' % adder)
@@ -199,7 +201,7 @@ class OnionrUtils:
     def getBlockMetadataFromData(self, blockData):
         '''
             accepts block contents as string, returns a tuple of metadata, meta (meta being internal metadata, which will be returned as an encrypted base64 string if it is encrypted, dict if not).
-            
+
         '''
         meta = {}
         metadata = {}
@@ -208,7 +210,7 @@ class OnionrUtils:
             blockData = blockData.encode()
         except AttributeError:
             pass
-        
+
         try:
             metadata = json.loads(blockData[:blockData.find(b'\n')].decode())
         except json.decoder.JSONDecodeError:
@@ -221,7 +223,7 @@ class OnionrUtils:
                     meta = json.loads(metadata['meta'])
                 except KeyError:
                     pass
-            meta = metadata['meta']       
+            meta = metadata['meta']
         return (metadata, meta, data)
 
     def checkPort(self, port, host=''):
@@ -251,7 +253,7 @@ class OnionrUtils:
             return False
         else:
             return True
-    
+
     def processBlockMetadata(self, blockHash):
         '''
             Read metadata from a block and cache it to the block database
@@ -269,7 +271,7 @@ class OnionrUtils:
     def escapeAnsi(self, line):
         '''
             Remove ANSI escape codes from a string with regex
-            
+
             taken or adapted from: https://stackoverflow.com/a/38662876
         '''
         ansi_escape = re.compile(r'(\x9B|\x1B\[)[0-?]*[ -/]*[@-~]')
@@ -331,12 +333,12 @@ class OnionrUtils:
                 retVal = False
 
         return retVal
-    
-    def validateMetadata(self, metadata):
+
+    def validateMetadata(self, metadata, blockData):
         '''Validate metadata meets onionr spec (does not validate proof value computation), take in either dictionary or json string'''
         # TODO, make this check sane sizes
         retData = False
-        
+
         # convert to dict if it is json string
         if type(metadata) is str:
             try:
@@ -362,7 +364,24 @@ class OnionrUtils:
                         break
             else:
                 # if metadata loop gets no errors, it does not break, therefore metadata is valid
-                retData = True
+                # make sure we do not have another block with the same data content (prevent data duplication and replay attacks)
+                nonce = self._core._utils.bytesToStr(self._core._crypto.sha3Hash(blockData))
+                try:
+                    with open(self._core.dataNonceFile, 'r') as nonceFile:
+                        if nonce in nonceFile.read():
+                            retData = False # we've seen that nonce before, so we can't pass metadata
+                            raise onionrexceptions.DataExists
+                except FileNotFoundError:
+                    retData = True
+                except onionrexceptions.DataExists:
+                    # do not set retData to True, because nonce has been seen before
+                    pass
+                else:
+                    retData = True
+                if retData:
+                    # Executes if data not seen
+                    with open(self._core.dataNonceFile, 'a') as nonceFile:
+                        nonceFile.write(nonce + '\n')
         else:
             logger.warn('In call to utils.validateMetadata, metadata must be JSON string or a dictionary object')
 
@@ -382,7 +401,7 @@ class OnionrUtils:
         else:
             retVal = True
         return retVal
-    
+
     def isIntegerString(self, data):
         '''Check if a string is a valid base10 integer'''
         try:
@@ -531,14 +550,14 @@ class OnionrUtils:
         if proxyType == 'tor':
             if port == 0:
                 port = self._core.torPort
-            proxies = {'http': 'socks5://127.0.0.1:' + str(port), 'https': 'socks5://127.0.0.1:' + str(port)}
+            proxies = {'http': 'socks4a://127.0.0.1:' + str(port), 'https': 'socks4a://127.0.0.1:' + str(port)}
         elif proxyType == 'i2p':
             proxies = {'http': 'http://127.0.0.1:4444'}
         else:
             return
         headers = {'user-agent': 'PyOnionr'}
         try:
-            proxies = {'http': 'socks5h://127.0.0.1:' + str(port), 'https': 'socks5h://127.0.0.1:' + str(port)}
+            proxies = {'http': 'socks4a://127.0.0.1:' + str(port), 'https': 'socks4a://127.0.0.1:' + str(port)}
             r = requests.post(url, data=data, headers=headers, proxies=proxies, allow_redirects=False, timeout=(15, 30))
             retData = r.text
         except KeyboardInterrupt:
@@ -552,21 +571,24 @@ class OnionrUtils:
         '''
         Do a get request through a local tor or i2p instance
         '''
+        retData = False
         if proxyType == 'tor':
             if port == 0:
                 raise onionrexceptions.MissingPort('Socks port required for Tor HTTP get request')
-            proxies = {'http': 'socks5://127.0.0.1:' + str(port), 'https': 'socks5://127.0.0.1:' + str(port)}
+            proxies = {'http': 'socks4a://127.0.0.1:' + str(port), 'https': 'socks4a://127.0.0.1:' + str(port)}
         elif proxyType == 'i2p':
             proxies = {'http': 'http://127.0.0.1:4444'}
         else:
             return
         headers = {'user-agent': 'PyOnionr'}
         try:
-            proxies = {'http': 'socks5h://127.0.0.1:' + str(port), 'https': 'socks5h://127.0.0.1:' + str(port)}
+            proxies = {'http': 'socks4a://127.0.0.1:' + str(port), 'https': 'socks4a://127.0.0.1:' + str(port)}
             r = requests.get(url, headers=headers, proxies=proxies, allow_redirects=False, timeout=(15, 30))
             retData = r.text
         except KeyboardInterrupt:
             raise KeyboardInterrupt
+        except ValueError as e:
+            logger.debug('Failed to make request', error = e)
         except requests.exceptions.RequestException as e:
             logger.debug('Error: %s' % str(e))
             retData = False
@@ -593,6 +615,19 @@ class OnionrUtils:
         else:
             self.powSalt = retData
         return retData
+    
+    def strToBytes(self, data):
+        try:
+            data = data.encode()
+        except AttributeError:
+            pass
+        return data
+    def bytesToStr(self, data):
+        try:
+            data = data.decode()
+        except AttributeError:
+            pass
+        return data
 
 def size(path='.'):
     '''
