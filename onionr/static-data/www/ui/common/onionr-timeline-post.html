@@ -1,0 +1,32 @@
+<!-- POST -->
+<div class="col-12">
+    <div class="onionr-post">
+        <div class="row">
+            <div class="col-2">
+                <img class="onionr-post-user-icon" src="$user-image">
+            </div>
+            <div class="col-10">
+                <div class="row">
+                    <div class="col col-auto">
+                        <a class="onionr-post-user-name" href="#!" onclick="viewProfile('$user-id-url', '$user-name-url')">$user-name</a>
+                        <a class="onionr-post-user-id" href="#!" onclick="viewProfile('$user-id-url', '$user-name-url')" data-placement="top" data-toggle="tooltip" title="$user-id">$user-id-truncated</a>
+                    </div>
+
+                    <div class="col col-auto text-right ml-auto pl-0">
+                        <div class="onionr-post-date text-right" data-placement="top" data-toggle="tooltip" title="$date">$date-relative</div>
+                    </div>
+                </div>
+
+                <div class="onionr-post-content">
+                    $content
+                </div>
+
+                <div class="onionr-post-controls pt-2">
+                    <a href="#!" onclick="toggleLike('$post-id')" class="glyphicon glyphicon-heart mr-2"><$= LANG.POST_LIKE $></a>
+                    <a href="#!" onclick="reply('$post-id')" class="glyphicon glyphicon-comment mr-2"><$= LANG.POST_REPLY $></a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- END POST -->

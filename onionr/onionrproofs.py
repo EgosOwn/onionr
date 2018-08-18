@@ -22,16 +22,19 @@ import nacl.encoding, nacl.hash, nacl.utils, time, math, threading, binascii, lo
 import core
 
 class DataPOW:
-    def __init__(self, data, threadCount = 5):
+    def __init__(self, data, forceDifficulty=0, threadCount = 5):
         self.foundHash = False
         self.difficulty = 0
         self.data = data
         self.threadCount = threadCount
 
-        dataLen = sys.getsizeof(data)
-        self.difficulty = math.floor(dataLen / 1000000)
-        if self.difficulty <= 2:
-            self.difficulty = 4
+        if forceDifficulty == 0:
+            dataLen = sys.getsizeof(data)
+            self.difficulty = math.floor(dataLen / 1000000)
+            if self.difficulty <= 2:
+                self.difficulty = 4
+        else:
+            self.difficulty = forceDifficulty
 
         try:
             self.data = self.data.encode()

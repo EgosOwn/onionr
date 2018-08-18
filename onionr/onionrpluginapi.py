@@ -130,6 +130,22 @@ class CommandAPI:
     def get_commands(self):
         return self.pluginapi.get_onionr().getCommands()
 
+class WebAPI:
+    def __init__(self, pluginapi):
+        self.pluginapi = pluginapi
+
+    def register_callback(self, action, callback, scope = 'public'):
+        return self.pluginapi.get_onionr().api.setCallback(action, callback, scope = scope)
+
+    def unregister_callback(self, action, scope = 'public'):
+        return self.pluginapi.get_onionr().api.removeCallback(action, scope = scope)
+
+    def get_callback(self, action, scope = 'public'):
+        return self.pluginapi.get_onionr().api.getCallback(action, scope=  scope)
+
+    def get_callbacks(self, scope = None):
+        return self.pluginapi.get_onionr().api.getCallbacks(scope = scope)
+
 class pluginapi:
     def __init__(self, onionr, data):
         self.onionr = onionr
@@ -142,6 +158,7 @@ class pluginapi:
         self.daemon = DaemonAPI(self)
         self.plugins = PluginAPI(self)
         self.commands = CommandAPI(self)
+        self.web = WebAPI(self)
 
     def get_onionr(self):
         return self.onionr
@@ -166,6 +183,9 @@ class pluginapi:
 
     def get_commandapi(self):
         return self.commands
+
+    def get_webapi(self):
+        return self.web
 
     def is_development_mode(self):
         return self.get_onionr()._developmentMode

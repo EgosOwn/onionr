@@ -40,9 +40,9 @@ except ImportError:
     raise Exception("You need the PySocks module (for use with socks5 proxy to use Tor)")
 
 ONIONR_TAGLINE = 'Anonymous P2P Platform - GPLv3 - https://Onionr.VoidNet.Tech'
-ONIONR_VERSION = '0.1.0' # for debugging and stuff
+ONIONR_VERSION = '0.2.0' # for debugging and stuff
 ONIONR_VERSION_TUPLE = tuple(ONIONR_VERSION.split('.')) # (MAJOR, MINOR, VERSION)
-API_VERSION = '4' # increments of 1; only change when something fundemental about how the API works changes. This way other nodes knows how to communicate without learning too much information about you.
+API_VERSION = '4' # increments of 1; only change when something fundemental about how the API works changes. This way other nodes know how to communicate without learning too much information about you.
 
 class Onionr:
     def __init__(self):
@@ -91,8 +91,6 @@ class Onionr:
         self.onionrCore = core.Core()
         self.onionrUtils = OnionrUtils(self.onionrCore)
 
-        self.userOS = platform.system()
-
         # Handle commands
 
         self.debug = False # Whole application debugging
@@ -137,18 +135,18 @@ class Onionr:
             self.onionrCore.createAddressDB()
 
         # Get configuration
-
-        if not data_exists:
-            # Generate default config
-            # Hostname should only be set if different from 127.x.x.x. Important for DNS rebinding attack prevention.
-            if self.debug:
-                randomPort = 8080
-            else:
-                while True:
-                    randomPort = random.randint(1024, 65535)
-                    if self.onionrUtils.checkPort(randomPort):
-                        break
-            config.set('client', {'participate': True, 'hmac': base64.b16encode(os.urandom(32)).decode('utf-8'), 'port': randomPort, 'api_version': API_VERSION}, True)
+        if type(config.get('client.hmac')) is type(None):
+            config.set('client.hmac', base64.b16encode(os.urandom(32)).decode('utf-8'), savefile=True)
+        if type(config.get('client.port')) is type(None):
+            randomPort = 0
+            while randomPort < 1024:
+                randomPort = self.onionrCore._crypto.secrets.randbelow(65535)
+            config.set('client.port', randomPort, savefile=True)
+        if type(config.get('client.participate')) is type(None):
+            config.set('client.participate', True, savefile=True)
+        if type(config.get('client.api_version')) is type(None):
+            config.set('client.api_version', API_VERSION, savefile=True)
+    
 
         self.cmds = {
             '': self.showHelpSuggestion,
@@ -188,6 +186,8 @@ class Onionr:
             'addaddress': self.addAddress,
             'list-peers': self.listPeers,
 
+            'blacklist-block': self.banBlock,
+
             'add-file': self.addFile,
             'addfile': self.addFile,
             'listconn': self.listConn,
@@ -198,8 +198,19 @@ class Onionr:
             'introduce': self.onionrCore.introduceNode,
             'connect': self.addAddress,
             'kex': self.doKEX,
+            'pex': self.doPEX,
 
-            'getpassword': self.getWebPassword
+            'ui' : self.openUI,
+            'gui' : self.openUI,
+
+            'getpassword': self.printWebPassword,
+            'get-password': self.printWebPassword,
+            'getpwd': self.printWebPassword,
+            'get-pwd': self.printWebPassword,
+            'getpass': self.printWebPassword,
+            'get-pass': self.printWebPassword,
+            'getpasswd': self.printWebPassword,
+            'get-passwd': self.printWebPassword
         }
 
         self.cmdhelp = {
@@ -209,7 +220,7 @@ class Onionr:
             'start': 'Starts the Onionr daemon',
             'stop': 'Stops the Onionr daemon',
             'stats': 'Displays node statistics',
-            'getpassword': 'Displays the web password',
+            'get-password': 'Displays the web password',
             'enable-plugin': 'Enables and starts a plugin',
             'disable-plugin': 'Disables and stops a plugin',
             'reload-plugin': 'Reloads a plugin',
@@ -220,6 +231,8 @@ class Onionr:
             'import-blocks': 'import blocks from the disk (Onionr is transport-agnostic!)',
             'listconn': 'list connected peers',
             'kex': 'exchange keys with peers (done automatically)',
+            'pex': 'exchange addresses with peers (done automatically)',
+            'blacklist-block': 'deletes a block by hash and permanently removes it from your node',
             'introduce': 'Introduce your node to the public Onionr network',
         }
 
@@ -248,6 +261,26 @@ class Onionr:
     def getCommands(self):
         return self.cmds
 
+    def banBlock(self):
+        try:
+            ban = sys.argv[2]
+        except IndexError:
+            ban = logger.readline('Enter a block hash:')
+        if self.onionrUtils.validateHash(ban):
+            if not self.onionrCore._blacklist.inBlacklist(ban):
+                try:
+                    self.onionrCore._blacklist.addToDB(ban)
+                    self.onionrCore.removeBlock(ban)
+                except Exception as error:
+                    logger.error('Could not blacklist block', error=error)
+                else:
+                    logger.info('Block blacklisted')
+            else:
+                logger.warn('That block is already blacklisted')
+        else:
+            logger.error('Invalid block hash')
+        return
+
     def listConn(self):
         self.onionrCore.daemonQueueAdd('connectedPeers')
 
@@ -258,6 +291,9 @@ class Onionr:
 
     def getWebPassword(self):
         return config.get('client.hmac')
+
+    def printWebPassword(self):
+        print(self.getWebPassword())
 
     def getHelp(self):
         return self.cmdhelp
@@ -327,6 +363,11 @@ class Onionr:
         '''make communicator do kex'''
         logger.info('Sending kex to command queue...')
         self.onionrCore.daemonQueueAdd('kex')
+
+    def doPEX(self):
+        '''make communicator do pex'''
+        logger.info('Sending pex to command queue...')
+        self.onionrCore.daemonQueueAdd('pex')
 
     def listKeys(self):
         '''
@@ -525,22 +566,36 @@ class Onionr:
             Starts the Onionr communication daemon
         '''
         communicatorDaemon = './communicator2.py'
-        if not os.environ.get("WERKZEUG_RUN_MAIN") == "true":
-            if self._developmentMode:
-                logger.warn('DEVELOPMENT MODE ENABLED (THIS IS LESS SECURE!)', timestamp = False)
-            net = NetController(config.get('client.port', 59496))
-            logger.info('Tor is starting...')
-            if not net.startTor():
-                sys.exit(1)
-            logger.info('Started .onion service: ' + logger.colors.underline + net.myID)
-            logger.info('Our Public key: ' + self.onionrCore._crypto.pubKey)
-            time.sleep(1)
-            #TODO make runable on windows
-            subprocess.Popen([communicatorDaemon, "run", str(net.socksPort)])
-            logger.debug('Started communicator')
-            events.event('daemon_start', onionr = self)
-        api.API(self.debug)
 
+        apiThread = Thread(target=api.API, args=(self.debug,))
+        apiThread.start()
+        try:
+            time.sleep(3)
+        except KeyboardInterrupt:
+            logger.info('Got keyboard interrupt')
+            time.sleep(1)
+            self.onionrUtils.localCommand('shutdown')
+        else:
+            if apiThread.isAlive():
+                if self._developmentMode:
+                    logger.warn('DEVELOPMENT MODE ENABLED (THIS IS LESS SECURE!)', timestamp = False)
+                net = NetController(config.get('client.port', 59496))
+                logger.info('Tor is starting...')
+                if not net.startTor():
+                    sys.exit(1)
+                logger.info('Started .onion service: ' + logger.colors.underline + net.myID)
+                logger.info('Our Public key: ' + self.onionrCore._crypto.pubKey)
+                time.sleep(1)
+                #TODO make runable on windows
+                subprocess.Popen([communicatorDaemon, "run", str(net.socksPort)])
+                logger.debug('Started communicator')
+                events.event('daemon_start', onionr = self)
+                try:
+                    while True:
+                        time.sleep(5)
+                except KeyboardInterrupt:
+                    self.onionrCore.daemonQueueAdd('shutdown')
+                    self.onionrUtils.localCommand('shutdown')
         return
 
     def killDaemon(self):
@@ -696,6 +751,13 @@ class Onionr:
                 logger.error('Failed to save file in block.', timestamp = False)
         else:
             logger.error('%s add-file <filename>' % sys.argv[0], timestamp = False)
+
+    def openUI(self):
+        import webbrowser
+        url = 'http://127.0.0.1:%s/ui/index.html?timingToken=%s' % (config.get('client.port', 59496), self.onionrUtils.getTimeBypassToken())
+
+        print('Opening %s ...' % url)
+        webbrowser.open(url, new = 1, autoraise = True)
 
 if __name__ == "__main__":
     Onionr()

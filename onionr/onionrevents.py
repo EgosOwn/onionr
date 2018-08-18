@@ -33,10 +33,10 @@ def __event_caller(event_name, data = {}, onionr = None):
         try:
             call(plugins.get_plugin(plugin), event_name, data, get_pluginapi(onionr, data))
         except ModuleNotFoundError as e:
-            logger.warn('Disabling nonexistant plugin \"' + plugin + '\"...')
+            logger.warn('Disabling nonexistant plugin "%s"...' % plugin)
             plugins.disable(plugin, onionr, stop_event = False)
         except Exception as e:
-            logger.warn('Event \"' + event_name + '\" failed for plugin \"' + plugin + '\".')
+            logger.warn('Event "%s" failed for plugin "%s".' % (event_name, plugin))
             logger.debug(str(e))
 
 

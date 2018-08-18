@@ -1,0 +1,36 @@
+body {
+    background-color: #96928f;
+    color: #25383C;
+}
+
+/* timeline */
+
+.onionr-post {
+    border: 1px solid black;
+    border-radius: 1rem;
+
+    background-color: lightgray;
+}
+
+.onionr-post-user-name {
+    color: green;
+    font-weight: bold;
+}
+
+.onionr-post-user-id {
+    color: gray;
+}
+
+.onionr-post-date {
+    color: gray;
+}
+
+.onionr-post-content {
+    font-family: sans-serif, serif;
+    border-top: 1px solid black;
+    font-size: 15pt;
+}
+
+.h-divider {
+    border-top:1px solid gray;
+}
