@@ -624,6 +624,18 @@ class Core:
         '''
         retData = False
 
+        # check nonce
+        dataNonce = self._utils.bytesToStr(self._crypto.sha3Hash(data))
+        try:
+            with open(self.dataNonceFile, 'r') as nonces:
+                if dataNonce in nonces:
+                    return retData
+        except FileNotFoundError:
+            pass
+        # record nonce
+        with open(self.dataNonceFile, 'a') as nonceFile:
+            nonceFile.write(dataNonce + '\n')
+
         if meta is None:
             meta = dict()
 
@@ -683,13 +695,7 @@ class Core:
         metadata['sig'] = signature
         metadata['signer'] = signer
         metadata['time'] = str(self._utils.getEpoch())
-        
-        nonce = self._utils.bytesToStr(self._crypto.sha3Hash(data))
-
-        # TODO check in advance
-        with open(self.dataNonceFile, 'a') as nonceFile:
-            nonceFile.write(nonce + '\n')
-
+    
         # send block data (and metadata) to POW module to get tokenized block data
         proof = onionrproofs.POW(metadata, data)
         payload = proof.waitForResult()
