@@ -239,6 +239,7 @@ class API:
                 resp = Response('Goodbye')
             elif action == 'ping':
                 resp = Response('pong')
+            '''#TODO Remove and replace with iframe
             elif action == 'site':
                 block = data
                 siteData = self._core.getData(data)
@@ -247,6 +248,7 @@ class API:
                     self.mimeType = 'text/html'
                     response = siteData.split(b'-', 2)[-1]
                 resp = Response(response)
+            '''
             elif action == "insertBlock":
                 response = {'success' : False, 'reason' : 'An unknown error occurred'}
 
