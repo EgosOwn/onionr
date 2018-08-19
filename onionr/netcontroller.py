@@ -18,7 +18,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 
-import subprocess, os, random, sys, logger, time, signal
+import subprocess, os, random, sys, logger, time, signal, config
 from onionrblockapi import Block
 
 class NetController:
@@ -33,6 +33,7 @@ class NetController:
         self.hsPort = hsPort
         self._torInstnace = ''
         self.myID = ''
+        config.reload()
         '''
             if os.path.exists(self.torConfigLocation):
                 torrc = open(self.torConfigLocation, 'r')
@@ -47,11 +48,15 @@ class NetController:
         '''
             Generate a torrc file for our tor instance
         '''
-
+        hsVer = '# v2 onions'
+        if config.get('tor.v3onions'):
+            hsVer = 'HiddenServiceVersion 3'
+            logger.info('Using v3 onions :)')
         if os.path.exists(self.torConfigLocation):
             os.remove(self.torConfigLocation)
         torrcData = '''SocksPort ''' + str(self.socksPort) + '''
 HiddenServiceDir data/hs/
+\n''' + hsVer + '''\n
 HiddenServicePort 80 127.0.0.1:''' + str(self.hsPort) + '''
 DataDirectory data/tordata/
         '''

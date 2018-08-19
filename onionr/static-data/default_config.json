@@ -41,7 +41,7 @@
     },
 
     "tor" : {
-
+        "v3onions": false
     },
 
     "i2p":{

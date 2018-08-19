@@ -247,6 +247,10 @@ class OnionrCrypto:
         return result
 
     def sha3Hash(self, data):
+        try:
+            data = data.encode()
+        except AttributeError:
+            pass
         hasher = hashlib.sha3_256()
         hasher.update(data)
         return hasher.hexdigest()
