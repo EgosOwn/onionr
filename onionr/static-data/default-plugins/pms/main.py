@@ -108,6 +108,7 @@ class OnionrMail:
                 except KeyError:
                     pass
                 else:
+                    cancel = ''
                     readBlock.verifySig()
                     print('Message recieved from %s' % (readBlock.signer,))
                     print('Valid signature:', readBlock.validSig)

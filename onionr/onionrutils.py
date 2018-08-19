@@ -43,7 +43,7 @@ class OnionrUtils:
 
         self.avoidDupe = [] # list used to prevent duplicate requests per peer for certain actions
         self.peerProcessing = {} # dict of current peer actions: peer, actionList
-
+        config.reload()
         return
 
     def getTimeBypassToken(self):
@@ -128,6 +128,8 @@ class OnionrUtils:
                 for adder in newAdderList.split(','):
                     adder = adder.strip()
                     if not adder in self._core.listAdders(randomOrder = False) and adder != self.getMyAddress() and not self._core._blacklist.inBlacklist(adder):
+                        if not config.get('tor.v3onions') and len(address) == 62:
+                            continue
                         if self._core.addAddress(adder):
                             logger.info('Added %s to db.' % adder, timestamp = True)
                             retVal = True
