@@ -18,20 +18,23 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 
-import nacl.encoding, nacl.hash, nacl.utils, time, math, threading, binascii, logger, sys, base64
+import nacl.encoding, nacl.hash, nacl.utils, time, math, threading, binascii, logger, sys, base64, json
 import core
 
-class POW:
-    def __init__(self, data, threadCount = 5):
+class DataPOW:
+    def __init__(self, data, forceDifficulty=0, threadCount = 5):
         self.foundHash = False
         self.difficulty = 0
         self.data = data
         self.threadCount = threadCount
 
-        dataLen = sys.getsizeof(data)
-        self.difficulty = math.floor(dataLen / 1000000)
-        if self.difficulty <= 2:
-            self.difficulty = 4
+        if forceDifficulty == 0:
+            dataLen = sys.getsizeof(data)
+            self.difficulty = math.floor(dataLen / 1000000)
+            if self.difficulty <= 2:
+                self.difficulty = 4
+        else:
+            self.difficulty = forceDifficulty
 
         try:
             self.data = self.data.encode()
@@ -76,6 +79,105 @@ class POW:
                 logger.debug('Found token after %s seconds: %s' % (endTime - startTime, token), timestamp=True)
                 logger.debug('Random value was: %s' % base64.b64encode(rand).decode())
             self.result = (token, rand)
+
+    def shutdown(self):
+        self.hashing = False
+        self.puzzle = ''
+
+    def changeDifficulty(self, newDiff):
+        self.difficulty = newDiff
+
+    def getResult(self):
+        '''
+            Returns the result then sets to false, useful to automatically clear the result
+        '''
+        
+        try:
+            retVal = self.result
+        except AttributeError:
+            retVal = False
+            
+        self.result = False
+        return retVal
+
+    def waitForResult(self):
+        '''
+            Returns the result only when it has been found, False if not running and not found
+        '''
+        result = False
+        try:
+            while True:
+                result = self.getResult()
+                if not self.hashing:
+                    break
+                else:
+                    time.sleep(2)
+        except KeyboardInterrupt:
+            self.shutdown()
+            logger.warn('Got keyboard interrupt while waiting for POW result, stopping')
+        return result
+
+class POW:
+    def __init__(self, metadata, data, threadCount = 5):
+        self.foundHash = False
+        self.difficulty = 0
+        self.data = data
+        self.metadata = metadata
+        self.threadCount = threadCount
+
+        dataLen = len(data) + len(json.dumps(metadata))
+        self.difficulty = math.floor(dataLen / 1000000)
+        if self.difficulty <= 2:
+            self.difficulty = 4
+
+        try:
+            self.data = self.data.encode()
+        except AttributeError:
+            pass
+        
+        logger.info('Computing POW (difficulty: %s)...' % self.difficulty)
+
+        self.mainHash = '0' * 64
+        self.puzzle = self.mainHash[0:min(self.difficulty, len(self.mainHash))]
+        
+        myCore = core.Core()
+        for i in range(max(1, threadCount)):
+            t = threading.Thread(name = 'thread%s' % i, target = self.pow, args = (True,myCore))
+            t.start()
+        
+        return
+
+    def pow(self, reporting = False, myCore = None):
+        startTime = math.floor(time.time())
+        self.hashing = True
+        self.reporting = reporting
+        iFound = False # if current thread is the one that found the answer
+        answer = ''
+        heartbeat = 200000
+        hbCount = 0
+        
+        while self.hashing:
+            rand = nacl.utils.random()
+            #token = nacl.hash.blake2b(rand + self.data).decode()
+            self.metadata['powRandomToken'] = base64.b64encode(rand).decode()
+            payload = json.dumps(self.metadata).encode() + b'\n' + self.data
+            token = myCore._crypto.sha3Hash(payload)
+            try:
+                # on some versions, token is bytes
+                token = token.decode()
+            except AttributeError:
+                pass
+            if self.puzzle == token[0:self.difficulty]:
+                self.hashing = False
+                iFound = True
+                self.result = payload
+                break
+                
+        if iFound:
+            endTime = math.floor(time.time())
+            if self.reporting:
+                logger.debug('Found token after %s seconds: %s' % (endTime - startTime, token), timestamp=True)
+                logger.debug('Random value was: %s' % base64.b64encode(rand).decode())
 
     def shutdown(self):
         self.hashing = False

@@ -18,12 +18,12 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 # Misc functions that do not fit in the main api, but are useful
-import getpass, sys, requests, os, socket, hashlib, logger, sqlite3, config, binascii, time, base64, json, glob, shutil, math, json
+import getpass, sys, requests, os, socket, hashlib, logger, sqlite3, config, binascii, time, base64, json, glob, shutil, math, json, re
 import nacl.signing, nacl.encoding
 from onionrblockapi import Block
 import onionrexceptions
 from defusedxml import minidom
-
+import pgpwords
 if sys.version_info < (3, 6):
     try:
         import sha3
@@ -33,7 +33,7 @@ if sys.version_info < (3, 6):
 
 class OnionrUtils:
     '''
-        Various useful function
+        Various useful functions for validating things, etc functions, connectivity
     '''
     def __init__(self, coreInstance):
         self.fingerprintFile = 'data/own-fingerprint.txt'
@@ -41,6 +41,9 @@ class OnionrUtils:
 
         self.timingToken = ''
 
+        self.avoidDupe = [] # list used to prevent duplicate requests per peer for certain actions
+        self.peerProcessing = {} # dict of current peer actions: peer, actionList
+        config.reload()
         return
 
     def getTimeBypassToken(self):
@@ -49,43 +52,16 @@ class OnionrUtils:
                 with open('data/time-bypass.txt', 'r') as bypass:
                     self.timingToken = bypass.read()
         except Exception as error:
-            logger.error('Failed to fetch time bypass token.', error=error)
+            logger.error('Failed to fetch time bypass token.', error = error)
 
-    def sendPM(self, pubkey, message):
+        return self.timingToken
+
+    def getRoundedEpoch(self, roundS=60):
         '''
-            High level function to encrypt a message to a peer and insert it as a block
-        '''
-
-        try:
-            # We sign PMs here rather than in core.insertBlock in order to mask the sender's pubkey
-            payload = {'sig': '', 'msg': '', 'id': self._core._crypto.pubKey}
-
-            sign = self._core._crypto.edSign(message, self._core._crypto.privKey, encodeResult=True)
-            #encrypted = self._core._crypto.pubKeyEncrypt(message, pubkey, anonymous=True, encodedData=True).decode()
-
-            payload['sig'] = sign
-            payload['msg'] = message
-            payload = json.dumps(payload)
-            message = payload
-            encrypted = self._core._crypto.pubKeyEncrypt(message, pubkey, anonymous=True, encodedData=True).decode()
-
-
-            block = self._core.insertBlock(encrypted, header='pm', sign=False)
-            if block == '':
-                logger.error('Could not send PM')
-            else:
-                logger.info('Sent PM, hash: %s' % block)
-        except Exception as error:
-            logger.error('Failed to send PM.', error=error)
-
-        return
-
-    def getCurrentHourEpoch(self):
-        '''
-            Returns the current epoch, rounded down to the hour
+            Returns the epoch, rounded down to given seconds (Default 60)
         '''
         epoch = self.getEpoch()
-        return epoch - (epoch % 3600)
+        return epoch - (epoch % roundS)
 
     def incrementAddressSuccess(self, address):
         '''
@@ -134,7 +110,8 @@ class OnionrUtils:
                             else:
                                 logger.warn("Failed to add key")
                     else:
-                        logger.warn('%s pow failed' % key[0])
+                        pass
+                        #logger.debug('%s pow failed' % key[0])
             return retVal
         except Exception as error:
             logger.error('Failed to merge keys.', error=error)
@@ -149,12 +126,16 @@ class OnionrUtils:
             retVal = False
             if newAdderList != False:
                 for adder in newAdderList.split(','):
-                    if not adder in self._core.listAdders(randomOrder = False) and adder.strip() != self.getMyAddress():
+                    adder = adder.strip()
+                    if not adder in self._core.listAdders(randomOrder = False) and adder != self.getMyAddress() and not self._core._blacklist.inBlacklist(adder):
+                        if not config.get('tor.v3onions') and len(adder) == 62:
+                            continue
                         if self._core.addAddress(adder):
                             logger.info('Added %s to db.' % adder, timestamp = True)
                             retVal = True
                     else:
-                        logger.debug('%s is either our address or already in our DB' % adder)
+                        pass
+                        #logger.debug('%s is either our address or already in our DB' % adder)
             return retVal
         except Exception as error:
             logger.error('Failed to merge adders.', error = error)
@@ -176,14 +157,17 @@ class OnionrUtils:
         config.reload()
         self.getTimeBypassToken()
         # TODO: URL encode parameters, just as an extra measure. May not be needed, but should be added regardless.
-        with open('data/host.txt', 'r') as host:
-            hostname = host.read()
+        try:
+            with open('data/host.txt', 'r') as host:
+                hostname = host.read()
+        except FileNotFoundError:
+            return False
         payload = 'http://%s:%s/client/?action=%s&token=%s&timingToken=%s' % (hostname, config.get('client.port'), command, config.get('client.hmac'), self.timingToken)
         try:
             retData = requests.get(payload).text
         except Exception as error:
             if not silent:
-                logger.error('Failed to make local request (command: %s).' % command, error=error)
+                logger.error('Failed to make local request (command: %s):%s' % (command, error))
             retData = False
 
         return retData
@@ -209,20 +193,39 @@ class OnionrUtils:
 
         return pass1
 
+    def getHumanReadableID(self, pub=''):
+        '''gets a human readable ID from a public key'''
+        if pub == '':
+            pub = self._core._crypto.pubKey
+        pub = base64.b16encode(base64.b32decode(pub)).decode()
+        return '-'.join(pgpwords.wordify(pub))
+
     def getBlockMetadataFromData(self, blockData):
         '''
-            accepts block contents as string and returns a tuple of metadata, meta (meta being internal metadata)
+            accepts block contents as string, returns a tuple of metadata, meta (meta being internal metadata, which will be returned as an encrypted base64 string if it is encrypted, dict if not).
+
         '''
+        meta = {}
+        metadata = {}
+        data = blockData
         try:
             blockData = blockData.encode()
         except AttributeError:
             pass
-        metadata = json.loads(blockData[:blockData.find(b'\n')].decode())
-        data = blockData[blockData.find(b'\n'):].decode()
+
         try:
-            meta = json.loads(metadata['meta'])
-        except KeyError:
-            meta = {}
+            metadata = json.loads(blockData[:blockData.find(b'\n')].decode())
+        except json.decoder.JSONDecodeError:
+            pass
+        else:
+            data = blockData[blockData.find(b'\n'):].decode()
+
+            if not metadata['encryptType'] in ('asym', 'sym'):
+                try:
+                    meta = json.loads(metadata['meta'])
+                except KeyError:
+                    pass
+            meta = metadata['meta']
         return (metadata, meta, data)
 
     def checkPort(self, port, host=''):
@@ -252,6 +255,29 @@ class OnionrUtils:
             return False
         else:
             return True
+
+    def processBlockMetadata(self, blockHash):
+        '''
+            Read metadata from a block and cache it to the block database
+        '''
+        myBlock = Block(blockHash, self._core)
+        if myBlock.isEncrypted:
+            myBlock.decrypt()
+        blockType = myBlock.getMetadata('type') # we would use myBlock.getType() here, but it is bugged with encrypted blocks
+        try:
+            if len(blockType) <= 10:
+                self._core.updateBlockInfo(blockHash, 'dataType', blockType)
+        except TypeError:
+            pass
+
+    def escapeAnsi(self, line):
+        '''
+            Remove ANSI escape codes from a string with regex
+
+            taken or adapted from: https://stackoverflow.com/a/38662876
+        '''
+        ansi_escape = re.compile(r'(\x9B|\x1B\[)[0-?]*[ -/]*[@-~]')
+        return ansi_escape.sub('', line)
 
     def getBlockDBHash(self):
         '''
@@ -309,12 +335,12 @@ class OnionrUtils:
                 retVal = False
 
         return retVal
-    
-    def validateMetadata(metadata):
+
+    def validateMetadata(self, metadata, blockData):
         '''Validate metadata meets onionr spec (does not validate proof value computation), take in either dictionary or json string'''
         # TODO, make this check sane sizes
         retData = False
-        
+
         # convert to dict if it is json string
         if type(metadata) is str:
             try:
@@ -334,9 +360,30 @@ class OnionrUtils:
                     if self._core.requirements.blockMetadataLengths[i] < len(metadata[i]):
                         logger.warn('Block metadata key ' + i + ' exceeded maximum size')
                         break
+                if i == 'time':
+                    if not self.isIntegerString(metadata[i]):
+                        logger.warn('Block metadata time stamp is not integer string')
+                        break
             else:
                 # if metadata loop gets no errors, it does not break, therefore metadata is valid
-                retData = True
+                # make sure we do not have another block with the same data content (prevent data duplication and replay attacks)
+                nonce = self._core._utils.bytesToStr(self._core._crypto.sha3Hash(blockData))
+                try:
+                    with open(self._core.dataNonceFile, 'r') as nonceFile:
+                        if nonce in nonceFile.read():
+                            retData = False # we've seen that nonce before, so we can't pass metadata
+                            raise onionrexceptions.DataExists
+                except FileNotFoundError:
+                    retData = True
+                except onionrexceptions.DataExists:
+                    # do not set retData to True, because nonce has been seen before
+                    pass
+                else:
+                    retData = True
+                if retData:
+                    # Executes if data not seen
+                    with open(self._core.dataNonceFile, 'a') as nonceFile:
+                        nonceFile.write(nonce + '\n')
         else:
             logger.warn('In call to utils.validateMetadata, metadata must be JSON string or a dictionary object')
 
@@ -357,6 +404,14 @@ class OnionrUtils:
             retVal = True
         return retVal
 
+    def isIntegerString(self, data):
+        '''Check if a string is a valid base10 integer'''
+        try:
+            int(data)
+        except ValueError:
+            return False
+        else:
+            return True
 
     def validateID(self, id):
         '''
@@ -404,52 +459,6 @@ class OnionrUtils:
             return retVal
         except:
             return False
-
-    def loadPMs(self):
-        '''
-            Find, decrypt, and return array of PMs (array of dictionary, {from, text})
-        '''
-        blocks = Block.getBlocks(type = 'pm', core = self._core)
-        message = ''
-        sender = ''
-        for i in blocks:
-            try:
-                blockContent = i.getContent()
-
-                try:
-                    message = self._core._crypto.pubKeyDecrypt(blockContent, encodedData=True, anonymous=True)
-                except nacl.exceptions.CryptoError as e:
-                    pass
-                else:
-                    try:
-                        message = message.decode()
-                    except AttributeError:
-                        pass
-
-                    try:
-                        message = json.loads(message)
-                    except json.decoder.JSONDecodeError:
-                        pass
-                    else:
-                        logger.debug('Decrypted %s:' % i.getHash())
-                        logger.info(message["msg"])
-
-                        signer = message["id"]
-                        sig = message["sig"]
-
-                        if self.validatePubKey(signer):
-                            if self._core._crypto.edVerify(message["msg"], signer, sig, encodedData=True):
-                                logger.info("Good signature by %s" % signer)
-                            else:
-                                logger.warn("Bad signature by %s" % signer)
-                        else:
-                            logger.warn('Bad sender id: %s' % signer)
-
-            except FileNotFoundError:
-                pass
-            except Exception as error:
-                logger.error('Failed to open block %s.' % i, error=error)
-        return
 
     def getPeerByHashId(self, hash):
         '''
@@ -536,29 +545,58 @@ class OnionrUtils:
         '''returns epoch'''
         return math.floor(time.time())
 
-    def doGetRequest(self, url, port=0, proxyType='tor'):
+    def doPostRequest(self, url, data={}, port=0, proxyType='tor'):
         '''
-        Do a get request through a local tor or i2p instance
+        Do a POST request through a local tor or i2p instance
         '''
         if proxyType == 'tor':
             if port == 0:
-                raise onionrexceptions.MissingPort('Socks port required for Tor HTTP get request')
-            proxies = {'http': 'socks5://127.0.0.1:' + str(port), 'https': 'socks5://127.0.0.1:' + str(port)}
+                port = self._core.torPort
+            proxies = {'http': 'socks4a://127.0.0.1:' + str(port), 'https': 'socks4a://127.0.0.1:' + str(port)}
         elif proxyType == 'i2p':
             proxies = {'http': 'http://127.0.0.1:4444'}
         else:
             return
         headers = {'user-agent': 'PyOnionr'}
         try:
-            proxies = {'http': 'socks5h://127.0.0.1:' + str(port), 'https': 'socks5h://127.0.0.1:' + str(port)}
-            r = requests.get(url, headers=headers, proxies=proxies, allow_redirects=False, timeout=(15, 30))
+            proxies = {'http': 'socks4a://127.0.0.1:' + str(port), 'https': 'socks4a://127.0.0.1:' + str(port)}
+            r = requests.post(url, data=data, headers=headers, proxies=proxies, allow_redirects=False, timeout=(15, 30))
             retData = r.text
+        except KeyboardInterrupt:
+            raise KeyboardInterrupt
         except requests.exceptions.RequestException as e:
             logger.debug('Error: %s' % str(e))
             retData = False
         return retData
 
-    def getNistBeaconSalt(self, torPort=0):
+    def doGetRequest(self, url, port=0, proxyType='tor'):
+        '''
+        Do a get request through a local tor or i2p instance
+        '''
+        retData = False
+        if proxyType == 'tor':
+            if port == 0:
+                raise onionrexceptions.MissingPort('Socks port required for Tor HTTP get request')
+            proxies = {'http': 'socks4a://127.0.0.1:' + str(port), 'https': 'socks4a://127.0.0.1:' + str(port)}
+        elif proxyType == 'i2p':
+            proxies = {'http': 'http://127.0.0.1:4444'}
+        else:
+            return
+        headers = {'user-agent': 'PyOnionr'}
+        try:
+            proxies = {'http': 'socks4a://127.0.0.1:' + str(port), 'https': 'socks4a://127.0.0.1:' + str(port)}
+            r = requests.get(url, headers=headers, proxies=proxies, allow_redirects=False, timeout=(15, 30))
+            retData = r.text
+        except KeyboardInterrupt:
+            raise KeyboardInterrupt
+        except ValueError as e:
+            logger.debug('Failed to make request', error = e)
+        except requests.exceptions.RequestException as e:
+            logger.debug('Error: %s' % str(e))
+            retData = False
+        return retData
+
+    def getNistBeaconSalt(self, torPort=0, rounding=3600):
         '''
             Get the token for the current hour from the NIST randomness beacon
         '''
@@ -568,7 +606,7 @@ class OnionrUtils:
             except IndexError:
                 raise onionrexceptions.MissingPort('Missing Tor socks port')
         retData = ''
-        curTime = self._core._utils.getCurrentHourEpoch
+        curTime = self.getRoundedEpoch(rounding)
         self.nistSaltTimestamp = curTime
         data = self.doGetRequest('https://beacon.nist.gov/rest/record/' + str(curTime), port=torPort)
         dataXML = minidom.parseString(data, forbid_dtd=True, forbid_entities=True, forbid_external=True)
@@ -579,6 +617,19 @@ class OnionrUtils:
         else:
             self.powSalt = retData
         return retData
+    
+    def strToBytes(self, data):
+        try:
+            data = data.encode()
+        except AttributeError:
+            pass
+        return data
+    def bytesToStr(self, data):
+        try:
+            data = data.decode()
+        except AttributeError:
+            pass
+        return data
 
 def size(path='.'):
     '''

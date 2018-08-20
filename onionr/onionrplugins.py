@@ -63,15 +63,17 @@ def enable(name, onionr = None, start_event = True):
     if exists(name):
         enabled_plugins = get_enabled_plugins()
         if not name in enabled_plugins:
-            enabled_plugins.append(name)
-            config.set('plugins.enabled', enabled_plugins, True)
-
-            events.call(get_plugin(name), 'enable', onionr)
-
-            if start_event is True:
-                start(name)
-
-            return True
+            try:
+                events.call(get_plugin(name), 'enable', onionr)
+            except ImportError: # Was getting import error on Gitlab CI test "data"
+                return False
+            else:
+                enabled_plugins.append(name)
+                config.set('plugins.enabled', enabled_plugins, True)
+        
+                if start_event is True:
+                    start(name)
+                return True
         else:
             return False
     else:

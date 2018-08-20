@@ -59,7 +59,7 @@ class OnionrCrypto:
             with open(self._keyFile, 'w') as keyfile:
                 keyfile.write(self.pubKey + ',' + self.privKey)
             with open(self.keyPowFile, 'w') as keyPowFile:
-                proof = onionrproofs.POW(self.pubKey)
+                proof = onionrproofs.DataPOW(self.pubKey)
                 logger.info('Doing necessary work to insert our public key')
                 while True:
                     time.sleep(0.2)
@@ -114,6 +114,11 @@ class OnionrCrypto:
         '''Encrypt to a public key (Curve25519, taken from base32 Ed25519 pubkey)'''
         retVal = ''
 
+        try:
+            pubkey = pubkey.encode()
+        except AttributeError:
+            pass
+
         if encodedData:
             encoding = nacl.encoding.Base64Encoder
         else:
@@ -127,7 +132,11 @@ class OnionrCrypto:
         elif anonymous:
             key = nacl.signing.VerifyKey(key=pubkey, encoder=nacl.encoding.Base32Encoder).to_curve25519_public_key()
             anonBox = nacl.public.SealedBox(key)
-            retVal = anonBox.encrypt(data.encode(), encoder=encoding)
+            try:
+                data = data.encode()
+            except AttributeError:
+                pass
+            retVal = anonBox.encrypt(data, encoder=encoding)
         return retVal
 
     def pubKeyDecrypt(self, data, pubkey='', anonymous=False, encodedData=False):
@@ -238,6 +247,10 @@ class OnionrCrypto:
         return result
 
     def sha3Hash(self, data):
+        try:
+            data = data.encode()
+        except AttributeError:
+            pass
         hasher = hashlib.sha3_256()
         hasher.update(data)
         return hasher.hexdigest()
@@ -249,22 +262,22 @@ class OnionrCrypto:
             pass
         return nacl.hash.blake2b(data)
 
-    def verifyPow(self, blockContent, metadata):
+    def verifyPow(self, blockContent):
         '''
             Verifies the proof of work associated with a block
         '''
         retData = False
 
-        if not 'powRandomToken' in metadata:
-            logger.warn('No powRandomToken')
-            return False
-
         dataLen = len(blockContent)
 
-        expectedHash = self.blake2bHash(base64.b64decode(metadata['powRandomToken']) + self.blake2bHash(blockContent.encode()))
-        difficulty = 0
         try:
-            expectedHash = expectedHash.decode()
+            blockContent = blockContent.encode()
+        except AttributeError:
+            pass
+
+        blockHash = self.sha3Hash(blockContent)
+        try:
+            blockHash = blockHash.decode() # bytes on some versions for some reason
         except AttributeError:
             pass
 
@@ -273,7 +286,7 @@ class OnionrCrypto:
         mainHash = '0000000000000000000000000000000000000000000000000000000000000000'#nacl.hash.blake2b(nacl.utils.random()).decode()
         puzzle = mainHash[:difficulty]
 
-        if metadata['powRandomToken'][:difficulty] == puzzle:
+        if blockHash[:difficulty] == puzzle:
             # logger.debug('Validated block pow')
             retData = True
         else:

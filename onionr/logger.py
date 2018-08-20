@@ -123,18 +123,18 @@ def get_file():
 
     return _outputfile
 
-def raw(data):
+def raw(data, fd = sys.stdout):
     '''
         Outputs raw data to console without formatting
     '''
 
     if get_settings() & OUTPUT_TO_CONSOLE:
-        print(data)
+        ts = fd.write('%s\n' % data)
     if get_settings() & OUTPUT_TO_FILE:
         with open(_outputfile, "a+") as f:
             f.write(colors.filter(data) + '\n')
 
-def log(prefix, data, color = '', timestamp=True):
+def log(prefix, data, color = '', timestamp=True, fd = sys.stdout, prompt = True):
     '''
         Logs the data
         prefix : The prefix to the output
@@ -145,11 +145,11 @@ def log(prefix, data, color = '', timestamp=True):
     if timestamp:
         curTime = time.strftime("%m-%d %H:%M:%S") + ' '
 
-    output = colors.reset + str(color) + '[' + colors.bold + str(prefix) + colors.reset + str(color) + '] ' + curTime + str(data) + colors.reset
+    output = colors.reset + str(color) + ('[' + colors.bold + str(prefix) + colors.reset + str(color) + '] ' if prompt is True else '') + curTime + str(data) + colors.reset
     if not get_settings() & USE_ANSI:
         output = colors.filter(output)
 
-    raw(output)
+    raw(output, fd = fd)
 
 def readline(message = ''):
     '''
@@ -201,31 +201,37 @@ def confirm(default = 'y', message = 'Are you sure %s? '):
         return default == 'y'
 
 # debug: when there is info that could be useful for debugging purposes only
-def debug(data, timestamp=True):
+def debug(data, error = None, timestamp = True, prompt = True):
     if get_level() <= LEVEL_DEBUG:
-        log('/', data, timestamp=timestamp)
+        log('/', data, timestamp=timestamp, prompt = prompt)
+    if not error is None:
+        debug('Error: ' + str(error) + parse_error())
 
 # info: when there is something to notify the user of, such as the success of a process
-def info(data, timestamp=False):
+def info(data, timestamp = False, prompt = True):
     if get_level() <= LEVEL_INFO:
-        log('+', data, colors.fg.green, timestamp=timestamp)
+        log('+', data, colors.fg.green, timestamp = timestamp, prompt = prompt)
 
 # warn: when there is a potential for something bad to happen
-def warn(data, timestamp=True):
+def warn(data, error = None, timestamp = True, prompt = True):
+    if not error is None:
+        debug('Error: ' + str(error) + parse_error())
     if get_level() <= LEVEL_WARN:
-        log('!', data, colors.fg.orange, timestamp=timestamp)
+        log('!', data, colors.fg.orange, timestamp = timestamp, prompt = prompt)
 
 # error: when only one function, module, or process of the program encountered a problem and must stop
-def error(data, error=None, timestamp=True):
+def error(data, error = None, timestamp = True, prompt = True):
     if get_level() <= LEVEL_ERROR:
-        log('-', data, colors.fg.red, timestamp=timestamp)
+        log('-', data, colors.fg.red, timestamp = timestamp, fd = sys.stderr, prompt = prompt)
     if not error is None:
         debug('Error: ' + str(error) + parse_error())
 
 # fatal: when the something so bad has happened that the program must stop
-def fatal(data, timestamp=True):
+def fatal(data, error = None, timestamp=True, prompt = True):
+    if not error is None:
+        debug('Error: ' + str(error) + parse_error())
     if get_level() <= LEVEL_FATAL:
-        log('#', data, colors.bg.red + colors.fg.green + colors.bold, timestamp=timestamp)
+        log('#', data, colors.bg.red + colors.fg.green + colors.bold, timestamp=timestamp, fd = sys.stderr, prompt = prompt)
 
 # returns a formatted error message
 def parse_error():

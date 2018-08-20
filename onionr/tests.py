@@ -14,7 +14,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import unittest, sys, os, base64, tarfile, shutil, simplecrypt, logger #, btc
+import unittest, sys, os, base64, tarfile, shutil, simplecrypt, logger
 
 class OnionrTests(unittest.TestCase):
     def testPython3(self):
@@ -116,7 +116,7 @@ class OnionrTests(unittest.TestCase):
             self.assertTrue(False)
 
         self.assertTrue(True)
-
+    '''
     def testBlockAPI(self):
         logger.debug('-'*26 + '\n')
         logger.info('Running BlockAPI test #1...')
@@ -153,15 +153,6 @@ class OnionrTests(unittest.TestCase):
         if merged != original_content:
             self.assertTrue(False)
         self.assertTrue(True)
-
-
-    def testBitcoinNode(self):
-        # temporarily disabled- this takes a lot of time the CI doesn't have
-        self.assertTrue(True)
-        #logger.debug('-'*26 + '\n')
-        #logger.info('Running bitcoin node test...')
-
-        #sbitcoin = btc.OnionrBTC()
 
     def testPluginReload(self):
         logger.debug('-'*26 + '\n')
@@ -224,7 +215,7 @@ class OnionrTests(unittest.TestCase):
         logger.debug('thread finished.', timestamp = False)
 
         self.assertTrue(True)
-
+    '''
     def testQueue(self):
         logger.debug('-'*26 + '\n')
         logger.info('Running daemon queue test...')
@@ -261,7 +252,6 @@ class OnionrTests(unittest.TestCase):
     def testAddAdder(self):
         logger.debug('-'*26 + '\n')
         logger.info('Running address add+remove test')
-
         import core
         myCore = core.Core()
         if not os.path.exists('data/address.db'):
@@ -273,5 +263,11 @@ class OnionrTests(unittest.TestCase):
                 self.assertTrue(False)
         else:
             self.assertTrue(False) # <- annoying :(
+    def testCrypto(self):
+        logger.info('running cryptotests')
+        if os.system('python3 cryptotests.py') == 0:
+            self.assertTrue(True)
+        else:
+            self.assertTrue(False)
 
 unittest.main()
