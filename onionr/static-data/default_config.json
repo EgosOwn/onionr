@@ -58,7 +58,7 @@
     },
     "peers":{
         "minimumScore": -100,
-        "maxStoredPeers": 500,
+        "maxStoredPeers": 5000,
         "maxConnect": 5
     }
 }

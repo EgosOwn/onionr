@@ -131,8 +131,12 @@ class OnionrUtils:
                         if not config.get('tor.v3onions') and len(adder) == 62:
                             continue
                         if self._core.addAddress(adder):
-                            logger.info('Added %s to db.' % adder, timestamp = True)
-                            retVal = True
+                            # Check if we have the maxmium amount of allowed stored peers
+                            if config.get('peers.maxStoredPeers') > len(self._core.listAdders):
+                                logger.info('Added %s to db.' % adder, timestamp = True)
+                                retVal = True
+                            else:
+                                logger.warn('Reached the maximum amount of peers in the net database as allowed by your config.')
                     else:
                         pass
                         #logger.debug('%s is either our address or already in our DB' % adder)
@@ -630,6 +634,23 @@ class OnionrUtils:
         except AttributeError:
             pass
         return data
+    
+    def checkNetwork(self):
+        '''Check if we are connected to the internet (through Tor)'''
+        retData = False
+        connectURLs = []
+        try:
+            with open('static-data/connect-check.txt', 'r') as connectTest:
+                connectURLs = connectTest.read().split(',')
+            
+            for url in connectURLs:
+                if self.doGetRequest(url) != False:
+                    retData = True
+                    break
+
+        except FileNotFoundError:
+            pass
+        return retData
 
 def size(path='.'):
     '''

@@ -27,6 +27,8 @@ from defusedxml import minidom
 class OnionrCommunicatorDaemon:
     def __init__(self, debug, developmentMode):
 
+        self.isOnline = True # Assume we're connected to the internet
+
         # list of timer instances
         self.timers = []
 
@@ -93,6 +95,7 @@ class OnionrCommunicatorDaemon:
         OnionrCommunicatorTimers(self, self.clearOfflinePeer, 58)
         OnionrCommunicatorTimers(self, self.lookupKeys, 60, requiresPeer=True)
         OnionrCommunicatorTimers(self, self.lookupAdders, 60, requiresPeer=True)
+        netCheckTimer = OnionrCommunicatorTimers(self, self.daemonTools.netCheck, 600)
         announceTimer = OnionrCommunicatorTimers(self, self.daemonTools.announceNode, 305, requiresPeer=True, maxThreads=1)
         cleanupTimer = OnionrCommunicatorTimers(self, self.peerCleanup, 300, requiresPeer=True)
 
