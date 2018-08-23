@@ -27,7 +27,7 @@ class StorageCounter:
 
     def isFull(self):
         retData = False
-        if self._core.config.get('allocations.disk') >= self.getAmount():
+        if self._core.config.get('allocations.disk') <= self.getAmount():
             retData = True
         return retData
 
