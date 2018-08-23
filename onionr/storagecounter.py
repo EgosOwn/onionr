@@ -34,7 +34,7 @@ class StorageCounter:
     def _update(self, data):
         with open(self.dataFile, 'w') as dataFile:
             dataFile.write(str(data))
-    def getAmount(self, data):
+    def getAmount(self):
         '''Return how much disk space we're using (according to record)'''
         retData = 0
         try:
