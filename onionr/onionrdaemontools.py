@@ -61,5 +61,11 @@ class DaemonTools:
             if not self.daemon._core._utils.checkNetwork():
                 logger.warn('Network check failed, are you connected to the internet?')
                 self.daemon.isOnline = False
-
         self.daemon.decrementThreadCount('netCheck')
+    
+    def cleanOldBlocks(self):
+        '''Delete old blocks if our disk allocation is full/near full'''
+        if self.daemon._core._utils.storageCounter.isFull():
+            
+        
+        self.daemon.decrementThreadCount('cleanOldBlocks')

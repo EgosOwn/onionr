@@ -183,8 +183,16 @@ class Core:
             c.execute('Delete from hashes where hash=?;', t)
             conn.commit()
             conn.close()
+            blockFile = 'data/blocks/' + block + '.dat'
+            dataSize = 0
             try:
-                os.remove('data/blocks/' + block + '.dat')
+                ''' Get size of data when loaded as an object/var, rather than on disk, 
+                    to avoid conflict with getsizeof when saving blocks
+                '''
+                with open(blockFile, 'r') as data:
+                    dataSize = sys.getsizeof(data.read())
+                self._utils.storageCounter.removeBytes(dataSize)
+                os.remove(blockFile)
             except FileNotFoundError:
                 pass
 
@@ -280,6 +288,8 @@ class Core:
                 c.execute("UPDATE hashes SET dataSaved=1 WHERE hash = '" + dataHash + "';")
                 conn.commit()
                 conn.close()
+                with open(self.dataNonceFile, 'a') as nonceFile:
+                    nonceFile.write(dataHash + '\n')
             else:
                 raise onionrexceptions.DiskAllocationReached
 
@@ -544,7 +554,7 @@ class Core:
         if unsaved:
             execute = 'SELECT hash FROM hashes WHERE dataSaved != 1 ORDER BY RANDOM();'
         else:
-            execute = 'SELECT hash FROM hashes ORDER BY dateReceived DESC;'
+            execute = 'SELECT hash FROM hashes ORDER BY dateReceived ASC;'
         rows = list()
         for row in c.execute(execute):
             for i in row:

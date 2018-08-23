@@ -61,5 +61,5 @@ class InvalidAddress(Exception):
 
 # file exceptions
 
-class DiskAllocationReached:
+class DiskAllocationReached(Exception):
     pass

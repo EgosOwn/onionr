@@ -588,6 +588,9 @@ class Onionr:
                 time.sleep(1)
                 #TODO make runable on windows
                 subprocess.Popen([communicatorDaemon, "run", str(net.socksPort)])
+                # Print nice header thing :)
+                if config.get('general.display_header', True):
+                    self.header()
                 logger.debug('Started communicator')
                 events.event('daemon_start', onionr = self)
                 try:
@@ -758,6 +761,13 @@ class Onionr:
 
         print('Opening %s ...' % url)
         webbrowser.open(url, new = 1, autoraise = True)
+
+    def header(self, message = logger.colors.fg.pink + logger.colors.bold + 'Onionr' + logger.colors.reset + logger.colors.fg.pink + ' has started.'):
+        if os.path.exists('static-data/header.txt'):
+            with open('static-data/header.txt', 'rb') as file:
+                # only to stdout, not file or log or anything
+                sys.stderr.write(file.read().decode().replace('P', logger.colors.fg.pink).replace('W', logger.colors.reset + logger.colors.bold).replace('G', logger.colors.fg.green).replace('\n', logger.colors.reset + '\n').replace('B', logger.colors.bold).replace('V', ONIONR_VERSION))
+                logger.info(logger.colors.fg.lightgreen + '-> ' + str(message) + logger.colors.reset + logger.colors.fg.lightgreen + ' <-\n')
 
 if __name__ == "__main__":
     Onionr()

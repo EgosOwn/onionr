@@ -80,10 +80,6 @@ class OnionrCommunicatorDaemon:
         if debug or developmentMode:
             OnionrCommunicatorTimers(self, self.heartbeat, 10)
 
-        # Print nice header thing :)
-        if config.get('general.display_header', True) and not self.shutdown:
-            self.header()
-
         # Set timers, function reference, seconds
         # requiresPeer True means the timer function won't fire if we have no connected peers
         # TODO: make some of these timer counts configurable
@@ -93,6 +89,7 @@ class OnionrCommunicatorDaemon:
         OnionrCommunicatorTimers(self, self.lookupBlocks, 7, requiresPeer=True, maxThreads=1)
         OnionrCommunicatorTimers(self, self.getBlocks, 10, requiresPeer=True)
         OnionrCommunicatorTimers(self, self.clearOfflinePeer, 58)
+        OnionrCommunicatorTimers(self, self.daemonTools.cleanOldBlocks, 650)
         OnionrCommunicatorTimers(self, self.lookupKeys, 60, requiresPeer=True)
         OnionrCommunicatorTimers(self, self.lookupAdders, 60, requiresPeer=True)
         netCheckTimer = OnionrCommunicatorTimers(self, self.daemonTools.netCheck, 600)
@@ -152,6 +149,8 @@ class OnionrCommunicatorDaemon:
         triedPeers = [] # list of peers we've tried this time around
         for i in range(tryAmount):
             # check if disk allocation is used
+            if not self.isOnline:
+                break
             if self._core._utils.storageCounter.isFull():
                 logger.warn('Not looking up new blocks due to maximum amount of allowed disk space used')
                 break
@@ -188,8 +187,8 @@ class OnionrCommunicatorDaemon:
     def getBlocks(self):
         '''download new blocks in queue'''
         for blockHash in self.blockQueue:
-            if self.shutdown:
-                # Exit loop if shutting down
+            if self.shutdown or not self.isOnline:
+                # Exit loop if shutting down or offline
                 break
             # Do not download blocks being downloaded or that are already saved (edge cases)
             if blockHash in self.currentDownloading:
@@ -221,11 +220,11 @@ class OnionrCommunicatorDaemon:
                     #meta = metas[1]
                     if self._core._utils.validateMetadata(metadata, metas[2]): # check if metadata is valid, and verify nonce
                         if self._core._crypto.verifyPow(content): # check if POW is enough/correct
-                            logger.info('Block passed proof, saving.')
+                            logger.info('Block passed proof, attemping save.')
                             try:
                                 self._core.setData(content)
                             except onionrexceptions.DiskAllocationReached:
-                                logger.error("Reached disk allocation allowance, cannot save additional blocks.")
+                                logger.error("Reached disk allocation allowance, cannot save this block.")
                             else:
                                 self._core.addToBlockDB(blockHash, dataSaved=True)
                                 self._core._utils.processBlockMetadata(blockHash) # caches block metadata values to block database
@@ -488,13 +487,6 @@ class OnionrCommunicatorDaemon:
                 logger.error('Daemon detected API crash (or otherwise unable to reach API after long time), stopping...')
                 self.shutdown = True
         self.decrementThreadCount('detectAPICrash')
-
-    def header(self, message = logger.colors.fg.pink + logger.colors.bold + 'Onionr' + logger.colors.reset + logger.colors.fg.pink + ' has started.'):
-        if os.path.exists('static-data/header.txt'):
-            with open('static-data/header.txt', 'rb') as file:
-                # only to stdout, not file or log or anything
-                sys.stderr.write(file.read().decode().replace('P', logger.colors.fg.pink).replace('W', logger.colors.reset + logger.colors.bold).replace('G', logger.colors.fg.green).replace('\n', logger.colors.reset + '\n').replace('B', logger.colors.bold).replace('V', onionr.ONIONR_VERSION))
-                logger.info(logger.colors.fg.lightgreen + '-> ' + str(message) + logger.colors.reset + logger.colors.fg.lightgreen + ' <-\n')
 
 class OnionrCommunicatorTimers:
     def __init__(self, daemonInstance, timerFunction, frequency, makeThread=True, threadAmount=1, maxThreads=5, requiresPeer=False):

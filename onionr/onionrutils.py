@@ -384,10 +384,6 @@ class OnionrUtils:
                     pass
                 else:
                     retData = True
-                if retData:
-                    # Executes if data not seen
-                    with open(self._core.dataNonceFile, 'a') as nonceFile:
-                        nonceFile.write(nonce + '\n')
         else:
             logger.warn('In call to utils.validateMetadata, metadata must be JSON string or a dictionary object')
 
