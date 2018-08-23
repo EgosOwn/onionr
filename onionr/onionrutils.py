@@ -631,7 +631,7 @@ class OnionrUtils:
             pass
         return data
     
-    def checkNetwork(self):
+    def checkNetwork(self, torPort=0):
         '''Check if we are connected to the internet (through Tor)'''
         retData = False
         connectURLs = []
@@ -640,7 +640,7 @@ class OnionrUtils:
                 connectURLs = connectTest.read().split(',')
             
             for url in connectURLs:
-                if self.doGetRequest(url) != False:
+                if self.doGetRequest(url, port=torPort) != False:
                     retData = True
                     break
         except FileNotFoundError:

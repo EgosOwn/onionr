@@ -90,7 +90,11 @@ def peerCleanup(coreInst):
         if PeerProfiles(address, coreInst).score < minScore:
             coreInst.removeAddress(address)
             try:
-                coreInst._blacklist.addToDB(address, dataType=1, expire=300)
+                if (self.coreInst._utils.getEpoch() - coreInst.getPeerInfo(address, 4)) >= 600:
+                    expireTime = 600
+                else:
+                    expireTime = 86400
+                coreInst._blacklist.addToDB(address, dataType=1, expire=expireTime)
             except sqlite3.IntegrityError: #TODO just make sure its not a unique constraint issue
                 pass
             logger.warn('Removed address ' + address + '.')

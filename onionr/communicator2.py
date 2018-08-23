@@ -89,7 +89,7 @@ class OnionrCommunicatorDaemon:
         OnionrCommunicatorTimers(self, self.lookupBlocks, 7, requiresPeer=True, maxThreads=1)
         OnionrCommunicatorTimers(self, self.getBlocks, 10, requiresPeer=True)
         OnionrCommunicatorTimers(self, self.clearOfflinePeer, 58)
-        OnionrCommunicatorTimers(self, self.daemonTools.cleanOldBlocks, 650)
+        OnionrCommunicatorTimers(self, self.daemonTools.cleanOldBlocks, 65)
         OnionrCommunicatorTimers(self, self.lookupKeys, 60, requiresPeer=True)
         OnionrCommunicatorTimers(self, self.lookupAdders, 60, requiresPeer=True)
         netCheckTimer = OnionrCommunicatorTimers(self, self.daemonTools.netCheck, 600)
@@ -152,7 +152,7 @@ class OnionrCommunicatorDaemon:
             if not self.isOnline:
                 break
             if self._core._utils.storageCounter.isFull():
-                logger.warn('Not looking up new blocks due to maximum amount of allowed disk space used')
+                logger.debug('Not looking up new blocks due to maximum amount of allowed disk space used')
                 break
             peer = self.pickOnlinePeer() # select random online peer
             # if we've already tried all the online peers this time around, stop
@@ -187,6 +187,7 @@ class OnionrCommunicatorDaemon:
     def getBlocks(self):
         '''download new blocks in queue'''
         for blockHash in self.blockQueue:
+            removeFromQueue = True
             if self.shutdown or not self.isOnline:
                 # Exit loop if shutting down or offline
                 break
@@ -198,6 +199,8 @@ class OnionrCommunicatorDaemon:
                 logger.debug('%s is already saved' % (blockHash,))
                 self.blockQueue.remove(blockHash)
                 continue
+            if self._core._utils.storageCounter.isFull():
+                break
             self.currentDownloading.append(blockHash) # So we can avoid concurrent downloading in other threads of same block
             logger.info("Attempting to download %s..." % blockHash)
             peerUsed = self.pickOnlinePeer()
@@ -225,6 +228,7 @@ class OnionrCommunicatorDaemon:
                                 self._core.setData(content)
                             except onionrexceptions.DiskAllocationReached:
                                 logger.error("Reached disk allocation allowance, cannot save this block.")
+                                removeFromQueue = False
                             else:
                                 self._core.addToBlockDB(blockHash, dataSaved=True)
                                 self._core._utils.processBlockMetadata(blockHash) # caches block metadata values to block database
@@ -246,7 +250,8 @@ class OnionrCommunicatorDaemon:
                     # Punish peer for sharing invalid block (not always malicious, but is bad regardless)
                     onionrpeers.PeerProfiles(peerUsed, self._core).addScore(-50)  
                     logger.warn('Block hash validation failed for ' + blockHash + ' got ' + tempHash)
-                self.blockQueue.remove(blockHash) # remove from block queue both if success or false
+                if removeFromQueue:
+                    self.blockQueue.remove(blockHash) # remove from block queue both if success or false
             self.currentDownloading.remove(blockHash)
         self.decrementThreadCount('getBlocks')
         return
