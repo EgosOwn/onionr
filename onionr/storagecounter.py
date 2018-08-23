@@ -38,7 +38,7 @@ class StorageCounter:
         '''Return how much disk space we're using (according to record)'''
         retData = 0
         try:
-            with open(self.dataFile, 'w') as dataFile:
+            with open(self.dataFile, 'r') as dataFile:
                 retData = int(dataFile.read())
         except FileNotFoundError:
             pass
