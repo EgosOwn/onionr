@@ -50,6 +50,7 @@ class Core:
             self.dbCreate = dbcreator.DBCreator(self)
 
             self.usageFile = 'data/disk-usage.txt'
+            self.config = config
 
             if not os.path.exists('data/'):
                 os.mkdir('data/')
@@ -256,6 +257,8 @@ class Core:
             Set the data assciated with a hash
         '''
         data = data
+        dataSize = sys.getsizeof(data)
+
         if not type(data) is bytes:
             data = data.encode()
             
@@ -268,15 +271,17 @@ class Core:
             pass # TODO: properly check if block is already saved elsewhere
             #raise Exception("Data is already set for " + dataHash)
         else:
-            blockFile = open(blockFileName, 'wb')
-            blockFile.write(data)
-            blockFile.close()
-
-        conn = sqlite3.connect(self.blockDB)
-        c = conn.cursor()
-        c.execute("UPDATE hashes SET dataSaved=1 WHERE hash = '" + dataHash + "';")
-        conn.commit()
-        conn.close()
+            if self._utils.storageCounter.addBytes(dataSize) != False:
+                blockFile = open(blockFileName, 'wb')
+                blockFile.write(data)
+                blockFile.close()
+                conn = sqlite3.connect(self.blockDB)
+                c = conn.cursor()
+                c.execute("UPDATE hashes SET dataSaved=1 WHERE hash = '" + dataHash + "';")
+                conn.commit()
+                conn.close()
+            else:
+                raise onionrexceptions.DiskAllocationReached
 
         return dataHash
 

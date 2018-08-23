@@ -117,14 +117,14 @@ class OnionrCommunicatorDaemon:
             pass
 
         logger.info('Goodbye.')
-        self._core._utils.localCommand('shutdown')
+        self._core._utils.localCommand('shutdown') # shutdown the api
         time.sleep(0.5)
 
     def lookupKeys(self):
         '''Lookup new keys'''
         logger.debug('Looking up new keys...')
         tryAmount = 1
-        for i in range(tryAmount):
+        for i in range(tryAmount): # amount of times to ask peers for new keys
             # Download new key list from random online peers
             peer = self.pickOnlinePeer()
             newKeys = self.peerAction(peer, action='kex')
@@ -151,6 +151,10 @@ class OnionrCommunicatorDaemon:
         existingBlocks = self._core.getBlockList()
         triedPeers = [] # list of peers we've tried this time around
         for i in range(tryAmount):
+            # check if disk allocation is used
+            if self._core._utils.storageCounter.isFull():
+                logger.warn('Not looking up new blocks due to maximum amount of allowed disk space used')
+                break
             peer = self.pickOnlinePeer() # select random online peer
             # if we've already tried all the online peers this time around, stop
             if peer in triedPeers:
@@ -165,7 +169,7 @@ class OnionrCommunicatorDaemon:
             if newDBHash != self._core.getAddressInfo(peer, 'DBHash'):
                 self._core.setAddressInfo(peer, 'DBHash', newDBHash)
                 try:
-                    newBlocks = self.peerAction(peer, 'getBlockHashes')
+                    newBlocks = self.peerAction(peer, 'getBlockHashes') # get list of new block hashes
                 except Exception as error:
                     logger.warn("could not get new blocks with " + peer, error=error)
                     newBlocks = False
@@ -177,7 +181,7 @@ class OnionrCommunicatorDaemon:
                             if not i in existingBlocks:
                                 # if block does not exist on disk and is not already in block queue
                                 if i not in self.blockQueue and not self._core._blacklist.inBlacklist(i):
-                                    self.blockQueue.append(i)
+                                    self.blockQueue.append(i) # add blocks to download queue
         self.decrementThreadCount('lookupBlocks')
         return
 
@@ -185,7 +189,9 @@ class OnionrCommunicatorDaemon:
         '''download new blocks in queue'''
         for blockHash in self.blockQueue:
             if self.shutdown:
+                # Exit loop if shutting down
                 break
+            # Do not download blocks being downloaded or that are already saved (edge cases)
             if blockHash in self.currentDownloading:
                 logger.debug('ALREADY DOWNLOADING ' + blockHash)
                 continue
@@ -193,7 +199,7 @@ class OnionrCommunicatorDaemon:
                 logger.debug('%s is already saved' % (blockHash,))
                 self.blockQueue.remove(blockHash)
                 continue
-            self.currentDownloading.append(blockHash)
+            self.currentDownloading.append(blockHash) # So we can avoid concurrent downloading in other threads of same block
             logger.info("Attempting to download %s..." % blockHash)
             peerUsed = self.pickOnlinePeer()
             content = self.peerAction(peerUsed, 'getData', data=blockHash) # block content from random peer (includes metadata)
@@ -216,9 +222,13 @@ class OnionrCommunicatorDaemon:
                     if self._core._utils.validateMetadata(metadata, metas[2]): # check if metadata is valid, and verify nonce
                         if self._core._crypto.verifyPow(content): # check if POW is enough/correct
                             logger.info('Block passed proof, saving.')
-                            self._core.setData(content)
-                            self._core.addToBlockDB(blockHash, dataSaved=True)
-                            self._core._utils.processBlockMetadata(blockHash) # caches block metadata values to block database
+                            try:
+                                self._core.setData(content)
+                            except onionrexceptions.DiskAllocationReached:
+                                logger.error("Reached disk allocation allowance, cannot save additional blocks.")
+                            else:
+                                self._core.addToBlockDB(blockHash, dataSaved=True)
+                                self._core._utils.processBlockMetadata(blockHash) # caches block metadata values to block database
                         else:
                             logger.warn('POW failed for block ' + blockHash)
                     else:

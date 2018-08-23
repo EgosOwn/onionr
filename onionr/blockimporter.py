@@ -39,8 +39,12 @@ def importBlockFromData(content, coreInst):
     if coreInst._utils.validateMetadata(metadata, metas[2]): # check if metadata is valid
         if coreInst._crypto.verifyPow(content): # check if POW is enough/correct
             logger.info('Block passed proof, saving.')
-            blockHash = coreInst.setData(content)
-            coreInst.addToBlockDB(blockHash, dataSaved=True)
-            coreInst._utils.processBlockMetadata(blockHash) # caches block metadata values to block database
-            retData = True
+            try:
+                blockHash = coreInst.setData(content)
+            except onionrexceptions.DiskAllocationReached:
+                pass
+            else:
+                coreInst.addToBlockDB(blockHash, dataSaved=True)
+                coreInst._utils.processBlockMetadata(blockHash) # caches block metadata values to block database
+                retData = True
     return retData

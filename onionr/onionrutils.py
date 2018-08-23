@@ -23,7 +23,7 @@ import nacl.signing, nacl.encoding
 from onionrblockapi import Block
 import onionrexceptions
 from defusedxml import minidom
-import pgpwords
+import pgpwords, storagecounter
 if sys.version_info < (3, 6):
     try:
         import sha3
@@ -40,9 +40,9 @@ class OnionrUtils:
         self._core = coreInstance
 
         self.timingToken = ''
-
         self.avoidDupe = [] # list used to prevent duplicate requests per peer for certain actions
         self.peerProcessing = {} # dict of current peer actions: peer, actionList
+        self.storageCounter = storagecounter.StorageCounter(self._core)
         config.reload()
         return
 
@@ -647,7 +647,6 @@ class OnionrUtils:
                 if self.doGetRequest(url) != False:
                     retData = True
                     break
-
         except FileNotFoundError:
             pass
         return retData
