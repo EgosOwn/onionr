@@ -175,6 +175,8 @@ class Core:
     def removeBlock(self, block):
         '''
             remove a block from this node (does not automatically blacklist)
+
+            **You may want blacklist.addToDB(blockHash)
         '''
         if self._utils.validateHash(block):
             conn = sqlite3.connect(self.blockDB)

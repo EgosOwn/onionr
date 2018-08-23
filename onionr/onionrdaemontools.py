@@ -66,7 +66,7 @@ class DaemonTools:
     def cleanOldBlocks(self):
         '''Delete old blocks if our disk allocation is full/near full'''
         while self.daemon._core._utils.storageCounter.isFull():
-            oldest = self.daemon._core.getBlockList[0]
+            oldest = self.daemon._core.getBlockList()[0]
             self.daemon._core._blacklist.addToDB(oldest)
             self.daemon._core.removeBlock(oldest)
             logger.info('Deleted block: %s' % (oldest,))        
