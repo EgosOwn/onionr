@@ -52,6 +52,8 @@ class Core:
             self.usageFile = 'data/disk-usage.txt'
             self.config = config
 
+            self.maxBlockSize = 10000000 # max block size in bytes
+
             if not os.path.exists('data/'):
                 os.mkdir('data/')
             if not os.path.exists('data/blocks/'):

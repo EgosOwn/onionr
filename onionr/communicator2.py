@@ -199,6 +199,8 @@ class OnionrCommunicatorDaemon:
                 logger.debug('%s is already saved' % (blockHash,))
                 self.blockQueue.remove(blockHash)
                 continue
+            if self._core._blacklist.inBlacklist(blockHash):
+                continue
             if self._core._utils.storageCounter.isFull():
                 break
             self.currentDownloading.append(blockHash) # So we can avoid concurrent downloading in other threads of same block
@@ -223,7 +225,7 @@ class OnionrCommunicatorDaemon:
                     #meta = metas[1]
                     if self._core._utils.validateMetadata(metadata, metas[2]): # check if metadata is valid, and verify nonce
                         if self._core._crypto.verifyPow(content): # check if POW is enough/correct
-                            logger.info('Block passed proof, attemping save.')
+                            logger.info('Block passed proof, attempting save.')
                             try:
                                 self._core.setData(content)
                             except onionrexceptions.DiskAllocationReached:
