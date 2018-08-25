@@ -50,6 +50,9 @@ class Core:
             self.dbCreate = dbcreator.DBCreator(self)
 
             self.usageFile = 'data/disk-usage.txt'
+            self.config = config
+
+            self.maxBlockSize = 10000000 # max block size in bytes
 
             if not os.path.exists('data/'):
                 os.mkdir('data/')
@@ -174,6 +177,8 @@ class Core:
     def removeBlock(self, block):
         '''
             remove a block from this node (does not automatically blacklist)
+
+            **You may want blacklist.addToDB(blockHash)
         '''
         if self._utils.validateHash(block):
             conn = sqlite3.connect(self.blockDB)
@@ -182,8 +187,16 @@ class Core:
             c.execute('Delete from hashes where hash=?;', t)
             conn.commit()
             conn.close()
+            blockFile = 'data/blocks/' + block + '.dat'
+            dataSize = 0
             try:
-                os.remove('data/blocks/' + block + '.dat')
+                ''' Get size of data when loaded as an object/var, rather than on disk, 
+                    to avoid conflict with getsizeof when saving blocks
+                '''
+                with open(blockFile, 'r') as data:
+                    dataSize = sys.getsizeof(data.read())
+                self._utils.storageCounter.removeBytes(dataSize)
+                os.remove(blockFile)
             except FileNotFoundError:
                 pass
 
@@ -256,6 +269,8 @@ class Core:
             Set the data assciated with a hash
         '''
         data = data
+        dataSize = sys.getsizeof(data)
+
         if not type(data) is bytes:
             data = data.encode()
             
@@ -268,15 +283,19 @@ class Core:
             pass # TODO: properly check if block is already saved elsewhere
             #raise Exception("Data is already set for " + dataHash)
         else:
-            blockFile = open(blockFileName, 'wb')
-            blockFile.write(data)
-            blockFile.close()
-
-        conn = sqlite3.connect(self.blockDB)
-        c = conn.cursor()
-        c.execute("UPDATE hashes SET dataSaved=1 WHERE hash = '" + dataHash + "';")
-        conn.commit()
-        conn.close()
+            if self._utils.storageCounter.addBytes(dataSize) != False:
+                blockFile = open(blockFileName, 'wb')
+                blockFile.write(data)
+                blockFile.close()
+                conn = sqlite3.connect(self.blockDB)
+                c = conn.cursor()
+                c.execute("UPDATE hashes SET dataSaved=1 WHERE hash = '" + dataHash + "';")
+                conn.commit()
+                conn.close()
+                with open(self.dataNonceFile, 'a') as nonceFile:
+                    nonceFile.write(dataHash + '\n')
+            else:
+                raise onionrexceptions.DiskAllocationReached
 
         return dataHash
 
@@ -539,7 +558,7 @@ class Core:
         if unsaved:
             execute = 'SELECT hash FROM hashes WHERE dataSaved != 1 ORDER BY RANDOM();'
         else:
-            execute = 'SELECT hash FROM hashes ORDER BY dateReceived DESC;'
+            execute = 'SELECT hash FROM hashes ORDER BY dateReceived ASC;'
         rows = list()
         for row in c.execute(execute):
             for i in row:
