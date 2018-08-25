@@ -60,5 +60,9 @@
         "minimumScore": -100,
         "maxStoredPeers": 5000,
         "maxConnect": 5
+    },
+    "timers":{
+        "lookupBlocks": 25,
+        "getBlocks": 30
     }
 }
