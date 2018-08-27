@@ -264,9 +264,24 @@ class OnionrUtils:
         if myBlock.isEncrypted:
             myBlock.decrypt()
         blockType = myBlock.getMetadata('type') # we would use myBlock.getType() here, but it is bugged with encrypted blocks
+        signer = myBlock.getSigner()
+
         try:
             if len(blockType) <= 10:
                 self._core.updateBlockInfo(blockHash, 'dataType', blockType)
+
+                if blockType == 'userInfo':
+                    if myBlock.verifySig():
+                        peerName = myBlock.getMetadata('name')
+                        try:
+                            if len(peerName) > 20:
+                                raise onionrexceptions.InvalidMetdata('Peer name specified is too large')
+                        except TypeError:
+                            pass
+                        except onionrexceptions.InvalidMetadata:
+                            pass
+                        else:
+                            self._core.setPeerInfo(signer, 'name', peerName)
         except TypeError:
             pass
 

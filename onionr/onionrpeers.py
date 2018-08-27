@@ -1,5 +1,5 @@
 '''
-    Onionr - P2P Microblogging Platform & Social network.
+    Onionr - P2P Anonymous Storage Network
 
     This file contains both the PeerProfiles class for network profiling of Onionr nodes
 '''

@@ -61,7 +61,6 @@ class DBCreator:
             ID text not null,
             name text,
             adders text,
-            blockDBHash text,
             forwardKey text,
             dateSeen not null,
             bytesStored int,

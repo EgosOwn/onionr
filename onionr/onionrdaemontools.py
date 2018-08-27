@@ -1,5 +1,5 @@
 '''
-    Onionr - P2P Microblogging Platform & Social network.
+    Onionr - P2P Anonymous Storage Network
 
     Contains the CommunicatorUtils class which contains useful functions for the communicator daemon
 '''

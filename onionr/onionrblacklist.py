@@ -1,5 +1,5 @@
 '''
-    Onionr - P2P Microblogging Platform & Social network.
+    Onionr - P2P Anonymous Storage Network
 
     This file handles maintenence of a blacklist database, for blocks and peers
 '''

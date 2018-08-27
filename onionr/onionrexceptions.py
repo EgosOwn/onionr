@@ -1,5 +1,5 @@
 '''
-    Onionr - P2P Microblogging Platform & Social network.
+    Onionr - P2P Anonymous Storage Network
 
     This file contains exceptions for onionr
 '''
@@ -32,6 +32,9 @@ class OnlinePeerNeeded(Exception):
 
 # crypto exceptions
 class InvalidPubkey(Exception):
+    pass
+
+class KeyNotKnown(Exception):
     pass
 
 # block exceptions

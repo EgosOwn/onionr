@@ -1,5 +1,5 @@
 '''
-    Onionr - P2P Microblogging Platform & Social network
+    Onionr - P2P Anonymous Storage Network
 
     Core Onionr library, useful for external programs. Handles peer & data processing
 '''
@@ -102,7 +102,7 @@ class Core:
         conn = sqlite3.connect(self.peerDB)
         hashID = self._crypto.pubKeyHashID(peerID)
         c = conn.cursor()
-        t = (peerID, name, 'unknown', hashID, powID)
+        t = (peerID, name, 'unknown', hashID, powID, 0)
 
         for i in c.execute("SELECT * FROM PEERS where id = '" + peerID + "';"):
             try:
@@ -113,7 +113,7 @@ class Core:
                 pass
             except IndexError:
                 pass
-        c.execute('INSERT INTO peers (id, name, dateSeen, pow, hashID) VALUES(?, ?, ?, ?, ?);', t)
+        c.execute('INSERT INTO peers (id, name, dateSeen, pow, hashID, trust) VALUES(?, ?, ?, ?, ?, ?);', t)
         conn.commit()
         conn.close()
 
@@ -403,19 +403,23 @@ class Core:
         conn.close()
         return addressList
 
-    def listPeers(self, randomOrder=True, getPow=False):
+    def listPeers(self, randomOrder=True, getPow=False, trust=0):
         '''
             Return a list of public keys (misleading function name)
 
             randomOrder determines if the list should be in a random order
+            trust sets the minimum trust to list
         '''
         conn = sqlite3.connect(self.peerDB)
         c = conn.cursor()
         payload = ""
+        if trust not in (0, 1, 2):
+            logger.error('Tried to select invalid trust.')
+            return
         if randomOrder:
-            payload = 'SELECT * FROM peers ORDER BY RANDOM();'
+            payload = 'SELECT * FROM peers where trust >= %s ORDER BY RANDOM();' % (trust,)
         else:
-            payload = 'SELECT * FROM peers;'
+            payload = 'SELECT * FROM peers where trust >= %s;' % (trust,)
         peerList = []
         for i in c.execute(payload):
             try:

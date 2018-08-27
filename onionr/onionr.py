@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 '''
-    Onionr - P2P Microblogging Platform & Social network.
+    Onionr - P2P Anonymous Storage Network
 
     Onionr is the name for both the protocol and the original/reference software.
 
@@ -32,7 +32,7 @@ import onionrutils
 from onionrutils import OnionrUtils
 from netcontroller import NetController
 from onionrblockapi import Block
-import onionrproofs
+import onionrproofs, onionrexceptions, onionrusers
 
 try:
     from urllib3.contrib.socks import SOCKSProxyManager
@@ -210,7 +210,9 @@ class Onionr:
             'getpass': self.printWebPassword,
             'get-pass': self.printWebPassword,
             'getpasswd': self.printWebPassword,
-            'get-passwd': self.printWebPassword
+            'get-passwd': self.printWebPassword,
+
+            'friend': self.friendCmd
         }
 
         self.cmdhelp = {
@@ -234,6 +236,7 @@ class Onionr:
             'pex': 'exchange addresses with peers (done automatically)',
             'blacklist-block': 'deletes a block by hash and permanently removes it from your node',
             'introduce': 'Introduce your node to the public Onionr network',
+            'friend': '[add|remove] [public key/id]'
         }
 
         # initialize plugins
@@ -260,6 +263,41 @@ class Onionr:
 
     def getCommands(self):
         return self.cmds
+    
+    def friendCmd(self):
+        '''List, add, or remove friend(s)'''
+        friend = ''
+        try:
+            action = sys.argv[2]
+        except IndexError:
+            logger.info('Syntax: friend add/remove/list [address]')
+        else:
+            action = action.lower()
+            if action == 'list':
+                for friend in self.onionrCore.listPeers(randomOrder=False, trust=1):
+                    logger.info(friend)
+            elif action in ('add', 'remove'):
+                try:
+                    friend = sys.argv[3]
+                    if not self.onionrUtils.validatePubKey(friend):
+                        raise onionrexceptions.InvalidPubkey('Public key is invalid')
+                    if friend not in self.onionrCore.listPeers():
+                        raise onionrexceptions.KeyNotKnown
+                    friend = onionrusers.OnionrUser(self.onionrCore, friend)
+                except IndexError:
+                    logger.error('Friend ID is required.')
+                except onionrexceptions.KeyNotKnown:
+                    logger.error('That peer is not in our database')
+                else:
+                    if action == 'add':
+                        friend.setTrust(1)
+                        logger.info('Added %s as friend.' % (friend.publicKey,))
+                    else:
+                        friend.setTrust(0)
+                        logger.info('Removed %s as friend.' % (friend.publicKey,))
+            else:
+                logger.info('Syntax: friend add/remove/list [address]')
+
 
     def banBlock(self):
         try:
