@@ -264,7 +264,7 @@ class OnionrUtils:
         if myBlock.isEncrypted:
             myBlock.decrypt()
         blockType = myBlock.getMetadata('type') # we would use myBlock.getType() here, but it is bugged with encrypted blocks
-        signer = myBlock.getSigner()
+        signer = myBlock.signer
 
         try:
             if len(blockType) <= 10:

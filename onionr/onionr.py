@@ -275,7 +275,10 @@ class Onionr:
             action = action.lower()
             if action == 'list':
                 for friend in self.onionrCore.listPeers(randomOrder=False, trust=1):
-                    logger.info(friend)
+                    if friend == self.onionrCore._crypto.pubKey:
+                        continue
+                    friendProfile = onionrusers.OnionrUser(self.onionrCore, friend)
+                    logger.info(friend + ' - ' + friendProfile.getName())
             elif action in ('add', 'remove'):
                 try:
                     friend = sys.argv[3]

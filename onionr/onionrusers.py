@@ -31,9 +31,19 @@ class OnionrUser:
         self._core.setPeerInfo(self.publicKey, 'trust', newTrust)
 
     def isFriend(self):
-        if self._core.getPeerInfo(self.publicKey, 6) == 1:
+        if self._core.getPeerInfo(self.publicKey, 'trust') == 1:
             return True
         return False
+    
+    def getName(self):
+        retData = 'anonymous'
+        name = self._core.getPeerInfo(self.publicKey, 'name')
+        try:
+            if len(name) > 0:
+                retData = name
+        except ValueError:
+            pass
+        return retData
 
     def encrypt(self, data):
         encrypted = coreInst._crypto.pubKeyEncrypt(data, self.publicKey, encodedData=True)
