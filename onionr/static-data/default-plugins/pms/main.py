@@ -82,9 +82,14 @@ class OnionrMail:
                 blockCount += 1
                 pmBlockMap[blockCount] = blockHash
                 
-                block = Block(blockHash, core=self.myCore)
-                senderKey = block.getMetadata('signer')
-                senderDisplay = onionrusers.OnionrUser(self.myCore, senderKey)
+                block = pmBlocks[blockHash]
+                senderKey = block.signer
+                try:
+                    senderKey = senderKey.decode()
+                except AttributeError:
+                    pass
+                print("DEBUG:", senderKey)
+                senderDisplay = onionrusers.OnionrUser(self.myCore, senderKey).getName()
                 if senderDisplay == 'anonymous':
                     senderDisplay = senderKey
 

@@ -31,7 +31,7 @@ class OnionrCLIUI:
         self.myCore = apiInst.get_core()
         return
     def start(self):
-        name = input("Enter your name")
+        name = input("Enter your name: ")
         self.myCore.insertBlock("userInfo-" + str(uuid.uuid1()), sign=True, header='userInfo', meta={'name': name})
         return
 

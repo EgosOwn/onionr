@@ -95,7 +95,10 @@ class OnionrUtils:
                     except IndexError:
                         logger.warn('No pow token')
                         continue
-                    value = base64.b64decode(key[1])
+                    try:
+                        value = base64.b64decode(key[1])
+                    except binascii.Error:
+                        continue
                     hashedKey = self._core._crypto.blake2bHash(key[0])
                     powHash = self._core._crypto.blake2bHash(value + hashedKey)
                     try:
@@ -264,8 +267,7 @@ class OnionrUtils:
         if myBlock.isEncrypted:
             myBlock.decrypt()
         blockType = myBlock.getMetadata('type') # we would use myBlock.getType() here, but it is bugged with encrypted blocks
-        signer = myBlock.signer
-
+        signer = self.bytesToStr(myBlock.signer)
         try:
             if len(blockType) <= 10:
                 self._core.updateBlockInfo(blockHash, 'dataType', blockType)
@@ -282,7 +284,7 @@ class OnionrUtils:
                             pass
                         else:
                             self._core.setPeerInfo(signer, 'name', peerName)
-                            logger.info('%s is now using the name %s.' % (signer, peerName))
+                            logger.info('%s is now using the name %s.' % (signer, self.escapeAnsi(peerName)))
         except TypeError:
             pass
 

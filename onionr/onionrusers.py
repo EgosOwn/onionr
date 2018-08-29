@@ -17,7 +17,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import onionrblockapi, logger
+import onionrblockapi, logger, onionrexceptions
 class OnionrUser:
     def __init__(self, coreInst, publicKey):
         self.trust = 0
@@ -69,5 +69,8 @@ class OnionrUser:
                 if block.verifySig():
                     newName = block.getMetadata('name')
                     if newName.isalnum():
-                        logger.info('%s is now using the name %s.' % (self.publicKey, newName))
+                        logger.info('%s is now using the name %s.' % (self.publicKey, self._core._utils.escapeAnsi(newName)))
                         self._core.setPeerInfo(self.publicKey, 'name', newName)
+                        print("DEBUG PLS")
+            else:
+                raise onionrexceptions.InvalidPubkey
