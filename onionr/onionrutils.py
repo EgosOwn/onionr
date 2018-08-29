@@ -23,7 +23,7 @@ import nacl.signing, nacl.encoding
 from onionrblockapi import Block
 import onionrexceptions
 from defusedxml import minidom
-import pgpwords
+import pgpwords, onionrusers
 if sys.version_info < (3, 6):
     try:
         import sha3
@@ -95,7 +95,6 @@ class OnionrUtils:
                     except IndexError:
                         logger.warn('No pow token')
                         continue
-                    #powHash = self._core._crypto.blake2bHash(base64.b64decode(key[1]) + self._core._crypto.blake2bHash(key[0].encode()))
                     value = base64.b64decode(key[1])
                     hashedKey = self._core._crypto.blake2bHash(key[0])
                     powHash = self._core._crypto.blake2bHash(value + hashedKey)
@@ -106,6 +105,7 @@ class OnionrUtils:
                     if powHash.startswith(b'0000'):
                         if not key[0] in self._core.listPeers(randomOrder=False) and type(key) != None and key[0] != self._core._crypto.pubKey:
                             if self._core.addPeer(key[0], key[1]):
+                                onionrusers.OnionrUser(self._core, key[0]).findAndSetID()
                                 retVal = True
                             else:
                                 logger.warn("Failed to add key")
@@ -282,6 +282,7 @@ class OnionrUtils:
                             pass
                         else:
                             self._core.setPeerInfo(signer, 'name', peerName)
+                            logger.info('%s is now using the name %s.' % (signer, peerName))
         except TypeError:
             pass
 

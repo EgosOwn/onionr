@@ -265,17 +265,21 @@ class Onionr:
         return self.cmds
     
     def friendCmd(self):
-        '''List, add, or remove friend(s)'''
+        '''List, add, or remove friend(s)
+        Changes their peer DB entry.
+        '''
         friend = ''
         try:
+            # Get the friend command
             action = sys.argv[2]
         except IndexError:
             logger.info('Syntax: friend add/remove/list [address]')
         else:
             action = action.lower()
             if action == 'list':
+                # List out peers marked as our friend
                 for friend in self.onionrCore.listPeers(randomOrder=False, trust=1):
-                    if friend == self.onionrCore._crypto.pubKey:
+                    if friend == self.onionrCore._crypto.pubKey: # do not list our key
                         continue
                     friendProfile = onionrusers.OnionrUser(self.onionrCore, friend)
                     logger.info(friend + ' - ' + friendProfile.getName())

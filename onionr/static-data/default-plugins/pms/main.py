@@ -21,7 +21,7 @@
 # Imports some useful libraries
 import logger, config, threading, time, readline, datetime
 from onionrblockapi import Block
-import onionrexceptions
+import onionrexceptions, onionrusers
 import locale
 locale.setlocale(locale.LC_ALL, '')
 
@@ -81,8 +81,15 @@ class OnionrMail:
                     continue
                 blockCount += 1
                 pmBlockMap[blockCount] = blockHash
+                
+                block = Block(blockHash, core=self.myCore)
+                senderKey = block.getMetadata('signer')
+                senderDisplay = onionrusers.OnionrUser(self.myCore, senderKey)
+                if senderDisplay == 'anonymous':
+                    senderDisplay = senderKey
+
                 blockDate = pmBlocks[blockHash].getDate().strftime("%m/%d %H:%M")
-                print('%s. %s: %s' % (blockCount, blockDate, blockHash))
+                print('%s. %s - %s: %s' % (blockCount, blockDate, senderDisplay, blockHash))
 
             try:
                 choice = logger.readline('Enter a block number, -r to refresh, or -q to stop: ').strip().lower()

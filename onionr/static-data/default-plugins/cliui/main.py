@@ -19,7 +19,7 @@
 '''
 
 # Imports some useful libraries
-import logger, config, threading, time
+import logger, config, threading, time, uuid
 from onionrblockapi import Block
 
 plugin_name = 'cliui'
@@ -32,7 +32,7 @@ class OnionrCLIUI:
         return
     def start(self):
         name = input("Enter your name")
-        self.myCore.insertBlock("userInfo", sign=True, header='userInfo', meta={'name': name})
+        self.myCore.insertBlock("userInfo-" + str(uuid.uuid1()), sign=True, header='userInfo', meta={'name': name})
         return
 
 def on_init(api, data = None):

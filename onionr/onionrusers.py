@@ -17,6 +17,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
+import onionrblockapi, logger
 class OnionrUser:
     def __init__(self, coreInst, publicKey):
         self.trust = 0
@@ -59,3 +60,14 @@ class OnionrUser:
     def forwardDecrypt(self, encrypted):
         return
     
+    def findAndSetID(self):
+        '''Find any info about the user from existing blocks and cache it to their DB entry'''
+        infoBlocks = []
+        for bHash in self._core.getBlocksByType('userInfo'):
+            block = onionrblockapi.Block(bHash, core=self._core)
+            if block.signer == self.publicKey:
+                if block.verifySig():
+                    newName = block.getMetadata('name')
+                    if newName.isalnum():
+                        logger.info('%s is now using the name %s.' % (self.publicKey, newName))
+                        self._core.setPeerInfo(self.publicKey, 'name', newName)
