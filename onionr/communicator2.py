@@ -84,7 +84,6 @@ class OnionrCommunicatorDaemon:
 
         # Set timers, function reference, seconds
         # requiresPeer True means the timer function won't fire if we have no connected peers
-        # TODO: make some of these timer counts configurable
         OnionrCommunicatorTimers(self, self.daemonCommands, 5)
         OnionrCommunicatorTimers(self, self.detectAPICrash, 5)
         peerPoolTimer = OnionrCommunicatorTimers(self, self.getOnlinePeers, 60)
@@ -277,7 +276,7 @@ class OnionrCommunicatorDaemon:
         '''Manages the self.onlinePeers attribute list, connects to more peers if we have none connected'''
 
         logger.info('Refreshing peer pool.')
-        maxPeers = 6
+        maxPeers = config.get('peers.maxConnect')
         needed = maxPeers - len(self.onlinePeers)
 
         for i in range(needed):
