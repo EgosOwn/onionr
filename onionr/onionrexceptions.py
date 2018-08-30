@@ -61,3 +61,8 @@ class MissingPort(Exception):
 
 class InvalidAddress(Exception):
     pass
+
+# file exceptions
+
+class DiskAllocationReached(Exception):
+    pass

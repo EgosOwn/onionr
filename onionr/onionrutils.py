@@ -23,7 +23,7 @@ import nacl.signing, nacl.encoding
 from onionrblockapi import Block
 import onionrexceptions
 from defusedxml import minidom
-import pgpwords, onionrusers
+import pgpwords, onionrusers, storagecounter
 if sys.version_info < (3, 6):
     try:
         import sha3
@@ -40,9 +40,9 @@ class OnionrUtils:
         self._core = coreInstance
 
         self.timingToken = ''
-
         self.avoidDupe = [] # list used to prevent duplicate requests per peer for certain actions
         self.peerProcessing = {} # dict of current peer actions: peer, actionList
+        self.storageCounter = storagecounter.StorageCounter(self._core)
         config.reload()
         return
 
@@ -134,8 +134,12 @@ class OnionrUtils:
                         if not config.get('tor.v3onions') and len(adder) == 62:
                             continue
                         if self._core.addAddress(adder):
-                            logger.info('Added %s to db.' % adder, timestamp = True)
-                            retVal = True
+                            # Check if we have the maxmium amount of allowed stored peers
+                            if config.get('peers.maxStoredPeers') > len(self._core.listAdders()):
+                                logger.info('Added %s to db.' % adder, timestamp = True)
+                                retVal = True
+                            else:
+                                logger.warn('Reached the maximum amount of peers in the net database as allowed by your config.')
                     else:
                         pass
                         #logger.debug('%s is either our address or already in our DB' % adder)
@@ -398,10 +402,6 @@ class OnionrUtils:
                     pass
                 else:
                     retData = True
-                if retData:
-                    # Executes if data not seen
-                    with open(self._core.dataNonceFile, 'a') as nonceFile:
-                        nonceFile.write(nonce + '\n')
         else:
             logger.warn('In call to utils.validateMetadata, metadata must be JSON string or a dictionary object')
 
@@ -648,6 +648,22 @@ class OnionrUtils:
         except AttributeError:
             pass
         return data
+    
+    def checkNetwork(self, torPort=0):
+        '''Check if we are connected to the internet (through Tor)'''
+        retData = False
+        connectURLs = []
+        try:
+            with open('static-data/connect-check.txt', 'r') as connectTest:
+                connectURLs = connectTest.read().split(',')
+            
+            for url in connectURLs:
+                if self.doGetRequest(url, port=torPort) != False:
+                    retData = True
+                    break
+        except FileNotFoundError:
+            pass
+        return retData
 
 def size(path='.'):
     '''
