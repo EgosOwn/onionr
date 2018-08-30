@@ -71,6 +71,5 @@ class OnionrUser:
                     if newName.isalnum():
                         logger.info('%s is now using the name %s.' % (self.publicKey, self._core._utils.escapeAnsi(newName)))
                         self._core.setPeerInfo(self.publicKey, 'name', newName)
-                        print("DEBUG PLS")
             else:
                 raise onionrexceptions.InvalidPubkey

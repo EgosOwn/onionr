@@ -90,7 +90,7 @@ def peerCleanup(coreInst):
         if PeerProfiles(address, coreInst).score < minScore:
             coreInst.removeAddress(address)
             try:
-                if (coreInst._utils.getEpoch() - coreInst.getPeerInfo(address, 4)) >= 600:
+                if (coreInst._utils.getEpoch() - coreInst.getPeerInfo(address, 'dateSeen')) >= 600:
                     expireTime = 600
                 else:
                     expireTime = 86400

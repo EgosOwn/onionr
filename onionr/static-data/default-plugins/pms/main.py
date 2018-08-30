@@ -88,13 +88,12 @@ class OnionrMail:
                     senderKey = senderKey.decode()
                 except AttributeError:
                     pass
-                print("DEBUG:", senderKey)
                 senderDisplay = onionrusers.OnionrUser(self.myCore, senderKey).getName()
                 if senderDisplay == 'anonymous':
                     senderDisplay = senderKey
 
                 blockDate = pmBlocks[blockHash].getDate().strftime("%m/%d %H:%M")
-                print('%s. %s - %s: %s' % (blockCount, blockDate, senderDisplay, blockHash))
+                print('%s. %s - %s: %s' % (blockCount, blockDate, senderDisplay[:12], blockHash))
 
             try:
                 choice = logger.readline('Enter a block number, -r to refresh, or -q to stop: ').strip().lower()
