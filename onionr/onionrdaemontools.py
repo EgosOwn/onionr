@@ -17,7 +17,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import onionrexceptions, onionrpeers, onionrproofs, base64, logger
+import onionrexceptions, onionrpeers, onionrproofs, base64, logger, secrets
 class DaemonTools:
     def __init__(self, daemon):
             self.daemon = daemon
@@ -71,3 +71,34 @@ class DaemonTools:
             self.daemon._core.removeBlock(oldest)
             logger.info('Deleted block: %s' % (oldest,))        
         self.daemon.decrementThreadCount('cleanOldBlocks')
+
+    def cooldownPeer(self):
+        '''Randomly add an online peer to cooldown, so we can connect a new one'''
+        onlinePeerAmount = len(self.daemon.onlinePeers)
+        minTime = 300
+        cooldownTime = 600
+        toCool = ''
+        tempConnectTimes = dict(self.daemon.connectTimes)
+
+        # Remove peers from cooldown that have been there long enough
+        tempCooldown = dict(self.daemon.cooldownPeer)
+        for peer in tempCooldown:
+            if (self.daemon._core._utils.getEpoch() - tempCooldown[peer]) >= cooldownTime:
+                del self.daemon.cooldownPeer[peer]
+
+        # Cool down a peer, if we have max connections alive for long enough
+        if onlinePeerAmount >= self.daemon._core.config.get('peers.maxConnect'):
+            finding = True
+            while finding:
+                try:
+                    toCool = min(tempConnectTimes, key=tempConnectTimes.get)
+                    if (self.daemon._core._utils.getEpoch() - tempConnectTimes[toCool]) < minTime:
+                        del tempConnectTimes[toCool]
+                    else:
+                        finding = False
+                except ValueError:
+                    break
+            else:
+                self.daemon.removeOnlinePeer(toCool)
+                self.daemon.cooldownPeer[toCool] = self.daemon._core._utils.getEpoch()
+        self.daemon.decrementThreadCount('cooldownPeer')

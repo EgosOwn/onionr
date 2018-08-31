@@ -51,6 +51,8 @@ class OnionrCommunicatorDaemon:
         # lists of connected peers and peers we know we can't reach currently
         self.onlinePeers = []
         self.offlinePeers = []
+        self.cooldownPeer = {}
+        self.connectTimes = {}
         self.peerProfiles = [] # list of peer's profiles (onionrpeers.PeerProfile instances)
 
         # amount of threads running by name, used to prevent too many
@@ -84,13 +86,14 @@ class OnionrCommunicatorDaemon:
         # requiresPeer True means the timer function won't fire if we have no connected peers
         OnionrCommunicatorTimers(self, self.daemonCommands, 5)
         OnionrCommunicatorTimers(self, self.detectAPICrash, 5)
-        peerPoolTimer = OnionrCommunicatorTimers(self, self.getOnlinePeers, 60)
+        peerPoolTimer = OnionrCommunicatorTimers(self, self.getOnlinePeers, 60, maxThreads=1)
         OnionrCommunicatorTimers(self, self.lookupBlocks, self._core.config.get('timers.lookupBlocks'), requiresPeer=True, maxThreads=1)
         OnionrCommunicatorTimers(self, self.getBlocks, self._core.config.get('timers.getBlocks'), requiresPeer=True)
         OnionrCommunicatorTimers(self, self.clearOfflinePeer, 58)
         OnionrCommunicatorTimers(self, self.daemonTools.cleanOldBlocks, 65)
         OnionrCommunicatorTimers(self, self.lookupKeys, 60, requiresPeer=True)
         OnionrCommunicatorTimers(self, self.lookupAdders, 60, requiresPeer=True)
+        OnionrCommunicatorTimers(self, self.daemonTools.cooldownPeer, 30, requiresPeer=True)
         netCheckTimer = OnionrCommunicatorTimers(self, self.daemonTools.netCheck, 600)
         announceTimer = OnionrCommunicatorTimers(self, self.daemonTools.announceNode, 305, requiresPeer=True, maxThreads=1)
         cleanupTimer = OnionrCommunicatorTimers(self, self.peerCleanup, 300, requiresPeer=True)
@@ -295,7 +298,7 @@ class OnionrCommunicatorDaemon:
         '''Manages the self.onlinePeers attribute list, connects to more peers if we have none connected'''
 
         logger.info('Refreshing peer pool.')
-        maxPeers = config.get('peers.maxConnect')
+        maxPeers = int(config.get('peers.maxConnect'))
         needed = maxPeers - len(self.onlinePeers)
 
         for i in range(needed):
@@ -338,7 +341,7 @@ class OnionrCommunicatorDaemon:
         for address in peerList:
             if not config.get('tor.v3onions') and len(address) == 62:
                 continue
-            if len(address) == 0 or address in tried or address in self.onlinePeers:
+            if len(address) == 0 or address in tried or address in self.onlinePeers or address in self.cooldownPeer:
                 continue
             if self.shutdown:
                 return
@@ -347,6 +350,7 @@ class OnionrCommunicatorDaemon:
                 time.sleep(0.1)
                 if address not in self.onlinePeers:
                     self.onlinePeers.append(address)
+                    self.connectTimes[address] = self._core._utils.getEpoch()
                 retData = address
                 
                 # add peer to profile list if they're not in it
@@ -360,6 +364,17 @@ class OnionrCommunicatorDaemon:
                 tried.append(address)
                 logger.debug('Failed to connect to ' + address)
         return retData
+
+    def removeOnlinePeer(self, peer):
+        '''Remove an online peer'''
+        try:
+            del self.connectTimes[peer]
+        except KeyError:
+            pass
+        try:
+            self.onlinePeers.remove(peer)
+        except ValueError:
+            pass
 
     def peerCleanup(self):
         '''This just calls onionrpeers.cleanupPeers, which removes dead or bad peers (offline too long, too slow)'''
@@ -392,7 +407,7 @@ class OnionrCommunicatorDaemon:
         if retData == False:
             try:
                 self.getPeerProfileInstance(peer).addScore(-10)
-                self.onlinePeers.remove(peer)
+                self.removeOnlinePeer(peer)
                 self.getOnlinePeers() # Will only add a new peer to pool if needed
             except ValueError:
                 pass
