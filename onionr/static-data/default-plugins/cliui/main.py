@@ -37,19 +37,37 @@ class OnionrCLIUI:
             except KeyboardInterrupt:
                 pass
 
+    def refresh(self):
+        for i in range(100):
+            print('')
+
     def start(self):
         '''Main CLI UI interface menu'''
         showMenu = True
+        isOnline = "No"
+        firstRun = True
+
         while showMenu:
-            print('''\n1. Flow (Anonymous public chat, use at your own risk)
+            if firstRun:
+                print("please wait while Onionr starts...")
+                subprocess.Popen(["./onionr.py", "start"], stdin=subprocess.PIPE, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
+                time.sleep(30)
+                firstRun = False
+
+            if self.myCore._utils.localCommand('ping') == 'pong':
+                isOnline = "Yes"
+            print('''Online Status: ''' + isOnline + '''
+            
+1. Flow (Anonymous public chat, use at your own risk)
 2. Mail (Secure email-like service)
 3. File Sharing
 4. User Settings
-5. Quit
+5. Start/Stop Daemon
+6. Quit
             ''')
             try:
                 choice = input(">").strip().lower()
-            except KeyboardInterrupt:
+            except (KeyboardInterrupt, EOFError):
                 choice = "quit"
 
             if choice in ("flow", "1"):
@@ -61,8 +79,20 @@ class OnionrCLIUI:
                     self.setName()
                 except (KeyboardInterrupt, EOFError) as e:
                     pass
-            elif choice in ("5", "quit"):
+            elif choice in ("5", "daemon"):
+                if isOnline == "Yes":
+                    print("Onionr daemon will shutdown...")
+                    #self.myCore._utils.localCommand("shutdown")
+                    self.myCore.daemonQueueAdd('shutdown')
+                else:
+                    print("Starting Daemon...")
+                    subprocess.Popen(["./onionr.py", "start"], stdin=subprocess.PIPE, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
+            elif choice in ("6", "quit"):
                 showMenu = False
+            elif choice == "":
+                pass
+            else:
+                print("Invalid choice")
         return
 
     def setName(self):
