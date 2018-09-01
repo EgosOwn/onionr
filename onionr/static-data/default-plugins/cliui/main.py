@@ -19,7 +19,7 @@
 '''
 
 # Imports some useful libraries
-import logger, config, threading, time, uuid
+import logger, config, threading, time, uuid, subprocess
 from onionrblockapi import Block
 
 plugin_name = 'cliui'
@@ -30,7 +30,42 @@ class OnionrCLIUI:
         self.api = apiInst
         self.myCore = apiInst.get_core()
         return
+
+    def subCommand(self, command):
+            try:
+                subprocess.run(["./onionr.py", command])
+            except KeyboardInterrupt:
+                pass
+
     def start(self):
+        '''Main CLI UI interface menu'''
+        showMenu = True
+        while showMenu:
+            print('''\n1. Flow (Anonymous public chat, use at your own risk)
+2. Mail (Secure email-like service)
+3. File Sharing
+4. User Settings
+5. Quit
+            ''')
+            try:
+                choice = input(">").strip().lower()
+            except KeyboardInterrupt:
+                choice = "quit"
+
+            if choice in ("flow", "1"):
+                self.subCommand("flow")
+            elif choice in ("2", "mail"):
+                self.subCommand("mail")
+            elif choice in ("4", "user settings", "settings"):
+                try:
+                    self.setName()
+                except (KeyboardInterrupt, EOFError) as e:
+                    pass
+            elif choice in ("5", "quit"):
+                showMenu = False
+        return
+
+    def setName(self):
         name = input("Enter your name: ")
         self.myCore.insertBlock("userInfo-" + str(uuid.uuid1()), sign=True, header='userInfo', meta={'name': name})
         return

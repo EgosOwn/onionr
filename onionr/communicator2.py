@@ -408,7 +408,8 @@ class OnionrCommunicatorDaemon:
             try:
                 self.getPeerProfileInstance(peer).addScore(-10)
                 self.removeOnlinePeer(peer)
-                self.getOnlinePeers() # Will only add a new peer to pool if needed
+                if action != 'ping':
+                    self.getOnlinePeers() # Will only add a new peer to pool if needed
             except ValueError:
                 pass
         else:

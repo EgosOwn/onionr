@@ -59,7 +59,7 @@
     "peers":{
         "minimumScore": -100,
         "maxStoredPeers": 5000,
-        "maxConnect": 5
+        "maxConnect": 10
     },
     "timers":{
         "lookupBlocks": 25,
