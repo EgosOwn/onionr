@@ -249,6 +249,8 @@ class API:
                     self.mimeType = 'text/html'
                     response = siteData.split(b'-', 2)[-1]
                 resp = Response(response)
+            elif action == 'info':
+                resp = new Response(json.dumps({'id' : 'not yet implemented'}))
             elif action == "insertBlock":
                 response = {'success' : False, 'reason' : 'An unknown error occurred'}
 

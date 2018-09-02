@@ -17,6 +17,13 @@ function remove(key) {
     return localStorage.removeItem(key);
 }
 
+function getParameter(name) {
+    var match = RegExp('[?&]' + name + '=([^&]*)').exec(window.location.search);
+    return match && decodeURIComponent(match[1].replace(/\+/g, ' '));
+}
+
+/* usermap localStorage stuff */
+
 var usermap = JSON.parse(get('usermap', '{}'));
 
 function getUserMap() {
@@ -24,11 +31,29 @@ function getUserMap() {
 }
 
 function deserializeUser(id) {
+    if(!(id in getUserMap()))
+        return null;
+
     var serialized = getUserMap()[id]
     var user = new User();
+
     user.setName(serialized['name']);
     user.setID(serialized['id']);
     user.setIcon(serialized['icon']);
+
+    return user;
+}
+
+function serializeUser(user) {
+    if(user !== null && user !== undefined) {
+        var serialized = {'name' : user.getName(), 'id' : user.getID(), 'icon' : user.getIcon()};
+
+        usermap[user.getID()] = serialized;
+
+        set('usermap', JSON.stringify(getUserMap()));
+
+        return serialized;
+    }
 }
 
 /* returns a relative date format, e.g. "5 minutes" */
@@ -219,7 +244,7 @@ class Post {
         // postTemplate = postTemplate.replaceAll('$user-id-truncated', Sanitize.html(this.getUser().getID().split('-').slice(0, 4).join('-')));
 
         postTemplate = postTemplate.replaceAll('$user-id', Sanitize.html(this.getUser().getID()));
-        postTemplate = postTemplate.replaceAll('$user-image', Sanitize.html(this.getUser().getIcon()));
+        postTemplate = postTemplate.replaceAll('$user-image', "data:image/jpeg;base64," + Sanitize.html(this.getUser().getIcon()));
         postTemplate = postTemplate.replaceAll('$content', Sanitize.html(this.getContent()));
         postTemplate = postTemplate.replaceAll('$date-relative', timeSince(this.getPostDate(), device) + (device === 'desktop' ?  ' ago' : ''));
         postTemplate = postTemplate.replaceAll('$date', this.getPostDate().toLocaleString());
@@ -448,4 +473,9 @@ if(getWebPassword() === null) {
 
     setWebPassword(password);
     window.location.reload(true);
+}
+
+var tt = getParameter("timingToken");
+if(tt !== null && tt !== undefined) {
+    setTimingToken(tt);
 }
