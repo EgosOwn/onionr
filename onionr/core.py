@@ -377,18 +377,21 @@ class Core:
         '''
             Add a command to the daemon queue, used by the communication daemon (communicator.py)
         '''
+        retData = True
         # Intended to be used by the web server
         date = self._utils.getEpoch()
         conn = sqlite3.connect(self.queueDB)
         c = conn.cursor()
         t = (command, data, date)
-        c.execute('INSERT INTO commands (command, data, date) VALUES(?, ?, ?)', t)
-        conn.commit()
-        conn.close()
-
+        try:
+            c.execute('INSERT INTO commands (command, data, date) VALUES(?, ?, ?)', t)
+            conn.commit()
+            conn.close()
+        except sqlite3.OperationalError:
+            retData = False
         events.event('queue_push', data = {'command': command, 'data': data}, onionr = None)
 
-        return
+        return retData
 
     def clearDaemonQueue(self):
         '''

@@ -47,6 +47,9 @@ class OnionrCLIUI:
         isOnline = "No"
         firstRun = True
 
+        if self.myCore._utils.localCommand('ping') == 'pong':
+            firstRun = False
+
         while showMenu:
             if firstRun:
                 print("please wait while Onionr starts...")
@@ -56,14 +59,18 @@ class OnionrCLIUI:
 
             if self.myCore._utils.localCommand('ping') == 'pong':
                 isOnline = "Yes"
-            print('''Online Status: ''' + isOnline + '''
+            else:
+                isOnline = "No"
+
+            print('''
+Daemon Running: ''' + isOnline + '''
             
 1. Flow (Anonymous public chat, use at your own risk)
 2. Mail (Secure email-like service)
 3. File Sharing
 4. User Settings
 5. Start/Stop Daemon
-6. Quit
+6. Quit (Does not shutdown daemon)
             ''')
             try:
                 choice = input(">").strip().lower()
@@ -74,6 +81,8 @@ class OnionrCLIUI:
                 self.subCommand("flow")
             elif choice in ("2", "mail"):
                 self.subCommand("mail")
+            elif choice in ("3", "file sharing", "file"):
+                print("Not supported yet")
             elif choice in ("4", "user settings", "settings"):
                 try:
                     self.setName()
@@ -84,6 +93,9 @@ class OnionrCLIUI:
                     print("Onionr daemon will shutdown...")
                     #self.myCore._utils.localCommand("shutdown")
                     self.myCore.daemonQueueAdd('shutdown')
+                    while self.myCore._utils.localCommand('ping') == 'pong':
+                        self.myCore.daemonQueueAdd('shutdown')
+                        time.sleep(8)
                 else:
                     print("Starting Daemon...")
                     subprocess.Popen(["./onionr.py", "start"], stdin=subprocess.PIPE, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
@@ -96,8 +108,12 @@ class OnionrCLIUI:
         return
 
     def setName(self):
-        name = input("Enter your name: ")
-        self.myCore.insertBlock("userInfo-" + str(uuid.uuid1()), sign=True, header='userInfo', meta={'name': name})
+        try:
+            name = input("Enter your name: ")
+            if name != "":
+                self.myCore.insertBlock("userInfo-" + str(uuid.uuid1()), sign=True, header='userInfo', meta={'name': name})
+        except KeyboardInterrupt:
+            pass
         return
 
 def on_init(api, data = None):
