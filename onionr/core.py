@@ -389,6 +389,7 @@ class Core:
             conn.close()
         except sqlite3.OperationalError:
             retData = False
+            self.daemonQueue()
         events.event('queue_push', data = {'command': command, 'data': data}, onionr = None)
 
         return retData

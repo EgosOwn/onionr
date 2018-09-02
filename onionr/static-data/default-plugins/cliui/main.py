@@ -53,7 +53,7 @@ class OnionrCLIUI:
         while showMenu:
             if firstRun:
                 print("please wait while Onionr starts...")
-                subprocess.Popen(["./onionr.py", "start"], stdin=subprocess.PIPE, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
+                daemon = subprocess.Popen(["./onionr.py", "start"], stdin=subprocess.PIPE, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
                 time.sleep(30)
                 firstRun = False
 
@@ -93,12 +93,13 @@ Daemon Running: ''' + isOnline + '''
                     print("Onionr daemon will shutdown...")
                     #self.myCore._utils.localCommand("shutdown")
                     self.myCore.daemonQueueAdd('shutdown')
-                    while self.myCore._utils.localCommand('ping') == 'pong':
-                        self.myCore.daemonQueueAdd('shutdown')
-                        time.sleep(8)
+                    try:
+                        daemon.kill()
+                    except UnboundLocalError:
+                        pass
                 else:
                     print("Starting Daemon...")
-                    subprocess.Popen(["./onionr.py", "start"], stdin=subprocess.PIPE, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
+                    daemon = subprocess.Popen(["./onionr.py", "start"], stdin=subprocess.PIPE, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
             elif choice in ("6", "quit"):
                 showMenu = False
             elif choice == "":
