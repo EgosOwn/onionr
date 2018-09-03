@@ -86,6 +86,12 @@ Blocks are stored indefinitely until the allocated space is filled, at which poi
 
 ## Block Timestamping
 
-Onionr can provide evidence when a block was inserted by requesting other users to sign a hash of the current time with the block data hash: sha3_256(time + sha3_256(block data)).
+Onionr can provide evidence of when a block was inserted by requesting other users to sign a hash of the current time with the block data hash: sha3_256(time + sha3_256(block data)).
 
 This can be done either by the creator of the block prior to generation, or by any node after insertion.
+
+In addition, randomness beacons such as the one operated by [NIST](https://beacon.nist.gov/home) or the hash of the latest blocks in a cryptocurrency network could be used to affirm that a block was at least not *created* before a given time.
+
+# Direct Connections
+
+We propose a system to 

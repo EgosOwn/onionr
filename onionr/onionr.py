@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 '''
-    Onionr - P2P Microblogging Platform & Social network.
+    Onionr - P2P Anonymous Storage Network
 
     Onionr is the name for both the protocol and the original/reference software.
 
@@ -32,7 +32,7 @@ import onionrutils
 from onionrutils import OnionrUtils
 from netcontroller import NetController
 from onionrblockapi import Block
-import onionrproofs
+import onionrproofs, onionrexceptions, onionrusers
 
 try:
     from urllib3.contrib.socks import SOCKSProxyManager
@@ -40,7 +40,7 @@ except ImportError:
     raise Exception("You need the PySocks module (for use with socks5 proxy to use Tor)")
 
 ONIONR_TAGLINE = 'Anonymous P2P Platform - GPLv3 - https://Onionr.VoidNet.Tech'
-ONIONR_VERSION = '0.1.1' # for debugging and stuff
+ONIONR_VERSION = '0.2.0' # for debugging and stuff
 ONIONR_VERSION_TUPLE = tuple(ONIONR_VERSION.split('.')) # (MAJOR, MINOR, VERSION)
 API_VERSION = '4' # increments of 1; only change when something fundemental about how the API works changes. This way other nodes know how to communicate without learning too much information about you.
 
@@ -135,18 +135,18 @@ class Onionr:
             self.onionrCore.createAddressDB()
 
         # Get configuration
-
-        if not data_exists:
-            # Generate default config
-            # Hostname should only be set if different from 127.x.x.x. Important for DNS rebinding attack prevention.
-            if self.debug:
-                randomPort = 8080
-            else:
-                while True:
-                    randomPort = random.randint(1024, 65535)
-                    if self.onionrUtils.checkPort(randomPort):
-                        break
-            config.set('client', {'participate': True, 'hmac': base64.b16encode(os.urandom(32)).decode('utf-8'), 'port': randomPort, 'api_version': API_VERSION}, True)
+        if type(config.get('client.hmac')) is type(None):
+            config.set('client.hmac', base64.b16encode(os.urandom(32)).decode('utf-8'), savefile=True)
+        if type(config.get('client.port')) is type(None):
+            randomPort = 0
+            while randomPort < 1024:
+                randomPort = self.onionrCore._crypto.secrets.randbelow(65535)
+            config.set('client.port', randomPort, savefile=True)
+        if type(config.get('client.participate')) is type(None):
+            config.set('client.participate', True, savefile=True)
+        if type(config.get('client.api_version')) is type(None):
+            config.set('client.api_version', API_VERSION, savefile=True)
+    
 
         self.cmds = {
             '': self.showHelpSuggestion,
@@ -186,6 +186,8 @@ class Onionr:
             'addaddress': self.addAddress,
             'list-peers': self.listPeers,
 
+            'blacklist-block': self.banBlock,
+
             'add-file': self.addFile,
             'addfile': self.addFile,
             'listconn': self.listConn,
@@ -208,7 +210,9 @@ class Onionr:
             'getpass': self.printWebPassword,
             'get-pass': self.printWebPassword,
             'getpasswd': self.printWebPassword,
-            'get-passwd': self.printWebPassword
+            'get-passwd': self.printWebPassword,
+
+            'friend': self.friendCmd
         }
 
         self.cmdhelp = {
@@ -230,7 +234,9 @@ class Onionr:
             'listconn': 'list connected peers',
             'kex': 'exchange keys with peers (done automatically)',
             'pex': 'exchange addresses with peers (done automatically)',
+            'blacklist-block': 'deletes a block by hash and permanently removes it from your node',
             'introduce': 'Introduce your node to the public Onionr network',
+            'friend': '[add|remove] [public key/id]'
         }
 
         # initialize plugins
@@ -257,6 +263,68 @@ class Onionr:
 
     def getCommands(self):
         return self.cmds
+    
+    def friendCmd(self):
+        '''List, add, or remove friend(s)
+        Changes their peer DB entry.
+        '''
+        friend = ''
+        try:
+            # Get the friend command
+            action = sys.argv[2]
+        except IndexError:
+            logger.info('Syntax: friend add/remove/list [address]')
+        else:
+            action = action.lower()
+            if action == 'list':
+                # List out peers marked as our friend
+                for friend in self.onionrCore.listPeers(randomOrder=False, trust=1):
+                    if friend == self.onionrCore._crypto.pubKey: # do not list our key
+                        continue
+                    friendProfile = onionrusers.OnionrUser(self.onionrCore, friend)
+                    logger.info(friend + ' - ' + friendProfile.getName())
+            elif action in ('add', 'remove'):
+                try:
+                    friend = sys.argv[3]
+                    if not self.onionrUtils.validatePubKey(friend):
+                        raise onionrexceptions.InvalidPubkey('Public key is invalid')
+                    if friend not in self.onionrCore.listPeers():
+                        raise onionrexceptions.KeyNotKnown
+                    friend = onionrusers.OnionrUser(self.onionrCore, friend)
+                except IndexError:
+                    logger.error('Friend ID is required.')
+                except onionrexceptions.KeyNotKnown:
+                    logger.error('That peer is not in our database')
+                else:
+                    if action == 'add':
+                        friend.setTrust(1)
+                        logger.info('Added %s as friend.' % (friend.publicKey,))
+                    else:
+                        friend.setTrust(0)
+                        logger.info('Removed %s as friend.' % (friend.publicKey,))
+            else:
+                logger.info('Syntax: friend add/remove/list [address]')
+
+
+    def banBlock(self):
+        try:
+            ban = sys.argv[2]
+        except IndexError:
+            ban = logger.readline('Enter a block hash:')
+        if self.onionrUtils.validateHash(ban):
+            if not self.onionrCore._blacklist.inBlacklist(ban):
+                try:
+                    self.onionrCore._blacklist.addToDB(ban)
+                    self.onionrCore.removeBlock(ban)
+                except Exception as error:
+                    logger.error('Could not blacklist block', error=error)
+                else:
+                    logger.info('Block blacklisted')
+            else:
+                logger.warn('That block is already blacklisted')
+        else:
+            logger.error('Invalid block hash')
+        return
 
     def listConn(self):
         self.onionrCore.daemonQueueAdd('connectedPeers')
@@ -543,22 +611,39 @@ class Onionr:
             Starts the Onionr communication daemon
         '''
         communicatorDaemon = './communicator2.py'
-        if not os.environ.get("WERKZEUG_RUN_MAIN") == "true":
-            if self._developmentMode:
-                logger.warn('DEVELOPMENT MODE ENABLED (THIS IS LESS SECURE!)', timestamp = False)
-            net = NetController(config.get('client.port', 59496))
-            logger.info('Tor is starting...')
-            if not net.startTor():
-                sys.exit(1)
-            logger.info('Started .onion service: ' + logger.colors.underline + net.myID)
-            logger.info('Our Public key: ' + self.onionrCore._crypto.pubKey)
-            time.sleep(1)
-            #TODO make runable on windows
-            subprocess.Popen([communicatorDaemon, "run", str(net.socksPort)])
-            logger.debug('Started communicator')
-            events.event('daemon_start', onionr = self)
-        self.api = api.API(self.debug)
 
+        apiThread = Thread(target=api.API, args=(self.debug,))
+        apiThread.start()
+        try:
+            time.sleep(3)
+        except KeyboardInterrupt:
+            logger.info('Got keyboard interrupt')
+            time.sleep(1)
+            self.onionrUtils.localCommand('shutdown')
+        else:
+            if apiThread.isAlive():
+                if self._developmentMode:
+                    logger.warn('DEVELOPMENT MODE ENABLED (THIS IS LESS SECURE!)', timestamp = False)
+                net = NetController(config.get('client.port', 59496))
+                logger.info('Tor is starting...')
+                if not net.startTor():
+                    sys.exit(1)
+                logger.info('Started .onion service: ' + logger.colors.underline + net.myID)
+                logger.info('Our Public key: ' + self.onionrCore._crypto.pubKey)
+                time.sleep(1)
+                #TODO make runable on windows
+                subprocess.Popen([communicatorDaemon, "run", str(net.socksPort)])
+                # Print nice header thing :)
+                if config.get('general.display_header', True):
+                    self.header()
+                logger.debug('Started communicator')
+                events.event('daemon_start', onionr = self)
+                try:
+                    while True:
+                        time.sleep(5)
+                except KeyboardInterrupt:
+                    self.onionrCore.daemonQueueAdd('shutdown')
+                    self.onionrUtils.localCommand('shutdown')
         return
 
     def killDaemon(self):
@@ -721,6 +806,13 @@ class Onionr:
 
         print('Opening %s ...' % url)
         webbrowser.open(url, new = 1, autoraise = True)
+
+    def header(self, message = logger.colors.fg.pink + logger.colors.bold + 'Onionr' + logger.colors.reset + logger.colors.fg.pink + ' has started.'):
+        if os.path.exists('static-data/header.txt'):
+            with open('static-data/header.txt', 'rb') as file:
+                # only to stdout, not file or log or anything
+                sys.stderr.write(file.read().decode().replace('P', logger.colors.fg.pink).replace('W', logger.colors.reset + logger.colors.bold).replace('G', logger.colors.fg.green).replace('\n', logger.colors.reset + '\n').replace('B', logger.colors.bold).replace('V', ONIONR_VERSION))
+                logger.info(logger.colors.fg.lightgreen + '-> ' + str(message) + logger.colors.reset + logger.colors.fg.lightgreen + ' <-\n')
 
 if __name__ == "__main__":
     Onionr()

@@ -1,5 +1,5 @@
 '''
-    Onionr - P2P Microblogging Platform & Social network
+    Onionr - P2P Anonymous Storage Network
 
     Core Onionr library, useful for external programs. Handles peer & data processing
 '''
@@ -21,7 +21,8 @@ import sqlite3, os, sys, time, math, base64, tarfile, getpass, simplecrypt, hash
 from onionrblockapi import Block
 
 import onionrutils, onionrcrypto, onionrproofs, onionrevents as events, onionrexceptions, onionrvalues
-
+import onionrblacklist
+import dbcreator
 if sys.version_info < (3, 6):
     try:
         import sha3
@@ -40,13 +41,18 @@ class Core:
             self.blockDB = 'data/blocks.db'
             self.blockDataLocation = 'data/blocks/'
             self.addressDB = 'data/address.db'
-            self.hsAdder = ''
+            self.hsAddress = ''
             self.bootstrapFileLocation = 'static-data/bootstrap-nodes.txt'
             self.bootstrapList = []
             self.requirements = onionrvalues.OnionrValues()
             self.torPort = torPort
+            self.dataNonceFile = 'data/block-nonces.dat'
+            self.dbCreate = dbcreator.DBCreator(self)
 
             self.usageFile = 'data/disk-usage.txt'
+            self.config = config
+
+            self.maxBlockSize = 10000000 # max block size in bytes
 
             if not os.path.exists('data/'):
                 os.mkdir('data/')
@@ -57,7 +63,7 @@ class Core:
 
             if os.path.exists('data/hs/hostname'):
                 with open('data/hs/hostname', 'r') as hs:
-                    self.hsAdder = hs.read().strip()
+                    self.hsAddress = hs.read().strip()
 
             # Load bootstrap address list
             if os.path.exists(self.bootstrapFileLocation):
@@ -71,12 +77,19 @@ class Core:
             self._utils = onionrutils.OnionrUtils(self)
             # Initialize the crypto object
             self._crypto = onionrcrypto.OnionrCrypto(self)
+            self._blacklist = onionrblacklist.OnionrBlackList(self)
 
         except Exception as error:
             logger.error('Failed to initialize core Onionr library.', error=error)
             logger.fatal('Cannot recover from error.')
             sys.exit(1)
         return
+
+    def refreshFirstStartVars(self):
+        '''Hack to refresh some vars which may not be set on first start'''
+        if os.path.exists('data/hs/hostname'):
+            with open('data/hs/hostname', 'r') as hs:
+                self.hsAddress = hs.read().strip()
 
     def addPeer(self, peerID, powID, name=''):
         '''
@@ -92,7 +105,7 @@ class Core:
         conn = sqlite3.connect(self.peerDB)
         hashID = self._crypto.pubKeyHashID(peerID)
         c = conn.cursor()
-        t = (peerID, name, 'unknown', hashID, powID)
+        t = (peerID, name, 'unknown', hashID, powID, 0)
 
         for i in c.execute("SELECT * FROM PEERS where id = '" + peerID + "';"):
             try:
@@ -103,7 +116,7 @@ class Core:
                 pass
             except IndexError:
                 pass
-        c.execute('INSERT INTO peers (id, name, dateSeen, pow, hashID) VALUES(?, ?, ?, ?, ?);', t)
+        c.execute('INSERT INTO peers (id, name, dateSeen, pow, hashID, trust) VALUES(?, ?, ?, ?, ?, ?);', t)
         conn.commit()
         conn.close()
 
@@ -125,7 +138,6 @@ class Core:
             for i in c.execute("SELECT * FROM adders where address = '" + address + "';"):
                 try:
                     if i[0] == address:
-                        logger.warn('Not adding existing address')
                         conn.close()
                         return False
                 except ValueError:
@@ -158,14 +170,15 @@ class Core:
             conn.close()
 
             events.event('address_remove', data = {'address': address}, onionr = None)
-
             return True
         else:
             return False
 
     def removeBlock(self, block):
         '''
-            remove a block from this node
+            remove a block from this node (does not automatically blacklist)
+
+            **You may want blacklist.addToDB(blockHash)
         '''
         if self._utils.validateHash(block):
             conn = sqlite3.connect(self.blockDB)
@@ -174,97 +187,36 @@ class Core:
             c.execute('Delete from hashes where hash=?;', t)
             conn.commit()
             conn.close()
+            blockFile = 'data/blocks/' + block + '.dat'
+            dataSize = 0
             try:
-                os.remove('data/blocks/' + block + '.dat')
+                ''' Get size of data when loaded as an object/var, rather than on disk, 
+                    to avoid conflict with getsizeof when saving blocks
+                '''
+                with open(blockFile, 'r') as data:
+                    dataSize = sys.getsizeof(data.read())
+                self._utils.storageCounter.removeBytes(dataSize)
+                os.remove(blockFile)
             except FileNotFoundError:
                 pass
 
     def createAddressDB(self):
         '''
             Generate the address database
-
-            types:
-                1: I2P b32 address
-                2: Tor v2 (like facebookcorewwwi.onion)
-                3: Tor v3
         '''
-        conn = sqlite3.connect(self.addressDB)
-        c = conn.cursor()
-        c.execute('''CREATE TABLE adders(
-            address text,
-            type int,
-            knownPeer text,
-            speed int,
-            success int,
-            DBHash text,
-            powValue text,
-            failure int,
-            lastConnect int,
-            lastConnectAttempt int,
-            trust int
-            );
-        ''')
-        conn.commit()
-        conn.close()
+        self.dbCreate.createAddressDB()
 
     def createPeerDB(self):
         '''
             Generate the peer sqlite3 database and populate it with the peers table.
         '''
-        # generate the peer database
-        conn = sqlite3.connect(self.peerDB)
-        c = conn.cursor()
-        c.execute('''CREATE TABLE peers(
-            ID text not null,
-            name text,
-            adders text,
-            blockDBHash text,
-            forwardKey text,
-            dateSeen not null,
-            bytesStored int,
-            trust int,
-            pubkeyExchanged int,
-            hashID text,
-            pow text not null);
-        ''')
-        conn.commit()
-        conn.close()
-        return
+        self.dbCreate.createPeerDB()
 
     def createBlockDB(self):
         '''
             Create a database for blocks
-
-            hash         - the hash of a block
-            dateReceived - the date the block was recieved, not necessarily when it was created
-            decrypted    - if we can successfully decrypt the block (does not describe its current state)
-            dataType     - data type of the block
-            dataFound    - if the data has been found for the block
-            dataSaved    - if the data has been saved for the block
-            sig    - optional signature by the author (not optional if author is specified)
-            author       - multi-round partial sha3-256 hash of authors public key
-            dateClaimed  - timestamp claimed inside the block, only as trustworthy as the block author is
         '''
-        if os.path.exists(self.blockDB):
-            raise Exception("Block database already exists")
-        conn = sqlite3.connect(self.blockDB)
-        c = conn.cursor()
-        c.execute('''CREATE TABLE hashes(
-            hash text not null,
-            dateReceived int,
-            decrypted int,
-            dataType text,
-            dataFound int,
-            dataSaved int,
-            sig text,
-            author text,
-            dateClaimed int
-            );
-        ''')
-        conn.commit()
-        conn.close()
-
-        return
+        self.dbCreate.createBlockDB()
 
     def addToBlockDB(self, newHash, selfInsert=False, dataSaved=False):
         '''
@@ -304,16 +256,26 @@ class Core:
 
         return data
 
-    def setData(self, data):
-        '''
-            Set the data assciated with a hash
-        '''
-        data = data
+    def _getSha3Hash(self, data):
         hasher = hashlib.sha3_256()
         if not type(data) is bytes:
             data = data.encode()
         hasher.update(data)
         dataHash = hasher.hexdigest()
+        return dataHash
+
+    def setData(self, data):
+        '''
+            Set the data assciated with a hash
+        '''
+        data = data
+        dataSize = sys.getsizeof(data)
+
+        if not type(data) is bytes:
+            data = data.encode()
+            
+        dataHash = self._getSha3Hash(data)
+
         if type(dataHash) is bytes:
             dataHash = dataHash.decode()
         blockFileName = self.blockDataLocation + dataHash + '.dat'
@@ -321,15 +283,19 @@ class Core:
             pass # TODO: properly check if block is already saved elsewhere
             #raise Exception("Data is already set for " + dataHash)
         else:
-            blockFile = open(blockFileName, 'wb')
-            blockFile.write(data)
-            blockFile.close()
-
-        conn = sqlite3.connect(self.blockDB)
-        c = conn.cursor()
-        c.execute("UPDATE hashes SET dataSaved=1 WHERE hash = '" + dataHash + "';")
-        conn.commit()
-        conn.close()
+            if self._utils.storageCounter.addBytes(dataSize) != False:
+                blockFile = open(blockFileName, 'wb')
+                blockFile.write(data)
+                blockFile.close()
+                conn = sqlite3.connect(self.blockDB)
+                c = conn.cursor()
+                c.execute("UPDATE hashes SET dataSaved=1 WHERE hash = '" + dataHash + "';")
+                conn.commit()
+                conn.close()
+                with open(self.dataNonceFile, 'a') as nonceFile:
+                    nonceFile.write(dataHash + '\n')
+            else:
+                raise onionrexceptions.DiskAllocationReached
 
         return dataHash
 
@@ -411,18 +377,22 @@ class Core:
         '''
             Add a command to the daemon queue, used by the communication daemon (communicator.py)
         '''
+        retData = True
         # Intended to be used by the web server
         date = self._utils.getEpoch()
         conn = sqlite3.connect(self.queueDB)
         c = conn.cursor()
         t = (command, data, date)
-        c.execute('INSERT INTO commands (command, data, date) VALUES(?, ?, ?)', t)
-        conn.commit()
-        conn.close()
-
+        try:
+            c.execute('INSERT INTO commands (command, data, date) VALUES(?, ?, ?)', t)
+            conn.commit()
+            conn.close()
+        except sqlite3.OperationalError:
+            retData = False
+            self.daemonQueue()
         events.event('queue_push', data = {'command': command, 'data': data}, onionr = None)
 
-        return
+        return retData
 
     def clearDaemonQueue(self):
         '''
@@ -456,19 +426,23 @@ class Core:
         conn.close()
         return addressList
 
-    def listPeers(self, randomOrder=True, getPow=False):
+    def listPeers(self, randomOrder=True, getPow=False, trust=0):
         '''
             Return a list of public keys (misleading function name)
 
             randomOrder determines if the list should be in a random order
+            trust sets the minimum trust to list
         '''
         conn = sqlite3.connect(self.peerDB)
         c = conn.cursor()
         payload = ""
+        if trust not in (0, 1, 2):
+            logger.error('Tried to select invalid trust.')
+            return
         if randomOrder:
-            payload = 'SELECT * FROM peers ORDER BY RANDOM();'
+            payload = 'SELECT * FROM peers where trust >= %s ORDER BY RANDOM();' % (trust,)
         else:
-            payload = 'SELECT * FROM peers;'
+            payload = 'SELECT * FROM peers where trust >= %s;' % (trust,)
         peerList = []
         for i in c.execute(payload):
             try:
@@ -592,7 +566,7 @@ class Core:
         if unsaved:
             execute = 'SELECT hash FROM hashes WHERE dataSaved != 1 ORDER BY RANDOM();'
         else:
-            execute = 'SELECT hash FROM hashes ORDER BY dateReceived DESC;'
+            execute = 'SELECT hash FROM hashes ORDER BY dateReceived ASC;'
         rows = list()
         for row in c.execute(execute):
             for i in row:
@@ -677,6 +651,18 @@ class Core:
         '''
         retData = False
 
+        # check nonce
+        dataNonce = self._utils.bytesToStr(self._crypto.sha3Hash(data))
+        try:
+            with open(self.dataNonceFile, 'r') as nonces:
+                if dataNonce in nonces:
+                    return retData
+        except FileNotFoundError:
+            pass
+        # record nonce
+        with open(self.dataNonceFile, 'a') as nonceFile:
+            nonceFile.write(dataNonce + '\n')
+
         if meta is None:
             meta = dict()
 
@@ -688,6 +674,7 @@ class Core:
         signature = ''
         signer = ''
         metadata = {}
+        # metadata is full block metadata, meta is internal, user specified metadata
 
         # only use header if not set in provided meta
         if not header is None:
@@ -735,7 +722,7 @@ class Core:
         metadata['sig'] = signature
         metadata['signer'] = signer
         metadata['time'] = str(self._utils.getEpoch())
-
+    
         # send block data (and metadata) to POW module to get tokenized block data
         proof = onionrproofs.POW(metadata, data)
         payload = proof.waitForResult()

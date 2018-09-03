@@ -1,3 +1,0 @@
-[submodule "onionr/bitpeer"]
-	path = onionr/bitpeer
-	url = https://github.com/beardog108/bitpeer.py

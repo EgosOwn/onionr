@@ -41,7 +41,7 @@
     },
 
     "tor" : {
-
+        "v3onions": false
     },
 
     "i2p":{
@@ -51,14 +51,18 @@
      },
 
     "allocations":{
-        "disk": 9000000000,
+        "disk": 10000000000,
         "netTotal": 1000000000,
-        "blockCache" : 5000000,
-        "blockCacheTotal" : 50000000
+        "blockCache": 5000000,
+        "blockCacheTotal": 50000000
     },
     "peers":{
-        "minimumScore": -4000,
-        "maxStoredPeers": 100,
-        "maxConnect": 3
+        "minimumScore": -100,
+        "maxStoredPeers": 5000,
+        "maxConnect": 10
+    },
+    "timers":{
+        "lookupBlocks": 25,
+        "getBlocks": 30
     }
 }

@@ -1,5 +1,5 @@
 '''
-    Onionr - P2P Microblogging Platform & Social network.
+    Onionr - P2P Anonymous Storage Network
 
     This class contains the OnionrBlocks class which is a class for working with Onionr blocks
 '''

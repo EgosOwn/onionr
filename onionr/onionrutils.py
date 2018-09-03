@@ -23,7 +23,7 @@ import nacl.signing, nacl.encoding
 from onionrblockapi import Block
 import onionrexceptions
 from defusedxml import minidom
-import pgpwords
+import pgpwords, onionrusers, storagecounter
 if sys.version_info < (3, 6):
     try:
         import sha3
@@ -40,10 +40,10 @@ class OnionrUtils:
         self._core = coreInstance
 
         self.timingToken = ''
-
         self.avoidDupe = [] # list used to prevent duplicate requests per peer for certain actions
         self.peerProcessing = {} # dict of current peer actions: peer, actionList
-
+        self.storageCounter = storagecounter.StorageCounter(self._core)
+        config.reload()
         return
 
     def getTimeBypassToken(self):
@@ -95,8 +95,10 @@ class OnionrUtils:
                     except IndexError:
                         logger.warn('No pow token')
                         continue
-                    #powHash = self._core._crypto.blake2bHash(base64.b64decode(key[1]) + self._core._crypto.blake2bHash(key[0].encode()))
-                    value = base64.b64decode(key[1])
+                    try:
+                        value = base64.b64decode(key[1])
+                    except binascii.Error:
+                        continue
                     hashedKey = self._core._crypto.blake2bHash(key[0])
                     powHash = self._core._crypto.blake2bHash(value + hashedKey)
                     try:
@@ -106,6 +108,7 @@ class OnionrUtils:
                     if powHash.startswith(b'0000'):
                         if not key[0] in self._core.listPeers(randomOrder=False) and type(key) != None and key[0] != self._core._crypto.pubKey:
                             if self._core.addPeer(key[0], key[1]):
+                                onionrusers.OnionrUser(self._core, key[0]).findAndSetID()
                                 retVal = True
                             else:
                                 logger.warn("Failed to add key")
@@ -126,10 +129,17 @@ class OnionrUtils:
             retVal = False
             if newAdderList != False:
                 for adder in newAdderList.split(','):
-                    if not adder in self._core.listAdders(randomOrder = False) and adder.strip() != self.getMyAddress():
+                    adder = adder.strip()
+                    if not adder in self._core.listAdders(randomOrder = False) and adder != self.getMyAddress() and not self._core._blacklist.inBlacklist(adder):
+                        if not config.get('tor.v3onions') and len(adder) == 62:
+                            continue
                         if self._core.addAddress(adder):
-                            logger.info('Added %s to db.' % adder, timestamp = True)
-                            retVal = True
+                            # Check if we have the maxmium amount of allowed stored peers
+                            if config.get('peers.maxStoredPeers') > len(self._core.listAdders()):
+                                logger.info('Added %s to db.' % adder, timestamp = True)
+                                retVal = True
+                            else:
+                                logger.warn('Reached the maximum amount of peers in the net database as allowed by your config.')
                     else:
                         pass
                         #logger.debug('%s is either our address or already in our DB' % adder)
@@ -261,9 +271,24 @@ class OnionrUtils:
         if myBlock.isEncrypted:
             myBlock.decrypt()
         blockType = myBlock.getMetadata('type') # we would use myBlock.getType() here, but it is bugged with encrypted blocks
+        signer = self.bytesToStr(myBlock.signer)
         try:
             if len(blockType) <= 10:
                 self._core.updateBlockInfo(blockHash, 'dataType', blockType)
+
+                if blockType == 'userInfo':
+                    if myBlock.verifySig():
+                        peerName = myBlock.getMetadata('name')
+                        try:
+                            if len(peerName) > 20:
+                                raise onionrexceptions.InvalidMetdata('Peer name specified is too large')
+                        except TypeError:
+                            pass
+                        except onionrexceptions.InvalidMetadata:
+                            pass
+                        else:
+                            self._core.setPeerInfo(signer, 'name', peerName)
+                            logger.info('%s is now using the name %s.' % (signer, self.escapeAnsi(peerName)))
         except TypeError:
             pass
 
@@ -333,7 +358,7 @@ class OnionrUtils:
 
         return retVal
 
-    def validateMetadata(self, metadata):
+    def validateMetadata(self, metadata, blockData):
         '''Validate metadata meets onionr spec (does not validate proof value computation), take in either dictionary or json string'''
         # TODO, make this check sane sizes
         retData = False
@@ -363,7 +388,20 @@ class OnionrUtils:
                         break
             else:
                 # if metadata loop gets no errors, it does not break, therefore metadata is valid
-                retData = True
+                # make sure we do not have another block with the same data content (prevent data duplication and replay attacks)
+                nonce = self._core._utils.bytesToStr(self._core._crypto.sha3Hash(blockData))
+                try:
+                    with open(self._core.dataNonceFile, 'r') as nonceFile:
+                        if nonce in nonceFile.read():
+                            retData = False # we've seen that nonce before, so we can't pass metadata
+                            raise onionrexceptions.DataExists
+                except FileNotFoundError:
+                    retData = True
+                except onionrexceptions.DataExists:
+                    # do not set retData to True, because nonce has been seen before
+                    pass
+                else:
+                    retData = True
         else:
             logger.warn('In call to utils.validateMetadata, metadata must be JSON string or a dictionary object')
 
@@ -553,6 +591,7 @@ class OnionrUtils:
         '''
         Do a get request through a local tor or i2p instance
         '''
+        retData = False
         if proxyType == 'tor':
             if port == 0:
                 raise onionrexceptions.MissingPort('Socks port required for Tor HTTP get request')
@@ -595,6 +634,35 @@ class OnionrUtils:
             logger.warn('Could not get NIST beacon value')
         else:
             self.powSalt = retData
+        return retData
+    
+    def strToBytes(self, data):
+        try:
+            data = data.encode()
+        except AttributeError:
+            pass
+        return data
+    def bytesToStr(self, data):
+        try:
+            data = data.decode()
+        except AttributeError:
+            pass
+        return data
+    
+    def checkNetwork(self, torPort=0):
+        '''Check if we are connected to the internet (through Tor)'''
+        retData = False
+        connectURLs = []
+        try:
+            with open('static-data/connect-check.txt', 'r') as connectTest:
+                connectURLs = connectTest.read().split(',')
+            
+            for url in connectURLs:
+                if self.doGetRequest(url, port=torPort) != False:
+                    retData = True
+                    break
+        except FileNotFoundError:
+            pass
         return retData
 
 def size(path='.'):
