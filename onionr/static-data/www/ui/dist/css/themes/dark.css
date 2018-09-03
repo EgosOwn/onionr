@@ -31,6 +31,35 @@ body {
     font-size: 15pt;
 }
 
+.onionr-post-creator {
+    border: 1px solid black;
+    border-radius: 1rem;
+
+    background-color: lightgray;
+}
+
+.onionr-post-creator-user-name {
+    color: green;
+    font-weight: bold;
+}
+
+.onionr-post-creator-user-id {
+    color: gray;
+}
+
+.onionr-post-creator-date {
+    color: gray;
+}
+
+.onionr-post-creator-content {
+    font-family: sans-serif, serif;
+    border-top: 1px solid black;
+    font-size: 15pt;
+    background-color: lightgray;
+    color: black;
+    border-width: 0px;
+}
+
 .h-divider {
     border-top:1px solid gray;
 }

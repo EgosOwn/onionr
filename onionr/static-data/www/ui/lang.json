@@ -6,10 +6,21 @@
         "NOTIFICATIONS" : "Notifications",
         "MESSAGES" : "Messages",
 
+        "LATEST" : "Latest...",
         "TRENDING" : "Trending",
 
+        "MODAL_TITLE" : "Loading...",
+        "MODAL_MESSAGE" : "Onionr has begun performing a CPU-intensive operation. If this operation does not complete in the next 10 seconds, try reloading the page.",
+
         "POST_LIKE" : "like",
-        "POST_REPLY" : "reply"
+        "POST_REPLY" : "reply",
+
+        "POST_CREATOR_YOU" : "you",
+        "POST_CREATOR_PLACEHOLDER" : "Enter a message here...",
+        "POST_CREATOR_CREATE" : "Create post",
+
+        "PROFILE_EDIT_SAVE" : "Save",
+        "PROFILE_EDIT_CANCEL" : "Cancel"
     },
 
     "spa" : {

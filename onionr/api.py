@@ -250,7 +250,7 @@ class API:
                     response = siteData.split(b'-', 2)[-1]
                 resp = Response(response)
             elif action == 'info':
-                resp = new Response(json.dumps({'id' : 'not yet implemented'}))
+                resp = Response(json.dumps({'pubkey' : self._core._crypto.pubKey, 'host' : self._core.hsAdder}))
             elif action == "insertBlock":
                 response = {'success' : False, 'reason' : 'An unknown error occurred'}
 

@@ -44,16 +44,17 @@ function deserializeUser(id) {
     return user;
 }
 
-function serializeUser(user) {
-    if(user !== null && user !== undefined) {
-        var serialized = {'name' : user.getName(), 'id' : user.getID(), 'icon' : user.getIcon()};
+function getCurrentUser() {
+    var user = get('currentUser', null);
 
-        usermap[user.getID()] = serialized;
+    if(user === null)
+        return null;
 
-        set('usermap', JSON.stringify(getUserMap()));
+    return User.getUser(user, function() {});
+}
 
-        return serialized;
-    }
+function setCurrentUser(user) {
+    set('currentUser', user.getID());
 }
 
 /* returns a relative date format, e.g. "5 minutes" */
@@ -131,6 +132,11 @@ class Sanitize {
     static url(url) {
         return encodeURIComponent(url);
     }
+
+    /* usernames */
+    static username(username) {
+        return String(username).replace(/[\W_]+/g, " ").substring(0, 25);
+    }
 }
 
 /* config stuff */
@@ -182,17 +188,74 @@ class User {
         return this.image;
     }
 
+    setDescription(description) {
+        this.description = description;
+    }
+
+    getDescription() {
+        return this.description;
+    }
+
     serialize() {
         return {
             'name' : this.getName(),
             'id' : this.getID(),
-            'icon' : this.getIcon()
+            'icon' : this.getIcon(),
+            'description' : this.getDescription()
         };
     }
 
+    /* save in usermap */
     remember() {
         usermap[this.getID()] = this.serialize();
         set('usermap', JSON.stringify(usermap));
+    }
+
+    /* save as a block */
+    save(callback) {
+        var block = new Block();
+
+        block.setType('onionr-user');
+        block.setContent(JSON.stringify(this.serialize()));
+
+        return block.save(true, callback);
+    }
+
+    static getUser(id, callback) {
+        var user = deserializeUser(id);
+        if(user === null) {
+            Block.getBlocks({'type' : 'onionr-user-info', 'signed' : true, 'reverse' : true}, function(data) {
+                if(data.length !== 0) {
+                    try {
+                        user = new User();
+
+                        var userInfo = JSON.parse(data[0].getContent());
+
+                        if(userInfo['id'] === id) {
+                            user.setName(userInfo['name']);
+                            user.setIcon(userInfo['icon']);
+                            user.setID(id);
+
+                            user.remember();
+
+                            callback(user);
+                            return user;
+                        }
+                    } catch(e) {
+                        console.log(e);
+
+                        callback(null);
+                        return null;
+                    }
+                } else {
+                    callback(null);
+                    return null;
+                }
+            });
+        } else {
+            callback(user);
+            return user;
+        }
     }
 }
 
@@ -277,6 +340,35 @@ class Post {
 
     getPostDate() {
         return this.date;
+    }
+
+    save(callback) {
+        var args = {'type' : 'onionr-post', 'sign' : true, 'content' : JSON.stringify({'content' : this.getContent()})};
+
+        var url = '/client/?action=insertBlock&data=' + Sanitize.url(JSON.stringify(args)) + '&token=' + Sanitize.url(getWebPassword()) + '&timingToken=' + Sanitize.url(getTimingToken());
+
+        console.log(url);
+
+        var http = new XMLHttpRequest();
+
+        if(callback !== undefined) {
+            // async
+
+            http.addEventListener('load', function() {
+                callback(Block.parseBlockArray(JSON.parse(http.responseText)['hash']));
+            }, false);
+
+            http.open('GET', url, true);
+            http.timeout = 5000;
+            http.send(null);
+        } else {
+            // sync
+
+            http.open('GET', url, false);
+            http.send(null);
+
+            return Block.parseBlockArray(JSON.parse(http.responseText)['hash']);
+        }
     }
 }
 
@@ -380,6 +472,52 @@ class Block {
         return !(this.hash === null || this.hash === undefined);
     }
 
+    // saves the block, returns the hash
+    save(sign, callback) {
+        var type = this.getType();
+        var content = this.getContent();
+        var parent = this.getParent();
+
+        if(content !== undefined && content !== null && type !== '') {
+            var args = {'content' : content};
+
+            if(type !== undefined && type !== null && type !== '')
+                args['type'] = type;
+            if(parent !== undefined && parent !== null && parent.getHash() !== undefined && parent.getHash() !== null && parent.getHash() !== '')
+                args['parent'] = parent.getHash();
+            if(sign !== undefined && sign !== null)
+                args['sign'] = String(sign) !== 'false'
+
+
+            var url = '/client/?action=insertBlock&data=' + Sanitize.url(JSON.stringify(args)) + '&token=' + Sanitize.url(getWebPassword()) + '&timingToken=' + Sanitize.url(getTimingToken());
+
+            console.log(url);
+
+            var http = new XMLHttpRequest();
+
+            if(callback !== undefined) {
+                // async
+
+                http.addEventListener('load', function() {
+                    callback(Block.parseBlockArray(JSON.parse(http.responseText)['hash']));
+                }, false);
+
+                http.open('GET', url, true);
+                http.timeout = 5000;
+                http.send(null);
+            } else {
+                // sync
+
+                http.open('GET', url, false);
+                http.send(null);
+
+                return Block.parseBlockArray(JSON.parse(http.responseText)['hash']);
+            }
+        }
+
+        return false;
+    }
+
     /* static functions */
 
     // recreates a block by hash
@@ -463,19 +601,56 @@ class Block {
 
 /* temporary code */
 
+var tt = getParameter("timingToken");
+if(tt !== null && tt !== undefined) {
+    setTimingToken(tt);
+}
+
 if(getWebPassword() === null) {
     var password = "";
     while(password.length != 64) {
         password = prompt("Please enter the web password (run `./RUN-LINUX.sh --get-password`)");
     }
 
-    setTimingToken(prompt("Please enter the timing token (optional)"));
-
     setWebPassword(password);
-    window.location.reload(true);
 }
 
-var tt = getParameter("timingToken");
-if(tt !== null && tt !== undefined) {
-    setTimingToken(tt);
+if(getCurrentUser() === null) {
+    var url = '/client/?action=info&token=' + Sanitize.url(getWebPassword()) + '&timingToken=' + Sanitize.url(getTimingToken());
+
+    console.log(url);
+
+    var http = new XMLHttpRequest();
+
+    // sync
+
+    http.open('GET', url, false);
+    http.send(null);
+
+    var id = JSON.parse(http.responseText)['pubkey'];
+
+    User.getUser(id, function(data) {
+        if(data === null || data === undefined) {
+            jQuery('#modal').modal('show');
+
+            var user = new User();
+
+            user.setName('New User');
+            user.setID(id);
+            user.setIcon('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\
+');
+            user.setDescription('A new OnionrUI user');
+
+            user.remember();
+            user.save();
+
+            setCurrentUser(user);
+
+            window.location.reload();
+        } else {
+            setCurrentUser(data);
+        }
+    });
 }
+
+currentUser = getCurrentUser();

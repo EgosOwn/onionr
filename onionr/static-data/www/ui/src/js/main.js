@@ -44,16 +44,17 @@ function deserializeUser(id) {
     return user;
 }
 
-function serializeUser(user) {
-    if(user !== null && user !== undefined) {
-        var serialized = {'name' : user.getName(), 'id' : user.getID(), 'icon' : user.getIcon()};
+function getCurrentUser() {
+    var user = get('currentUser', null);
 
-        usermap[user.getID()] = serialized;
+    if(user === null)
+        return null;
 
-        set('usermap', JSON.stringify(getUserMap()));
+    return User.getUser(user, function() {});
+}
 
-        return serialized;
-    }
+function setCurrentUser(user) {
+    set('currentUser', user.getID());
 }
 
 /* returns a relative date format, e.g. "5 minutes" */
@@ -131,6 +132,11 @@ class Sanitize {
     static url(url) {
         return encodeURIComponent(url);
     }
+
+    /* usernames */
+    static username(username) {
+        return String(username).replace(/[\W_]+/g, " ").substring(0, 25);
+    }
 }
 
 /* config stuff */
@@ -182,17 +188,74 @@ class User {
         return this.image;
     }
 
+    setDescription(description) {
+        this.description = description;
+    }
+
+    getDescription() {
+        return this.description;
+    }
+
     serialize() {
         return {
             'name' : this.getName(),
             'id' : this.getID(),
-            'icon' : this.getIcon()
+            'icon' : this.getIcon(),
+            'description' : this.getDescription()
         };
     }
 
+    /* save in usermap */
     remember() {
         usermap[this.getID()] = this.serialize();
         set('usermap', JSON.stringify(usermap));
+    }
+
+    /* save as a block */
+    save(callback) {
+        var block = new Block();
+
+        block.setType('onionr-user');
+        block.setContent(JSON.stringify(this.serialize()));
+
+        return block.save(true, callback);
+    }
+
+    static getUser(id, callback) {
+        var user = deserializeUser(id);
+        if(user === null) {
+            Block.getBlocks({'type' : 'onionr-user-info', 'signed' : true, 'reverse' : true}, function(data) {
+                if(data.length !== 0) {
+                    try {
+                        user = new User();
+
+                        var userInfo = JSON.parse(data[0].getContent());
+
+                        if(userInfo['id'] === id) {
+                            user.setName(userInfo['name']);
+                            user.setIcon(userInfo['icon']);
+                            user.setID(id);
+
+                            user.remember();
+
+                            callback(user);
+                            return user;
+                        }
+                    } catch(e) {
+                        console.log(e);
+
+                        callback(null);
+                        return null;
+                    }
+                } else {
+                    callback(null);
+                    return null;
+                }
+            });
+        } else {
+            callback(user);
+            return user;
+        }
     }
 }
 
@@ -245,6 +308,35 @@ class Post {
 
     getPostDate() {
         return this.date;
+    }
+
+    save(callback) {
+        var args = {'type' : 'onionr-post', 'sign' : true, 'content' : JSON.stringify({'content' : this.getContent()})};
+
+        var url = '/client/?action=insertBlock&data=' + Sanitize.url(JSON.stringify(args)) + '&token=' + Sanitize.url(getWebPassword()) + '&timingToken=' + Sanitize.url(getTimingToken());
+
+        console.log(url);
+
+        var http = new XMLHttpRequest();
+
+        if(callback !== undefined) {
+            // async
+
+            http.addEventListener('load', function() {
+                callback(Block.parseBlockArray(JSON.parse(http.responseText)['hash']));
+            }, false);
+
+            http.open('GET', url, true);
+            http.timeout = 5000;
+            http.send(null);
+        } else {
+            // sync
+
+            http.open('GET', url, false);
+            http.send(null);
+
+            return Block.parseBlockArray(JSON.parse(http.responseText)['hash']);
+        }
     }
 }
 
@@ -348,6 +440,52 @@ class Block {
         return !(this.hash === null || this.hash === undefined);
     }
 
+    // saves the block, returns the hash
+    save(sign, callback) {
+        var type = this.getType();
+        var content = this.getContent();
+        var parent = this.getParent();
+
+        if(content !== undefined && content !== null && type !== '') {
+            var args = {'content' : content};
+
+            if(type !== undefined && type !== null && type !== '')
+                args['type'] = type;
+            if(parent !== undefined && parent !== null && parent.getHash() !== undefined && parent.getHash() !== null && parent.getHash() !== '')
+                args['parent'] = parent.getHash();
+            if(sign !== undefined && sign !== null)
+                args['sign'] = String(sign) !== 'false'
+
+
+            var url = '/client/?action=insertBlock&data=' + Sanitize.url(JSON.stringify(args)) + '&token=' + Sanitize.url(getWebPassword()) + '&timingToken=' + Sanitize.url(getTimingToken());
+
+            console.log(url);
+
+            var http = new XMLHttpRequest();
+
+            if(callback !== undefined) {
+                // async
+
+                http.addEventListener('load', function() {
+                    callback(Block.parseBlockArray(JSON.parse(http.responseText)['hash']));
+                }, false);
+
+                http.open('GET', url, true);
+                http.timeout = 5000;
+                http.send(null);
+            } else {
+                // sync
+
+                http.open('GET', url, false);
+                http.send(null);
+
+                return Block.parseBlockArray(JSON.parse(http.responseText)['hash']);
+            }
+        }
+
+        return false;
+    }
+
     /* static functions */
 
     // recreates a block by hash
@@ -431,19 +569,55 @@ class Block {
 
 /* temporary code */
 
+var tt = getParameter("timingToken");
+if(tt !== null && tt !== undefined) {
+    setTimingToken(tt);
+}
+
 if(getWebPassword() === null) {
     var password = "";
     while(password.length != 64) {
         password = prompt("Please enter the web password (run `./RUN-LINUX.sh --get-password`)");
     }
 
-    setTimingToken(prompt("Please enter the timing token (optional)"));
-
     setWebPassword(password);
-    window.location.reload(true);
 }
 
-var tt = getParameter("timingToken");
-if(tt !== null && tt !== undefined) {
-    setTimingToken(tt);
+if(getCurrentUser() === null) {
+    var url = '/client/?action=info&token=' + Sanitize.url(getWebPassword()) + '&timingToken=' + Sanitize.url(getTimingToken());
+
+    console.log(url);
+
+    var http = new XMLHttpRequest();
+
+    // sync
+
+    http.open('GET', url, false);
+    http.send(null);
+
+    var id = JSON.parse(http.responseText)['pubkey'];
+
+    User.getUser(id, function(data) {
+        if(data === null || data === undefined) {
+            jQuery('#modal').modal('show');
+
+            var user = new User();
+
+            user.setName('New User');
+            user.setID(id);
+            user.setIcon('<$= Template.jsTemplate("default-icon") $>');
+            user.setDescription('A new OnionrUI user');
+
+            user.remember();
+            user.save();
+
+            setCurrentUser(user);
+
+            window.location.reload();
+        } else {
+            setCurrentUser(data);
+        }
+    });
 }
+
+currentUser = getCurrentUser();
