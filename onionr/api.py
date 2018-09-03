@@ -20,7 +20,7 @@
 import flask
 from flask import request, Response, abort, send_from_directory
 from multiprocessing import Process
-from gevent.wsgi import WSGIServer
+from gevent.pywsgi import WSGIServer
 import sys, random, threading, hmac, hashlib, base64, time, math, os, json
 from core import Core
 from onionrblockapi import Block
