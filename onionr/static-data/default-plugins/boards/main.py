@@ -23,7 +23,7 @@ import logger, config, sys
 from onionrblockapi import Block
 try:
     import tkinter
-except (ModuleNotFoundError, ImportError, NameError) as e:
+except (ImportError, NameError) as e:
     TK_ENABLED = False
 else:
     TK_ENABLED = True
