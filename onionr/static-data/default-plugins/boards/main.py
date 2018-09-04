@@ -37,7 +37,8 @@ class OnionrBoards:
         self.api = apiInst
         self.myCore = apiInst.get_core()
 
-        self.gui = tkinter.Tk()
+        if TK_ENABLED:
+            self.gui = tkinter.Tk()
 
         return
 
