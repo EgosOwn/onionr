@@ -91,7 +91,6 @@ Daemon Running: ''' + isOnline + '''
             elif choice in ("5", "daemon"):
                 if isOnline == "Yes":
                     print("Onionr daemon will shutdown...")
-                    #self.myCore._utils.localCommand("shutdown")
                     self.myCore.daemonQueueAdd('shutdown')
                     try:
                         daemon.kill()
