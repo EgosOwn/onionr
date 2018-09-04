@@ -17,7 +17,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import onionrblockapi, logger, onionrexceptions
+import onionrblockapi, logger, onionrexceptions, json
 class OnionrUser:
     def __init__(self, coreInst, publicKey):
         self.trust = 0

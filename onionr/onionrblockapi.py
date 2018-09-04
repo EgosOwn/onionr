@@ -177,6 +177,7 @@ class Block:
             # signed data is jsonMeta + block content (no linebreak)
             self.signedData = (None if not self.isSigned() else self.getHeader('meta') + self.getContent())
             self.date = self.getCore().getBlockDate(self.getHash())
+            self.claimedTime = self.getHeader('time', None)
 
             if not self.getDate() is None:
                 self.date = datetime.datetime.fromtimestamp(self.getDate())

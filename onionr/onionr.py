@@ -50,6 +50,7 @@ class Onionr:
             Main Onionr class. This is for the CLI program, and does not handle much of the logic.
             In general, external programs and plugins should not use this class.
         '''
+        self.userRunDir = os.getcwd() # Directory user runs the program from
         try:
             os.chdir(sys.path[0])
         except FileNotFoundError:
@@ -190,6 +191,10 @@ class Onionr:
 
             'add-file': self.addFile,
             'addfile': self.addFile,
+
+            'get-file': self.getFile,
+            'getfile': self.getFile,
+
             'listconn': self.listConn,
 
             'import-blocks': self.onionrUtils.importNewBlocks,
@@ -230,6 +235,7 @@ class Onionr:
             'add-peer': 'Adds a peer to database',
             'list-peers': 'Displays a list of peers',
             'add-file': 'Create an Onionr block from a file',
+            'get-file': 'Get a file from Onionr blocks',
             'import-blocks': 'import blocks from the disk (Onionr is transport-agnostic!)',
             'listconn': 'list connected peers',
             'kex': 'exchange keys with peers (done automatically)',
@@ -780,6 +786,24 @@ class Onionr:
 
         return columns
 
+    def getFile(self):
+        '''
+            Get a file from onionr blocks
+        '''
+        if len(sys.argv) >= 3:
+            fileName = sys.argv[2]
+            print(fileName)
+            contents = None
+            bHash = sys.argv[3]
+            if os.path.exists(fileName):
+                logger.error("File already exists")
+                return
+            if not self.onionrUtils.validateHash(bHash):
+                logger.error('Block hash is invalid')
+                return
+            Block.mergeChain(bHash, fileName)
+        return
+
     def addFile(self):
         '''
             Adds a file to the onionr network
@@ -790,8 +814,9 @@ class Onionr:
             contents = None
 
             if not os.path.exists(filename):
-                logger.warn('That file does not exist. Improper path?')
-
+                logger.error('That file does not exist. Improper path (specify full path)?')
+                return
+            logger.info('Adding file... this might take a long time.')
             try:
                 blockhash = Block.createChain(file = filename)
                 logger.info('File %s saved in block %s.' % (filename, blockhash))
