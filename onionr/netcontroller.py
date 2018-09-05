@@ -18,7 +18,8 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 
-import subprocess, os, random, sys, logger, time, signal, config
+import subprocess, os, random, sys, logger, time, signal, config, base64
+from stem.control import Controller
 from onionrblockapi import Block
 
 class NetController:
@@ -33,6 +34,14 @@ class NetController:
         self.hsPort = hsPort
         self._torInstnace = ''
         self.myID = ''
+
+        if os.path.exists('./tor'):
+            self.torBinary = './tor'
+        elif os.path.exists('/usr/bin/tor'):
+            self.torBinary = '/usr/bin/tor'
+        else:
+            self.torBinary = 'tor'
+
         config.reload()
         '''
             if os.path.exists(self.torConfigLocation):
@@ -52,13 +61,27 @@ class NetController:
         if config.get('tor.v3onions'):
             hsVer = 'HiddenServiceVersion 3'
             logger.info('Using v3 onions :)')
+
         if os.path.exists(self.torConfigLocation):
             os.remove(self.torConfigLocation)
+
+        # Set the Tor control password. Meant to make it harder to manipulate our Tor instance
+        plaintext = base64.b64encode(os.urandom(50)).decode()
+        config.set('tor.controlpassword', plaintext, savefile=True)
+
+        hashedPassword = subprocess.Popen([self.torBinary, '--hash-password', plaintext], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        for line in iter(hashedPassword.stdout.readline, b''):
+            password = line.decode()
+            break
+
         torrcData = '''SocksPort ''' + str(self.socksPort) + '''
 HiddenServiceDir data/hs/
 \n''' + hsVer + '''\n
 HiddenServicePort 80 127.0.0.1:''' + str(self.hsPort) + '''
 DataDirectory data/tordata/
+CookieAuthentication 1
+ControlPort 9051
+HashedControlPassword ''' + str(password) + '''
         '''
         torrc = open(self.torConfigLocation, 'w')
         torrc.write(torrcData)
@@ -74,20 +97,20 @@ DataDirectory data/tordata/
         self.generateTorrc()
 
         if os.path.exists('./tor'):
-            torBinary = './tor'
+            self.torBinary = './tor'
         elif os.path.exists('/usr/bin/tor'):
-            torBinary = '/usr/bin/tor'
+            self.torBinary = '/usr/bin/tor'
         else:
-            torBinary = 'tor'
+            self.torBinary = 'tor'
 
         try:
-            tor = subprocess.Popen([torBinary, '-f', self.torConfigLocation], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            tor = subprocess.Popen([self.torBinary, '-f', self.torConfigLocation], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         except FileNotFoundError:
             logger.fatal("Tor was not found in your path or the Onionr directory. Please install Tor and try again.")
             sys.exit(1)
         else:
             # Test Tor Version
-            torVersion = subprocess.Popen([torBinary, '--version'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            torVersion = subprocess.Popen([self.torBinary, '--version'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             for line in iter(torVersion.stdout.readline, b''):
                 if 'Tor 0.2.' in line.decode():
                     logger.warn("Running 0.2.x Tor series, no support for v3 onion peers")

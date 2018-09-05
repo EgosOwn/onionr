@@ -7,3 +7,4 @@ defusedxml==0.5.0
 simple_crypt==4.1.7
 Flask==1.0.2
 PySocks==1.6.8
+stem==1.6.0

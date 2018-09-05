@@ -46,6 +46,7 @@ class OnionrCLIUI:
         showMenu = True
         isOnline = "No"
         firstRun = True
+        choice = ''
 
         if self.myCore._utils.localCommand('ping') == 'pong':
             firstRun = False
