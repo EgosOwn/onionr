@@ -155,26 +155,6 @@ class OnionrCrypto:
             decrypted = anonBox.decrypt(data, encoder=encoding)
         return decrypted
 
-    def symmetricPeerEncrypt(self, data, peer):
-        '''Salsa20 encrypt data to peer (with mac)
-            this function does not accept a key, it is a wrapper for encryption with a peer
-        '''
-        key = self._core.getPeerInfo(4)
-        if type(key) != bytes:
-            key = self._core.getPeerInfo(2)
-        encrypted = self.symmetricEncrypt(data, key, encodedKey=True)
-        return encrypted
-
-    def symmetricPeerDecrypt(self, data, peer):
-        '''Salsa20 decrypt data from peer (with mac)
-        this function does not accept a key, it is a wrapper for encryption with a peer
-        '''
-        key = self._core.getPeerInfo(4)
-        if type(key) != bytes:
-            key = self._core.getPeerInfo(2)
-        decrypted = self.symmetricDecrypt(data, key, encodedKey=True)
-        return decrypted
-
     def symmetricEncrypt(self, data, key, encodedKey=False, returnEncoded=True):
         '''Encrypt data to a 32-byte key (Salsa20-Poly1305 MAC)'''
         if encodedKey:
@@ -247,6 +227,10 @@ class OnionrCrypto:
         return result
 
     def sha3Hash(self, data):
+        try:
+            data = data.encode()
+        except AttributeError:
+            pass
         hasher = hashlib.sha3_256()
         hasher.update(data)
         return hasher.hexdigest()

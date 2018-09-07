@@ -1,5 +1,5 @@
 '''
-    Onionr - P2P Microblogging Platform & Social network.
+    Onionr - P2P Anonymous Storage Network
 
     This file contains both the PeerProfiles class for network profiling of Onionr nodes
 '''
@@ -17,7 +17,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import core, config, logger
+import core, config, logger, sqlite3
 class PeerProfiles:
     '''
         PeerProfiles
@@ -72,7 +72,7 @@ def getScoreSortedPeerList(coreInst):
     return peerList
 
 def peerCleanup(coreInst):
-    '''Removes peers who have been offline too long'''
+    '''Removes peers who have been offline too long or score too low'''
     if not type(coreInst is core.Core):
         raise TypeError('coreInst must be instance of core.Core')
 
@@ -89,4 +89,17 @@ def peerCleanup(coreInst):
         # Remove peers that go below the negative score
         if PeerProfiles(address, coreInst).score < minScore:
             coreInst.removeAddress(address)
+            try:
+                if (int(coreInst._utils.getEpoch()) - int(coreInst.getPeerInfo(address, 'dateSeen'))) >= 600:
+                    expireTime = 600
+                else:
+                    expireTime = 86400
+                coreInst._blacklist.addToDB(address, dataType=1, expire=expireTime)
+            except sqlite3.IntegrityError: #TODO just make sure its not a unique constraint issue
+                pass
+            except ValueError:
+                pass
             logger.warn('Removed address ' + address + '.')
+
+    # Unban probably not malicious peers TODO improve
+    coreInst._blacklist.deleteExpired(dataType=1)

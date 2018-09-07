@@ -21,7 +21,9 @@
 # Imports some useful libraries
 import logger, config, threading, time, readline, datetime
 from onionrblockapi import Block
-import onionrexceptions
+import onionrexceptions, onionrusers
+import locale
+locale.setlocale(locale.LC_ALL, '')
 
 plugin_name = 'pms'
 PLUGIN_VERSION = '0.0.1'
@@ -79,8 +81,19 @@ class OnionrMail:
                     continue
                 blockCount += 1
                 pmBlockMap[blockCount] = blockHash
+                
+                block = pmBlocks[blockHash]
+                senderKey = block.signer
+                try:
+                    senderKey = senderKey.decode()
+                except AttributeError:
+                    pass
+                senderDisplay = onionrusers.OnionrUser(self.myCore, senderKey).getName()
+                if senderDisplay == 'anonymous':
+                    senderDisplay = senderKey
+
                 blockDate = pmBlocks[blockHash].getDate().strftime("%m/%d %H:%M")
-                print('%s. %s: %s' % (blockCount, blockDate, blockHash))
+                print('%s. %s - %s: %s' % (blockCount, blockDate, senderDisplay[:12], blockHash))
 
             try:
                 choice = logger.readline('Enter a block number, -r to refresh, or -q to stop: ').strip().lower()
@@ -106,15 +119,15 @@ class OnionrMail:
                 except KeyError:
                     pass
                 else:
+                    cancel = ''
                     readBlock.verifySig()
-                    print('Message recieved from', readBlock.signer)
+                    print('Message recieved from %s' % (readBlock.signer,))
                     print('Valid signature:', readBlock.validSig)
                     if not readBlock.validSig:
-                        logger.warn('This message has an INVALID signature. Anyone could have sent this message.')
-                        logger.readline('Press enter to continue to message.')
-
-                    print(draw_border(self.myCore._utils.escapeAnsi(readBlock.bcontent.decode().strip())))
-
+                        logger.warn('This message has an INVALID signature. ANYONE could have sent this message.')
+                        cancel = logger.readline('Press enter to continue to message, or -q to not open the message (recommended).')
+                    if cancel != '-q':
+                        print(draw_border(self.myCore._utils.escapeAnsi(readBlock.bcontent.decode().strip())))
         return
     
     def draftMessage(self):

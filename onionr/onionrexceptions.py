@@ -1,5 +1,5 @@
 '''
-    Onionr - P2P Microblogging Platform & Social network.
+    Onionr - P2P Anonymous Storage Network
 
     This file contains exceptions for onionr
 '''
@@ -34,8 +34,17 @@ class OnlinePeerNeeded(Exception):
 class InvalidPubkey(Exception):
     pass
 
+class KeyNotKnown(Exception):
+    pass
+
 # block exceptions
 class InvalidMetadata(Exception):
+    pass
+
+class BlacklistedBlock(Exception):
+    pass
+
+class DataExists(Exception):
     pass
 
 class InvalidHexHash(Exception):
@@ -51,4 +60,9 @@ class MissingPort(Exception):
     pass
 
 class InvalidAddress(Exception):
+    pass
+
+# file exceptions
+
+class DiskAllocationReached(Exception):
     pass
