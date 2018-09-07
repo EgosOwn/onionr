@@ -59,14 +59,9 @@ class API:
         }
 
         for mimetype in mimetypes:
-            logger.debug(path + ' endswith .' + mimetype + '?')
             if path.endswith('.%s' % mimetype):
-                logger.debug('- True!')
                 return mimetypes[mimetype]
-            else:
-                logger.debug('- no')
 
-        logger.debug('%s not in %s' % (path, mimetypes))
         return 'text/plain'
 
     def __init__(self, debug):
@@ -203,10 +198,10 @@ class API:
                     time.sleep(self._privateDelayTime - elapsed)
             '''
 
-            logger.debug('Serving %s' % path)
-
             self.mimeType = API.guessMime(path)
             self.overrideCSP = True
+
+            logger.debug('Serving %s (mime: %s)' % (path, self.mimeType))
 
             return send_from_directory('static-data/www/ui/dist/', path, mimetype = API.guessMime(path))
 
