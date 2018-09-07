@@ -1,11 +1,11 @@
 ![Onionr logo](./docs/onionr-logo.png)
 
+v0.3.0 (***experimental, not safe or easy to use yet***)
+
 [![Open Source Love](https://badges.frapsoft.com/os/v3/open-source.png?v=103)](https://github.com/ellerbrock/open-source-badges/)
 
 
 Anonymous P2P platform, using Tor & I2P.
-
-***Experimental, not safe or easy to use yet***
 
 <hr>
 
