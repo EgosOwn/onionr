@@ -21,7 +21,7 @@
 import subprocess, os, random, sys, logger, time, signal, config, base64
 from stem.control import Controller
 from onionrblockapi import Block
-
+from dependencies import secrets
 class NetController:
     '''
         This class handles hidden service setup on Tor and I2P
@@ -69,6 +69,8 @@ class NetController:
         plaintext = base64.b64encode(os.urandom(50)).decode()
         config.set('tor.controlpassword', plaintext, savefile=True)
 
+        controlPort = random.randint(1025, 65535)
+
         hashedPassword = subprocess.Popen([self.torBinary, '--hash-password', plaintext], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         for line in iter(hashedPassword.stdout.readline, b''):
             password = line.decode()
@@ -80,7 +82,7 @@ HiddenServiceDir data/hs/
 HiddenServicePort 80 127.0.0.1:''' + str(self.hsPort) + '''
 DataDirectory data/tordata/
 CookieAuthentication 1
-ControlPort 9051
+ControlPort ''' + str(controlPort) + '''
 HashedControlPassword ''' + str(password) + '''
         '''
         torrc = open(self.torConfigLocation, 'w')
