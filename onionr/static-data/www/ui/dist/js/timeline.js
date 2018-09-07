@@ -81,17 +81,21 @@ function toggleSaveButton(show) {
 function makePost() {
     var content = document.getElementById("onionr-post-creator-content").value;
 
-    var post = new Post();
+    if(content.trim() !== '') {
+        var post = new Post();
 
-    post.setUser(getCurrentUser());
-    post.setContent(content);
-    post.setPostDate(new Date());
+        post.setUser(getCurrentUser());
+        post.setContent(content);
+        post.setPostDate(new Date());
 
-    post.save(function(data) {}); // async, but no function
+        post.save(function(data) {}); // async, but no function
 
-    document.getElementById('onionr-timeline-posts').innerHTML = post.getHTML() + document.getElementById('onionr-timeline-posts').innerHTML;
+        document.getElementById('onionr-timeline-posts').innerHTML = post.getHTML() + document.getElementById('onionr-timeline-posts').innerHTML;
 
-    document.getElementById("onionr-post-creator-content").value = "";
+        document.getElementById("onionr-post-creator-content").value = "";
+    } else {
+        console.log('Not making empty post.');
+    }
 }
 
 $('body').on('click', '[data-editable]', function() {
