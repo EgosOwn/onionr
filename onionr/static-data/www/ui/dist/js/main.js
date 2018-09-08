@@ -25,9 +25,20 @@ function getParameter(name) {
 /* usermap localStorage stuff */
 
 var usermap = JSON.parse(get('usermap', '{}'));
+var postmap = JSON.parse(get('postmap', '{}'))
 
 function getUserMap() {
     return usermap;
+}
+
+function getPostMap(hash) {
+    if(hash !== undefined) {
+        if(hash in postmap)
+            return postmap[hash];
+        return null;
+    }
+
+    return postmap;
 }
 
 function deserializeUser(id) {
@@ -287,7 +298,7 @@ class Post {
                 </div>\
 \
                 <div class="onionr-post-controls pt-2">\
-                    <a href="#!" onclick="toggleLike(\'$post-hash\')" class="glyphicon glyphicon-heart mr-2">like</a>\
+                    <a href="#!" onclick="toggleLike(\'$post-hash\')" class="glyphicon glyphicon-heart mr-2">$liked</a>\
                     <a href="#!" onclick="reply(\'$post-hash\')" class="glyphicon glyphicon-comment mr-2">reply</a>\
                 </div>\
             </div>\
@@ -312,6 +323,12 @@ class Post {
         postTemplate = postTemplate.replaceAll('$post-hash', this.getHash());
         postTemplate = postTemplate.replaceAll('$date-relative', timeSince(this.getPostDate(), device) + (device === 'desktop' ?  ' ago' : ''));
         postTemplate = postTemplate.replaceAll('$date', this.getPostDate().toLocaleString());
+
+        if(this.getHash() in getPostMap() && getPostMap()[this.getHash()]['liked']) {
+            postTemplate = postTemplate.replaceAll('$liked', 'unlike');
+        } else {
+            postTemplate = postTemplate.replaceAll('$liked', 'like');
+        }
 
         return postTemplate;
     }

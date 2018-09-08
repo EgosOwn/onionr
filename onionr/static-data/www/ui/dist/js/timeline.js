@@ -32,6 +32,28 @@ Block.getBlocks({'type' : 'onionr-post', 'signed' : true, 'reverse' : true}, fun
     }
 });
 
+function toggleLike(hash) {
+    var post = getPostMap(hash);
+    if(post === null || !getPostMap()[hash]['liked']) {
+        console.log('Liking ' + hash + '...');
+
+        if(post === null)
+            getPostMap()[hash] = {};
+
+        getPostMap()[hash]['liked'] = true;
+
+        set('postmap', JSON.stringify(getPostMap()));
+
+        var block = new Block();
+
+        block.setType('onionr-post-like');
+        block.setContent(JSON.stringify({'hash' : hash}));
+        block.save(true, function(hash) {});
+    } else {
+        console.log('Unliking ' + hash + '...');
+    }
+}
+
 function postCreatorChange() {
     var content = document.getElementById('onionr-post-creator-content').value;
     var message = '';
@@ -55,9 +77,9 @@ function postCreatorChange() {
     var button = document.getElementById("onionr-post-creator-create");
 
     if(message === '')
-        element.style.display = 'none';
+        element.style.visibility = 'hidden';
     else {
-        element.style.display = 'block';
+        element.style.visibility = 'visible';
 
         element.innerHTML = message;
 
@@ -139,6 +161,7 @@ function makePost() {
         document.getElementById('onionr-timeline-posts').innerHTML = post.getHTML() + document.getElementById('onionr-timeline-posts').innerHTML;
 
         document.getElementById("onionr-post-creator-content").value = "";
+        postCreatorChange();
     } else {
         console.log('Not making empty post.');
     }
@@ -162,6 +185,8 @@ $('body').on('click', '[data-editable]', function() {
 
     input.one('blur', save).focus();
 });
+
+currentUser = getCurrentUser();
 
 document.getElementById("onionr-post-creator-user-name").innerHTML = Sanitize.html(currentUser.getName());
 document.getElementById("onionr-post-creator-user-id").innerHTML = "you";

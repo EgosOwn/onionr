@@ -13,6 +13,7 @@
         "MODAL_MESSAGE" : "Onionr has begun performing a CPU-intensive operation. If this operation does not complete in the next 10 seconds, try reloading the page.",
 
         "POST_LIKE" : "like",
+        "POST_UNLIKE" : "unlike",
         "POST_REPLY" : "reply",
 
         "POST_CREATOR_YOU" : "you",

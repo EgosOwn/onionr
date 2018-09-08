@@ -234,6 +234,16 @@ class API:
                 resp = Response('Goodbye')
             elif action == 'ping':
                 resp = Response('pong')
+            elif action == 'site':
+                block = data
+                siteData = self._core.getData(data)
+                response = 'not found'
+                if siteData != '' and siteData != False:
+                    self.mimeType = 'text/html'
+                    response = siteData.split(b'-', 2)[-1]
+                resp = Response(response)
+            elif action == 'info':
+                resp = Response(json.dumps({'pubkey' : self._core._crypto.pubKey, 'host' : self._core.hsAddress}))
             elif action == "insertBlock":
                 response = {'success' : False, 'reason' : 'An unknown error occurred'}
 
@@ -431,7 +441,7 @@ class API:
                     else:
                         logger.warn(newNode.decode() + ' failed to meet POW: ' + powHash)
             resp = Response(resp)
-            return resp   
+            return resp
 
         @app.route('/public/')
         def public_handler():
