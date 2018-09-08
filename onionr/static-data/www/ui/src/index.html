@@ -29,6 +29,12 @@
 
                 <div class="col-sm-12 col-lg-6">
                     <div class="row" id="onionr-timeline-post-creator">
+                        <div class="col-12">
+                            <div class="onionr-timeline">
+                                <h2><$= LANG.TIMELINE $></h2>
+                            </div>
+                        </div>
+
                         <!-- POST -->
                         <div class="col-12">
                             <div class="onionr-post-creator">
@@ -40,11 +46,13 @@
                                         <div class="row">
                                             <div class="col col-auto">
                                                 <a class="onionr-post-creator-user-name" id="onionr-post-creator-user-name" href="#!" onclick="viewProfile('$user-id-url', '$user-name-url')"></a>
-                                                <a class="onionr-post-creator-user-id" id="onionr-post-creator-user-id" href="#!" onclick="viewProfile('$user-id-url', '$user-name-url')" data-placement="top" data-toggle="tooltip" title="$user-id">you</a>
+                                                <a class="onionr-post-creator-user-id" id="onionr-post-creator-user-id" href="#!" onclick="viewProfile('$user-id-url', '$user-name-url')" data-placement="top" data-toggle="tooltip" title="$user-id"><$= LANG.POST_CREATOR_YOU $></a>
                                             </div>
                                         </div>
 
-                                        <textarea class="onionr-post-creator-content" id="onionr-post-creator-content"></textarea>
+                                        <textarea class="onionr-post-creator-content" id="onionr-post-creator-content" oninput="postCreatorChange()"></textarea>
+
+                                        <div class="onionr-post-creator-content-message" id="onionr-post-creator-content-message"></div>
 
                                         <input type="button" onclick="makePost()" title="<$= LANG.POST_CREATOR_CREATE $>" value="<$= LANG.POST_CREATOR_CREATE $>" id="onionr-post-creator-create" class="onionr-post-creator-create" />
                                     </div>

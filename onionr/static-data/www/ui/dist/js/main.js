@@ -115,10 +115,10 @@ function timeSince(date, size) {
 }
 
 /* replace all instances of string */
-String.prototype.replaceAll = function(search, replacement) {
+String.prototype.replaceAll = function(search, replacement, limit) {
     // taken from https://stackoverflow.com/a/17606289/3678023
     var target = this;
-    return target.split(search).join(replacement);
+    return target.split(search, limit).join(replacement);
 };
 
 /* useful functions to sanitize data */
@@ -287,8 +287,8 @@ class Post {
                 </div>\
 \
                 <div class="onionr-post-controls pt-2">\
-                    <a href="#!" onclick="toggleLike(\'$post-id\')" class="glyphicon glyphicon-heart mr-2">like</a>\
-                    <a href="#!" onclick="reply(\'$post-id\')" class="glyphicon glyphicon-comment mr-2">reply</a>\
+                    <a href="#!" onclick="toggleLike(\'$post-hash\')" class="glyphicon glyphicon-heart mr-2">like</a>\
+                    <a href="#!" onclick="reply(\'$post-hash\')" class="glyphicon glyphicon-comment mr-2">reply</a>\
                 </div>\
             </div>\
         </div>\
@@ -308,7 +308,8 @@ class Post {
 
         postTemplate = postTemplate.replaceAll('$user-id', Sanitize.html(this.getUser().getID()));
         postTemplate = postTemplate.replaceAll('$user-image', "data:image/jpeg;base64," + Sanitize.html(this.getUser().getIcon()));
-        postTemplate = postTemplate.replaceAll('$content', Sanitize.html(this.getContent()));
+        postTemplate = postTemplate.replaceAll('$content', Sanitize.html(this.getContent()).replaceAll('\n', '<br />', 16)); // Maximum of 16 lines
+        postTemplate = postTemplate.replaceAll('$post-hash', this.getHash());
         postTemplate = postTemplate.replaceAll('$date-relative', timeSince(this.getPostDate(), device) + (device === 'desktop' ?  ' ago' : ''));
         postTemplate = postTemplate.replaceAll('$date', this.getPostDate().toLocaleString());
 
@@ -342,6 +343,14 @@ class Post {
         return this.date;
     }
 
+    setHash(hash) {
+        this.hash = hash;
+    }
+
+    getHash() {
+        return this.hash;
+    }
+
     save(callback) {
         var args = {'type' : 'onionr-post', 'sign' : true, 'content' : JSON.stringify({'content' : this.getContent()})};
 
@@ -354,8 +363,11 @@ class Post {
         if(callback !== undefined) {
             // async
 
+            var thisObject = this;
+
             http.addEventListener('load', function() {
-                callback(Block.parseBlockArray(JSON.parse(http.responseText)['hash']));
+                thisObject.setHash(Block.parseBlockArray(JSON.parse(http.responseText)['hash']));
+                callback(thisObject.getHash());
             }, false);
 
             http.open('GET', url, true);
@@ -367,7 +379,9 @@ class Post {
             http.open('GET', url, false);
             http.send(null);
 
-            return Block.parseBlockArray(JSON.parse(http.responseText)['hash']);
+            this.setHash(Block.parseBlockArray(JSON.parse(http.responseText)['hash']));
+
+            return this.getHash();
         }
     }
 }

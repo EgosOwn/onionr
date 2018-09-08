@@ -19,6 +19,10 @@
         "POST_CREATOR_PLACEHOLDER" : "Enter a message here...",
         "POST_CREATOR_CREATE" : "Create post",
 
+        "POST_CREATOR_MESSAGE_MAXIMUM_NEWLINES" : "Please use less than 16 newlines",
+        "POST_CREATOR_MESSAGE_REMAINING" : "%s characters remaining",
+        "POST_CREATOR_MESSAGE_OVER" : "%s characters over maximum",
+
         "PROFILE_EDIT_SAVE" : "Save",
         "PROFILE_EDIT_CANCEL" : "Cancel"
     },

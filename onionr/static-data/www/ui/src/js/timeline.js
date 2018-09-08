@@ -10,11 +10,16 @@ Block.getBlocks({'type' : 'onionr-post', 'signed' : true, 'reverse' : true}, fun
 
                 var blockContent = JSON.parse(block.getContent());
 
-                post.setContent(blockContent['content']);
-                post.setPostDate(block.getDate());
-                post.setUser(user);
+                // just ignore anything shorter than 280 characters
+                if(String(blockContent['content']).length <= 280) {
+                    post.setContent(blockContent['content']);
+                    post.setPostDate(block.getDate());
+                    post.setUser(user);
 
-                document.getElementById('onionr-timeline-posts').innerHTML += post.getHTML();
+                    post.setHash(block.getHash());
+
+                    document.getElementById('onionr-timeline-posts').innerHTML += post.getHTML();
+                }
 
                 finished = true;
             });
@@ -26,6 +31,47 @@ Block.getBlocks({'type' : 'onionr-post', 'signed' : true, 'reverse' : true}, fun
         }
     }
 });
+
+function postCreatorChange() {
+    var content = document.getElementById('onionr-post-creator-content').value;
+    var message = '';
+
+    var disable = true;
+
+    if(content.length !== 0) {
+        if(content.length - content.replaceAll('\n', '').length > 16) {
+            // 16 max newlines
+            message = '<$= LANG.POST_CREATOR_MESSAGE_MAXIMUM_NEWLINES $>';
+        } else if(content.length <= 280) {
+            // 280 max characters
+            message = '<$= LANG.POST_CREATOR_MESSAGE_REMAINING $>'.replaceAll('%s', (280 - content.length));
+            disable = false;
+        } else {
+            message = '<$= LANG.POST_CREATOR_MESSAGE_OVER $>'.replaceAll('%s', (content.length - 280));
+        }
+    }
+
+    var element = document.getElementById('onionr-post-creator-content-message');
+    var button = document.getElementById("onionr-post-creator-create");
+
+    if(message === '')
+        element.style.display = 'none';
+    else {
+        element.style.display = 'block';
+
+        element.innerHTML = message;
+
+        if(disable)
+            element.style.color = 'red';
+        else
+            element.style.color = 'gray';
+    }
+
+    if(disable)
+        button.disabled = true;
+    else
+        button.disabled = false;
+}
 
 function viewProfile(id, name) {
     id = decodeURIComponent(id);
@@ -129,3 +175,6 @@ viewCurrentProfile = function() {
 
 document.getElementById("onionr-post-creator-user-id").onclick = viewCurrentProfile;
 document.getElementById("onionr-post-creator-user-name").onclick = viewCurrentProfile;
+
+// on some browsers it saves the user input on reload. So, it should also recheck the input.
+postCreatorChange();

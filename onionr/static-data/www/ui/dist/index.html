@@ -59,6 +59,12 @@
 
                 <div class="col-sm-12 col-lg-6">
                     <div class="row" id="onionr-timeline-post-creator">
+                        <div class="col-12">
+                            <div class="onionr-timeline">
+                                <h2>Timeline</h2>
+                            </div>
+                        </div>
+
                         <!-- POST -->
                         <div class="col-12">
                             <div class="onionr-post-creator">
@@ -74,7 +80,9 @@
                                             </div>
                                         </div>
 
-                                        <textarea class="onionr-post-creator-content" id="onionr-post-creator-content"></textarea>
+                                        <textarea class="onionr-post-creator-content" id="onionr-post-creator-content" oninput="postCreatorChange()"></textarea>
+
+                                        <div class="onionr-post-creator-content-message" id="onionr-post-creator-content-message"></div>
 
                                         <input type="button" onclick="makePost()" title="Create post" value="Create post" id="onionr-post-creator-create" class="onionr-post-creator-create" />
                                     </div>
