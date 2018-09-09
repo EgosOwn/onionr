@@ -23,6 +23,7 @@ import nacl.signing, nacl.encoding
 from onionrblockapi import Block
 import onionrexceptions
 from defusedxml import minidom
+import onionrevents
 import pgpwords, onionrusers, storagecounter
 if sys.version_info < (3, 6):
     try:
@@ -276,19 +277,8 @@ class OnionrUtils:
             if len(blockType) <= 10:
                 self._core.updateBlockInfo(blockHash, 'dataType', blockType)
 
-                if blockType == 'userInfo':
-                    if myBlock.verifySig():
-                        peerName = myBlock.getMetadata('name')
-                        try:
-                            if len(peerName) > 20:
-                                raise onionrexceptions.InvalidMetdata('Peer name specified is too large')
-                        except TypeError:
-                            pass
-                        except onionrexceptions.InvalidMetadata:
-                            pass
-                        else:
-                            self._core.setPeerInfo(signer, 'name', peerName)
-                            logger.info('%s is now using the name %s.' % (signer, self.escapeAnsi(peerName)))
+                onionrevents.event('processBlocks', data = {'block': myBlock, 'type': blockType}, onionr = None)
+
         except TypeError:
             pass
 

@@ -102,6 +102,8 @@ class Core:
             logger.warn("POW token for pubkey base64 representation exceeded 120 bytes, is " + str(sys.getsizeof(powID)))
             return False
 
+        events.event('pubkey_add', data = {'key': peerID}, onionr = None)
+        
         conn = sqlite3.connect(self.peerDB)
         hashID = self._crypto.pubKeyHashID(peerID)
         c = conn.cursor()

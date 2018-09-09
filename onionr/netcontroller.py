@@ -74,7 +74,8 @@ class NetController:
         hashedPassword = subprocess.Popen([self.torBinary, '--hash-password', plaintext], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         for line in iter(hashedPassword.stdout.readline, b''):
             password = line.decode()
-            break
+            if 'warn' not in password:
+                break
 
         torrcData = '''SocksPort ''' + str(self.socksPort) + '''
 HiddenServiceDir data/hs/
