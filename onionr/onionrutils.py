@@ -37,17 +37,20 @@ class OnionrUtils:
         Various useful functions for validating things, etc functions, connectivity
     '''
     def __init__(self, coreInstance):
-        self.fingerprintFile = 'data/own-fingerprint.txt'
-        self._core = coreInstance
+        #self.fingerprintFile = 'data/own-fingerprint.txt' #TODO Remove since probably not needed
+        self._core = coreInstance # onionr core instance
 
-        self.timingToken = ''
+        self.timingToken = '' # for when we make local connections to our http api, to bypass timing attack defense mechanism
         self.avoidDupe = [] # list used to prevent duplicate requests per peer for certain actions
         self.peerProcessing = {} # dict of current peer actions: peer, actionList
-        self.storageCounter = storagecounter.StorageCounter(self._core)
-        config.reload()
+        self.storageCounter = storagecounter.StorageCounter(self._core) # used to keep track of how much data onionr is using on disk
+        config.reload() # onionr config
         return
 
     def getTimeBypassToken(self):
+        '''
+            Load our timingToken from disk for faster local HTTP API
+        '''
         try:
             if os.path.exists('data/time-bypass.txt'):
                 with open('data/time-bypass.txt', 'r') as bypass:
@@ -64,22 +67,6 @@ class OnionrUtils:
         epoch = self.getEpoch()
         return epoch - (epoch % roundS)
 
-    def incrementAddressSuccess(self, address):
-        '''
-            Increase the recorded sucesses for an address
-        '''
-        increment = self._core.getAddressInfo(address, 'success') + 1
-        self._core.setAddressInfo(address, 'success', increment)
-        return
-
-    def decrementAddressSuccess(self, address):
-        '''
-            Decrease the recorded sucesses for an address
-        '''
-        increment = self._core.getAddressInfo(address, 'success') - 1
-        self._core.setAddressInfo(address, 'success', increment)
-        return
-
     def mergeKeys(self, newKeyList):
         '''
             Merge ed25519 key list to our database, comma seperated string
@@ -89,6 +76,7 @@ class OnionrUtils:
             if newKeyList != False:
                 for key in newKeyList.split(','):
                     key = key.split('-')
+                    # Test if key is valid
                     try:
                         if len(key[0]) > 60 or len(key[1]) > 1000:
                             logger.warn('%s or its pow value is too large.' % key[0])
@@ -100,15 +88,19 @@ class OnionrUtils:
                         value = base64.b64decode(key[1])
                     except binascii.Error:
                         continue
+                    # Load the pow token
                     hashedKey = self._core._crypto.blake2bHash(key[0])
                     powHash = self._core._crypto.blake2bHash(value + hashedKey)
                     try:
                         powHash = powHash.encode()
                     except AttributeError:
                         pass
+                    # if POW meets required difficulty, TODO make configurable/dynamic
                     if powHash.startswith(b'0000'):
+                        # if we don't already have the key and its not our key, add it.
                         if not key[0] in self._core.listPeers(randomOrder=False) and type(key) != None and key[0] != self._core._crypto.pubKey:
                             if self._core.addPeer(key[0], key[1]):
+                                # Check if the peer has a set username already
                                 onionrusers.OnionrUser(self._core, key[0]).findAndSetID()
                                 retVal = True
                             else:
