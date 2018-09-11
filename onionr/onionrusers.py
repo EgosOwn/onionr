@@ -17,7 +17,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import onionrblockapi, logger, onionrexceptions, json
+import onionrblockapi, logger, onionrexceptions, json, sqlite3
 class OnionrUser:
     def __init__(self, coreInst, publicKey):
         self.trust = 0
@@ -58,6 +58,20 @@ class OnionrUser:
         return
     
     def forwardDecrypt(self, encrypted):
+        return
+    
+    def addForwardKey(self, newKey):
+        # Add a forward secrecy key for the peer
+        conn = sqlite3.connect(self._core.peerDB)
+        c = conn.cursor()
+        # Prepare the insert
+        time = self._core._utils.getEpoch()
+        command = (self.publicKey, newKey, time)
+
+        c.execute("INSERT INTO forwardKeys VALUES(?, ?, ?);", command)
+
+        conn.commit()
+        conn.close()
         return
     
     def findAndSetID(self):

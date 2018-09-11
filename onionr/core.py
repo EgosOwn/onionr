@@ -472,18 +472,17 @@ class Core:
             id text             0
             name text,          1
             adders text,        2
-            forwardKey text,    3
-            dateSeen not null,  4
-            bytesStored int,    5
-            trust int           6
-            pubkeyExchanged int 7
-            hashID text         8
-            pow text            9
+            dateSeen not null,  3
+            bytesStored int,    4
+            trust int           5
+            pubkeyExchanged int 6
+            hashID text         7
+            pow text            8
         '''
         conn = sqlite3.connect(self.peerDB)
         c = conn.cursor()
         command = (peer,)
-        infoNumbers = {'id': 0, 'name': 1, 'adders': 2, 'forwardKey': 3, 'dateSeen': 4, 'bytesStored': 5, 'trust': 6, 'pubkeyExchanged': 7, 'hashID': 8}
+        infoNumbers = {'id': 0, 'name': 1, 'adders': 2, 'dateSeen': 3, 'bytesStored': 4, 'trust': 5, 'pubkeyExchanged': 6, 'hashID': 7}
         info = infoNumbers[info]
         iterCount = 0
         retVal = ''

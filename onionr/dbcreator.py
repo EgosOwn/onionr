@@ -61,7 +61,6 @@ class DBCreator:
             ID text not null,
             name text,
             adders text,
-            forwardKey text,
             dateSeen not null,
             bytesStored int,
             trust int,
@@ -69,6 +68,10 @@ class DBCreator:
             hashID text,
             pow text not null);
         ''')
+        c.execute('''CREATE TABLE forwardKeys(
+        peerKey text not null,
+        forwardKey text not null,
+        date int not null);''')
         conn.commit()
         conn.close()
         return
