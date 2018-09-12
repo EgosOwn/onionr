@@ -54,7 +54,7 @@ def _processForwardKey(api, myBlock):
 def on_processBlocks(api):
     myBlock = api.data['block']
     blockType = api.data['type']
-    print('blockType is ' + blockType)
+    logger.info('blockType is ' + blockType)
 
     # Process specific block types
 

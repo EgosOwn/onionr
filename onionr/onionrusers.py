@@ -50,7 +50,7 @@ class OnionrUser:
         encrypted = coreInst._crypto.pubKeyEncrypt(data, self.publicKey, encodedData=True)
         return encrypted
     
-    def decrypt(self, data):
+    def decrypt(self, data, anonymous=True):
         decrypted = coreInst._crypto.pubKeyDecrypt(data, self.publicKey, encodedData=True)
         return decrypted
     
@@ -59,8 +59,26 @@ class OnionrUser:
     
     def forwardDecrypt(self, encrypted):
         return
-    
+
+    def _getLatestForwardKey(self):
+        # Get the latest forward secrecy key for a peer
+        conn = sqlite3.connect(self._core.peerDB)
+        c = conn.cursor()
+        # Prepare the insert
+        time = self._core._utils.getEpoch()
+        key = ''
+
+        for row in c.execute("SELECT forwardKey FROM forwardKeys WHERE DATE=(SELECT max(date) FROM forwardKeys);"):
+            key = row[0]
+            break
+
+        conn.commit()
+        conn.close()
+        return key
+
     def addForwardKey(self, newKey):
+        if not self._core._utils.validatePubKey(newKey):
+            raise onionrexceptions.InvalidPubkey
         # Add a forward secrecy key for the peer
         conn = sqlite3.connect(self._core.peerDB)
         c = conn.cursor()

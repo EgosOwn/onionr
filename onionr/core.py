@@ -693,7 +693,7 @@ class Core:
             data = data.encode()
         except AttributeError:
             pass
-        # sign before encrypt, as unauthenticated crypto should not be a problem here
+
         if sign:
             signature = self._crypto.edSign(jsonMeta.encode() + data, key=self._crypto.privKey, encodeResult=True)
             signer = self._crypto.pubKey
