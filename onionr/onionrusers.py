@@ -55,26 +55,43 @@ class OnionrUser:
         return decrypted
     
     def forwardEncrypt(self, data):
+        retData = ''
+        forwardKey = self._getLatestForwardKey()
+        if self._core._utils.validatePubKey(forwardKey):
+            encrypted = self._core._crypto.pubKeyEncrypt(data, forwardKey, encodedData=True)
+        else:
+            raise Exception("No valid forward key available for this user")
         return
     
     def forwardDecrypt(self, encrypted):
+        retData = ''
         return
 
     def _getLatestForwardKey(self):
         # Get the latest forward secrecy key for a peer
         conn = sqlite3.connect(self._core.peerDB)
         c = conn.cursor()
-        # Prepare the insert
-        time = self._core._utils.getEpoch()
-        key = ''
 
-        for row in c.execute("SELECT forwardKey FROM forwardKeys WHERE DATE=(SELECT max(date) FROM forwardKeys);"):
+        for row in c.execute("SELECT forwardKey FROM forwardKeys WHERE peerKey = ? AND date=(SELECT max(date) FROM forwardKeys)", (self.publicKey,)):
             key = row[0]
             break
 
         conn.commit()
         conn.close()
         return key
+    
+    def _getForwardKeys(self):
+        conn = sqlite3.connect(self._core.peerDB)
+        c = conn.cursor()
+        keyList = []
+        for row in c.execute("SELECT forwardKey FROM forwardKeys WHERE peerKey = ?", (self.publicKey,)):
+            key = row[0]
+            keyList.append(key)
+
+        conn.commit()
+        conn.close()
+
+        return list(keyList)
 
     def addForwardKey(self, newKey):
         if not self._core._utils.validatePubKey(newKey):
