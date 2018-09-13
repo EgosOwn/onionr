@@ -51,6 +51,7 @@ function deserializeUser(id) {
     user.setName(serialized['name']);
     user.setID(serialized['id']);
     user.setIcon(serialized['icon']);
+    user.setDescription(serialized['description']);
 
     return user;
 }
@@ -148,6 +149,11 @@ class Sanitize {
     static username(username) {
         return String(username).replace(/[\W_]+/g, " ").substring(0, 25);
     }
+
+    /* profile descriptions */
+    static description(description) {
+        return String(description).substring(0, 128);
+    }
 }
 
 /* config stuff */
@@ -233,6 +239,7 @@ class User {
     }
 
     static getUser(id, callback) {
+        console.log(callback);
         var user = deserializeUser(id);
         if(user === null) {
             Block.getBlocks({'type' : 'onionr-user-info', 'signed' : true, 'reverse' : true}, function(data) {
@@ -245,10 +252,11 @@ class User {
                         if(userInfo['id'] === id) {
                             user.setName(userInfo['name']);
                             user.setIcon(userInfo['icon']);
+                            user.setDescription(userInfo['description']);
                             user.setID(id);
 
                             user.remember();
-
+                            console.log(callback);
                             callback(user);
                             return user;
                         }
@@ -264,6 +272,7 @@ class User {
                 }
             });
         } else {
+            console.log(callback);
             callback(user);
             return user;
         }
@@ -615,6 +624,8 @@ if(getWebPassword() === null) {
 }
 
 if(getCurrentUser() === null) {
+    jQuery('#modal').modal('show');
+
     var url = '/client/?action=info&token=' + Sanitize.url(getWebPassword()) + '&timingToken=' + Sanitize.url(getTimingToken());
 
     console.log(url);
@@ -623,32 +634,32 @@ if(getCurrentUser() === null) {
 
     // sync
 
-    http.open('GET', url, false);
-    http.send(null);
+    http.addEventListener('load', function() {
+        var id = JSON.parse(http.responseText)['pubkey'];
 
-    var id = JSON.parse(http.responseText)['pubkey'];
+        User.getUser(id, function(data) {
+            if(data === null || data === undefined) {
+                var user = new User();
 
-    User.getUser(id, function(data) {
-        if(data === null || data === undefined) {
-            jQuery('#modal').modal('show');
+                user.setName('New User');
+                user.setID(id);
+                user.setIcon('<$= Template.jsTemplate("default-icon") $>');
+                user.setDescription('A new OnionrUI user');
 
-            var user = new User();
+                user.remember();
+                user.save();
 
-            user.setName('New User');
-            user.setID(id);
-            user.setIcon('<$= Template.jsTemplate("default-icon") $>');
-            user.setDescription('A new OnionrUI user');
-
-            user.remember();
-            user.save();
-
-            setCurrentUser(user);
+                setCurrentUser(user);
+            } else {
+                setCurrentUser(data);
+            }
 
             window.location.reload();
-        } else {
-            setCurrentUser(data);
-        }
-    });
+        });
+    }, false);
+
+    http.open('GET', url, true);
+    http.send(null);
 }
 
 currentUser = getCurrentUser();

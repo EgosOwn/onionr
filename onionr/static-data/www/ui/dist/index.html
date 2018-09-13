@@ -43,13 +43,21 @@
                                 <img id="onionr-profile-user-icon" class="onionr-profile-user-icon" src="">
                             </div>
                             <div class="col-8 col-lg-12">
-                                <h2 id="onionr-profile-username" class="onionr-profile-username text-left text-lg-center text-sm-left" data-placement="top" data-toggle="tooltip" title="unknown" data-editable></h2>
+                                <h2 maxlength="25" id="onionr-profile-username" class="onionr-profile-username text-left text-lg-center text-sm-left" data-placement="top" data-toggle="tooltip" title="unknown" data-editable></h2>
                             </div>
-                            <div class="col-sm-6 col-lg-12">
-                                <input type="button" onclick="updateUser()" class="onionr-profile-save text-center" id="onionr-profile-save" value="Save" style="display: none" />
+                            <div class="col-12">
+                                <p maxlength="128" id="onionr-profile-description" class="onionr-profile-description" data-editable></p>
                             </div>
-                            <div class="col-sm-6 col-lg-12">
-                                <input type="button" onclick="cancelUpdate()" class="onionr-profile-save text-center" id="onionr-profile-cancel" value="Cancel" style="display: none" />
+
+                            <div class="col-12 onionr-profile-edit" id="onionr-profile-edit" style="display: none">
+                                <div class="row">
+                                    <div class="col-sm-6 col-lg-12">
+                                        <input type="button" onclick="updateUser()" class="onionr-profile-save text-center" id="onionr-profile-save" value="Save" />
+                                    </div>
+                                    <div class="col-sm-6 col-lg-12">
+                                        <input type="button" onclick="cancelUpdate()" class="onionr-profile-save text-center" id="onionr-profile-cancel" value="Cancel" />
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>

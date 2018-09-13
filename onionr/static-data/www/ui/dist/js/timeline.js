@@ -58,18 +58,25 @@ function postCreatorChange() {
     var content = document.getElementById('onionr-post-creator-content').value;
     var message = '';
 
+    var maxlength = 280;
+
     var disable = true;
+    var warn = false;
 
     if(content.length !== 0) {
         if(content.length - content.replaceAll('\n', '').length > 16) {
             // 16 max newlines
             message = 'Please use less than 16 newlines';
-        } else if(content.length <= 280) {
+        } else if(content.length <= maxlength) {
             // 280 max characters
             message = '%s characters remaining'.replaceAll('%s', (280 - content.length));
             disable = false;
+
+            if(maxlength - content.length < maxlength / 4) {
+                warn = true;
+            }
         } else {
-            message = '%s characters over maximum'.replaceAll('%s', (content.length - 280));
+            message = '%s characters over maximum'.replaceAll('%s', (content.length - maxlength));
         }
     }
 
@@ -85,6 +92,8 @@ function postCreatorChange() {
 
         if(disable)
             element.style.color = 'red';
+        else if(warn)
+            element.style.color = '#FF8C00';
         else
             element.style.color = 'gray';
     }
@@ -101,10 +110,11 @@ function viewProfile(id, name) {
 
     User.getUser(id, function(data) {
         if(data !== null) {
-            document.getElementById("onionr-profile-username").innerHTML = Sanitize.html(data.getName());
-            document.getElementById("onionr-profile-username").title = Sanitize.html(data.getID());
             document.getElementById("onionr-profile-user-icon").src = "data:image/jpeg;base64," + Sanitize.html(data.getIcon());
             document.getElementById("onionr-profile-user-icon").b64 = Sanitize.html(data.getIcon());
+            document.getElementById("onionr-profile-username").innerHTML = Sanitize.html(Sanitize.username(data.getName()));
+            document.getElementById("onionr-profile-username").title = Sanitize.html(data.getID());
+            document.getElementById("onionr-profile-description").innerHTML = Sanitize.html(Sanitize.description(data.getDescription()));
         }
     });
 }
@@ -112,24 +122,26 @@ function viewProfile(id, name) {
 function updateUser() {
     toggleSaveButton(false);
 
-    jQuery('#modal').modal('show');
+    // jQuery('#modal').modal('show');
 
     var name = jQuery('#onionr-profile-username').text();
     var id = document.getElementById("onionr-profile-username").title;
     var icon = document.getElementById("onionr-profile-user-icon").b64;
-    var description = 'todo';
+    var description = jQuery("#onionr-profile-description").text();
 
     var user = new User();
 
     user.setName(name);
     user.setID(id);
     user.setIcon(icon);
-    user.setDescription(description);
+    user.setDescription(Sanitize.description(description));
 
     user.remember();
-    user.save();
+    user.save(function() {
+        setCurrentUser(user);
 
-    window.location.reload();
+        window.location.reload();
+    });
 }
 
 function cancelUpdate() {
@@ -142,8 +154,7 @@ function cancelUpdate() {
 }
 
 function toggleSaveButton(show) {
-    document.getElementById("onionr-profile-save").style.display = (show ? 'block' : 'none');
-    document.getElementById("onionr-profile-cancel").style.display = (show ? 'block' : 'none');
+    document.getElementById("onionr-profile-edit").style.display = (show ? 'block' : 'none');
 }
 
 function makePost() {
@@ -161,38 +172,56 @@ function makePost() {
         document.getElementById('onionr-timeline-posts').innerHTML = post.getHTML() + document.getElementById('onionr-timeline-posts').innerHTML;
 
         document.getElementById("onionr-post-creator-content").value = "";
+        document.getElementById("onionr-post-creator-content").focus();
         postCreatorChange();
     } else {
         console.log('Not making empty post.');
     }
 }
 
-$('body').on('click', '[data-editable]', function() {
+jQuery('body').on('click', '[data-editable]', function() {
     var el = jQuery(this);
     var txt = el.text();
+    var maxlength = el.attr("maxlength");
 
     var input = jQuery('<input/>').val(txt);
+    input.attr('maxlength', maxlength);
     el.replaceWith(input);
 
     var save = function() {
         var newTxt = input.val();
-        var p = el.text(Sanitize.username(newTxt));
+
+        if(el.attr('id') === 'onionr-profile-username')
+            newTxt = Sanitize.username(newTxt);
+        if(el.attr('id') === 'onionr-profile-description')
+            newTxt = Sanitize.description(newTxt);
+
+        var p = el.text(newTxt);
+
         input.replaceWith(p);
 
         if(newTxt !== txt)
             toggleSaveButton(true);
     };
 
-    input.one('blur', save).focus();
+    var saveEnter = function(event) {
+        console.log(event);
+        console.log(event.keyCode);
+        if (event.keyCode === 13)
+            save();
+    };
+
+    input.one('blur', save).bind('keyup', saveEnter).focus();
 });
 
 currentUser = getCurrentUser();
-
-document.getElementById("onionr-post-creator-user-name").innerHTML = Sanitize.html(currentUser.getName());
-document.getElementById("onionr-post-creator-user-id").innerHTML = "you";
-document.getElementById("onionr-post-creator-user-icon").src = "data:image/jpeg;base64," + Sanitize.html(currentUser.getIcon());
-document.getElementById("onionr-post-creator-user-id").title = currentUser.getID();
-document.getElementById("onionr-post-creator-content").placeholder = "Enter a message here...";
+if(currentUser !== undefined && currentUser !== null) {
+    document.getElementById("onionr-post-creator-user-name").innerHTML = Sanitize.html(currentUser.getName());
+    document.getElementById("onionr-post-creator-user-id").innerHTML = "you";
+    document.getElementById("onionr-post-creator-user-icon").src = "data:image/jpeg;base64," + Sanitize.html(currentUser.getIcon());
+    document.getElementById("onionr-post-creator-user-id").title = currentUser.getID();
+    document.getElementById("onionr-post-creator-content").placeholder = "Enter a message here...";
+}
 
 viewCurrentProfile = function() {
     viewProfile(encodeURIComponent(currentUser.getID()), encodeURIComponent(currentUser.getName()));
