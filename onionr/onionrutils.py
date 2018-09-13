@@ -265,11 +265,12 @@ class OnionrUtils:
             myBlock.decrypt()
         blockType = myBlock.getMetadata('type') # we would use myBlock.getType() here, but it is bugged with encrypted blocks
         signer = self.bytesToStr(myBlock.signer)
+        valid = myBlock.verifySig()
         try:
             if len(blockType) <= 10:
                 self._core.updateBlockInfo(blockHash, 'dataType', blockType)
 
-                onionrevents.event('processBlocks', data = {'block': myBlock, 'type': blockType}, onionr = None)
+                onionrevents.event('processBlocks', data = {'block': myBlock, 'type': blockType, 'signer': signer, 'validSig': valid}, onionr = None)
 
         except TypeError:
             pass

@@ -71,7 +71,9 @@ class DBCreator:
         c.execute('''CREATE TABLE forwardKeys(
         peerKey text not null,
         forwardKey text not null,
-        date int not null);''')
+        date int not null,
+        expire int not null
+        );''')
         conn.commit()
         conn.close()
         return
@@ -104,6 +106,26 @@ class DBCreator:
             sig text,
             author text,
             dateClaimed int
+            );
+        ''')
+        conn.commit()
+        conn.close()
+        return
+
+    def createForwardKeyDB(self):
+        '''
+            Create the forward secrecy key db (*for *OUR* keys*)
+        '''
+        if os.path.exists(self.core.forwardKeysFile):
+            raise Exception("Block database already exists")
+        conn = sqlite3.connect(self.core.forwardKeysFile)
+        c = conn.cursor()
+        c.execute('''CREATE TABLE myForwardKeys(
+            peer text not null,
+            public key text not null,
+            private key text not null,
+            date int not null,
+            expire int not null
             );
         ''')
         conn.commit()

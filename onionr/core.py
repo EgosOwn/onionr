@@ -48,6 +48,7 @@ class Core:
             self.torPort = torPort
             self.dataNonceFile = 'data/block-nonces.dat'
             self.dbCreate = dbcreator.DBCreator(self)
+            self.forwardKeysFile = 'data/forward-keys.db'
 
             self.usageFile = 'data/disk-usage.txt'
             self.config = config

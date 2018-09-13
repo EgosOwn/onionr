@@ -22,7 +22,7 @@
 import logger, config
 import os, sys, json, time, random, shutil, base64, getpass, datetime, re
 from onionrblockapi import Block
-import onionrusers
+import onionrusers, onionrexceptions
 
 plugin_name = 'metadataprocessor'
 
@@ -50,6 +50,13 @@ def _processForwardKey(api, myBlock):
         Get the forward secrecy key specified by the user for us to use
     '''
     peer = onionrusers.OnionrUser(self.api.get_core(), myBlock.signer)
+    key = myBlock.getMetadata('newFSKey')
+
+    # We don't need to validate here probably, but it helps
+    if api.get_utils().validatePubKey(key):
+        peer.addForwardKey(key)
+    else:
+        raise onionrexceptions.InvalidPubkey("%s is nota valid pubkey key" % (key,))
 
 def on_processBlocks(api):
     myBlock = api.data['block']
@@ -60,12 +67,16 @@ def on_processBlocks(api):
 
     # userInfo blocks, such as for setting username
     if blockType == 'userInfo':
-        if myBlock.verifySig():
+        if api.data['validSig']:
             _processUserInfo(api, myBlock)
-    # forwardKey blocks
+    # forwardKey blocks, add a new forward secrecy key for a peer
     elif blockType == 'forwardKey':
-        if myBlock.verifySig():
+        if api.data['validSig']:
             _processForwardKey(api, myBlock)
+    # socket blocks
+    elif blockType == 'openSocket':
+        if api.data['validSig']:
+            pass
 
 def on_init(api, data = None):
 
