@@ -21,7 +21,7 @@
 '''
 import sys, os, core, config, json, requests, time, logger, threading, base64, onionr
 import onionrexceptions, onionrpeers, onionrevents as events, onionrplugins as plugins, onionrblockapi as block
-import onionrdaemontools
+import onionrdaemontools, onionrsockets
 from defusedxml import minidom
 
 class OnionrCommunicatorDaemon:
@@ -78,6 +78,9 @@ class OnionrCommunicatorDaemon:
         # intended only for use by OnionrCommunicatorDaemon
         #self.daemonTools = onionrdaemontools.DaemonTools(self)
         self.daemonTools = onionrdaemontools.DaemonTools(self)
+
+        # Active sockets for direct connections
+        self.sockets = []
 
         if debug or developmentMode:
             OnionrCommunicatorTimers(self, self.heartbeat, 10)
@@ -462,6 +465,9 @@ class OnionrCommunicatorDaemon:
             elif cmd[0] == 'uploadBlock':
                 self.blockToUpload = cmd[1]
                 threading.Thread(target=self.uploadBlock).start()
+            elif cmd[0] == 'createSocket':
+                # Create a socket
+                self.onionrsockets.append(onionrsockets.OnionrSockets(self._core, startData))
             else:
                 logger.info('Recieved daemonQueue command:' + cmd[0])
 

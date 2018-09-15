@@ -59,6 +59,7 @@ def _processForwardKey(api, myBlock):
         raise onionrexceptions.InvalidPubkey("%s is nota valid pubkey key" % (key,))
 
 def on_processBlocks(api):
+    # Generally fired by utils.
     myBlock = api.data['block']
     blockType = api.data['type']
     logger.info('blockType is ' + blockType)
@@ -76,7 +77,12 @@ def on_processBlocks(api):
     # socket blocks
     elif blockType == 'openSocket':
         if api.data['validSig']:
-            pass
+            try:
+                address = api.data['address']
+            except KeyError:
+                raise onionrexceptions.MissingAddress("Missing address for new socket")
+            socketInfo = json.dumps({'peer': api.data['signer'], 'address': address, create = False})
+            api.get_core().daemonQueueAdd('createSocket', socketInfo)
 
 def on_init(api, data = None):
 

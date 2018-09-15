@@ -66,3 +66,8 @@ class InvalidAddress(Exception):
 
 class DiskAllocationReached(Exception):
     pass
+
+# onionrsocket exceptions
+
+class MissingAddress(Exception):
+    pass
