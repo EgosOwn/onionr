@@ -68,21 +68,21 @@ def on_processBlocks(api):
 
     # userInfo blocks, such as for setting username
     if blockType == 'userInfo':
-        if api.data['validSig']:
+        if api.data['validSig'] == True: # we use == True for type safety
             _processUserInfo(api, myBlock)
     # forwardKey blocks, add a new forward secrecy key for a peer
     elif blockType == 'forwardKey':
-        if api.data['validSig']:
+        if api.data['validSig'] == True:
             _processForwardKey(api, myBlock)
     # socket blocks
     elif blockType == 'openSocket':
-        if api.data['validSig']:
+        if api.data['validSig'] == True:
             try:
                 address = api.data['address']
             except KeyError:
                 raise onionrexceptions.MissingAddress("Missing address for new socket")
             socketInfo = json.dumps({'peer': api.data['signer'], 'address': address, create = False})
-            api.get_core().daemonQueueAdd('createSocket', socketInfo)
+            api.get_core().daemonQueueAdd('startSocket', socketInfo)
 
 def on_init(api, data = None):
 

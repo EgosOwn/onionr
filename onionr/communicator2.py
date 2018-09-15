@@ -465,8 +465,8 @@ class OnionrCommunicatorDaemon:
             elif cmd[0] == 'uploadBlock':
                 self.blockToUpload = cmd[1]
                 threading.Thread(target=self.uploadBlock).start()
-            elif cmd[0] == 'createSocket':
-                # Create a socket
+            elif cmd[0] == 'startSocket':
+                # Create a socket or connect to one
                 self.onionrsockets.append(onionrsockets.OnionrSockets(self._core, startData))
             else:
                 logger.info('Recieved daemonQueue command:' + cmd[0])

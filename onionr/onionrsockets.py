@@ -33,6 +33,7 @@ class OnionrSockets:
         '''
         self.socketID = secrets.token_hex(32) # Generate an ID for this socket
         self._core = coreInst
+        self.socketInfo = socketInfo
         
         # Make sure socketInfo provides all necessary values
         for i in ('peer', 'address', 'create'):
@@ -40,5 +41,11 @@ class OnionrSockets:
                 socketInfo[i]
             except KeyError:
                 raise ValueError('Must provide peer, address, and create in socketInfo dict argument')
-        
-        
+
+        self.isServer = socketInfo['create']
+
+        self.serverKey = socketInfo['peer']
+        self.serverAddress = socketInfo['address']
+    
+    def createServer(self):
+        return
