@@ -76,12 +76,17 @@ def on_processBlocks(api):
             _processForwardKey(api, myBlock)
     # socket blocks
     elif blockType == 'openSocket':
-        if api.data['validSig'] == True:
+        if api.data['validSig'] == True and myBlock.decrypted: # we check if it is decrypted as a way of seeing if it was for us
             try:
                 address = api.data['address']
             except KeyError:
                 raise onionrexceptions.MissingAddress("Missing address for new socket")
-            socketInfo = json.dumps({'peer': api.data['signer'], 'address': address, create = False})
+            try:
+                port = api.data['port']
+            except KeyError:
+                raise ValueError("Missing port for new socket")
+
+            socketInfo = json.dumps({'peer': api.data['signer'], 'address': address, 'port': port, create = False})
             api.get_core().daemonQueueAdd('startSocket', socketInfo)
 
 def on_init(api, data = None):

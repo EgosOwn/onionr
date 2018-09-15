@@ -17,7 +17,8 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import stem
+import stem.control
+import socket, selectors
 import onionrexceptions
 from dependencies import secrets
 
@@ -36,16 +37,34 @@ class OnionrSockets:
         self.socketInfo = socketInfo
         
         # Make sure socketInfo provides all necessary values
-        for i in ('peer', 'address', 'create'):
+        for i in ('peer', 'address', 'create', 'port'):
             try:
                 socketInfo[i]
             except KeyError:
                 raise ValueError('Must provide peer, address, and create in socketInfo dict argument')
 
-        self.isServer = socketInfo['create']
+        self.isServer = socketInfo['create'] # if we are the one creating the service
 
-        self.serverKey = socketInfo['peer']
+        self.remotePeer = socketInfo['peer']
+        self.socketPort = socketInfo['port']
         self.serverAddress = socketInfo['address']
+
+        if self.isServer:
+            self.createServer()
     
     def createServer(self):
+        # Create our HS and advertise it via a block
+        dataID = uuid.uuid4().hex
+        ourAddress = ''
+        ourPort = 1337
+        ourInternalPort = 1338
+
+        # Setup the empheral HS
+        with stem.control.Controller.from_port() as controller:
+            controller.authenticate()
+            socketHS = controller.create_ephemeral_hidden_service({ourPort: ourInternalPort}, await_publication = True)
+            ourAddress = socketHS.service_id
+
+        meta = {'address': ourAddress, 'port': ourPort}
+        self._core.insertBlock(dataID, header='openSocket', encryptType='asym', asymPeer=self.remotePeer, sign=True, meta=meta)
         return
