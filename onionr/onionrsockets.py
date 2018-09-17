@@ -19,8 +19,9 @@
 '''
 import stem.control
 import socket, selectors
-import onionrexceptions
+import onionrexceptions, time
 from dependencies import secrets
+sel = selectors.DefaultSelector()
 
 class OnionrSockets:
     def __init__(self, coreInst, socketInfo):
@@ -48,6 +49,9 @@ class OnionrSockets:
         self.remotePeer = socketInfo['peer']
         self.socketPort = socketInfo['port']
         self.serverAddress = socketInfo['address']
+        self.connected = False
+        self.segment = 0
+        self.connData = {}
 
         if self.isServer:
             self.createServer()
@@ -65,6 +69,52 @@ class OnionrSockets:
             socketHS = controller.create_ephemeral_hidden_service({ourPort: ourInternalPort}, await_publication = True)
             ourAddress = socketHS.service_id
 
-        meta = {'address': ourAddress, 'port': ourPort}
-        self._core.insertBlock(dataID, header='openSocket', encryptType='asym', asymPeer=self.remotePeer, sign=True, meta=meta)
+            # Advertise the server
+            meta = {'address': ourAddress, 'port': ourPort}
+            self._core.insertBlock(dataID, header='openSocket', encryptType='asym', asymPeer=self.remotePeer, sign=True, meta=meta)
+
+            # Build the socket server
+            sock = socket.socket()
+            sock.bind(('127.0.0.1', ourInternalPort))
+            sock.listen(100)
+            sock.setblocking(False)
+            sel.register(sock, selectors.EVENT_READ, self._accept)
+
+            while True:
+                events = sel.select()
+                for key, mask in events:
+                    callback = key.data
+                    callback(key.fileobj, mask)
+
         return
+    
+    def connectServer(self):
+        return
+
+    def _accept(self, sock, mask):
+        # Just accept the connection and pass it to our handler
+        conn, addr = sock.accept()
+        conn.setblocking(False)
+        sel.register(conn, selectors.EVENT_READ, self._read)
+
+    def _read(self, conn, mask):
+        data = conn.recv(1000).decode()
+        if data:
+            self.segment += 1
+            self.connData[self.segment] = data
+            conn.send(data)
+        else:
+            sel.unregister(conn)
+            conn.close()
+    
+    def readConnection(self):
+        if not self.connected:
+            raise Exception("Connection closed")
+        count = 0
+        while self.connected:
+            try:
+                yield self.connData[count]
+                count += 1
+            except KeyError:
+                pass
+            time.sleep(0.01)
