@@ -19,12 +19,13 @@
 '''
 import logger, time
 class OnionrChat:
-    def __init__(self, communicatorInst, socketInst):
+    def __init__(self, communicatorInst, socketID):
         self.communicator = communicatorInst
-        self.socket = socketInst
+        self.socket = self.communicator.sockets[socketID]
 
         while True:
             time.sleep(2)
-            logger.info(self.socket.readData())
-            self.socket.sendData('rekt')
+            logger.info('Chat: got %s' % (self.socket.getReadData(),))
+            time.sleep(1)
+            self.socket.addSendData('rekt')
         return

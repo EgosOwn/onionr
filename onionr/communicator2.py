@@ -489,7 +489,7 @@ class OnionrCommunicatorDaemon:
         else:
             del self.sockets[mySocket.socketID] # Delete socket if we have no handler for it
 
-        threading.Thread(target=sockProgram, args=(self, mySocket)).start()
+        threading.Thread(target=sockProgram, args=(self, mySocket.socketID)).start()
         mySocket.startConn()
 
     def uploadBlock(self):

@@ -72,6 +72,8 @@ class NetController:
 
         controlPort = random.randint(1025, 65535)
 
+        config.set('tor.controlPort', controlPort, savefile=True)
+
         hashedPassword = subprocess.Popen([self.torBinary, '--hash-password', plaintext], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         for line in iter(hashedPassword.stdout.readline, b''):
             password = line.decode()

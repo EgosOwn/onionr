@@ -18,7 +18,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 import stem.control
-import socket, selectors, socks, config
+import socket, selectors, socks, config, uuid
 import onionrexceptions, time, onionrchat
 from dependencies import secrets
 sel = selectors.DefaultSelector()
@@ -53,8 +53,9 @@ class OnionrSockets:
 
         self.readData = []
         self.sendData = 0  
+        config.reload()
 
-    def startConn():
+    def startConn(self):
         if self.isServer:
             self.createServer()
         else:
@@ -68,8 +69,8 @@ class OnionrSockets:
         ourInternalPort = 1338
 
         # Setup the empheral HS
-        with stem.control.Controller.from_port() as controller:
-            controller.authenticate()
+        with stem.control.Controller.from_port(port=config.get('tor.controlPort')) as controller:
+            controller.authenticate(config.get('tor.controlpassword'))
             socketHS = controller.create_ephemeral_hidden_service({ourPort: ourInternalPort}, await_publication = True)
             ourAddress = socketHS.service_id
 
@@ -108,14 +109,14 @@ class OnionrSockets:
             sel.unregister(conn)
             conn.close()
 
-    def sendData(self, data):
+    def addSendData(self, data):
         try:
             data = data.encode()
         except AttributeError:
             pass
         self.sendData = data
     
-    def readData(self):
+    def getReadData(self):
         try:
             data = self.readData.pop(0)
         except IndexError:
