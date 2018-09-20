@@ -68,6 +68,7 @@ class NetController:
         # Set the Tor control password. Meant to make it harder to manipulate our Tor instance
         plaintext = base64.b64encode(os.urandom(50)).decode()
         config.set('tor.controlpassword', plaintext, savefile=True)
+        config.set('tor.socksport', self.socksPort, savefile=True)
 
         controlPort = random.randint(1025, 65535)
 

@@ -18,13 +18,25 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 import stem.control
-import socket, selectors
-import onionrexceptions, time
+import socket, selectors, socks, config
+import onionrexceptions, time, onionrchat
 from dependencies import secrets
 sel = selectors.DefaultSelector()
 
+def getSocketCallbackRecieveHandler(coreInst, reason, create):
+    '''Return the recieve handler function for a given socket reason'''
+    retData = ''
+    if startData == 'chat':
+        retData = coreInst.chatInst.recieveMessage
+
+def getSocketCallbackSendHandler(coreInst, reason, create):
+    '''Return the send handler function for a given socket reason'''
+    retData = ''
+    if startData == 'chat':
+        retData = coreInst.chatInst.sendMessage
+
 class OnionrSockets:
-    def __init__(self, coreInst, socketInfo):
+    def __init__(self, coreInst, socketInfo, recieveCallback=None, sendCallback=None):
         '''Create a new Socket object. This interface is named a bit misleadingly
         and does not actually forward network requests. 
 
@@ -36,6 +48,12 @@ class OnionrSockets:
         self.socketID = secrets.token_hex(32) # Generate an ID for this socket
         self._core = coreInst
         self.socketInfo = socketInfo
+
+        if not callable(sendCallback) or not callable(recieveCallback)
+            raise ValueError("callback must be a function")
+
+        self.sendCallback = sendCallback
+        self.recieveCallback = recieveCallback
         
         # Make sure socketInfo provides all necessary values
         for i in ('peer', 'address', 'create', 'port'):
@@ -50,11 +68,11 @@ class OnionrSockets:
         self.socketPort = socketInfo['port']
         self.serverAddress = socketInfo['address']
         self.connected = False
-        self.segment = 0
-        self.connData = {}
 
         if self.isServer:
             self.createServer()
+        else:
+            self.connectServer()
     
     def createServer(self):
         # Create our HS and advertise it via a block
@@ -87,34 +105,31 @@ class OnionrSockets:
                     callback(key.fileobj, mask)
 
         return
-    
-    def connectServer(self):
-        return
 
     def _accept(self, sock, mask):
         # Just accept the connection and pass it to our handler
         conn, addr = sock.accept()
         conn.setblocking(False)
         sel.register(conn, selectors.EVENT_READ, self._read)
+        self.connected = True
 
     def _read(self, conn, mask):
-        data = conn.recv(1000).decode()
+        data = conn.recv(1024)
         if data:
-            self.segment += 1
-            self.connData[self.segment] = data
-            conn.send(data)
+            data = data.decode()
+            self.callback(self, data)
         else:
             sel.unregister(conn)
             conn.close()
-    
-    def readConnection(self):
-        if not self.connected:
-            raise Exception("Connection closed")
-        count = 0
-        while self.connected:
-            try:
-                yield self.connData[count]
-                count += 1
-            except KeyError:
-                pass
-            time.sleep(0.01)
+
+    def connectServer(self):
+        # Set the Tor proxy
+        socks.setdefaultproxy(socks.PROXY_TYPE_SOCKS5, '127.0.0.1', config.get('tor.socksport'), rdns=True)
+        socket.socket = socks.socksocket
+        remoteSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+        with remoteSocket as s:
+            s.connect((self.serverAddress, self.port))
+            data = s.recv(1024)
+            data.send(self.sendCallback(self, data.decode()))
+        return

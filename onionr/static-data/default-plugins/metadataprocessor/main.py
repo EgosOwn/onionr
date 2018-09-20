@@ -85,8 +85,12 @@ def on_processBlocks(api):
                 port = api.data['port']
             except KeyError:
                 raise ValueError("Missing port for new socket")
+            try:
+                reason = api.data['reason']
+            except KeyError:
+                raise ValueError("Missing socket reason")
 
-            socketInfo = json.dumps({'peer': api.data['signer'], 'address': address, 'port': port, create = False})
+            socketInfo = json.dumps({'peer': api.data['signer'], 'address': address, 'port': port, 'create' = False, 'reason': reason})
             api.get_core().daemonQueueAdd('startSocket', socketInfo)
 
 def on_init(api, data = None):

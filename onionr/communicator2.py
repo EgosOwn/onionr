@@ -466,8 +466,12 @@ class OnionrCommunicatorDaemon:
                 self.blockToUpload = cmd[1]
                 threading.Thread(target=self.uploadBlock).start()
             elif cmd[0] == 'startSocket':
-                # Create a socket or connect to one
-                self.onionrsockets.append(onionrsockets.OnionrSockets(self._core, startData))
+                # Create a socket or connect to one.
+                # The socket handler (such as the plugin or app using it) is specified in startData['reason]
+                startData = json.loads(cmd[1])
+                rCallback = onionrsockets.getSocketCallbackRecieveHandler(self._core, startData['reason'], startData['create'])
+                sCallback = onionrsockets.getSocketCallbackSendHandler(self._core, startData['reason'], startData['create'])
+                self.onionrsockets.append(onionrsockets.OnionrSockets(self._core, startData, recieveCallback=rCallback, sendCallback=sCallback))
             else:
                 logger.info('Recieved daemonQueue command:' + cmd[0])
 
