@@ -17,14 +17,14 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import logger
+import logger, time
 class OnionrChat:
-    def __init__(self, coreInst):
+    def __init__(self, communicatorInst, socketInst):
+        self.communicator = communicatorInst
+        self.socket = socketInst
+
+        while True:
+            time.sleep(2)
+            logger.info(self.socket.readData())
+            self.socket.sendData('rekt')
         return
-    
-    def recieveMessage(self, socketInst, data):
-        logger.info('Got %s' % (data,))
-        return ''
-    
-    def sendMessage(self, socketInst, data):
-        return "Hello"

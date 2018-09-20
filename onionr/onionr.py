@@ -218,7 +218,7 @@ class Onionr:
             'getpasswd': self.printWebPassword,
             'get-passwd': self.printWebPassword,
 
-            'chat': self.onionrCore.chatInst.connect()
+            'chat': self.startChat(),
 
             'friend': self.friendCmd
         }
@@ -269,6 +269,11 @@ class Onionr:
     '''
         THIS SECTION HANDLES THE COMMANDS
     '''
+
+    def startChat(self):
+        self.onionrCore.daemonQueueAdd()
+        socketInfo = json.dumps({'peer': api.data['signer'], 'address': address, 'port': port, 'create': True, 'reason': reason})
+        self.onionrCore.daemonQueueAdd('startSocket', socketInfo)
 
     def getCommands(self):
         return self.cmds

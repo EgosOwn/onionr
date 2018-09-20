@@ -23,18 +23,6 @@ import onionrexceptions, time, onionrchat
 from dependencies import secrets
 sel = selectors.DefaultSelector()
 
-def getSocketCallbackRecieveHandler(coreInst, reason, create):
-    '''Return the recieve handler function for a given socket reason'''
-    retData = ''
-    if startData == 'chat':
-        retData = coreInst.chatInst.recieveMessage
-
-def getSocketCallbackSendHandler(coreInst, reason, create):
-    '''Return the send handler function for a given socket reason'''
-    retData = ''
-    if startData == 'chat':
-        retData = coreInst.chatInst.sendMessage
-
 class OnionrSockets:
     def __init__(self, coreInst, socketInfo):
         '''Create a new Socket object. This interface is named a bit misleadingly
@@ -64,8 +52,9 @@ class OnionrSockets:
         self.connected = False
 
         self.readData = []
-        self.sendData = 0
+        self.sendData = 0  
 
+    def startConn():
         if self.isServer:
             self.createServer()
         else:

@@ -21,7 +21,8 @@
 '''
 import sys, os, core, config, json, requests, time, logger, threading, base64, onionr
 import onionrexceptions, onionrpeers, onionrevents as events, onionrplugins as plugins, onionrblockapi as block
-import onionrdaemontools, onionrsockets
+import onionrdaemontools, onionrsockets, onionrchat
+from dependencies import secrets
 from defusedxml import minidom
 
 class OnionrCommunicatorDaemon:
@@ -80,7 +81,8 @@ class OnionrCommunicatorDaemon:
         self.daemonTools = onionrdaemontools.DaemonTools(self)
 
         # Active sockets for direct connections
-        self.sockets = []
+        self.sockets = {}
+        self.socketExchange = {} # Socket ID exchange
 
         if debug or developmentMode:
             OnionrCommunicatorTimers(self, self.heartbeat, 10)
@@ -469,11 +471,26 @@ class OnionrCommunicatorDaemon:
                 # Create a socket or connect to one.
                 # The socket handler (such as the plugin or app using it) is specified in startData['reason]
                 startData = json.loads(cmd[1])
-                self.onionrsockets.append(onionrsockets.OnionrSockets(self._core, startData))
+                threading.Thread(target=self.startSocket, args=(startData,)).start()
             else:
                 logger.info('Recieved daemonQueue command:' + cmd[0])
 
         self.decrementThreadCount('daemonCommands')
+
+    def startSocket(self, startData):
+        # Start a socket client
+        mySocket = onionrsockets.OnionrSockets(self._core, startData))
+        self.sockets[mySocket.socketID] = mySocket
+
+        sockProgram = '' # Function for socket handler (application)
+
+        if startData['reason'] == 'chat':
+            sockProgram = onionrchat.OnionrChat
+        else:
+            del self.sockets[mySocket.socketID] # Delete socket if we have no handler for it
+
+        threading.Thread(target=sockProgram, args=(self, mySocket)).start()
+        mySocket.startConn()
 
     def uploadBlock(self):
         '''Upload our block to a few peers'''

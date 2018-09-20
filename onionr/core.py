@@ -79,7 +79,6 @@ class Core:
             # Initialize the crypto object
             self._crypto = onionrcrypto.OnionrCrypto(self)
             self._blacklist = onionrblacklist.OnionrBlackList(self)
-            self.chatInst = onionrchat.OnionrChat(self)
 
         except Exception as error:
             logger.error('Failed to initialize core Onionr library.', error=error)
