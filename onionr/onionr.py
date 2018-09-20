@@ -271,7 +271,6 @@ class Onionr:
     '''
 
     def startChat(self):
-        self.onionrCore.daemonQueueAdd()
         socketInfo = json.dumps({'peer': api.data['signer'], 'address': address, 'port': port, 'create': True, 'reason': reason})
         self.onionrCore.daemonQueueAdd('startSocket', socketInfo)
 
