@@ -218,7 +218,7 @@ class Onionr:
             'getpasswd': self.printWebPassword,
             'get-passwd': self.printWebPassword,
 
-            'chat': self.startChat(),
+            'chat': self.startChat,
 
             'friend': self.friendCmd
         }

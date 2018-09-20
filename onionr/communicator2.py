@@ -479,7 +479,7 @@ class OnionrCommunicatorDaemon:
 
     def startSocket(self, startData):
         # Start a socket client
-        mySocket = onionrsockets.OnionrSockets(self._core, startData))
+        mySocket = onionrsockets.OnionrSockets(self._core, startData)
         self.sockets[mySocket.socketID] = mySocket
 
         sockProgram = '' # Function for socket handler (application)
