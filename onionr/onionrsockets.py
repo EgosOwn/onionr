@@ -36,7 +36,7 @@ def getSocketCallbackSendHandler(coreInst, reason, create):
         retData = coreInst.chatInst.sendMessage
 
 class OnionrSockets:
-    def __init__(self, coreInst, socketInfo, recieveCallback=None, sendCallback=None):
+    def __init__(self, coreInst, socketInfo):
         '''Create a new Socket object. This interface is named a bit misleadingly
         and does not actually forward network requests. 
 
@@ -48,12 +48,6 @@ class OnionrSockets:
         self.socketID = secrets.token_hex(32) # Generate an ID for this socket
         self._core = coreInst
         self.socketInfo = socketInfo
-
-        if not callable(sendCallback) or not callable(recieveCallback)
-            raise ValueError("callback must be a function")
-
-        self.sendCallback = sendCallback
-        self.recieveCallback = recieveCallback
         
         # Make sure socketInfo provides all necessary values
         for i in ('peer', 'address', 'create', 'port'):
@@ -68,6 +62,9 @@ class OnionrSockets:
         self.socketPort = socketInfo['port']
         self.serverAddress = socketInfo['address']
         self.connected = False
+
+        self.readData = []
+        self.sendData = 0
 
         if self.isServer:
             self.createServer()
@@ -117,10 +114,24 @@ class OnionrSockets:
         data = conn.recv(1024)
         if data:
             data = data.decode()
-            self.callback(self, data)
+            self.readData.append(data)
         else:
             sel.unregister(conn)
             conn.close()
+
+    def sendData(self, data):
+        try:
+            data = data.encode()
+        except AttributeError:
+            pass
+        self.sendData = data
+    
+    def readData(self):
+        try:
+            data = self.readData.pop(0)
+        except IndexError:
+            data = ''
+        return data
 
     def connectServer(self):
         # Set the Tor proxy
@@ -131,5 +142,7 @@ class OnionrSockets:
         with remoteSocket as s:
             s.connect((self.serverAddress, self.port))
             data = s.recv(1024)
-            data.send(self.sendCallback(self, data.decode()))
+            if self.sendData != 0:
+                s.send(self.sendData)
+                self.sendData = 0
         return

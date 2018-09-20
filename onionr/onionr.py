@@ -26,6 +26,7 @@ if sys.version_info[0] == 2 or sys.version_info[1] < 5:
     print('Error, Onionr requires Python 3.4+')
     sys.exit(1)
 import os, base64, random, getpass, shutil, subprocess, requests, time, platform, datetime, re, json, getpass, sqlite3
+import webbrowser
 from threading import Thread
 import api, core, config, logger, onionrplugins as plugins, onionrevents as events
 import onionrutils
@@ -216,6 +217,8 @@ class Onionr:
             'get-pass': self.printWebPassword,
             'getpasswd': self.printWebPassword,
             'get-passwd': self.printWebPassword,
+
+            'chat': self.onionrCore.chatInst.connect()
 
             'friend': self.friendCmd
         }
@@ -826,7 +829,6 @@ class Onionr:
             logger.error('%s add-file <filename>' % sys.argv[0], timestamp = False)
 
     def openUI(self):
-        import webbrowser
         url = 'http://127.0.0.1:%s/ui/index.html?timingToken=%s' % (config.get('client.port', 59496), self.onionrUtils.getTimeBypassToken())
 
         print('Opening %s ...' % url)
