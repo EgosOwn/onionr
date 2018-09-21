@@ -108,6 +108,8 @@ class OnionrCommunicatorDaemon:
         cleanupTimer.count = (cleanupTimer.frequency - 60)
         announceTimer.count = (cleanupTimer.frequency - 60)
 
+        self.socketServer = onionrsockets.OnionrSocketServer(self._core)
+
         # Main daemon loop, mainly for calling timers, don't do any complex operations here to avoid locking
         try:
             while not self.shutdown:
@@ -467,30 +469,14 @@ class OnionrCommunicatorDaemon:
             elif cmd[0] == 'uploadBlock':
                 self.blockToUpload = cmd[1]
                 threading.Thread(target=self.uploadBlock).start()
-            elif cmd[0] == 'startSocket':
-                # Create a socket or connect to one.
-                # The socket handler (such as the plugin or app using it) is specified in startData['reason]
-                startData = json.loads(cmd[1])
-                threading.Thread(target=self.startSocket, args=(startData,)).start()
+            elif cmd[0] == 'addSocket':
+                socketInfo = json.loads(cmd[1])
+                if socketInfo['reason'] in ('chat'):
+                    onionrsockets.OnionrSocketClient(self._core, socketInfo['peer'])
             else:
                 logger.info('Recieved daemonQueue command:' + cmd[0])
 
         self.decrementThreadCount('daemonCommands')
-
-    def startSocket(self, startData):
-        # Start a socket client
-        mySocket = onionrsockets.OnionrSockets(self._core, startData)
-        self.sockets[mySocket.socketID] = mySocket
-
-        sockProgram = '' # Function for socket handler (application)
-
-        if startData['reason'] == 'chat':
-            sockProgram = onionrchat.OnionrChat
-        else:
-            del self.sockets[mySocket.socketID] # Delete socket if we have no handler for it
-
-        threading.Thread(target=sockProgram, args=(self, mySocket.socketID)).start()
-        mySocket.startConn()
 
     def uploadBlock(self):
         '''Upload our block to a few peers'''

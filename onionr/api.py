@@ -140,7 +140,7 @@ class API:
             self.overrideCSP = False
 
             return resp
-
+            
         @app.route('/www/private/<path:path>')
         def www_private(path):
             startTime = math.floor(time.time())

@@ -18,121 +18,68 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 import stem.control
-import socket, selectors, socks, config, uuid
-import onionrexceptions, time, onionrchat
+import socks, config, uuid
+import onionrexceptions, time, requests
 from dependencies import secrets
-sel = selectors.DefaultSelector()
+from flask import request, Response, abort
 
-class OnionrSockets:
-    def __init__(self, coreInst, socketInfo):
-        '''Create a new Socket object. This interface is named a bit misleadingly
-        and does not actually forward network requests. 
-
-        Accepts coreInst, an instance of Onionr core library, and socketInfo, a dict with these values:
-        'peer': peer master public key
-        'address': string, if we're connecting to a socket, this is the address we connect to. Not applicable if we're creating our own
-        create: bool
-        '''
-        self.socketID = secrets.token_hex(32) # Generate an ID for this socket
+class OnionrSocketServer:
+    def __init__(self, coreInst):
+        self.sockets = {} # pubkey: tor address
+        self.connPool = {}
+        self.bindPort = 1337
         self._core = coreInst
-        self.socketInfo = socketInfo
+        self.responseData = {}
+        self.killSocket = False
+        app = flask.Flask(__name__)
         
-        # Make sure socketInfo provides all necessary values
-        for i in ('peer', 'address', 'create', 'port'):
-            try:
-                socketInfo[i]
-            except KeyError:
-                raise ValueError('Must provide peer, address, and create in socketInfo dict argument')
+        http_server = WSGIServer((socket.service_id, bindPort), app)
+        http_server.serve_forever()
 
-        self.isServer = socketInfo['create'] # if we are the one creating the service
+    @app.route('/dc/', methods=['POST'])
+    def acceptConn(self):
+        data = request.form['data']
+        data = self._core._utils.bytesTorStr(data)
 
-        self.remotePeer = socketInfo['peer']
-        self.socketPort = socketInfo['port']
-        self.serverAddress = socketInfo['address']
-        self.connected = False
-
-        self.readData = []
-        self.sendData = 0  
-        config.reload()
-
-    def startConn(self):
-        if self.isServer:
-            self.createServer()
+        if request.host in self.connPool:
+            self.connPool[request.host].append(data)
         else:
-            self.connectServer()
-    
-    def createServer(self):
-        # Create our HS and advertise it via a block
-        dataID = uuid.uuid4().hex
-        ourAddress = ''
-        ourPort = 1337
-        ourInternalPort = 1338
+            self.connPool[request.host] = [data]
 
-        # Setup the empheral HS
+        retData = self.responseData[request.host]
+
+        self.responseData[request.host] = ''
+
+        return retData
+    
+    def setResponseData(self, host, data):
+        self.responseData[host] = data
+
+    def addSocket(self, peer):
+        bindPort = 1337
         with stem.control.Controller.from_port(port=config.get('tor.controlPort')) as controller:
             controller.authenticate(config.get('tor.controlpassword'))
-            socketHS = controller.create_ephemeral_hidden_service({ourPort: ourInternalPort}, await_publication = True)
-            ourAddress = socketHS.service_id
 
-            # Advertise the server
-            meta = {'address': ourAddress, 'port': ourPort}
-            self._core.insertBlock(dataID, header='openSocket', encryptType='asym', asymPeer=self.remotePeer, sign=True, meta=meta)
+            socket = controller.create_ephemeral_hidden_service({80: bindPort}, await_publication = True)
+            self.sockets[peer] = socket.service_id
 
-            # Build the socket server
-            sock = socket.socket()
-            sock.bind(('127.0.0.1', ourInternalPort))
-            sock.listen(100)
-            sock.setblocking(False)
-            sel.register(sock, selectors.EVENT_READ, self._accept)
+            self.responseData[socket.service_id] = ''
 
-            while True:
-                events = sel.select()
-                for key, mask in events:
-                    callback = key.data
-                    callback(key.fileobj, mask)
+            self._core.insertBlock(uuid.uuid4(), header='startSocket', sign=True, encryptType='asym', asymPeer=peer, meta={})
 
+            while not self.killSocket:
+                time.sleep(3)
         return
-
-    def _accept(self, sock, mask):
-        # Just accept the connection and pass it to our handler
-        conn, addr = sock.accept()
-        conn.setblocking(False)
-        sel.register(conn, selectors.EVENT_READ, self._read)
-        self.connected = True
-
-    def _read(self, conn, mask):
-        data = conn.recv(1024)
-        if data:
-            data = data.decode()
-            self.readData.append(data)
-        else:
-            sel.unregister(conn)
-            conn.close()
-
-    def addSendData(self, data):
-        try:
-            data = data.encode()
-        except AttributeError:
-            pass
-        self.sendData = data
     
-    def getReadData(self):
-        try:
-            data = self.readData.pop(0)
-        except IndexError:
-            data = ''
-        return data
+class OnionrSocketClient:
+    def __init__(self, coreInst):
+        self.sockets = {} # pubkey: tor address
+        self.connPool = {}
+        self.bindPort = 1337
+        self._core = coreInst
+        self.response = ''
+        self.request = ''
+        self.connected = False
 
-    def connectServer(self):
-        # Set the Tor proxy
-        socks.setdefaultproxy(socks.PROXY_TYPE_SOCKS5, '127.0.0.1', config.get('tor.socksport'), rdns=True)
-        socket.socket = socks.socksocket
-        remoteSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
-        with remoteSocket as s:
-            s.connect((self.serverAddress, self.port))
-            data = s.recv(1024)
-            if self.sendData != 0:
-                s.send(self.sendData)
-                self.sendData = 0
-        return
+    def getResponse(self, peer):
+        self._core._utils.doPostRequest(self.)
