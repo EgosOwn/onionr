@@ -109,6 +109,7 @@ class OnionrCommunicatorDaemon:
         announceTimer.count = (cleanupTimer.frequency - 60)
 
         self.socketServer = onionrsockets.OnionrSocketServer(self._core)
+        self.socketClient = onionrsockets.OnionrSocketClient(self._core)
 
         # Main daemon loop, mainly for calling timers, don't do any complex operations here to avoid locking
         try:
@@ -469,10 +470,13 @@ class OnionrCommunicatorDaemon:
             elif cmd[0] == 'uploadBlock':
                 self.blockToUpload = cmd[1]
                 threading.Thread(target=self.uploadBlock).start()
-            elif cmd[0] == 'addSocket':
+            elif cmd[0] == 'startSocket':
                 socketInfo = json.loads(cmd[1])
-                if socketInfo['reason'] in ('chat'):
-                    onionrsockets.OnionrSocketClient(self._core, socketInfo['peer'])
+                peer = socketInfo['peer']
+                reason = socketInfo['reason']
+                self.socketServer.addSocket(peer, reason)
+            elif cmd[0] == 'connectSocket':
+                pass
             else:
                 logger.info('Recieved daemonQueue command:' + cmd[0])
 

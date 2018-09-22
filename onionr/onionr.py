@@ -271,9 +271,8 @@ class Onionr:
     '''
 
     def startChat(self):
-        peer = sys.argv[2]
-        socketInfo = json.dumps({'peer': '', 'address': peer, 'port': 1337, 'create': True, 'reason': 'chat'})
-        self.onionrCore.daemonQueueAdd('startSocket', socketInfo)
+        data = json.dumps({'peer': sys.argv[2], 'reason': 'chat'})
+        self.onionrCore.daemonQueueAdd('startSocket', data)
 
     def getCommands(self):
         return self.cmds
