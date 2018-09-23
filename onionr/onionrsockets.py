@@ -20,41 +20,59 @@
 import stem.control
 import threading
 import socks, config, uuid
-import onionrexceptions, time, requests, onionrblockapi
+import onionrexceptions, time, requests, onionrblockapi, logger
 from dependencies import secrets
+from gevent.pywsgi import WSGIServer
 from flask import request, Response, abort
-
+import flask
 class OnionrSocketServer:
     def __init__(self, coreInst):
+        app = flask.Flask(__name__)
         self.sockets = {} # pubkey: tor address
         self.connPool = {}
 
         self.bindPort = 1337
         self._core = coreInst
         self.responseData = {}
-        self.killSocket = False
 
+        threading.Thread(target=self.detectShutdown).start()
+        threading.Thread(target=self.socketStarter).start()
         app = flask.Flask(__name__)
-        
-        http_server = WSGIServer((socket.service_id, bindPort), app)
-        threading.Thread(target=http_server.serve_forever).start()
+        self.http_server = WSGIServer(('127.0.0.1', self.bindPort), app)
+        self.http_server.serve_forever()
 
-    @app.route('/dc/', methods=['POST'])
-    def acceptConn(self):
-        data = request.form['data']
-        data = self._core._utils.bytesTorStr(data)
+        @app.route('/dc/', methods=['POST'])
+        def acceptConn(self):
+            data = request.form['data']
+            data = self._core._utils.bytesTorStr(data)
 
-        if request.host in self.connPool:
-            self.connPool[request.host].append(data)
-        else:
-            self.connPool[request.host] = [data]
+            if request.host in self.connPool:
+                self.connPool[request.host].append(data)
+            else:
+                self.connPool[request.host] = [data]
 
-        retData = self.responseData[request.host]
+            retData = self.responseData[request.host]
 
-        self.responseData[request.host] = ''
+            self.responseData[request.host] = ''
 
-        return retData
+            return retData
     
+    def socketStarter(self):
+        while not self._core.killSockets:
+            try:
+                self.addSocket(self._core.startSocket['peer'], reason=self._core.startSocket['reason'])
+            except KeyError:
+                pass
+            else:
+                logger.info('%s socket started with %s' % (self._core.startSocket['reason'], self._core.startSocket['peer']))
+                self._core.startSocket = {}
+
+    def detectShutdown(self):
+        while not self._core.killSockets:
+            time.sleep(5)
+        logger.info('Killing socket server')
+        self.http_server.stop()
+
     def setResponseData(self, host, data):
         self.responseData[host] = data
 
@@ -68,10 +86,8 @@ class OnionrSocketServer:
 
             self.responseData[socket.service_id] = ''
 
-            self._core.insertBlock(uuid.uuid4(), header='socket', sign=True, encryptType='asym', asymPeer=peer, meta={'reason': reason})
+            self._core.insertBlock(str(uuid.uuid4()), header='socket', sign=True, encryptType='asym', asymPeer=peer, meta={'reason': reason})
 
-            while not self.killSocket:
-                time.sleep(3)
         return
     
 class OnionrSocketClient:

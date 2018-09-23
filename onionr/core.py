@@ -50,6 +50,9 @@ class Core:
             self.dbCreate = dbcreator.DBCreator(self)
             self.forwardKeysFile = 'data/forward-keys.db'
 
+            self.killSockets = False
+            self.startSocket = {}
+
             self.usageFile = 'data/disk-usage.txt'
             self.config = config
 

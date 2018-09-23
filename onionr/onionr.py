@@ -271,8 +271,12 @@ class Onionr:
     '''
 
     def startChat(self):
-        data = json.dumps({'peer': sys.argv[2], 'reason': 'chat'})
-        self.onionrCore.daemonQueueAdd('startSocket', data)
+        try:
+            data = json.dumps({'peer': sys.argv[2], 'reason': 'chat'})
+        except IndexError:
+            logger.error('Must specify peer to chat with.')
+        else:
+            self.onionrCore.daemonQueueAdd('startSocket', data)
 
     def getCommands(self):
         return self.cmds

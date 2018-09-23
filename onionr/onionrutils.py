@@ -593,7 +593,8 @@ class OnionrUtils:
         except ValueError as e:
             logger.debug('Failed to make request', error = e)
         except requests.exceptions.RequestException as e:
-            logger.debug('Error: %s' % str(e))
+            if not 'ConnectTimeoutError' in str(e):
+                logger.debug('Error: %s' % str(e))
             retData = False
         return retData
 
