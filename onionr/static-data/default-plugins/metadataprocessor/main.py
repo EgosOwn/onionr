@@ -75,7 +75,7 @@ def on_processBlocks(api):
         if api.data['validSig'] == True:
             _processForwardKey(api, myBlock)
     # socket blocks
-    elif blockType == 'openSocket':
+    elif blockType == 'socket':
         if api.data['validSig'] == True and myBlock.decrypted: # we check if it is decrypted as a way of seeing if it was for us
             try:
                 address = api.data['address']

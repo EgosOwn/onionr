@@ -18,6 +18,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 import stem.control
+import threading
 import socks, config, uuid
 import onionrexceptions, time, requests, onionrblockapi
 from dependencies import secrets
@@ -36,7 +37,7 @@ class OnionrSocketServer:
         app = flask.Flask(__name__)
         
         http_server = WSGIServer((socket.service_id, bindPort), app)
-        http_server.serve_forever()
+        threading.Thread(target=http_server.serve_forever).start()
 
     @app.route('/dc/', methods=['POST'])
     def acceptConn(self):
@@ -67,7 +68,7 @@ class OnionrSocketServer:
 
             self.responseData[socket.service_id] = ''
 
-            self._core.insertBlock(uuid.uuid4(), header='startSocket', sign=True, encryptType='asym', asymPeer=peer, meta={'reason': reason})
+            self._core.insertBlock(uuid.uuid4(), header='socket', sign=True, encryptType='asym', asymPeer=peer, meta={'reason': reason})
 
             while not self.killSocket:
                 time.sleep(3)
@@ -85,7 +86,7 @@ class OnionrSocketClient:
         self.connected = False
         self.killSocket = False
 
-    def startSocket(self, peer):
+    def startSocket(self, peer, reason):
         address = ''
         # Find the newest open socket for a given peer
         for block in self._core.getBlocksByType('openSocket'):

@@ -19,7 +19,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import sys, os, core, config, json, requests, time, logger, threading, base64, onionr
+import sys, os, core, config, json, requests, time, logger, threading, base64, onionr, uuid
 import onionrexceptions, onionrpeers, onionrevents as events, onionrplugins as plugins, onionrblockapi as block
 import onionrdaemontools, onionrsockets, onionrchat
 from dependencies import secrets
@@ -471,12 +471,17 @@ class OnionrCommunicatorDaemon:
                 self.blockToUpload = cmd[1]
                 threading.Thread(target=self.uploadBlock).start()
             elif cmd[0] == 'startSocket':
+                # Create our own socket server
                 socketInfo = json.loads(cmd[1])
                 peer = socketInfo['peer']
                 reason = socketInfo['reason']
-                self.socketServer.addSocket(peer, reason)
-            elif cmd[0] == 'connectSocket':
-                pass
+                threading.Thread(target=self.socketServer.addSocket, args=(peer, reason)).start()
+            elif cmd[0] == 'addSocket':
+                # Socket server was created for us
+                socketInfo = json.loads(cmd[1])
+                peer = socketInfo['peer']
+                reason = socketInfo['reason']
+                threading.Thread(target=self.socketClient.startSocket, args=(peer, reason)).start()
             else:
                 logger.info('Recieved daemonQueue command:' + cmd[0])
 
