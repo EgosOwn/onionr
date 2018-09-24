@@ -120,6 +120,7 @@ class OnionrSocketClient:
 
     def startSocket(self, peer, reason):
         address = ''
+        logger.info('Trying to find socket server for %s' % (peer,))
         # Find the newest open socket for a given peer
         for block in self._core.getBlocksByType('socket'):
             block = onionrblockapi.Block(block, core=self._myCore)
@@ -128,7 +129,8 @@ class OnionrSocketClient:
                     address = block.getMetadata('address')
                     if self._core._utils.validateID(address):
                         # If we got their address, it is valid, and verified, we can break out
-                        break
+                        if block.getMetadata('reason') == 'chat':
+                            break
                     else:
                         address = ''
         if address != '':
