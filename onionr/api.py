@@ -150,14 +150,17 @@ class API:
 
             self.validateHost('private')
 
+            if config.get('www.public.guess_mime', True):
+                self.mimeType = API.guessMime(path)
+
             endTime = math.floor(time.time())
             elapsed = endTime - startTime
 
             if not hmac.compare_digest(timingToken, self.timeBypassToken):
-                if elapsed < self._privateDelayTime:
+                if (elapsed < self._privateDelayTime) and config.get('www.private.timing_protection', True):
                     time.sleep(self._privateDelayTime - elapsed)
 
-            return send_from_directory('static-data/www/private/', path)
+            return send_from_directory(config.get('www.private.path', 'static-data/www/private/'), path)
 
         @app.route('/www/public/<path:path>')
         def www_public(path):
@@ -166,7 +169,10 @@ class API:
 
             self.validateHost('public')
 
-            return send_from_directory('static-data/www/public/', path)
+            if config.get('www.public.guess_mime', True):
+                self.mimeType = API.guessMime(path)
+
+            return send_from_directory(config.get('www.public.path', 'static-data/www/public/'), path)
 
         @app.route('/ui/<path:path>')
         def ui_private(path):

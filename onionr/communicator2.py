@@ -87,8 +87,8 @@ class OnionrCommunicatorDaemon:
         OnionrCommunicatorTimers(self, self.daemonCommands, 5)
         OnionrCommunicatorTimers(self, self.detectAPICrash, 5)
         peerPoolTimer = OnionrCommunicatorTimers(self, self.getOnlinePeers, 60, maxThreads=1)
-        OnionrCommunicatorTimers(self, self.lookupBlocks, self._core.config.get('timers.lookupBlocks'), requiresPeer=True, maxThreads=1)
-        OnionrCommunicatorTimers(self, self.getBlocks, self._core.config.get('timers.getBlocks'), requiresPeer=True)
+        OnionrCommunicatorTimers(self, self.lookupBlocks, self._core.config.get('timers.lookup_blocks'), requiresPeer=True, maxThreads=1)
+        OnionrCommunicatorTimers(self, self.getBlocks, self._core.config.get('timers.get_blocks'), requiresPeer=True)
         OnionrCommunicatorTimers(self, self.clearOfflinePeer, 58)
         OnionrCommunicatorTimers(self, self.daemonTools.cleanOldBlocks, 65)
         OnionrCommunicatorTimers(self, self.lookupKeys, 60, requiresPeer=True)
@@ -252,7 +252,7 @@ class OnionrCommunicatorDaemon:
                     except AttributeError:
                         pass
                     # Punish peer for sharing invalid block (not always malicious, but is bad regardless)
-                    onionrpeers.PeerProfiles(peerUsed, self._core).addScore(-50)  
+                    onionrpeers.PeerProfiles(peerUsed, self._core).addScore(-50)
                     logger.warn('Block hash validation failed for ' + blockHash + ' got ' + tempHash)
                 if removeFromQueue:
                     self.blockQueue.remove(blockHash) # remove from block queue both if success or false
@@ -298,7 +298,7 @@ class OnionrCommunicatorDaemon:
         '''Manages the self.onlinePeers attribute list, connects to more peers if we have none connected'''
 
         logger.info('Refreshing peer pool.')
-        maxPeers = int(config.get('peers.maxConnect'))
+        maxPeers = int(config.get('peers.max_connect', 10))
         needed = maxPeers - len(self.onlinePeers)
 
         for i in range(needed):
@@ -331,7 +331,7 @@ class OnionrCommunicatorDaemon:
                 raise onionrexceptions.InvalidAddress('Will not attempt connection test to invalid address')
         else:
             peerList = self._core.listAdders()
-        
+
         peerList = onionrpeers.getScoreSortedPeerList(self._core)
 
         if len(peerList) == 0 or useBootstrap:
@@ -339,7 +339,7 @@ class OnionrCommunicatorDaemon:
             self.addBootstrapListToPeerList(peerList)
 
         for address in peerList:
-            if not config.get('tor.v3onions') and len(address) == 62:
+            if not config.get('tor.v3_onions') and len(address) == 62:
                 continue
             if len(address) == 0 or address in tried or address in self.onlinePeers or address in self.cooldownPeer:
                 continue
@@ -352,7 +352,7 @@ class OnionrCommunicatorDaemon:
                     self.onlinePeers.append(address)
                     self.connectTimes[address] = self._core._utils.getEpoch()
                 retData = address
-                
+
                 # add peer to profile list if they're not in it
                 for profile in self.peerProfiles:
                     if profile.address == address:
@@ -416,7 +416,7 @@ class OnionrCommunicatorDaemon:
             self._core.setAddressInfo(peer, 'lastConnect', self._core._utils.getEpoch())
             self.getPeerProfileInstance(peer).addScore(1)
         return retData
-    
+
     def getPeerProfileInstance(self, peer):
         '''Gets a peer profile instance from the list of profiles, by address name'''
         for i in self.peerProfiles:
@@ -543,7 +543,7 @@ class OnionrCommunicatorTimers:
                 if self.makeThread:
                     for i in range(self.threadAmount):
                         if self.daemonInstance.threadCounts[self.timerFunction.__name__] >= self.maxThreads:
-                            logger.warn(self.timerFunction.__name__ + ' has too many current threads to start anymore.')
+                            logger.warn('%s is currently using the maximum number of threads, not starting another.' % self.timerFunction.__name__)
                         else:
                             self.daemonInstance.threadCounts[self.timerFunction.__name__] += 1
                             newThread = threading.Thread(target=self.timerFunction)

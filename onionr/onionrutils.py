@@ -131,11 +131,11 @@ class OnionrUtils:
                 for adder in newAdderList.split(','):
                     adder = adder.strip()
                     if not adder in self._core.listAdders(randomOrder = False) and adder != self.getMyAddress() and not self._core._blacklist.inBlacklist(adder):
-                        if not config.get('tor.v3onions') and len(adder) == 62:
+                        if not config.get('tor.v3_onions') and len(adder) == 62:
                             continue
                         if self._core.addAddress(adder):
                             # Check if we have the maxmium amount of allowed stored peers
-                            if config.get('peers.maxStoredPeers') > len(self._core.listAdders()):
+                            if config.get('peers.max_stored') > len(self._core.listAdders()):
                                 logger.info('Added %s to db.' % adder, timestamp = True)
                                 retVal = True
                             else:
@@ -635,7 +635,7 @@ class OnionrUtils:
         else:
             self.powSalt = retData
         return retData
-    
+
     def strToBytes(self, data):
         try:
             data = data.encode()
@@ -648,7 +648,7 @@ class OnionrUtils:
         except AttributeError:
             pass
         return data
-    
+
     def checkNetwork(self, torPort=0):
         '''Check if we are connected to the internet (through Tor)'''
         retData = False
@@ -656,7 +656,7 @@ class OnionrUtils:
         try:
             with open('static-data/connect-check.txt', 'r') as connectTest:
                 connectURLs = connectTest.read().split(',')
-            
+
             for url in connectURLs:
                 if self.doGetRequest(url, port=torPort) != False:
                     retData = True

@@ -63,14 +63,14 @@ class DaemonTools:
                 logger.warn('Network check failed, are you connected to the internet?')
                 self.daemon.isOnline = False
         self.daemon.decrementThreadCount('netCheck')
-    
+
     def cleanOldBlocks(self):
         '''Delete old blocks if our disk allocation is full/near full'''
         while self.daemon._core._utils.storageCounter.isFull():
             oldest = self.daemon._core.getBlockList()[0]
             self.daemon._core._blacklist.addToDB(oldest)
             self.daemon._core.removeBlock(oldest)
-            logger.info('Deleted block: %s' % (oldest,))        
+            logger.info('Deleted block: %s' % (oldest,))
         self.daemon.decrementThreadCount('cleanOldBlocks')
 
     def cooldownPeer(self):
@@ -88,7 +88,7 @@ class DaemonTools:
                 del self.daemon.cooldownPeer[peer]
 
         # Cool down a peer, if we have max connections alive for long enough
-        if onlinePeerAmount >= self.daemon._core.config.get('peers.maxConnect'):
+        if onlinePeerAmount >= self.daemon._core.config.get('peers.max_connect', 10):
             finding = True
             while finding:
                 try:

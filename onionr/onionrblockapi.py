@@ -762,7 +762,7 @@ class Block:
             return False
 
         # dump old cached blocks if the size exeeds the maximum
-        if sys.getsizeof(Block.blockCacheOrder) >= config.get('allocations.blockCacheTotal', 50000000): # 50MB default cache size
+        if sys.getsizeof(Block.blockCacheOrder) >= config.get('allocations.block_cache_total', 50000000): # 50MB default cache size
             del Block.blockCache[blockCacheOrder.pop(0)]
 
         # cache block content

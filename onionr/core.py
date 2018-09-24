@@ -126,7 +126,7 @@ class Core:
         '''
             Add an address to the address database (only tor currently)
         '''
-        if address == config.get('i2p.ownAddr', None):
+        if address == config.get('i2p.own_addr', None):
 
             return False
         if self._utils.validateID(address):
@@ -190,7 +190,7 @@ class Core:
             blockFile = 'data/blocks/' + block + '.dat'
             dataSize = 0
             try:
-                ''' Get size of data when loaded as an object/var, rather than on disk, 
+                ''' Get size of data when loaded as an object/var, rather than on disk,
                     to avoid conflict with getsizeof when saving blocks
                 '''
                 with open(blockFile, 'r') as data:
@@ -273,7 +273,7 @@ class Core:
 
         if not type(data) is bytes:
             data = data.encode()
-            
+
         dataHash = self._getSha3Hash(data)
 
         if type(dataHash) is bytes:
@@ -722,7 +722,7 @@ class Core:
         metadata['sig'] = signature
         metadata['signer'] = signer
         metadata['time'] = str(self._utils.getEpoch())
-    
+
         # send block data (and metadata) to POW module to get tokenized block data
         proof = onionrproofs.POW(metadata, data)
         payload = proof.waitForResult()
