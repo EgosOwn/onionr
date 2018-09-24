@@ -121,7 +121,7 @@ class OnionrSocketClient:
     def startSocket(self, peer, reason):
         address = ''
         # Find the newest open socket for a given peer
-        for block in self._core.getBlocksByType('openSocket'):
+        for block in self._core.getBlocksByType('socket'):
             block = onionrblockapi.Block(block, core=self._myCore)
             if block.decrypt():
                 if block.verifySig() and block.signer == peer:
