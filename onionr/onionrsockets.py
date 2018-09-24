@@ -132,6 +132,7 @@ class OnionrSocketClient:
                     else:
                         address = ''
         if address != '':
+            logger.info('%s socket client started with %s' % (reason, peer))
             self.sockets[peer] = address
             data = 'hey'
             while not self.killSocket:
