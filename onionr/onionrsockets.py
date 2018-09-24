@@ -103,7 +103,7 @@ class OnionrSocketServer:
 
             self.responseData[socket.service_id] = ''
 
-            self._core.insertBlock(str(uuid.uuid4()), header='socket', sign=True, encryptType='asym', asymPee=peer, meta={'reason': reason})
+            self._core.insertBlock(str(uuid.uuid4()), header='socket', sign=True, encryptType='asym', asymPeer=peer, meta={'reason': reason})
             self._core.socketReasons[peer] = reason
         return
     
