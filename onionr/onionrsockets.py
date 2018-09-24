@@ -27,12 +27,16 @@ from flask import request, Response, abort
 import flask
 class OnionrSocketServer:
     def __init__(self, coreInst):
-        app = flask.Flask(__name__)
-        self.sockets = {} # pubkey: tor address
-        self.connPool = {}
-
-        self.bindPort = 1337
         self._core = coreInst
+        app = flask.Flask(__name__)
+        self._core.socketServerConnData = {}
+        self.bindPort = 0
+
+        self.sockets = {}
+
+        while self.bindPort < 1024:
+            self.bindPort = secrets.randbelow(65535)
+
         self.responseData = {}
 
         threading.Thread(target=self.detectShutdown).start()
@@ -45,15 +49,27 @@ class OnionrSocketServer:
         def acceptConn(self):
             data = request.form['data']
             data = self._core._utils.bytesTorStr(data)
-
-            if request.host in self.connPool:
-                self.connPool[request.host].append(data)
+            data = {'date': self._core._utils.getEpoch(), 'data': data}
+            myPeer = ''
+            retData = ''
+            for peer in self.sockets:
+                if self.sockets[peer] == request.host:
+                    myPeer = peer
+                    break
             else:
-                self.connPool[request.host] = [data]
+                return ""
 
-            retData = self.responseData[request.host]
+            if request.host in self.sockets:
+                self._core.socketServerConnData[myPeer].append(data)
+            else:
+                self._core.socketServerConnData[myPeer] = [data]
 
-            self.responseData[request.host] = ''
+            try:
+                retData = self._core.socketServerResponseData[myPeer]
+            except KeyError:
+                pass
+
+            self._core.socketServerConnData[myPeer] = ''
 
             return retData
     
@@ -66,6 +82,7 @@ class OnionrSocketServer:
             else:
                 logger.info('%s socket started with %s' % (self._core.startSocket['reason'], self._core.startSocket['peer']))
                 self._core.startSocket = {}
+            time.sleep(1)
 
     def detectShutdown(self):
         while not self._core.killSockets:
@@ -73,11 +90,11 @@ class OnionrSocketServer:
         logger.info('Killing socket server')
         self.http_server.stop()
 
-    def setResponseData(self, host, data):
-        self.responseData[host] = data
-
     def addSocket(self, peer, reason=''):
         bindPort = 1337
+
+        assert len(reason) <= 12
+            
         with stem.control.Controller.from_port(port=config.get('tor.controlPort')) as controller:
             controller.authenticate(config.get('tor.controlpassword'))
 
@@ -86,8 +103,8 @@ class OnionrSocketServer:
 
             self.responseData[socket.service_id] = ''
 
-            self._core.insertBlock(str(uuid.uuid4()), header='socket', sign=True, encryptType='asym', asymPeer=peer, meta={'reason': reason})
-
+            self._core.insertBlock(str(uuid.uuid4()), header='socket', sign=True, encryptType='asym', asymPee=peer, meta={'reason': reason})
+            self._core.socketReasons[peer] = reason
         return
     
 class OnionrSocketClient:
@@ -95,7 +112,6 @@ class OnionrSocketClient:
         self.sockets = {} # pubkey: tor address
         self.connPool = {}
         self.sendData = {}
-        self.bindPort = 1337
         self._core = coreInst
         self.response = ''
         self.request = ''
@@ -117,7 +133,7 @@ class OnionrSocketClient:
                         address = ''
         if address != '':
             self.sockets[peer] = address
-            data = ''
+            data = 'hey'
             while not self.killSocket:
                 try:
                     data = self.sendData[peer]
@@ -126,7 +142,7 @@ class OnionrSocketClient:
                 else:
                     self.sendData[peer] = ''
                 postData = {'data': data}
-                self.connPool[peer] = self._core._utils.doPostRequest('http://' + address + '/dc/', data=postData)
+                self.connPool[peer] = {'date': self._core._utils.getEpoch(), 'data': self._core._utils.doPostRequest('http://' + address + '/dc/', data=postData)}
     
     def getResponse(self, peer):
         retData = ''

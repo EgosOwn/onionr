@@ -80,9 +80,7 @@ class OnionrCommunicatorDaemon:
         #self.daemonTools = onionrdaemontools.DaemonTools(self)
         self.daemonTools = onionrdaemontools.DaemonTools(self)
 
-        # Active sockets for direct connections
-        self.sockets = {}
-        self.socketExchange = {} # Socket ID exchange
+        self._chat = onionrchat.OnionrChat(self)
 
         if debug or developmentMode:
             OnionrCommunicatorTimers(self, self.heartbeat, 10)
@@ -111,6 +109,9 @@ class OnionrCommunicatorDaemon:
         self.socketServer = threading.Thread(target=onionrsockets.OnionrSocketServer, args=(self._core,))
         self.socketServer.start()
         self.socketClient = onionrsockets.OnionrSocketClient(self._core)
+
+        # Loads chat messages into memory
+        threading.Thread(target=self._chat.chatHandler).start()
 
         # Main daemon loop, mainly for calling timers, don't do any complex operations here to avoid locking
         try:

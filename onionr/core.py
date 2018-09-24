@@ -50,8 +50,12 @@ class Core:
             self.dbCreate = dbcreator.DBCreator(self)
             self.forwardKeysFile = 'data/forward-keys.db'
 
+            # Socket data, defined here because of multithreading constraints with gevent
             self.killSockets = False
             self.startSocket = {}
+            self.socketServerConnData = {}
+            self.socketReasons = {}
+            self.socketServerResponseData = {}
 
             self.usageFile = 'data/disk-usage.txt'
             self.config = config

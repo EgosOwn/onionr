@@ -18,14 +18,23 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 import logger, time
-class OnionrChat:
-    def __init__(self, communicatorInst, socketID):
-        self.communicator = communicatorInst
-        self.socket = self.communicator.sockets[socketID]
 
-        while True:
-            time.sleep(2)
-            logger.info('Chat: got %s' % (self.socket.getReadData(),))
-            time.sleep(1)
-            self.socket.addSendData('rekt')
-        return
+class OnionrChat:
+    def __init__(self, communicatorInst):
+        '''OnionrChat uses onionrsockets (handled by the communicator) to exchange direct chat messages'''
+        self.communicator = communicatorInst
+        self._core = self.communicator._core
+        self._utils = self._core._utils
+
+        self.chats = {} # {'peer': {'date': date, message': message}}
+
+    def chatHandler(self):
+        while not self.communicator.shutdown:
+            for peer in self._core.socketServerConnData:
+                try:
+                    assert self._core.socketReasons[peer] == "chat"
+                except (AssertionError, KeyError) as e:
+                    continue
+                else:
+                    self.chats[peer] = {'date': self._core.socketServerConnData[peer]['date'], 'data': self._core.socketServerConnData[peer]['data']}
+                    logger.info("CHAT MESSAGE RECIEVED: %s" % self.chats[peer]['data'])
