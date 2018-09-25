@@ -34,6 +34,7 @@ soft-reset:
 reset:
 	@echo "Hard-resetting Onionr..."
 	rm -rf onionr/data/ | true > /dev/null 2>&1
+        cd onionr/static-data/www/ui/; rm -rf ./dist; python compile.py
 	#@./RUN-LINUX.sh version | grep -v "Failed" --color=always
 
 plugins-reset:

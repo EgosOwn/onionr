@@ -188,7 +188,11 @@ class Block:
 
             return True
         except Exception as e:
-            logger.error('Failed to update block data.', error = e, timestamp = False)
+            logger.error('Failed to parse block %s.' % self.getHash(), error = e, timestamp = False)
+
+            # if block can't be parsed, it's a waste of precious space. Throw it away.
+            if not self.delete():
+                logger.error('Failed to delete invalid block %s.' % self.getHash(), error = e)
 
         self.valid = False
         return False
