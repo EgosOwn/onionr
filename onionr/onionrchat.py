@@ -27,6 +27,7 @@ class OnionrChat:
         self._utils = self._core._utils
 
         self.chats = {} # {'peer': {'date': date, message': message}}
+        self.chatSend = {}
 
     def chatHandler(self):
         while not self.communicator.shutdown:
@@ -34,7 +35,15 @@ class OnionrChat:
                 try:
                     assert self._core.socketReasons[peer] == "chat"
                 except (AssertionError, KeyError) as e:
+                    logger.warn('Peer is not for chat')
                     continue
                 else:
                     self.chats[peer] = {'date': self._core.socketServerConnData[peer]['date'], 'data': self._core.socketServerConnData[peer]['data']}
                     logger.info("CHAT MESSAGE RECIEVED: %s" % self.chats[peer]['data'])
+            for peer in self.communicator.socketClient.sockets:
+                try:
+                    logger.info(self.communicator.socketClient.connPool[peer]['data'])
+                    self.communicator.socketClient.sendData(peer, "lol")
+                except:
+                    pass
+            time.sleep(2)

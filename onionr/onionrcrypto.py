@@ -28,8 +28,8 @@ elif sys.version_info[0] == 3 and sys.version_info[1] >= 6:
 class OnionrCrypto:
     def __init__(self, coreInstance):
         self._core = coreInstance
-        self._keyFile = 'data/keys.txt'
-        self.keyPowFile = 'data/keyPow.txt'
+        self._keyFile = self._core.dataDir + 'keys.txt'
+        self.keyPowFile = self._core.dataDir + 'keyPow.txt'
         self.pubKey = None
         self.privKey = None
 
@@ -42,7 +42,7 @@ class OnionrCrypto:
 
         # Load our own pub/priv Ed25519 keys, gen & save them if they don't exist
         if os.path.exists(self._keyFile):
-            with open('data/keys.txt', 'r') as keys:
+            with open(self._core.dataDir + 'keys.txt', 'r') as keys:
                 keys = keys.read().split(',')
                 self.pubKey = keys[0]
                 self.privKey = keys[1]

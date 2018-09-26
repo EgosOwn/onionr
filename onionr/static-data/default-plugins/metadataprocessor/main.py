@@ -58,7 +58,7 @@ def _processForwardKey(api, myBlock):
     else:
         raise onionrexceptions.InvalidPubkey("%s is nota valid pubkey key" % (key,))
 
-def on_processBlocks(api):
+def on_processblocks(api):
     # Generally fired by utils.
     myBlock = api.data['block']
     blockType = api.data['type']
@@ -77,21 +77,24 @@ def on_processBlocks(api):
     # socket blocks
     elif blockType == 'socket':
         if api.data['validSig'] == True and myBlock.decrypted: # we check if it is decrypted as a way of seeing if it was for us
+            logger.info('Detected socket advertised to us...')
             try:
-                address = api.data['address']
+                address = myBlock.getMetadata('address')
             except KeyError:
                 raise onionrexceptions.MissingAddress("Missing address for new socket")
             try:
-                port = api.data['port']
+                port = myBlock.getMetadata('port')
             except KeyError:
                 raise ValueError("Missing port for new socket")
             try:
-                reason = api.data['reason']
+                reason = myBlock.getMetadata('reason')
             except KeyError:
                 raise ValueError("Missing socket reason")
 
             socketInfo = json.dumps({'peer': api.data['signer'], 'address': address, 'port': port, 'create': False, 'reason': reason})
             api.get_core().daemonQueueAdd('addSocket', socketInfo)
+        else:
+            logger.warn("socket is not for us or is invalid")
 
 def on_init(api, data = None):
 

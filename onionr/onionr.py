@@ -57,18 +57,25 @@ class Onionr:
         except FileNotFoundError:
             pass
 
+        try:
+            self.dataDir = os.environ['ONIONR_HOME']
+            if not self.dataDir.endswith('/'):
+                self.dataDir += '/'
+        except KeyError:
+            self.dataDir = 'data/'
+
         # Load global configuration data
 
-        data_exists = os.path.exists('data/')
+        data_exists = os.path.exists(self.dataDir)
 
         if not data_exists:
-            os.mkdir('data/')
+            os.mkdir(self.dataDir)
 
         if os.path.exists('static-data/default_config.json'):
             config.set_config(json.loads(open('static-data/default_config.json').read())) # this is the default config, it will be overwritten if a config file already exists. Else, it saves it
         else:
             # the default config file doesn't exist, try hardcoded config
-            config.set_config({'dev_mode': True, 'log': {'file': {'output': True, 'path': 'data/output.log'}, 'console': {'output': True, 'color': True}}})
+            config.set_config({'dev_mode': True, 'log': {'file': {'output': True, 'path': self.dataDir + 'output.log'}, 'console': {'output': True, 'color': True}}})
         if not data_exists:
             config.save()
         config.reload() # this will read the configuration file into memory
@@ -80,7 +87,7 @@ class Onionr:
             settings = settings | logger.OUTPUT_TO_CONSOLE
         if config.get('log.file.output', True):
             settings = settings | logger.OUTPUT_TO_FILE
-            logger.set_file(config.get('log.file.path', '/tmp/onionr.log'))
+            logger.set_file(config.get('log.file.path', '/tmp/onionr.log').replace('data/', self.dataDir))
         logger.set_settings(settings)
 
         if str(config.get('general.dev_mode', True)).lower() == 'true':
@@ -102,15 +109,15 @@ class Onionr:
                 print('Enter password to decrypt:')
                 password = getpass.getpass()
                 result = self.onionrCore.dataDirDecrypt(password)
-                if os.path.exists('data/'):
+                if os.path.exists(self.dataDir):
                     break
                 else:
                     logger.error('Failed to decrypt: ' + result[1], timestamp = False)
         else:
             # If data folder does not exist
             if not data_exists:
-                if not os.path.exists('data/blocks/'):
-                    os.mkdir('data/blocks/')
+                if not os.path.exists(self.dataDir + 'blocks/'):
+                    os.mkdir(self.dataDir + 'blocks/')
 
             # Copy default plugins into plugins folder
             if not os.path.exists(plugins.get_plugins_folder()):
@@ -262,7 +269,7 @@ class Onionr:
         if not self._developmentMode:
             encryptionPassword = self.onionrUtils.getPassword('Enter password to encrypt directory: ')
             self.onionrCore.dataDirEncrypt(encryptionPassword)
-            shutil.rmtree('data/')
+            shutil.rmtree(self.dataDir)
 
         return
 
@@ -695,7 +702,7 @@ class Onionr:
             powToken = self.onionrCore._crypto.pubKeyPowToken
             messages = {
                 # info about local client
-                'Onionr Daemon Status' : ((logger.colors.fg.green + 'Online') if self.onionrUtils.isCommunicatorRunning(timeout = 2) else logger.colors.fg.red + 'Offline'),
+                'Onionr Daemon Status' : ((logger.colors.fg.green + 'Online') if self.onionrUtils.isCommunicatorRunning(timeout = 9) else logger.colors.fg.red + 'Offline'),
                 'Public Key' : self.onionrCore._crypto.pubKey,
                 'POW Token' : powToken,
                 'Combined' : self.onionrCore._crypto.pubKey + '-' + powToken,
@@ -704,14 +711,14 @@ class Onionr:
 
                 # file and folder size stats
                 'div1' : True, # this creates a solid line across the screen, a div
-                'Total Block Size' : onionrutils.humanSize(onionrutils.size('data/blocks/')),
-                'Total Plugin Size' : onionrutils.humanSize(onionrutils.size('data/plugins/')),
-                'Log File Size' : onionrutils.humanSize(onionrutils.size('data/output.log')),
+                'Total Block Size' : onionrutils.humanSize(onionrutils.size(self.dataDir + 'blocks/')),
+                'Total Plugin Size' : onionrutils.humanSize(onionrutils.size(self.dataDir + 'plugins/')),
+                'Log File Size' : onionrutils.humanSize(onionrutils.size(self.dataDir + 'output.log')),
 
                 # count stats
                 'div2' : True,
                 'Known Peers Count' : str(len(self.onionrCore.listPeers()) - 1),
-                'Enabled Plugins Count' : str(len(config.get('plugins.enabled', list()))) + ' / ' + str(len(os.listdir('data/plugins/'))),
+                'Enabled Plugins Count' : str(len(config.get('plugins.enabled', list()))) + ' / ' + str(len(os.listdir(self.dataDir + 'plugins/'))),
                 'Known Blocks Count' : str(totalBlocks),
                 'Percent Blocks Signed' : str(round(100 * signedBlocks / max(totalBlocks, 1), 2)) + '%'
             }
@@ -777,7 +784,7 @@ class Onionr:
 
     def get_hostname(self):
         try:
-            with open('./data/hs/hostname', 'r') as hostname:
+            with open('./' + self.dataDir + 'hs/hostname', 'r') as hostname:
                 return hostname.read().strip()
         except Exception:
             return None

@@ -459,7 +459,7 @@ class OnionrCommunicatorDaemon:
                 self.announce(cmd[1])
             elif cmd[0] == 'runCheck':
                 logger.debug('Status check; looks good.')
-                open('data/.runcheck', 'w+').close()
+                open(self._core.dataDir + '.runcheck', 'w+').close()
             elif cmd[0] == 'connectedPeers':
                 self.printOnlinePeers()
             elif cmd[0] == 'kex':

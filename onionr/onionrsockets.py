@@ -68,8 +68,8 @@ class OnionrSocketServer:
                 retData = self._core.socketServerResponseData[myPeer]
             except KeyError:
                 pass
-
-            self._core.socketServerConnData[myPeer] = ''
+            else:
+                self._core.socketServerResponseData[myPeer] = ''
 
             return retData
     
@@ -99,11 +99,11 @@ class OnionrSocketServer:
             controller.authenticate(config.get('tor.controlpassword'))
 
             socket = controller.create_ephemeral_hidden_service({80: bindPort}, await_publication = True)
-            self.sockets[peer] = socket.service_id
+            self.sockets[peer] = socket.service_id + '.onion'
 
-            self.responseData[socket.service_id] = ''
+            self.responseData[socket.service_id + '.onion'] = ''
 
-            self._core.insertBlock(str(uuid.uuid4()), header='socket', sign=True, encryptType='asym', asymPeer=peer, meta={'reason': reason})
+            self._core.insertBlock(str(uuid.uuid4()), header='socket', sign=True, encryptType='asym', asymPeer=peer, meta={'reason': reason, 'address': socket.service_id + '.onion'})
             self._core.socketReasons[peer] = reason
         return
     
@@ -123,16 +123,26 @@ class OnionrSocketClient:
         logger.info('Trying to find socket server for %s' % (peer,))
         # Find the newest open socket for a given peer
         for block in self._core.getBlocksByType('socket'):
-            block = onionrblockapi.Block(block, core=self._myCore)
+            block = onionrblockapi.Block(block, core=self._core)
             if block.decrypt():
-                if block.verifySig() and block.signer == peer:
+                theSigner = block.signer
+                try:
+                    theSigner = theSigner.decode()
+                except AttributeError:
+                    pass
+                if block.verifySig() and theSigner == peer:
                     address = block.getMetadata('address')
                     if self._core._utils.validateID(address):
                         # If we got their address, it is valid, and verified, we can break out
-                        if block.getMetadata('reason') == 'chat':
+                        if block.getMetadata('reason') == reason:
                             break
+                        else:
+                            logger.error('The socket the peer opened is not for %s' % (reason,))
                     else:
+                        logger.error('Peer transport id is invalid for socket: %s' % (address,))
                         address = ''
+                else:
+                    logger.warn('Block has invalid sig or id, was for %s' % (theSigner,))
         if address != '':
             logger.info('%s socket client started with %s' % (reason, peer))
             self.sockets[peer] = address
@@ -140,12 +150,14 @@ class OnionrSocketClient:
             while not self.killSocket:
                 try:
                     data = self.sendData[peer]
+                    logger.info('Sending %s to %s' % (data, peer))
                 except KeyError:
                     pass
                 else:
                     self.sendData[peer] = ''
                 postData = {'data': data}
                 self.connPool[peer] = {'date': self._core._utils.getEpoch(), 'data': self._core._utils.doPostRequest('http://' + address + '/dc/', data=postData)}
+                time.sleep(2)
     
     def getResponse(self, peer):
         retData = ''

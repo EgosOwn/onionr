@@ -102,7 +102,7 @@ class API:
         self.mimeType = 'text/plain'
         self.overrideCSP = False
 
-        with open('data/time-bypass.txt', 'w') as bypass:
+        with open(self._core.dataDir + 'time-bypass.txt', 'w') as bypass:
             bypass.write(self.timeBypassToken)
 
         if not debug and not self._developmentMode:
@@ -111,7 +111,7 @@ class API:
         else:
             self.host = '127.0.0.1'
 
-        with open('data/host.txt', 'w') as file:
+        with open(self._core.dataDir + 'host.txt', 'w') as file:
             file.write(self.host)
 
         @app.before_request
@@ -466,7 +466,7 @@ class API:
             elif action == 'getData':
                 resp = ''
                 if self._utils.validateHash(data):
-                    if os.path.exists('data/blocks/' + data + '.dat'):
+                    if os.path.exists(self._core.dataDir + 'blocks/' + data + '.dat'):
                         block = Block(hash=data.encode(), core=self._core)
                         resp = base64.b64encode(block.getRaw().encode()).decode()
                 if len(resp) == 0:

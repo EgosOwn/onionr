@@ -52,8 +52,8 @@ class OnionrUtils:
             Load our timingToken from disk for faster local HTTP API
         '''
         try:
-            if os.path.exists('data/time-bypass.txt'):
-                with open('data/time-bypass.txt', 'r') as bypass:
+            if os.path.exists(self._core.dataDir + 'time-bypass.txt'):
+                with open(self._core.dataDir + 'time-bypass.txt', 'r') as bypass:
                     self.timingToken = bypass.read()
         except Exception as error:
             logger.error('Failed to fetch time bypass token.', error = error)
@@ -143,7 +143,7 @@ class OnionrUtils:
 
     def getMyAddress(self):
         try:
-            with open('./data/hs/hostname', 'r') as hostname:
+            with open('./' + self._core.dataDir + 'hs/hostname', 'r') as hostname:
                 return hostname.read().strip()
         except Exception as error:
             logger.error('Failed to read my address.', error = error)
@@ -158,7 +158,7 @@ class OnionrUtils:
         self.getTimeBypassToken()
         # TODO: URL encode parameters, just as an extra measure. May not be needed, but should be added regardless.
         try:
-            with open('data/host.txt', 'r') as host:
+            with open(self._core.dataDir + 'host.txt', 'r') as host:
                 hostname = host.read()
         except FileNotFoundError:
             return False
@@ -270,9 +270,10 @@ class OnionrUtils:
             if len(blockType) <= 10:
                 self._core.updateBlockInfo(blockHash, 'dataType', blockType)
 
-                onionrevents.event('processBlocks', data = {'block': myBlock, 'type': blockType, 'signer': signer, 'validSig': valid}, onionr = None)
+                onionrevents.event('processblocks', data = {'block': myBlock, 'type': blockType, 'signer': signer, 'validSig': valid}, onionr = None)
 
         except TypeError:
+            logger.warn("Missing block information")
             pass
 
     def escapeAnsi(self, line):
@@ -479,7 +480,7 @@ class OnionrUtils:
 
     def isCommunicatorRunning(self, timeout = 5, interval = 0.1):
         try:
-            runcheck_file = 'data/.runcheck'
+            runcheck_file = self._core.dataDir + '.runcheck'
 
             if os.path.isfile(runcheck_file):
                 os.remove(runcheck_file)
@@ -593,7 +594,7 @@ class OnionrUtils:
         except ValueError as e:
             logger.debug('Failed to make request', error = e)
         except requests.exceptions.RequestException as e:
-            if not 'ConnectTimeoutError' in str(e):
+            if not 'ConnectTimeoutError' in str(e) and not 'Request rejected or failed' in str(e):
                 logger.debug('Error: %s' % str(e))
             retData = False
         return retData

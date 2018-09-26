@@ -28,7 +28,14 @@ class NetController:
     '''
 
     def __init__(self, hsPort):
-        self.torConfigLocation = 'data/torrc'
+        try:
+            self.dataDir = os.environ['ONIONR_HOME']
+            if not self.dataDir.endswith('/'):
+                self.dataDir += '/'
+        except KeyError:
+            self.dataDir = 'data/'
+
+        self.torConfigLocation = self.dataDir + 'torrc'
         self.readyState = False
         self.socksPort = random.randint(1024, 65535)
         self.hsPort = hsPort
@@ -81,10 +88,10 @@ class NetController:
                 break
 
         torrcData = '''SocksPort ''' + str(self.socksPort) + '''
-HiddenServiceDir data/hs/
+HiddenServiceDir ''' + self.dataDir + '''hs/
 \n''' + hsVer + '''\n
 HiddenServicePort 80 127.0.0.1:''' + str(self.hsPort) + '''
-DataDirectory data/tordata/
+DataDirectory ''' + self.dataDir + '''tordata/
 CookieAuthentication 1
 ControlPort ''' + str(controlPort) + '''
 HashedControlPassword ''' + str(password) + '''
@@ -140,11 +147,11 @@ HashedControlPassword ''' + str(password) + '''
         logger.debug('Finished starting Tor.', timestamp=True)
         self.readyState = True
 
-        myID = open('data/hs/hostname', 'r')
+        myID = open(self.dataDir + 'hs/hostname', 'r')
         self.myID = myID.read().replace('\n', '')
         myID.close()
 
-        torPidFile = open('data/torPid.txt', 'w')
+        torPidFile = open(self.dataDir + 'torPid.txt', 'w')
         torPidFile.write(str(tor.pid))
         torPidFile.close()
 
@@ -156,7 +163,7 @@ HashedControlPassword ''' + str(password) + '''
         '''
 
         try:
-            pid = open('data/torPid.txt', 'r')
+            pid = open(self.dataDir + 'torPid.txt', 'r')
             pidN = pid.read()
             pid.close()
         except FileNotFoundError:
@@ -169,7 +176,7 @@ HashedControlPassword ''' + str(password) + '''
 
         try:
             os.kill(int(pidN), signal.SIGTERM)
-            os.remove('data/torPid.txt')
+            os.remove(self.dataDir + 'torPid.txt')
         except ProcessLookupError:
             pass
         except FileNotFoundError:

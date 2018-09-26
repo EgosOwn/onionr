@@ -20,7 +20,7 @@
 import sqlite3, os, logger
 class OnionrBlackList:
     def __init__(self, coreInst):
-        self.blacklistDB = 'data/blacklist.db'
+        self.blacklistDB = coreInst.dataDir + 'blacklist.db'
         self._core = coreInst
         
         if not os.path.exists(self.blacklistDB):

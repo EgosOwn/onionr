@@ -149,7 +149,7 @@ class Block:
 
                     # read from file if it's still None
                     if blockdata is None:
-                        filelocation = 'data/blocks/%s.dat' % self.getHash()
+                        filelocation = self.core.dataDir + 'blocks/%s.dat' % self.getHash()
 
                 if readfile:
                     with open(filelocation, 'rb') as f:
@@ -727,7 +727,7 @@ class Block:
         if type(hash) == Block:
             blockfile = hash.getBlockFile()
         else:
-            blockfile = 'data/blocks/%s.dat' % hash
+            blockfile = onionrcore.Core().dataDir + 'blocks/%s.dat' % hash
 
         return os.path.exists(blockfile) and os.path.isfile(blockfile)
 

@@ -35,20 +35,28 @@ class Core:
         '''
             Initialize Core Onionr library
         '''
+
         try:
-            self.queueDB = 'data/queue.db'
-            self.peerDB = 'data/peers.db'
-            self.blockDB = 'data/blocks.db'
-            self.blockDataLocation = 'data/blocks/'
-            self.addressDB = 'data/address.db'
+            self.dataDir = os.environ['ONIONR_HOME']
+            if not self.dataDir.endswith('/'):
+                self.dataDir += '/'
+        except KeyError:
+            self.dataDir = 'data/'
+            
+        try:
+            self.queueDB = self.dataDir + 'queue.db'
+            self.peerDB = self.dataDir + 'peers.db'
+            self.blockDB = self.dataDir + 'blocks.db'
+            self.blockDataLocation = self.dataDir + 'blocks/'
+            self.addressDB = self.dataDir + 'address.db'
             self.hsAddress = ''
             self.bootstrapFileLocation = 'static-data/bootstrap-nodes.txt'
             self.bootstrapList = []
             self.requirements = onionrvalues.OnionrValues()
             self.torPort = torPort
-            self.dataNonceFile = 'data/block-nonces.dat'
+            self.dataNonceFile = self.dataDir + 'block-nonces.dat'
             self.dbCreate = dbcreator.DBCreator(self)
-            self.forwardKeysFile = 'data/forward-keys.db'
+            self.forwardKeysFile = self.dataDir + 'forward-keys.db'
 
             # Socket data, defined here because of multithreading constraints with gevent
             self.killSockets = False
@@ -57,20 +65,20 @@ class Core:
             self.socketReasons = {}
             self.socketServerResponseData = {}
 
-            self.usageFile = 'data/disk-usage.txt'
+            self.usageFile = self.dataDir + 'disk-usage.txt'
             self.config = config
 
             self.maxBlockSize = 10000000 # max block size in bytes
 
-            if not os.path.exists('data/'):
-                os.mkdir('data/')
-            if not os.path.exists('data/blocks/'):
-                os.mkdir('data/blocks/')
+            if not os.path.exists(self.dataDir):
+                os.mkdir(self.dataDir)
+            if not os.path.exists(self.dataDir + 'blocks/'):
+                os.mkdir(self.dataDir + 'blocks/')
             if not os.path.exists(self.blockDB):
                 self.createBlockDB()
 
-            if os.path.exists('data/hs/hostname'):
-                with open('data/hs/hostname', 'r') as hs:
+            if os.path.exists(self.dataDir + '/hs/hostname'):
+                with open(self.dataDir + '/hs/hostname', 'r') as hs:
                     self.hsAddress = hs.read().strip()
 
             # Load bootstrap address list
@@ -95,8 +103,8 @@ class Core:
 
     def refreshFirstStartVars(self):
         '''Hack to refresh some vars which may not be set on first start'''
-        if os.path.exists('data/hs/hostname'):
-            with open('data/hs/hostname', 'r') as hs:
+        if os.path.exists(self.dataDir + '/hs/hostname'):
+            with open(self.dataDir + '/hs/hostname', 'r') as hs:
                 self.hsAddress = hs.read().strip()
 
     def addPeer(self, peerID, powID, name=''):
@@ -136,7 +144,7 @@ class Core:
         '''
             Add an address to the address database (only tor currently)
         '''
-        if address == config.get('i2p.ownAddr', None):
+        if address == config.get('i2p.ownAddr', None) or address == self.hsAddress:
 
             return False
         if self._utils.validateID(address):
@@ -197,7 +205,7 @@ class Core:
             c.execute('Delete from hashes where hash=?;', t)
             conn.commit()
             conn.close()
-            blockFile = 'data/blocks/' + block + '.dat'
+            blockFile = self.dataDir + '/blocks/' + block + '.dat'
             dataSize = 0
             try:
                 ''' Get size of data when loaded as an object/var, rather than on disk, 
