@@ -78,6 +78,9 @@ class OnionrCrypto:
         except nacl.exceptions.ValueError:
             logger.warn('Signature by unknown key (cannot reverse hash)')
             return False
+        except binascii.Error:
+            logger.warn('Could not load key for verification, invalid padding')
+            return False
         retData = False
         sig = base64.b64decode(sig)
         try:
