@@ -179,6 +179,12 @@ function makePost() {
     }
 }
 
+function focusPost(id) {
+    document.getElementById("onionr-post-focus-content").innerHTML = "";
+
+    jQuery('#onionr-post-focus').modal('show');
+}
+
 jQuery('body').on('click', '[data-editable]', function() {
     var el = jQuery(this);
     var txt = el.text();
@@ -213,6 +219,10 @@ jQuery('body').on('click', '[data-editable]', function() {
 
     input.one('blur', save).bind('keyup', saveEnter).focus();
 });
+//viewProfile('$user-id-url', '$user-name-url')
+jQuery('#onionr-post-user-id').on('click', function(e) { alert(3);});
+//jQuery('#onionr-post *').on('click', function(e) { e.stopPropagation(); });
+jQuery('#onionr-post').click(function(e) { alert(1); });
 
 currentUser = getCurrentUser();
 if(currentUser !== undefined && currentUser !== null) {

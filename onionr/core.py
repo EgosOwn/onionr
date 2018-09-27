@@ -644,7 +644,7 @@ class Core:
         conn.close()
         return True
 
-    def insertBlock(self, data, header='txt', sign=False, encryptType='', symKey='', asymPeer='', meta = None):
+    def insertBlock(self, data, header='txt', sign=False, encryptType='', symKey='', asymPeer='', meta = dict()):
         '''
             Inserts a block into the network
             encryptType must be specified to encrypt a block
@@ -662,9 +662,6 @@ class Core:
         # record nonce
         with open(self.dataNonceFile, 'a') as nonceFile:
             nonceFile.write(dataNonce + '\n')
-
-        if meta is None:
-            meta = dict()
 
         if type(data) is bytes:
             data = data.decode()

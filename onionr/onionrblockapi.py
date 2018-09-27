@@ -163,7 +163,7 @@ class Block:
             self.raw = str(blockdata)
             self.bheader = json.loads(self.getRaw()[:self.getRaw().index('\n')])
             self.bcontent = self.getRaw()[self.getRaw().index('\n') + 1:]
-            if self.bheader['encryptType'] in ('asym', 'sym'):
+            if ('encryptType' in self.bheader) and (self.bheader['encryptType'] in ('asym', 'sym')):
                 self.bmetadata = self.getHeader('meta', None)
                 self.isEncrypted = True
             else:
@@ -193,6 +193,8 @@ class Block:
             # if block can't be parsed, it's a waste of precious space. Throw it away.
             if not self.delete():
                 logger.error('Failed to delete invalid block %s.' % self.getHash(), error = e)
+            else:
+                logger.debug('Deleted invalid block %s.' % self.getHash(), timestamp = False)
 
         self.valid = False
         return False
@@ -207,7 +209,7 @@ class Block:
 
         if self.exists():
             os.remove(self.getBlockFile())
-            removeBlock(self.getHash())
+            self.getCore().removeBlock(self.getHash())
             return True
         return False
 
@@ -230,7 +232,7 @@ class Block:
                         blockFile.write(self.getRaw().encode())
                     self.update()
                 else:
-                    self.hash = self.getCore().insertBlock(self.getContent(), header = self.getType(), sign = sign)
+                    self.hash = self.getCore().insertBlock(self.getContent(), header = self.getType(), sign = sign, meta = self.getMetadata())
                     self.update()
 
                 return self.getHash()
