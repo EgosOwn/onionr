@@ -263,18 +263,21 @@ class OnionrUtils:
         myBlock = Block(blockHash, self._core)
         if myBlock.isEncrypted:
             myBlock.decrypt()
-        blockType = myBlock.getMetadata('type') # we would use myBlock.getType() here, but it is bugged with encrypted blocks
-        signer = self.bytesToStr(myBlock.signer)
-        valid = myBlock.verifySig()
-        try:
-            if len(blockType) <= 10:
-                self._core.updateBlockInfo(blockHash, 'dataType', blockType)
+        if myBlock.decrypted:
+            blockType = myBlock.getMetadata('type') # we would use myBlock.getType() here, but it is bugged with encrypted blocks
+            signer = self.bytesToStr(myBlock.signer)
+            valid = myBlock.verifySig()
+            try:
+                if len(blockType) <= 10:
+                    self._core.updateBlockInfo(blockHash, 'dataType', blockType)
 
-                onionrevents.event('processblocks', data = {'block': myBlock, 'type': blockType, 'signer': signer, 'validSig': valid}, onionr = None)
+                    onionrevents.event('processblocks', data = {'block': myBlock, 'type': blockType, 'signer': signer, 'validSig': valid}, onionr = None)
 
-        except TypeError:
-            logger.warn("Missing block information")
-            pass
+            except TypeError:
+                logger.warn("Missing block information")
+                pass
+        else:
+            logger.debug('Not processing metadata on encrypted block we cannot decrypt.')
 
     def escapeAnsi(self, line):
         '''

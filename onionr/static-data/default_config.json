@@ -30,7 +30,7 @@
 
     "log": {
         "file": {
-            "output": true,
+            "output": false,
             "path": "data/output.log"
         },
 

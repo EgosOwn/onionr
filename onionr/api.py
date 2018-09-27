@@ -515,7 +515,7 @@ class API:
             while len(self._core.hsAddress) == 0:
                 self._core.refreshFirstStartVars()
                 time.sleep(0.5)
-            self.http_server = WSGIServer((self.host, bindPort), app)
+            self.http_server = WSGIServer((self.host, bindPort), app, log=None)
             self.http_server.serve_forever()
         except KeyboardInterrupt:
             pass
