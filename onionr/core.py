@@ -107,7 +107,7 @@ class Core:
         c = conn.cursor()
         t = (peerID, name, 'unknown', hashID, powID, 0)
 
-        for i in c.execute("SELECT * FROM PEERS where id = '" + peerID + "';"):
+        for i in c.execute("SELECT * FROM PEERS where id = ?;", (peerID,)):
             try:
                 if i[0] == peerID:
                     conn.close()
@@ -135,7 +135,7 @@ class Core:
             # check if address is in database
             # this is safe to do because the address is validated above, but we strip some chars here too just in case
             address = address.replace('\'', '').replace(';', '').replace('"', '').replace('\\', '')
-            for i in c.execute("SELECT * FROM adders where address = '" + address + "';"):
+            for i in c.execute("SELECT * FROM adders where address = ?;", (address,)):
                 try:
                     if i[0] == address:
                         conn.close()
@@ -187,7 +187,7 @@ class Core:
             c.execute('Delete from hashes where hash=?;', t)
             conn.commit()
             conn.close()
-            blockFile = 'data/blocks/' + block + '.dat'
+            blockFile = 'data/blocks/%s.dat' % block
             dataSize = 0
             try:
                 ''' Get size of data when loaded as an object/var, rather than on disk,
@@ -289,7 +289,7 @@ class Core:
                 blockFile.close()
                 conn = sqlite3.connect(self.blockDB)
                 c = conn.cursor()
-                c.execute("UPDATE hashes SET dataSaved=1 WHERE hash = '" + dataHash + "';")
+                c.execute("UPDATE hashes SET dataSaved=1 WHERE hash = ?;", (dataHash,))
                 conn.commit()
                 conn.close()
                 with open(self.dataNonceFile, 'a') as nonceFile:
@@ -309,7 +309,7 @@ class Core:
         for name in ['data']:
             tar.add(name)
         tar.close()
-        tarData = open('data.tar', 'r',  encoding = "ISO-8859-1").read()
+        tarData = open('data.tar', 'r',  encoding = 'ISO-8859-1').read()
         encrypted = simplecrypt.encrypt(password, tarData)
         open('data-encrypted.dat', 'wb').write(encrypted)
         os.remove('data.tar')
@@ -433,17 +433,23 @@ class Core:
             randomOrder determines if the list should be in a random order
             trust sets the minimum trust to list
         '''
+
         conn = sqlite3.connect(self.peerDB)
         c = conn.cursor()
-        payload = ""
+
+        payload = ''
+
         if trust not in (0, 1, 2):
             logger.error('Tried to select invalid trust.')
             return
+
         if randomOrder:
             payload = 'SELECT * FROM peers where trust >= %s ORDER BY RANDOM();' % (trust,)
         else:
             payload = 'SELECT * FROM peers where trust >= %s;' % (trust,)
+
         peerList = []
+
         for i in c.execute(payload):
             try:
                 if len(i[0]) != 0:
@@ -453,6 +459,7 @@ class Core:
                         peerList.append(i[0])
             except TypeError:
                 pass
+
         if getPow:
             try:
                 peerList.append(self._crypto.pubKey + '-' + self._crypto.pubKeyPowToken)
@@ -460,7 +467,9 @@ class Core:
                 pass
         else:
             peerList.append(self._crypto.pubKey)
+
         conn.close()
+
         return peerList
 
     def getPeerInfo(self, peer, info):
@@ -478,13 +487,17 @@ class Core:
             hashID text         8
             pow text            9
         '''
+
         conn = sqlite3.connect(self.peerDB)
         c = conn.cursor()
+
         command = (peer,)
+
         infoNumbers = {'id': 0, 'name': 1, 'adders': 2, 'forwardKey': 3, 'dateSeen': 4, 'bytesStored': 5, 'trust': 6, 'pubkeyExchanged': 7, 'hashID': 8}
         info = infoNumbers[info]
         iterCount = 0
         retVal = ''
+
         for row in c.execute('SELECT * from peers where id=?;', command):
             for i in row:
                 if iterCount == info:
@@ -492,6 +505,7 @@ class Core:
                     break
                 else:
                     iterCount += 1
+
         conn.close()
 
         return retVal
@@ -500,15 +514,20 @@ class Core:
         '''
             Update a peer for a key
         '''
+
         conn = sqlite3.connect(self.peerDB)
         c = conn.cursor()
+
         command = (data, peer)
+
         # TODO: validate key on whitelist
         if key not in ('id', 'name', 'pubkey', 'blockDBHash', 'forwardKey', 'dateSeen', 'bytesStored', 'trust'):
             raise Exception("Got invalid database key when setting peer info")
+
         c.execute('UPDATE peers SET ' + key + ' = ? WHERE id=?', command)
         conn.commit()
         conn.close()
+
         return
 
     def getAddressInfo(self, address, info):
@@ -531,7 +550,7 @@ class Core:
         info = infoNumbers[info]
         iterCount = 0
         retVal = ''
-        for row in c.execute('SELECT * from adders where address=?;', command):
+        for row in c.execute('SELECT * FROM adders WHERE address=?;', command):
             for i in row:
                 if iterCount == info:
                     retVal = i
@@ -613,9 +632,10 @@ class Core:
 
         conn = sqlite3.connect(self.blockDB)
         c = conn.cursor()
-        c.execute("UPDATE hashes SET dataType='" + blockType + "' WHERE hash = '" + hash + "';")
+        c.execute("UPDATE hashes SET dataType = ? WHERE hash = ?;", (blockType, hash))
         conn.commit()
         conn.close()
+
         return
 
     def updateBlockInfo(self, hash, key, data):
@@ -642,6 +662,7 @@ class Core:
         c.execute("UPDATE hashes SET " + key + " = ? where hash = ?;", args)
         conn.commit()
         conn.close()
+
         return True
 
     def insertBlock(self, data, header='txt', sign=False, encryptType='', symKey='', asymPeer='', meta = dict()):
