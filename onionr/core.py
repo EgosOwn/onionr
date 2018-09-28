@@ -120,7 +120,7 @@ class Core:
 
         events.event('pubkey_add', data = {'key': peerID}, onionr = None)
         
-        conn = sqlite3.connect(self.peerDB)
+        conn = sqlite3.connect(self.peerDB, timeout=10)
         hashID = self._crypto.pubKeyHashID(peerID)
         c = conn.cursor()
         t = (peerID, name, 'unknown', hashID, powID, 0)
@@ -148,7 +148,7 @@ class Core:
 
             return False
         if self._utils.validateID(address):
-            conn = sqlite3.connect(self.addressDB)
+            conn = sqlite3.connect(self.addressDB, timeout=10)
             c = conn.cursor()
             # check if address is in database
             # this is safe to do because the address is validated above, but we strip some chars here too just in case
@@ -180,7 +180,7 @@ class Core:
             Remove an address from the address database
         '''
         if self._utils.validateID(address):
-            conn = sqlite3.connect(self.addressDB)
+            conn = sqlite3.connect(self.addressDB, timeout=10)
             c = conn.cursor()
             t = (address,)
             c.execute('Delete from adders where address=?;', t)
@@ -199,7 +199,7 @@ class Core:
             **You may want blacklist.addToDB(blockHash)
         '''
         if self._utils.validateHash(block):
-            conn = sqlite3.connect(self.blockDB)
+            conn = sqlite3.connect(self.blockDB, timeout=10)
             c = conn.cursor()
             t = (block,)
             c.execute('Delete from hashes where hash=?;', t)
@@ -246,7 +246,7 @@ class Core:
             raise Exception('Block db does not exist')
         if self._utils.hasBlock(newHash):
             return
-        conn = sqlite3.connect(self.blockDB)
+        conn = sqlite3.connect(self.blockDB, timeout=10)
         c = conn.cursor()
         currentTime = self._utils.getEpoch()
         if selfInsert or dataSaved:
@@ -305,7 +305,7 @@ class Core:
                 blockFile = open(blockFileName, 'wb')
                 blockFile.write(data)
                 blockFile.close()
-                conn = sqlite3.connect(self.blockDB)
+                conn = sqlite3.connect(self.blockDB, timeout=10)
                 c = conn.cursor()
                 c.execute("UPDATE hashes SET dataSaved=1 WHERE hash = '" + dataHash + "';")
                 conn.commit()
@@ -363,7 +363,7 @@ class Core:
         if not os.path.exists(self.queueDB):
             self.makeDaemonDB()
         else:
-            conn = sqlite3.connect(self.queueDB)
+            conn = sqlite3.connect(self.queueDB, timeout=10)
             c = conn.cursor()
             try:
                 for row in c.execute('SELECT command, data, date, min(ID) FROM commands group by id'):
@@ -383,7 +383,7 @@ class Core:
 
     def makeDaemonDB(self):
         '''generate the daemon queue db'''
-        conn = sqlite3.connect(self.queueDB)
+        conn = sqlite3.connect(self.queueDB, timeout=10)
         c = conn.cursor()
         # Create table
         c.execute('''CREATE TABLE commands
@@ -398,7 +398,7 @@ class Core:
         retData = True
         # Intended to be used by the web server
         date = self._utils.getEpoch()
-        conn = sqlite3.connect(self.queueDB)
+        conn = sqlite3.connect(self.queueDB, timeout=10)
         c = conn.cursor()
         t = (command, data, date)
         try:
@@ -416,7 +416,7 @@ class Core:
         '''
             Clear the daemon queue (somewhat dangerous)
         '''
-        conn = sqlite3.connect(self.queueDB)
+        conn = sqlite3.connect(self.queueDB, timeout=10)
         c = conn.cursor()
         try:
             c.execute('DELETE FROM commands;')
@@ -432,7 +432,7 @@ class Core:
         '''
             Return a list of addresses
         '''
-        conn = sqlite3.connect(self.addressDB)
+        conn = sqlite3.connect(self.addressDB, timeout=10)
         c = conn.cursor()
         if randomOrder:
             addresses = c.execute('SELECT * FROM adders ORDER BY RANDOM();')
@@ -451,7 +451,7 @@ class Core:
             randomOrder determines if the list should be in a random order
             trust sets the minimum trust to list
         '''
-        conn = sqlite3.connect(self.peerDB)
+        conn = sqlite3.connect(self.peerDB, timeout=10)
         c = conn.cursor()
         payload = ""
         if trust not in (0, 1, 2):
@@ -495,7 +495,7 @@ class Core:
             hashID text         7
             pow text            8
         '''
-        conn = sqlite3.connect(self.peerDB)
+        conn = sqlite3.connect(self.peerDB, timeout=10)
         c = conn.cursor()
         command = (peer,)
         infoNumbers = {'id': 0, 'name': 1, 'adders': 2, 'dateSeen': 3, 'bytesStored': 4, 'trust': 5, 'pubkeyExchanged': 6, 'hashID': 7}
@@ -517,7 +517,7 @@ class Core:
         '''
             Update a peer for a key
         '''
-        conn = sqlite3.connect(self.peerDB)
+        conn = sqlite3.connect(self.peerDB, timeout=10)
         c = conn.cursor()
         command = (data, peer)
         # TODO: validate key on whitelist
@@ -541,7 +541,7 @@ class Core:
             failure int 6
             lastConnect 7
         '''
-        conn = sqlite3.connect(self.addressDB)
+        conn = sqlite3.connect(self.addressDB, timeout=10)
         c = conn.cursor()
         command = (address,)
         infoNumbers = {'address': 0, 'type': 1, 'knownPeer': 2, 'speed': 3, 'success': 4, 'DBHash': 5, 'failure': 6, 'lastConnect': 7}
@@ -562,7 +562,7 @@ class Core:
         '''
             Update an address for a key
         '''
-        conn = sqlite3.connect(self.addressDB)
+        conn = sqlite3.connect(self.addressDB, timeout=10)
         c = conn.cursor()
         command = (data, address)
         # TODO: validate key on whitelist
@@ -578,7 +578,7 @@ class Core:
         '''
             Get list of our blocks
         '''
-        conn = sqlite3.connect(self.blockDB)
+        conn = sqlite3.connect(self.blockDB, timeout=10)
         c = conn.cursor()
         if unsaved:
             execute = 'SELECT hash FROM hashes WHERE dataSaved != 1 ORDER BY RANDOM();'
@@ -595,7 +595,7 @@ class Core:
         '''
             Returns the date a block was received
         '''
-        conn = sqlite3.connect(self.blockDB)
+        conn = sqlite3.connect(self.blockDB, timeout=10)
         c = conn.cursor()
         execute = 'SELECT dateReceived FROM hashes WHERE hash=?;'
         args = (blockHash,)
@@ -609,7 +609,7 @@ class Core:
         '''
             Returns a list of blocks by the type
         '''
-        conn = sqlite3.connect(self.blockDB)
+        conn = sqlite3.connect(self.blockDB, timeout=10)
         c = conn.cursor()
         if orderDate:
             execute = 'SELECT hash FROM hashes WHERE dataType=? ORDER BY dateReceived;'
@@ -628,7 +628,7 @@ class Core:
             Sets the type of block
         '''
 
-        conn = sqlite3.connect(self.blockDB)
+        conn = sqlite3.connect(self.blockDB, timeout=10)
         c = conn.cursor()
         c.execute("UPDATE hashes SET dataType='" + blockType + "' WHERE hash = '" + hash + "';")
         conn.commit()
@@ -653,7 +653,7 @@ class Core:
         if key not in ('dateReceived', 'decrypted', 'dataType', 'dataFound', 'dataSaved', 'sig', 'author', 'dateClaimed'):
             return False
 
-        conn = sqlite3.connect(self.blockDB)
+        conn = sqlite3.connect(self.blockDB, timeout=10)
         c = conn.cursor()
         args = (data, hash)
         c.execute("UPDATE hashes SET " + key + " = ? where hash = ?;", args)

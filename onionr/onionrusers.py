@@ -69,7 +69,7 @@ class OnionrUser:
 
     def _getLatestForwardKey(self):
         # Get the latest forward secrecy key for a peer
-        conn = sqlite3.connect(self._core.peerDB)
+        conn = sqlite3.connect(self._core.peerDB, timeout=10)
         c = conn.cursor()
 
         for row in c.execute("SELECT forwardKey FROM forwardKeys WHERE peerKey = ? AND date=(SELECT max(date) FROM forwardKeys)", (self.publicKey,)):
@@ -81,7 +81,7 @@ class OnionrUser:
         return key
     
     def _getForwardKeys(self):
-        conn = sqlite3.connect(self._core.peerDB)
+        conn = sqlite3.connect(self._core.peerDB, timeout=10)
         c = conn.cursor()
         keyList = []
         for row in c.execute("SELECT forwardKey FROM forwardKeys WHERE peerKey = ?", (self.publicKey,)):
@@ -96,7 +96,7 @@ class OnionrUser:
     def generateForwardKey(self, expire=432000):
 
         # Generate a forward secrecy key for the peer
-        conn = sqlite3.connect(self._core.forwardKeysFile)
+        conn = sqlite3.connect(self._core.forwardKeysFile, timeout=10)
         c = conn.cursor()
         # Prepare the insert
         time = self._core._utils.getEpoch()
@@ -117,7 +117,7 @@ class OnionrUser:
         if not self._core._utils.validatePubKey(newKey):
             raise onionrexceptions.InvalidPubkey
         # Add a forward secrecy key for the peer
-        conn = sqlite3.connect(self._core.peerDB)
+        conn = sqlite3.connect(self._core.peerDB, timeout=10)
         c = conn.cursor()
         # Prepare the insert
         time = self._core._utils.getEpoch()
