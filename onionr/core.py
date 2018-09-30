@@ -628,7 +628,7 @@ class Core:
         c = conn.cursor()
         date = int(self._utils.getEpoch())
 
-        execute = 'SELECT hash FROM hashes WHERE expire >= %s ORDER BY dateReceived;' % (date,)
+        execute = 'SELECT hash FROM hashes WHERE expire <= %s ORDER BY dateReceived;' % (date,)
 
         rows = list()
         for row in c.execute(execute):
@@ -675,7 +675,7 @@ class Core:
         conn.close()
         return True
 
-    def insertBlock(self, data, header='txt', sign=False, encryptType='', symKey='', asymPeer='', meta = None):
+    def insertBlock(self, data, header='txt', sign=False, encryptType='', symKey='', asymPeer='', meta = None, expire=None):
         '''
             Inserts a block into the network
             encryptType must be specified to encrypt a block
@@ -753,6 +753,11 @@ class Core:
         metadata['sig'] = signature
         metadata['signer'] = signer
         metadata['time'] = str(self._utils.getEpoch())
+
+        # ensure expire is integer and of sane length
+        if type(expire) is not type(None):
+            assert len(str(int(expire))) < 14
+            metadata['expire'] = expire
     
         # send block data (and metadata) to POW module to get tokenized block data
         proof = onionrproofs.POW(metadata, data)
@@ -760,7 +765,8 @@ class Core:
         if payload != False:
             retData = self.setData(payload)
             self.addToBlockDB(retData, selfInsert=True, dataSaved=True)
-            self.setBlockType(retData, meta['type'])
+            #self.setBlockType(retData, meta['type'])
+            self._utils.processBlockMetadata(retData)
             self.daemonQueueAdd('uploadBlock', retData)
 
         if retData != False:

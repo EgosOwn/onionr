@@ -263,7 +263,7 @@ class OnionrUtils:
         myBlock = Block(blockHash, self._core)
         if myBlock.isEncrypted:
             myBlock.decrypt()
-        if myBlock.decrypted:
+        if (myBlock.isEncrypted and myBlock.decrypted) or (not myBlock.isEncrypted):
             blockType = myBlock.getMetadata('type') # we would use myBlock.getType() here, but it is bugged with encrypted blocks
             signer = self.bytesToStr(myBlock.signer)
             valid = myBlock.verifySig()
@@ -276,9 +276,9 @@ class OnionrUtils:
                 pass
             # Set block expire time if specified
             try:
-                expireTime = myBlock.getMetadata('expire')
-                assert len(int(expireTime)) < 20 # test that expire time is an integer of sane length (for epoch)
-            except (AssertionError, ValueError) as e:
+                expireTime = myBlock.getHeader('expire')
+                assert len(str(int(expireTime))) < 20 # test that expire time is an integer of sane length (for epoch)
+            except (AssertionError, ValueError, TypeError) as e:
                 pass
             else:
                 self._core.updateBlockInfo(blockHash, 'expire', expireTime)
@@ -379,8 +379,14 @@ class OnionrUtils:
                     if not self.isIntegerString(metadata[i]):
                         logger.warn('Block metadata time stamp is not integer string')
                         break
+                elif i == 'expire':
+                    try:
+                        assert int(metadata[i]) > self.getEpoch()
+                    except AssertionError:
+                        logger.warn('Block is expired')
+                        break
             else:
-                # if metadata loop gets no errors, it does not break, therefore metadata is valid
+                # if metadata loop gets no errors, it does not break, therefore metadata is valid      
                 # make sure we do not have another block with the same data content (prevent data duplication and replay attacks)
                 nonce = self._core._utils.bytesToStr(self._core._crypto.sha3Hash(blockData))
                 try:
@@ -532,6 +538,7 @@ class OnionrUtils:
                     if self._core._crypto.sha3Hash(newBlock.read()) == block.replace('.dat', ''):
                         self._core.addToBlockDB(block.replace('.dat', ''), dataSaved=True)
                         logger.info('Imported block %s.' % block)
+                        self._core._utils.processBlockMetadata(block)
                     else:
                         logger.warn('Failed to verify hash for %s' % block)
 

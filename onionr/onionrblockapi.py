@@ -25,7 +25,7 @@ class Block:
     blockCacheOrder = list() # NEVER write your own code that writes to this!
     blockCache = dict() # should never be accessed directly, look at Block.getCache()
 
-    def __init__(self, hash = None, core = None, type = None, content = None):
+    def __init__(self, hash = None, core = None, type = None, content = None, expire=None):
         # take from arguments
         # sometimes people input a bytes object instead of str in `hash`
         if (not hash is None) and isinstance(hash, bytes):
@@ -35,6 +35,7 @@ class Block:
         self.core = core
         self.btype = type
         self.bcontent = content
+        self.expire = expire
 
         # initialize variables
         self.valid = True
