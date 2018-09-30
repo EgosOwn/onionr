@@ -65,12 +65,17 @@ class DaemonTools:
         self.daemon.decrementThreadCount('netCheck')
     
     def cleanOldBlocks(self):
-        '''Delete old blocks if our disk allocation is full/near full'''
+        '''Delete old blocks if our disk allocation is full/near full, and also expired blocks'''
+
         while self.daemon._core._utils.storageCounter.isFull():
             oldest = self.daemon._core.getBlockList()[0]
             self.daemon._core._blacklist.addToDB(oldest)
             self.daemon._core.removeBlock(oldest)
-            logger.info('Deleted block: %s' % (oldest,))        
+            logger.info('Deleted block: %s' % (oldest,))
+        # Delete expired blocks
+        for bHash in self.daemon._core.getExpiredBlocks():
+            self.daemon._core._blacklist.addToDB(bHash)
+            self.daemon._core.removeBlock(bHash)
         self.daemon.decrementThreadCount('cleanOldBlocks')
 
     def cooldownPeer(self):

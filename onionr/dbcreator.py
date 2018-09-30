@@ -91,6 +91,7 @@ class DBCreator:
             sig    - optional signature by the author (not optional if author is specified)
             author       - multi-round partial sha3-256 hash of authors public key
             dateClaimed  - timestamp claimed inside the block, only as trustworthy as the block author is
+            expire int   - block expire date in epoch
         '''
         if os.path.exists(self.core.blockDB):
             raise Exception("Block database already exists")
@@ -105,7 +106,8 @@ class DBCreator:
             dataSaved int,
             sig text,
             author text,
-            dateClaimed int
+            dateClaimed int,
+            expire int
             );
         ''')
         conn.commit()

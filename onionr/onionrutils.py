@@ -270,12 +270,18 @@ class OnionrUtils:
             try:
                 if len(blockType) <= 10:
                     self._core.updateBlockInfo(blockHash, 'dataType', blockType)
-
                     onionrevents.event('processblocks', data = {'block': myBlock, 'type': blockType, 'signer': signer, 'validSig': valid}, onionr = None)
-
             except TypeError:
                 logger.warn("Missing block information")
                 pass
+            # Set block expire time if specified
+            try:
+                expireTime = myBlock.getMetadata('expire')
+                assert len(int(expireTime)) < 20 # test that expire time is an integer of sane length (for epoch)
+            except (AssertionError, ValueError) as e:
+                pass
+            else:
+                self._core.updateBlockInfo(blockHash, 'expire', expireTime)
         else:
             logger.debug('Not processing metadata on encrypted block we cannot decrypt.')
 

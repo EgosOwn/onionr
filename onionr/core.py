@@ -620,8 +620,21 @@ class Core:
         for row in c.execute(execute, args):
             for i in row:
                 rows.append(i)
-
         return rows
+
+    def getExpiredBlocks(self):
+        '''Returns a list of expired blocks'''
+        conn = sqlite3.connect(self.blockDB, timeout=10)
+        c = conn.cursor()
+        date = int(self._utils.getEpoch())
+
+        execute = 'SELECT hash FROM hashes WHERE expire >= %s ORDER BY dateReceived;' % (date,)
+
+        rows = list()
+        for row in c.execute(execute):
+            for i in row:
+                rows.append(i)
+        return rows     
 
     def setBlockType(self, hash, blockType):
         '''
@@ -648,9 +661,10 @@ class Core:
             sig    - optional signature by the author (not optional if author is specified)
             author       - multi-round partial sha3-256 hash of authors public key
             dateClaimed  - timestamp claimed inside the block, only as trustworthy as the block author is
+            expire       - expire date for a block
         '''
 
-        if key not in ('dateReceived', 'decrypted', 'dataType', 'dataFound', 'dataSaved', 'sig', 'author', 'dateClaimed'):
+        if key not in ('dateReceived', 'decrypted', 'dataType', 'dataFound', 'dataSaved', 'sig', 'author', 'dateClaimed', 'expire'):
             return False
 
         conn = sqlite3.connect(self.blockDB, timeout=10)
