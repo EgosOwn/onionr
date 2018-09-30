@@ -23,6 +23,7 @@ from onionrblockapi import Block
 import onionrutils, onionrcrypto, onionrproofs, onionrevents as events, onionrexceptions, onionrvalues
 import onionrblacklist
 import dbcreator
+
 if sys.version_info < (3, 6):
     try:
         import sha3
@@ -35,6 +36,7 @@ class Core:
         '''
             Initialize Core Onionr library
         '''
+
         try:
             self.queueDB = 'data/queue.db'
             self.peerDB = 'data/peers.db'
@@ -86,7 +88,9 @@ class Core:
         return
 
     def refreshFirstStartVars(self):
-        '''Hack to refresh some vars which may not be set on first start'''
+        '''
+            Hack to refresh some vars which may not be set on first start
+        '''
         if os.path.exists('data/hs/hostname'):
             with open('data/hs/hostname', 'r') as hs:
                 self.hsAddress = hs.read().strip()
@@ -95,6 +99,7 @@ class Core:
         '''
             Adds a public key to the key database (misleading function name)
         '''
+
         # This function simply adds a peer to the DB
         if not self._utils.validatePubKey(peerID):
             return False
@@ -126,6 +131,7 @@ class Core:
         '''
             Add an address to the address database (only tor currently)
         '''
+
         if address == config.get('i2p.own_addr', None):
 
             return False
@@ -161,6 +167,7 @@ class Core:
         '''
             Remove an address from the address database
         '''
+
         if self._utils.validateID(address):
             conn = sqlite3.connect(self.addressDB)
             c = conn.cursor()
@@ -180,6 +187,7 @@ class Core:
 
             **You may want blacklist.addToDB(blockHash)
         '''
+
         if self._utils.validateHash(block):
             conn = sqlite3.connect(self.blockDB)
             c = conn.cursor()
@@ -204,18 +212,21 @@ class Core:
         '''
             Generate the address database
         '''
+
         self.dbCreate.createAddressDB()
 
     def createPeerDB(self):
         '''
             Generate the peer sqlite3 database and populate it with the peers table.
         '''
+
         self.dbCreate.createPeerDB()
 
     def createBlockDB(self):
         '''
             Create a database for blocks
         '''
+
         self.dbCreate.createBlockDB()
 
     def addToBlockDB(self, newHash, selfInsert=False, dataSaved=False):
@@ -224,6 +235,7 @@ class Core:
 
             Should be in hex format!
         '''
+
         if not os.path.exists(self.blockDB):
             raise Exception('Block db does not exist')
         if self._utils.hasBlock(newHash):
@@ -246,6 +258,7 @@ class Core:
         '''
             Simply return the data associated to a hash
         '''
+
         try:
             # logger.debug('Opening %s' % (str(self.blockDataLocation) + str(hash) + '.dat'))
             dataFile = open(self.blockDataLocation + hash + '.dat', 'rb')
@@ -268,6 +281,7 @@ class Core:
         '''
             Set the data assciated with a hash
         '''
+
         data = data
         dataSize = sys.getsizeof(data)
 
@@ -303,6 +317,7 @@ class Core:
         '''
             Encrypt the data directory on Onionr shutdown
         '''
+
         if os.path.exists('data.tar'):
             os.remove('data.tar')
         tar = tarfile.open("data.tar", "w")
@@ -320,6 +335,7 @@ class Core:
         '''
             Decrypt the data directory on startup
         '''
+
         if not os.path.exists('data-encrypted.dat'):
             return (False, 'encrypted archive does not exist')
         data = open('data-encrypted.dat', 'rb').read()
@@ -341,6 +357,7 @@ class Core:
 
             This function intended to be used by the client. Queue to exchange data between "client" and server.
         '''
+
         retData = False
         if not os.path.exists(self.queueDB):
             self.makeDaemonDB()
@@ -364,25 +381,35 @@ class Core:
         return retData
 
     def makeDaemonDB(self):
-        '''generate the daemon queue db'''
+        '''
+            Generate the daemon queue db
+        '''
+
         conn = sqlite3.connect(self.queueDB)
         c = conn.cursor()
+
         # Create table
         c.execute('''CREATE TABLE commands
                     (id integer primary key autoincrement, command text, data text, date text)''')
         conn.commit()
+
         conn.close()
+        return
 
     def daemonQueueAdd(self, command, data=''):
         '''
             Add a command to the daemon queue, used by the communication daemon (communicator.py)
         '''
+
         retData = True
         # Intended to be used by the web server
+
         date = self._utils.getEpoch()
         conn = sqlite3.connect(self.queueDB)
+
         c = conn.cursor()
         t = (command, data, date)
+
         try:
             c.execute('INSERT INTO commands (command, data, date) VALUES(?, ?, ?)', t)
             conn.commit()
@@ -398,13 +425,16 @@ class Core:
         '''
             Clear the daemon queue (somewhat dangerous)
         '''
+
         conn = sqlite3.connect(self.queueDB)
         c = conn.cursor()
+
         try:
             c.execute('DELETE FROM commands;')
             conn.commit()
         except:
             pass
+
         conn.close()
         events.event('queue_clear', onionr = None)
 
@@ -543,13 +573,16 @@ class Core:
             failure int 6
             lastConnect 7
         '''
+
         conn = sqlite3.connect(self.addressDB)
         c = conn.cursor()
+
         command = (address,)
         infoNumbers = {'address': 0, 'type': 1, 'knownPeer': 2, 'speed': 3, 'success': 4, 'DBHash': 5, 'failure': 6, 'lastConnect': 7}
         info = infoNumbers[info]
         iterCount = 0
         retVal = ''
+
         for row in c.execute('SELECT * FROM adders WHERE address=?;', command):
             for i in row:
                 if iterCount == info:
@@ -558,15 +591,19 @@ class Core:
                 else:
                     iterCount += 1
         conn.close()
+
         return retVal
 
     def setAddressInfo(self, address, key, data):
         '''
             Update an address for a key
         '''
+
         conn = sqlite3.connect(self.addressDB)
         c = conn.cursor()
+
         command = (data, address)
+
         # TODO: validate key on whitelist
         if key not in ('address', 'type', 'knownPeer', 'speed', 'success', 'DBHash', 'failure', 'lastConnect', 'lastConnectAttempt'):
             raise Exception("Got invalid database key when setting address info")
@@ -574,18 +611,22 @@ class Core:
             c.execute('UPDATE adders SET ' + key + ' = ? WHERE address=?', command)
             conn.commit()
             conn.close()
+
         return
 
     def getBlockList(self, unsaved = False): # TODO: Use unsaved??
         '''
             Get list of our blocks
         '''
+
         conn = sqlite3.connect(self.blockDB)
         c = conn.cursor()
+
         if unsaved:
             execute = 'SELECT hash FROM hashes WHERE dataSaved != 1 ORDER BY RANDOM();'
         else:
             execute = 'SELECT hash FROM hashes ORDER BY dateReceived ASC;'
+
         rows = list()
         for row in c.execute(execute):
             for i in row:
@@ -597,8 +638,10 @@ class Core:
         '''
             Returns the date a block was received
         '''
+
         conn = sqlite3.connect(self.blockDB)
         c = conn.cursor()
+
         execute = 'SELECT dateReceived FROM hashes WHERE hash=?;'
         args = (blockHash,)
         for row in c.execute(execute, args):
@@ -611,14 +654,18 @@ class Core:
         '''
             Returns a list of blocks by the type
         '''
+
         conn = sqlite3.connect(self.blockDB)
         c = conn.cursor()
+
         if orderDate:
             execute = 'SELECT hash FROM hashes WHERE dataType=? ORDER BY dateReceived;'
         else:
             execute = 'SELECT hash FROM hashes WHERE dataType=?;'
+
         args = (blockType,)
         rows = list()
+
         for row in c.execute(execute, args):
             for i in row:
                 rows.append(i)
@@ -670,6 +717,7 @@ class Core:
             Inserts a block into the network
             encryptType must be specified to encrypt a block
         '''
+
         retData = False
 
         # check nonce

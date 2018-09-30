@@ -37,6 +37,14 @@ body {
 
 /* timeline */
 
+.onionr-post-focus-separator {
+    width: 100%;
+    
+    padding: 1rem;
+    padding-left: 0;
+    padding-right: 0;
+}
+
 .onionr-post {
     padding: 1rem;
     margin-bottom: 1rem;

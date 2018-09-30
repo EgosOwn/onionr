@@ -5,6 +5,17 @@ body {
 
 /* timeline */
 
+.onionr-post-focus-separator {
+    border-color: black;
+}
+
+.modal-content {
+    border: 1px solid black;
+    border-radius: 1rem;
+
+    background-color: lightgray;
+}
+
 .onionr-post {
     border: 1px solid black;
     border-radius: 1rem;

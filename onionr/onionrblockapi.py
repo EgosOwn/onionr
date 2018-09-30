@@ -72,6 +72,7 @@ class Block:
         '''
             Decrypt a block, loading decrypted data into their vars
         '''
+
         if self.decrypted:
             return True
         retData = False
@@ -104,6 +105,7 @@ class Block:
         '''
             Verify if a block's signature is signed by its claimed signer
         '''
+
         core = self.getCore()
 
         if core._crypto.edVerify(data=self.signedData, key=self.signer, sig=self.signature, encodedData=True):

@@ -239,7 +239,7 @@ class User {
     }
 
     static getUser(id, callback) {
-        console.log(callback);
+        // console.log(callback);
         var user = deserializeUser(id);
         if(user === null) {
             Block.getBlocks({'type' : 'onionr-user-info', 'signed' : true, 'reverse' : true}, function(data) {
@@ -256,7 +256,7 @@ class User {
                             user.setID(id);
 
                             user.remember();
-                            console.log(callback);
+                            // console.log(callback);
                             callback(user);
                             return user;
                         }
@@ -272,7 +272,7 @@ class User {
                 }
             });
         } else {
-            console.log(callback);
+            // console.log(callback);
             callback(user);
             return user;
         }
@@ -282,7 +282,39 @@ class User {
 /* post class */
 class Post {
     /* returns the html content of a post */
-    getHTML() {
+    getHTML(type) {
+        var replyTemplate = '<!-- POST -->\
+<div class="col-12">\
+    <div class="onionr-post" id="onionr-post-$post-hash" onclick="focusPost(\'$post-hash\', \'user-id-url\', \'user-name-url\', \'\')">\
+        <div class="row">\
+            <div class="col-3">\
+                <img class="onionr-post-user-icon" src="$user-image">\
+            </div>\
+            <div class="col-9">\
+                <div class="row">\
+                    <div class="col col-auto">\
+                        <a class="onionr-post-user-name" id="onionr-post-user-name" href="#!" onclick="viewProfile(\'$user-id-url\', \'$user-name-url\')">$user-name</a>\
+                    </div>\
+\
+                    <div class="col col-auto text-right ml-auto pl-0">\
+                        <div class="onionr-post-date text-right" data-placement="top" data-toggle="tooltip" title="$date">$date-relative-truncated</div>\
+                    </div>\
+                </div>\
+\
+                <div class="onionr-post-content">\
+                    $content\
+                </div>\
+\
+                <div class="onionr-post-controls pt-2">\
+                    <a href="#!" onclick="toggleLike(\'$post-hash\')" class="glyphicon glyphicon-heart mr-2">$liked</a>\
+                    <a href="#!" onclick="reply(\'$post-hash\')" class="glyphicon glyphicon-comment mr-2">reply</a>\
+                </div>\
+            </div>\
+        </div>\
+    </div>\
+</div>\
+<!-- END POST -->\
+';
         var postTemplate = '<!-- POST -->\
 <div class="col-12">\
     <div class="onionr-post" id="onionr-post-$post-hash" onclick="focusPost(\'$post-hash\', \'user-id-url\', \'user-name-url\', \'\')">\
@@ -317,29 +349,37 @@ class Post {
 <!-- END POST -->\
 ';
 
+        var template = '';
+
+        if(type !== undefined && type !== null && type == 'reply')
+            template = replyTemplate;
+        else
+            template = postTemplate;
+
         var device = (jQuery(document).width() < 768 ? 'mobile' : 'desktop');
 
-        postTemplate = postTemplate.replaceAll('$user-name-url', Sanitize.html(Sanitize.url(this.getUser().getName())));
-        postTemplate = postTemplate.replaceAll('$user-name', Sanitize.html(this.getUser().getName()));
-        postTemplate = postTemplate.replaceAll('$user-id-url', Sanitize.html(Sanitize.url(this.getUser().getID())));
+        template = template.replaceAll('$user-name-url', Sanitize.html(Sanitize.url(this.getUser().getName())));
+        template = template.replaceAll('$user-name', Sanitize.html(this.getUser().getName()));
+        template = template.replaceAll('$user-id-url', Sanitize.html(Sanitize.url(this.getUser().getID())));
 
-        postTemplate = postTemplate.replaceAll('$user-id-truncated', Sanitize.html(this.getUser().getID().substring(0, 12) + '...'));
-        // postTemplate = postTemplate.replaceAll('$user-id-truncated', Sanitize.html(this.getUser().getID().split('-').slice(0, 4).join('-')));
+        template = template.replaceAll('$user-id-truncated', Sanitize.html(this.getUser().getID().substring(0, 12) + '...'));
+        // template = template.replaceAll('$user-id-truncated', Sanitize.html(this.getUser().getID().split('-').slice(0, 4).join('-')));
 
-        postTemplate = postTemplate.replaceAll('$user-id', Sanitize.html(this.getUser().getID()));
-        postTemplate = postTemplate.replaceAll('$user-image', "data:image/jpeg;base64," + Sanitize.html(this.getUser().getIcon()));
-        postTemplate = postTemplate.replaceAll('$content', Sanitize.html(this.getContent()).replaceAll('\n', '<br />', 16)); // Maximum of 16 lines
-        postTemplate = postTemplate.replaceAll('$post-hash', this.getHash());
-        postTemplate = postTemplate.replaceAll('$date-relative', timeSince(this.getPostDate(), device) + (device === 'desktop' ?  ' ago' : ''));
-        postTemplate = postTemplate.replaceAll('$date', this.getPostDate().toLocaleString());
+        template = template.replaceAll('$user-id', Sanitize.html(this.getUser().getID()));
+        template = template.replaceAll('$user-image', "data:image/jpeg;base64," + Sanitize.html(this.getUser().getIcon()));
+        template = template.replaceAll('$content', Sanitize.html(this.getContent()).replaceAll('\n', '<br />', 16)); // Maximum of 16 lines
+        template = template.replaceAll('$post-hash', this.getHash());
+        template = template.replaceAll('$date-relative-truncated', timeSince(this.getPostDate(), 'mobile'));
+        template = template.replaceAll('$date-relative', timeSince(this.getPostDate(), device) + (device === 'desktop' ?  ' ago' : ''));
+        template = template.replaceAll('$date', this.getPostDate().toLocaleString());
 
         if(this.getHash() in getPostMap() && getPostMap()[this.getHash()]['liked']) {
-            postTemplate = postTemplate.replaceAll('$liked', 'unlike');
+            template = template.replaceAll('$liked', 'unlike');
         } else {
-            postTemplate = postTemplate.replaceAll('$liked', 'like');
+            template = template.replaceAll('$liked', 'like');
         }
 
-        return postTemplate;
+        return template;
     }
 
     setUser(user) {
@@ -356,6 +396,14 @@ class Post {
 
     getContent() {
         return this.content;
+    }
+
+    setParent(parent) {
+        this.parent = parent;
+    }
+
+    getParent() {
+        return this.parent;
     }
 
     setPostDate(date) { // unix timestamp input
@@ -379,6 +427,9 @@ class Post {
 
     save(callback) {
         var args = {'type' : 'onionr-post', 'sign' : true, 'content' : JSON.stringify({'content' : this.getContent()})};
+
+        if(this.getParent() !== undefined && this.getParent() !== null)
+            args['parent'] = (this.getParent() instanceof Post ? this.getParent().getHash() : (this.getParent() instanceof Block ? this.getParent().getHash() : this.getParent()));
 
         var url = '/client/?action=insertBlock&data=' + Sanitize.url(JSON.stringify(args)) + '&token=' + Sanitize.url(getWebPassword()) + '&timingToken=' + Sanitize.url(getTimingToken());
 
@@ -458,8 +509,12 @@ class Block {
 
     // returns the parent block's hash (not Block object, for performance)
     getParent() {
-        if(!(this.parent instanceof Block) && this.parent !== undefined && this.parent !== null)
-            this.parent = Block.openBlock(this.parent); // convert hash to Block object
+        // console.log(this.parent);
+
+        // TODO: Create a function to fetch the block contents and parse it from the server; right now it is only possible to search for types of blocks (see Block.getBlocks), so it is impossible to return a Block object here
+
+        // if(!(this.parent instanceof Block) && this.parent !== undefined && this.parent !== null)
+        //     this.parent = Block.openBlock(this.parent); // convert hash to Block object
         return this.parent;
     }
 
@@ -562,7 +617,7 @@ class Block {
 
     // recreates a block by hash
     static openBlock(hash) {
-        return parseBlock(response);
+        return Block.parseBlock(hash);
     }
 
     // converts an associative array to a Block

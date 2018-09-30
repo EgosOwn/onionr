@@ -8,6 +8,7 @@
 
         "LATEST" : "Latest...",
         "TRENDING" : "Trending",
+        "REPLIES" : "Replies",
 
         "MODAL_TITLE" : "Loading...",
         "MODAL_MESSAGE" : "Onionr has begun performing a CPU-intensive operation. If this operation does not complete in the next 10 seconds, try reloading the page.",
@@ -20,9 +21,17 @@
         "POST_CREATOR_PLACEHOLDER" : "Enter a message here...",
         "POST_CREATOR_CREATE" : "Create post",
 
+        "REPLY_CREATOR_YOU" : "you",
+        "REPLY_CREATOR_PLACEHOLDER" : "Enter reply here...",
+        "REPLY_CREATOR_CREATE" : "Reply",
+
         "POST_CREATOR_MESSAGE_MAXIMUM_NEWLINES" : "Please use less than 16 newlines",
         "POST_CREATOR_MESSAGE_REMAINING" : "%s characters remaining",
         "POST_CREATOR_MESSAGE_OVER" : "%s characters over maximum",
+
+        "REPLY_CREATOR_MESSAGE_MAXIMUM_NEWLINES" : "Please use less than 16 newlines",
+        "REPLY_CREATOR_MESSAGE_REMAINING" : "%s characters remaining",
+        "REPLY_CREATOR_MESSAGE_OVER" : "%s characters over maximum",
 
         "PROFILE_EDIT_SAVE" : "Save",
         "PROFILE_EDIT_CANCEL" : "Cancel"

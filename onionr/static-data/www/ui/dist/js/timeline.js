@@ -11,7 +11,7 @@ Block.getBlocks({'type' : 'onionr-post', 'signed' : true, 'reverse' : true}, fun
                 var blockContent = JSON.parse(block.getContent());
 
                 // just ignore anything shorter than 280 characters
-                if(String(blockContent['content']).length <= 280) {
+                if(String(blockContent['content']).length <= 280 && block.getParent() === null) {
                     post.setContent(blockContent['content']);
                     post.setPostDate(block.getDate());
                     post.setUser(user);
@@ -82,6 +82,106 @@ function postCreatorChange() {
 
     var element = document.getElementById('onionr-post-creator-content-message');
     var button = document.getElementById("onionr-post-creator-create");
+
+    if(message === '')
+        element.style.visibility = 'hidden';
+    else {
+        element.style.visibility = 'visible';
+
+        element.innerHTML = message;
+
+        if(disable)
+            element.style.color = 'red';
+        else if(warn)
+            element.style.color = '#FF8C00';
+        else
+            element.style.color = 'gray';
+    }
+
+    if(disable)
+        button.disabled = true;
+    else
+        button.disabled = false;
+}
+
+function replyCreatorChange() {
+    var content = document.getElementById('onionr-reply-creator-content').value;
+    var message = '';
+
+    var maxlength = 280;
+
+    var disable = true;
+    var warn = false;
+
+    if(content.length !== 0) {
+        if(content.length - content.replaceAll('\n', '').length > 16) {
+            // 16 max newlines
+            message = 'Please use less than 16 newlines';
+        } else if(content.length <= maxlength) {
+            // 280 max characters
+            message = '%s characters remaining'.replaceAll('%s', (280 - content.length));
+            disable = false;
+
+            if(maxlength - content.length < maxlength / 4) {
+                warn = true;
+            }
+        } else {
+            message = '%s characters over maximum'.replaceAll('%s', (content.length - maxlength));
+        }
+    }
+
+    var element = document.getElementById('onionr-reply-creator-content-message');
+    var button = document.getElementById("onionr-reply-creator-create");
+
+    if(message === '')
+        element.style.visibility = 'hidden';
+    else {
+        element.style.visibility = 'visible';
+
+        element.innerHTML = message;
+
+        if(disable)
+            element.style.color = 'red';
+        else if(warn)
+            element.style.color = '#FF8C00';
+        else
+            element.style.color = 'gray';
+    }
+
+    if(disable)
+        button.disabled = true;
+    else
+        button.disabled = false;
+}
+
+function focusReplyCreatorChange() {
+    var content = document.getElementById('onionr-post-focus-reply-creator-content').value;
+    var message = '';
+
+    var maxlength = 280;
+
+    var disable = true;
+    var warn = false;
+
+    if(content.length !== 0) {
+        if(content.length - content.replaceAll('\n', '').length > 16) {
+            // 16 max newlines
+            message = 'Please use less than 16 newlines';
+        } else if(content.length <= maxlength) {
+            // 280 max characters
+            message = '%s characters remaining'.replaceAll('%s', (280 - content.length));
+            disable = false;
+
+            if(maxlength - content.length < maxlength / 4) {
+                warn = true;
+            }
+        } else {
+            message = '%s characters over maximum'.replaceAll('%s', (content.length - maxlength));
+        }
+    }
+
+    var element = document.getElementById('onionr-post-focus-reply-creator-content-message');
+    var button = document.getElementById("onionr-post-focus-reply-creator-create");
 
     if(message === '')
         element.style.visibility = 'hidden';
@@ -179,10 +279,153 @@ function makePost() {
     }
 }
 
+function getReplies(id, callback) {
+    Block.getBlocks({'type' : 'onionr-post', 'parent' : id, 'signed' : true, 'reverse' : true}, callback);
+}
+
 function focusPost(id) {
-    document.getElementById("onionr-post-focus-content").innerHTML = "";
+    viewReplies(id);
+}
+
+function viewRepliesMobile(id) {
+    var post = document.getElementById('onionr-post-' + id);
+
+    var user_name = '';
+    var user_id = '';
+    var user_id_trunc = '';
+    var user_icon = '';
+    var post_content = '';
+
+    if(post !== null && post !== undefined) {
+        // if the post is in the timeline, get the data from it
+        user_name = post.getElementsByClassName('onionr-post-user-name')[0].innerHTML;
+        user_id = post.getElementsByClassName('onionr-post-user-id')[0].title;
+        user_id_trunc = post.getElementsByClassName('onionr-post-user-id')[0].innerHTML;
+        user_icon = post.getElementsByClassName('onionr-post-user-icon')[0].src;
+        post_content = post.getElementsByClassName('onionr-post-content')[0].innerHTML;
+    } else {
+        // otherwise, fetch the data
+    }
+
+    document.getElementById('onionr-post-focus-user-icon').src = user_icon;
+    document.getElementById('onionr-post-focus-user-name').innerHTML = user_name;
+    document.getElementById('onionr-post-focus-user-id').innerHTML = user_id_trunc;
+    document.getElementById('onionr-post-focus-user-id').title = user_id;
+    document.getElementById('onionr-post-focus-content').innerHTML = post_content;
+
+    document.getElementById('onionr-post-focus-reply-creator-user-name').innerHTML = Sanitize.html(Sanitize.username(getCurrentUser().getName()));
+    document.getElementById('onionr-post-focus-reply-creator-user-icon').src = "data:image/jpeg;base64," + Sanitize.html(getCurrentUser().getIcon());
+    document.getElementById('onionr-post-focus-reply-creator-content').value = '';
+    document.getElementById('onionr-post-focus-reply-creator-content-message').value = '';
 
     jQuery('#onionr-post-focus').modal('show');
+}
+
+function viewReplies(id) {
+    document.getElementById('onionr-replies-title').innerHTML = 'Replies';
+    document.getElementById('onionr-reply-creator-panel').originalPost = id;
+    document.getElementById('onionr-reply-creator-panel').innerHTML = '<!-- POST REPLIES -->\
+<div class="onionr-post-creator">\
+    <div class="row">\
+        <div class="onionr-reply-creator container">\
+            <div class="row">\
+                <div class="col-3">\
+                    <img class="onionr-post-creator-user-icon" id="onionr-reply-creator-user-icon">\
+                </div>\
+                <div class="col-9">\
+                    <div class="row">\
+                        <div class="col col-auto">\
+                            <a class="onionr-post-creator-user-name" id="onionr-reply-creator-user-name" href="#!" onclick="viewProfile(\'$user-id-url\', \'$user-name-url\')"></a>\
+                            <a class="onionr-post-creator-user-id" id="onionr-reply-creator-user-id" href="#!" onclick="viewProfile(\'$user-id-url\', \'$user-name-url\')" data-placement="top" data-toggle="tooltip" title="$user-id">you</a>\
+                        </div>\
+                    </div>\
+\
+                    <textarea class="onionr-post-creator-content" id="onionr-reply-creator-content" oninput="replyCreatorChange()"></textarea>\
+\
+                    <div class="onionr-post-creator-content-message" id="onionr-reply-creator-content-message"></div>\
+\
+                    <input type="button" onclick="makeReply()" title="Reply" value="Reply" id="onionr-reply-creator-create" class="onionr-post-creator-create" />\
+                </div>\
+            </div>\
+        </div>\
+    </div>\
+</div>\
+\
+<div class="row">\
+    <div id="onionr-replies"></div>\
+</div>\
+<!-- END POST REPLIES -->\
+';
+
+    document.getElementById('onionr-reply-creator-content').innerHTML = '';
+    document.getElementById("onionr-reply-creator-content").placeholder = "Enter a message here...";
+    document.getElementById('onionr-reply-creator-user-name').innerHTML = Sanitize.html(Sanitize.username(getCurrentUser().getName()));
+    document.getElementById('onionr-reply-creator-user-icon').src = "data:image/jpeg;base64," + Sanitize.html(getCurrentUser().getIcon());
+
+    document.getElementById('onionr-replies').innerHTML = '';
+    getReplies(id, function(data) {
+        var replies = document.getElementById('onionr-replies');
+
+        replies.innerHTML = '';
+
+        for(var i = 0; i < data.length; i++) {
+            try {
+                var block = data[i];
+
+                var finished = false;
+                User.getUser(new String(block.getHeader('signer', 'unknown')), function(user) {
+                    var post = new Post();
+
+                    var blockContent = JSON.parse(block.getContent());
+
+                    // just ignore anything shorter than 280 characters
+                    if(String(blockContent['content']).length <= 280) {
+                        post.setContent(blockContent['content']);
+                        post.setPostDate(block.getDate());
+                        post.setUser(user);
+
+                        post.setHash(block.getHash());
+
+                        replies.innerHTML += post.getHTML('reply');
+                    }
+
+                    finished = true;
+                });
+
+                while(!finished);
+            } catch(e) {
+                console.log('Troublemaker block: ' + data[i].getHash());
+                console.log(e);
+            }
+        }
+    });
+}
+
+function makeReply() {
+    var content = document.getElementById("onionr-reply-creator-content").value;
+
+    if(content.trim() !== '') {
+        var post = new Post();
+
+        var originalPost = document.getElementById('onionr-reply-creator-panel').originalPost;
+
+        console.log('Original post hash: ' + originalPost);
+
+        post.setUser(getCurrentUser());
+        post.setParent(originalPost);
+        post.setContent(content);
+        post.setPostDate(new Date());
+
+        post.save(function(data) {}); // async, but no function
+
+        document.getElementById('onionr-replies').innerHTML = post.getHTML('reply') + document.getElementById('onionr-replies').innerHTML;
+
+        document.getElementById("onionr-reply-creator-content").value = "";
+        document.getElementById("onionr-reply-creator-content").focus();
+        replyCreatorChange();
+    } else {
+        console.log('Not making empty reply.');
+    }
 }
 
 jQuery('body').on('click', '[data-editable]', function() {
@@ -220,9 +463,9 @@ jQuery('body').on('click', '[data-editable]', function() {
     input.one('blur', save).bind('keyup', saveEnter).focus();
 });
 //viewProfile('$user-id-url', '$user-name-url')
-jQuery('#onionr-post-user-id').on('click', function(e) { alert(3);});
+// jQuery('#onionr-post-user-id').on('click', function(e) { alert(3);});
 //jQuery('#onionr-post *').on('click', function(e) { e.stopPropagation(); });
-jQuery('#onionr-post').click(function(e) { alert(1); });
+// jQuery('#onionr-post').click(function(e) { alert(1); });
 
 currentUser = getCurrentUser();
 if(currentUser !== undefined && currentUser !== null) {
@@ -230,7 +473,11 @@ if(currentUser !== undefined && currentUser !== null) {
     document.getElementById("onionr-post-creator-user-id").innerHTML = "you";
     document.getElementById("onionr-post-creator-user-icon").src = "data:image/jpeg;base64," + Sanitize.html(currentUser.getIcon());
     document.getElementById("onionr-post-creator-user-id").title = currentUser.getID();
+
     document.getElementById("onionr-post-creator-content").placeholder = "Enter a message here...";
+    document.getElementById("onionr-post-focus-reply-creator-content").placeholder = "Enter a message here...";
+
+    document.getElementById("onionr-post-focus-reply-creator-user-id").innerHTML = "you";
 }
 
 viewCurrentProfile = function() {

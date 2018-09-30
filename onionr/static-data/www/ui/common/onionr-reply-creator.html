@@ -1,0 +1,31 @@
+<!-- POST REPLIES -->
+<div class="onionr-post-creator">
+    <div class="row">
+        <div class="onionr-reply-creator container">
+            <div class="row">
+                <div class="col-3">
+                    <img class="onionr-post-creator-user-icon" id="onionr-reply-creator-user-icon">
+                </div>
+                <div class="col-9">
+                    <div class="row">
+                        <div class="col col-auto">
+                            <a class="onionr-post-creator-user-name" id="onionr-reply-creator-user-name" href="#!" onclick="viewProfile('$user-id-url', '$user-name-url')"></a>
+                            <a class="onionr-post-creator-user-id" id="onionr-reply-creator-user-id" href="#!" onclick="viewProfile('$user-id-url', '$user-name-url')" data-placement="top" data-toggle="tooltip" title="$user-id"><$= LANG.REPLY_CREATOR_YOU $></a>
+                        </div>
+                    </div>
+
+                    <textarea class="onionr-post-creator-content" id="onionr-reply-creator-content" oninput="replyCreatorChange()"></textarea>
+
+                    <div class="onionr-post-creator-content-message" id="onionr-reply-creator-content-message"></div>
+
+                    <input type="button" onclick="makeReply()" title="<$= LANG.REPLY_CREATOR_CREATE $>" value="<$= LANG.REPLY_CREATOR_CREATE $>" id="onionr-reply-creator-create" class="onionr-post-creator-create" />
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div id="onionr-replies"></div>
+</div>
+<!-- END POST REPLIES -->
