@@ -220,7 +220,7 @@ class OnionrCommunicatorDaemon:
             logger.info("Attempting to download %s..." % blockHash)
             peerUsed = self.pickOnlinePeer()
             content = self.peerAction(peerUsed, 'getData', data=blockHash) # block content from random peer (includes metadata)
-            if content != False:
+            if content != False and len(content) > 0:
                 try:
                     content = content.encode()
                 except AttributeError:
@@ -266,7 +266,10 @@ class OnionrCommunicatorDaemon:
                     onionrpeers.PeerProfiles(peerUsed, self._core).addScore(-50)  
                     logger.warn('Block hash validation failed for ' + blockHash + ' got ' + tempHash)
                 if removeFromQueue:
-                    self.blockQueue.remove(blockHash) # remove from block queue both if success or false
+                    try:
+                        self.blockQueue.remove(blockHash) # remove from block queue both if success or false
+                    except ValueError:
+                        pass
             self.currentDownloading.remove(blockHash)
         self.decrementThreadCount('getBlocks')
         return

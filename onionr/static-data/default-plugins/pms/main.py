@@ -68,6 +68,7 @@ class OnionrMail:
         pmBlocks = {}
         logger.info('Decrypting messages...')
         choice = ''
+        displayList = []
 
         # this could use a lot of memory if someone has recieved a lot of messages
         for blockHash in self.myCore.getBlocksByType('pm'):
@@ -93,8 +94,10 @@ class OnionrMail:
                     senderDisplay = senderKey
 
                 blockDate = pmBlocks[blockHash].getDate().strftime("%m/%d %H:%M")
-                print('%s. %s - %s: %s' % (blockCount, blockDate, senderDisplay[:12], blockHash))
-
+                displayList.append('%s. %s - %s: %s' % (blockCount, blockDate, senderDisplay[:12], blockHash))
+            #displayList.reverse()
+            for i in displayList:
+                print(i)
             try:
                 choice = logger.readline('Enter a block number, -r to refresh, or -q to stop: ').strip().lower()
             except (EOFError, KeyboardInterrupt):

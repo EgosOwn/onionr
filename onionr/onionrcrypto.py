@@ -76,7 +76,7 @@ class OnionrCrypto:
         try:
             key = nacl.signing.VerifyKey(key=key, encoder=nacl.encoding.Base32Encoder)
         except nacl.exceptions.ValueError:
-            logger.warn('Signature by unknown key (cannot reverse hash)')
+            #logger.debug('Signature by unknown key (cannot reverse hash)')
             return False
         except binascii.Error:
             logger.warn('Could not load key for verification, invalid padding')
