@@ -372,7 +372,12 @@ class OnionrUtils:
                     logger.warn('Block has invalid metadata key ' + i)
                     break
                 else:
-                    if self._core.requirements.blockMetadataLengths[i] < len(metadata[i]):
+                    testData = metadata[i]
+                    try:
+                        testData = len(testData)
+                    except (TypeError, AttributeError) as e:
+                        testData = len(str(testData))
+                    if self._core.requirements.blockMetadataLengths[i] < testData:
                         logger.warn('Block metadata key ' + i + ' exceeded maximum size')
                         break
                 if i == 'time':

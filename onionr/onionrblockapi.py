@@ -228,7 +228,7 @@ class Block:
                         blockFile.write(self.getRaw().encode())
                     self.update()
                 else:
-                    self.hash = self.getCore().insertBlock(self.getContent(), header = self.getType(), sign = sign)
+                    self.hash = self.getCore().insertBlock(self.getContent(), header = self.getType(), sign = sign, expire=self.getExpire())
                     self.update()
 
                 return self.getHash()
@@ -240,6 +240,15 @@ class Block:
         return False
 
     # getters
+
+    def getExpire(self):
+        '''
+            Returns the expire time for a block
+
+            Outputs:
+            - (int): the expire time for a block, or None
+        '''
+        return self.expire
 
     def getHash(self):
         '''

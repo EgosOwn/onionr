@@ -94,7 +94,7 @@ class OnionrCommunicatorDaemon:
         OnionrCommunicatorTimers(self, self.getBlocks, self._core.config.get('timers.getBlocks'), requiresPeer=True)
         OnionrCommunicatorTimers(self, self.clearOfflinePeer, 58)
         OnionrCommunicatorTimers(self, self.daemonTools.cleanOldBlocks, 65)
-        OnionrCommunicatorTimers(self, self.lookupKeys, 60, requiresPeer=True)
+        #OnionrCommunicatorTimers(self, self.lookupKeys, 60, requiresPeer=True)
         OnionrCommunicatorTimers(self, self.lookupAdders, 60, requiresPeer=True)
         OnionrCommunicatorTimers(self, self.daemonTools.cooldownPeer, 30, requiresPeer=True)
         netCheckTimer = OnionrCommunicatorTimers(self, self.daemonTools.netCheck, 600)
