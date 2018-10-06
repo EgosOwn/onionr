@@ -55,20 +55,23 @@ class OnionrUser:
         return decrypted
     
     def forwardEncrypt(self, data):
+        self.generateForwardKey()
         retData = ''
         forwardKey = self._getLatestForwardKey()
         if self._core._utils.validatePubKey(forwardKey):
             encrypted = self._core._crypto.pubKeyEncrypt(data, forwardKey, encodedData=True)
         else:
-            raise Exception("No valid forward key available for this user")
-        return
+            raise onionrexceptions.InvalidPubkey("No valid forward key available for this user")
+        return (data, forwardKey)
     
     def forwardDecrypt(self, encrypted):
         retData = ''
+        for key in self
         return
 
     def _getLatestForwardKey(self):
         # Get the latest forward secrecy key for a peer
+        key = ""
         conn = sqlite3.connect(self._core.peerDB, timeout=10)
         c = conn.cursor()
 
@@ -111,7 +114,17 @@ class OnionrUser:
 
         conn.commit()
         conn.close()
+        return newPub
 
+    def getGeneratedForwardKeys(self, peer):
+        # Fetch the keys we generated for the peer, that are still around
+        conn = sqlite3.connect(self._core.peerDB, timeout=10)
+        c = conn.cursor()
+        command = (peer,)
+        keyList = [] # list of tuples containing pub, private for peer
+        for result in c.execute("SELECT * FROM myForwardKeys where peer=?", command):
+            keyList.append((result[1], result[2]))
+        return keyList
 
     def addForwardKey(self, newKey):
         if not self._core._utils.validatePubKey(newKey):

@@ -21,7 +21,7 @@ import sqlite3, os, sys, time, math, base64, tarfile, getpass, simplecrypt, hash
 from onionrblockapi import Block
 
 import onionrutils, onionrcrypto, onionrproofs, onionrevents as events, onionrexceptions, onionrvalues
-import onionrblacklist, onionrchat
+import onionrblacklist, onionrchat, onionrusers
 import dbcreator
 if sys.version_info < (3, 6):
     try:
@@ -731,8 +731,16 @@ class Core:
         if len(jsonMeta) > 1000:
             raise onionrexceptions.InvalidMetadata('meta in json encoded form must not exceed 1000 bytes')
 
+        user = onionrusers.OnionrUser(self, symKey)
+
         # encrypt block metadata/sig/content
         if encryptType == 'sym':
+
+            # Encrypt block data with forward secrecy key first, but not meta
+            forwardEncrypted = onionrusers.OnionrUser(self, key=symKey).forwardEncrypt(data)
+            data = forwardEncrypted[0]
+            jsonMeta['newFSKey'] = forwardEncrypted[1]
+
             if len(symKey) < self.requirements.passwordLength:
                 raise onionrexceptions.SecurityError('Weak encryption key')
             jsonMeta = self._crypto.symmetricEncrypt(jsonMeta, key=symKey, returnEncoded=True).decode()
