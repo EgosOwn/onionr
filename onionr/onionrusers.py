@@ -115,7 +115,7 @@ class OnionrUser:
         time = self._core._utils.getEpoch()
         command = (self.publicKey, newPub, newPriv, time, expire)
 
-        c.execute("INSERT INTO myForwardKeys VALUES(?, ?, ?, ?);", command)
+        c.execute("INSERT INTO myForwardKeys VALUES(?, ?, ?, ?, ?);", command)
 
         conn.commit()
         conn.close()
@@ -123,7 +123,7 @@ class OnionrUser:
 
     def getGeneratedForwardKeys(self):
         # Fetch the keys we generated for the peer, that are still around
-        conn = sqlite3.connect(self._core.peerDB, timeout=10)
+        conn = sqlite3.connect(self._core.forwardKeysFile, timeout=10)
         c = conn.cursor()
         command = (self.publicKey,)
         keyList = [] # list of tuples containing pub, private for peer
@@ -131,7 +131,7 @@ class OnionrUser:
             keyList.append((result[1], result[2]))
         return keyList
 
-    def addForwardKey(self, newKey):
+    def addForwardKey(self, newKey, expire=432000):
         if not self._core._utils.validatePubKey(newKey):
             raise onionrexceptions.InvalidPubkey
         # Add a forward secrecy key for the peer
@@ -139,9 +139,9 @@ class OnionrUser:
         c = conn.cursor()
         # Prepare the insert
         time = self._core._utils.getEpoch()
-        command = (self.publicKey, newKey, time)
+        command = (self.publicKey, newKey, time, expire)
 
-        c.execute("INSERT INTO forwardKeys VALUES(?, ?, ?);", command)
+        c.execute("INSERT INTO forwardKeys VALUES(?, ?, ?, ?);", command)
 
         conn.commit()
         conn.close()

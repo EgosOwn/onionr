@@ -267,6 +267,10 @@ class OnionrUtils:
             blockType = myBlock.getMetadata('type') # we would use myBlock.getType() here, but it is bugged with encrypted blocks
             signer = self.bytesToStr(myBlock.signer)
             valid = myBlock.verifySig()
+
+            if myBlock.getMetadata('newFSKey') is not None:
+                onionrusers.OnionrUser(self._core, signer).addForwardKey(myBlock.getMetadata('newFSKey'))
+        
             try:
                 if len(blockType) <= 10:
                     self._core.updateBlockInfo(blockHash, 'dataType', blockType)

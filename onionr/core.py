@@ -738,11 +738,6 @@ class Core:
         # encrypt block metadata/sig/content
         if encryptType == 'sym':
 
-            # Encrypt block data with forward secrecy key first, but not meta
-            forwardEncrypted = onionrusers.OnionrUser(self, key=symKey).forwardEncrypt(data)
-            data = forwardEncrypted[0]
-            jsonMeta['newFSKey'] = forwardEncrypted[1]
-
             if len(symKey) < self.requirements.passwordLength:
                 raise onionrexceptions.SecurityError('Weak encryption key')
             jsonMeta = self._crypto.symmetricEncrypt(jsonMeta, key=symKey, returnEncoded=True).decode()
@@ -751,6 +746,14 @@ class Core:
             signer = self._crypto.symmetricEncrypt(signer, key=symKey, returnEncoded=True).decode()
         elif encryptType == 'asym':
             if self._utils.validatePubKey(asymPeer):
+                # Encrypt block data with forward secrecy key first, but not meta
+                try:
+                    forwardEncrypted = onionrusers.OnionrUser(self, asymPeer).forwardEncrypt(data)
+                    data = forwardEncrypted[0]
+                    meta['newFSKey'] = forwardEncrypted[1][0]
+                except onionrexceptions.InvalidPubkey:
+                    meta['newFSKey'] = onionrusers.OnionrUser(self, asymPeer).getGeneratedForwardKeys()[0][0]
+                jsonMeta = json.dumps(meta)
                 jsonMeta = self._crypto.pubKeyEncrypt(jsonMeta, asymPeer, encodedData=True, anonymous=True).decode()
                 data = self._crypto.pubKeyEncrypt(data, asymPeer, encodedData=True, anonymous=True).decode()
                 signature = self._crypto.pubKeyEncrypt(signature, asymPeer, encodedData=True, anonymous=True).decode()
