@@ -76,6 +76,8 @@ class Core:
                 os.mkdir(self.dataDir + 'blocks/')
             if not os.path.exists(self.blockDB):
                 self.createBlockDB()
+            if not os.path.exists(self.forwardKeysFile):
+                self.dbCreate.createForwardKeyDB()
 
             if os.path.exists(self.dataDir + '/hs/hostname'):
                 with open(self.dataDir + '/hs/hostname', 'r') as hs:

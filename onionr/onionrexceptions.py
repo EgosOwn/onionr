@@ -37,6 +37,9 @@ class InvalidPubkey(Exception):
 class KeyNotKnown(Exception):
     pass
 
+class DecryptionError(Exception):
+    pass
+
 # block exceptions
 class InvalidMetadata(Exception):
     pass
