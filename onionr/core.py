@@ -726,6 +726,13 @@ class Core:
         except AttributeError:
             pass
 
+        try:
+            forwardEncrypted = onionrusers.OnionrUser(self, asymPeer).forwardEncrypt(data)
+            data = forwardEncrypted[0]
+            meta['newFSKey'] = forwardEncrypted[1][0]
+        except onionrexceptions.InvalidPubkey:
+            meta['newFSKey'] = onionrusers.OnionrUser(self, asymPeer).getGeneratedForwardKeys()[0][0]
+            
         if sign:
             signature = self._crypto.edSign(jsonMeta.encode() + data, key=self._crypto.privKey, encodeResult=True)
             signer = self._crypto.pubKey
@@ -747,12 +754,6 @@ class Core:
         elif encryptType == 'asym':
             if self._utils.validatePubKey(asymPeer):
                 # Encrypt block data with forward secrecy key first, but not meta
-                try:
-                    forwardEncrypted = onionrusers.OnionrUser(self, asymPeer).forwardEncrypt(data)
-                    data = forwardEncrypted[0]
-                    meta['newFSKey'] = forwardEncrypted[1][0]
-                except onionrexceptions.InvalidPubkey:
-                    meta['newFSKey'] = onionrusers.OnionrUser(self, asymPeer).getGeneratedForwardKeys()[0][0]
                 jsonMeta = json.dumps(meta)
                 jsonMeta = self._crypto.pubKeyEncrypt(jsonMeta, asymPeer, encodedData=True, anonymous=True).decode()
                 data = self._crypto.pubKeyEncrypt(data, asymPeer, encodedData=True, anonymous=True).decode()

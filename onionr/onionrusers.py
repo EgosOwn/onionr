@@ -55,13 +55,13 @@ class OnionrUser:
         return decrypted
     
     def forwardEncrypt(self, data):
-        self.generateForwardKey()
         retData = ''
         forwardKey = self._getLatestForwardKey()
         if self._core._utils.validatePubKey(forwardKey):
             retData = self._core._crypto.pubKeyEncrypt(data, forwardKey, encodedData=True)
         else:
             raise onionrexceptions.InvalidPubkey("No valid forward key available for this user")
+        self.generateForwardKey()
         return (retData, forwardKey)
     
     def forwardDecrypt(self, encrypted):

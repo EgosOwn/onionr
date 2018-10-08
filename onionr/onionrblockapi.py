@@ -18,7 +18,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 
-import core as onionrcore, logger, config, onionrexceptions, nacl.exceptions
+import core as onionrcore, logger, config, onionrexceptions, nacl.exceptions, onionrusers
 import json, os, sys, datetime, base64
 
 class Block:
@@ -91,6 +91,12 @@ class Block:
                 self.signature = core._crypto.pubKeyDecrypt(self.signature, anonymous=anonymous, encodedData=encodedData)
                 self.signer = core._crypto.pubKeyDecrypt(self.signer, anonymous=anonymous, encodedData=encodedData)
                 self.signedData =  json.dumps(self.bmetadata) + self.bcontent.decode()
+                try:
+                    assert self.bmetadata['forwardEnc'] is True
+                except (AssertionError, KeyError) as e:
+                    pass
+                else:
+                    self.bcontent = onionrusers.OnionrUser(self.core, self.signer).forwardDecrypt()
             except nacl.exceptions.CryptoError:
                 pass
                 #logger.debug('Could not decrypt block. Either invalid key or corrupted data')
