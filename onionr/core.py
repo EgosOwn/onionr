@@ -714,8 +714,6 @@ class Core:
             meta['type'] = header
         meta['type'] = str(meta['type'])
 
-        jsonMeta = json.dumps(meta)
-
         if encryptType in ('asym', 'sym', ''):
             metadata['encryptType'] = encryptType
         else:
@@ -729,10 +727,13 @@ class Core:
         try:
             forwardEncrypted = onionrusers.OnionrUser(self, asymPeer).forwardEncrypt(data)
             data = forwardEncrypted[0]
-            meta['newFSKey'] = forwardEncrypted[1][0]
+            meta['newFSKey'] = forwardEncrypted[1]
+            meta['forwardEnc'] = True
         except onionrexceptions.InvalidPubkey:
-            meta['newFSKey'] = onionrusers.OnionrUser(self, asymPeer).getGeneratedForwardKeys()[0][0]
-            
+            onionrusers.OnionrUser(self, asymPeer).generateForwardKey()
+            fsKey = onionrusers.OnionrUser(self, asymPeer).getGeneratedForwardKeys()[0]
+            meta['newFSKey'] = fsKey[0]
+        jsonMeta = json.dumps(meta)
         if sign:
             signature = self._crypto.edSign(jsonMeta.encode() + data, key=self._crypto.privKey, encodeResult=True)
             signer = self._crypto.pubKey

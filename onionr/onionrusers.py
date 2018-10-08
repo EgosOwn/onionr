@@ -58,7 +58,7 @@ class OnionrUser:
         retData = ''
         forwardKey = self._getLatestForwardKey()
         if self._core._utils.validatePubKey(forwardKey):
-            retData = self._core._crypto.pubKeyEncrypt(data, forwardKey, encodedData=True)
+            retData = self._core._crypto.pubKeyEncrypt(data, forwardKey, encodedData=True, anonymous=True)
         else:
             raise onionrexceptions.InvalidPubkey("No valid forward key available for this user")
         self.generateForwardKey()
@@ -67,7 +67,8 @@ class OnionrUser:
     def forwardDecrypt(self, encrypted):
         retData = ""
         for key in self.getGeneratedForwardKeys():
-            retData = self._core._crypto.pubKeyDecrypt(encrypted, pubkey=key[1])
+            retData = self._core._crypto.pubKeyDecrypt(encrypted, pubkey=key[1], anonymous=True)
+            logger('decrypting ' + key + ' got ' + retData)
             if retData != False:
                 break
         else:
@@ -132,6 +133,7 @@ class OnionrUser:
         return keyList
 
     def addForwardKey(self, newKey, expire=432000):
+        logger.info(newKey)
         if not self._core._utils.validatePubKey(newKey):
             raise onionrexceptions.InvalidPubkey
         # Add a forward secrecy key for the peer
