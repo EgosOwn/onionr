@@ -262,7 +262,7 @@ class OnionrUtils:
         '''
         myBlock = Block(blockHash, self._core)
         if myBlock.isEncrypted:
-            myBlock.decrypt()
+            logger.warn(myBlock.decrypt())
         if (myBlock.isEncrypted and myBlock.decrypted) or (not myBlock.isEncrypted):
             blockType = myBlock.getMetadata('type') # we would use myBlock.getType() here, but it is bugged with encrypted blocks
             signer = self.bytesToStr(myBlock.signer)
@@ -287,6 +287,7 @@ class OnionrUtils:
             else:
                 self._core.updateBlockInfo(blockHash, 'expire', expireTime)
         else:
+            logger.info(myBlock.isEncrypted)
             logger.debug('Not processing metadata on encrypted block we cannot decrypt.')
 
     def escapeAnsi(self, line):

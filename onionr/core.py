@@ -727,12 +727,13 @@ class Core:
         try:
             forwardEncrypted = onionrusers.OnionrUser(self, asymPeer).forwardEncrypt(data)
             data = forwardEncrypted[0]
-            meta['newFSKey'] = forwardEncrypted[1]
             meta['forwardEnc'] = True
         except onionrexceptions.InvalidPubkey:
             onionrusers.OnionrUser(self, asymPeer).generateForwardKey()
-            fsKey = onionrusers.OnionrUser(self, asymPeer).getGeneratedForwardKeys()[0]
-            meta['newFSKey'] = fsKey[0]
+        else:
+            logger.info(forwardEncrypted)
+        fsKey = onionrusers.OnionrUser(self, asymPeer).getGeneratedForwardKeys()[0]
+        meta['newFSKey'] = fsKey[0]
         jsonMeta = json.dumps(meta)
         if sign:
             signature = self._crypto.edSign(jsonMeta.encode() + data, key=self._crypto.privKey, encodeResult=True)

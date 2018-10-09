@@ -97,12 +97,12 @@ class Block:
                     pass
                 else:
                     try:
-                        self.bcontent = onionrusers.OnionrUser(self.core, self.signer).forwardDecrypt(self.bcontent)
-                    except onionrexceptions.DecryptionError:
+                        self.bcontent = onionrusers.OnionrUser(self.getCore(), self.signer).forwardDecrypt(self.bcontent)
+                    except (onionrexceptions.DecryptionError, nacl.exceptions.CryptoError) as e:
+                        logger.error(str(e))
                         pass
             except nacl.exceptions.CryptoError:
-                pass
-                #logger.debug('Could not decrypt block. Either invalid key or corrupted data')
+                logger.debug('Could not decrypt block. Either invalid key or corrupted data')
             else:
                 retData = True
                 self.decrypted = True

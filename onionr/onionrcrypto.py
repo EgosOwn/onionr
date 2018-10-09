@@ -142,7 +142,7 @@ class OnionrCrypto:
             retVal = anonBox.encrypt(data, encoder=encoding)
         return retVal
 
-    def pubKeyDecrypt(self, data, pubkey='', anonymous=False, encodedData=False):
+    def pubKeyDecrypt(self, data, pubkey='', privkey='', anonymous=False, encodedData=False):
         '''pubkey decrypt (Curve25519, taken from Ed25519 pubkey)'''
         retVal = False
         if encodedData:
@@ -154,7 +154,11 @@ class OnionrCrypto:
             ourBox = nacl.public.Box(ownKey, pubkey)
             decrypted = ourBox.decrypt(data, encoder=encoding)
         elif anonymous:
-            anonBox = nacl.public.SealedBox(ownKey)
+            if self._core._utils.validatePubKey(privkey):
+                privkey = nacl.signing.SigningKey(seed=privkey, encoder=nacl.encoding.Base32Encoder()).to_curve25519_private_key()
+                anonBox = nacl.public.SealedBox(privkey)
+            else:
+                anonBox = nacl.public.SealedBox(ownKey)
             decrypted = anonBox.decrypt(data, encoder=encoding)
         return decrypted
 
