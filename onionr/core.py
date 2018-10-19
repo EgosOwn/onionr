@@ -732,6 +732,7 @@ class Core:
             onionrusers.OnionrUser(self, asymPeer).generateForwardKey()
         else:
             logger.info(forwardEncrypted)
+        onionrusers.OnionrUser(self, asymPeer).generateForwardKey()
         fsKey = onionrusers.OnionrUser(self, asymPeer).getGeneratedForwardKeys()[0]
         meta['newFSKey'] = fsKey[0]
         jsonMeta = json.dumps(meta)

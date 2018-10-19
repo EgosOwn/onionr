@@ -128,7 +128,7 @@ class OnionrCrypto:
             encoding = nacl.encoding.RawEncoder
 
         if self.privKey != None and not anonymous:
-            ownKey = nacl.signing.SigningKey(seed=self.privKey, encoder=nacl.encoding.Base32Encoder)
+            ownKey = nacl.signing.SigningKey(seed=self.privKey, encoder=nacl.encoding.Base32Encoder).to_curve25519_private_key()
             key = nacl.signing.VerifyKey(key=pubkey, encoder=nacl.encoding.Base32Encoder).to_curve25519_public_key()
             ourBox = nacl.public.Box(ownKey, key)
             retVal = ourBox.encrypt(data.encode(), encoder=encoding)

@@ -58,6 +58,7 @@ class OnionrUser:
     def forwardEncrypt(self, data):
         retData = ''
         forwardKey = self._getLatestForwardKey()
+        logger.info('using ' + forwardKey)
         if self._core._utils.validatePubKey(forwardKey):
             retData = self._core._crypto.pubKeyEncrypt(data, forwardKey, encodedData=True, anonymous=True)
         else:
@@ -87,7 +88,7 @@ class OnionrUser:
         conn = sqlite3.connect(self._core.peerDB, timeout=10)
         c = conn.cursor()
 
-        for row in c.execute("SELECT forwardKey FROM forwardKeys WHERE peerKey = ? AND date=(SELECT max(date) FROM forwardKeys)", (self.publicKey,)):
+        for row in c.execute("SELECT forwardKey FROM forwardKeys WHERE peerKey = ? order by date desc", (self.publicKey,)):
             key = row[0]
             break
 
@@ -99,7 +100,7 @@ class OnionrUser:
         conn = sqlite3.connect(self._core.peerDB, timeout=10)
         c = conn.cursor()
         keyList = []
-        for row in c.execute("SELECT forwardKey FROM forwardKeys WHERE peerKey = ?", (self.publicKey,)):
+        for row in c.execute("SELECT forwardKey FROM forwardKeys WHERE peerKey = ? order by date desc", (self.publicKey,)):
             key = row[0]
             keyList.append(key)
 
