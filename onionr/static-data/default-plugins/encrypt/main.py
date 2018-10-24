@@ -74,8 +74,16 @@ class PlainEncryption:
             print('ONIONR ENCRYPTED DATA %s END ENCRYPTED DATA' % (encrypted,))
     def decrypt(self, data):
         plaintext = ""
-        encrypted = data
-        
+        encrypted = data.replace('ONIONR ENCRYPTED DATA ', '').replace('END ENCRYPTED DATA', '')
+        myPub = self.api.get_core()._crypto.pubKey
+        decrypted = self.api.get_core()._crypto.pubKeyDecrypt(encrypted, pubkey, anonymous=True, encodedData=True)
+        if decrypted == False:
+            print("Decryption failed")
+        else:
+            data = json.loads(decrypted)
+            if not self.api.get_core()._crypto.edVerify(data['data'], data['signer'], data['sig']):
+                print("WARNING: THIS MESSAGE HAS AN INVALID SIGNATURE")
+            print(self.api.get_core()._utils.escapeAnsi(data['data']))
         return
     
 

@@ -144,7 +144,7 @@ class OnionrCrypto:
 
     def pubKeyDecrypt(self, data, pubkey='', privkey='', anonymous=False, encodedData=False):
         '''pubkey decrypt (Curve25519, taken from Ed25519 pubkey)'''
-        retVal = False
+        decrypted = False
         if encodedData:
             encoding = nacl.encoding.Base64Encoder
         else:
