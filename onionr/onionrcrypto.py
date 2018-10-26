@@ -159,7 +159,6 @@ class OnionrCrypto:
                 anonBox = nacl.public.SealedBox(privkey)
             else:
                 anonBox = nacl.public.SealedBox(ownKey)
-            print(data)
             decrypted = anonBox.decrypt(data, encoder=encoding)
         return decrypted
 

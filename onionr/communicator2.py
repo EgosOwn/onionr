@@ -94,7 +94,6 @@ class OnionrCommunicatorDaemon:
         OnionrCommunicatorTimers(self, self.getBlocks, self._core.config.get('timers.getBlocks'), requiresPeer=True)
         OnionrCommunicatorTimers(self, self.clearOfflinePeer, 58)
         OnionrCommunicatorTimers(self, self.daemonTools.cleanOldBlocks, 65)
-        #OnionrCommunicatorTimers(self, self.lookupKeys, 60, requiresPeer=True)
         OnionrCommunicatorTimers(self, self.lookupAdders, 60, requiresPeer=True)
         OnionrCommunicatorTimers(self, self.daemonTools.cooldownPeer, 30, requiresPeer=True)
         netCheckTimer = OnionrCommunicatorTimers(self, self.daemonTools.netCheck, 600)
@@ -129,18 +128,6 @@ class OnionrCommunicatorDaemon:
         self._core.killSockets = True
         self._core._utils.localCommand('shutdown') # shutdown the api
         time.sleep(0.5)
-
-    def lookupKeys(self):
-        '''Lookup new keys'''
-        logger.debug('Looking up new keys...')
-        tryAmount = 1
-        for i in range(tryAmount): # amount of times to ask peers for new keys
-            # Download new key list from random online peers
-            peer = self.pickOnlinePeer()
-            newKeys = self.peerAction(peer, action='kex')
-            self._core._utils.mergeKeys(newKeys)
-        self.decrementThreadCount('lookupKeys')
-        return
 
     def lookupAdders(self):
         '''Lookup new peer addresses'''
@@ -465,10 +452,6 @@ class OnionrCommunicatorDaemon:
                 open(self._core.dataDir + '.runcheck', 'w+').close()
             elif cmd[0] == 'connectedPeers':
                 self.printOnlinePeers()
-            elif cmd[0] == 'kex':
-                for i in self.timers:
-                    if i.timerFunction.__name__ == 'lookupKeys':
-                        i.count = (i.frequency - 1)
             elif cmd[0] == 'pex':
                 for i in self.timers:
                     if i.timerFunction.__name__ == 'lookupAdders':
