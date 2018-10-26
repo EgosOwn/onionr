@@ -72,18 +72,34 @@ class PlainEncryption:
             encrypted = self.api.get_core()._crypto.pubKeyEncrypt(plaintext, pubkey, anonymous=True, encodedData=True)
             encrypted = self.api.get_core()._utils.bytesToStr(encrypted)
             print('ONIONR ENCRYPTED DATA %s END ENCRYPTED DATA' % (encrypted,))
-    def decrypt(self, data):
+    def decrypt(self):
         plaintext = ""
+        data = ""
+        logger.info("Please enter your message (ctrl-d or -q to stop):")
+        try:
+            for line in sys.stdin:
+                if line == '-q\n':
+                        break
+                data += line
+        except KeyboardInterrupt:
+            sys.exit(1)
+        if len(data) <= 1:
+            return
         encrypted = data.replace('ONIONR ENCRYPTED DATA ', '').replace('END ENCRYPTED DATA', '')
         myPub = self.api.get_core()._crypto.pubKey
-        decrypted = self.api.get_core()._crypto.pubKeyDecrypt(encrypted, pubkey, anonymous=True, encodedData=True)
+        decrypted = self.api.get_core()._crypto.pubKeyDecrypt(encrypted, privkey=self.api.get_core()._crypto.privKey, anonymous=True, encodedData=True)
         if decrypted == False:
             print("Decryption failed")
         else:
             data = json.loads(decrypted)
-            if not self.api.get_core()._crypto.edVerify(data['data'], data['signer'], data['sig']):
-                print("WARNING: THIS MESSAGE HAS AN INVALID SIGNATURE")
-            print(self.api.get_core()._utils.escapeAnsi(data['data']))
+            print(data['data'])
+            try:
+                logger.info("Signing public key: %s" % (data['signer'],))
+                assert self.api.get_core()._crypto.edVerify(data['data'], data['signer'], data['sig']) != False
+            except (AssertionError, KeyError) as e:
+                logger.warn("WARNING: THIS MESSAGE HAS A MISSING OR INVALID SIGNATURE")
+            else:
+                logger.info("Message has good signature.")
         return
     
 
