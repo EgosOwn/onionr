@@ -616,7 +616,10 @@ class OnionrUtils:
             proxies = {'http': 'socks4a://127.0.0.1:' + str(port), 'https': 'socks4a://127.0.0.1:' + str(port)}
             r = requests.get(url, headers=headers, proxies=proxies, allow_redirects=False, timeout=(15, 30))
             # Check server is using same API version as us
-            if r.headers['api'] != str(API_VERSION):
+            try:
+                if r.headers['api'] != str(API_VERSION):
+                    raise onionrexceptions.InvalidAPIVersion
+            except KeyError:
                 raise onionrexceptions.InvalidAPIVersion
             retData = r.text
         except KeyboardInterrupt:
