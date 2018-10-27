@@ -22,7 +22,7 @@ from flask import request, Response, abort, send_from_directory
 from multiprocessing import Process
 from gevent.pywsgi import WSGIServer
 import sys, random, threading, hmac, hashlib, base64, time, math, os, json
-from core import Core
+import core
 from onionrblockapi import Block
 import onionrutils, onionrexceptions, onionrcrypto, blockimporter, onionrevents as events, logger, config
 
@@ -69,7 +69,7 @@ class API:
         logger.debug('%s not in %s' % (path, mimetypes))
         return 'text/plain'
 
-    def __init__(self, debug):
+    def __init__(self, debug, API_VERSION):
         '''
             Initialize the api server, preping variables for later use
 
@@ -88,7 +88,7 @@ class API:
 
         self.debug = debug
         self._privateDelayTime = 3
-        self._core = Core()
+        self._core = core.Core()
         self._crypto = onionrcrypto.OnionrCrypto(self._core)
         self._utils = onionrutils.OnionrUtils(self._core)
         app = flask.Flask(__name__)
@@ -133,7 +133,7 @@ class API:
                 resp.headers["Content-Security-Policy"] =  "default-src 'none'; script-src 'none'; object-src 'none'; style-src data: 'unsafe-inline'; img-src data:; media-src 'none'; frame-src 'none'; font-src 'none'; connect-src 'none'"
             resp.headers['X-Frame-Options'] = 'deny'
             resp.headers['X-Content-Type-Options'] = "nosniff"
-            resp.headers['server'] = 'Onionr'
+            resp.headers['api'] = API_VERSION
 
             # reset to text/plain to help prevent browser attacks
             self.mimeType = 'text/plain'

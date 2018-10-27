@@ -22,6 +22,7 @@ import getpass, sys, requests, os, socket, hashlib, logger, sqlite3, config, bin
 import nacl.signing, nacl.encoding
 from onionrblockapi import Block
 import onionrexceptions
+from onionr import API_VERSION
 from defusedxml import minidom
 import onionrevents
 import pgpwords, onionrusers, storagecounter
@@ -614,11 +615,16 @@ class OnionrUtils:
         try:
             proxies = {'http': 'socks4a://127.0.0.1:' + str(port), 'https': 'socks4a://127.0.0.1:' + str(port)}
             r = requests.get(url, headers=headers, proxies=proxies, allow_redirects=False, timeout=(15, 30))
+            # Check server is using same API version as us
+            if r.headers['api'] != str(API_VERSION):
+                raise onionrexceptions.InvalidAPIVersion
             retData = r.text
         except KeyboardInterrupt:
             raise KeyboardInterrupt
         except ValueError as e:
             logger.debug('Failed to make request', error = e)
+        except onionrexceptions.InvalidAPIVersion:
+            logger.debug("Node is using different API version :(")
         except requests.exceptions.RequestException as e:
             if not 'ConnectTimeoutError' in str(e) and not 'Request rejected or failed' in str(e):
                 logger.debug('Error: %s' % str(e))

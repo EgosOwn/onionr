@@ -30,7 +30,6 @@ import webbrowser
 from threading import Thread
 import api, core, config, logger, onionrplugins as plugins, onionrevents as events
 import onionrutils
-from onionrutils import OnionrUtils
 from netcontroller import NetController
 from onionrblockapi import Block
 import onionrproofs, onionrexceptions, onionrusers
@@ -98,7 +97,7 @@ class Onionr:
             logger.set_level(logger.LEVEL_INFO)
 
         self.onionrCore = core.Core()
-        self.onionrUtils = OnionrUtils(self.onionrCore)
+        self.onionrUtils = onionrutils.OnionrUtils(self.onionrCore)
 
         # Handle commands
 
@@ -636,7 +635,7 @@ class Onionr:
         '''
         communicatorDaemon = './communicator2.py'
 
-        apiThread = Thread(target=api.API, args=(self.debug,))
+        apiThread = Thread(target=api.API, args=(self.debug,API_VERSION))
         apiThread.start()
         try:
             time.sleep(3)
