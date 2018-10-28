@@ -19,7 +19,7 @@
 '''
 
 import nacl.encoding, nacl.hash, nacl.utils, time, math, threading, binascii, logger, sys, base64, json
-import core
+import core, config
 
 class DataPOW:
     def __init__(self, data, forceDifficulty=0, threadCount = 5):
@@ -27,6 +27,7 @@ class DataPOW:
         self.difficulty = 0
         self.data = data
         self.threadCount = threadCount
+        config.reload()
 
         if forceDifficulty == 0:
             dataLen = sys.getsizeof(data)
@@ -128,7 +129,7 @@ class POW:
         dataLen = len(data) + len(json.dumps(metadata))
         self.difficulty = math.floor(dataLen / 1000000)
         if self.difficulty <= 2:
-            self.difficulty = 4
+            self.difficulty = int(config.get('general.minimum_block_pow'))
 
         try:
             self.data = self.data.encode()
@@ -144,7 +145,7 @@ class POW:
         for i in range(max(1, threadCount)):
             t = threading.Thread(name = 'thread%s' % i, target = self.pow, args = (True,myCore))
             t.start()
-        
+        self.myCore = myCore
         return
 
     def pow(self, reporting = False, myCore = None):
