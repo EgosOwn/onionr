@@ -24,6 +24,8 @@ if sys.version_info[0] == 3 and sys.version_info[1] < 6:
     from dependencies import secrets
 elif sys.version_info[0] == 3 and sys.version_info[1] >= 6:
     import secrets
+import config
+config.reload()
 
 class OnionrCrypto:
     def __init__(self, coreInstance):

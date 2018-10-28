@@ -20,6 +20,29 @@
 
 import nacl.encoding, nacl.hash, nacl.utils, time, math, threading, binascii, logger, sys, base64, json
 import core, config
+config.reload()
+
+def getHashDifficulty(h):
+    '''
+        Return the amount of leading zeroes in a hex hash string (h)
+    '''
+    difficulty = 0
+    assert type(h) is str
+    for character in h:
+        if character == '0':
+            difficulty += 1
+    return difficulty
+
+def hashMeetsDifficulty(h):
+    '''
+        Return bool for a hash string to see if it meets pow difficulty defined in config
+    '''
+    hashDifficulty = getHashDifficulty(h)
+    expected = int(config.get('minimum_block_pow'))
+    if hashDifficulty >= expected:
+        return True
+    else:
+        return False
 
 class DataPOW:
     def __init__(self, data, forceDifficulty=0, threadCount = 5):

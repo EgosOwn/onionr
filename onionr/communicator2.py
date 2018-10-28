@@ -180,6 +180,7 @@ class OnionrCommunicatorDaemon:
                             if not i in existingBlocks:
                                 # if block does not exist on disk and is not already in block queue
                                 if i not in self.blockQueue and not self._core._blacklist.inBlacklist(i):
+                                    # TODO ensure block starts with minimum difficulty before adding to queue
                                     self.blockQueue.append(i) # add blocks to download queue
         self.decrementThreadCount('lookupBlocks')
         return
