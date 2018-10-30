@@ -103,31 +103,21 @@ class Onionr:
 
         self.debug = False # Whole application debugging
 
-        if os.path.exists('data-encrypted.dat'):
-            while True:
-                print('Enter password to decrypt:')
-                password = getpass.getpass()
-                result = self.onionrCore.dataDirDecrypt(password)
-                if os.path.exists(self.dataDir):
-                    break
-                else:
-                    logger.error('Failed to decrypt: ' + result[1], timestamp = False)
-        else:
-            # If data folder does not exist
-            if not data_exists:
-                if not os.path.exists(self.dataDir + 'blocks/'):
-                    os.mkdir(self.dataDir + 'blocks/')
+        # If data folder does not exist
+        if not data_exists:
+            if not os.path.exists(self.dataDir + 'blocks/'):
+                os.mkdir(self.dataDir + 'blocks/')
 
-            # Copy default plugins into plugins folder
-            if not os.path.exists(plugins.get_plugins_folder()):
-                if os.path.exists('static-data/default-plugins/'):
-                    names = [f for f in os.listdir("static-data/default-plugins/") if not os.path.isfile(f)]
-                    shutil.copytree('static-data/default-plugins/', plugins.get_plugins_folder())
+        # Copy default plugins into plugins folder
+        if not os.path.exists(plugins.get_plugins_folder()):
+            if os.path.exists('static-data/default-plugins/'):
+                names = [f for f in os.listdir("static-data/default-plugins/") if not os.path.isfile(f)]
+                shutil.copytree('static-data/default-plugins/', plugins.get_plugins_folder())
 
-                    # Enable plugins
-                    for name in names:
-                        if not name in plugins.get_enabled_plugins():
-                            plugins.enable(name, self)
+                # Enable plugins
+                for name in names:
+                    if not name in plugins.get_enabled_plugins():
+                        plugins.enable(name, self)
 
         for name in plugins.get_enabled_plugins():
             if not os.path.exists(plugins.get_plugin_data_folder(name)):
@@ -264,11 +254,6 @@ class Onionr:
             command = ''
         finally:
             self.execute(command)
-
-        if not self._developmentMode:
-            encryptionPassword = self.onionrUtils.getPassword('Enter password to encrypt directory: ')
-            self.onionrCore.dataDirEncrypt(encryptionPassword)
-            shutil.rmtree(self.dataDir)
 
         return
 

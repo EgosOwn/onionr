@@ -25,10 +25,10 @@ if sys.version_info[0] == 3 and sys.version_info[1] < 6:
 elif sys.version_info[0] == 3 and sys.version_info[1] >= 6:
     import secrets
 import config
-config.reload()
 
 class OnionrCrypto:
     def __init__(self, coreInstance):
+        config.reload()
         self._core = coreInstance
         self._keyFile = self._core.dataDir + 'keys.txt'
         self.keyPowFile = self._core.dataDir + 'keyPow.txt'

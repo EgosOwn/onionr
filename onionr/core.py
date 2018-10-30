@@ -17,7 +17,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import sqlite3, os, sys, time, math, base64, tarfile, getpass, simplecrypt, hashlib, nacl, logger, json, netcontroller, math, config
+import sqlite3, os, sys, time, math, base64, tarfile, nacl, logger, json, netcontroller, math, config
 from onionrblockapi import Block
 
 import onionrutils, onionrcrypto, onionrproofs, onionrevents as events, onionrexceptions, onionrvalues
@@ -276,14 +276,6 @@ class Core:
 
         return data
 
-    def _getSha3Hash(self, data):
-        hasher = hashlib.sha3_256()
-        if not type(data) is bytes:
-            data = data.encode()
-        hasher.update(data)
-        dataHash = hasher.hexdigest()
-        return dataHash
-
     def setData(self, data):
         '''
             Set the data assciated with a hash
@@ -294,7 +286,7 @@ class Core:
         if not type(data) is bytes:
             data = data.encode()
             
-        dataHash = self._getSha3Hash(data)
+        dataHash = self._crypto.sha3Hash(data)
 
         if type(dataHash) is bytes:
             dataHash = dataHash.decode()
@@ -319,42 +311,6 @@ class Core:
 
         return dataHash
 
-    def dataDirEncrypt(self, password):
-        '''
-            Encrypt the data directory on Onionr shutdown
-        '''
-        if os.path.exists('data.tar'):
-            os.remove('data.tar')
-        tar = tarfile.open("data.tar", "w")
-        for name in ['data']:
-            tar.add(name)
-        tar.close()
-        tarData = open('data.tar', 'r',  encoding = "ISO-8859-1").read()
-        encrypted = simplecrypt.encrypt(password, tarData)
-        open('data-encrypted.dat', 'wb').write(encrypted)
-        os.remove('data.tar')
-
-        return
-
-    def dataDirDecrypt(self, password):
-        '''
-            Decrypt the data directory on startup
-        '''
-        if not os.path.exists('data-encrypted.dat'):
-            return (False, 'encrypted archive does not exist')
-        data = open('data-encrypted.dat', 'rb').read()
-        try:
-            decrypted = simplecrypt.decrypt(password, data)
-        except simplecrypt.DecryptionException:
-            return (False, 'wrong password (or corrupted archive)')
-        else:
-            open('data.tar', 'wb').write(decrypted)
-            tar = tarfile.open('data.tar')
-            tar.extractall()
-            tar.close()
-
-        return (True, '')
-
     def daemonQueue(self):
         '''
             Gives commands to the communication proccess/daemon by reading an sqlite3 database
@@ -363,7 +319,7 @@ class Core:
         '''
         retData = False
         if not os.path.exists(self.queueDB):
-            self.makeDaemonDB()
+            self.dbCreate.createDaemonDB()
         else:
             conn = sqlite3.connect(self.queueDB, timeout=10)
             c = conn.cursor()
@@ -372,7 +328,7 @@ class Core:
                     retData = row
                     break
             except sqlite3.OperationalError:
-                self.makeDaemonDB()
+                self.dbCreate.createDaemonDB()
             else:
                 if retData != False:
                     c.execute('DELETE FROM commands WHERE id=?;', (retData[3],))
@@ -382,16 +338,6 @@ class Core:
         events.event('queue_pop', data = {'data': retData}, onionr = None)
 
         return retData
-
-    def makeDaemonDB(self):
-        '''generate the daemon queue db'''
-        conn = sqlite3.connect(self.queueDB, timeout=10)
-        c = conn.cursor()
-        # Create table
-        c.execute('''CREATE TABLE commands
-                    (id integer primary key autoincrement, command text, data text, date text)''')
-        conn.commit()
-        conn.close()
 
     def daemonQueueAdd(self, command, data=''):
         '''

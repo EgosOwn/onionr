@@ -2,8 +2,8 @@
     "general" : {
         "dev_mode": true,
         "display_header" : true,
-        "minimum_block_pow": 6,
-        "minimum_send_pow": 6,
+        "minimum_block_pow": 5,
+        "minimum_send_pow": 5,
 
         "direct_connect" : {
             "respond" : true,

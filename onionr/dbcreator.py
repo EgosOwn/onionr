@@ -133,3 +133,15 @@ class DBCreator:
         conn.commit()
         conn.close()
         return
+    
+    def createDaemonDB(self):
+        '''
+            Create the daemon queue database
+        '''
+        conn = sqlite3.connect(self.core.queueDB, timeout=10)
+        c = conn.cursor()
+        # Create table
+        c.execute('''CREATE TABLE commands
+                    (id integer primary key autoincrement, command text, data text, date text)''')
+        conn.commit()
+        conn.close()

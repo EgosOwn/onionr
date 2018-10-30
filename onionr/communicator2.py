@@ -83,7 +83,7 @@ class OnionrCommunicatorDaemon:
         self._chat = onionrchat.OnionrChat(self)
 
         if debug or developmentMode:
-            OnionrCommunicatorTimers(self, self.heartbeat, 10)
+            OnionrCommunicatorTimers(self, self.heartbeat, 30)
 
         # Set timers, function reference, seconds
         # requiresPeer True means the timer function won't fire if we have no connected peers
@@ -500,9 +500,7 @@ class OnionrCommunicatorDaemon:
 
     def announce(self, peer):
         '''Announce to peers our address'''
-        if self.daemonTools.announceNode():
-            logger.info('Successfully introduced node to ' + peer)
-        else:
+        if self.daemonTools.announceNode() == False:
             logger.warn('Could not introduce node.')
 
     def detectAPICrash(self):

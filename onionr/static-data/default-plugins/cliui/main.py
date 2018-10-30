@@ -53,7 +53,7 @@ class OnionrCLIUI:
 
         while showMenu:
             if firstRun:
-                print("please wait while Onionr starts...")
+                logger.info("please wait while Onionr starts...")
                 daemon = subprocess.Popen(["./onionr.py", "start"], stdin=subprocess.PIPE, stdout=subprocess.DEVNULL)
                 time.sleep(30)
                 firstRun = False

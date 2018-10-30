@@ -20,7 +20,6 @@
 
 import nacl.encoding, nacl.hash, nacl.utils, time, math, threading, binascii, logger, sys, base64, json
 import core, config
-config.reload()
 
 def getHashDifficulty(h):
     '''
@@ -37,6 +36,7 @@ def hashMeetsDifficulty(h):
     '''
         Return bool for a hash string to see if it meets pow difficulty defined in config
     '''
+    config.reload()
     hashDifficulty = getHashDifficulty(h)
     expected = int(config.get('minimum_block_pow'))
     if hashDifficulty >= expected:
