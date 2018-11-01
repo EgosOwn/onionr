@@ -133,6 +133,34 @@ class OnionrMail:
                         print(draw_border(self.myCore._utils.escapeAnsi(readBlock.bcontent.decode().strip())))
         return
     
+    def sentbox(self):
+        '''
+            Display sent mail messages
+        '''
+        entering = True
+        while entering:
+            print('''1. List Sent Messages
+2. Read sent message
+3. Delete Sent Message
+4. Main Menu
+''')
+            try:
+                choice = logger.readline('>').lower()
+            except (KeyboardInterrupt, EOFError):
+                entering = False
+            else:
+                if choice in ('1', 'list'):
+                    print(getSentList())
+                elif choice in ('2', 'read'):
+                    pass
+                else:
+                    print('Not implemented')
+                
+        return
+    
+    def getSentList(self):
+        return ""
+
     def draftMessage(self):
         message = ''
         newLine = ''
@@ -185,7 +213,7 @@ class OnionrMail:
             if choice in (self.strings.mainMenuChoices[0], '1'):
                 self.inbox()
             elif choice in (self.strings.mainMenuChoices[1], '2'):
-                logger.warn('not implemented yet')
+                self.sentbox()
             elif choice in (self.strings.mainMenuChoices[2], '3'):
                 self.draftMessage()
             elif choice in (self.strings.mainMenuChoices[3], '4'):
