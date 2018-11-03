@@ -20,24 +20,27 @@
 import sqlite3, os
 import core
 class SentBox:
-    def __init__(self, core):
-        assert isinstance(core, core.Core)
-        self.dbLocation = core.dataDir + 'sentbox.db'
+    def __init__(self, mycore):
+        assert isinstance(mycore, core.Core)
+        self.dbLocation = mycore.dataDir + 'sentbox.db'
         if not os.path.exists(self.dbLocation):
             self.createDB()
         self.conn = sqlite3.connect(self.dbLocation)
         self.cursor = self.conn.cursor()
+        self.core = mycore
         return
     
     def createDB(self):
-        self.cursor.execute('''CREATE TABLE sent(
+        conn = sqlite3.connect(self.dbLocation)
+        cursor = conn.cursor()
+        cursor.execute('''CREATE TABLE sent(
             hash id not null,
             peer text not null,
             message text not null,
             date int not null
             );
         ''')
-        self.conn.commit()
+        conn.commit()
         return
 
     def listSent(self):
@@ -46,8 +49,14 @@ class SentBox:
             retData.append({'hash': entry[0], 'peer': entry[1], 'message': entry[2], 'date': entry[3]})
         return retData
     
-    def addToSent(self, blockID):
+    def addToSent(self, blockID, peer, message):
+        args = (blockID, peer, message, self.core._utils.getEpoch())
+        self.cursor.execute('INSERT INTO sent VALUES(?, ?, ?, ?)', args)
+        self.conn.commit()
         return
     
     def removeSent(self, blockID):
+        args = (blockID,)
+        self.cursor.execute('DELETE FROM sent where hash=?', args)
+        self.conn.commit()
         return

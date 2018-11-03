@@ -101,7 +101,6 @@ class DataPOW:
             endTime = math.floor(time.time())
             if self.reporting:
                 logger.debug('Found token after %s seconds: %s' % (endTime - startTime, token), timestamp=True)
-                logger.debug('Random value was: %s' % base64.b64encode(rand).decode())
             self.result = (token, rand)
 
     def shutdown(self):
@@ -201,7 +200,6 @@ class POW:
             endTime = math.floor(time.time())
             if self.reporting:
                 logger.debug('Found token after %s seconds: %s' % (endTime - startTime, token), timestamp=True)
-                logger.debug('Random value was: %s' % base64.b64encode(rand).decode())
 
     def shutdown(self):
         self.hashing = False

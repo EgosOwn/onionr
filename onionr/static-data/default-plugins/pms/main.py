@@ -22,8 +22,12 @@
 import logger, config, threading, time, readline, datetime
 from onionrblockapi import Block
 import onionrexceptions, onionrusers
-import locale
+import locale, sys, os
+
 locale.setlocale(locale.LC_ALL, '')
+
+sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
+import sentboxdb # import after path insert
 
 plugin_name = 'pms'
 PLUGIN_VERSION = '0.0.1'
@@ -60,6 +64,9 @@ class OnionrMail:
         #self.dataFolder = pluginapi.get_data_folder()
         self.strings = MailStrings(self)
 
+        self.sentboxTools = sentboxdb.SentBox(self.myCore)
+        self.sentboxList = []
+        self.sentMessages = {}
         return
     
     def inbox(self):
@@ -139,27 +146,35 @@ class OnionrMail:
         '''
         entering = True
         while entering:
-            print('''1. List Sent Messages
-2. Read sent message
-3. Delete Sent Message
-4. Main Menu
-''')
+            self.getSentList()
+            print('Enter block number or -q to return')
             try:
-                choice = logger.readline('>').lower()
-            except (KeyboardInterrupt, EOFError):
+                choice = input('>')
+            except (EOFError, KeyboardInterrupt) as e:
                 entering = False
             else:
-                if choice in ('1', 'list'):
-                    print(getSentList())
-                elif choice in ('2', 'read'):
-                    pass
+                if choice == '-q':
+                    entering = False
                 else:
-                    print('Not implemented')
-                
+                    try:
+                        self.sentboxList[int(choice) - 1]
+                    except IndexError:
+                        print('Invalid block')
+                    else:
+                        logger.info('Sent to: ' + self.sentMessages[self.sentboxList[int(choice) - 1]][1])
+                        # Print ansi escaped sent message
+                        print(self.myCore._utils.escapeAnsi(self.sentMessages[self.sentboxList[int(choice) - 1]][0]))
+                        input('Press enter to continue...')
+
         return
     
     def getSentList(self):
-        return ""
+        count = 1
+        for i in self.sentboxTools.listSent():
+            self.sentboxList.append(i['hash'])
+            self.sentMessages[i['hash']] = (i['message'], i['peer'])
+            print('%s. %s - %s - %s' % (count, i['hash'], i['peer'][:12], i['date']))
+            count += 1
 
     def draftMessage(self):
         message = ''
@@ -197,8 +212,8 @@ class OnionrMail:
 
         print('Inserting encrypted message as Onionr block....')
 
-        self.myCore.insertBlock(message, header='pm', encryptType='asym', asymPeer=recip, sign=True)
-
+        blockID = self.myCore.insertBlock(message, header='pm', encryptType='asym', asymPeer=recip, sign=True)
+        self.sentboxTools.addToSent(blockID, recip, message)
     def menu(self):
         choice = ''
         while True:
