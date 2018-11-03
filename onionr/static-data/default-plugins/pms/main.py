@@ -131,7 +131,7 @@ class OnionrMail:
                 else:
                     cancel = ''
                     readBlock.verifySig()
-                    print('Message recieved from %s' % (readBlock.signer,))
+                    print('Message recieved from %s' % (self.myCore._utils.bytesToStr(readBlock.signer,)))
                     print('Valid signature:', readBlock.validSig)
                     if not readBlock.validSig:
                         logger.warn('This message has an INVALID signature. ANYONE could have sent this message.')

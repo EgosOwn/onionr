@@ -683,13 +683,10 @@ class Onionr:
             # define stats messages here
             totalBlocks = len(Block.getBlocks())
             signedBlocks = len(Block.getBlocks(signed = True))
-            powToken = self.onionrCore._crypto.pubKeyPowToken
             messages = {
                 # info about local client
                 'Onionr Daemon Status' : ((logger.colors.fg.green + 'Online') if self.onionrUtils.isCommunicatorRunning(timeout = 9) else logger.colors.fg.red + 'Offline'),
                 'Public Key' : self.onionrCore._crypto.pubKey,
-                'POW Token' : powToken,
-                'Combined' : self.onionrCore._crypto.pubKey + '-' + powToken,
                 'Human readable public key' : self.onionrCore._utils.getHumanReadableID(),
                 'Node Address' : self.get_hostname(),
 
