@@ -1,5 +1,5 @@
 '''
-    Onionr - P2P Microblogging Platform & Social network
+    Onionr - P2P Anonymous Storage Network
 
     This default plugin handles private messages in an email like fashion
 '''
@@ -48,15 +48,14 @@ class MailStrings:
         self.mailInstance = mailInstance
 
         self.programTag = 'OnionrMail v%s' % (PLUGIN_VERSION)
-        choices = ['view inbox', 'view sentbox', 'send message', 'help', 'quit']
+        choices = ['view inbox', 'view sentbox', 'send message', 'quit']
         self.mainMenuChoices = choices
         self.mainMenu = '''\n
 -----------------
 1. %s
 2. %s
 3. %s
-4. %s
-5. %s''' % (choices[0], choices[1], choices[2], choices[3], choices[4])
+4. %s''' % (choices[0], choices[1], choices[2], choices[3])
 
 class OnionrMail:
     def __init__(self, pluginapi):
@@ -232,8 +231,6 @@ class OnionrMail:
             elif choice in (self.strings.mainMenuChoices[2], '3'):
                 self.draftMessage()
             elif choice in (self.strings.mainMenuChoices[3], '4'):
-                logger.warn('not implemented yet')
-            elif choice in (self.strings.mainMenuChoices[4], '5'):
                 logger.info('Goodbye.')
                 break
             elif choice == '':

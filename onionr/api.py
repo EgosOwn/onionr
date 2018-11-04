@@ -1,5 +1,5 @@
 '''
-    Onionr - P2P Microblogging Platform & Social network
+    Onionr - P2P Anonymous Storage Network
 
     This file handles all incoming http requests to the client, using Flask
 '''
