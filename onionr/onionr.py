@@ -640,7 +640,7 @@ class Onionr:
                 logger.info('Our Public key: ' + self.onionrCore._crypto.pubKey)
                 time.sleep(1)
                 #TODO make runable on windows
-                subprocess.Popen([communicatorDaemon, "run", str(net.socksPort)])
+                communicatorProc = subprocess.Popen([communicatorDaemon, "run", str(net.socksPort)])
                 # Print nice header thing :)
                 if config.get('general.display_header', True):
                     self.header()
@@ -649,6 +649,9 @@ class Onionr:
                 try:
                     while True:
                         time.sleep(5)
+                        # Break if communicator process ends, so we don't have left over processes
+                        if communicatorProc.poll() is not None:
+                            break
                 except KeyboardInterrupt:
                     self.onionrCore.daemonQueueAdd('shutdown')
                     self.onionrUtils.localCommand('shutdown')
@@ -789,11 +792,14 @@ class Onionr:
         '''
             Get a file from onionr blocks
         '''
-        if len(sys.argv) >= 3:
+        try:
             fileName = sys.argv[2]
+            bHash = sys.argv[3]
+        except IndexError:
+            logger.error("Syntax %s %s" % (sys.argv[0], '/path/to/filename <blockhash>'))
+        else:
             print(fileName)
             contents = None
-            bHash = sys.argv[3]
             if os.path.exists(fileName):
                 logger.error("File already exists")
                 return
