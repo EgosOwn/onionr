@@ -32,7 +32,8 @@ class OnionrBlackList:
         retData = False
         if not hashed.isalnum():
             raise Exception("Hashed data is not alpha numeric")
-
+        if len(hashed) > 64:
+            raise Exception("Hashed data is too large")
         for i in self._dbExecute("select * from blacklist where hash='%s'" % (hashed,)):
             retData = True # this only executes if an entry is present by that hash
             break
@@ -95,9 +96,8 @@ class OnionrBlackList:
         '''
         # we hash the data so we can remove data entirely from our node's disk
         hashed = self._core._utils.bytesToStr(self._core._crypto.sha3Hash(data))
-
-        if self.inBlacklist(hashed):
-            return
+        if len(hashed) > 64:
+            raise Exception("Hashed data is too large")
 
         if not hashed.isalnum():
             raise Exception("Hashed data is not alpha numeric")
@@ -109,7 +109,8 @@ class OnionrBlackList:
             int(expire)
         except ValueError:
             raise Exception("expire is not int")
-        #TODO check for length sanity
+        if self.inBlacklist(hashed):
+            return
         insert = (hashed,)
         blacklistDate = self._core._utils.getEpoch()
         self._dbExecute("insert into blacklist (hash, dataType, blacklistDate, expire) VALUES('%s', %s, %s, %s);" % (hashed, dataType, blacklistDate, expire))

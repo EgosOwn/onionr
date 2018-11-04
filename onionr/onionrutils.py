@@ -483,6 +483,12 @@ class OnionrUtils:
                         retVal = False
                 if not idNoDomain.isalnum():
                     retVal = False
+                
+                # Validate address is valid base32 (when capitalized and minus extension); v2/v3 onions and .b32.i2p use base32
+                try:
+                    base64.b32decode(idNoDomain.upper().encode())
+                except binascii.Error:
+                    retVal = False
 
             return retVal
         except:

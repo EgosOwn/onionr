@@ -60,7 +60,6 @@ class MailStrings:
 class OnionrMail:
     def __init__(self, pluginapi):
         self.myCore = pluginapi.get_core()
-        #self.dataFolder = pluginapi.get_data_folder()
         self.strings = MailStrings(self)
 
         self.sentboxTools = sentboxdb.SentBox(self.myCore)
