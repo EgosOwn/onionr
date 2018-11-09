@@ -670,7 +670,7 @@ class Core:
         except AttributeError:
             pass
 
-        if encryptType == 'sym':
+        if encryptType == 'asym':
             try:
                 forwardEncrypted = onionrusers.OnionrUser(self, asymPeer).forwardEncrypt(data)
                 data = forwardEncrypted[0]

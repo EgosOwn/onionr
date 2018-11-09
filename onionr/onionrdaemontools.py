@@ -17,7 +17,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import onionrexceptions, onionrpeers, onionrproofs, base64, logger
+import onionrexceptions, onionrpeers, onionrproofs, base64, logger, onionrusers, sqlite3
 from dependencies import secrets
 class DaemonTools:
     def __init__(self, daemon):
@@ -78,6 +78,26 @@ class DaemonTools:
             self.daemon._core._blacklist.addToDB(bHash)
             self.daemon._core.removeBlock(bHash)
         self.daemon.decrementThreadCount('cleanOldBlocks')
+    
+    def cleanKeys(self):
+        '''Delete expired forward secrecy keys'''
+        conn = sqlite3.connect(self.daemon._core.peerDB, timeout=10)
+        c = conn.cursor()
+        time = self.daemon._core._utils.getEpoch()
+        deleteKeys = []
+        for entry in c.execute("SELECT * FROM forwardKeys where expire <= ?", (time,)):
+            logger.info(entry[1])
+            deleteKeys.append(entry[1])
+        
+        for key in deleteKeys:
+            logger.info('Deleting forward key '+ key)
+            c.execute("DELETE from forwardKeys where forwardKey = ?", (key,))
+        conn.commit()
+        conn.close()
+
+        onionrusers.deleteExpiredKeys(self.daemon._core)
+
+        self.daemon.decrementThreadCount('cleanKeys')
 
     def cooldownPeer(self):
         '''Randomly add an online peer to cooldown, so we can connect a new one'''

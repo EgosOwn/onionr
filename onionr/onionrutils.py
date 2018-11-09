@@ -263,14 +263,19 @@ class OnionrUtils:
         '''
         myBlock = Block(blockHash, self._core)
         if myBlock.isEncrypted:
+            #pass
             logger.warn(myBlock.decrypt())
         if (myBlock.isEncrypted and myBlock.decrypted) or (not myBlock.isEncrypted):
             blockType = myBlock.getMetadata('type') # we would use myBlock.getType() here, but it is bugged with encrypted blocks
             signer = self.bytesToStr(myBlock.signer)
             valid = myBlock.verifySig()
 
+            logger.info('Checking for fs key')
             if myBlock.getMetadata('newFSKey') is not None:
                 onionrusers.OnionrUser(self._core, signer).addForwardKey(myBlock.getMetadata('newFSKey'))
+            else:
+                logger.warn('FS not used for this encrypted block')
+                logger.info(myBlock.bmetadata)
         
             try:
                 if len(blockType) <= 10:

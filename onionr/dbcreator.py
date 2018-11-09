@@ -124,8 +124,8 @@ class DBCreator:
         c = conn.cursor()
         c.execute('''CREATE TABLE myForwardKeys(
             peer text not null,
-            public key text not null,
-            private key text not null,
+            publickey text not null,
+            privatekey text not null,
             date int not null,
             expire int not null
             );

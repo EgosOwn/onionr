@@ -99,11 +99,13 @@ class OnionrCommunicatorDaemon:
         netCheckTimer = OnionrCommunicatorTimers(self, self.daemonTools.netCheck, 600)
         announceTimer = OnionrCommunicatorTimers(self, self.daemonTools.announceNode, 305, requiresPeer=True, maxThreads=1)
         cleanupTimer = OnionrCommunicatorTimers(self, self.peerCleanup, 300, requiresPeer=True)
+        forwardSecrecyTimer = OnionrCommunicatorTimers(self, self.daemonTools.cleanKeys, 15)
 
         # set loop to execute instantly to load up peer pool (replaced old pool init wait)
         peerPoolTimer.count = (peerPoolTimer.frequency - 1)
         cleanupTimer.count = (cleanupTimer.frequency - 60)
         announceTimer.count = (cleanupTimer.frequency - 60)
+        #forwardSecrecyTimer.count = (forwardSecrecyTimer.frequency - 990)
 
         self.socketServer = threading.Thread(target=onionrsockets.OnionrSocketServer, args=(self._core,))
         self.socketServer.start()
@@ -450,7 +452,10 @@ class OnionrCommunicatorDaemon:
             if cmd[0] == 'shutdown':
                 self.shutdown = True
             elif cmd[0] == 'announceNode':
-                self.announce(cmd[1])
+                if len(self.onlinePeers) > 0:
+                    self.announce(cmd[1])
+                else:
+                    logger.warn("Not introducing, since I have no connected nodes.")
             elif cmd[0] == 'runCheck':
                 logger.debug('Status check; looks good.')
                 open(self._core.dataDir + '.runcheck', 'w+').close()
