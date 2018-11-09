@@ -136,6 +136,7 @@ class OnionrMail:
                         cancel = logger.readline('Press enter to continue to message, or -q to not open the message (recommended).')
                     if cancel != '-q':
                         print(draw_border(self.myCore._utils.escapeAnsi(readBlock.bcontent.decode().strip())))
+                        input("Press enter to continue")
         return
     
     def sentbox(self):

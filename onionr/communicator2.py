@@ -147,10 +147,13 @@ class OnionrCommunicatorDaemon:
         newBlocks = ''
         existingBlocks = self._core.getBlockList()
         triedPeers = [] # list of peers we've tried this time around
+        maxBacklog = 1560 # Max amount of *new* block hashes to have already in queue, to avoid memory exhaustion
         for i in range(tryAmount):
-            # check if disk allocation is used
+            if len(self.blockQueue) >= maxBacklog:
+                break
             if not self.isOnline:
                 break
+            # check if disk allocation is used
             if self._core._utils.storageCounter.isFull():
                 logger.debug('Not looking up new blocks due to maximum amount of allowed disk space used')
                 break

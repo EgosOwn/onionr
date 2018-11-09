@@ -37,6 +37,9 @@ class API:
         '''
             Validate that the client token matches the given token
         '''
+        if len(self.clientToken) == 0:
+            logger.error("client password needs to be set")
+            return False
         try:
             if not hmac.compare_digest(self.clientToken, token):
                 return False

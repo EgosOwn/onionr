@@ -59,7 +59,7 @@ class DaemonTools:
 
     def netCheck(self):
         '''Check if we are connected to the internet or not when we can't connect to any peers'''
-        if len(self.daemon.onlinePeers) != 0:
+        if len(self.daemon.onlinePeers) == 0:
             if not self.daemon._core._utils.checkNetwork(torPort=self.daemon.proxyPort):
                 logger.warn('Network check failed, are you connected to the internet?')
                 self.daemon.isOnline = False
