@@ -87,6 +87,7 @@ class OnionrCommunicatorDaemon:
 
         # Set timers, function reference, seconds
         # requiresPeer True means the timer function won't fire if we have no connected peers
+        OnionrCommunicatorTimers(self, self.runCheck, 1)
         OnionrCommunicatorTimers(self, self.daemonCommands, 5)
         OnionrCommunicatorTimers(self, self.detectAPICrash, 5)
         peerPoolTimer = OnionrCommunicatorTimers(self, self.getOnlinePeers, 60, maxThreads=1)
@@ -133,7 +134,7 @@ class OnionrCommunicatorDaemon:
 
     def lookupAdders(self):
         '''Lookup new peer addresses'''
-        logger.info('LOOKING UP NEW ADDRESSES')
+        logger.info('Looking up new addresses...')
         tryAmount = 1
         for i in range(tryAmount):
             # Download new peer address list from random online peers
@@ -144,7 +145,7 @@ class OnionrCommunicatorDaemon:
 
     def lookupBlocks(self):
         '''Lookup new blocks & add them to download queue'''
-        logger.info('LOOKING UP NEW BLOCKS')
+        logger.info('Looking up new blocks...')
         tryAmount = 2
         newBlocks = ''
         existingBlocks = self._core.getBlockList()
@@ -175,7 +176,7 @@ class OnionrCommunicatorDaemon:
                 try:
                     newBlocks = self.peerAction(peer, 'getBlockHashes') # get list of new block hashes
                 except Exception as error:
-                    logger.warn("could not get new blocks with " + peer, error=error)
+                    logger.warn('Could not get new blocks from %s.' % peer, error = error)
                     newBlocks = False
                 if newBlocks != False:
                     # if request was a success
@@ -199,10 +200,10 @@ class OnionrCommunicatorDaemon:
                 break
             # Do not download blocks being downloaded or that are already saved (edge cases)
             if blockHash in self.currentDownloading:
-                logger.debug('ALREADY DOWNLOADING ' + blockHash)
+                logger.debug('Already downloading block %s...' % blockHash)
                 continue
             if blockHash in self._core.getBlockList():
-                logger.debug('%s is already saved' % (blockHash,))
+                logger.debug('Block %s is already saved.' % (blockHash,))
                 self.blockQueue.remove(blockHash)
                 continue
             if self._core._blacklist.inBlacklist(blockHash):
@@ -231,22 +232,22 @@ class OnionrCommunicatorDaemon:
                     #meta = metas[1]
                     if self._core._utils.validateMetadata(metadata, metas[2]): # check if metadata is valid, and verify nonce
                         if self._core._crypto.verifyPow(content): # check if POW is enough/correct
-                            logger.info('Block passed proof, attempting save.')
+                            logger.info('Attempting to save block %s...' % blockHash)
                             try:
                                 self._core.setData(content)
                             except onionrexceptions.DiskAllocationReached:
-                                logger.error("Reached disk allocation allowance, cannot save this block.")
+                                logger.error('Reached disk allocation allowance, cannot save block %s.' % blockHash)
                                 removeFromQueue = False
                             else:
                                 self._core.addToBlockDB(blockHash, dataSaved=True)
                                 self._core._utils.processBlockMetadata(blockHash) # caches block metadata values to block database
                         else:
-                            logger.warn('POW failed for block ' + blockHash)
+                            logger.warn('POW failed for block %s.' % blockHash)
                     else:
                         if self._core._blacklist.inBlacklist(realHash):
-                            logger.warn('%s is blacklisted' % (realHash,))
+                            logger.warn('Block %s is blacklisted.' % (realHash,))
                         else:
-                            logger.warn('Metadata for ' + blockHash + ' is invalid.')
+                            logger.warn('Metadata for block %s is invalid.' % blockHash)
                             self._core._blacklist.addToDB(blockHash)
                 else:
                     # if block didn't meet expected hash
@@ -456,7 +457,7 @@ class OnionrCommunicatorDaemon:
                     self.announce(cmd[1])
                 else:
                     logger.warn("Not introducing, since I have no connected nodes.")
-            elif cmd[0] == 'runCheck':
+            elif cmd[0] == 'runCheck': # deprecated
                 logger.debug('Status check; looks good.')
                 open(self._core.dataDir + '.runcheck', 'w+').close()
             elif cmd[0] == 'connectedPeers':
@@ -524,6 +525,12 @@ class OnionrCommunicatorDaemon:
                 logger.error('Daemon detected API crash (or otherwise unable to reach API after long time), stopping...')
                 self.shutdown = True
         self.decrementThreadCount('detectAPICrash')
+
+    def runCheck(self):
+        if self.daemonTools.runCheck():
+            logger.debug('Status check; looks good.')
+
+        self.decrementThreadCount('runCheck')
 
 class OnionrCommunicatorTimers:
     def __init__(self, daemonInstance, timerFunction, frequency, makeThread=True, threadAmount=1, maxThreads=5, requiresPeer=False):

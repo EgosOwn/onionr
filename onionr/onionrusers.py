@@ -150,7 +150,7 @@ class OnionrUser:
         pubkey = self._core._utils.bytesToStr(pubkey)
         command = (pubkey,)
         keyList = [] # list of tuples containing pub, private for peer
-        for result in c.execute("SELECT * FROM myForwardKeys WHERE peer=?", command):
+        for result in c.execute("SELECT * FROM myForwardKeys WHERE peer = ?", command):
             keyList.append((result[1], result[2]))
         if len(keyList) == 0:
             if genNew:

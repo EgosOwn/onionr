@@ -519,18 +519,16 @@ class OnionrUtils:
         try:
             runcheck_file = self._core.dataDir + '.runcheck'
 
-            if os.path.isfile(runcheck_file):
-                os.remove(runcheck_file)
-                logger.debug('%s file appears to have existed before the run check.' % runcheck_file, timestamp = False)
+            if not os.path.isfile(runcheck_file):
+                open(runcheck_file, 'w+').close()
 
-            self._core.daemonQueueAdd('runCheck')
+            # self._core.daemonQueueAdd('runCheck') # deprecated
             starttime = time.time()
 
             while True:
                 time.sleep(interval)
-                if os.path.isfile(runcheck_file):
-                    os.remove(runcheck_file)
-
+                
+                if not os.path.isfile(runcheck_file):
                     return True
                 elif time.time() - starttime >= timeout:
                     return False
@@ -541,6 +539,7 @@ class OnionrUtils:
         '''
             Generates a secure random hex encoded token
         '''
+
         return binascii.hexlify(os.urandom(size))
 
     def importNewBlocks(self, scanDir=''):

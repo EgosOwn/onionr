@@ -17,8 +17,10 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import onionrexceptions, onionrpeers, onionrproofs, base64, logger, onionrusers, sqlite3
+import onionrexceptions, onionrpeers, onionrproofs, logger, onionrusers
+import base64, sqlite3, os
 from dependencies import secrets
+
 class DaemonTools:
     def __init__(self, daemon):
             self.daemon = daemon
@@ -131,3 +133,10 @@ class DaemonTools:
                 self.daemon.removeOnlinePeer(toCool)
                 self.daemon.cooldownPeer[toCool] = self.daemon._core._utils.getEpoch()
         self.daemon.decrementThreadCount('cooldownPeer')
+
+    def runCheck(self):
+        if os.path.isfile('data/.runcheck'):
+            os.remove('data/.runcheck')
+            return True
+
+        return False

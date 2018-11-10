@@ -179,7 +179,7 @@ class Core:
 
             return True
         else:
-            logger.debug('Invalid ID')
+            logger.debug('Invalid ID: %s' % address)
             return False
 
     def removeAddress(self, address):

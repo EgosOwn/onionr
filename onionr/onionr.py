@@ -156,6 +156,16 @@ class Onionr:
             'status': self.showStats,
             'statistics': self.showStats,
             'stats': self.showStats,
+            'details' : self.showDetails,
+            'detail' : self.showDetails,
+            'show-details' : self.showDetails,
+            'show-detail' : self.showDetails,
+            'showdetails' : self.showDetails,
+            'showdetail' : self.showDetails,
+            'get-details' : self.showDetails,
+            'get-detail' : self.showDetails,
+            'getdetails' : self.showDetails,
+            'getdetail' : self.showDetails,
 
             'enable-plugin': self.enablePlugin,
             'enplugin': self.enablePlugin,
@@ -188,7 +198,6 @@ class Onionr:
 
             'add-file': self.addFile,
             'addfile': self.addFile,
-
             'get-file': self.getFile,
             'getfile': self.getFile,
 
@@ -204,16 +213,6 @@ class Onionr:
 
             'ui' : self.openUI,
             'gui' : self.openUI,
-
-            'getpassword': self.printWebPassword,
-            'get-password': self.printWebPassword,
-            'getpwd': self.printWebPassword,
-            'get-pwd': self.printWebPassword,
-            'getpass': self.printWebPassword,
-            'get-pass': self.printWebPassword,
-            'getpasswd': self.printWebPassword,
-            'get-passwd': self.printWebPassword,
-
             'chat': self.startChat,
 
             'friend': self.friendCmd
@@ -260,6 +259,18 @@ class Onionr:
     '''
         THIS SECTION HANDLES THE COMMANDS
     '''
+
+    def showDetails(self):
+        details = {
+            'Node Address' : self.get_hostname(),
+            'Web Password' : self.getWebPassword(),
+            'Public Key' : self.onionrCore._crypto.pubKey,
+            'Human-readable Public Key' : self.onionrCore._utils.getHumanReadableID()
+        }
+
+        for detail in details:
+            logger.info('%s%s: \n%s%s\n' % (logger.colors.fg.lightgreen, detail, logger.colors.fg.green, details[detail]), sensitive = True)
+
 
     def startChat(self):
         try:
@@ -427,9 +438,7 @@ class Onionr:
             Displays a list of keys (used to be called peers) (?)
         '''
 
-        logger.info('Public keys in database:\n')
-        for i in self.onionrCore.listPeers():
-            logger.info(i)
+        logger.info('%sPublic keys in database: \n%s%s' % (logger.colors.fg.lightgreen, logger.colors.fg.green, '\n'.join(self.onionrCore.listPeers())))
 
     def addPeer(self):
         '''
@@ -618,7 +627,13 @@ class Onionr:
         '''
             Starts the Onionr communication daemon
         '''
+
         communicatorDaemon = './communicator2.py'
+
+        # remove runcheck if it exists
+        if os.path.isfile('data/.runcheck'):
+            logger.debug('Runcheck file found on daemon start, deleting in advance.')
+            os.remove('data/.runcheck')
 
         apiThread = Thread(target=api.API, args=(self.debug,API_VERSION))
         apiThread.start()
@@ -689,9 +704,6 @@ class Onionr:
             messages = {
                 # info about local client
                 'Onionr Daemon Status' : ((logger.colors.fg.green + 'Online') if self.onionrUtils.isCommunicatorRunning(timeout = 9) else logger.colors.fg.red + 'Offline'),
-                'Public Key' : self.onionrCore._crypto.pubKey,
-                'Human readable public key' : self.onionrCore._utils.getHumanReadableID(),
-                'Node Address' : self.get_hostname(),
 
                 # file and folder size stats
                 'div1' : True, # this creates a solid line across the screen, a div
