@@ -14,3 +14,4 @@ onionr/.onionr-lock
 core
 .vscode/*
 venv/*
+onionr/fs*

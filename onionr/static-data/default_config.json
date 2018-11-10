@@ -2,6 +2,8 @@
     "general" : {
         "dev_mode" : true,
         "display_header" : true,
+        "minimum_block_pow": 5,
+        "minimum_send_pow": 5,
 
         "direct_connect" : {
             "respond" : true,
@@ -32,11 +34,10 @@
     "client" : {
 
     },
-
-    "log" : {
-        "file" : {
-            "output" : true,
-            "path" : "data/output.log"
+    "log": {
+        "file": {
+            "output": false,
+            "path": "data/output.log"
         },
 
         "console" : {

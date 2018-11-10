@@ -18,14 +18,14 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 
-import core as onionrcore, logger, config, onionrexceptions, nacl.exceptions
+import core as onionrcore, logger, config, onionrexceptions, nacl.exceptions, onionrusers
 import json, os, sys, datetime, base64
 
 class Block:
     blockCacheOrder = list() # NEVER write your own code that writes to this!
     blockCache = dict() # should never be accessed directly, look at Block.getCache()
 
-    def __init__(self, hash = None, core = None, type = None, content = None):
+    def __init__(self, hash = None, core = None, type = None, content = None, expire=None):
         # take from arguments
         # sometimes people input a bytes object instead of str in `hash`
         if (not hash is None) and isinstance(hash, bytes):
@@ -35,6 +35,7 @@ class Block:
         self.core = core
         self.btype = type
         self.bcontent = content
+        self.expire = expire
 
         # initialize variables
         self.valid = True
@@ -91,9 +92,18 @@ class Block:
                 self.signature = core._crypto.pubKeyDecrypt(self.signature, anonymous=anonymous, encodedData=encodedData)
                 self.signer = core._crypto.pubKeyDecrypt(self.signer, anonymous=anonymous, encodedData=encodedData)
                 self.signedData =  json.dumps(self.bmetadata) + self.bcontent.decode()
+                try:
+                    assert self.bmetadata['forwardEnc'] is True
+                except (AssertionError, KeyError) as e:
+                    pass
+                else:
+                    try:
+                        self.bcontent = onionrusers.OnionrUser(self.getCore(), self.signer).forwardDecrypt(self.bcontent)
+                    except (onionrexceptions.DecryptionError, nacl.exceptions.CryptoError) as e:
+                        logger.error(str(e))
+                        pass
             except nacl.exceptions.CryptoError:
-                pass
-                #logger.debug('Could not decrypt block. Either invalid key or corrupted data')
+                logger.debug('Could not decrypt block. Either invalid key or corrupted data')
             else:
                 retData = True
                 self.decrypted = True
@@ -151,7 +161,7 @@ class Block:
 
                     # read from file if it's still None
                     if blockdata is None:
-                        filelocation = 'data/blocks/%s.dat' % self.getHash()
+                        filelocation = self.core.dataDir + 'blocks/%s.dat' % self.getHash()
 
                 if readfile:
                     with open(filelocation, 'rb') as f:
@@ -179,6 +189,7 @@ class Block:
             # signed data is jsonMeta + block content (no linebreak)
             self.signedData = (None if not self.isSigned() else self.getHeader('meta') + self.getContent())
             self.date = self.getCore().getBlockDate(self.getHash())
+            self.claimedTime = self.getHeader('time', None)
 
             if not self.getDate() is None:
                 self.date = datetime.datetime.fromtimestamp(self.getDate())
@@ -234,7 +245,7 @@ class Block:
                         blockFile.write(self.getRaw().encode())
                     self.update()
                 else:
-                    self.hash = self.getCore().insertBlock(self.getContent(), header = self.getType(), sign = sign, meta = self.getMetadata())
+                    self.hash = self.getCore().insertBlock(self.getContent(), header = self.getType(), sign = sign, meta = self.getMetadata(), expire = self.getExpire())
                     self.update()
 
                 return self.getHash()
@@ -246,6 +257,15 @@ class Block:
         return False
 
     # getters
+
+    def getExpire(self):
+        '''
+            Returns the expire time for a block
+
+            Outputs:
+            - (int): the expire time for a block, or None
+        '''
+        return self.expire
 
     def getHash(self):
         '''
@@ -734,7 +754,7 @@ class Block:
         if type(hash) == Block:
             blockfile = hash.getBlockFile()
         else:
-            blockfile = 'data/blocks/%s.dat' % hash
+            blockfile = onionrcore.Core().dataDir + 'blocks/%s.dat' % hash
 
         return os.path.exists(blockfile) and os.path.isfile(blockfile)
 

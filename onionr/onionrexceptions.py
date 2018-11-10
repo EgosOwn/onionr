@@ -37,6 +37,9 @@ class InvalidPubkey(Exception):
 class KeyNotKnown(Exception):
     pass
 
+class DecryptionError(Exception):
+    pass
+
 # block exceptions
 class InvalidMetadata(Exception):
     pass
@@ -62,7 +65,15 @@ class MissingPort(Exception):
 class InvalidAddress(Exception):
     pass
 
+class InvalidAPIVersion(Exception):
+    pass
+
 # file exceptions
 
 class DiskAllocationReached(Exception):
+    pass
+
+# onionrsocket exceptions
+
+class MissingAddress(Exception):
     pass

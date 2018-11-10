@@ -1,5 +1,5 @@
 '''
-    Onionr - P2P Microblogging Platform & Social network
+    Onionr - P2P Anonymous Storage Network
 
     This default plugin handles private messages in an email like fashion
 '''
@@ -22,8 +22,12 @@
 import logger, config, threading, time, readline, datetime
 from onionrblockapi import Block
 import onionrexceptions, onionrusers
-import locale
+import locale, sys, os
+
 locale.setlocale(locale.LC_ALL, '')
+
+sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
+import sentboxdb # import after path insert
 
 plugin_name = 'pms'
 PLUGIN_VERSION = '0.0.1'
@@ -44,22 +48,23 @@ class MailStrings:
         self.mailInstance = mailInstance
 
         self.programTag = 'OnionrMail v%s' % (PLUGIN_VERSION)
-        choices = ['view inbox', 'view sentbox', 'send message', 'help', 'quit']
+        choices = ['view inbox', 'view sentbox', 'send message', 'quit']
         self.mainMenuChoices = choices
         self.mainMenu = '''\n
 -----------------
 1. %s
 2. %s
 3. %s
-4. %s
-5. %s''' % (choices[0], choices[1], choices[2], choices[3], choices[4])
+4. %s''' % (choices[0], choices[1], choices[2], choices[3])
 
 class OnionrMail:
     def __init__(self, pluginapi):
         self.myCore = pluginapi.get_core()
-        #self.dataFolder = pluginapi.get_data_folder()
         self.strings = MailStrings(self)
 
+        self.sentboxTools = sentboxdb.SentBox(self.myCore)
+        self.sentboxList = []
+        self.sentMessages = {}
         return
     
     def inbox(self):
@@ -68,6 +73,7 @@ class OnionrMail:
         pmBlocks = {}
         logger.info('Decrypting messages...')
         choice = ''
+        displayList = []
 
         # this could use a lot of memory if someone has recieved a lot of messages
         for blockHash in self.myCore.getBlocksByType('pm'):
@@ -93,8 +99,10 @@ class OnionrMail:
                     senderDisplay = senderKey
 
                 blockDate = pmBlocks[blockHash].getDate().strftime("%m/%d %H:%M")
-                print('%s. %s - %s: %s' % (blockCount, blockDate, senderDisplay[:12], blockHash))
-
+                displayList.append('%s. %s - %s: %s' % (blockCount, blockDate, senderDisplay[:12], blockHash))
+            #displayList.reverse()
+            for i in displayList:
+                print(i)
             try:
                 choice = logger.readline('Enter a block number, -r to refresh, or -q to stop: ').strip().lower()
             except (EOFError, KeyboardInterrupt):
@@ -121,15 +129,52 @@ class OnionrMail:
                 else:
                     cancel = ''
                     readBlock.verifySig()
-                    print('Message recieved from %s' % (readBlock.signer,))
+                    print('Message recieved from %s' % (self.myCore._utils.bytesToStr(readBlock.signer,)))
                     print('Valid signature:', readBlock.validSig)
                     if not readBlock.validSig:
                         logger.warn('This message has an INVALID signature. ANYONE could have sent this message.')
                         cancel = logger.readline('Press enter to continue to message, or -q to not open the message (recommended).')
                     if cancel != '-q':
                         print(draw_border(self.myCore._utils.escapeAnsi(readBlock.bcontent.decode().strip())))
+                        input("Press enter to continue")
         return
     
+    def sentbox(self):
+        '''
+            Display sent mail messages
+        '''
+        entering = True
+        while entering:
+            self.getSentList()
+            print('Enter block number or -q to return')
+            try:
+                choice = input('>')
+            except (EOFError, KeyboardInterrupt) as e:
+                entering = False
+            else:
+                if choice == '-q':
+                    entering = False
+                else:
+                    try:
+                        self.sentboxList[int(choice) - 1]
+                    except IndexError:
+                        print('Invalid block')
+                    else:
+                        logger.info('Sent to: ' + self.sentMessages[self.sentboxList[int(choice) - 1]][1])
+                        # Print ansi escaped sent message
+                        print(self.myCore._utils.escapeAnsi(self.sentMessages[self.sentboxList[int(choice) - 1]][0]))
+                        input('Press enter to continue...')
+
+        return
+    
+    def getSentList(self):
+        count = 1
+        for i in self.sentboxTools.listSent():
+            self.sentboxList.append(i['hash'])
+            self.sentMessages[i['hash']] = (i['message'], i['peer'])
+            print('%s. %s - %s - %s' % (count, i['hash'], i['peer'][:12], i['date']))
+            count += 1
+
     def draftMessage(self):
         message = ''
         newLine = ''
@@ -166,8 +211,8 @@ class OnionrMail:
 
         print('Inserting encrypted message as Onionr block....')
 
-        self.myCore.insertBlock(message, header='pm', encryptType='asym', asymPeer=recip, sign=True)
-
+        blockID = self.myCore.insertBlock(message, header='pm', encryptType='asym', asymPeer=recip, sign=True)
+        self.sentboxTools.addToSent(blockID, recip, message)
     def menu(self):
         choice = ''
         while True:
@@ -182,12 +227,10 @@ class OnionrMail:
             if choice in (self.strings.mainMenuChoices[0], '1'):
                 self.inbox()
             elif choice in (self.strings.mainMenuChoices[1], '2'):
-                logger.warn('not implemented yet')
+                self.sentbox()
             elif choice in (self.strings.mainMenuChoices[2], '3'):
                 self.draftMessage()
             elif choice in (self.strings.mainMenuChoices[3], '4'):
-                logger.warn('not implemented yet')
-            elif choice in (self.strings.mainMenuChoices[4], '5'):
                 logger.info('Goodbye.')
                 break
             elif choice == '':

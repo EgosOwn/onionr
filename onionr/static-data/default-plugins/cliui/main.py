@@ -46,14 +46,15 @@ class OnionrCLIUI:
         showMenu = True
         isOnline = "No"
         firstRun = True
+        choice = ''
 
         if self.myCore._utils.localCommand('ping') == 'pong':
             firstRun = False
 
         while showMenu:
             if firstRun:
-                print("please wait while Onionr starts...")
-                daemon = subprocess.Popen(["./onionr.py", "start"], stdin=subprocess.PIPE, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
+                logger.info("please wait while Onionr starts...")
+                daemon = subprocess.Popen(["./onionr.py", "start"], stdin=subprocess.PIPE, stdout=subprocess.DEVNULL)
                 time.sleep(30)
                 firstRun = False
 
@@ -91,7 +92,6 @@ Daemon Running: ''' + isOnline + '''
             elif choice in ("5", "daemon"):
                 if isOnline == "Yes":
                     print("Onionr daemon will shutdown...")
-                    #self.myCore._utils.localCommand("shutdown")
                     self.myCore.daemonQueueAdd('shutdown')
                     try:
                         daemon.kill()

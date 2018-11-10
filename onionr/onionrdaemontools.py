@@ -17,7 +17,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import onionrexceptions, onionrpeers, onionrproofs, base64, logger
+import onionrexceptions, onionrpeers, onionrproofs, base64, logger, onionrusers, sqlite3
 from dependencies import secrets
 class DaemonTools:
     def __init__(self, daemon):
@@ -52,26 +52,54 @@ class DaemonTools:
 
         logger.info('Announcing node to ' + url)
         if self.daemon._core._utils.doPostRequest(url, data) == 'Success':
+            logger.info('Successfully introduced node to ' + peer)
             retData = True
         self.daemon.decrementThreadCount('announceNode')
         return retData
 
     def netCheck(self):
         '''Check if we are connected to the internet or not when we can't connect to any peers'''
-        if len(self.daemon.onlinePeers) != 0:
+        if len(self.daemon.onlinePeers) == 0:
             if not self.daemon._core._utils.checkNetwork(torPort=self.daemon.proxyPort):
                 logger.warn('Network check failed, are you connected to the internet?')
                 self.daemon.isOnline = False
         self.daemon.decrementThreadCount('netCheck')
 
     def cleanOldBlocks(self):
-        '''Delete old blocks if our disk allocation is full/near full'''
+        '''Delete old blocks if our disk allocation is full/near full, and also expired blocks'''
+
         while self.daemon._core._utils.storageCounter.isFull():
             oldest = self.daemon._core.getBlockList()[0]
             self.daemon._core._blacklist.addToDB(oldest)
             self.daemon._core.removeBlock(oldest)
             logger.info('Deleted block: %s' % (oldest,))
+
+        # Delete expired blocks
+        for bHash in self.daemon._core.getExpiredBlocks():
+            self.daemon._core._blacklist.addToDB(bHash)
+            self.daemon._core.removeBlock(bHash)
+        
         self.daemon.decrementThreadCount('cleanOldBlocks')
+
+    def cleanKeys(self):
+        '''Delete expired forward secrecy keys'''
+        conn = sqlite3.connect(self.daemon._core.peerDB, timeout=10)
+        c = conn.cursor()
+        time = self.daemon._core._utils.getEpoch()
+        deleteKeys = []
+        for entry in c.execute("SELECT * FROM forwardKeys where expire <= ?", (time,)):
+            logger.info(entry[1])
+            deleteKeys.append(entry[1])
+
+        for key in deleteKeys:
+            logger.info('Deleting forward key '+ key)
+            c.execute("DELETE from forwardKeys where forwardKey = ?", (key,))
+        conn.commit()
+        conn.close()
+
+        onionrusers.deleteExpiredKeys(self.daemon._core)
+
+        self.daemon.decrementThreadCount('cleanKeys')
 
     def cooldownPeer(self):
         '''Randomly add an online peer to cooldown, so we can connect a new one'''

@@ -22,7 +22,9 @@ import getpass, sys, requests, os, socket, hashlib, logger, sqlite3, config, bin
 import nacl.signing, nacl.encoding
 from onionrblockapi import Block
 import onionrexceptions
+from onionr import API_VERSION
 from defusedxml import minidom
+import onionrevents
 import pgpwords, onionrusers, storagecounter
 if sys.version_info < (3, 6):
     try:
@@ -36,20 +38,23 @@ class OnionrUtils:
         Various useful functions for validating things, etc functions, connectivity
     '''
     def __init__(self, coreInstance):
-        self.fingerprintFile = 'data/own-fingerprint.txt'
-        self._core = coreInstance
+        #self.fingerprintFile = 'data/own-fingerprint.txt' #TODO Remove since probably not needed
+        self._core = coreInstance # onionr core instance
 
-        self.timingToken = ''
+        self.timingToken = '' # for when we make local connections to our http api, to bypass timing attack defense mechanism
         self.avoidDupe = [] # list used to prevent duplicate requests per peer for certain actions
         self.peerProcessing = {} # dict of current peer actions: peer, actionList
-        self.storageCounter = storagecounter.StorageCounter(self._core)
-        config.reload()
+        self.storageCounter = storagecounter.StorageCounter(self._core) # used to keep track of how much data onionr is using on disk
+        config.reload() # onionr config
         return
 
     def getTimeBypassToken(self):
+        '''
+            Load our timingToken from disk for faster local HTTP API
+        '''
         try:
-            if os.path.exists('data/time-bypass.txt'):
-                with open('data/time-bypass.txt', 'r') as bypass:
+            if os.path.exists(self._core.dataDir + 'time-bypass.txt'):
+                with open(self._core.dataDir + 'time-bypass.txt', 'r') as bypass:
                     self.timingToken = bypass.read()
         except Exception as error:
             logger.error('Failed to fetch time bypass token.', error = error)
@@ -63,22 +68,6 @@ class OnionrUtils:
         epoch = self.getEpoch()
         return epoch - (epoch % roundS)
 
-    def incrementAddressSuccess(self, address):
-        '''
-            Increase the recorded sucesses for an address
-        '''
-        increment = self._core.getAddressInfo(address, 'success') + 1
-        self._core.setAddressInfo(address, 'success', increment)
-        return
-
-    def decrementAddressSuccess(self, address):
-        '''
-            Decrease the recorded sucesses for an address
-        '''
-        increment = self._core.getAddressInfo(address, 'success') - 1
-        self._core.setAddressInfo(address, 'success', increment)
-        return
-
     def mergeKeys(self, newKeyList):
         '''
             Merge ed25519 key list to our database, comma seperated string
@@ -88,6 +77,7 @@ class OnionrUtils:
             if newKeyList != False:
                 for key in newKeyList.split(','):
                     key = key.split('-')
+                    # Test if key is valid
                     try:
                         if len(key[0]) > 60 or len(key[1]) > 1000:
                             logger.warn('%s or its pow value is too large.' % key[0])
@@ -99,15 +89,19 @@ class OnionrUtils:
                         value = base64.b64decode(key[1])
                     except binascii.Error:
                         continue
+                    # Load the pow token
                     hashedKey = self._core._crypto.blake2bHash(key[0])
                     powHash = self._core._crypto.blake2bHash(value + hashedKey)
                     try:
                         powHash = powHash.encode()
                     except AttributeError:
                         pass
+                    # if POW meets required difficulty, TODO make configurable/dynamic
                     if powHash.startswith(b'0000'):
+                        # if we don't already have the key and its not our key, add it.
                         if not key[0] in self._core.listPeers(randomOrder=False) and type(key) != None and key[0] != self._core._crypto.pubKey:
                             if self._core.addPeer(key[0], key[1]):
+                                # Check if the peer has a set username already
                                 onionrusers.OnionrUser(self._core, key[0]).findAndSetID()
                                 retVal = True
                             else:
@@ -150,7 +144,7 @@ class OnionrUtils:
 
     def getMyAddress(self):
         try:
-            with open('./data/hs/hostname', 'r') as hostname:
+            with open('./' + self._core.dataDir + 'hs/hostname', 'r') as hostname:
                 return hostname.read().strip()
         except Exception as error:
             logger.error('Failed to read my address.', error = error)
@@ -165,7 +159,7 @@ class OnionrUtils:
         self.getTimeBypassToken()
         # TODO: URL encode parameters, just as an extra measure. May not be needed, but should be added regardless.
         try:
-            with open('data/host.txt', 'r') as host:
+            with open(self._core.dataDir + 'host.txt', 'r') as host:
                 hostname = host.read()
         except FileNotFoundError:
             return False
@@ -269,28 +263,38 @@ class OnionrUtils:
         '''
         myBlock = Block(blockHash, self._core)
         if myBlock.isEncrypted:
-            myBlock.decrypt()
-        blockType = myBlock.getMetadata('type') # we would use myBlock.getType() here, but it is bugged with encrypted blocks
-        signer = self.bytesToStr(myBlock.signer)
-        try:
-            if len(blockType) <= 10:
-                self._core.updateBlockInfo(blockHash, 'dataType', blockType)
+            #pass
+            logger.warn(myBlock.decrypt())
+        if (myBlock.isEncrypted and myBlock.decrypted) or (not myBlock.isEncrypted):
+            blockType = myBlock.getMetadata('type') # we would use myBlock.getType() here, but it is bugged with encrypted blocks
+            signer = self.bytesToStr(myBlock.signer)
+            valid = myBlock.verifySig()
 
-                if blockType == 'userInfo':
-                    if myBlock.verifySig():
-                        peerName = myBlock.getMetadata('name')
-                        try:
-                            if len(peerName) > 20:
-                                raise onionrexceptions.InvalidMetdata('Peer name specified is too large')
-                        except TypeError:
-                            pass
-                        except onionrexceptions.InvalidMetadata:
-                            pass
-                        else:
-                            self._core.setPeerInfo(signer, 'name', peerName)
-                            logger.info('%s is now using the name %s.' % (signer, self.escapeAnsi(peerName)))
-        except TypeError:
-            pass
+            logger.info('Checking for fs key')
+            if myBlock.getMetadata('newFSKey') is not None:
+                onionrusers.OnionrUser(self._core, signer).addForwardKey(myBlock.getMetadata('newFSKey'))
+            else:
+                logger.warn('FS not used for this encrypted block')
+                logger.info(myBlock.bmetadata)
+        
+            try:
+                if len(blockType) <= 10:
+                    self._core.updateBlockInfo(blockHash, 'dataType', blockType)
+                    onionrevents.event('processblocks', data = {'block': myBlock, 'type': blockType, 'signer': signer, 'validSig': valid}, onionr = None)
+            except TypeError:
+                logger.warn("Missing block information")
+                pass
+            # Set block expire time if specified
+            try:
+                expireTime = myBlock.getHeader('expire')
+                assert len(str(int(expireTime))) < 20 # test that expire time is an integer of sane length (for epoch)
+            except (AssertionError, ValueError, TypeError) as e:
+                pass
+            else:
+                self._core.updateBlockInfo(blockHash, 'expire', expireTime)
+        else:
+            logger.info(myBlock.isEncrypted)
+            logger.debug('Not processing metadata on encrypted block we cannot decrypt.')
 
     def escapeAnsi(self, line):
         '''
@@ -379,15 +383,26 @@ class OnionrUtils:
                     logger.warn('Block has invalid metadata key ' + i)
                     break
                 else:
-                    if self._core.requirements.blockMetadataLengths[i] < len(metadata[i]):
+                    testData = metadata[i]
+                    try:
+                        testData = len(testData)
+                    except (TypeError, AttributeError) as e:
+                        testData = len(str(testData))
+                    if self._core.requirements.blockMetadataLengths[i] < testData:
                         logger.warn('Block metadata key ' + i + ' exceeded maximum size')
                         break
                 if i == 'time':
                     if not self.isIntegerString(metadata[i]):
                         logger.warn('Block metadata time stamp is not integer string')
                         break
+                elif i == 'expire':
+                    try:
+                        assert int(metadata[i]) > self.getEpoch()
+                    except AssertionError:
+                        logger.warn('Block is expired')
+                        break
             else:
-                # if metadata loop gets no errors, it does not break, therefore metadata is valid
+                # if metadata loop gets no errors, it does not break, therefore metadata is valid      
                 # make sure we do not have another block with the same data content (prevent data duplication and replay attacks)
                 nonce = self._core._utils.bytesToStr(self._core._crypto.sha3Hash(blockData))
                 try:
@@ -473,6 +488,12 @@ class OnionrUtils:
                         retVal = False
                 if not idNoDomain.isalnum():
                     retVal = False
+                
+                # Validate address is valid base32 (when capitalized and minus extension); v2/v3 onions and .b32.i2p use base32
+                try:
+                    base64.b32decode(idNoDomain.upper().encode())
+                except binascii.Error:
+                    retVal = False
 
             return retVal
         except:
@@ -496,7 +517,7 @@ class OnionrUtils:
 
     def isCommunicatorRunning(self, timeout = 5, interval = 0.1):
         try:
-            runcheck_file = 'data/.runcheck'
+            runcheck_file = self._core.dataDir + '.runcheck'
 
             if os.path.isfile(runcheck_file):
                 os.remove(runcheck_file)
@@ -539,6 +560,7 @@ class OnionrUtils:
                     if self._core._crypto.sha3Hash(newBlock.read()) == block.replace('.dat', ''):
                         self._core.addToBlockDB(block.replace('.dat', ''), dataSaved=True)
                         logger.info('Imported block %s.' % block)
+                        self._core._utils.processBlockMetadata(block)
                     else:
                         logger.warn('Failed to verify hash for %s' % block)
 
@@ -604,13 +626,22 @@ class OnionrUtils:
         try:
             proxies = {'http': 'socks4a://127.0.0.1:' + str(port), 'https': 'socks4a://127.0.0.1:' + str(port)}
             r = requests.get(url, headers=headers, proxies=proxies, allow_redirects=False, timeout=(15, 30))
+            # Check server is using same API version as us
+            try:
+                if r.headers['api'] != str(API_VERSION):
+                    raise onionrexceptions.InvalidAPIVersion
+            except KeyError:
+                raise onionrexceptions.InvalidAPIVersion
             retData = r.text
         except KeyboardInterrupt:
             raise KeyboardInterrupt
         except ValueError as e:
             logger.debug('Failed to make request', error = e)
+        except onionrexceptions.InvalidAPIVersion:
+            logger.debug("Node is using different API version :(")
         except requests.exceptions.RequestException as e:
-            logger.debug('Error: %s' % str(e))
+            if not 'ConnectTimeoutError' in str(e) and not 'Request rejected or failed' in str(e):
+                logger.debug('Error: %s' % str(e))
             retData = False
         return retData
 

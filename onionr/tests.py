@@ -14,7 +14,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import unittest, sys, os, base64, tarfile, shutil, simplecrypt, logger
+import unittest, sys, os, base64, tarfile, shutil, logger
 
 class OnionrTests(unittest.TestCase):
     def testPython3(self):
@@ -57,36 +57,6 @@ class OnionrTests(unittest.TestCase):
         if not os.path.exists('data/peers.db'):
             myCore.createPeerDB()
         if myCore.addPeer('6M5MXL237OK57ITHVYN5WGHANPGOMKS5C3PJLHBBNKFFJQOIDOJA====', '1cSix9Ao/yQSdo0sNif8cm2uTcYnSphb4JdZL/3WkN4=') and not myCore.addPeer('NFXHMYLMNFSAU===', '1cSix9Ao/yQSdo0sNif8cm2uTcYnSphb4JdZL/3WkN4='):
-            self.assertTrue(True)
-        else:
-            self.assertTrue(False)
-
-    def testData_b_Encrypt(self):
-        self.assertTrue(True)
-        return
-
-        logger.debug('-'*26 + '\n')
-        logger.info('Running data dir encrypt test...')
-
-        import core
-        myCore = core.Core()
-        myCore.dataDirEncrypt('password')
-        if os.path.exists('data-encrypted.dat'):
-            self.assertTrue(True)
-        else:
-            self.assertTrue(False)
-
-    def testData_a_Decrypt(self):
-        self.assertTrue(True)
-        return
-
-        logger.debug('-'*26 + '\n')
-        logger.info('Running data dir decrypt test...')
-
-        import core
-        myCore = core.Core()
-        myCore.dataDirDecrypt('password')
-        if os.path.exists('data/'):
             self.assertTrue(True)
         else:
             self.assertTrue(False)
