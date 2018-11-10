@@ -40,7 +40,7 @@ class OnionrUser:
 
         self.trust = self._core.getPeerInfo(self.publicKey, 'trust')
         return
-    
+
     def setTrust(self, newTrust):
         '''Set the peers trust. 0 = not trusted, 1 = friend, 2 = ultimate'''
         self._core.setPeerInfo(self.publicKey, 'trust', newTrust)
@@ -49,7 +49,7 @@ class OnionrUser:
         if self._core.getPeerInfo(self.publicKey, 'trust') == 1:
             return True
         return False
-    
+
     def getName(self):
         retData = 'anonymous'
         name = self._core.getPeerInfo(self.publicKey, 'name')
@@ -63,11 +63,11 @@ class OnionrUser:
     def encrypt(self, data):
         encrypted = coreInst._crypto.pubKeyEncrypt(data, self.publicKey, encodedData=True)
         return encrypted
-    
+
     def decrypt(self, data, anonymous=True):
         decrypted = coreInst._crypto.pubKeyDecrypt(data, self.publicKey, encodedData=True)
         return decrypted
-    
+
     def forwardEncrypt(self, data):
         retData = ''
         forwardKey = self._getLatestForwardKey()
@@ -78,7 +78,7 @@ class OnionrUser:
             raise onionrexceptions.InvalidPubkey("No valid forward key available for this user")
         #self.generateForwardKey()
         return (retData, forwardKey)
-    
+
     def forwardDecrypt(self, encrypted):
         retData = ""
         #logger.error(self.publicKey)
@@ -101,19 +101,19 @@ class OnionrUser:
         conn = sqlite3.connect(self._core.peerDB, timeout=10)
         c = conn.cursor()
 
-        for row in c.execute("SELECT forwardKey FROM forwardKeys WHERE peerKey = ? order by date desc", (self.publicKey,)):
+        for row in c.execute("SELECT forwardKey FROM forwardKeys WHERE peerKey = ? ORDER BY date DESC", (self.publicKey,)):
             key = row[0]
             break
 
         conn.commit()
         conn.close()
         return key
-    
+
     def _getForwardKeys(self):
         conn = sqlite3.connect(self._core.peerDB, timeout=10)
         c = conn.cursor()
         keyList = []
-        for row in c.execute("SELECT forwardKey FROM forwardKeys WHERE peerKey = ? order by date desc", (self.publicKey,)):
+        for row in c.execute("SELECT forwardKey FROM forwardKeys WHERE peerKey = ? ORDER BY date DESC", (self.publicKey,)):
             key = row[0]
             keyList.append(key)
 
@@ -150,7 +150,7 @@ class OnionrUser:
         pubkey = self._core._utils.bytesToStr(pubkey)
         command = (pubkey,)
         keyList = [] # list of tuples containing pub, private for peer
-        for result in c.execute("SELECT * FROM myForwardKeys where peer=?", command):
+        for result in c.execute("SELECT * FROM myForwardKeys WHERE peer=?", command):
             keyList.append((result[1], result[2]))
         if len(keyList) == 0:
             if genNew:
@@ -173,7 +173,7 @@ class OnionrUser:
         conn.commit()
         conn.close()
         return
-    
+
     def findAndSetID(self):
         '''Find any info about the user from existing blocks and cache it to their DB entry'''
         infoBlocks = []

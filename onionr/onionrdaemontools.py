@@ -78,7 +78,7 @@ class DaemonTools:
         for bHash in self.daemon._core.getExpiredBlocks():
             self.daemon._core._blacklist.addToDB(bHash)
             self.daemon._core.removeBlock(bHash)
-        
+
         self.daemon.decrementThreadCount('cleanOldBlocks')
 
     def cleanKeys(self):
@@ -87,7 +87,7 @@ class DaemonTools:
         c = conn.cursor()
         time = self.daemon._core._utils.getEpoch()
         deleteKeys = []
-        for entry in c.execute("SELECT * FROM forwardKeys where expire <= ?", (time,)):
+        for entry in c.execute("SELECT * FROM forwardKeys WHERE expire <= ?", (time,)):
             logger.info(entry[1])
             deleteKeys.append(entry[1])
 

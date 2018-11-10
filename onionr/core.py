@@ -132,7 +132,7 @@ class Core:
         c = conn.cursor()
         t = (peerID, name, 'unknown', hashID, powID, 0)
 
-        for i in c.execute("SELECT * FROM PEERS where id = ?;", (peerID,)):
+        for i in c.execute("SELECT * FROM peers WHERE id = ?;", (peerID,)):
             try:
                 if i[0] == peerID:
                     conn.close()
@@ -160,7 +160,7 @@ class Core:
             # check if address is in database
             # this is safe to do because the address is validated above, but we strip some chars here too just in case
             address = address.replace('\'', '').replace(';', '').replace('"', '').replace('\\', '')
-            for i in c.execute("SELECT * FROM adders where address = ?;", (address,)):
+            for i in c.execute("SELECT * FROM adders WHERE address = ?;", (address,)):
                 try:
                     if i[0] == address:
                         conn.close()
@@ -428,13 +428,13 @@ class Core:
             return
 
         if randomOrder:
-            payload = 'SELECT * FROM peers where trust >= %s ORDER BY RANDOM();' % (trust,)
+            payload = 'SELECT * FROM peers WHERE trust >= ? ORDER BY RANDOM();'
         else:
-            payload = 'SELECT * FROM peers where trust >= %s;' % (trust,)
+            payload = 'SELECT * FROM peers WHERE trust >= ?;'
 
         peerList = []
 
-        for i in c.execute(payload):
+        for i in c.execute(payload, (trust,)):
             try:
                 if len(i[0]) != 0:
                     if getPow:
@@ -480,7 +480,7 @@ class Core:
         iterCount = 0
         retVal = ''
 
-        for row in c.execute('SELECT * from peers where id=?;', command):
+        for row in c.execute('SELECT * FROM peers WHERE id=?;', command):
             for i in row:
                 if iterCount == info:
                     retVal = i
@@ -631,10 +631,10 @@ class Core:
         c = conn.cursor()
         date = int(self._utils.getEpoch())
 
-        execute = 'SELECT hash FROM hashes WHERE expire <= %s ORDER BY dateReceived;' % (date,)
+        execute = 'SELECT hash FROM hashes WHERE expire <= ? ORDER BY dateReceived;'
 
         rows = list()
-        for row in c.execute(execute):
+        for row in c.execute(execute, (date,)):
             for i in row:
                 rows.append(i)
         return rows

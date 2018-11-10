@@ -276,7 +276,7 @@ class OnionrUtils:
             else:
                 logger.warn('FS not used for this encrypted block')
                 logger.info(myBlock.bmetadata)
-        
+
             try:
                 if len(blockType) <= 10:
                     self._core.updateBlockInfo(blockHash, 'dataType', blockType)
@@ -328,7 +328,7 @@ class OnionrUtils:
         c = conn.cursor()
         if not self.validateHash(hash):
             raise Exception("Invalid hash")
-        for result in c.execute("SELECT COUNT() FROM hashes where hash='" + hash + "'"):
+        for result in c.execute("SELECT COUNT() FROM hashes WHERE hash = ?", (hash,)):
             if result[0] >= 1:
                 conn.commit()
                 conn.close()
@@ -402,7 +402,7 @@ class OnionrUtils:
                         logger.warn('Block is expired')
                         break
             else:
-                # if metadata loop gets no errors, it does not break, therefore metadata is valid      
+                # if metadata loop gets no errors, it does not break, therefore metadata is valid
                 # make sure we do not have another block with the same data content (prevent data duplication and replay attacks)
                 nonce = self._core._utils.bytesToStr(self._core._crypto.sha3Hash(blockData))
                 try:
@@ -488,7 +488,7 @@ class OnionrUtils:
                         retVal = False
                 if not idNoDomain.isalnum():
                     retVal = False
-                
+
                 # Validate address is valid base32 (when capitalized and minus extension); v2/v3 onions and .b32.i2p use base32
                 try:
                     base64.b32decode(idNoDomain.upper().encode())
@@ -510,7 +510,7 @@ class OnionrUtils:
         c = conn.cursor()
         command = (hash,)
         retData = ''
-        for row in c.execute('SELECT ID FROM peers where hashID=?', command):
+        for row in c.execute('SELECT id FROM peers WHERE hashID = ?', command):
             if row[0] != '':
                 retData = row[0]
         return retData
