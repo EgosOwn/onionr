@@ -324,7 +324,7 @@ class OnionrCommunicatorDaemon:
     def addBootstrapListToPeerList(self, peerList):
         '''Add the bootstrap list to the peer list (no duplicates)'''
         for i in self._core.bootstrapList:
-            if i not in peerList and i not in self.offlinePeers and i != self._core.hsAddress:
+            if i not in peerList and i not in self.offlinePeers and i != self._core.hsAddress and len(str(i).strip()) > 0:
                 peerList.append(i)
                 self._core.addAddress(i)
 
