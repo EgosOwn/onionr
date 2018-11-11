@@ -1,5 +1,5 @@
 '''
-    Onionr - P2P Microblogging Platform & Social network
+    Onionr - P2P Anonymous Storage Network
 
     Proof of work module
 '''
@@ -19,7 +19,30 @@
 '''
 
 import nacl.encoding, nacl.hash, nacl.utils, time, math, threading, binascii, logger, sys, base64, json
-import core
+import core, config
+
+def getHashDifficulty(h):
+    '''
+        Return the amount of leading zeroes in a hex hash string (h)
+    '''
+    difficulty = 0
+    assert type(h) is str
+    for character in h:
+        if character == '0':
+            difficulty += 1
+    return difficulty
+
+def hashMeetsDifficulty(h):
+    '''
+        Return bool for a hash string to see if it meets pow difficulty defined in config
+    '''
+    config.reload()
+    hashDifficulty = getHashDifficulty(h)
+    expected = int(config.get('minimum_block_pow'))
+    if hashDifficulty >= expected:
+        return True
+    else:
+        return False
 
 class DataPOW:
     def __init__(self, data, forceDifficulty=0, threadCount = 5):
@@ -27,6 +50,7 @@ class DataPOW:
         self.difficulty = 0
         self.data = data
         self.threadCount = threadCount
+        config.reload()
 
         if forceDifficulty == 0:
             dataLen = sys.getsizeof(data)
@@ -77,7 +101,6 @@ class DataPOW:
             endTime = math.floor(time.time())
             if self.reporting:
                 logger.debug('Found token after %s seconds: %s' % (endTime - startTime, token), timestamp=True)
-                logger.debug('Random value was: %s' % base64.b64encode(rand).decode())
             self.result = (token, rand)
 
     def shutdown(self):
@@ -128,7 +151,7 @@ class POW:
         dataLen = len(data) + len(json.dumps(metadata))
         self.difficulty = math.floor(dataLen / 1000000)
         if self.difficulty <= 2:
-            self.difficulty = 4
+            self.difficulty = int(config.get('general.minimum_block_pow'))
 
         try:
             self.data = self.data.encode()
@@ -144,7 +167,7 @@ class POW:
         for i in range(max(1, threadCount)):
             t = threading.Thread(name = 'thread%s' % i, target = self.pow, args = (True,myCore))
             t.start()
-        
+        self.myCore = myCore
         return
 
     def pow(self, reporting = False, myCore = None):
@@ -177,7 +200,6 @@ class POW:
             endTime = math.floor(time.time())
             if self.reporting:
                 logger.debug('Found token after %s seconds: %s' % (endTime - startTime, token), timestamp=True)
-                logger.debug('Random value was: %s' % base64.b64encode(rand).decode())
 
     def shutdown(self):
         self.hashing = False

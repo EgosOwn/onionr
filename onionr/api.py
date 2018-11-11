@@ -1,5 +1,5 @@
 '''
-    Onionr - P2P Microblogging Platform & Social network
+    Onionr - P2P Anonymous Storage Network
 
     This file handles all incoming http requests to the client, using Flask
 '''
@@ -22,7 +22,7 @@ from flask import request, Response, abort, send_from_directory
 from multiprocessing import Process
 from gevent.pywsgi import WSGIServer
 import sys, random, threading, hmac, hashlib, base64, time, math, os, json
-from core import Core
+import core
 from onionrblockapi import Block
 import onionrutils, onionrexceptions, onionrcrypto, blockimporter, onionrevents as events, logger, config
 
@@ -37,6 +37,9 @@ class API:
         '''
             Validate that the client token matches the given token
         '''
+        if len(self.clientToken) == 0:
+            logger.error("client password needs to be set")
+            return False
         try:
             if not hmac.compare_digest(self.clientToken, token):
                 return False
@@ -69,7 +72,7 @@ class API:
         logger.debug('%s not in %s' % (path, mimetypes))
         return 'text/plain'
 
-    def __init__(self, debug):
+    def __init__(self, debug, API_VERSION):
         '''
             Initialize the api server, preping variables for later use
 
@@ -88,7 +91,7 @@ class API:
 
         self.debug = debug
         self._privateDelayTime = 3
-        self._core = Core()
+        self._core = core.Core()
         self._crypto = onionrcrypto.OnionrCrypto(self._core)
         self._utils = onionrutils.OnionrUtils(self._core)
         app = flask.Flask(__name__)
@@ -102,7 +105,7 @@ class API:
         self.mimeType = 'text/plain'
         self.overrideCSP = False
 
-        with open('data/time-bypass.txt', 'w') as bypass:
+        with open(self._core.dataDir + 'time-bypass.txt', 'w') as bypass:
             bypass.write(self.timeBypassToken)
 
         if not debug and not self._developmentMode:
@@ -111,7 +114,7 @@ class API:
         else:
             self.host = '127.0.0.1'
 
-        with open('data/host.txt', 'w') as file:
+        with open(self._core.dataDir + 'host.txt', 'w') as file:
             file.write(self.host)
 
         @app.before_request
@@ -133,14 +136,14 @@ class API:
                 resp.headers["Content-Security-Policy"] =  "default-src 'none'; script-src 'none'; object-src 'none'; style-src data: 'unsafe-inline'; img-src data:; media-src 'none'; frame-src 'none'; font-src 'none'; connect-src 'none'"
             resp.headers['X-Frame-Options'] = 'deny'
             resp.headers['X-Content-Type-Options'] = "nosniff"
-            resp.headers['server'] = 'Onionr'
+            resp.headers['api'] = API_VERSION
 
             # reset to text/plain to help prevent browser attacks
             self.mimeType = 'text/plain'
             self.overrideCSP = False
 
             return resp
-
+            
         @app.route('/www/private/<path:path>')
         def www_private(path):
             startTime = math.floor(time.time())
@@ -466,7 +469,7 @@ class API:
             elif action == 'getData':
                 resp = ''
                 if self._utils.validateHash(data):
-                    if os.path.exists('data/blocks/' + data + '.dat'):
+                    if os.path.exists(self._core.dataDir + 'blocks/' + data + '.dat'):
                         block = Block(hash=data.encode(), core=self._core)
                         resp = base64.b64encode(block.getRaw().encode()).decode()
                 if len(resp) == 0:
@@ -515,7 +518,7 @@ class API:
             while len(self._core.hsAddress) == 0:
                 self._core.refreshFirstStartVars()
                 time.sleep(0.5)
-            self.http_server = WSGIServer((self.host, bindPort), app)
+            self.http_server = WSGIServer((self.host, bindPort), app, log=None)
             self.http_server.serve_forever()
         except KeyboardInterrupt:
             pass
