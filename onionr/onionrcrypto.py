@@ -1,5 +1,5 @@
 '''
-    Onionr - P2P Microblogging Platform & Social network
+    Onionr - P2P Anonymous Storage Network
 
     This file handles Onionr's cryptography.
 '''
@@ -24,51 +24,32 @@ if sys.version_info[0] == 3 and sys.version_info[1] < 6:
     from dependencies import secrets
 elif sys.version_info[0] == 3 and sys.version_info[1] >= 6:
     import secrets
+import config
 
 class OnionrCrypto:
     def __init__(self, coreInstance):
+        config.reload()
         self._core = coreInstance
-        self._keyFile = 'data/keys.txt'
-        self.keyPowFile = 'data/keyPow.txt'
+        self._keyFile = self._core.dataDir + 'keys.txt'
         self.pubKey = None
         self.privKey = None
 
         self.secrets = secrets
-
-        self.pubKeyPowToken = None
-        #self.pubKeyPowHash = None
-
+        
         self.HASH_ID_ROUNDS = 2000
 
         # Load our own pub/priv Ed25519 keys, gen & save them if they don't exist
         if os.path.exists(self._keyFile):
-            with open('data/keys.txt', 'r') as keys:
+            with open(self._core.dataDir + 'keys.txt', 'r') as keys:
                 keys = keys.read().split(',')
                 self.pubKey = keys[0]
                 self.privKey = keys[1]
-            try:
-                with open(self.keyPowFile, 'r') as powFile:
-                    data = powFile.read()
-                    self.pubKeyPowToken = data
-            except (FileNotFoundError, IndexError):
-                pass
         else:
             keys = self.generatePubKey()
             self.pubKey = keys[0]
             self.privKey = keys[1]
             with open(self._keyFile, 'w') as keyfile:
                 keyfile.write(self.pubKey + ',' + self.privKey)
-            with open(self.keyPowFile, 'w') as keyPowFile:
-                proof = onionrproofs.DataPOW(self.pubKey)
-                logger.info('Doing necessary work to insert our public key')
-                while True:
-                    time.sleep(0.2)
-                    powToken = proof.getResult()
-                    if powToken != False:
-                        break
-                keyPowFile.write(base64.b64encode(powToken[1]).decode())
-                self.pubKeyPowToken = powToken[1]
-                self.pubKeyPowHash = powToken[0]
         return
 
     def edVerify(self, data, key, sig, encodedData=True):
@@ -76,7 +57,10 @@ class OnionrCrypto:
         try:
             key = nacl.signing.VerifyKey(key=key, encoder=nacl.encoding.Base32Encoder)
         except nacl.exceptions.ValueError:
-            logger.warn('Signature by unknown key (cannot reverse hash)')
+            #logger.debug('Signature by unknown key (cannot reverse hash)')
+            return False
+        except binascii.Error:
+            logger.warn('Could not load key for verification, invalid padding')
             return False
         retData = False
         sig = base64.b64decode(sig)
@@ -125,7 +109,7 @@ class OnionrCrypto:
             encoding = nacl.encoding.RawEncoder
 
         if self.privKey != None and not anonymous:
-            ownKey = nacl.signing.SigningKey(seed=self.privKey, encoder=nacl.encoding.Base32Encoder)
+            ownKey = nacl.signing.SigningKey(seed=self.privKey, encoder=nacl.encoding.Base32Encoder).to_curve25519_private_key()
             key = nacl.signing.VerifyKey(key=pubkey, encoder=nacl.encoding.Base32Encoder).to_curve25519_public_key()
             ourBox = nacl.public.Box(ownKey, key)
             retVal = ourBox.encrypt(data.encode(), encoder=encoding)
@@ -139,9 +123,9 @@ class OnionrCrypto:
             retVal = anonBox.encrypt(data, encoder=encoding)
         return retVal
 
-    def pubKeyDecrypt(self, data, pubkey='', anonymous=False, encodedData=False):
+    def pubKeyDecrypt(self, data, pubkey='', privkey='', anonymous=False, encodedData=False):
         '''pubkey decrypt (Curve25519, taken from Ed25519 pubkey)'''
-        retVal = False
+        decrypted = False
         if encodedData:
             encoding = nacl.encoding.Base64Encoder
         else:
@@ -151,28 +135,12 @@ class OnionrCrypto:
             ourBox = nacl.public.Box(ownKey, pubkey)
             decrypted = ourBox.decrypt(data, encoder=encoding)
         elif anonymous:
-            anonBox = nacl.public.SealedBox(ownKey)
+            if self._core._utils.validatePubKey(privkey):
+                privkey = nacl.signing.SigningKey(seed=privkey, encoder=nacl.encoding.Base32Encoder()).to_curve25519_private_key()
+                anonBox = nacl.public.SealedBox(privkey)
+            else:
+                anonBox = nacl.public.SealedBox(ownKey)
             decrypted = anonBox.decrypt(data, encoder=encoding)
-        return decrypted
-
-    def symmetricPeerEncrypt(self, data, peer):
-        '''Salsa20 encrypt data to peer (with mac)
-            this function does not accept a key, it is a wrapper for encryption with a peer
-        '''
-        key = self._core.getPeerInfo(4)
-        if type(key) != bytes:
-            key = self._core.getPeerInfo(2)
-        encrypted = self.symmetricEncrypt(data, key, encodedKey=True)
-        return encrypted
-
-    def symmetricPeerDecrypt(self, data, peer):
-        '''Salsa20 decrypt data from peer (with mac)
-        this function does not accept a key, it is a wrapper for encryption with a peer
-        '''
-        key = self._core.getPeerInfo(4)
-        if type(key) != bytes:
-            key = self._core.getPeerInfo(2)
-        decrypted = self.symmetricDecrypt(data, key, encodedKey=True)
         return decrypted
 
     def symmetricEncrypt(self, data, key, encodedKey=False, returnEncoded=True):
@@ -282,7 +250,8 @@ class OnionrCrypto:
             pass
 
         difficulty = math.floor(dataLen / 1000000)
-
+        if difficulty < int(config.get('general.minimum_block_pow')):
+            difficulty = int(config.get('general.minimum_block_pow'))
         mainHash = '0000000000000000000000000000000000000000000000000000000000000000'#nacl.hash.blake2b(nacl.utils.random()).decode()
         puzzle = mainHash[:difficulty]
 

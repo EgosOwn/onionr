@@ -45,9 +45,9 @@ class OnionrFlow:
                 self.flowRunning = False
             if message == "q":
                 self.flowRunning = False
-
+            expireTime = self.myCore._utils.getEpoch() + 43200
             if len(message) > 0:
-                Block(content = message, type = 'txt', core = self.myCore).save()
+                Block(content = message, type = 'txt', expire=expireTime, core = self.myCore).save()
 
         logger.info("Flow is exiting, goodbye")
         return
