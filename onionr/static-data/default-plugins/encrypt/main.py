@@ -71,7 +71,7 @@ class PlainEncryption:
             plaintext = data
             encrypted = self.api.get_core()._crypto.pubKeyEncrypt(plaintext, pubkey, anonymous=True, encodedData=True)
             encrypted = self.api.get_core()._utils.bytesToStr(encrypted)
-            print('ONIONR ENCRYPTED DATA %s END ENCRYPTED DATA' % (encrypted,))
+            logger.info('Encrypted Message: \n\nONIONR ENCRYPTED DATA %s END ENCRYPTED DATA' % (encrypted,))
     def decrypt(self):
         plaintext = ""
         data = ""
@@ -89,10 +89,10 @@ class PlainEncryption:
         myPub = self.api.get_core()._crypto.pubKey
         decrypted = self.api.get_core()._crypto.pubKeyDecrypt(encrypted, privkey=self.api.get_core()._crypto.privKey, anonymous=True, encodedData=True)
         if decrypted == False:
-            print("Decryption failed")
+            logger.error("Decryption failed")
         else:
             data = json.loads(decrypted)
-            print(data['data'])
+            logger.info('Decrypted Message: \n\n%s' % data['data'])
             try:
                 logger.info("Signing public key: %s" % (data['signer'],))
                 assert self.api.get_core()._crypto.edVerify(data['data'], data['signer'], data['sig']) != False
@@ -101,7 +101,7 @@ class PlainEncryption:
             else:
                 logger.info("Message has good signature.")
         return
-    
+
 
 def on_init(api, data = None):
     '''

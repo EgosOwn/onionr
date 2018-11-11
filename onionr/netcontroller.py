@@ -141,7 +141,7 @@ HashedControlPassword ''' + str(password) + '''
                 logger.fatal('Failed to start Tor. Maybe a stray instance of Tor used by Onionr is still running?')
                 return False
         except KeyboardInterrupt:
-            logger.fatal("Got keyboard interrupt.")
+            logger.fatal('Got keyboard interrupt.', timestamp = false, level = logger.LEVEL_IMPORTANT)
             return False
 
         logger.debug('Finished starting Tor.', timestamp=True)

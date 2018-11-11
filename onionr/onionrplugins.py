@@ -77,7 +77,7 @@ def enable(name, onionr = None, start_event = True):
             else:
                 enabled_plugins.append(name)
                 config.set('plugins.enabled', enabled_plugins, True)
-        
+
                 if start_event is True:
                     start(name)
                 return True
@@ -234,7 +234,7 @@ def check():
     config.reload()
 
     if not config.is_set('plugins'):
-        logger.debug('Generating plugin config data...')
+        logger.debug('Generating plugin configuration data...')
         config.set('plugins', {'enabled': []}, True)
 
     if not os.path.exists(os.path.dirname(get_plugins_folder())):

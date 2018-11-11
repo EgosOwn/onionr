@@ -24,7 +24,7 @@ from gevent.pywsgi import WSGIServer
 import sys, random, threading, hmac, hashlib, base64, time, math, os, json
 import core
 from onionrblockapi import Block
-import onionrutils, onionrexceptions, onionrcrypto, blockimporter, onionrevents as events, logger, config
+import onionrutils, onionrexceptions, onionrcrypto, blockimporter, onionrevents as events, logger, config, onionr
 
 class API:
     '''
@@ -75,14 +75,8 @@ class API:
             This also saves the used host (random localhost IP address) to the data folder in host.txt
         '''
 
-        config.reload()
-
-        if config.get('dev_mode', True):
-            self._developmentMode = True
-            logger.set_level(logger.LEVEL_DEBUG)
-        else:
-            self._developmentMode = False
-            logger.set_level(logger.LEVEL_INFO)
+        # configure logger and stuff
+        onionr.Onionr.setupConfig('data/', self = self)
 
         self.debug = debug
         self._privateDelayTime = 3
@@ -131,14 +125,14 @@ class API:
                 resp.headers["Content-Security-Policy"] =  "default-src 'none'; script-src 'none'; object-src 'none'; style-src data: 'unsafe-inline'; img-src data:; media-src 'none'; frame-src 'none'; font-src 'none'; connect-src 'none'"
             resp.headers['X-Frame-Options'] = 'deny'
             resp.headers['X-Content-Type-Options'] = "nosniff"
-            resp.headers['api'] = API_VERSION
+            resp.headers['X-API'] = API_VERSION
 
             # reset to text/plain to help prevent browser attacks
             self.mimeType = 'text/plain'
             self.overrideCSP = False
 
             return resp
-            
+
         @app.route('/www/private/<path:path>')
         def www_private(path):
             startTime = math.floor(time.time())

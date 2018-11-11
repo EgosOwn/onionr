@@ -140,3 +140,23 @@ class DaemonTools:
             return True
 
         return False
+
+    def humanReadableTime(self, seconds):
+        build = ''
+
+        units = {
+            'year' : 31557600,
+            'month' : (31557600 / 12),
+            'day' : 86400,
+            'hour' : 3600,
+            'minute' : 60,
+            'second' : 1
+        }
+
+        for unit in units:
+            amnt_unit = int(seconds / units[unit])
+            if amnt_unit >= 1:
+                seconds -= amnt_unit * units[unit]
+                build += '%s %s' % (amnt_unit, unit) + ('s' if amnt_unit != 1 else '') + ' '
+
+        return build.strip()

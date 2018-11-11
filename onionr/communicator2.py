@@ -21,12 +21,14 @@
 '''
 import sys, os, core, config, json, requests, time, logger, threading, base64, onionr, uuid
 import onionrexceptions, onionrpeers, onionrevents as events, onionrplugins as plugins, onionrblockapi as block
-import onionrdaemontools, onionrsockets, onionrchat
+import onionrdaemontools, onionrsockets, onionrchat, onionr
 from dependencies import secrets
 from defusedxml import minidom
 
 class OnionrCommunicatorDaemon:
     def __init__(self, debug, developmentMode):
+        # configure logger and stuff
+        onionr.Onionr.setupConfig('data/', self = self)
 
         self.isOnline = True # Assume we're connected to the internet
 
@@ -303,9 +305,11 @@ class OnionrCommunicatorDaemon:
         self.decrementThreadCount('clearOfflinePeer')
 
     def getOnlinePeers(self):
-        '''Manages the self.onlinePeers attribute list, connects to more peers if we have none connected'''
+        '''
+            Manages the self.onlinePeers attribute list, connects to more peers if we have none connected
+        '''
 
-        logger.info('Refreshing peer pool.')
+        logger.debug('Refreshing peer pool...')
         maxPeers = int(config.get('peers.max_connect', 10))
         needed = maxPeers - len(self.onlinePeers)
 
@@ -318,11 +322,13 @@ class OnionrCommunicatorDaemon:
                 break
         else:
             if len(self.onlinePeers) == 0:
-                logger.warn('Could not connect to any peer.')
+                logger.debug('Couldn\'t connect to any peers.')
         self.decrementThreadCount('getOnlinePeers')
 
     def addBootstrapListToPeerList(self, peerList):
-        '''Add the bootstrap list to the peer list (no duplicates)'''
+        '''
+            Add the bootstrap list to the peer list (no duplicates)
+        '''
         for i in self._core.bootstrapList:
             if i not in peerList and i not in self.offlinePeers and i != self._core.hsAddress and len(str(i).strip()) > 0:
                 peerList.append(i)
@@ -440,11 +446,13 @@ class OnionrCommunicatorDaemon:
     def heartbeat(self):
         '''Show a heartbeat debug message'''
         currentTime = self._core._utils.getEpoch() - self.startTime
-        logger.debug('heartbeat, running seconds: ' + str(currentTime))
+        logger.debug('Heartbeat. Node online for %s.' % self.daemonTools.humanReadableTime(currentTime))
         self.decrementThreadCount('heartbeat')
 
     def daemonCommands(self):
-        '''process daemon commands from daemonQueue'''
+        '''
+            Process daemon commands from daemonQueue
+        '''
         cmd = self._core.daemonQueue()
 
         if cmd is not False:

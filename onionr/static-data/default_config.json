@@ -2,6 +2,7 @@
     "general" : {
         "dev_mode" : true,
         "display_header" : true,
+
         "minimum_block_pow": 5,
         "minimum_send_pow": 5,
 
@@ -34,7 +35,20 @@
     "client" : {
 
     },
-    "log": {
+
+    "plugins" : {
+        "enabled" : {
+
+        },
+
+        "disabled" : {
+
+        }
+    },
+
+    "log" : {
+        "verbosity" : "default",
+
         "file": {
             "output": false,
             "path": "data/output.log"

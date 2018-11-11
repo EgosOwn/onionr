@@ -66,7 +66,7 @@ class OnionrMail:
         self.sentboxList = []
         self.sentMessages = {}
         return
-    
+
     def inbox(self):
         blockCount = 0
         pmBlockMap = {}
@@ -87,7 +87,7 @@ class OnionrMail:
                     continue
                 blockCount += 1
                 pmBlockMap[blockCount] = blockHash
-                
+
                 block = pmBlocks[blockHash]
                 senderKey = block.signer
                 try:
@@ -102,7 +102,7 @@ class OnionrMail:
                 displayList.append('%s. %s - %s: %s' % (blockCount, blockDate, senderDisplay[:12], blockHash))
             #displayList.reverse()
             for i in displayList:
-                print(i)
+                logger.info(i)
             try:
                 choice = logger.readline('Enter a block number, -r to refresh, or -q to stop: ').strip().lower()
             except (EOFError, KeyboardInterrupt):
@@ -129,16 +129,16 @@ class OnionrMail:
                 else:
                     cancel = ''
                     readBlock.verifySig()
-                    print('Message recieved from %s' % (self.myCore._utils.bytesToStr(readBlock.signer,)))
-                    print('Valid signature:', readBlock.validSig)
+                    logger.info('Message recieved from %s' % (self.myCore._utils.bytesToStr(readBlock.signer,)))
+                    logger.info('Valid signature: %s' % readBlock.validSig)
                     if not readBlock.validSig:
                         logger.warn('This message has an INVALID signature. ANYONE could have sent this message.')
                         cancel = logger.readline('Press enter to continue to message, or -q to not open the message (recommended).')
                     if cancel != '-q':
                         print(draw_border(self.myCore._utils.escapeAnsi(readBlock.bcontent.decode().strip())))
-                        input("Press enter to continue")
+                        logger.readline("Press enter to continue")
         return
-    
+
     def sentbox(self):
         '''
             Display sent mail messages
@@ -146,7 +146,7 @@ class OnionrMail:
         entering = True
         while entering:
             self.getSentList()
-            print('Enter block number or -q to return')
+            logger.info('Enter block number or -q to return')
             try:
                 choice = input('>')
             except (EOFError, KeyboardInterrupt) as e:
@@ -158,21 +158,21 @@ class OnionrMail:
                     try:
                         self.sentboxList[int(choice) - 1]
                     except IndexError:
-                        print('Invalid block')
+                        logger.warn('Invalid block.')
                     else:
                         logger.info('Sent to: ' + self.sentMessages[self.sentboxList[int(choice) - 1]][1])
                         # Print ansi escaped sent message
-                        print(self.myCore._utils.escapeAnsi(self.sentMessages[self.sentboxList[int(choice) - 1]][0]))
+                        logger.info(self.myCore._utils.escapeAnsi(self.sentMessages[self.sentboxList[int(choice) - 1]][0]))
                         input('Press enter to continue...')
 
         return
-    
+
     def getSentList(self):
         count = 1
         for i in self.sentboxTools.listSent():
             self.sentboxList.append(i['hash'])
             self.sentMessages[i['hash']] = (i['message'], i['peer'])
-            print('%s. %s - %s - %s' % (count, i['hash'], i['peer'][:12], i['date']))
+            logger.info('%s. %s - %s - %s' % (count, i['hash'], i['peer'][:12], i['date']))
             count += 1
 
     def draftMessage(self):
@@ -198,7 +198,7 @@ class OnionrMail:
             # if -q or ctrl-c/d, exit function here, otherwise we successfully got the public key
             return
 
-        print('Enter your message, stop by entering -q on a new line.')
+        logger.info('Enter your message, stop by entering -q on a new line.')
         while newLine != '-q':
             try:
                 newLine = input()
@@ -209,7 +209,7 @@ class OnionrMail:
             newLine += '\n'
             message += newLine
 
-        print('Inserting encrypted message as Onionr block....')
+        logger.info('Inserting encrypted message as Onionr block....')
 
         blockID = self.myCore.insertBlock(message, header='pm', encryptType='asym', asymPeer=recip, sign=True)
         self.sentboxTools.addToSent(blockID, recip, message)
@@ -217,7 +217,7 @@ class OnionrMail:
         choice = ''
         while True:
 
-            print(self.strings.programTag + '\n\nOur ID: ' + self.myCore._crypto.pubKey + self.strings.mainMenu.title()) # print out main menu
+            logger.info(self.strings.programTag + '\n\nOur ID: ' + self.myCore._crypto.pubKey + self.strings.mainMenu.title()) # print out main menu
 
             try:
                 choice = logger.readline('Enter 1-%s:\n' % (len(self.strings.mainMenuChoices))).lower().strip()
