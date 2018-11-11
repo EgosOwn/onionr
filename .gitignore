@@ -13,3 +13,5 @@ onionr/data-encrypted.dat
 onionr/.onionr-lock
 core
 .vscode/*
+venv/*
+onionr/fs*

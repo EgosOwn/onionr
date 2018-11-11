@@ -21,7 +21,14 @@
 import os, re, importlib, config, logger
 import onionrevents as events
 
-_pluginsfolder = 'data/plugins/'
+try:
+    dataDir = os.environ['ONIONR_HOME']
+    if not dataDir.endswith('/'):
+        dataDir += '/'
+except KeyError:
+    dataDir = 'data/'
+
+_pluginsfolder = dataDir + 'plugins/'
 _instances = dict()
 
 def reload(onionr = None, stop_event = True):
@@ -217,7 +224,7 @@ def get_plugin_data_folder(name, absolute = True):
         Returns the location of a plugin's data folder
     '''
 
-    return get_plugins_folder(name, absolute) + 'data/'
+    return get_plugins_folder(name, absolute) + dataDir
 
 def check():
     '''

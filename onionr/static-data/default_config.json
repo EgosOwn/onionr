@@ -2,6 +2,8 @@
     "general" : {
         "dev_mode": true,
         "display_header" : true,
+        "minimum_block_pow": 5,
+        "minimum_send_pow": 5,
 
         "direct_connect" : {
             "respond" : true,
@@ -30,7 +32,7 @@
 
     "log": {
         "file": {
-            "output": true,
+            "output": false,
             "path": "data/output.log"
         },
 
@@ -59,7 +61,7 @@
     "peers":{
         "minimumScore": -100,
         "maxStoredPeers": 5000,
-        "maxConnect": 5
+        "maxConnect": 10
     },
     "timers":{
         "lookupBlocks": 25,

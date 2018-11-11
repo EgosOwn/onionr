@@ -20,7 +20,14 @@
 
 import os, json, logger
 
-_configfile = os.path.abspath('data/config.json')
+try:
+    dataDir = os.environ['ONIONR_HOME']
+    if not dataDir.endswith('/'):
+        dataDir += '/'
+except KeyError:
+    dataDir = 'data/'
+    
+_configfile = os.path.abspath(dataDir + 'config.json')
 _config = {}
 
 def get(key, default = None):

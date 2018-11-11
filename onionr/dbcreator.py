@@ -61,8 +61,6 @@ class DBCreator:
             ID text not null,
             name text,
             adders text,
-            blockDBHash text,
-            forwardKey text,
             dateSeen not null,
             bytesStored int,
             trust int,
@@ -70,6 +68,12 @@ class DBCreator:
             hashID text,
             pow text not null);
         ''')
+        c.execute('''CREATE TABLE forwardKeys(
+        peerKey text not null,
+        forwardKey text not null,
+        date int not null,
+        expire int not null
+        );''')
         conn.commit()
         conn.close()
         return
@@ -87,6 +91,7 @@ class DBCreator:
             sig    - optional signature by the author (not optional if author is specified)
             author       - multi-round partial sha3-256 hash of authors public key
             dateClaimed  - timestamp claimed inside the block, only as trustworthy as the block author is
+            expire int   - block expire date in epoch
         '''
         if os.path.exists(self.core.blockDB):
             raise Exception("Block database already exists")
@@ -101,9 +106,42 @@ class DBCreator:
             dataSaved int,
             sig text,
             author text,
-            dateClaimed int
+            dateClaimed int,
+            expire int
             );
         ''')
         conn.commit()
         conn.close()
         return
+
+    def createForwardKeyDB(self):
+        '''
+            Create the forward secrecy key db (*for *OUR* keys*)
+        '''
+        if os.path.exists(self.core.forwardKeysFile):
+            raise Exception("Block database already exists")
+        conn = sqlite3.connect(self.core.forwardKeysFile)
+        c = conn.cursor()
+        c.execute('''CREATE TABLE myForwardKeys(
+            peer text not null,
+            publickey text not null,
+            privatekey text not null,
+            date int not null,
+            expire int not null
+            );
+        ''')
+        conn.commit()
+        conn.close()
+        return
+    
+    def createDaemonDB(self):
+        '''
+            Create the daemon queue database
+        '''
+        conn = sqlite3.connect(self.core.queueDB, timeout=10)
+        c = conn.cursor()
+        # Create table
+        c.execute('''CREATE TABLE commands
+                    (id integer primary key autoincrement, command text, data text, date text)''')
+        conn.commit()
+        conn.close()
