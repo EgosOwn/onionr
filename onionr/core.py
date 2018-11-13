@@ -728,6 +728,8 @@ class Core:
         payload = proof.waitForResult()
         if payload != False:
             retData = self.setData(payload)
+            # Tell the api server through localCommand to wait for the daemon to upload this block to make stastical analysis more difficult
+            self._utils.localCommand('waitForShare', data=retData)
             self.addToBlockDB(retData, selfInsert=True, dataSaved=True)
             #self.setBlockType(retData, meta['type'])
             self._utils.processBlockMetadata(retData)
