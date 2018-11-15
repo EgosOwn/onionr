@@ -403,7 +403,7 @@ class OnionrCommunicatorDaemon:
         '''Perform a get request to a peer'''
         if len(peer) == 0:
             return False
-        logger.info('Performing ' + action + ' with ' + peer + ' on port ' + str(self.proxyPort))
+        #logger.debug('Performing ' + action + ' with ' + peer + ' on port ' + str(self.proxyPort))
         url = 'http://' + peer + '/public/?action=' + action
         if len(data) > 0:
             url += '&data=' + data
@@ -493,6 +493,7 @@ class OnionrCommunicatorDaemon:
             for bl in self.blocksToUpload:
                 if not self._core._utils.validateHash(bl):
                     logger.warn('Requested to upload invalid block')
+                    self.decrementThreadCount('uploadBlock')
                     return
                 for i in range(max(len(self.onlinePeers), 2)):
                     peer = self.pickOnlinePeer()
@@ -506,12 +507,16 @@ class OnionrCommunicatorDaemon:
                         proxyType = 'tor'
                     elif peer.endswith('.i2p'):
                         proxyType = 'i2p'
-                    logger.info("Uploading block")
+                    logger.info("Uploading block to " + peer)
                     if not self._core._utils.doPostRequest(url, data=data, proxyType=proxyType) == False:
                         self._core._utils.localCommand('waitForShare', data=bl)
                         finishedUploads.append(bl)
+                        break
         for x in finishedUploads:
-            self.blocksToUpload.remove(x)
+            try:
+                self.blocksToUpload.remove(x)
+            except ValueError:
+                pass
         self.decrementThreadCount('uploadBlock')
 
     def announce(self, peer):

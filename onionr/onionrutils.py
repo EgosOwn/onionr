@@ -276,7 +276,7 @@ class OnionrUtils:
             if myBlock.getMetadata('newFSKey') is not None:
                 onionrusers.OnionrUser(self._core, signer).addForwardKey(myBlock.getMetadata('newFSKey'))
             else:
-                logger.warn('FS not used for this encrypted block')
+                logger.debug('FS not used for this block')
                 logger.info(myBlock.bmetadata)
         
             try:
