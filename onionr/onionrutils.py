@@ -18,7 +18,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 # Misc functions that do not fit in the main api, but are useful
-import getpass, sys, requests, os, socket, hashlib, logger, sqlite3, config, binascii, time, base64, json, glob, shutil, math, json, re
+import getpass, sys, requests, os, socket, hashlib, logger, sqlite3, config, binascii, time, base64, json, glob, shutil, math, json, re, urllib.parse
 import nacl.signing, nacl.encoding
 from onionrblockapi import Block
 import onionrexceptions
@@ -150,7 +150,7 @@ class OnionrUtils:
             logger.error('Failed to read my address.', error = error)
             return None
 
-    def localCommand(self, command, silent = True):
+    def localCommand(self, command, data='', silent = True):
         '''
             Send a command to the local http API server, securely. Intended for local clients, DO NOT USE for remote peers.
         '''
@@ -164,6 +164,8 @@ class OnionrUtils:
         except FileNotFoundError:
             return False
         payload = 'http://%s:%s/client/?action=%s&token=%s&timingToken=%s' % (hostname, config.get('client.port'), command, config.get('client.hmac'), self.timingToken)
+        if data != '':
+            payload += '&data=' + urllib.parse.quote_plus(data)
         try:
             retData = requests.get(payload).text
         except Exception as error:
