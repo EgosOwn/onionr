@@ -66,6 +66,8 @@ class DaemonTools:
             if not self.daemon._core._utils.checkNetwork(torPort=self.daemon.proxyPort):
                 logger.warn('Network check failed, are you connected to the internet?')
                 self.daemon.isOnline = False
+            else:
+                self.daemon.isOnline = True
         self.daemon.decrementThreadCount('netCheck')
 
     def cleanOldBlocks(self):

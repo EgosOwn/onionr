@@ -371,7 +371,6 @@ class Core:
             retData = False
             self.daemonQueue()
         events.event('queue_push', data = {'command': command, 'data': data}, onionr = None)
-
         return retData
 
     def clearDaemonQueue(self):
@@ -672,7 +671,7 @@ class Core:
 
         return True
 
-    def insertBlock(self, data, header='txt', sign=False, encryptType='', symKey='', asymPeer='', meta = None, expire=None):
+    def insertBlock(self, data, header='txt', sign=False, encryptType='', symKey='', asymPeer='', meta = {}, expire=None):
         '''
             Inserts a block into the network
             encryptType must be specified to encrypt a block
@@ -703,9 +702,8 @@ class Core:
         # metadata is full block metadata, meta is internal, user specified metadata
 
         # only use header if not set in provided meta
-        if not header is None:
-            meta['type'] = header
-        meta['type'] = str(meta['type'])
+
+        meta['type'] = str(header)
 
         if encryptType in ('asym', 'sym', ''):
             metadata['encryptType'] = encryptType

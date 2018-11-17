@@ -84,7 +84,7 @@
     },
 
     "timers" : {
-        "lookup_blocks" : 25,
-        "get_blocks" : 30
+        "lookupBlocks" : 25,
+        "getBlocks" : 30
     }
 }

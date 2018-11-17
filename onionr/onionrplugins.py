@@ -192,7 +192,7 @@ def get_enabled_plugins():
 
     config.reload()
 
-    return config.get('plugins.enabled', list())
+    return list(config.get('plugins.enabled', list()))
 
 def is_enabled(name):
     '''

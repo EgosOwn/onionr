@@ -129,7 +129,7 @@ class OnionrUtils:
                             continue
                         if self._core.addAddress(adder):
                             # Check if we have the maxmium amount of allowed stored peers
-                            if config.get('peers.max_stored') > len(self._core.listAdders()):
+                            if config.get('peers.max_stored_peers') > len(self._core.listAdders()):
                                 logger.info('Added %s to db.' % adder, timestamp = True)
                                 retVal = True
                             else:
