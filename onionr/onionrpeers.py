@@ -44,7 +44,7 @@ class PeerProfiles:
         except (TypeError, ValueError) as e:
             self.success = 0
         self.score = self.success
-    
+
     def saveScore(self):
         '''Save the node's score to the database'''
         self.coreInst.setAddressInfo(self.address, 'success', self.score)
@@ -79,8 +79,8 @@ def peerCleanup(coreInst):
     logger.info('Cleaning peers...')
     config.reload()
 
-    minScore = int(config.get('peers.minimumScore'))
-    maxPeers = int(config.get('peers.maxStoredPeers'))
+    minScore = int(config.get('peers.minimum_score', -100))
+    maxPeers = int(config.get('peers.max_stored', 5000))
 
     adders = getScoreSortedPeerList(coreInst)
     adders.reverse()

@@ -40,7 +40,7 @@ except ImportError:
     raise Exception("You need the PySocks module (for use with socks5 proxy to use Tor)")
 
 ONIONR_TAGLINE = 'Anonymous P2P Platform - GPLv3 - https://Onionr.VoidNet.Tech'
-ONIONR_VERSION = '0.3.1' # for debugging and stuff
+ONIONR_VERSION = '0.3.2' # for debugging and stuff
 ONIONR_VERSION_TUPLE = tuple(ONIONR_VERSION.split('.')) # (MAJOR, MINOR, VERSION)
 API_VERSION = '5' # increments of 1; only change when something fundemental about how the API works changes. This way other nodes know how to communicate without learning too much information about you.
 
@@ -64,37 +64,7 @@ class Onionr:
             self.dataDir = 'data/'
 
         # Load global configuration data
-
-        data_exists = os.path.exists(self.dataDir)
-
-        if not data_exists:
-            os.mkdir(self.dataDir)
-
-        if os.path.exists('static-data/default_config.json'):
-            config.set_config(json.loads(open('static-data/default_config.json').read())) # this is the default config, it will be overwritten if a config file already exists. Else, it saves it
-        else:
-            # the default config file doesn't exist, try hardcoded config
-            config.set_config({'dev_mode': True, 'log': {'file': {'output': True, 'path': self.dataDir + 'output.log'}, 'console': {'output': True, 'color': True}}})
-        if not data_exists:
-            config.save()
-        config.reload() # this will read the configuration file into memory
-
-        settings = 0b000
-        if config.get('log.console.color', True):
-            settings = settings | logger.USE_ANSI
-        if config.get('log.console.output', True):
-            settings = settings | logger.OUTPUT_TO_CONSOLE
-        if config.get('log.file.output', True):
-            settings = settings | logger.OUTPUT_TO_FILE
-            logger.set_file(config.get('log.file.path', '/tmp/onionr.log').replace('data/', self.dataDir))
-        logger.set_settings(settings)
-
-        if str(config.get('general.dev_mode', True)).lower() == 'true':
-            self._developmentMode = True
-            logger.set_level(logger.LEVEL_DEBUG)
-        else:
-            self._developmentMode = False
-            logger.set_level(logger.LEVEL_INFO)
+        data_exists = Onionr.setupConfig(self.dataDir, self = self)
 
         self.onionrCore = core.Core()
         self.onionrUtils = onionrutils.OnionrUtils(self.onionrCore)
@@ -144,7 +114,7 @@ class Onionr:
             config.set('client.participate', True, savefile=True)
         if type(config.get('client.api_version')) is type(None):
             config.set('client.api_version', API_VERSION, savefile=True)
-    
+
 
         self.cmds = {
             '': self.showHelpSuggestion,
@@ -156,6 +126,16 @@ class Onionr:
             'status': self.showStats,
             'statistics': self.showStats,
             'stats': self.showStats,
+            'details' : self.showDetails,
+            'detail' : self.showDetails,
+            'show-details' : self.showDetails,
+            'show-detail' : self.showDetails,
+            'showdetails' : self.showDetails,
+            'showdetail' : self.showDetails,
+            'get-details' : self.showDetails,
+            'get-detail' : self.showDetails,
+            'getdetails' : self.showDetails,
+            'getdetail' : self.showDetails,
 
             'enable-plugin': self.enablePlugin,
             'enplugin': self.enablePlugin,
@@ -204,6 +184,7 @@ class Onionr:
 
             'ui' : self.openUI,
             'gui' : self.openUI,
+            'chat': self.startChat,
 
             'getpassword': self.printWebPassword,
             'get-password': self.printWebPassword,
@@ -223,14 +204,18 @@ class Onionr:
             'help': 'Displays this Onionr help menu',
             'version': 'Displays the Onionr version',
             'config': 'Configures something and adds it to the file',
+
             'start': 'Starts the Onionr daemon',
             'stop': 'Stops the Onionr daemon',
+
             'stats': 'Displays node statistics',
-            'get-password': 'Displays the web password',
+            'details': 'Displays the web password, public key, and human readable public key',
+
             'enable-plugin': 'Enables and starts a plugin',
             'disable-plugin': 'Disables and stops a plugin',
             'reload-plugin': 'Reloads a plugin',
             'create-plugin': 'Creates directory structure for a plugin',
+
             'add-peer': 'Adds a peer to database',
             'list-peers': 'Displays a list of peers',
             'add-file': 'Create an Onionr block from a file',
@@ -261,6 +246,17 @@ class Onionr:
         THIS SECTION HANDLES THE COMMANDS
     '''
 
+    def showDetails(self):
+        details = {
+            'Node Address' : self.get_hostname(),
+            'Web Password' : self.getWebPassword(),
+            'Public Key' : self.onionrCore._crypto.pubKey,
+            'Human-readable Public Key' : self.onionrCore._utils.getHumanReadableID()
+        }
+
+        for detail in details:
+            logger.info('%s%s: \n%s%s\n' % (logger.colors.fg.lightgreen, detail, logger.colors.fg.green, details[detail]), sensitive = True)
+
     def startChat(self):
         try:
             data = json.dumps({'peer': sys.argv[2], 'reason': 'chat'})
@@ -271,7 +267,49 @@ class Onionr:
 
     def getCommands(self):
         return self.cmds
-    
+
+    def friendCmd(self):
+        '''List, add, or remove friend(s)
+        Changes their peer DB entry.
+        '''
+        friend = ''
+        try:
+            # Get the friend command
+            action = sys.argv[2]
+        except IndexError:
+            logger.info('Syntax: friend add/remove/list [address]')
+        else:
+            action = action.lower()
+            if action == 'list':
+                # List out peers marked as our friend
+                for friend in self.onionrCore.listPeers(randomOrder=False, trust=1):
+                    if friend == self.onionrCore._crypto.pubKey: # do not list our key
+                        continue
+                    friendProfile = onionrusers.OnionrUser(self.onionrCore, friend)
+                    logger.info(friend + ' - ' + friendProfile.getName())
+            elif action in ('add', 'remove'):
+                try:
+                    friend = sys.argv[3]
+                    if not self.onionrUtils.validatePubKey(friend):
+                        raise onionrexceptions.InvalidPubkey('Public key is invalid')
+                    if friend not in self.onionrCore.listPeers():
+                        raise onionrexceptions.KeyNotKnown
+                    friend = onionrusers.OnionrUser(self.onionrCore, friend)
+                except IndexError:
+                    logger.error('Friend ID is required.')
+                except onionrexceptions.KeyNotKnown:
+                    logger.error('That peer is not in our database')
+                else:
+                    if action == 'add':
+                        friend.setTrust(1)
+                        logger.info('Added %s as friend.' % (friend.publicKey,))
+                    else:
+                        friend.setTrust(0)
+                        logger.info('Removed %s as friend.' % (friend.publicKey,))
+            else:
+                logger.info('Syntax: friend add/remove/list [address]')
+
+
     def friendCmd(self):
         '''List, add, or remove friend(s)
         Changes their peer DB entry.
@@ -346,7 +384,7 @@ class Onionr:
         return config.get('client.hmac')
 
     def printWebPassword(self):
-        print(self.getWebPassword())
+        logger.info(self.getWebPassword(), sensitive = True)
 
     def getHelp(self):
         return self.cmdhelp
@@ -399,16 +437,16 @@ class Onionr:
         THIS SECTION DEFINES THE COMMANDS
     '''
 
-    def version(self, verbosity=5):
+    def version(self, verbosity = 5, function = logger.info):
         '''
             Displays the Onionr version
         '''
 
-        logger.info('Onionr %s (%s) - API v%s' % (ONIONR_VERSION, platform.machine(), API_VERSION))
+        function('Onionr v%s (%s) (API v%s)' % (ONIONR_VERSION, platform.machine(), API_VERSION))
         if verbosity >= 1:
-            logger.info(ONIONR_TAGLINE)
+            function(ONIONR_TAGLINE)
         if verbosity >= 2:
-            logger.info('Running on %s %s' % (platform.platform(), platform.release()))
+            function('Running on %s %s' % (platform.platform(), platform.release()))
 
         return
 
@@ -427,9 +465,7 @@ class Onionr:
             Displays a list of keys (used to be called peers) (?)
         '''
 
-        logger.info('Public keys in database:\n')
-        for i in self.onionrCore.listPeers():
-            logger.info(i)
+        logger.info('%sPublic keys in database: \n%s%s' % (logger.colors.fg.lightgreen, logger.colors.fg.green, '\n'.join(self.onionrCore.listPeers())))
 
     def addPeer(self):
         '''
@@ -618,37 +654,56 @@ class Onionr:
         '''
             Starts the Onionr communication daemon
         '''
+
         communicatorDaemon = './communicator2.py'
 
-        apiThread = Thread(target=api.API, args=(self.debug,API_VERSION))
+        # remove runcheck if it exists
+        if os.path.isfile('data/.runcheck'):
+            logger.debug('Runcheck file found on daemon start, deleting in advance.')
+            os.remove('data/.runcheck')
+
+        apiThread = Thread(target = api.API, args = (self.debug, API_VERSION))
         apiThread.start()
+
         try:
             time.sleep(3)
         except KeyboardInterrupt:
-            logger.info('Got keyboard interrupt')
+            logger.debug('Got keyboard interrupt, shutting down...')
             time.sleep(1)
             self.onionrUtils.localCommand('shutdown')
         else:
             if apiThread.isAlive():
+                # configure logger and stuff
+                Onionr.setupConfig('data/', self = self)
+
                 if self._developmentMode:
                     logger.warn('DEVELOPMENT MODE ENABLED (THIS IS LESS SECURE!)', timestamp = False)
                 net = NetController(config.get('client.port', 59496))
-                logger.info('Tor is starting...')
+                logger.debug('Tor is starting...')
                 if not net.startTor():
                     sys.exit(1)
-                logger.info('Started .onion service: ' + logger.colors.underline + net.myID)
-                logger.info('Our Public key: ' + self.onionrCore._crypto.pubKey)
+                logger.debug('Started .onion service: %s' % (logger.colors.underline + net.myID))
+                logger.debug('Using public key: %s' % (logger.colors.underline + self.onionrCore._crypto.pubKey))
                 time.sleep(1)
-                #TODO make runable on windows
-                communicatorProc = subprocess.Popen([communicatorDaemon, "run", str(net.socksPort)])
-                # Print nice header thing :)
+
+                # TODO: make runable on windows
+                communicatorProc = subprocess.Popen([communicatorDaemon, 'run', str(net.socksPort)])
+
+                # print nice header thing :)
                 if config.get('general.display_header', True):
                     self.header()
-                logger.debug('Started communicator')
+
+                # print out debug info
+                self.version(verbosity = 5, function = logger.debug)
+                logger.debug('Python version %s' % platform.python_version())
+
+                logger.debug('Started communicator.')
+
                 events.event('daemon_start', onionr = self)
                 try:
                     while True:
                         time.sleep(5)
+
                         # Break if communicator process ends, so we don't have left over processes
                         if communicatorProc.poll() is not None:
                             break
@@ -689,9 +744,6 @@ class Onionr:
             messages = {
                 # info about local client
                 'Onionr Daemon Status' : ((logger.colors.fg.green + 'Online') if self.onionrUtils.isCommunicatorRunning(timeout = 9) else logger.colors.fg.red + 'Offline'),
-                'Public Key' : self.onionrCore._crypto.pubKey,
-                'Human readable public key' : self.onionrCore._utils.getHumanReadableID(),
-                'Node Address' : self.get_hostname(),
 
                 # file and folder size stats
                 'div1' : True, # this creates a solid line across the screen, a div
@@ -798,7 +850,8 @@ class Onionr:
         except IndexError:
             logger.error("Syntax %s %s" % (sys.argv[0], '/path/to/filename <blockhash>'))
         else:
-            print(fileName)
+            logger.info(fileName)
+
             contents = None
             if os.path.exists(fileName):
                 logger.error("File already exists")
@@ -806,6 +859,7 @@ class Onionr:
             if not self.onionrUtils.validateHash(bHash):
                 logger.error('Block hash is invalid')
                 return
+
             Block.mergeChain(bHash, fileName)
         return
 
@@ -830,17 +884,83 @@ class Onionr:
         else:
             logger.error('%s add-file <filename>' % sys.argv[0], timestamp = False)
 
+    def setupConfig(dataDir, self = None):
+        data_exists = os.path.exists(dataDir)
+
+        if not data_exists:
+            os.mkdir(dataDir)
+
+        if os.path.exists('static-data/default_config.json'):
+            config.set_config(json.loads(open('static-data/default_config.json').read())) # this is the default config, it will be overwritten if a config file already exists. Else, it saves it
+        else:
+            # the default config file doesn't exist, try hardcoded config
+            logger.warn('Default configuration file does not exist, switching to hardcoded fallback configuration!')
+            config.set_config({'dev_mode': True, 'log': {'file': {'output': True, 'path': dataDir + 'output.log'}, 'console': {'output': True, 'color': True}}})
+        if not data_exists:
+            config.save()
+        config.reload() # this will read the configuration file into memory
+
+        settings = 0b000
+        if config.get('log.console.color', True):
+            settings = settings | logger.USE_ANSI
+        if config.get('log.console.output', True):
+            settings = settings | logger.OUTPUT_TO_CONSOLE
+        if config.get('log.file.output', True):
+            settings = settings | logger.OUTPUT_TO_FILE
+            logger.set_file(config.get('log.file.path', '/tmp/onionr.log').replace('data/', dataDir))
+        logger.set_settings(settings)
+
+        if not self is None:
+            if str(config.get('general.dev_mode', True)).lower() == 'true':
+                self._developmentMode = True
+                logger.set_level(logger.LEVEL_DEBUG)
+            else:
+                self._developmentMode = False
+                logger.set_level(logger.LEVEL_INFO)
+
+        verbosity = str(config.get('log.verbosity', 'default')).lower().strip()
+        if not verbosity in ['default', 'null', 'none', 'nil']:
+            map = {
+                str(logger.LEVEL_DEBUG) : logger.LEVEL_DEBUG,
+                'verbose' : logger.LEVEL_DEBUG,
+                'debug' : logger.LEVEL_DEBUG,
+                str(logger.LEVEL_INFO) : logger.LEVEL_INFO,
+                'info' : logger.LEVEL_INFO,
+                'information' : logger.LEVEL_INFO,
+                str(logger.LEVEL_WARN) : logger.LEVEL_WARN,
+                'warn' : logger.LEVEL_WARN,
+                'warning' : logger.LEVEL_WARN,
+                'warnings' : logger.LEVEL_WARN,
+                str(logger.LEVEL_ERROR) : logger.LEVEL_ERROR,
+                'err' : logger.LEVEL_ERROR,
+                'error' : logger.LEVEL_ERROR,
+                'errors' : logger.LEVEL_ERROR,
+                str(logger.LEVEL_FATAL) : logger.LEVEL_FATAL,
+                'fatal' : logger.LEVEL_FATAL,
+                str(logger.LEVEL_IMPORTANT) : logger.LEVEL_IMPORTANT,
+                'silent' : logger.LEVEL_IMPORTANT,
+                'quiet' : logger.LEVEL_IMPORTANT,
+                'important' : logger.LEVEL_IMPORTANT
+            }
+
+            if verbosity in map:
+                logger.set_level(map[verbosity])
+            else:
+                logger.warn('Verbosity level %s is not valid, using default verbosity.' % verbosity)
+
+        return data_exists
+
     def openUI(self):
         url = 'http://127.0.0.1:%s/ui/index.html?timingToken=%s' % (config.get('client.port', 59496), self.onionrUtils.getTimeBypassToken())
 
-        print('Opening %s ...' % url)
+        logger.info('Opening %s ...' % url)
         webbrowser.open(url, new = 1, autoraise = True)
 
     def header(self, message = logger.colors.fg.pink + logger.colors.bold + 'Onionr' + logger.colors.reset + logger.colors.fg.pink + ' has started.'):
-        if os.path.exists('static-data/header.txt'):
+        if os.path.exists('static-data/header.txt') and logger.get_level() <= logger.LEVEL_INFO:
             with open('static-data/header.txt', 'rb') as file:
                 # only to stdout, not file or log or anything
-                sys.stderr.write(file.read().decode().replace('P', logger.colors.fg.pink).replace('W', logger.colors.reset + logger.colors.bold).replace('G', logger.colors.fg.green).replace('\n', logger.colors.reset + '\n').replace('B', logger.colors.bold).replace('V', ONIONR_VERSION))
+                sys.stderr.write(file.read().decode().replace('P', logger.colors.fg.pink).replace('W', logger.colors.reset + logger.colors.bold).replace('G', logger.colors.fg.green).replace('\n', logger.colors.reset + '\n').replace('B', logger.colors.bold).replace('A', '%s' % API_VERSION).replace('V', ONIONR_VERSION))
                 logger.info(logger.colors.fg.lightgreen + '-> ' + str(message) + logger.colors.reset + logger.colors.fg.lightgreen + ' <-\n')
 
 if __name__ == "__main__":

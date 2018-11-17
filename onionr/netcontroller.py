@@ -65,7 +65,7 @@ class NetController:
             Generate a torrc file for our tor instance
         '''
         hsVer = '# v2 onions'
-        if config.get('tor.v3onions'):
+        if config.get('tor.v3_onions'):
             hsVer = 'HiddenServiceVersion 3'
             logger.info('Using v3 onions :)')
 
@@ -141,7 +141,7 @@ HashedControlPassword ''' + str(password) + '''
                 logger.fatal('Failed to start Tor. Maybe a stray instance of Tor used by Onionr is still running?')
                 return False
         except KeyboardInterrupt:
-            logger.fatal("Got keyboard interrupt.")
+            logger.fatal('Got keyboard interrupt.', timestamp = false, level = logger.LEVEL_IMPORTANT)
             return False
 
         logger.debug('Finished starting Tor.', timestamp=True)

@@ -37,9 +37,19 @@ body {
 
 /* timeline */
 
+.onionr-post-focus-separator {
+    width: 100%;
+    
+    padding: 1rem;
+    padding-left: 0;
+    padding-right: 0;
+}
+
 .onionr-post {
     padding: 1rem;
     margin-bottom: 1rem;
+
+    cursor: pointer;
 
     width: 100%;
 }
@@ -60,6 +70,35 @@ body {
     width: 100%;
 }
 
+.onionr-post-creator {
+    padding: 1rem;
+    margin-bottom: 1rem;
+
+    width: 100%;
+}
+
+.onionr-post-creator-user-name {
+    display: inline;
+}
+
+.onionr-post-creator-user-id:before { content: "("; }
+.onionr-post-creator-user-id:after { content: ")"; }
+
+.onionr-post-creator-content {
+    word-wrap: break-word;
+    width: 100%;
+}
+
+.onionr-post-creator-user-icon {
+    border-radius: 100%;
+    width: 100%;
+}
+
+.onionr-post-creator-create {
+    width: 100%;
+    text-align: center;
+}
+
 .h-divider {
     margin: 5px 15px;
     height: 1px;
@@ -76,4 +115,8 @@ body {
 
 .onionr-profile-username {
     text-align: center;
+}
+
+.onionr-profile-save {
+    width: 100%;
 }

@@ -21,12 +21,14 @@
 '''
 import sys, os, core, config, json, requests, time, logger, threading, base64, onionr, uuid
 import onionrexceptions, onionrpeers, onionrevents as events, onionrplugins as plugins, onionrblockapi as block
-import onionrdaemontools, onionrsockets, onionrchat
+import onionrdaemontools, onionrsockets, onionrchat, onionr
 from dependencies import secrets
 from defusedxml import minidom
 
 class OnionrCommunicatorDaemon:
     def __init__(self, debug, developmentMode):
+        # configure logger and stuff
+        onionr.Onionr.setupConfig('data/', self = self)
 
         self.isOnline = True # Assume we're connected to the internet
 
@@ -87,9 +89,8 @@ class OnionrCommunicatorDaemon:
 
         # Set timers, function reference, seconds
         # requiresPeer True means the timer function won't fire if we have no connected peers
-        OnionrCommunicatorTimers(self, self.daemonCommands, 5)
-        OnionrCommunicatorTimers(self, self.detectAPICrash, 5)
         peerPoolTimer = OnionrCommunicatorTimers(self, self.getOnlinePeers, 60, maxThreads=1)
+        OnionrCommunicatorTimers(self, self.runCheck, 1)
         OnionrCommunicatorTimers(self, self.lookupBlocks, self._core.config.get('timers.lookupBlocks'), requiresPeer=True, maxThreads=1)
         OnionrCommunicatorTimers(self, self.getBlocks, self._core.config.get('timers.getBlocks'), requiresPeer=True)
         OnionrCommunicatorTimers(self, self.clearOfflinePeer, 58)
@@ -134,7 +135,7 @@ class OnionrCommunicatorDaemon:
 
     def lookupAdders(self):
         '''Lookup new peer addresses'''
-        logger.info('LOOKING UP NEW ADDRESSES')
+        logger.info('Looking up new addresses...')
         tryAmount = 1
         for i in range(tryAmount):
             # Download new peer address list from random online peers
@@ -145,7 +146,7 @@ class OnionrCommunicatorDaemon:
 
     def lookupBlocks(self):
         '''Lookup new blocks & add them to download queue'''
-        logger.info('LOOKING UP NEW BLOCKS')
+        logger.info('Looking up new blocks...')
         tryAmount = 2
         newBlocks = ''
         existingBlocks = self._core.getBlockList()
@@ -176,7 +177,7 @@ class OnionrCommunicatorDaemon:
                 try:
                     newBlocks = self.peerAction(peer, 'getBlockHashes') # get list of new block hashes
                 except Exception as error:
-                    logger.warn("could not get new blocks with " + peer, error=error)
+                    logger.warn('Could not get new blocks from %s.' % peer, error = error)
                     newBlocks = False
                 if newBlocks != False:
                     # if request was a success
@@ -200,10 +201,10 @@ class OnionrCommunicatorDaemon:
                 break
             # Do not download blocks being downloaded or that are already saved (edge cases)
             if blockHash in self.currentDownloading:
-                logger.debug('ALREADY DOWNLOADING ' + blockHash)
+                logger.debug('Already downloading block %s...' % blockHash)
                 continue
             if blockHash in self._core.getBlockList():
-                logger.debug('%s is already saved' % (blockHash,))
+                logger.debug('Block %s is already saved.' % (blockHash,))
                 self.blockQueue.remove(blockHash)
                 continue
             if self._core._blacklist.inBlacklist(blockHash):
@@ -232,22 +233,22 @@ class OnionrCommunicatorDaemon:
                     #meta = metas[1]
                     if self._core._utils.validateMetadata(metadata, metas[2]): # check if metadata is valid, and verify nonce
                         if self._core._crypto.verifyPow(content): # check if POW is enough/correct
-                            logger.info('Block passed proof, attempting save.')
+                            logger.info('Attempting to save block %s...' % blockHash)
                             try:
                                 self._core.setData(content)
                             except onionrexceptions.DiskAllocationReached:
-                                logger.error("Reached disk allocation allowance, cannot save this block.")
+                                logger.error('Reached disk allocation allowance, cannot save block %s.' % blockHash)
                                 removeFromQueue = False
                             else:
                                 self._core.addToBlockDB(blockHash, dataSaved=True)
                                 self._core._utils.processBlockMetadata(blockHash) # caches block metadata values to block database
                         else:
-                            logger.warn('POW failed for block ' + blockHash)
+                            logger.warn('POW failed for block %s.' % blockHash)
                     else:
                         if self._core._blacklist.inBlacklist(realHash):
-                            logger.warn('%s is blacklisted' % (realHash,))
+                            logger.warn('Block %s is blacklisted.' % (realHash,))
                         else:
-                            logger.warn('Metadata for ' + blockHash + ' is invalid.')
+                            logger.warn('Metadata for block %s is invalid.' % blockHash)
                             self._core._blacklist.addToDB(blockHash)
                 else:
                     # if block didn't meet expected hash
@@ -257,7 +258,7 @@ class OnionrCommunicatorDaemon:
                     except AttributeError:
                         pass
                     # Punish peer for sharing invalid block (not always malicious, but is bad regardless)
-                    onionrpeers.PeerProfiles(peerUsed, self._core).addScore(-50)  
+                    onionrpeers.PeerProfiles(peerUsed, self._core).addScore(-50)
                     logger.warn('Block hash validation failed for ' + blockHash + ' got ' + tempHash)
                 if removeFromQueue:
                     try:
@@ -303,10 +304,12 @@ class OnionrCommunicatorDaemon:
         self.decrementThreadCount('clearOfflinePeer')
 
     def getOnlinePeers(self):
-        '''Manages the self.onlinePeers attribute list, connects to more peers if we have none connected'''
+        '''
+            Manages the self.onlinePeers attribute list, connects to more peers if we have none connected
+        '''
 
-        logger.info('Refreshing peer pool.')
-        maxPeers = int(config.get('peers.maxConnect'))
+        logger.debug('Refreshing peer pool...')
+        maxPeers = int(config.get('peers.max_connect', 10))
         needed = maxPeers - len(self.onlinePeers)
 
         for i in range(needed):
@@ -318,13 +321,15 @@ class OnionrCommunicatorDaemon:
                 break
         else:
             if len(self.onlinePeers) == 0:
-                logger.warn('Could not connect to any peer.')
+                logger.debug('Couldn\'t connect to any peers.')
         self.decrementThreadCount('getOnlinePeers')
 
     def addBootstrapListToPeerList(self, peerList):
-        '''Add the bootstrap list to the peer list (no duplicates)'''
+        '''
+            Add the bootstrap list to the peer list (no duplicates)
+        '''
         for i in self._core.bootstrapList:
-            if i not in peerList and i not in self.offlinePeers and i != self._core.hsAddress:
+            if i not in peerList and i not in self.offlinePeers and i != self._core.hsAddress and len(str(i).strip()) > 0:
                 peerList.append(i)
                 self._core.addAddress(i)
 
@@ -339,7 +344,7 @@ class OnionrCommunicatorDaemon:
                 raise onionrexceptions.InvalidAddress('Will not attempt connection test to invalid address')
         else:
             peerList = self._core.listAdders()
-        
+
         peerList = onionrpeers.getScoreSortedPeerList(self._core)
 
         if len(peerList) == 0 or useBootstrap:
@@ -347,7 +352,7 @@ class OnionrCommunicatorDaemon:
             self.addBootstrapListToPeerList(peerList)
 
         for address in peerList:
-            if not config.get('tor.v3onions') and len(address) == 62:
+            if not config.get('tor.v3_onions') and len(address) == 62:
                 continue
             if len(address) == 0 or address in tried or address in self.onlinePeers or address in self.cooldownPeer:
                 continue
@@ -360,7 +365,7 @@ class OnionrCommunicatorDaemon:
                     self.onlinePeers.append(address)
                     self.connectTimes[address] = self._core._utils.getEpoch()
                 retData = address
-                
+
                 # add peer to profile list if they're not in it
                 for profile in self.peerProfiles:
                     if profile.address == address:
@@ -424,7 +429,7 @@ class OnionrCommunicatorDaemon:
             self._core.setAddressInfo(peer, 'lastConnect', self._core._utils.getEpoch())
             self.getPeerProfileInstance(peer).addScore(1)
         return retData
-    
+
     def getPeerProfileInstance(self, peer):
         '''Gets a peer profile instance from the list of profiles, by address name'''
         for i in self.peerProfiles:
@@ -440,11 +445,13 @@ class OnionrCommunicatorDaemon:
     def heartbeat(self):
         '''Show a heartbeat debug message'''
         currentTime = self._core._utils.getEpoch() - self.startTime
-        logger.debug('heartbeat, running seconds: ' + str(currentTime))
+        logger.debug('Heartbeat. Node online for %s.' % self.daemonTools.humanReadableTime(currentTime))
         self.decrementThreadCount('heartbeat')
 
     def daemonCommands(self):
-        '''process daemon commands from daemonQueue'''
+        '''
+            Process daemon commands from daemonQueue
+        '''
         cmd = self._core.daemonQueue()
 
         if cmd is not False:
@@ -457,7 +464,7 @@ class OnionrCommunicatorDaemon:
                     self.announce(cmd[1])
                 else:
                     logger.warn("Not introducing, since I have no connected nodes.")
-            elif cmd[0] == 'runCheck':
+            elif cmd[0] == 'runCheck': # deprecated
                 logger.debug('Status check; looks good.')
                 open(self._core.dataDir + '.runcheck', 'w+').close()
             elif cmd[0] == 'connectedPeers':
@@ -538,6 +545,12 @@ class OnionrCommunicatorDaemon:
                 self.shutdown = True
         self.decrementThreadCount('detectAPICrash')
 
+    def runCheck(self):
+        if self.daemonTools.runCheck():
+            logger.debug('Status check; looks good.')
+
+        self.decrementThreadCount('runCheck')
+
 class OnionrCommunicatorTimers:
     def __init__(self, daemonInstance, timerFunction, frequency, makeThread=True, threadAmount=1, maxThreads=5, requiresPeer=False):
         self.timerFunction = timerFunction
@@ -571,7 +584,7 @@ class OnionrCommunicatorTimers:
                 if self.makeThread:
                     for i in range(self.threadAmount):
                         if self.daemonInstance.threadCounts[self.timerFunction.__name__] >= self.maxThreads:
-                            logger.warn(self.timerFunction.__name__ + ' has too many current threads to start anymore.')
+                            logger.warn('%s is currently using the maximum number of threads, not starting another.' % self.timerFunction.__name__)
                         else:
                             self.daemonInstance.threadCounts[self.timerFunction.__name__] += 1
                             newThread = threading.Thread(target=self.timerFunction)

@@ -1,7 +1,10 @@
 {
     "general" : {
-        "dev_mode": true,
+        "dev_mode" : true,
         "display_header" : true,
+        "minimum_block_pow": 5,
+        "minimum_send_pow": 5,
+
         "minimum_block_pow": 5,
         "minimum_send_pow": 5,
 
@@ -13,11 +16,16 @@
 
     "www" : {
         "public" : {
-            "run" : true
+            "run" : true,
+            "path" : "static-data/www/public/",
+            "guess_mime" : true
         },
 
         "private" : {
-            "run" : true
+            "run" : true,
+            "path" : "static-data/www/private/",
+            "guess_mime" : true,
+            "timing_protection" : true
         },
 
         "ui" : {
@@ -30,41 +38,55 @@
 
     },
 
-    "log": {
+    "plugins" : {
+        "enabled" : {
+
+        },
+
+        "disabled" : {
+
+        }
+    },
+
+    "log" : {
+        "verbosity" : "default",
+
         "file": {
             "output": false,
             "path": "data/output.log"
         },
 
-        "console": {
-            "output": true,
-            "color": true
+        "console" : {
+            "output" : true,
+            "color" : true
         }
     },
 
     "tor" : {
-        "v3onions": false
+        "v3onions" : false
     },
 
-    "i2p":{
-    	"host": false,
-        "connect": true,
-        "ownAddr": ""
+    "i2p" : {
+    	"host" : false,
+        "connect" : true,
+        "own_addr" : ""
      },
 
-    "allocations":{
-        "disk": 10000000000,
-        "netTotal": 1000000000,
-        "blockCache": 5000000,
-        "blockCacheTotal": 50000000
+    "allocations" : {
+        "disk" : 10000000000,
+        "net_total" : 1000000000,
+        "blockCache" : 5000000,
+        "blockCacheTotal" : 50000000
     },
-    "peers":{
-        "minimumScore": -100,
-        "maxStoredPeers": 5000,
-        "maxConnect": 10
+
+    "peers" : {
+        "minimum_score" : -100,
+        "max_stored_peers" : 5000,
+        "max_connect" : 10
     },
-    "timers":{
-        "lookupBlocks": 25,
-        "getBlocks": 30
+
+    "timers" : {
+        "lookup_blocks" : 25,
+        "get_blocks" : 30
     }
 }

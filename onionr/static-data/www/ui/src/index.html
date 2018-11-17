@@ -10,10 +10,24 @@
                     <div class="onionr-profile">
                         <div class="row">
                             <div class="col-4 col-lg-12">
-                                <img id="onionr-profile-user-icon" class="onionr-profile-user-icon" src="img/default.png">
+                                <img id="onionr-profile-user-icon" class="onionr-profile-user-icon" src="">
                             </div>
                             <div class="col-8 col-lg-12">
-                                <h2 id="onionr-profile-username" class="onionr-profile-username text-left text-lg-center text-sm-left">arinerron</h2>
+                                <h2 maxlength="25" id="onionr-profile-username" class="onionr-profile-username text-left text-lg-center text-sm-left" data-placement="top" data-toggle="tooltip" title="unknown" data-editable></h2>
+                            </div>
+                            <div class="col-12">
+                                <p maxlength="128" id="onionr-profile-description" class="onionr-profile-description" data-editable></p>
+                            </div>
+
+                            <div class="col-12 onionr-profile-edit" id="onionr-profile-edit" style="display: none">
+                                <div class="row">
+                                    <div class="col-sm-6 col-lg-12">
+                                        <input type="button" onclick="updateUser()" class="onionr-profile-save text-center" id="onionr-profile-save" value="<$= LANG.PROFILE_EDIT_SAVE $>" />
+                                    </div>
+                                    <div class="col-sm-6 col-lg-12">
+                                        <input type="button" onclick="cancelUpdate()" class="onionr-profile-save text-center" id="onionr-profile-cancel" value="<$= LANG.PROFILE_EDIT_CANCEL $>" />
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -22,6 +36,40 @@
                 <div class="h-divider pb-3 d-block d-lg-none"></div>
 
                 <div class="col-sm-12 col-lg-6">
+                    <div class="row" id="onionr-timeline-post-creator">
+                        <div class="col-12">
+                            <div class="onionr-timeline">
+                                <h2><$= LANG.TIMELINE $></h2>
+                            </div>
+                        </div>
+
+                        <!-- POST CREATOR -->
+                        <div class="col-12">
+                            <div class="onionr-post-creator">
+                                <div class="row">
+                                    <div class="col-2">
+                                        <img class="onionr-post-creator-user-icon" id="onionr-post-creator-user-icon">
+                                    </div>
+                                    <div class="col-10">
+                                        <div class="row">
+                                            <div class="col col-auto">
+                                                <a class="onionr-post-creator-user-name" id="onionr-post-creator-user-name" href="#!" onclick="viewProfile('$user-id-url', '$user-name-url')"></a>
+                                                <a class="onionr-post-creator-user-id" id="onionr-post-creator-user-id" href="#!" onclick="viewProfile('$user-id-url', '$user-name-url')" data-placement="top" data-toggle="tooltip" title="$user-id"><$= LANG.POST_CREATOR_YOU $></a>
+                                            </div>
+                                        </div>
+
+                                        <textarea class="onionr-post-creator-content" id="onionr-post-creator-content" oninput="postCreatorChange()"></textarea>
+
+                                        <div class="onionr-post-creator-content-message" id="onionr-post-creator-content-message"></div>
+
+                                        <input type="button" onclick="makePost()" title="<$= LANG.POST_CREATOR_CREATE $>" value="<$= LANG.POST_CREATOR_CREATE $>" id="onionr-post-creator-create" class="onionr-post-creator-create" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- END POST CREATOR -->
+                    </div>
+
                     <div class="row" id="onionr-timeline-posts">
 
                     </div>
@@ -30,14 +78,57 @@
                 <div class="d-none d-lg-block col-lg-3">
                     <div class="row">
                         <div class="col-12">
-                            <div class="onionr-trending">
-                                <h2><$= LANG.TRENDING $></h2>
+                            <div class="onionr-replies">
+                                <h2 id="onionr-replies-title"></h2>
                             </div>
                         </div>
+
+                        <div id="onionr-reply-creator-panel">
+
+                        </div>
+                    </div>
+
+                    <div class="row">
+
                     </div>
                 </div>
             </div>
         </div>
+
+        <!-- POST FOCUS DIALOG -->
+        <div class="modal fade" id="onionr-post-focus" tabindex="-1" role="dialog" aria-labelledby="modal-title" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="row p-3">
+                        <div class="col-2">
+                            <img src="" id="onionr-post-focus-user-icon" class="onionr-post-user-icon">
+                        </div>
+                        <div class="col-10">
+                            <div class="row">
+                                <div class="col col-auto">
+                                    <a class="onionr-post-user-name" id="onionr-post-focus-user-name" href="#!" onclick="viewProfile('$user-id-url', '$user-name-url'); jQuery('#onionr-post-focus').modal('hide');">$user-name</a>
+                                    <a class="onionr-post-user-id" id="onionr-post-focus-user-id" href="#!" onclick="viewProfile('$user-id-url', '$user-name-url'); jQuery('#onionr-post-focus').modal('hide');" data-placement="top" data-toggle="tooltip" title="$user-id">$user-id-truncated</a>
+                                </div>
+
+                                <div class="col col-auto text-right ml-auto pl-0">
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="onionr-post-content" id="onionr-post-focus-content">
+
+                            </div>
+                        </div>
+
+                        <hr class="col-12 onionr-post-focus-separator" />
+
+                        <$= htmlTemplate('onionr-timeline-reply-creator') $>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- END POST FOCUS DIALOG -->
 
         <footer />
         <script src="js/timeline.js"></script>

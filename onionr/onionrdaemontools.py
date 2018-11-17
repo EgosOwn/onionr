@@ -17,8 +17,11 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import onionrexceptions, onionrpeers, onionrproofs, base64, logger, onionrusers, sqlite3
+
+import onionrexceptions, onionrpeers, onionrproofs, logger, onionrusers
+import base64, sqlite3, os
 from dependencies import secrets
+
 class DaemonTools:
     def __init__(self, daemon):
             self.daemon = daemon
@@ -64,7 +67,7 @@ class DaemonTools:
                 logger.warn('Network check failed, are you connected to the internet?')
                 self.daemon.isOnline = False
         self.daemon.decrementThreadCount('netCheck')
-    
+
     def cleanOldBlocks(self):
         '''Delete old blocks if our disk allocation is full/near full, and also expired blocks'''
 
@@ -73,22 +76,25 @@ class DaemonTools:
             self.daemon._core._blacklist.addToDB(oldest)
             self.daemon._core.removeBlock(oldest)
             logger.info('Deleted block: %s' % (oldest,))
+
         # Delete expired blocks
         for bHash in self.daemon._core.getExpiredBlocks():
             self.daemon._core._blacklist.addToDB(bHash)
             self.daemon._core.removeBlock(bHash)
+
         self.daemon.decrementThreadCount('cleanOldBlocks')
-    
+
     def cleanKeys(self):
         '''Delete expired forward secrecy keys'''
         conn = sqlite3.connect(self.daemon._core.peerDB, timeout=10)
         c = conn.cursor()
         time = self.daemon._core._utils.getEpoch()
         deleteKeys = []
-        for entry in c.execute("SELECT * FROM forwardKeys where expire <= ?", (time,)):
+
+        for entry in c.execute("SELECT * FROM forwardKeys WHERE expire <= ?", (time,)):
             logger.info(entry[1])
             deleteKeys.append(entry[1])
-        
+
         for key in deleteKeys:
             logger.info('Deleting forward key '+ key)
             c.execute("DELETE from forwardKeys where forwardKey = ?", (key,))
@@ -114,8 +120,9 @@ class DaemonTools:
                 del self.daemon.cooldownPeer[peer]
 
         # Cool down a peer, if we have max connections alive for long enough
-        if onlinePeerAmount >= self.daemon._core.config.get('peers.maxConnect'):
+        if onlinePeerAmount >= self.daemon._core.config.get('peers.max_connect', 10):
             finding = True
+
             while finding:
                 try:
                     toCool = min(tempConnectTimes, key=tempConnectTimes.get)
@@ -128,4 +135,32 @@ class DaemonTools:
             else:
                 self.daemon.removeOnlinePeer(toCool)
                 self.daemon.cooldownPeer[toCool] = self.daemon._core._utils.getEpoch()
+
         self.daemon.decrementThreadCount('cooldownPeer')
+
+    def runCheck(self):
+        if os.path.isfile('data/.runcheck'):
+            os.remove('data/.runcheck')
+            return True
+
+        return False
+
+    def humanReadableTime(self, seconds):
+        build = ''
+
+        units = {
+            'year' : 31557600,
+            'month' : (31557600 / 12),
+            'day' : 86400,
+            'hour' : 3600,
+            'minute' : 60,
+            'second' : 1
+        }
+
+        for unit in units:
+            amnt_unit = int(seconds / units[unit])
+            if amnt_unit >= 1:
+                seconds -= amnt_unit * units[unit]
+                build += '%s %s' % (amnt_unit, unit) + ('s' if amnt_unit != 1 else '') + ' '
+
+        return build.strip()

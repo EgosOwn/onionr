@@ -125,11 +125,11 @@ class OnionrUtils:
                 for adder in newAdderList.split(','):
                     adder = adder.strip()
                     if not adder in self._core.listAdders(randomOrder = False) and adder != self.getMyAddress() and not self._core._blacklist.inBlacklist(adder):
-                        if not config.get('tor.v3onions') and len(adder) == 62:
+                        if not config.get('tor.v3_onions') and len(adder) == 62:
                             continue
                         if self._core.addAddress(adder):
                             # Check if we have the maxmium amount of allowed stored peers
-                            if config.get('peers.maxStoredPeers') > len(self._core.listAdders()):
+                            if config.get('peers.max_stored') > len(self._core.listAdders()):
                                 logger.info('Added %s to db.' % adder, timestamp = True)
                                 retVal = True
                             else:
@@ -276,9 +276,9 @@ class OnionrUtils:
             if myBlock.getMetadata('newFSKey') is not None:
                 onionrusers.OnionrUser(self._core, signer).addForwardKey(myBlock.getMetadata('newFSKey'))
             else:
-                logger.debug('FS not used for this block')
+                logger.warn('FS not used for this encrypted block')
                 logger.info(myBlock.bmetadata)
-        
+
             try:
                 if len(blockType) <= 10:
                     self._core.updateBlockInfo(blockHash, 'dataType', blockType)
@@ -330,7 +330,7 @@ class OnionrUtils:
         c = conn.cursor()
         if not self.validateHash(hash):
             raise Exception("Invalid hash")
-        for result in c.execute("SELECT COUNT() FROM hashes where hash='" + hash + "'"):
+        for result in c.execute("SELECT COUNT() FROM hashes WHERE hash = ?", (hash,)):
             if result[0] >= 1:
                 conn.commit()
                 conn.close()
@@ -404,7 +404,7 @@ class OnionrUtils:
                         logger.warn('Block is expired')
                         break
             else:
-                # if metadata loop gets no errors, it does not break, therefore metadata is valid      
+                # if metadata loop gets no errors, it does not break, therefore metadata is valid
                 # make sure we do not have another block with the same data content (prevent data duplication and replay attacks)
                 nonce = self._core._utils.bytesToStr(self._core._crypto.sha3Hash(blockData))
                 try:
@@ -490,7 +490,13 @@ class OnionrUtils:
                         retVal = False
                 if not idNoDomain.isalnum():
                     retVal = False
-                
+
+                # Validate address is valid base32 (when capitalized and minus extension); v2/v3 onions and .b32.i2p use base32
+                try:
+                    base64.b32decode(idNoDomain.upper().encode())
+                except binascii.Error:
+                    retVal = False
+
                 # Validate address is valid base32 (when capitalized and minus extension); v2/v3 onions and .b32.i2p use base32
                 try:
                     base64.b32decode(idNoDomain.upper().encode())
@@ -512,7 +518,7 @@ class OnionrUtils:
         c = conn.cursor()
         command = (hash,)
         retData = ''
-        for row in c.execute('SELECT ID FROM peers where hashID=?', command):
+        for row in c.execute('SELECT id FROM peers WHERE hashID = ?', command):
             if row[0] != '':
                 retData = row[0]
         return retData
@@ -521,18 +527,16 @@ class OnionrUtils:
         try:
             runcheck_file = self._core.dataDir + '.runcheck'
 
-            if os.path.isfile(runcheck_file):
-                os.remove(runcheck_file)
-                logger.debug('%s file appears to have existed before the run check.' % runcheck_file, timestamp = False)
+            if not os.path.isfile(runcheck_file):
+                open(runcheck_file, 'w+').close()
 
-            self._core.daemonQueueAdd('runCheck')
+            # self._core.daemonQueueAdd('runCheck') # deprecated
             starttime = time.time()
 
             while True:
                 time.sleep(interval)
-                if os.path.isfile(runcheck_file):
-                    os.remove(runcheck_file)
 
+                if not os.path.isfile(runcheck_file):
                     return True
                 elif time.time() - starttime >= timeout:
                     return False
@@ -543,6 +547,7 @@ class OnionrUtils:
         '''
             Generates a secure random hex encoded token
         '''
+
         return binascii.hexlify(os.urandom(size))
 
     def importNewBlocks(self, scanDir=''):
@@ -625,12 +630,14 @@ class OnionrUtils:
         else:
             return
         headers = {'user-agent': 'PyOnionr'}
+        response_headers = dict()
         try:
             proxies = {'http': 'socks4a://127.0.0.1:' + str(port), 'https': 'socks4a://127.0.0.1:' + str(port)}
             r = requests.get(url, headers=headers, proxies=proxies, allow_redirects=False, timeout=(15, 30))
             # Check server is using same API version as us
             try:
-                if r.headers['api'] != str(API_VERSION):
+                response_headers = r.headers
+                if r.headers['X-API'] != str(API_VERSION):
                     raise onionrexceptions.InvalidAPIVersion
             except KeyError:
                 raise onionrexceptions.InvalidAPIVersion
@@ -638,9 +645,12 @@ class OnionrUtils:
         except KeyboardInterrupt:
             raise KeyboardInterrupt
         except ValueError as e:
-            logger.debug('Failed to make request', error = e)
+            logger.debug('Failed to make GET request to %s' % url, error = e, sensitive = True)
         except onionrexceptions.InvalidAPIVersion:
-            logger.debug("Node is using different API version :(")
+            if 'X-API' in response_headers:
+                logger.debug('Using API version %s. Cannot communicate with node\'s API version of %s.' % (API_VERSION, response_headers['X-API']))
+            else:
+                logger.debug('Using API version %s. API version was not sent with the request.' % API_VERSION)
         except requests.exceptions.RequestException as e:
             if not 'ConnectTimeoutError' in str(e) and not 'Request rejected or failed' in str(e):
                 logger.debug('Error: %s' % str(e))
@@ -659,16 +669,16 @@ class OnionrUtils:
         retData = ''
         curTime = self.getRoundedEpoch(rounding)
         self.nistSaltTimestamp = curTime
-        data = self.doGetRequest('https://beacon.nist.gov/rest/record/' + str(curTime), port=torPort)
-        dataXML = minidom.parseString(data, forbid_dtd=True, forbid_entities=True, forbid_external=True)
+        data = self.doGetRequest('https://beacon.nist.gov/rest/record/' + str(curTime), port = torPort)
+        dataXML = minidom.parseString(data, forbid_dtd = True, forbid_entities = True, forbid_external = True)
         try:
             retData = dataXML.getElementsByTagName('outputValue')[0].childNodes[0].data
         except ValueError:
-            logger.warn('Could not get NIST beacon value')
+            logger.warn('Failed to get the NIST beacon value.')
         else:
             self.powSalt = retData
         return retData
-    
+
     def strToBytes(self, data):
         try:
             data = data.encode()
@@ -681,7 +691,7 @@ class OnionrUtils:
         except AttributeError:
             pass
         return data
-    
+
     def checkNetwork(self, torPort=0):
         '''Check if we are connected to the internet (through Tor)'''
         retData = False
@@ -689,7 +699,7 @@ class OnionrUtils:
         try:
             with open('static-data/connect-check.txt', 'r') as connectTest:
                 connectURLs = connectTest.read().split(',')
-            
+
             for url in connectURLs:
                 if self.doGetRequest(url, port=torPort) != False:
                     retData = True
