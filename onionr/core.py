@@ -592,7 +592,6 @@ class Core:
         '''
 
         conn = sqlite3.connect(self.blockDB, timeout=10)
-
         c = conn.cursor()
 
         execute = 'SELECT dateReceived FROM hashes WHERE hash=?;'
@@ -609,7 +608,6 @@ class Core:
         '''
 
         conn = sqlite3.connect(self.blockDB, timeout=10)
-
         c = conn.cursor()
 
         if orderDate:
@@ -623,6 +621,7 @@ class Core:
         for row in c.execute(execute, args):
             for i in row:
                 rows.append(i)
+
         return rows
 
     def getExpiredBlocks(self):
@@ -631,10 +630,10 @@ class Core:
         c = conn.cursor()
         date = int(self._utils.getEpoch())
 
-        execute = 'SELECT hash FROM hashes WHERE expire <= ? ORDER BY dateReceived;'
+        execute = 'SELECT hash FROM hashes WHERE expire <= %s ORDER BY dateReceived;' % (date,)
 
         rows = list()
-        for row in c.execute(execute, (date,)):
+        for row in c.execute(execute):
             for i in row:
                 rows.append(i)
         return rows
@@ -680,8 +679,7 @@ class Core:
 
         return True
 
-
-    def insertBlock(self, data, header='txt', sign=False, encryptType='', symKey='', asymPeer='', meta = dict(), expire=None):
+    def insertBlock(self, data, header='txt', sign=False, encryptType='', symKey='', asymPeer='', meta = None, expire=None):
         '''
             Inserts a block into the network
             encryptType must be specified to encrypt a block
@@ -784,6 +782,8 @@ class Core:
         payload = proof.waitForResult()
         if payload != False:
             retData = self.setData(payload)
+            # Tell the api server through localCommand to wait for the daemon to upload this block to make stastical analysis more difficult
+            self._utils.localCommand('waitForShare', data=retData)
             self.addToBlockDB(retData, selfInsert=True, dataSaved=True)
             #self.setBlockType(retData, meta['type'])
             self._utils.processBlockMetadata(retData)

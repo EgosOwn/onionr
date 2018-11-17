@@ -52,7 +52,7 @@ class OnionrCLIUI:
 
         while showMenu:
             if firstRun:
-                logger.info('Please wait while Onionr starts...'')
+                logger.info('Please wait while Onionr starts...')
                 daemon = subprocess.Popen(["./onionr.py", "start"], stdin=subprocess.PIPE, stdout=subprocess.DEVNULL)
                 time.sleep(30)
                 firstRun = False
@@ -63,7 +63,6 @@ class OnionrCLIUI:
                 isOnline = "No"
 
             logger.info('''Daemon Running: ''' + isOnline + '''
-
 1. Flow (Anonymous public chat, use at your own risk)
 2. Mail (Secure email-like service)
 3. File Sharing
@@ -91,6 +90,7 @@ class OnionrCLIUI:
                 if isOnline == "Yes":
                     logger.info("Onionr daemon will shutdown...")
                     self.myCore.daemonQueueAdd('shutdown')
+
                     try:
                         daemon.kill()
                     except UnboundLocalError:

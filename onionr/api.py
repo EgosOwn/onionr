@@ -94,6 +94,8 @@ class API:
         self.mimeType = 'text/plain'
         self.overrideCSP = False
 
+        self.hideBlocks = [] # Blocks to be denied sharing
+
         with open(self._core.dataDir + 'time-bypass.txt', 'w') as bypass:
             bypass.write(self.timeBypassToken)
 
@@ -231,6 +233,15 @@ class API:
             self.validateHost('private')
             if action == 'hello':
                 resp = Response('Hello, World! ' + request.host)
+            elif action == 'waitForShare':
+                if self._core._utils.validateHash(data):
+                    if data not in self.hideBlocks:
+                        self.hideBlocks.append(data)
+                    else:
+                        self.hideBlocks.remove(data)
+                    resp = "success"
+                else:
+                    resp = "failed to validate hash"
             elif action == 'shutdown':
                 # request.environ.get('werkzeug.server.shutdown')()
                 self.http_server.stop()
@@ -469,7 +480,11 @@ class API:
             elif action == 'getDBHash':
                 resp = Response(self._utils.getBlockDBHash())
             elif action == 'getBlockHashes':
-                resp = Response('\n'.join(self._core.getBlockList()))
+                bList = self._core.getBlockList()
+                for b in self.hideBlocks:
+                    if b in bList:
+                        bList.remove(b)
+                resp = Response('\n'.join(bList))
             # setData should be something the communicator initiates, not this api
             elif action == 'getData':
                 resp = ''

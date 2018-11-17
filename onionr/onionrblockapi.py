@@ -243,10 +243,10 @@ class Block:
                 if (not self.getBlockFile() is None) and (recreate is True):
                     with open(self.getBlockFile(), 'wb') as blockFile:
                         blockFile.write(self.getRaw().encode())
-                    self.update()
                 else:
                     self.hash = self.getCore().insertBlock(self.getContent(), header = self.getType(), sign = sign, meta = self.getMetadata(), expire = self.getExpire())
-                    self.update()
+                
+                self.update()
 
                 return self.getHash()
             else:

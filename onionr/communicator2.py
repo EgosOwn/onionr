@@ -43,7 +43,7 @@ class OnionrCommunicatorDaemon:
         self.nistSaltTimestamp = 0
         self.powSalt = 0
 
-        self.blockToUpload = ''
+        self.blocksToUpload = []
 
         # loop time.sleep delay in seconds
         self.delay = 1
@@ -89,16 +89,15 @@ class OnionrCommunicatorDaemon:
 
         # Set timers, function reference, seconds
         # requiresPeer True means the timer function won't fire if we have no connected peers
-        OnionrCommunicatorTimers(self, self.runCheck, 1)
-        OnionrCommunicatorTimers(self, self.daemonCommands, 5)
-        OnionrCommunicatorTimers(self, self.detectAPICrash, 5)
         peerPoolTimer = OnionrCommunicatorTimers(self, self.getOnlinePeers, 60, maxThreads=1)
-        OnionrCommunicatorTimers(self, self.lookupBlocks, self._core.config.get('timers.lookup_blocks'), requiresPeer=True, maxThreads=1)
-        OnionrCommunicatorTimers(self, self.getBlocks, self._core.config.get('timers.get_blocks'), requiresPeer=True)
+        OnionrCommunicatorTimers(self, self.runCheck, 1)
+        OnionrCommunicatorTimers(self, self.lookupBlocks, self._core.config.get('timers.lookupBlocks'), requiresPeer=True, maxThreads=1)
+        OnionrCommunicatorTimers(self, self.getBlocks, self._core.config.get('timers.getBlocks'), requiresPeer=True)
         OnionrCommunicatorTimers(self, self.clearOfflinePeer, 58)
         OnionrCommunicatorTimers(self, self.daemonTools.cleanOldBlocks, 65)
         OnionrCommunicatorTimers(self, self.lookupAdders, 60, requiresPeer=True)
         OnionrCommunicatorTimers(self, self.daemonTools.cooldownPeer, 30, requiresPeer=True)
+        OnionrCommunicatorTimers(self, self.uploadBlock, 10, requiresPeer=True, maxThreads=1)
         netCheckTimer = OnionrCommunicatorTimers(self, self.daemonTools.netCheck, 600)
         announceTimer = OnionrCommunicatorTimers(self, self.daemonTools.announceNode, 305, requiresPeer=True, maxThreads=1)
         cleanupTimer = OnionrCommunicatorTimers(self, self.peerCleanup, 300, requiresPeer=True)
@@ -170,7 +169,7 @@ class OnionrCommunicatorDaemon:
                 else:
                     continue
             newDBHash = self.peerAction(peer, 'getDBHash') # get their db hash
-            if newDBHash == False:
+            if newDBHash == False or not self._core._utils.validateHash(newDBHash):
                 continue # if request failed, restart loop (peer is added to offline peers automatically)
             triedPeers.append(peer)
             if newDBHash != self._core.getAddressInfo(peer, 'DBHash'):
@@ -409,7 +408,7 @@ class OnionrCommunicatorDaemon:
         '''Perform a get request to a peer'''
         if len(peer) == 0:
             return False
-        logger.info('Performing ' + action + ' with ' + peer + ' on port ' + str(self.proxyPort))
+        #logger.debug('Performing ' + action + ' with ' + peer + ' on port ' + str(self.proxyPort))
         url = 'http://' + peer + '/public/?action=' + action
         if len(data) > 0:
             url += '&data=' + data
@@ -475,8 +474,7 @@ class OnionrCommunicatorDaemon:
                     if i.timerFunction.__name__ == 'lookupAdders':
                         i.count = (i.frequency - 1)
             elif cmd[0] == 'uploadBlock':
-                self.blockToUpload = cmd[1]
-                threading.Thread(target=self.uploadBlock).start()
+                self.blocksToUpload.append(cmd[1])
             elif cmd[0] == 'startSocket':
                 # Create our own socket server
                 socketInfo = json.loads(cmd[1])
@@ -497,23 +495,36 @@ class OnionrCommunicatorDaemon:
         '''Upload our block to a few peers'''
         # when inserting a block, we try to upload it to a few peers to add some deniability
         triedPeers = []
-        if not self._core._utils.validateHash(self.blockToUpload):
-            logger.warn('Requested to upload invalid block')
-            return
-        for i in range(max(len(self.onlinePeers), 2)):
-            peer = self.pickOnlinePeer()
-            if peer in triedPeers:
-                continue
-            triedPeers.append(peer)
-            url = 'http://' + peer + '/public/upload/'
-            data = {'block': block.Block(self.blockToUpload).getRaw()}
-            proxyType = ''
-            if peer.endswith('.onion'):
-                proxyType = 'tor'
-            elif peer.endswith('.i2p'):
-                proxyType = 'i2p'
-            logger.info("Uploading block")
-            self._core._utils.doPostRequest(url, data=data, proxyType=proxyType)
+        finishedUploads = []
+        if len(self.blocksToUpload) != 0:
+            for bl in self.blocksToUpload:
+                if not self._core._utils.validateHash(bl):
+                    logger.warn('Requested to upload invalid block')
+                    self.decrementThreadCount('uploadBlock')
+                    return
+                for i in range(max(len(self.onlinePeers), 2)):
+                    peer = self.pickOnlinePeer()
+                    if peer in triedPeers:
+                        continue
+                    triedPeers.append(peer)
+                    url = 'http://' + peer + '/public/upload/'
+                    data = {'block': block.Block(bl).getRaw()}
+                    proxyType = ''
+                    if peer.endswith('.onion'):
+                        proxyType = 'tor'
+                    elif peer.endswith('.i2p'):
+                        proxyType = 'i2p'
+                    logger.info("Uploading block to " + peer)
+                    if not self._core._utils.doPostRequest(url, data=data, proxyType=proxyType) == False:
+                        self._core._utils.localCommand('waitForShare', data=bl)
+                        finishedUploads.append(bl)
+                        break
+        for x in finishedUploads:
+            try:
+                self.blocksToUpload.remove(x)
+            except ValueError:
+                pass
+        self.decrementThreadCount('uploadBlock')
 
     def announce(self, peer):
         '''Announce to peers our address'''

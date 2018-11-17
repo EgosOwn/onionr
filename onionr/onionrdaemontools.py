@@ -17,6 +17,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
+
 import onionrexceptions, onionrpeers, onionrproofs, logger, onionrusers
 import base64, sqlite3, os
 from dependencies import secrets
@@ -89,6 +90,7 @@ class DaemonTools:
         c = conn.cursor()
         time = self.daemon._core._utils.getEpoch()
         deleteKeys = []
+
         for entry in c.execute("SELECT * FROM forwardKeys WHERE expire <= ?", (time,)):
             logger.info(entry[1])
             deleteKeys.append(entry[1])
@@ -120,6 +122,7 @@ class DaemonTools:
         # Cool down a peer, if we have max connections alive for long enough
         if onlinePeerAmount >= self.daemon._core.config.get('peers.max_connect', 10):
             finding = True
+
             while finding:
                 try:
                     toCool = min(tempConnectTimes, key=tempConnectTimes.get)
@@ -132,6 +135,7 @@ class DaemonTools:
             else:
                 self.daemon.removeOnlinePeer(toCool)
                 self.daemon.cooldownPeer[toCool] = self.daemon._core._utils.getEpoch()
+
         self.daemon.decrementThreadCount('cooldownPeer')
 
     def runCheck(self):

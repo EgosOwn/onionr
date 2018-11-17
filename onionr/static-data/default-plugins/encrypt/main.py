@@ -72,6 +72,7 @@ class PlainEncryption:
             encrypted = self.api.get_core()._crypto.pubKeyEncrypt(plaintext, pubkey, anonymous=True, encodedData=True)
             encrypted = self.api.get_core()._utils.bytesToStr(encrypted)
             logger.info('Encrypted Message: \n\nONIONR ENCRYPTED DATA %s END ENCRYPTED DATA' % (encrypted,))
+
     def decrypt(self):
         plaintext = ""
         data = ""
@@ -102,7 +103,6 @@ class PlainEncryption:
                 logger.info("Message has good signature.")
         return
 
-
 def on_init(api, data = None):
     '''
         This event is called after Onionr is initialized, but before the command
@@ -114,4 +114,5 @@ def on_init(api, data = None):
     encrypt = PlainEncryption(pluginapi)
     api.commands.register(['encrypt'], encrypt.encrypt)
     api.commands.register(['decrypt'], encrypt.decrypt)
+    
     return

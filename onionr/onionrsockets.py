@@ -87,6 +87,7 @@ class OnionrSocketServer:
     def detectShutdown(self):
         while not self._core.killSockets:
             time.sleep(5)
+
         logger.debug('Killing socket server...')
         self.http_server.stop()
 

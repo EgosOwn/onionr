@@ -40,7 +40,7 @@ except ImportError:
     raise Exception("You need the PySocks module (for use with socks5 proxy to use Tor)")
 
 ONIONR_TAGLINE = 'Anonymous P2P Platform - GPLv3 - https://Onionr.VoidNet.Tech'
-ONIONR_VERSION = '0.3.0' # for debugging and stuff
+ONIONR_VERSION = '0.3.2' # for debugging and stuff
 ONIONR_VERSION_TUPLE = tuple(ONIONR_VERSION.split('.')) # (MAJOR, MINOR, VERSION)
 API_VERSION = '5' # increments of 1; only change when something fundemental about how the API works changes. This way other nodes know how to communicate without learning too much information about you.
 
@@ -64,7 +64,6 @@ class Onionr:
             self.dataDir = 'data/'
 
         # Load global configuration data
-
         data_exists = Onionr.setupConfig(self.dataDir, self = self)
 
         self.onionrCore = core.Core()
@@ -169,6 +168,7 @@ class Onionr:
 
             'add-file': self.addFile,
             'addfile': self.addFile,
+
             'get-file': self.getFile,
             'getfile': self.getFile,
 
@@ -184,6 +184,17 @@ class Onionr:
 
             'ui' : self.openUI,
             'gui' : self.openUI,
+            'chat': self.startChat,
+
+            'getpassword': self.printWebPassword,
+            'get-password': self.printWebPassword,
+            'getpwd': self.printWebPassword,
+            'get-pwd': self.printWebPassword,
+            'getpass': self.printWebPassword,
+            'get-pass': self.printWebPassword,
+            'getpasswd': self.printWebPassword,
+            'get-passwd': self.printWebPassword,
+
             'chat': self.startChat,
 
             'friend': self.friendCmd
@@ -246,7 +257,6 @@ class Onionr:
         for detail in details:
             logger.info('%s%s: \n%s%s\n' % (logger.colors.fg.lightgreen, detail, logger.colors.fg.green, details[detail]), sensitive = True)
 
-
     def startChat(self):
         try:
             data = json.dumps({'peer': sys.argv[2], 'reason': 'chat'})
@@ -257,6 +267,48 @@ class Onionr:
 
     def getCommands(self):
         return self.cmds
+
+    def friendCmd(self):
+        '''List, add, or remove friend(s)
+        Changes their peer DB entry.
+        '''
+        friend = ''
+        try:
+            # Get the friend command
+            action = sys.argv[2]
+        except IndexError:
+            logger.info('Syntax: friend add/remove/list [address]')
+        else:
+            action = action.lower()
+            if action == 'list':
+                # List out peers marked as our friend
+                for friend in self.onionrCore.listPeers(randomOrder=False, trust=1):
+                    if friend == self.onionrCore._crypto.pubKey: # do not list our key
+                        continue
+                    friendProfile = onionrusers.OnionrUser(self.onionrCore, friend)
+                    logger.info(friend + ' - ' + friendProfile.getName())
+            elif action in ('add', 'remove'):
+                try:
+                    friend = sys.argv[3]
+                    if not self.onionrUtils.validatePubKey(friend):
+                        raise onionrexceptions.InvalidPubkey('Public key is invalid')
+                    if friend not in self.onionrCore.listPeers():
+                        raise onionrexceptions.KeyNotKnown
+                    friend = onionrusers.OnionrUser(self.onionrCore, friend)
+                except IndexError:
+                    logger.error('Friend ID is required.')
+                except onionrexceptions.KeyNotKnown:
+                    logger.error('That peer is not in our database')
+                else:
+                    if action == 'add':
+                        friend.setTrust(1)
+                        logger.info('Added %s as friend.' % (friend.publicKey,))
+                    else:
+                        friend.setTrust(0)
+                        logger.info('Removed %s as friend.' % (friend.publicKey,))
+            else:
+                logger.info('Syntax: friend add/remove/list [address]')
+
 
     def friendCmd(self):
         '''List, add, or remove friend(s)
@@ -633,6 +685,7 @@ class Onionr:
                 logger.debug('Started .onion service: %s' % (logger.colors.underline + net.myID))
                 logger.debug('Using public key: %s' % (logger.colors.underline + self.onionrCore._crypto.pubKey))
                 time.sleep(1)
+
                 # TODO: make runable on windows
                 communicatorProc = subprocess.Popen([communicatorDaemon, 'run', str(net.socksPort)])
 
@@ -798,6 +851,7 @@ class Onionr:
             logger.error("Syntax %s %s" % (sys.argv[0], '/path/to/filename <blockhash>'))
         else:
             logger.info(fileName)
+
             contents = None
             if os.path.exists(fileName):
                 logger.error("File already exists")
@@ -805,6 +859,7 @@ class Onionr:
             if not self.onionrUtils.validateHash(bHash):
                 logger.error('Block hash is invalid')
                 return
+
             Block.mergeChain(bHash, fileName)
         return
 

@@ -30,13 +30,16 @@ class OnionrBlackList:
     def inBlacklist(self, data):
         hashed = self._core._utils.bytesToStr(self._core._crypto.sha3Hash(data))
         retData = False
+
         if not hashed.isalnum():
             raise Exception("Hashed data is not alpha numeric")
         if len(hashed) > 64:
             raise Exception("Hashed data is too large")
+
         for i in self._dbExecute("SELECT * FROM blacklist WHERE hash = ?", (hashed,)):
             retData = True # this only executes if an entry is present by that hash
             break
+        
         return retData
 
     def _dbExecute(self, toExec, params = ()):

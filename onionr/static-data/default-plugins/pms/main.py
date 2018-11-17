@@ -129,8 +129,10 @@ class OnionrMail:
                 else:
                     cancel = ''
                     readBlock.verifySig()
+
                     logger.info('Message recieved from %s' % (self.myCore._utils.bytesToStr(readBlock.signer,)))
                     logger.info('Valid signature: %s' % readBlock.validSig)
+
                     if not readBlock.validSig:
                         logger.warn('This message has an INVALID signature. ANYONE could have sent this message.')
                         cancel = logger.readline('Press enter to continue to message, or -q to not open the message (recommended).')
@@ -172,6 +174,7 @@ class OnionrMail:
         for i in self.sentboxTools.listSent():
             self.sentboxList.append(i['hash'])
             self.sentMessages[i['hash']] = (i['message'], i['peer'])
+
             logger.info('%s. %s - %s - %s' % (count, i['hash'], i['peer'][:12], i['date']))
             count += 1
 

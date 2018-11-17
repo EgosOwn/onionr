@@ -46,4 +46,5 @@ class OnionrChat:
                     self.communicator.socketClient.sendData(peer, "lol")
                 except:
                     pass
+
             time.sleep(2)

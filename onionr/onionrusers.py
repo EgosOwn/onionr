@@ -107,12 +107,14 @@ class OnionrUser:
 
         conn.commit()
         conn.close()
+
         return key
 
     def _getForwardKeys(self):
         conn = sqlite3.connect(self._core.peerDB, timeout=10)
         c = conn.cursor()
         keyList = []
+
         for row in c.execute("SELECT forwardKey FROM forwardKeys WHERE peerKey = ? ORDER BY date DESC", (self.publicKey,)):
             key = row[0]
             keyList.append(key)
@@ -150,8 +152,10 @@ class OnionrUser:
         pubkey = self._core._utils.bytesToStr(pubkey)
         command = (pubkey,)
         keyList = [] # list of tuples containing pub, private for peer
+
         for result in c.execute("SELECT * FROM myForwardKeys WHERE peer = ?", command):
             keyList.append((result[1], result[2]))
+
         if len(keyList) == 0:
             if genNew:
                 self.generateForwardKey()
