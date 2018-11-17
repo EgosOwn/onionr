@@ -33,10 +33,19 @@ def deleteExpiredKeys(coreInst):
     return
 
 class OnionrUser:
-    def __init__(self, coreInst, publicKey):
+    def __init__(self, coreInst, publicKey, saveUser=False):
+        '''
+            OnionrUser is an abstraction for "users" of the network. 
+            
+            Takes an instance of onionr core, a base32 encoded ed25519 public key, and a bool saveUser
+            saveUser determines if we should add a user to our peer database or not.
+        '''
         self.trust = 0
         self._core = coreInst
         self.publicKey = publicKey
+
+        if saveUser:
+            self._core.addPeer(publicKey)
 
         self.trust = self._core.getPeerInfo(self.publicKey, 'trust')
         return

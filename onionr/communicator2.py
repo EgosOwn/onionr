@@ -108,12 +108,13 @@ class OnionrCommunicatorDaemon:
         announceTimer.count = (cleanupTimer.frequency - 60)
         #forwardSecrecyTimer.count = (forwardSecrecyTimer.frequency - 990)
 
-        self.socketServer = threading.Thread(target=onionrsockets.OnionrSocketServer, args=(self._core,))
-        self.socketServer.start()
-        self.socketClient = onionrsockets.OnionrSocketClient(self._core)
+        if config.get('general.socket_servers'):
+            self.socketServer = threading.Thread(target=onionrsockets.OnionrSocketServer, args=(self._core,))
+            self.socketServer.start()
+            self.socketClient = onionrsockets.OnionrSocketClient(self._core)
 
-        # Loads chat messages into memory
-        threading.Thread(target=self._chat.chatHandler).start()
+            # Loads chat messages into memory
+            threading.Thread(target=self._chat.chatHandler).start()
 
         # Main daemon loop, mainly for calling timers, don't do any complex operations here to avoid locking
         try:

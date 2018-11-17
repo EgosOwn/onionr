@@ -109,15 +109,12 @@ class Core:
             with open(self.dataDir + '/hs/hostname', 'r') as hs:
                 self.hsAddress = hs.read().strip()
 
-    def addPeer(self, peerID, powID, name=''):
+    def addPeer(self, peerID, name=''):
         '''
             Adds a public key to the key database (misleading function name)
         '''
         # This function simply adds a peer to the DB
         if not self._utils.validatePubKey(peerID):
-            return False
-        if sys.getsizeof(powID) > 120:
-            logger.warn("POW token for pubkey base64 representation exceeded 120 bytes, is " + str(sys.getsizeof(powID)))
             return False
 
         events.event('pubkey_add', data = {'key': peerID}, onionr = None)
@@ -125,7 +122,7 @@ class Core:
         conn = sqlite3.connect(self.peerDB, timeout=10)
         hashID = self._crypto.pubKeyHashID(peerID)
         c = conn.cursor()
-        t = (peerID, name, 'unknown', hashID, powID, 0)
+        t = (peerID, name, 'unknown', hashID, 0)
 
         for i in c.execute("SELECT * FROM PEERS where id = '" + peerID + "';"):
             try:
@@ -136,7 +133,7 @@ class Core:
                 pass
             except IndexError:
                 pass
-        c.execute('INSERT INTO peers (id, name, dateSeen, pow, hashID, trust) VALUES(?, ?, ?, ?, ?, ?);', t)
+        c.execute('INSERT INTO peers (id, name, dateSeen, hashID, trust) VALUES(?, ?, ?, ?, ?);', t)
         conn.commit()
         conn.close()
 
@@ -437,16 +434,13 @@ class Core:
             name text,          1
             adders text,        2
             dateSeen not null,  3
-            bytesStored int,    4
-            trust int           5
-            pubkeyExchanged int 6
-            hashID text         7
-            pow text            8
+            trust int           4
+            hashID text         5
         '''
         conn = sqlite3.connect(self.peerDB, timeout=10)
         c = conn.cursor()
         command = (peer,)
-        infoNumbers = {'id': 0, 'name': 1, 'adders': 2, 'dateSeen': 3, 'bytesStored': 4, 'trust': 5, 'pubkeyExchanged': 6, 'hashID': 7}
+        infoNumbers = {'id': 0, 'name': 1, 'adders': 2, 'dateSeen': 3, 'trust': 4, 'hashID': 5}
         info = infoNumbers[info]
         iterCount = 0
         retVal = ''
@@ -469,7 +463,7 @@ class Core:
         c = conn.cursor()
         command = (data, peer)
         # TODO: validate key on whitelist
-        if key not in ('id', 'name', 'pubkey', 'blockDBHash', 'forwardKey', 'dateSeen', 'bytesStored', 'trust'):
+        if key not in ('id', 'name', 'pubkey', 'forwardKey', 'dateSeen', 'trust'):
             raise Exception("Got invalid database key when setting peer info")
         c.execute('UPDATE peers SET ' + key + ' = ? WHERE id=?', command)
         conn.commit()

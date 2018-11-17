@@ -40,7 +40,7 @@ except ImportError:
     raise Exception("You need the PySocks module (for use with socks5 proxy to use Tor)")
 
 ONIONR_TAGLINE = 'Anonymous P2P Platform - GPLv3 - https://Onionr.VoidNet.Tech'
-ONIONR_VERSION = '0.3.1' # for debugging and stuff
+ONIONR_VERSION = '0.4.1' # for debugging and stuff
 ONIONR_VERSION_TUPLE = tuple(ONIONR_VERSION.split('.')) # (MAJOR, MINOR, VERSION)
 API_VERSION = '5' # increments of 1; only change when something fundemental about how the API works changes. This way other nodes know how to communicate without learning too much information about you.
 
@@ -296,13 +296,9 @@ class Onionr:
                     friend = sys.argv[3]
                     if not self.onionrUtils.validatePubKey(friend):
                         raise onionrexceptions.InvalidPubkey('Public key is invalid')
-                    if friend not in self.onionrCore.listPeers():
-                        raise onionrexceptions.KeyNotKnown
                     friend = onionrusers.OnionrUser(self.onionrCore, friend)
                 except IndexError:
                     logger.error('Friend ID is required.')
-                except onionrexceptions.KeyNotKnown:
-                    logger.error('That peer is not in our database')
                 else:
                     if action == 'add':
                         friend.setTrust(1)
