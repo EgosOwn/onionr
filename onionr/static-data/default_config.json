@@ -6,9 +6,6 @@
         "minimum_send_pow": 5,
         "socket_servers": false,
 
-        "minimum_block_pow": 5,
-        "minimum_send_pow": 5,
-
         "direct_connect" : {
             "respond" : true,
             "execute_callbacks" : true
