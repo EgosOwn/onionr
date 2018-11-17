@@ -72,7 +72,7 @@ class OnionrSocketServer:
                 self._core.socketServerResponseData[myPeer] = ''
 
             return retData
-    
+
     def socketStarter(self):
         while not self._core.killSockets:
             try:
@@ -87,14 +87,15 @@ class OnionrSocketServer:
     def detectShutdown(self):
         while not self._core.killSockets:
             time.sleep(5)
-        logger.info('Killing socket server')
+
+        logger.debug('Killing socket server...')
         self.http_server.stop()
 
     def addSocket(self, peer, reason=''):
         bindPort = 1337
 
         assert len(reason) <= 12
-            
+
         with stem.control.Controller.from_port(port=config.get('tor.controlPort')) as controller:
             controller.authenticate(config.get('tor.controlpassword'))
 
@@ -106,7 +107,7 @@ class OnionrSocketServer:
             self._core.insertBlock(str(uuid.uuid4()), header='socket', sign=True, encryptType='asym', asymPeer=peer, meta={'reason': reason, 'address': socket.service_id + '.onion'})
             self._core.socketReasons[peer] = reason
         return
-    
+
 class OnionrSocketClient:
     def __init__(self, coreInst):
         self.sockets = {} # pubkey: tor address
@@ -158,7 +159,7 @@ class OnionrSocketClient:
                 postData = {'data': data}
                 self.connPool[peer] = {'date': self._core._utils.getEpoch(), 'data': self._core._utils.doPostRequest('http://' + address + '/dc/', data=postData)}
                 time.sleep(2)
-    
+
     def getResponse(self, peer):
         retData = ''
         try:
@@ -166,6 +167,6 @@ class OnionrSocketClient:
         except KeyError:
             pass
         return
-    
+
     def sendData(self, peer, data):
         self.sendData[peer] = data

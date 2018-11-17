@@ -2,18 +2,17 @@
 <div class="col-12">
     <div class="onionr-post" id="onionr-post-$post-hash" onclick="focusPost('$post-hash', 'user-id-url', 'user-name-url', '')">
         <div class="row">
-            <div class="col-2">
+            <div class="col-3">
                 <img class="onionr-post-user-icon" src="$user-image">
             </div>
-            <div class="col-10">
+            <div class="col-9">
                 <div class="row">
                     <div class="col col-auto">
                         <a class="onionr-post-user-name" id="onionr-post-user-name" href="#!" onclick="viewProfile('$user-id-url', '$user-name-url')">$user-name</a>
-                        <a class="onionr-post-user-id" id="onionr-post-user-id" href="#!" onclick="viewProfile('$user-id-url', '$user-name-url')" data-placement="top" data-toggle="tooltip" title="$user-id">$user-id-truncated</a>
                     </div>
 
                     <div class="col col-auto text-right ml-auto pl-0">
-                        <div class="onionr-post-date text-right" data-placement="top" data-toggle="tooltip" title="$date">$date-relative</div>
+                        <div class="onionr-post-date text-right" data-placement="top" data-toggle="tooltip" title="$date">$date-relative-truncated</div>
                     </div>
                 </div>
 

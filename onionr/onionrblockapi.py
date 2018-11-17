@@ -73,6 +73,7 @@ class Block:
         '''
             Decrypt a block, loading decrypted data into their vars
         '''
+
         if self.decrypted:
             return True
         retData = False
@@ -114,6 +115,7 @@ class Block:
         '''
             Verify if a block's signature is signed by its claimed signer
         '''
+
         core = self.getCore()
 
         if core._crypto.edVerify(data=self.signedData, key=self.signer, sig=self.signature, encodedData=True):
@@ -173,7 +175,7 @@ class Block:
             self.raw = str(blockdata)
             self.bheader = json.loads(self.getRaw()[:self.getRaw().index('\n')])
             self.bcontent = self.getRaw()[self.getRaw().index('\n') + 1:]
-            if self.bheader['encryptType'] in ('asym', 'sym'):
+            if ('encryptType' in self.bheader) and (self.bheader['encryptType'] in ('asym', 'sym')):
                 self.bmetadata = self.getHeader('meta', None)
                 self.isEncrypted = True
             else:
@@ -199,7 +201,13 @@ class Block:
 
             return True
         except Exception as e:
-            logger.error('Failed to update block data.', error = e, timestamp = False)
+            logger.error('Failed to parse block %s.' % self.getHash(), error = e, timestamp = False)
+
+            # if block can't be parsed, it's a waste of precious space. Throw it away.
+            if not self.delete():
+                logger.error('Failed to delete invalid block %s.' % self.getHash(), error = e)
+            else:
+                logger.debug('Deleted invalid block %s.' % self.getHash(), timestamp = False)
 
         self.valid = False
         return False
@@ -214,7 +222,7 @@ class Block:
 
         if self.exists():
             os.remove(self.getBlockFile())
-            removeBlock(self.getHash())
+            self.getCore().removeBlock(self.getHash())
             return True
         return False
 
@@ -235,10 +243,10 @@ class Block:
                 if (not self.getBlockFile() is None) and (recreate is True):
                     with open(self.getBlockFile(), 'wb') as blockFile:
                         blockFile.write(self.getRaw().encode())
-                    self.update()
                 else:
-                    self.hash = self.getCore().insertBlock(self.getContent(), header = self.getType(), sign = sign, expire=self.getExpire())
-                    self.update()
+                    self.hash = self.getCore().insertBlock(self.getContent(), header = self.getType(), sign = sign, meta = self.getMetadata(), expire = self.getExpire())
+                
+                self.update()
 
                 return self.getHash()
             else:
@@ -782,7 +790,7 @@ class Block:
             return False
 
         # dump old cached blocks if the size exeeds the maximum
-        if sys.getsizeof(Block.blockCacheOrder) >= config.get('allocations.blockCacheTotal', 50000000): # 50MB default cache size
+        if sys.getsizeof(Block.blockCacheOrder) >= config.get('allocations.block_cache_total', 50000000): # 50MB default cache size
             del Block.blockCache[blockCacheOrder.pop(0)]
 
         # cache block content

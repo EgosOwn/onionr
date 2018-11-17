@@ -22,34 +22,37 @@ class OnionrBlackList:
     def __init__(self, coreInst):
         self.blacklistDB = coreInst.dataDir + 'blacklist.db'
         self._core = coreInst
-        
+
         if not os.path.exists(self.blacklistDB):
             self.generateDB()
         return
-    
+
     def inBlacklist(self, data):
         hashed = self._core._utils.bytesToStr(self._core._crypto.sha3Hash(data))
         retData = False
+
         if not hashed.isalnum():
             raise Exception("Hashed data is not alpha numeric")
         if len(hashed) > 64:
             raise Exception("Hashed data is too large")
-        for i in self._dbExecute("select * from blacklist where hash='%s'" % (hashed,)):
+
+        for i in self._dbExecute("SELECT * FROM blacklist WHERE hash = ?", (hashed,)):
             retData = True # this only executes if an entry is present by that hash
             break
+        
         return retData
 
-    def _dbExecute(self, toExec):
+    def _dbExecute(self, toExec, params = ()):
         conn = sqlite3.connect(self.blacklistDB)
         c = conn.cursor()
-        retData = c.execute(toExec)
+        retData = c.execute(toExec, params)
         conn.commit()
         return retData
-    
+
     def deleteBeforeDate(self, date):
         # TODO, delete blacklist entries before date
         return
-    
+
     def deleteExpired(self, dataType=0):
         '''Delete expired entries'''
         deleteList = []
@@ -60,13 +63,13 @@ class OnionrBlackList:
         except AttributeError:
             raise TypeError("dataType must be int")
 
-        for i in self._dbExecute('select * from blacklist where dataType=%s' % (dataType,)):
+        for i in self._dbExecute('SELECT * FROM blacklist WHERE dataType = ?', (dataType,)):
             if i[1] == dataType:
                 if (curTime - i[2]) >= i[3]:
                     deleteList.append(i[0])
-        
+
         for thing in deleteList:
-            self._dbExecute("delete from blacklist where hash='%s'" % (thing,))
+            self._dbExecute("DELETE FROM blacklist WHERE hash = ?", (thing,))
 
     def generateDB(self):
         self._dbExecute('''CREATE TABLE blacklist(
@@ -77,12 +80,12 @@ class OnionrBlackList:
             );
         ''')
         return
-    
+
     def clearDB(self):
-        self._dbExecute('''delete from blacklist;);''')
+        self._dbExecute('''DELETE FROM blacklist;);''')
 
     def getList(self):
-        data = self._dbExecute('select * from blacklist')
+        data = self._dbExecute('SELECT * FROM blacklist')
         myList = []
         for i in data:
             myList.append(i[0])
@@ -113,4 +116,4 @@ class OnionrBlackList:
             return
         insert = (hashed,)
         blacklistDate = self._core._utils.getEpoch()
-        self._dbExecute("insert into blacklist (hash, dataType, blacklistDate, expire) VALUES('%s', %s, %s, %s);" % (hashed, dataType, blacklistDate, expire))
+        self._dbExecute("INSERT INTO blacklist (hash, dataType, blacklistDate, expire) VALUES(?, ?, ?, ?);", (str(hashed), dataType, blacklistDate, expire))

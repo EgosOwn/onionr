@@ -41,16 +41,16 @@ LANG = type('LANG', (), langmap)
 
 # templating
 class Template:
-    def jsTemplate(template):
+    def jsTemplate(template, filename = ''):
         with open('common/%s.html' % template, 'r') as file:
-            return Template.parseTags(file.read().replace('\\', '\\\\').replace('\'', '\\\'').replace('\n', "\\\n"))
+            return Template.parseTags(file.read().replace('\\', '\\\\').replace('\'', '\\\'').replace('\n', "\\\n"), filename)
 
-    def htmlTemplate(template):
+    def htmlTemplate(template, filename = ''):
         with open('common/%s.html' % template, 'r') as file:
-            return Template.parseTags(file.read())
+            return Template.parseTags(file.read(), filename)
 
     # tag parser
-    def parseTags(contents):
+    def parseTags(contents, filename = ''):
         # <$ logic $>
         for match in re.findall(r'(<\$(?!=)(.*?)\$>)', contents):
             try:
@@ -66,7 +66,7 @@ class Template:
             try:
                 out = eval(match[1].strip())
                 contents = contents.replace(match[0], '' if out is None else str(out))
-            except NameError as e:
+            except (NameError, AttributeError) as e:
                 name = match[1].strip()
                 print('Warning: %s does not exist, treating as an str' % name)
                 contents = contents.replace(match[0], name)
@@ -118,7 +118,7 @@ def iterate(directory):
 
                         # do python tags
                         if settings['python_tags']:
-                            contents = Template.parseTags(contents)
+                            contents = Template.parseTags(contents, filename)
 
                         # write file
                         file.write(contents)

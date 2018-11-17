@@ -24,7 +24,7 @@ from gevent.pywsgi import WSGIServer
 import sys, random, threading, hmac, hashlib, base64, time, math, os, json
 import core
 from onionrblockapi import Block
-import onionrutils, onionrexceptions, onionrcrypto, blockimporter, onionrevents as events, logger, config
+import onionrutils, onionrexceptions, onionrcrypto, blockimporter, onionrevents as events, logger, config, onionr
 
 class API:
     '''
@@ -62,14 +62,9 @@ class API:
         }
 
         for mimetype in mimetypes:
-            logger.debug(path + ' endswith .' + mimetype + '?')
             if path.endswith('.%s' % mimetype):
-                logger.debug('- True!')
                 return mimetypes[mimetype]
-            else:
-                logger.debug('- no')
 
-        logger.debug('%s not in %s' % (path, mimetypes))
         return 'text/plain'
 
     def __init__(self, debug, API_VERSION):
@@ -80,14 +75,8 @@ class API:
             This also saves the used host (random localhost IP address) to the data folder in host.txt
         '''
 
-        config.reload()
-
-        if config.get('dev_mode', True):
-            self._developmentMode = True
-            logger.set_level(logger.LEVEL_DEBUG)
-        else:
-            self._developmentMode = False
-            logger.set_level(logger.LEVEL_INFO)
+        # configure logger and stuff
+        onionr.Onionr.setupConfig('data/', self = self)
 
         self.debug = debug
         self._privateDelayTime = 3
@@ -138,14 +127,14 @@ class API:
                 resp.headers["Content-Security-Policy"] =  "default-src 'none'; script-src 'none'; object-src 'none'; style-src data: 'unsafe-inline'; img-src data:; media-src 'none'; frame-src 'none'; font-src 'none'; connect-src 'none'"
             resp.headers['X-Frame-Options'] = 'deny'
             resp.headers['X-Content-Type-Options'] = "nosniff"
-            resp.headers['api'] = API_VERSION
+            resp.headers['X-API'] = API_VERSION
 
             # reset to text/plain to help prevent browser attacks
             self.mimeType = 'text/plain'
             self.overrideCSP = False
 
             return resp
-            
+
         @app.route('/www/private/<path:path>')
         def www_private(path):
             startTime = math.floor(time.time())
@@ -160,14 +149,17 @@ class API:
 
             self.validateHost('private')
 
+            if config.get('www.public.guess_mime', True):
+                self.mimeType = API.guessMime(path)
+
             endTime = math.floor(time.time())
             elapsed = endTime - startTime
 
             if not hmac.compare_digest(timingToken, self.timeBypassToken):
-                if elapsed < self._privateDelayTime:
+                if (elapsed < self._privateDelayTime) and config.get('www.private.timing_protection', True):
                     time.sleep(self._privateDelayTime - elapsed)
 
-            return send_from_directory('static-data/www/private/', path)
+            return send_from_directory(config.get('www.private.path', 'static-data/www/private/'), path)
 
         @app.route('/www/public/<path:path>')
         def www_public(path):
@@ -176,7 +168,10 @@ class API:
 
             self.validateHost('public')
 
-            return send_from_directory('static-data/www/public/', path)
+            if config.get('www.public.guess_mime', True):
+                self.mimeType = API.guessMime(path)
+
+            return send_from_directory(config.get('www.public.path', 'static-data/www/public/'), path)
 
         @app.route('/ui/<path:path>')
         def ui_private(path):
@@ -206,10 +201,10 @@ class API:
                     time.sleep(self._privateDelayTime - elapsed)
             '''
 
-            logger.debug('Serving %s' % path)
-
             self.mimeType = API.guessMime(path)
             self.overrideCSP = True
+
+            logger.debug('Serving %s (mime: %s)' % (path, self.mimeType))
 
             return send_from_directory('static-data/www/ui/dist/', path, mimetype = API.guessMime(path))
 
@@ -253,6 +248,16 @@ class API:
                 resp = Response('Goodbye')
             elif action == 'ping':
                 resp = Response('pong')
+            elif action == 'site':
+                block = data
+                siteData = self._core.getData(data)
+                response = 'not found'
+                if siteData != '' and siteData != False:
+                    self.mimeType = 'text/html'
+                    response = siteData.split(b'-', 2)[-1]
+                resp = Response(response)
+            elif action == 'info':
+                resp = Response(json.dumps({'pubkey' : self._core._crypto.pubKey, 'host' : self._core.hsAddress}))
             elif action == "insertBlock":
                 response = {'success' : False, 'reason' : 'An unknown error occurred'}
 
@@ -450,7 +455,7 @@ class API:
                     else:
                         logger.warn(newNode.decode() + ' failed to meet POW: ' + powHash)
             resp = Response(resp)
-            return resp   
+            return resp
 
         @app.route('/public/')
         def public_handler():

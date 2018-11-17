@@ -132,10 +132,10 @@ def createRepository(plugins):
     contents = {'plugins' : plugins, 'author' : getpass.getuser(), 'compiled-by' : plugin_name}
 
     block = Block(core = pluginapi.get_core())
-    
+
     block.setType('repository')
     block.setContent(json.dumps(contents))
-    
+
     return block.save(True)
 
 def check():
@@ -217,7 +217,7 @@ def pluginToBlock(plugin, import_block = True):
                     info = ''
                     with open(directory + 'info.json').read() as file:
                         info = json.loads(file.read())
-                    
+
                     if 'author' in info:
                         author = info['author']
                     if 'description' in info:
@@ -228,10 +228,10 @@ def pluginToBlock(plugin, import_block = True):
             metadata = {'author' : author, 'date' : str(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')), 'name' : plugin, 'info' : info, 'compiled-by' : plugin_name, 'content' : data.decode('utf-8'), 'description' : description}
 
             block = Block(core = pluginapi.get_core())
-            
+
             block.setType('plugin')
             block.setContent(json.dumps(metadata))
-            
+
             hash = block.save(True)
             # hash = pluginapi.get_core().insertBlock(, header = 'plugin', sign = True)
 
@@ -390,12 +390,12 @@ def commandInstallPlugin():
             except Exception as e:
                 logger.warn('Failed to lookup plugin in repositories.', timestamp = False)
                 logger.error('asdf', error = e, timestamp = False)
-                
+
                 return True
 
         if pkobh is None:
             logger.error('No key for this plugin found in keystore or repositories, please specify.', timestamp = False)
-            
+
             return True
 
         valid_hash = pluginapi.get_utils().validateHash(pkobh)
@@ -552,49 +552,48 @@ def commandPublishPlugin():
             logger.error('Plugin %s does not exist.' % pluginname, timestamp = False)
     else:
         logger.info(sys.argv[0] + ' ' + sys.argv[1] + ' <plugin>')
-        
+
 def commandCreateRepository():
     if len(sys.argv) >= 3:
         check()
-        
+
         plugins = list()
         script = sys.argv[0]
-        
+
         del sys.argv[:2]
         success = True
         for pluginname in sys.argv:
             distributor = None
-            
+
             if ':' in pluginname:
                 split = pluginname.split(':')
                 pluginname = split[0]
                 distributor = split[1]
-            
+
             pluginname = sanitize(pluginname)
-            
+
             if distributor is None:
                 distributor = getKey(pluginname)
             if distributor is None:
                 logger.error('No distributor key was found for the plugin %s.' % pluginname, timestamp = False)
                 success = False
-            
+
             plugins.append([pluginname, distributor])
-            
+
         if not success:
             logger.error('Please correct the above errors, then recreate the repository.')
             return True
-        
+
         blockhash = createRepository(plugins)
-        print(blockhash)
         if not blockhash is None:
             logger.info('Successfully created repository. Execute the following command to add the repository:\n    ' + logger.colors.underline + '%s --add-repository %s' % (script, blockhash))
         else:
             logger.error('Failed to create repository, an unknown error occurred.')
     else:
         logger.info(sys.argv[0] + ' ' + sys.argv[1] + ' [plugins...]')
-        
+
     return True
-    
+
 # event listeners
 
 def on_init(api, data = None):

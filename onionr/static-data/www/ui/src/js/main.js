@@ -17,18 +17,56 @@ function remove(key) {
     return localStorage.removeItem(key);
 }
 
+function getParameter(name) {
+    var match = RegExp('[?&]' + name + '=([^&]*)').exec(window.location.search);
+    return match && decodeURIComponent(match[1].replace(/\+/g, ' '));
+}
+
+/* usermap localStorage stuff */
+
 var usermap = JSON.parse(get('usermap', '{}'));
+var postmap = JSON.parse(get('postmap', '{}'))
 
 function getUserMap() {
     return usermap;
 }
 
+function getPostMap(hash) {
+    if(hash !== undefined) {
+        if(hash in postmap)
+            return postmap[hash];
+        return null;
+    }
+
+    return postmap;
+}
+
 function deserializeUser(id) {
+    if(!(id in getUserMap()))
+        return null;
+
     var serialized = getUserMap()[id]
     var user = new User();
+
     user.setName(serialized['name']);
     user.setID(serialized['id']);
     user.setIcon(serialized['icon']);
+    user.setDescription(serialized['description']);
+
+    return user;
+}
+
+function getCurrentUser() {
+    var user = get('currentUser', null);
+
+    if(user === null)
+        return null;
+
+    return User.getUser(user, function() {});
+}
+
+function setCurrentUser(user) {
+    set('currentUser', user.getID());
 }
 
 /* returns a relative date format, e.g. "5 minutes" */
@@ -89,10 +127,10 @@ function timeSince(date, size) {
 }
 
 /* replace all instances of string */
-String.prototype.replaceAll = function(search, replacement) {
+String.prototype.replaceAll = function(search, replacement, limit) {
     // taken from https://stackoverflow.com/a/17606289/3678023
     var target = this;
-    return target.split(search).join(replacement);
+    return target.split(search, limit).join(replacement);
 };
 
 /* useful functions to sanitize data */
@@ -105,6 +143,16 @@ class Sanitize {
     /* URL encodes a string */
     static url(url) {
         return encodeURIComponent(url);
+    }
+
+    /* usernames */
+    static username(username) {
+        return String(username).replace(/[\W_]+/g, " ").substring(0, 25);
+    }
+
+    /* profile descriptions */
+    static description(description) {
+        return String(description).substring(0, 128);
     }
 }
 
@@ -157,42 +205,118 @@ class User {
         return this.image;
     }
 
+    setDescription(description) {
+        this.description = description;
+    }
+
+    getDescription() {
+        return this.description;
+    }
+
     serialize() {
         return {
             'name' : this.getName(),
             'id' : this.getID(),
-            'icon' : this.getIcon()
+            'icon' : this.getIcon(),
+            'description' : this.getDescription()
         };
     }
 
+    /* save in usermap */
     remember() {
         usermap[this.getID()] = this.serialize();
         set('usermap', JSON.stringify(usermap));
+    }
+
+    /* save as a block */
+    save(callback) {
+        var block = new Block();
+
+        block.setType('onionr-user');
+        block.setContent(JSON.stringify(this.serialize()));
+
+        return block.save(true, callback);
+    }
+
+    static getUser(id, callback) {
+        // console.log(callback);
+        var user = deserializeUser(id);
+        if(user === null) {
+            Block.getBlocks({'type' : 'onionr-user-info', 'signed' : true, 'reverse' : true}, function(data) {
+                if(data.length !== 0) {
+                    try {
+                        user = new User();
+
+                        var userInfo = JSON.parse(data[0].getContent());
+
+                        if(userInfo['id'] === id) {
+                            user.setName(userInfo['name']);
+                            user.setIcon(userInfo['icon']);
+                            user.setDescription(userInfo['description']);
+                            user.setID(id);
+
+                            user.remember();
+                            // console.log(callback);
+                            callback(user);
+                            return user;
+                        }
+                    } catch(e) {
+                        console.log(e);
+
+                        callback(null);
+                        return null;
+                    }
+                } else {
+                    callback(null);
+                    return null;
+                }
+            });
+        } else {
+            // console.log(callback);
+            callback(user);
+            return user;
+        }
     }
 }
 
 /* post class */
 class Post {
     /* returns the html content of a post */
-    getHTML() {
+    getHTML(type) {
+        var replyTemplate = '<$= jsTemplate('onionr-timeline-reply') $>';
         var postTemplate = '<$= jsTemplate('onionr-timeline-post') $>';
+
+        var template = '';
+
+        if(type !== undefined && type !== null && type == 'reply')
+            template = replyTemplate;
+        else
+            template = postTemplate;
 
         var device = (jQuery(document).width() < 768 ? 'mobile' : 'desktop');
 
-        postTemplate = postTemplate.replaceAll('$user-name-url', Sanitize.html(Sanitize.url(this.getUser().getName())));
-        postTemplate = postTemplate.replaceAll('$user-name', Sanitize.html(this.getUser().getName()));
-        postTemplate = postTemplate.replaceAll('$user-id-url', Sanitize.html(Sanitize.url(this.getUser().getID())));
+        template = template.replaceAll('$user-name-url', Sanitize.html(Sanitize.url(this.getUser().getName())));
+        template = template.replaceAll('$user-name', Sanitize.html(this.getUser().getName()));
+        template = template.replaceAll('$user-id-url', Sanitize.html(Sanitize.url(this.getUser().getID())));
 
-        postTemplate = postTemplate.replaceAll('$user-id-truncated', Sanitize.html(this.getUser().getID().substring(0, 12) + '...'));
-        // postTemplate = postTemplate.replaceAll('$user-id-truncated', Sanitize.html(this.getUser().getID().split('-').slice(0, 4).join('-')));
+        template = template.replaceAll('$user-id-truncated', Sanitize.html(this.getUser().getID().substring(0, 12) + '...'));
+        // template = template.replaceAll('$user-id-truncated', Sanitize.html(this.getUser().getID().split('-').slice(0, 4).join('-')));
 
-        postTemplate = postTemplate.replaceAll('$user-id', Sanitize.html(this.getUser().getID()));
-        postTemplate = postTemplate.replaceAll('$user-image', Sanitize.html(this.getUser().getIcon()));
-        postTemplate = postTemplate.replaceAll('$content', Sanitize.html(this.getContent()));
-        postTemplate = postTemplate.replaceAll('$date-relative', timeSince(this.getPostDate(), device) + (device === 'desktop' ?  ' ago' : ''));
-        postTemplate = postTemplate.replaceAll('$date', this.getPostDate().toLocaleString());
+        template = template.replaceAll('$user-id', Sanitize.html(this.getUser().getID()));
+        template = template.replaceAll('$user-image', "data:image/jpeg;base64," + Sanitize.html(this.getUser().getIcon()));
+        template = template.replaceAll('$content', Sanitize.html(this.getContent()).replaceAll('\n', '<br />', 16)); // Maximum of 16 lines
+        template = template.replaceAll('$post-hash', this.getHash());
+        template = template.replaceAll('$date-relative-truncated', timeSince(this.getPostDate(), 'mobile'));
+        template = template.replaceAll('$date-relative', timeSince(this.getPostDate(), device) + (device === 'desktop' ?  ' ago' : ''));
+        template = template.replaceAll('$date', this.getPostDate().toLocaleString());
 
-        return postTemplate;
+        if(this.getHash() in getPostMap() && getPostMap()[this.getHash()]['liked']) {
+            template = template.replaceAll('$liked', '<$= LANG.POST_UNLIKE $>');
+        } else {
+            template = template.replaceAll('$liked', '<$= LANG.POST_LIKE $>');
+        }
+
+        return template;
     }
 
     setUser(user) {
@@ -211,6 +335,14 @@ class Post {
         return this.content;
     }
 
+    setParent(parent) {
+        this.parent = parent;
+    }
+
+    getParent() {
+        return this.parent;
+    }
+
     setPostDate(date) { // unix timestamp input
         if(date instanceof Date)
             this.date = date;
@@ -220,6 +352,51 @@ class Post {
 
     getPostDate() {
         return this.date;
+    }
+
+    setHash(hash) {
+        this.hash = hash;
+    }
+
+    getHash() {
+        return this.hash;
+    }
+
+    save(callback) {
+        var args = {'type' : 'onionr-post', 'sign' : true, 'content' : JSON.stringify({'content' : this.getContent()})};
+
+        if(this.getParent() !== undefined && this.getParent() !== null)
+            args['parent'] = (this.getParent() instanceof Post ? this.getParent().getHash() : (this.getParent() instanceof Block ? this.getParent().getHash() : this.getParent()));
+
+        var url = '/client/?action=insertBlock&data=' + Sanitize.url(JSON.stringify(args)) + '&token=' + Sanitize.url(getWebPassword()) + '&timingToken=' + Sanitize.url(getTimingToken());
+
+        console.log(url);
+
+        var http = new XMLHttpRequest();
+
+        if(callback !== undefined) {
+            // async
+
+            var thisObject = this;
+
+            http.addEventListener('load', function() {
+                thisObject.setHash(Block.parseBlockArray(JSON.parse(http.responseText)['hash']));
+                callback(thisObject.getHash());
+            }, false);
+
+            http.open('GET', url, true);
+            http.timeout = 5000;
+            http.send(null);
+        } else {
+            // sync
+
+            http.open('GET', url, false);
+            http.send(null);
+
+            this.setHash(Block.parseBlockArray(JSON.parse(http.responseText)['hash']));
+
+            return this.getHash();
+        }
     }
 }
 
@@ -269,8 +446,12 @@ class Block {
 
     // returns the parent block's hash (not Block object, for performance)
     getParent() {
-        if(!(this.parent instanceof Block) && this.parent !== undefined && this.parent !== null)
-            this.parent = Block.openBlock(this.parent); // convert hash to Block object
+        // console.log(this.parent);
+
+        // TODO: Create a function to fetch the block contents and parse it from the server; right now it is only possible to search for types of blocks (see Block.getBlocks), so it is impossible to return a Block object here
+
+        // if(!(this.parent instanceof Block) && this.parent !== undefined && this.parent !== null)
+        //     this.parent = Block.openBlock(this.parent); // convert hash to Block object
         return this.parent;
     }
 
@@ -323,11 +504,57 @@ class Block {
         return !(this.hash === null || this.hash === undefined);
     }
 
+    // saves the block, returns the hash
+    save(sign, callback) {
+        var type = this.getType();
+        var content = this.getContent();
+        var parent = this.getParent();
+
+        if(content !== undefined && content !== null && type !== '') {
+            var args = {'content' : content};
+
+            if(type !== undefined && type !== null && type !== '')
+                args['type'] = type;
+            if(parent !== undefined && parent !== null && parent.getHash() !== undefined && parent.getHash() !== null && parent.getHash() !== '')
+                args['parent'] = parent.getHash();
+            if(sign !== undefined && sign !== null)
+                args['sign'] = String(sign) !== 'false'
+
+
+            var url = '/client/?action=insertBlock&data=' + Sanitize.url(JSON.stringify(args)) + '&token=' + Sanitize.url(getWebPassword()) + '&timingToken=' + Sanitize.url(getTimingToken());
+
+            console.log(url);
+
+            var http = new XMLHttpRequest();
+
+            if(callback !== undefined) {
+                // async
+
+                http.addEventListener('load', function() {
+                    callback(Block.parseBlockArray(JSON.parse(http.responseText)['hash']));
+                }, false);
+
+                http.open('GET', url, true);
+                http.timeout = 5000;
+                http.send(null);
+            } else {
+                // sync
+
+                http.open('GET', url, false);
+                http.send(null);
+
+                return Block.parseBlockArray(JSON.parse(http.responseText)['hash']);
+            }
+        }
+
+        return false;
+    }
+
     /* static functions */
 
     // recreates a block by hash
     static openBlock(hash) {
-        return parseBlock(response);
+        return Block.parseBlock(hash);
     }
 
     // converts an associative array to a Block
@@ -406,14 +633,57 @@ class Block {
 
 /* temporary code */
 
+var tt = getParameter("timingToken");
+if(tt !== null && tt !== undefined) {
+    setTimingToken(tt);
+}
+
 if(getWebPassword() === null) {
     var password = "";
     while(password.length != 64) {
-        password = prompt("Please enter the web password (run `./RUN-LINUX.sh --get-password`)");
+        password = prompt("Please enter the web password (run `./RUN-LINUX.sh --details`)");
     }
 
-    setTimingToken(prompt("Please enter the timing token (optional)"));
-
     setWebPassword(password);
-    window.location.reload(true);
 }
+
+if(getCurrentUser() === null) {
+    jQuery('#modal').modal('show');
+
+    var url = '/client/?action=info&token=' + Sanitize.url(getWebPassword()) + '&timingToken=' + Sanitize.url(getTimingToken());
+
+    console.log(url);
+
+    var http = new XMLHttpRequest();
+
+    // sync
+
+    http.addEventListener('load', function() {
+        var id = JSON.parse(http.responseText)['pubkey'];
+
+        User.getUser(id, function(data) {
+            if(data === null || data === undefined) {
+                var user = new User();
+
+                user.setName('New User');
+                user.setID(id);
+                user.setIcon('<$= Template.jsTemplate("default-icon") $>');
+                user.setDescription('A new OnionrUI user');
+
+                user.remember();
+                user.save();
+
+                setCurrentUser(user);
+            } else {
+                setCurrentUser(data);
+            }
+
+            window.location.reload();
+        });
+    }, false);
+
+    http.open('GET', url, true);
+    http.send(null);
+}
+
+currentUser = getCurrentUser();

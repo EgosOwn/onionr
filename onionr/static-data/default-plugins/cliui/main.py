@@ -38,13 +38,12 @@ class OnionrCLIUI:
                 pass
 
     def refresh(self):
-        for i in range(100):
-            print('')
+            print('\n' * 80 + logger.colors.reset)
 
     def start(self):
         '''Main CLI UI interface menu'''
         showMenu = True
-        isOnline = "No"
+        isOnline = 'No'
         firstRun = True
         choice = ''
 
@@ -53,7 +52,7 @@ class OnionrCLIUI:
 
         while showMenu:
             if firstRun:
-                logger.info("please wait while Onionr starts...")
+                logger.info('Please wait while Onionr starts...')
                 daemon = subprocess.Popen(["./onionr.py", "start"], stdin=subprocess.PIPE, stdout=subprocess.DEVNULL)
                 time.sleep(30)
                 firstRun = False
@@ -63,9 +62,7 @@ class OnionrCLIUI:
             else:
                 isOnline = "No"
 
-            print('''
-Daemon Running: ''' + isOnline + '''
-            
+            logger.info('''Daemon Running: ''' + isOnline + '''
 1. Flow (Anonymous public chat, use at your own risk)
 2. Mail (Secure email-like service)
 3. File Sharing
@@ -83,7 +80,7 @@ Daemon Running: ''' + isOnline + '''
             elif choice in ("2", "mail"):
                 self.subCommand("mail")
             elif choice in ("3", "file sharing", "file"):
-                print("Not supported yet")
+                logger.warn("Not supported yet")
             elif choice in ("4", "user settings", "settings"):
                 try:
                     self.setName()
@@ -91,21 +88,22 @@ Daemon Running: ''' + isOnline + '''
                     pass
             elif choice in ("5", "daemon"):
                 if isOnline == "Yes":
-                    print("Onionr daemon will shutdown...")
+                    logger.info("Onionr daemon will shutdown...")
                     self.myCore.daemonQueueAdd('shutdown')
+
                     try:
                         daemon.kill()
                     except UnboundLocalError:
                         pass
                 else:
-                    print("Starting Daemon...")
+                    logger.info("Starting Daemon...")
                     daemon = subprocess.Popen(["./onionr.py", "start"], stdin=subprocess.PIPE, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
             elif choice in ("6", "quit"):
                 showMenu = False
             elif choice == "":
                 pass
             else:
-                print("Invalid choice")
+                logger.error("Invalid choice")
         return
 
     def setName(self):
