@@ -138,7 +138,9 @@ class OnionrMail:
                         cancel = logger.readline('Press enter to continue to message, or -q to not open the message (recommended).')
                     if cancel != '-q':
                         print(draw_border(self.myCore._utils.escapeAnsi(readBlock.bcontent.decode().strip())))
-                        logger.readline("Press enter to continue")
+                        reply = logger.readline("Press enter to continue, or enter %s to reply" % ("-r",))
+                        if reply == "-r":
+                            self.draftMessage(self.myCore._utils.bytesToStr(readBlock.signer,))
         return
 
     def sentbox(self):
@@ -178,28 +180,28 @@ class OnionrMail:
             logger.info('%s. %s - %s - %s' % (count, i['hash'], i['peer'][:12], i['date']))
             count += 1
 
-    def draftMessage(self):
+    def draftMessage(self, recip=''):
         message = ''
         newLine = ''
-        recip = ''
-        entering = True
-
-        while entering:
-            try:
-                recip = logger.readline('Enter peer address, or q to stop:').strip()
-                if recip in ('-q', 'q'):
-                    raise EOFError
-                if not self.myCore._utils.validatePubKey(recip):
-                    raise onionrexceptions.InvalidPubkey('Must be a valid ed25519 base32 encoded public key')
-            except onionrexceptions.InvalidPubkey:
-                logger.warn('Invalid public key')
-            except (KeyboardInterrupt, EOFError):
-                entering = False
+        entering = False
+        if len(recip) == 0:
+            entering = True
+            while entering:
+                try:
+                    recip = logger.readline('Enter peer address, or q to stop:').strip()
+                    if recip in ('-q', 'q'):
+                        raise EOFError
+                    if not self.myCore._utils.validatePubKey(recip):
+                        raise onionrexceptions.InvalidPubkey('Must be a valid ed25519 base32 encoded public key')
+                except onionrexceptions.InvalidPubkey:
+                    logger.warn('Invalid public key')
+                except (KeyboardInterrupt, EOFError):
+                    entering = False
+                else:
+                    break
             else:
-                break
-        else:
-            # if -q or ctrl-c/d, exit function here, otherwise we successfully got the public key
-            return
+                # if -q or ctrl-c/d, exit function here, otherwise we successfully got the public key
+                return
 
         logger.info('Enter your message, stop by entering -q on a new line.')
         while newLine != '-q':
