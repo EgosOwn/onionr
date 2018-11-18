@@ -161,7 +161,7 @@ class OnionrMail:
                 else:
                     try:
                         self.sentboxList[int(choice) - 1]
-                    except IndexError:
+                    except (IndexError, ValueError) as e:
                         logger.warn('Invalid block.')
                     else:
                         logger.info('Sent to: ' + self.sentMessages[self.sentboxList[int(choice) - 1]][1])
