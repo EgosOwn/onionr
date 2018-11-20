@@ -447,7 +447,7 @@ class OnionrCommunicatorDaemon:
     def heartbeat(self):
         '''Show a heartbeat debug message'''
         currentTime = self._core._utils.getEpoch() - self.startTime
-        logger.debug('Heartbeat. Node online for %s.' % self.daemonTools.humanReadableTime(currentTime))
+        logger.debug('Heartbeat. Node running for %s.' % self.daemonTools.humanReadableTime(currentTime))
         self.decrementThreadCount('heartbeat')
 
     def daemonCommands(self):

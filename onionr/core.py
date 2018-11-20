@@ -151,6 +151,8 @@ class Core:
 
         if address == config.get('i2p.ownAddr', None) or address == self.hsAddress:
             return False
+        if type(address) is type(None) or len(address) == 0:
+            return False
         if self._utils.validateID(address):
             conn = sqlite3.connect(self.addressDB, timeout=10)
             c = conn.cursor()
@@ -722,8 +724,6 @@ class Core:
                 meta['forwardEnc'] = True
             except onionrexceptions.InvalidPubkey:
                 onionrusers.OnionrUser(self, asymPeer).generateForwardKey()
-            else:
-                logger.info(forwardEncrypted)
             onionrusers.OnionrUser(self, asymPeer).generateForwardKey()
             fsKey = onionrusers.OnionrUser(self, asymPeer).getGeneratedForwardKeys()[0]
             meta['newFSKey'] = fsKey[0]
@@ -790,7 +790,7 @@ class Core:
             Introduces our node into the network by telling X many nodes our HS address
         '''
 
-        if(self._utils.isCommunicatorRunning()):
+        if(self._utils.isCommunicatorRunning(timeout=30)):
             announceAmount = 2
             nodeList = self.listAdders()
 

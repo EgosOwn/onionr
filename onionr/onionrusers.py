@@ -93,7 +93,7 @@ class OnionrUser:
         #logger.error(self.publicKey)
         #logger.error(self.getGeneratedForwardKeys(False))
         for key in self.getGeneratedForwardKeys(False):
-            logger.info(encrypted)
+            #logger.info(encrypted)
             try:
                 retData = self._core._crypto.pubKeyDecrypt(encrypted, privkey=key[1], anonymous=True, encodedData=True)
             except nacl.exceptions.CryptoError:
