@@ -1,0 +1,84 @@
+{
+  "general": {
+    "dev_mode": true,
+    "display_header": true,
+    "minimum_block_pow": 5,
+    "minimum_send_pow": 5,
+    "socket_servers": false,
+    "direct_connect": {
+      "respond": true,
+      "execute_callbacks": true
+    }
+  },
+  "www": {
+    "public": {
+      "run": true,
+      "path": "static-data/www/public/",
+      "guess_mime": true
+    },
+    "private": {
+      "run": true,
+      "path": "static-data/www/private/",
+      "guess_mime": true,
+      "timing_protection": true
+    },
+    "ui": {
+      "run": true,
+      "private": true
+    }
+  },
+  "client": {
+    "hmac": "1C0288DF9E9153DF0D72CA0C3E7B00683A3967CD42CBF0CB71E7CC4A2ED1DE87",
+    "port": 23814,
+    "participate": true,
+    "api_version": "5"
+  },
+  "plugins": {
+    "enabled": [
+      "metadataprocessor",
+      "flow",
+      "cliui",
+      "encrypt",
+      "pluginmanager",
+      "pms"
+    ],
+    "disabled": {}
+  },
+  "log": {
+    "verbosity": "default",
+    "file": {
+      "output": false,
+      "path": "data/output.log"
+    },
+    "console": {
+      "output": true,
+      "color": true
+    }
+  },
+  "tor": {
+    "v3onions": false,
+    "controlpassword": "BMweda+ppxc747LvBniOkhyoV3LrKdnq3f0ILavdICDGrTEZgWuUmBKp/lggf9Xz21c=",
+    "socksport": 31356,
+    "controlPort": 17796
+  },
+  "i2p": {
+    "host": false,
+    "connect": true,
+    "own_addr": ""
+  },
+  "allocations": {
+    "disk": 10000000000,
+    "net_total": 1000000000,
+    "blockCache": 5000000,
+    "blockCacheTotal": 50000000
+  },
+  "peers": {
+    "minimum_score": -100,
+    "max_stored_peers": 5000,
+    "max_connect": 10
+  },
+  "timers": {
+    "lookupBlocks": 25,
+    "getBlocks": 30
+  }
+}
