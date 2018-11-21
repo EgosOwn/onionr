@@ -98,7 +98,7 @@ class OnionrCommunicatorDaemon:
         OnionrCommunicatorTimers(self, self.lookupAdders, 60, requiresPeer=True)
         OnionrCommunicatorTimers(self, self.daemonTools.cooldownPeer, 30, requiresPeer=True)
         OnionrCommunicatorTimers(self, self.uploadBlock, 10, requiresPeer=True, maxThreads=1)
-        OnionrCommunicatorTimers(self, self.daemonCommands, 3, maxThreads=1)
+        OnionrCommunicatorTimers(self, self.daemonCommands, 6, maxThreads=1)
         netCheckTimer = OnionrCommunicatorTimers(self, self.daemonTools.netCheck, 600)
         announceTimer = OnionrCommunicatorTimers(self, self.daemonTools.announceNode, 305, requiresPeer=True, maxThreads=1)
         cleanupTimer = OnionrCommunicatorTimers(self, self.peerCleanup, 300, requiresPeer=True)
@@ -447,7 +447,7 @@ class OnionrCommunicatorDaemon:
     def heartbeat(self):
         '''Show a heartbeat debug message'''
         currentTime = self._core._utils.getEpoch() - self.startTime
-        logger.debug('Heartbeat. Node online for %s.' % self.daemonTools.humanReadableTime(currentTime))
+        logger.debug('Heartbeat. Node running for %s.' % self.daemonTools.humanReadableTime(currentTime))
         self.decrementThreadCount('heartbeat')
 
     def daemonCommands(self):

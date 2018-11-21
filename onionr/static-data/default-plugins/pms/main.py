@@ -79,28 +79,26 @@ class OnionrMail:
         for blockHash in self.myCore.getBlocksByType('pm'):
             pmBlocks[blockHash] = Block(blockHash, core=self.myCore)
             pmBlocks[blockHash].decrypt()
-
-        while choice not in ('-q', 'q', 'quit'):
             blockCount = 0
-            for blockHash in pmBlocks:
-                if not pmBlocks[blockHash].decrypted:
-                    continue
-                blockCount += 1
-                pmBlockMap[blockCount] = blockHash
+        for blockHash in pmBlocks:
+            if not pmBlocks[blockHash].decrypted:
+                continue
+            blockCount += 1
+            pmBlockMap[blockCount] = blockHash
 
-                block = pmBlocks[blockHash]
-                senderKey = block.signer
-                try:
-                    senderKey = senderKey.decode()
-                except AttributeError:
-                    pass
-                senderDisplay = onionrusers.OnionrUser(self.myCore, senderKey).getName()
-                if senderDisplay == 'anonymous':
-                    senderDisplay = senderKey
+            block = pmBlocks[blockHash]
+            senderKey = block.signer
+            try:
+                senderKey = senderKey.decode()
+            except AttributeError:
+                pass
+            senderDisplay = onionrusers.OnionrUser(self.myCore, senderKey).getName()
+            if senderDisplay == 'anonymous':
+                senderDisplay = senderKey
 
-                blockDate = pmBlocks[blockHash].getDate().strftime("%m/%d %H:%M")
-                displayList.append('%s. %s - %s: %s' % (blockCount, blockDate, senderDisplay[:12], blockHash))
-            #displayList.reverse()
+            blockDate = pmBlocks[blockHash].getDate().strftime("%m/%d %H:%M")
+            displayList.append('%s. %s - %s: %s' % (blockCount, blockDate, senderDisplay[:12], blockHash))
+        while choice not in ('-q', 'q', 'quit'):
             for i in displayList:
                 logger.info(i)
             try:
@@ -150,29 +148,36 @@ class OnionrMail:
         entering = True
         while entering:
             self.getSentList()
-            logger.info('Enter block number or -q to return')
+            logger.info('Enter a block number or -q to return')
             try:
                 choice = input('>')
             except (EOFError, KeyboardInterrupt) as e:
                 entering = False
             else:
-                if choice == '-q':
-                    entering = False
+                try:
+                    choice = int(choice) - 1
+                except ValueError:
+                    pass
                 else:
                     try:
-                        self.sentboxList[int(choice) - 1]
-                    except IndexError:
+                        self.sentboxList[int(choice)]
+                    except (IndexError, ValueError) as e:
                         logger.warn('Invalid block.')
                     else:
-                        logger.info('Sent to: ' + self.sentMessages[self.sentboxList[int(choice) - 1]][1])
+                        logger.info('Sent to: ' + self.sentMessages[self.sentboxList[int(choice)]][1])
                         # Print ansi escaped sent message
-                        logger.info(self.myCore._utils.escapeAnsi(self.sentMessages[self.sentboxList[int(choice) - 1]][0]))
+                        logger.info(self.myCore._utils.escapeAnsi(self.sentMessages[self.sentboxList[int(choice)]][0]))
                         input('Press enter to continue...')
+                finally:
+                    if choice == '-q':
+                        entering = False
 
         return
 
     def getSentList(self):
         count = 1
+        self.sentboxList = []
+        self.sentMessages = {}
         for i in self.sentboxTools.listSent():
             self.sentboxList.append(i['hash'])
             self.sentMessages[i['hash']] = (i['message'], i['peer'])
@@ -188,7 +193,7 @@ class OnionrMail:
             entering = True
             while entering:
                 try:
-                    recip = logger.readline('Enter peer address, or q to stop:').strip()
+                    recip = logger.readline('Enter peer address, or -q to stop:').strip()
                     if recip in ('-q', 'q'):
                         raise EOFError
                     if not self.myCore._utils.validatePubKey(recip):

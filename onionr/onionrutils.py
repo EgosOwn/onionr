@@ -276,8 +276,8 @@ class OnionrUtils:
             if myBlock.getMetadata('newFSKey') is not None:
                 onionrusers.OnionrUser(self._core, signer).addForwardKey(myBlock.getMetadata('newFSKey'))
             else:
-                logger.warn('FS not used for this encrypted block')
-                logger.info(myBlock.bmetadata)
+                logger.debug('FS is not used for this block')
+                logger.debug(myBlock.bmetadata)
 
             try:
                 if len(blockType) <= 10:
@@ -616,7 +616,7 @@ class OnionrUtils:
             retData = False
         return retData
 
-    def doGetRequest(self, url, port=0, proxyType='tor'):
+    def doGetRequest(self, url, port=0, proxyType='tor', ignoreAPI=False):
         '''
         Do a get request through a local tor or i2p instance
         '''
@@ -635,12 +635,13 @@ class OnionrUtils:
             proxies = {'http': 'socks4a://127.0.0.1:' + str(port), 'https': 'socks4a://127.0.0.1:' + str(port)}
             r = requests.get(url, headers=headers, proxies=proxies, allow_redirects=False, timeout=(15, 30))
             # Check server is using same API version as us
-            try:
-                response_headers = r.headers
-                if r.headers['X-API'] != str(API_VERSION):
+            if not ignoreAPI:
+                try:
+                    response_headers = r.headers
+                    if r.headers['X-API'] != str(API_VERSION):
+                        raise onionrexceptions.InvalidAPIVersion
+                except KeyError:
                     raise onionrexceptions.InvalidAPIVersion
-            except KeyError:
-                raise onionrexceptions.InvalidAPIVersion
             retData = r.text
         except KeyboardInterrupt:
             raise KeyboardInterrupt
@@ -701,7 +702,7 @@ class OnionrUtils:
                 connectURLs = connectTest.read().split(',')
 
             for url in connectURLs:
-                if self.doGetRequest(url, port=torPort) != False:
+                if self.doGetRequest(url, port=torPort, ignoreAPI=True) != False:
                     retData = True
                     break
         except FileNotFoundError:
