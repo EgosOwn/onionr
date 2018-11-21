@@ -29,7 +29,7 @@ class SentBox:
         self.cursor = self.conn.cursor()
         self.core = mycore
         return
-    
+
     def createDB(self):
         conn = sqlite3.connect(self.dbLocation)
         cursor = conn.cursor()
@@ -48,13 +48,13 @@ class SentBox:
         for entry in self.cursor.execute('SELECT * FROM sent;'):
             retData.append({'hash': entry[0], 'peer': entry[1], 'message': entry[2], 'date': entry[3]})
         return retData
-    
+
     def addToSent(self, blockID, peer, message):
         args = (blockID, peer, message, self.core._utils.getEpoch())
         self.cursor.execute('INSERT INTO sent VALUES(?, ?, ?, ?)', args)
         self.conn.commit()
         return
-    
+
     def removeSent(self, blockID):
         args = (blockID,)
         self.cursor.execute('DELETE FROM sent where hash=?', args)

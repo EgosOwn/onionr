@@ -212,7 +212,7 @@ def get_plugins_folder(name = None, absolute = True):
         path = _pluginsfolder
     else:
         # only allow alphanumeric characters
-        path = _pluginsfolder + re.sub('[^0-9a-zA-Z]+', '', str(name).lower())
+        path = _pluginsfolder + re.sub('[^0-9a-zA-Z_]+', '', str(name).lower())
 
     if absolute is True:
         path = os.path.abspath(path)

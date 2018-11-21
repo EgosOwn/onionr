@@ -70,6 +70,9 @@ class OnionrCommunicatorDaemon:
         # list of blocks currently downloading, avoid s
         self.currentDownloading = []
 
+        # timestamp when the last online node was seen
+        self.lastNodeSeen = None
+
         # Clear the daemon queue for any dead messages
         if os.path.exists(self._core.queueDB):
             self._core.clearDaemonQueue()
@@ -319,11 +322,14 @@ class OnionrCommunicatorDaemon:
                 self.connectNewPeer(useBootstrap=True)
             else:
                 self.connectNewPeer()
+
             if self.shutdown:
                 break
         else:
             if len(self.onlinePeers) == 0:
-                logger.debug('Couldn\'t connect to any peers.')
+                logger.debug('Couldn\'t connect to any peers.' + (' Last node seen %s ago.' % self.daemonTools.humanReadableTime(time.time() - self.lastNodeSeen) if not self.lastNodeSeen is None else ''))
+            else:
+                self.lastNodeSeen = time.time()
         self.decrementThreadCount('getOnlinePeers')
 
     def addBootstrapListToPeerList(self, peerList):

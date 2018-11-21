@@ -585,7 +585,7 @@ class Onionr:
 
         if len(sys.argv) >= 3:
             try:
-                plugin_name = re.sub('[^0-9a-zA-Z]+', '', str(sys.argv[2]).lower())
+                plugin_name = re.sub('[^0-9a-zA-Z_]+', '', str(sys.argv[2]).lower())
 
                 if not plugins.exists(plugin_name):
                     logger.info('Creating plugin "%s"...' % plugin_name)
