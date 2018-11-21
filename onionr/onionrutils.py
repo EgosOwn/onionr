@@ -277,7 +277,6 @@ class OnionrUtils:
                 onionrusers.OnionrUser(self._core, signer).addForwardKey(myBlock.getMetadata('newFSKey'))
             else:
                 logger.debug('FS is not used for this block')
-                logger.debug(myBlock.bmetadata)
 
             try:
                 if len(blockType) <= 10:
@@ -295,7 +294,6 @@ class OnionrUtils:
             else:
                 self._core.updateBlockInfo(blockHash, 'expire', expireTime)
         else:
-            logger.info(myBlock.isEncrypted)
             logger.debug('Not processing metadata on encrypted block we cannot decrypt.')
 
     def escapeAnsi(self, line):

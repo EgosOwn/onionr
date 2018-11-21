@@ -30,6 +30,7 @@ class DaemonTools:
     def announceNode(self):
         '''Announce our node to our peers'''
         retData = False
+        announceFail = False
 
         # Announce to random online peers
         for i in self.daemon.onlinePeers:
@@ -50,14 +51,20 @@ class DaemonTools:
             data['random'] = self.announceCache[peer]
         else:
             proof = onionrproofs.DataPOW(combinedNodes, forceDifficulty=4)
-            data['random'] = base64.b64encode(proof.waitForResult()[1])
-            self.announceCache[peer] = data['random']
-
-        logger.info('Announcing node to ' + url)
-        if self.daemon._core._utils.doPostRequest(url, data) == 'Success':
-            logger.info('Successfully introduced node to ' + peer)
-            retData = True
-        self.daemon.decrementThreadCount('announceNode')
+            try:
+                data['random'] = base64.b64encode(proof.waitForResult()[1])
+            except TypeError:
+                # Happens when we failed to produce a proof
+                logger.error("Failed to produce a pow for announcing to " + peer)
+                announceFail = True
+            else:
+                self.announceCache[peer] = data['random']
+        if not announceFail:
+            logger.info('Announcing node to ' + url)
+            if self.daemon._core._utils.doPostRequest(url, data) == 'Success':
+                logger.info('Successfully introduced node to ' + peer)
+                retData = True
+            self.daemon.decrementThreadCount('announceNode')
         return retData
 
     def netCheck(self):

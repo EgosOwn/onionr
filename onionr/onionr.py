@@ -23,7 +23,7 @@
 
 import sys
 if sys.version_info[0] == 2 or sys.version_info[1] < 5:
-    print('Error, Onionr requires Python 3.4+')
+    print('Error, Onionr requires Python 3.5+')
     sys.exit(1)
 import os, base64, random, getpass, shutil, subprocess, requests, time, platform, datetime, re, json, getpass, sqlite3
 import webbrowser
