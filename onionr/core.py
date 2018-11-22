@@ -230,21 +230,18 @@ class Core:
         '''
             Generate the address database
         '''
-
         self.dbCreate.createAddressDB()
 
     def createPeerDB(self):
         '''
             Generate the peer sqlite3 database and populate it with the peers table.
         '''
-
         self.dbCreate.createPeerDB()
 
     def createBlockDB(self):
         '''
             Create a database for blocks
         '''
-
         self.dbCreate.createBlockDB()
 
     def addToBlockDB(self, newHash, selfInsert=False, dataSaved=False):
