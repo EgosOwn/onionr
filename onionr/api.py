@@ -491,9 +491,10 @@ class API:
             elif action == 'getData':
                 resp = ''
                 if self._utils.validateHash(data):
-                    if os.path.exists(self._core.dataDir + 'blocks/' + data + '.dat'):
-                        block = Block(hash=data.encode(), core=self._core)
-                        resp = base64.b64encode(block.getRaw().encode()).decode()
+                    if data not in self.hideBlocks:
+                        if os.path.exists(self._core.dataDir + 'blocks/' + data + '.dat'):
+                            block = Block(hash=data.encode(), core=self._core)
+                            resp = base64.b64encode(block.getRaw().encode()).decode()
                 if len(resp) == 0:
                     abort(404)
                     resp = ""
