@@ -461,6 +461,8 @@ class API:
         def public_handler():
             # Public means it is publicly network accessible
             self.validateHost('public')
+            if config.get('general.security_level') != 0:
+                abort(403)
             action = request.args.get('action')
             requestingPeer = request.args.get('myID')
             data = request.args.get('data')

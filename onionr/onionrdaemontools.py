@@ -31,7 +31,7 @@ class DaemonTools:
         '''Announce our node to our peers'''
         retData = False
         announceFail = False
-
+        
         # Announce to random online peers
         for i in self.daemon.onlinePeers:
             if not i in self.announceCache:
