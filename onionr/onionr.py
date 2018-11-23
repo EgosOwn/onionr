@@ -678,7 +678,10 @@ class Onionr:
                 logger.debug('Tor is starting...')
                 if not net.startTor():
                     sys.exit(1)
-                logger.debug('Started .onion service: %s' % (logger.colors.underline + net.myID))
+                if len(net.myID) > 0 and config.get('general.security_level') == 0:
+                    logger.debug('Started .onion service: %s' % (logger.colors.underline + net.myID))
+                else:
+                    logger.debug('.onion service disabled')
                 logger.debug('Using public key: %s' % (logger.colors.underline + self.onionrCore._crypto.pubKey))
                 time.sleep(1)
 
@@ -713,7 +716,7 @@ class Onionr:
             Shutdown the Onionr daemon
         '''
 
-        logger.warn('Killing the running daemon...', timestamp = False)
+        logger.warn('Stopping the running daemon...', timestamp = False)
         try:
             events.event('daemon_stop', onionr = self)
             net = NetController(config.get('client.port', 59496))
@@ -818,6 +821,8 @@ class Onionr:
         try:
             with open('./' + self.dataDir + 'hs/hostname', 'r') as hostname:
                 return hostname.read().strip()
+        except FileNotFoundError:
+            return "Not Generated"
         except Exception:
             return None
 

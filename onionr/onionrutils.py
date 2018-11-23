@@ -146,6 +146,8 @@ class OnionrUtils:
         try:
             with open('./' + self._core.dataDir + 'hs/hostname', 'r') as hostname:
                 return hostname.read().strip()
+        except FileNotFoundError:
+            return ""
         except Exception as error:
             logger.error('Failed to read my address.', error = error)
             return None

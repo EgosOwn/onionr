@@ -88,14 +88,16 @@ class NetController:
                 break
 
         torrcData = '''SocksPort ''' + str(self.socksPort) + '''
-HiddenServiceDir ''' + self.dataDir + '''hs/
-\n''' + hsVer + '''\n
-HiddenServicePort 80 127.0.0.1:''' + str(self.hsPort) + '''
 DataDirectory ''' + self.dataDir + '''tordata/
 CookieAuthentication 1
 ControlPort ''' + str(controlPort) + '''
 HashedControlPassword ''' + str(password) + '''
         '''
+        if config.get('general.security_level') == 0:
+            torrcData += '''\nHiddenServiceDir ''' + self.dataDir + '''hs/
+\n''' + hsVer + '''\n
+HiddenServicePort 80 127.0.0.1:''' + str(self.hsPort)
+
         torrc = open(self.torConfigLocation, 'w')
         torrc.write(torrcData)
         torrc.close()
@@ -143,13 +145,16 @@ HashedControlPassword ''' + str(password) + '''
         except KeyboardInterrupt:
             logger.fatal('Got keyboard interrupt.', timestamp = false, level = logger.LEVEL_IMPORTANT)
             return False
-
+        
         logger.debug('Finished starting Tor.', timestamp=True)
         self.readyState = True
 
-        myID = open(self.dataDir + 'hs/hostname', 'r')
-        self.myID = myID.read().replace('\n', '')
-        myID.close()
+        try:
+            myID = open(self.dataDir + 'hs/hostname', 'r')
+            self.myID = myID.read().replace('\n', '')
+            myID.close()
+        except FileNotFoundError:
+            self.myID = ""
 
         torPidFile = open(self.dataDir + 'torPid.txt', 'w')
         torPidFile.write(str(tor.pid))

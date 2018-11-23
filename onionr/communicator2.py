@@ -103,14 +103,17 @@ class OnionrCommunicatorDaemon:
         OnionrCommunicatorTimers(self, self.uploadBlock, 10, requiresPeer=True, maxThreads=1)
         OnionrCommunicatorTimers(self, self.daemonCommands, 6, maxThreads=1)
         netCheckTimer = OnionrCommunicatorTimers(self, self.daemonTools.netCheck, 600)
-        announceTimer = OnionrCommunicatorTimers(self, self.daemonTools.announceNode, 305, requiresPeer=True, maxThreads=1)
+        if config.get('general.security_level') == 0:
+            announceTimer = OnionrCommunicatorTimers(self, self.daemonTools.announceNode, 305, requiresPeer=True, maxThreads=1)
+            announceTimer.count = (announceTimer.frequency - 60)
+        else:
+            logger.debug('Will not announce')
         cleanupTimer = OnionrCommunicatorTimers(self, self.peerCleanup, 300, requiresPeer=True)
         forwardSecrecyTimer = OnionrCommunicatorTimers(self, self.daemonTools.cleanKeys, 15)
 
         # set loop to execute instantly to load up peer pool (replaced old pool init wait)
         peerPoolTimer.count = (peerPoolTimer.frequency - 1)
         cleanupTimer.count = (cleanupTimer.frequency - 60)
-        announceTimer.count = (cleanupTimer.frequency - 60)
         #forwardSecrecyTimer.count = (forwardSecrecyTimer.frequency - 990)
 
         if config.get('general.socket_servers'):

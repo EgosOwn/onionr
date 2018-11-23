@@ -5,11 +5,7 @@
         "minimum_block_pow": 5,
         "minimum_send_pow": 5,
         "socket_servers": false,
-
-        "direct_connect" : {
-            "respond" : true,
-            "execute_callbacks" : true
-        }
+        "security_level": 0
     },
 
     "www" : {
