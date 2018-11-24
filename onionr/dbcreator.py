@@ -44,7 +44,8 @@ class DBCreator:
             failure int,
             lastConnect int,
             lastConnectAttempt int,
-            trust int
+            trust int,
+            introduced int
             );
         ''')
         conn.commit()

@@ -29,13 +29,19 @@ class OnionrFlow:
         self.myCore = pluginapi.get_core()
         self.alreadyOutputed = []
         self.flowRunning = False
+        self.channel = None
         return
 
     def start(self):
+        logger.warn("Please note: everything said here is public, even if a random channel name is used.")
         message = ""
         self.flowRunning = True
         newThread = threading.Thread(target=self.showOutput)
         newThread.start()
+        try:
+            self.channel = logger.readline("Enter a channel name or none for default:")
+        except (KeyboardInterrupt, EOFError) as e:
+            self.flowRunning = False
         while self.flowRunning:
             try:
                 message = logger.readline('\nInsert message into flow:').strip().replace('\n', '\\n').replace('\r', '\\r')
@@ -47,14 +53,20 @@ class OnionrFlow:
                 self.flowRunning = False
             expireTime = self.myCore._utils.getEpoch() + 43200
             if len(message) > 0:
-                Block(content = message, type = 'txt', expire=expireTime, core = self.myCore).save()
+                insertBL = Block(content = message, type = 'txt', expire=expireTime, core = self.myCore)
+                insertBL.setMetadata('ch', self.channel)
+                insertBL.save()
 
         logger.info("Flow is exiting, goodbye")
         return
 
     def showOutput(self):
+        while type(self.channel) is None:
+            time.sleep(1)
         while self.flowRunning:
             for block in Block.getBlocks(type = 'txt', core = self.myCore):
+                if block.getMetadata('ch') != self.channel:
+                    continue
                 if block.getHash() in self.alreadyOutputed:
                     continue
                 if not self.flowRunning:

@@ -64,6 +64,7 @@ class DaemonTools:
             if self.daemon._core._utils.doPostRequest(url, data) == 'Success':
                 logger.info('Successfully introduced node to ' + peer)
                 retData = True
+                self.daemon._core.setAddressInfo(peer, 'introduced', 1)
             self.daemon.decrementThreadCount('announceNode')
         return retData
 

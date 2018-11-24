@@ -104,8 +104,8 @@ class OnionrCommunicatorDaemon:
         OnionrCommunicatorTimers(self, self.daemonCommands, 6, maxThreads=1)
         netCheckTimer = OnionrCommunicatorTimers(self, self.daemonTools.netCheck, 600)
         if config.get('general.security_level') == 0:
-            announceTimer = OnionrCommunicatorTimers(self, self.daemonTools.announceNode, 305, requiresPeer=True, maxThreads=1)
-            announceTimer.count = (announceTimer.frequency - 60)
+            announceTimer = OnionrCommunicatorTimers(self, self.daemonTools.announceNode, 86400, requiresPeer=True, maxThreads=1)
+            announceTimer.count = (announceTimer.frequency - 120)
         else:
             logger.debug('Will not announce')
         cleanupTimer = OnionrCommunicatorTimers(self, self.peerCleanup, 300, requiresPeer=True)
