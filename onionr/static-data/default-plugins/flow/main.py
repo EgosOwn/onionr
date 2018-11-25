@@ -49,39 +49,39 @@ class OnionrFlow:
                 pass
             except KeyboardInterrupt:
                 self.flowRunning = False
-            if message == "q":
-                self.flowRunning = False
-            expireTime = self.myCore._utils.getEpoch() + 43200
-            if len(message) > 0:
-                insertBL = Block(content = message, type = 'txt', expire=expireTime, core = self.myCore)
-                insertBL.setMetadata('ch', self.channel)
-                insertBL.save()
+            else:
+                if message == "q":
+                    self.flowRunning = False
+                expireTime = self.myCore._utils.getEpoch() + 43200
+                if len(message) > 0:
+                    insertBL = Block(content = message, type = 'txt', expire=expireTime, core = self.myCore)
+                    insertBL.setMetadata('ch', self.channel)
+                    insertBL.save()
 
         logger.info("Flow is exiting, goodbye")
         return
 
     def showOutput(self):
-        while type(self.channel) is None:
+        while type(self.channel) is type(None) and self.flowRunning:
             time.sleep(1)
-        while self.flowRunning:
-            for block in Block.getBlocks(type = 'txt', core = self.myCore):
-                if block.getMetadata('ch') != self.channel:
-                    continue
-                if block.getHash() in self.alreadyOutputed:
-                    continue
-                if not self.flowRunning:
-                    break
-                logger.info('\n------------------------', prompt = False)
-                content = block.getContent()
-                # Escape new lines, remove trailing whitespace, and escape ansi sequences
-                content = self.myCore._utils.escapeAnsi(content.replace('\n', '\\n').replace('\r', '\\r').strip())
-                logger.info(block.getDate().strftime("%m/%d %H:%M") + ' - ' + logger.colors.reset + content, prompt = False)
-                self.alreadyOutputed.append(block.getHash())
-            try:
-                time.sleep(5)
-            except KeyboardInterrupt:
-                self.flowRunning = False
-                pass
+        try:
+            while self.flowRunning:
+                    for block in Block.getBlocks(type = 'txt', core = self.myCore):
+                        if block.getMetadata('ch') != self.channel:
+                            continue
+                        if block.getHash() in self.alreadyOutputed:
+                            continue
+                        if not self.flowRunning:
+                            break
+                        logger.info('\n------------------------', prompt = False)
+                        content = block.getContent()
+                        # Escape new lines, remove trailing whitespace, and escape ansi sequences
+                        content = self.myCore._utils.escapeAnsi(content.replace('\n', '\\n').replace('\r', '\\r').strip())
+                        logger.info(block.getDate().strftime("%m/%d %H:%M") + ' - ' + logger.colors.reset + content, prompt = False)
+                        self.alreadyOutputed.append(block.getHash())
+                        time.sleep(5)
+        except KeyboardInterrupt:
+            self.flowRunning = False
 
 def on_init(api, data = None):
     '''

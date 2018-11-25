@@ -274,7 +274,7 @@ class OnionrUtils:
             signer = self.bytesToStr(myBlock.signer)
             valid = myBlock.verifySig()
 
-            logger.info('Checking for fs key')
+            logger.debug('Checking for fs key')
             if myBlock.getMetadata('newFSKey') is not None:
                 onionrusers.OnionrUser(self._core, signer).addForwardKey(myBlock.getMetadata('newFSKey'))
             else:
