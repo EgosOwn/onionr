@@ -17,8 +17,8 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import nacl.signing, nacl.encoding, nacl.public, nacl.hash, nacl.secret, os, binascii, base64, hashlib, logger, onionrproofs, time, math, sys
-
+import nacl.signing, nacl.encoding, nacl.public, nacl.hash, nacl.pwhash, nacl.utils, nacl.secret, os, binascii, base64, hashlib, logger, onionrproofs, time, math, sys
+import onionrexceptions
 # secrets module was added into standard lib in 3.6+
 if sys.version_info[0] == 3 and sys.version_info[1] < 6:
     from dependencies import secrets
@@ -196,6 +196,28 @@ class OnionrCrypto:
         private_key = nacl.signing.SigningKey.generate()
         public_key = private_key.verify_key.encode(encoder=nacl.encoding.Base32Encoder())
         return (public_key.decode(), private_key.encode(encoder=nacl.encoding.Base32Encoder()).decode())
+    
+    def generateDeterministic(self, passphrase, bypassCheck=False):
+        '''Generate a Ed25519 public key pair from a password'''
+        passStrength = 25
+        passphrase = self._core._utils.strToBytes(passphrase) # Convert to bytes if not already
+        # Validate passphrase length
+        if not bypassCheck:
+            if len(passphrase) < passStrength:
+                raise onionrexceptions.PasswordStrengthError("Passphase must be at least %s characters" % (passStrength,))
+        # KDF values
+        kdf = nacl.pwhash.argon2id.kdf
+        salt = nacl.utils.random(nacl.pwhash.argon2i.SALTBYTES)
+        ops = nacl.pwhash.argon2id.OPSLIMIT_SENSITIVE
+        mem = nacl.pwhash.argon2id.MEMLIMIT_SENSITIVE
+        
+        key = kdf(nacl.secret.SecretBox.KEY_SIZE, passphrase, salt, opslimit=ops, memlimit=mem)
+        key = nacl.public.PrivateKey(key, nacl.encoding.RawEncoder())
+        publicKey = key.public_key
+
+        return (key.encode(encoder=nacl.encoding.Base32Encoder()), 
+                publicKey.encode(encoder=nacl.encoding.Base32Encoder()))
+
 
     def pubKeyHashID(self, pubkey=''):
         '''Accept a ed25519 public key, return a truncated result of X many sha3_256 hash rounds'''
