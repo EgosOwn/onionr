@@ -18,7 +18,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 import nacl.signing, nacl.encoding, nacl.public, nacl.hash, nacl.pwhash, nacl.utils, nacl.secret, os, binascii, base64, hashlib, logger, onionrproofs, time, math, sys
-import onionrexceptions
+import onionrexceptions, keymanager
 # secrets module was added into standard lib in 3.6+
 if sys.version_info[0] == 3 and sys.version_info[1] < 6:
     from dependencies import secrets
@@ -37,6 +37,7 @@ class OnionrCrypto:
         self.secrets = secrets
         
         self.HASH_ID_ROUNDS = 2000
+        self.keyManager = keymanager.KeyManager(self)
 
         # Load our own pub/priv Ed25519 keys, gen & save them if they don't exist
         if os.path.exists(self._keyFile):
@@ -48,8 +49,7 @@ class OnionrCrypto:
             keys = self.generatePubKey()
             self.pubKey = keys[0]
             self.privKey = keys[1]
-            with open(self._keyFile, 'w') as keyfile:
-                keyfile.write(self.pubKey + ',' + self.privKey)
+            self.keyManager.addKey(self.pubKey, self.privKey)
         return
 
     def edVerify(self, data, key, sig, encodedData=True):

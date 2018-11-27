@@ -23,14 +23,28 @@ class KeyManager:
         assert isinstance(crypto, onionrcrypto.OnionrCrypto)
         self._core = crypto._core
         self._utils = self._core._utils
+        self.keyFile = crypto._keyFile
     
     def getMasterKey(self):
         '''Return the master key (the key created on profile initilization)'''
         return
 
+    def addKey(self, pubKey=None, privKey=None):
+        if type(pubKey) is type(None) and type(privKey) is type(None):
+            pubKey, privKey = crypto.generatePubKey()
+        if pubKey in self.getPubkeyList():
+            raise ValueError('Pubkey already in list')
+
+        with open(self.keyFile, "a") as keyFile:
+            keyFile.write(pubKey + ',' + privKey)
+        return (pubKey, privKey)
+
+    def removeKey(self, pubKey):
+        return
+
     def getPubkeyList(self):
         '''Return a list of the user's keys'''
-        return
+        return []
     
     def getPrivkey(self, pubKey):
         return
