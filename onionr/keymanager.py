@@ -24,31 +24,55 @@ class KeyManager:
         self._core = crypto._core
         self._utils = self._core._utils
         self.keyFile = crypto._keyFile
-    
-    def getMasterKey(self):
-        '''Return the master key (the key created on profile initilization)'''
-        return
+        self.crypto = crypto
 
     def addKey(self, pubKey=None, privKey=None):
         if type(pubKey) is type(None) and type(privKey) is type(None):
-            pubKey, privKey = crypto.generatePubKey()
-        if pubKey in self.getPubkeyList():
-            raise ValueError('Pubkey already in list')
-
+            pubKey, privKey = self.crypto.generatePubKey()
+        try:
+            if pubKey in self.getPubkeyList():
+                raise ValueError('Pubkey already in list')
+        except FileNotFoundError:
+            pass
         with open(self.keyFile, "a") as keyFile:
-            keyFile.write(pubKey + ',' + privKey)
+            keyFile.write(pubKey + ',' + privKey + '\n')
         return (pubKey, privKey)
 
     def removeKey(self, pubKey):
-        return
+        '''Remove a key pair by pubkey'''
+        keyList = self.getPubkeyList()
+        keyData = ''
+        try:
+            keyList.remove(pubKey)
+        except ValueError:
+            return False
+        else:
+            keyData = ','.join(keyList)
+            with open(self.keyFile, "w") as keyFile:
+                keyFile.write(keyData)
 
     def getPubkeyList(self):
         '''Return a list of the user's keys'''
-        return []
+        keyList = []
+        with open(self.keyFile, "r") as keyFile:
+            keyData = keyFile.read()
+        keyData = keyData.split('\n')
+        for pair in keyData:
+            if len(pair) > 0: keyList.append(pair.split(',')[0])
+        return keyList
     
     def getPrivkey(self, pubKey):
-        return
+        privKey = None
+        with open(self.keyFile, "r") as keyFile:
+            keyData = keyFile.read()
+        for pair in keyData.split('\n'):
+            if pubKey in pair:
+                privKey = pair.split(',')[1]
+        return privKey
     
-    def changeKey(self, pubKey):
+    def changeActiveKey(self, pubKey):
         '''Change crypto.pubKey and crypto.privKey to a given key pair by specifying the public key'''
-        return
+        if not pubKey in self.getPubkeyList():
+            raise ValueError('That pubkey does not exist')
+        self.crypto.pubKey = pubKey
+        self.crypto.privKey = self.getPrivkey(pubKey)
