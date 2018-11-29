@@ -128,6 +128,7 @@ class API:
             resp.headers['X-Frame-Options'] = 'deny'
             resp.headers['X-Content-Type-Options'] = "nosniff"
             resp.headers['X-API'] = API_VERSION
+            resp.headers['Date'] = 'Thu, 1 Jan 1970 00:00:00 GMT' # Clock info is probably useful to attackers. Set to unix epoch.
 
             # reset to text/plain to help prevent browser attacks
             self.mimeType = 'text/plain'
