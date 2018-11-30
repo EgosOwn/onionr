@@ -17,7 +17,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import nacl.signing, nacl.encoding, nacl.public, nacl.hash, nacl.pwhash, nacl.utils, nacl.secret, os, binascii, base64, hashlib, logger, onionrproofs, time, math, sys
+import nacl.signing, nacl.encoding, nacl.public, nacl.hash, nacl.pwhash, nacl.utils, nacl.secret, os, binascii, base64, hashlib, logger, onionrproofs, time, math, sys, hmac
 import onionrexceptions, keymanager
 # secrets module was added into standard lib in 3.6+
 if sys.version_info[0] == 3 and sys.version_info[1] < 6:
@@ -36,12 +36,16 @@ class OnionrCrypto:
 
         self.secrets = secrets
         
+        self.deterministicRequirement = 25 # Min deterministic password/phrase length
         self.HASH_ID_ROUNDS = 2000
         self.keyManager = keymanager.KeyManager(self)
 
         # Load our own pub/priv Ed25519 keys, gen & save them if they don't exist
         if os.path.exists(self._keyFile):
-            self.pubKey = self.keyManager.getPubkeyList()[0]
+            if len(config.get('general.public_key')) > 0:
+                self.pubKey = config.get('general.public_key')
+            else:
+                self.pubKey = self.keyManager.getPubkeyList()[0]
             self.privKey = self.keyManager.getPrivkey(self.pubKey)
         else:
             keys = self.generatePubKey()
@@ -197,7 +201,7 @@ class OnionrCrypto:
     
     def generateDeterministic(self, passphrase, bypassCheck=False):
         '''Generate a Ed25519 public key pair from a password'''
-        passStrength = 25
+        passStrength = self.deterministicRequirement
         passphrase = self._core._utils.strToBytes(passphrase) # Convert to bytes if not already
         # Validate passphrase length
         if not bypassCheck:
@@ -205,7 +209,7 @@ class OnionrCrypto:
                 raise onionrexceptions.PasswordStrengthError("Passphase must be at least %s characters" % (passStrength,))
         # KDF values
         kdf = nacl.pwhash.argon2id.kdf
-        salt = nacl.utils.random(nacl.pwhash.argon2i.SALTBYTES)
+        salt = b"U81Q7llrQcdTP0Ux" # Does not need to be unique or secret, but must be 16 bytes
         ops = nacl.pwhash.argon2id.OPSLIMIT_SENSITIVE
         mem = nacl.pwhash.argon2id.MEMLIMIT_SENSITIVE
         
@@ -213,8 +217,8 @@ class OnionrCrypto:
         key = nacl.public.PrivateKey(key, nacl.encoding.RawEncoder())
         publicKey = key.public_key
 
-        return (key.encode(encoder=nacl.encoding.Base32Encoder()), 
-                publicKey.encode(encoder=nacl.encoding.Base32Encoder()))
+        return (publicKey.encode(encoder=nacl.encoding.Base32Encoder()),
+        key.encode(encoder=nacl.encoding.Base32Encoder()))
 
     def pubKeyHashID(self, pubkey=''):
         '''Accept a ed25519 public key, return a truncated result of X many sha3_256 hash rounds'''
@@ -281,3 +285,6 @@ class OnionrCrypto:
             logger.debug("Invalid token, bad proof")
 
         return retData
+    
+    def safeCompare(self, one, two):
+        return hmac.compare_digest(one, two)

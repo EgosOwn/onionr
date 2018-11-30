@@ -40,7 +40,7 @@ except ImportError:
     raise Exception("You need the PySocks module (for use with socks5 proxy to use Tor)")
 
 ONIONR_TAGLINE = 'Anonymous P2P Platform - GPLv3 - https://Onionr.VoidNet.Tech'
-ONIONR_VERSION = '0.4.1' # for debugging and stuff
+ONIONR_VERSION = '0.5.0' # for debugging and stuff
 ONIONR_VERSION_TUPLE = tuple(ONIONR_VERSION.split('.')) # (MAJOR, MINOR, VERSION)
 API_VERSION = '5' # increments of 1; only change when something fundemental about how the API works changes. This way other nodes know how to communicate without learning too much information about you.
 
@@ -114,7 +114,6 @@ class Onionr:
             config.set('client.participate', True, savefile=True)
         if type(config.get('client.api_version')) is type(None):
             config.set('client.api_version', API_VERSION, savefile=True)
-
 
         self.cmds = {
             '': self.showHelpSuggestion,
@@ -197,7 +196,9 @@ class Onionr:
 
             'chat': self.startChat,
 
-            'friend': self.friendCmd
+            'friend': self.friendCmd,
+            'add-id': self.addID,
+            'change-id': self.changeID
         }
 
         self.cmdhelp = {
@@ -226,7 +227,9 @@ class Onionr:
             'pex': 'exchange addresses with peers (done automatically)',
             'blacklist-block': 'deletes a block by hash and permanently removes it from your node',
             'introduce': 'Introduce your node to the public Onionr network',
-            'friend': '[add|remove] [public key/id]'
+            'friend': '[add|remove] [public key/id]',
+            'add-id': 'Generate a new ID (key pair)',
+            'change-id': 'Change active ID'
         }
 
         # initialize plugins
@@ -256,6 +259,48 @@ class Onionr:
 
         for detail in details:
             logger.info('%s%s: \n%s%s\n' % (logger.colors.fg.lightgreen, detail, logger.colors.fg.green, details[detail]), sensitive = True)
+
+    def addID(self):
+        try:
+            sys.argv[2]
+            assert sys.argv[2] == 'true'
+        except (IndexError, AssertionError) as e:
+            newID = self.onionrCore._crypto.keyManager.addKey()[0]
+        else:
+            logger.warn('Deterministic keys require random and long passphrases.')
+            logger.warn('If a good password is not used, your key can be easily stolen.')
+            pass1 = getpass.getpass(prompt='Enter at least %s characters: ' % (self.onionrCore._crypto.deterministicRequirement,))
+            pass2 = getpass.getpass(prompt='Confirm entry: ')
+            if self.onionrCore._crypto.safeCompare(pass1, pass2):
+                try:
+                    logger.info('Generating deterministic key. This can take a while.')
+                    newID, privKey = self.onionrCore._crypto.generateDeterministic(pass1)
+                except onionrexceptions.PasswordStrengthError:
+                    logger.error('Must use at least 25 characters.')
+                    sys.exit(1)
+            else:
+                logger.error('Passwords do not match.')
+                sys.exit(1)
+            self.onionrCore._crypto.keyManager.addKey(pubKey=newID, 
+            privKey=privKey)
+        logger.info('Added ID: %s' % (self.onionrUtils.bytesToStr(newID),))
+    
+    def changeID(self):
+        try:
+            key = sys.argv[2]
+        except IndexError:
+            logger.error('Specify pubkey to use')
+        else:
+            if self.onionrUtils.validatePubKey(key):
+                if key in self.onionrCore._crypto.keyManager.getPubkeyList():
+                    config.set('general.public_key', key)
+                    config.save()
+                    logger.info('Set active key to: %s' % (key,))
+                    logger.info('Restart Onionr if it is running.')
+                else:
+                    logger.error('That key does not exist')
+            else:
+                logger.error('Invalid key %s' % (key,))
 
     def startChat(self):
         try:
@@ -728,7 +773,6 @@ class Onionr:
             net.killTor()
         except Exception as e:
             logger.error('Failed to shutdown daemon.', error = e, timestamp = False)
-
         return
 
     def showStats(self):

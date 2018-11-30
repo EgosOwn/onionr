@@ -29,9 +29,11 @@ class KeyManager:
     def addKey(self, pubKey=None, privKey=None):
         if type(pubKey) is type(None) and type(privKey) is type(None):
             pubKey, privKey = self.crypto.generatePubKey()
+        pubKey = self.crypto._core._utils.bytesToStr(pubKey)
+        privKey = self.crypto._core._utils.bytesToStr(privKey)
         try:
             if pubKey in self.getPubkeyList():
-                raise ValueError('Pubkey already in list')
+                raise ValueError('Pubkey already in list: %s' % (pubKey,))
         except FileNotFoundError:
             pass
         with open(self.keyFile, "a") as keyFile:

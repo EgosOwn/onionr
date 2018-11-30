@@ -23,6 +23,9 @@ import base64, sqlite3, os
 from dependencies import secrets
 
 class DaemonTools:
+    '''
+        Class intended for use by Onionr Communicator
+    '''
     def __init__(self, daemon):
             self.daemon = daemon
             self.announceCache = {}
