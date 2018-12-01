@@ -133,7 +133,7 @@ class DaemonTools:
                 del self.daemon.cooldownPeer[peer]
 
         # Cool down a peer, if we have max connections alive for long enough
-        if onlinePeerAmount >= self.daemon._core.config.get('peers.max_connect', 10):
+        if onlinePeerAmount >= self.daemon._core.config.get('peers.max_connect', 10, save = True):
             finding = True
 
             while finding:

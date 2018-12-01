@@ -107,7 +107,7 @@ class OnionrCommunicatorDaemon:
             announceTimer = OnionrCommunicatorTimers(self, self.daemonTools.announceNode, 86400, requiresPeer=True, maxThreads=1)
             announceTimer.count = (announceTimer.frequency - 120)
         else:
-            logger.debug('Will not announce')
+            logger.debug('Will not announce node.')
         cleanupTimer = OnionrCommunicatorTimers(self, self.peerCleanup, 300, requiresPeer=True)
         forwardSecrecyTimer = OnionrCommunicatorTimers(self, self.daemonTools.cleanKeys, 15)
 
