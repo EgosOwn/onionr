@@ -760,7 +760,7 @@ class Core:
         metadata['meta'] = jsonMeta
         metadata['sig'] = signature
         metadata['signer'] = signer
-        metadata['time'] = str(self._utils.getEpoch())
+        metadata['time'] = self._utils.getEpoch()
 
         # ensure expire is integer and of sane length
         if type(expire) is not type(None):
