@@ -473,7 +473,7 @@ class OnionrCommunicatorDaemon:
                 if len(self.onlinePeers) > 0:
                     self.announce(cmd[1])
                 else:
-                    logger.warn("Not introducing, since I have no connected nodes.")
+                    logger.debug("No nodes connected. Will not introduce node.")
             elif cmd[0] == 'runCheck': # deprecated
                 logger.debug('Status check; looks good.')
                 open(self._core.dataDir + '.runcheck', 'w+').close()

@@ -105,11 +105,11 @@ class DaemonTools:
         deleteKeys = []
 
         for entry in c.execute("SELECT * FROM forwardKeys WHERE expire <= ?", (time,)):
-            logger.info(entry[1])
+            logger.debug('Forward key: %s' % entry[1])
             deleteKeys.append(entry[1])
 
         for key in deleteKeys:
-            logger.info('Deleting forward key '+ key)
+            logger.debug('Deleting forward key %s' % key)
             c.execute("DELETE from forwardKeys where forwardKey = ?", (key,))
         conn.commit()
         conn.close()
