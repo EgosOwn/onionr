@@ -42,7 +42,7 @@ class OnionrCrypto:
 
         # Load our own pub/priv Ed25519 keys, gen & save them if they don't exist
         if os.path.exists(self._keyFile):
-            if len(config.get('general.public_key')) > 0:
+            if len(config.get('general.public_key', '')) > 0:
                 self.pubKey = config.get('general.public_key')
             else:
                 self.pubKey = self.keyManager.getPubkeyList()[0]
