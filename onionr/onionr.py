@@ -167,6 +167,10 @@ class Onionr:
 
             'add-file': self.addFile,
             'addfile': self.addFile,
+            'addhtml': self.addWebpage,
+            'add-html': self.addWebpage,
+            'add-site': self.addWebpage,
+            'addsite': self.addWebpage,
 
             'get-file': self.getFile,
             'getfile': self.getFile,
@@ -908,7 +912,13 @@ class Onionr:
             Block.mergeChain(bHash, fileName)
         return
 
-    def addFile(self):
+    def addWebpage(self):
+        '''
+            Add a webpage to the onionr network
+        '''
+        self.addFile(singleBlock=True, blockType='html')
+
+    def addFile(self, singleBlock=False, blockType='txt'):
         '''
             Adds a file to the onionr network
         '''
@@ -922,7 +932,11 @@ class Onionr:
                 return
             logger.info('Adding file... this might take a long time.')
             try:
-                blockhash = Block.createChain(file = filename)
+                if singleBlock:
+                    with open(filename, 'rb') as singleFile:
+                        blockhash = self.onionrCore.insertBlock(base64.b64encode(singleFile.read()), header=blockType)
+                else:
+                    blockhash = Block.createChain(file = filename)
                 logger.info('File %s saved in block %s.' % (filename, blockhash))
             except:
                 logger.error('Failed to save file in block.', timestamp = False)

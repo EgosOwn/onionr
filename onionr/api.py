@@ -91,9 +91,6 @@ class API:
 
         self.i2pEnabled = config.get('i2p.host', False)
 
-        self.mimeType = 'text/plain'
-        self.overrideCSP = False
-
         self.hideBlocks = [] # Blocks to be denied sharing
 
         with open(self._core.dataDir + 'time-bypass.txt', 'w') as bypass:
@@ -122,19 +119,24 @@ class API:
                 resp.headers['Access-Control-Allow-Origin'] = '*'
             #else:
             #    resp.headers['server'] = 'Onionr'
-            resp.headers['Content-Type'] = self.mimeType
-            if not self.overrideCSP:
-                resp.headers["Content-Security-Policy"] =  "default-src 'none'; script-src 'none'; object-src 'none'; style-src data: 'unsafe-inline'; img-src data:; media-src 'none'; frame-src 'none'; font-src 'none'; connect-src 'none'"
+            resp.headers["Content-Security-Policy"] =  "default-src 'none'; script-src 'none'; object-src 'none'; style-src data: 'unsafe-inline'; img-src data:; media-src 'none'; frame-src 'none'; font-src 'none'; connect-src 'none'"
             resp.headers['X-Frame-Options'] = 'deny'
             resp.headers['X-Content-Type-Options'] = "nosniff"
             resp.headers['X-API'] = API_VERSION
             resp.headers['Date'] = 'Thu, 1 Jan 1970 00:00:00 GMT' # Clock info is probably useful to attackers. Set to unix epoch.
-
-            # reset to text/plain to help prevent browser attacks
-            self.mimeType = 'text/plain'
-            self.overrideCSP = False
-
             return resp
+
+        @app.route('/site/<path:block>')
+        def site(block):
+            bHash = block
+            resp = 'Not Found'
+            if self._core._utils.validateHash(bHash):
+                resp = Block(bHash).bcontent
+                try:
+                    resp = base64.b64decode(resp)
+                except:
+                    pass
+            return Response(resp)
 
         @app.route('/www/private/<path:path>')
         def www_private(path):
@@ -149,9 +151,6 @@ class API:
                 abort(403)
 
             self.validateHost('private')
-
-            if config.get('www.public.guess_mime', True):
-                self.mimeType = API.guessMime(path)
 
             endTime = math.floor(time.time())
             elapsed = endTime - startTime
@@ -168,9 +167,6 @@ class API:
                 abort(403)
 
             self.validateHost('public')
-
-            if config.get('www.public.guess_mime', True):
-                self.mimeType = API.guessMime(path)
 
             return send_from_directory(config.get('www.public.path', 'static-data/www/public/'), path)
 
@@ -202,12 +198,11 @@ class API:
                     time.sleep(self._privateDelayTime - elapsed)
             '''
 
-            self.mimeType = API.guessMime(path)
-            self.overrideCSP = True
+            mime = API.guessMime(path)
 
-            logger.debug('Serving %s (mime: %s)' % (path, self.mimeType))
+            logger.debug('Serving %s (mime: %s)' % (path, mime))
 
-            return send_from_directory('static-data/www/ui/dist/', path, mimetype = API.guessMime(path))
+            return send_from_directory('static-data/www/ui/dist/', path)
 
         @app.route('/client/')
         def private_handler():
@@ -249,16 +244,8 @@ class API:
                 resp = Response('Goodbye')
             elif action == 'ping':
                 resp = Response('pong')
-            elif action == 'site':
-                block = data
-                siteData = self._core.getData(data)
-                response = 'not found'
-                if siteData != '' and siteData != False:
-                    self.mimeType = 'text/html'
-                    response = siteData.split(b'-', 2)[-1]
-                resp = Response(response)
             elif action == 'info':
-                resp = Response(json.dumps({'pubkey' : self._core._crypto.pubKey, 'host' : self._core.hsAddress}))
+                resp = Response(json.dumps({'pubkey' : self._core._crypto.pubKey, 'host' : self._core.hsAddress}), mimetype='text/plain')
             elif action == "insertBlock":
                 response = {'success' : False, 'reason' : 'An unknown error occurred'}
 
@@ -369,12 +356,12 @@ class API:
                 else:
                     response = {'success' : False, 'reason' : 'Missing `data` parameter.', 'blocks' : {}}
 
-                resp = Response(json.dumps(response))
+                resp = Response(json.dumps(response), mimetype='text/plain')
 
             elif action in API.callbacks['private']:
-                resp = Response(str(getCallback(action, scope = 'private')(request)))
+                resp = Response(str(getCallback(action, scope = 'private')(request)), mimetype='text/plain')
             else:
-                resp = Response('(O_o) Dude what? (invalid command)')
+                resp = Response('invalid command')
             endTime = math.floor(time.time())
             elapsed = endTime - startTime
 
@@ -387,11 +374,10 @@ class API:
 
         @app.route('/')
         def banner():
-            self.mimeType = 'text/html'
             self.validateHost('public')
             try:
                 with open('static-data/index.html', 'r') as html:
-                    resp = Response(html.read())
+                    resp = Response(html.read(), mimetype='text/html')
             except FileNotFoundError:
                 resp = Response("")
             return resp
@@ -535,8 +521,8 @@ class API:
             resp = Response("Invalid request")
 
             return resp
-        if not os.environ.get("WERKZEUG_RUN_MAIN") == "true":
-            logger.info('Starting client on ' + self.host + ':' + str(bindPort) + '...', timestamp=False)
+
+        logger.info('Starting client on ' + self.host + ':' + str(bindPort) + '...', timestamp=False)
 
         try:
             while len(self._core.hsAddress) == 0:
