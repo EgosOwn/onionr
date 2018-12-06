@@ -177,3 +177,13 @@ class DaemonTools:
                 build += '%s %s' % (amnt_unit, unit) + ('s' if amnt_unit != 1 else '') + ' '
 
         return build.strip()
+
+    def insertDeniableBlock(self):
+        '''Insert a fake block in order to make it more difficult to track real blocks'''
+        fakePeer = self.daemon._core._crypto.generatePubKey()[0]
+        chance = 10
+        if secrets.randbelow(chance) == (chance - 1):
+            data = secrets.token_hex(secrets.randbelow(500) + 1)
+            self.daemon._core.insertBlock(data, header='pm', encryptType='asym', asymPeer=fakePeer)
+        self.daemon.decrementThreadCount('insertDeniableBlock')
+        return

@@ -102,6 +102,8 @@ class OnionrCommunicatorDaemon:
         OnionrCommunicatorTimers(self, self.daemonTools.cooldownPeer, 30, requiresPeer=True)
         OnionrCommunicatorTimers(self, self.uploadBlock, 10, requiresPeer=True, maxThreads=1)
         OnionrCommunicatorTimers(self, self.daemonCommands, 6, maxThreads=1)
+        deniableBlockTimer = OnionrCommunicatorTimers(self, self.daemonTools.insertDeniableBlock, 180, requiresPeer=True, maxThreads=1)
+
         netCheckTimer = OnionrCommunicatorTimers(self, self.daemonTools.netCheck, 600)
         if config.get('general.security_level') == 0:
             announceTimer = OnionrCommunicatorTimers(self, self.daemonTools.announceNode, 86400, requiresPeer=True, maxThreads=1)
@@ -114,6 +116,7 @@ class OnionrCommunicatorDaemon:
         # set loop to execute instantly to load up peer pool (replaced old pool init wait)
         peerPoolTimer.count = (peerPoolTimer.frequency - 1)
         cleanupTimer.count = (cleanupTimer.frequency - 60)
+        deniableBlockTimer.count = (deniableBlockTimer.frequency - 175)
         #forwardSecrecyTimer.count = (forwardSecrecyTimer.frequency - 990)
 
         if config.get('general.socket_servers'):
@@ -594,7 +597,7 @@ class OnionrCommunicatorTimers:
                 if self.makeThread:
                     for i in range(self.threadAmount):
                         if self.daemonInstance.threadCounts[self.timerFunction.__name__] >= self.maxThreads:
-                            logger.warn('%s is currently using the maximum number of threads, not starting another.' % self.timerFunction.__name__)
+                            logger.debug('%s is currently using the maximum number of threads, not starting another.' % self.timerFunction.__name__)
                         else:
                             self.daemonInstance.threadCounts[self.timerFunction.__name__] += 1
                             newThread = threading.Thread(target=self.timerFunction)
