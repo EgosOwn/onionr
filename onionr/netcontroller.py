@@ -65,7 +65,7 @@ class NetController:
             Generate a torrc file for our tor instance
         '''
         hsVer = '# v2 onions'
-        if config.get('tor.v3_onions'):
+        if config.get('tor.v3onions'):
             hsVer = 'HiddenServiceVersion 3'
             logger.info('Using v3 onions :)')
 

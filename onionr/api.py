@@ -128,6 +128,7 @@ class API:
 
         @app.route('/site/<path:block>')
         def site(block):
+            self.validateHost('private')
             bHash = block
             resp = 'Not Found'
             if self._core._utils.validateHash(bHash):

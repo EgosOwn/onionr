@@ -363,7 +363,7 @@ class OnionrCommunicatorDaemon:
             self.addBootstrapListToPeerList(peerList)
 
         for address in peerList:
-            if not config.get('tor.v3_onions') and len(address) == 62:
+            if not config.get('tor.v3onions') and len(address) == 62:
                 continue
             if len(address) == 0 or address in tried or address in self.onlinePeers or address in self.cooldownPeer:
                 continue
