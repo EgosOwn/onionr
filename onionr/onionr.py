@@ -103,8 +103,8 @@ class Onionr:
             self.onionrCore.createAddressDB()
 
         # Get configuration
-        if type(config.get('client.hmac')) is type(None):
-            config.set('client.hmac', base64.b16encode(os.urandom(32)).decode('utf-8'), savefile=True)
+        if type(config.get('client.webpassword')) is type(None):
+            config.set('client.webpassword', base64.b16encode(os.urandom(32)).decode('utf-8'), savefile=True)
         if type(config.get('client.port')) is type(None):
             randomPort = 0
             while randomPort < 1024:
@@ -426,7 +426,7 @@ class Onionr:
             logger.info(i)
 
     def getWebPassword(self):
-        return config.get('client.hmac')
+        return config.get('client.webpassword')
 
     def printWebPassword(self):
         logger.info(self.getWebPassword(), sensitive = True)
@@ -717,13 +717,18 @@ class Onionr:
             time.sleep(1)
             self.onionrUtils.localCommand('shutdown')
         else:
+            apiHost = '127.0.0.1'
             if apiThread.isAlive():
-                # configure logger and stuff
+                try:
+                    with open(self.onionrCore.dataDir + 'host.txt', 'r') as hostFile:
+                        apiHost = hostFile.read()
+                except FileNotFoundError:
+                    pass
                 Onionr.setupConfig('data/', self = self)
 
                 if self._developmentMode:
                     logger.warn('DEVELOPMENT MODE ENABLED (THIS IS LESS SECURE!)', timestamp = False)
-                net = NetController(config.get('client.port', 59496))
+                net = NetController(config.get('client.port', 59496), apiServerIP=apiHost)
                 logger.debug('Tor is starting...')
                 if not net.startTor():
                     sys.exit(1)

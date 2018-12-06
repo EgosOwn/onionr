@@ -1,6 +1,6 @@
 {
     "general" : {
-        "dev_mode" : true,
+        "dev_mode" : false,
         "display_header" : true,
         "minimum_block_pow": 5,
         "minimum_send_pow": 5,
@@ -47,7 +47,7 @@
         "verbosity" : "default",
 
         "file": {
-            "output": false,
+            "output": true,
             "path": "data/output.log"
         },
 

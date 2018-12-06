@@ -165,7 +165,7 @@ class OnionrUtils:
                 hostname = host.read()
         except FileNotFoundError:
             return False
-        payload = 'http://%s:%s/client/?action=%s&token=%s&timingToken=%s' % (hostname, config.get('client.port'), command, config.get('client.hmac'), self.timingToken)
+        payload = 'http://%s:%s/client/?action=%s&token=%s&timingToken=%s' % (hostname, config.get('client.port'), command, config.get('client.webpassword'), self.timingToken)
         if data != '':
             payload += '&data=' + urllib.parse.quote_plus(data)
         try:

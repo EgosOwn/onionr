@@ -86,7 +86,7 @@ class API:
         app = flask.Flask(__name__)
         bindPort = int(config.get('client.port', 59496))
         self.bindPort = bindPort
-        self.clientToken = config.get('client.hmac')
+        self.clientToken = config.get('client.webpassword')
         self.timeBypassToken = base64.b16encode(os.urandom(32)).decode()
 
         self.i2pEnabled = config.get('i2p.host', False)
@@ -97,7 +97,7 @@ class API:
             bypass.write(self.timeBypassToken)
 
         if not debug and not self._developmentMode:
-            hostOctets = [127, random.randint(0x02, 0xFF), random.randint(0x02, 0xFF), random.randint(0x02, 0xFF)]
+            hostOctets = [str(127), str(random.randint(0x02, 0xFF)), str(random.randint(0x02, 0xFF)), str(random.randint(0x02, 0xFF))]
             self.host = '.'.join(hostOctets)
         else:
             self.host = '127.0.0.1'
@@ -230,6 +230,8 @@ class API:
             self.validateHost('private')
             if action == 'hello':
                 resp = Response('Hello, World! ' + request.host)
+            elif action == 'getIP':
+                resp = Response(self.host)
             elif action == 'waitForShare':
                 if self._core._utils.validateHash(data):
                     if data not in self.hideBlocks:
@@ -523,7 +525,7 @@ class API:
 
             return resp
 
-        logger.info('Starting client on ' + self.host + ':' + str(bindPort) + '...', timestamp=False)
+        logger.info('Starting client on ' + self.host + ':' + str(bindPort), timestamp=False)
 
         try:
             while len(self._core.hsAddress) == 0:
@@ -562,13 +564,16 @@ class API:
         if not self.i2pEnabled and request.host.endswith('i2p'):
             abort(403)
 
+        '''
         if not self._developmentMode:
             try:
                 request.headers['X-Requested-With']
             except:
-                # we exit rather than abort to avoid fingerprinting
-                logger.debug('Avoiding fingerprinting, exiting...')
-                sys.exit(1)
+                pass
+            # we exit rather than abort to avoid fingerprinting
+            logger.debug('Avoiding fingerprinting, exiting...')
+                #sys.exit(1)
+        '''
 
     def setCallback(action, callback, scope = 'public'):
         if not scope in API.callbacks:

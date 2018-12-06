@@ -27,7 +27,7 @@ class NetController:
         This class handles hidden service setup on Tor and I2P
     '''
 
-    def __init__(self, hsPort):
+    def __init__(self, hsPort, apiServerIP='127.0.0.1'):
         try:
             self.dataDir = os.environ['ONIONR_HOME']
             if not self.dataDir.endswith('/'):
@@ -41,6 +41,7 @@ class NetController:
         self.hsPort = hsPort
         self._torInstnace = ''
         self.myID = ''
+        self.apiServerIP = apiServerIP
 
         if os.path.exists('./tor'):
             self.torBinary = './tor'
@@ -96,7 +97,7 @@ HashedControlPassword ''' + str(password) + '''
         if config.get('general.security_level') == 0:
             torrcData += '''\nHiddenServiceDir ''' + self.dataDir + '''hs/
 \n''' + hsVer + '''\n
-HiddenServicePort 80 127.0.0.1:''' + str(self.hsPort)
+HiddenServicePort 80 ''' + self.apiServerIP + ''':''' + str(self.hsPort)
 
         torrc = open(self.torConfigLocation, 'w')
         torrc.write(torrcData)
