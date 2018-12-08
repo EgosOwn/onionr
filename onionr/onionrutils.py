@@ -125,7 +125,7 @@ class OnionrUtils:
                 for adder in newAdderList.split(','):
                     adder = adder.strip()
                     if not adder in self._core.listAdders(randomOrder = False) and adder != self.getMyAddress() and not self._core._blacklist.inBlacklist(adder):
-                        if not config.get('tor.v3_onions') and len(adder) == 62:
+                        if not config.get('tor.v3onions') and len(adder) == 62:
                             continue
                         if self._core.addAddress(adder):
                             # Check if we have the maxmium amount of allowed stored peers
