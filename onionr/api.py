@@ -538,7 +538,6 @@ class API:
         except Exception as e:
             logger.error(str(e))
             logger.fatal('Failed to start client on ' + self.host + ':' + str(bindPort) + ', exiting...')
-            exit(1)
 
     def validateHost(self, hostType):
         '''

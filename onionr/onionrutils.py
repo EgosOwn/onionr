@@ -267,8 +267,7 @@ class OnionrUtils:
         '''
         myBlock = Block(blockHash, self._core)
         if myBlock.isEncrypted:
-            #pass
-            logger.warn(myBlock.decrypt())
+            myBlock.decrypt()
         if (myBlock.isEncrypted and myBlock.decrypted) or (not myBlock.isEncrypted):
             blockType = myBlock.getMetadata('type') # we would use myBlock.getType() here, but it is bugged with encrypted blocks
             signer = self.bytesToStr(myBlock.signer)

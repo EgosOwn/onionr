@@ -551,6 +551,7 @@ class Onionr:
 
         try:
             newAddress = sys.argv[2]
+            newAddress = newAddress.replace('http:', '').replace('/', '')
         except:
             pass
         else:
@@ -731,6 +732,7 @@ class Onionr:
                 net = NetController(config.get('client.port', 59496), apiServerIP=apiHost)
                 logger.debug('Tor is starting...')
                 if not net.startTor():
+                    self.onionrUtils.localCommand('shutdown')
                     sys.exit(1)
                 if len(net.myID) > 0 and config.get('general.security_level') == 0:
                     logger.debug('Started .onion service: %s' % (logger.colors.underline + net.myID))
