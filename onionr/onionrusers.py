@@ -33,10 +33,19 @@ def deleteExpiredKeys(coreInst):
     return
 
 class OnionrUser:
-    def __init__(self, coreInst, publicKey):
+    def __init__(self, coreInst, publicKey, saveUser=False):
+        '''
+            OnionrUser is an abstraction for "users" of the network. 
+            
+            Takes an instance of onionr core, a base32 encoded ed25519 public key, and a bool saveUser
+            saveUser determines if we should add a user to our peer database or not.
+        '''
         self.trust = 0
         self._core = coreInst
         self.publicKey = publicKey
+
+        if saveUser:
+            self._core.addPeer(publicKey)
 
         self.trust = self._core.getPeerInfo(self.publicKey, 'trust')
         return
@@ -71,7 +80,6 @@ class OnionrUser:
     def forwardEncrypt(self, data):
         retData = ''
         forwardKey = self._getLatestForwardKey()
-        #logger.info('using ' + forwardKey)
         if self._core._utils.validatePubKey(forwardKey):
             retData = self._core._crypto.pubKeyEncrypt(data, forwardKey, encodedData=True, anonymous=True)
         else:
@@ -81,10 +89,7 @@ class OnionrUser:
 
     def forwardDecrypt(self, encrypted):
         retData = ""
-        #logger.error(self.publicKey)
-        #logger.error(self.getGeneratedForwardKeys(False))
         for key in self.getGeneratedForwardKeys(False):
-            logger.info(encrypted)
             try:
                 retData = self._core._crypto.pubKeyDecrypt(encrypted, privkey=key[1], anonymous=True, encodedData=True)
             except nacl.exceptions.CryptoError:

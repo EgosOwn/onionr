@@ -125,11 +125,11 @@ class OnionrUtils:
                 for adder in newAdderList.split(','):
                     adder = adder.strip()
                     if not adder in self._core.listAdders(randomOrder = False) and adder != self.getMyAddress() and not self._core._blacklist.inBlacklist(adder):
-                        if not config.get('tor.v3_onions') and len(adder) == 62:
+                        if not config.get('tor.v3onions') and len(adder) == 62:
                             continue
                         if self._core.addAddress(adder):
                             # Check if we have the maxmium amount of allowed stored peers
-                            if config.get('peers.max_stored') > len(self._core.listAdders()):
+                            if config.get('peers.max_stored_peers') > len(self._core.listAdders()):
                                 logger.info('Added %s to db.' % adder, timestamp = True)
                                 retVal = True
                             else:
@@ -146,6 +146,8 @@ class OnionrUtils:
         try:
             with open('./' + self._core.dataDir + 'hs/hostname', 'r') as hostname:
                 return hostname.read().strip()
+        except FileNotFoundError:
+            return ""
         except Exception as error:
             logger.error('Failed to read my address.', error = error)
             return None
@@ -163,7 +165,7 @@ class OnionrUtils:
                 hostname = host.read()
         except FileNotFoundError:
             return False
-        payload = 'http://%s:%s/client/?action=%s&token=%s&timingToken=%s' % (hostname, config.get('client.port'), command, config.get('client.hmac'), self.timingToken)
+        payload = 'http://%s:%s/client/?action=%s&token=%s&timingToken=%s' % (hostname, config.get('client.port'), command, config.get('client.webpassword'), self.timingToken)
         if data != '':
             payload += '&data=' + urllib.parse.quote_plus(data)
         try:
@@ -265,20 +267,14 @@ class OnionrUtils:
         '''
         myBlock = Block(blockHash, self._core)
         if myBlock.isEncrypted:
-            #pass
-            logger.warn(myBlock.decrypt())
+            myBlock.decrypt()
         if (myBlock.isEncrypted and myBlock.decrypted) or (not myBlock.isEncrypted):
             blockType = myBlock.getMetadata('type') # we would use myBlock.getType() here, but it is bugged with encrypted blocks
             signer = self.bytesToStr(myBlock.signer)
             valid = myBlock.verifySig()
-
-            logger.info('Checking for fs key')
             if myBlock.getMetadata('newFSKey') is not None:
                 onionrusers.OnionrUser(self._core, signer).addForwardKey(myBlock.getMetadata('newFSKey'))
-            else:
-                logger.warn('FS not used for this encrypted block')
-                logger.info(myBlock.bmetadata)
-
+                
             try:
                 if len(blockType) <= 10:
                     self._core.updateBlockInfo(blockHash, 'dataType', blockType)
@@ -295,7 +291,6 @@ class OnionrUtils:
             else:
                 self._core.updateBlockInfo(blockHash, 'expire', expireTime)
         else:
-            logger.info(myBlock.isEncrypted)
             logger.debug('Not processing metadata on encrypted block we cannot decrypt.')
 
     def escapeAnsi(self, line):
@@ -616,7 +611,7 @@ class OnionrUtils:
             retData = False
         return retData
 
-    def doGetRequest(self, url, port=0, proxyType='tor'):
+    def doGetRequest(self, url, port=0, proxyType='tor', ignoreAPI=False):
         '''
         Do a get request through a local tor or i2p instance
         '''
@@ -635,12 +630,13 @@ class OnionrUtils:
             proxies = {'http': 'socks4a://127.0.0.1:' + str(port), 'https': 'socks4a://127.0.0.1:' + str(port)}
             r = requests.get(url, headers=headers, proxies=proxies, allow_redirects=False, timeout=(15, 30))
             # Check server is using same API version as us
-            try:
-                response_headers = r.headers
-                if r.headers['X-API'] != str(API_VERSION):
+            if not ignoreAPI:
+                try:
+                    response_headers = r.headers
+                    if r.headers['X-API'] != str(API_VERSION):
+                        raise onionrexceptions.InvalidAPIVersion
+                except KeyError:
                     raise onionrexceptions.InvalidAPIVersion
-            except KeyError:
-                raise onionrexceptions.InvalidAPIVersion
             retData = r.text
         except KeyboardInterrupt:
             raise KeyboardInterrupt
@@ -701,7 +697,7 @@ class OnionrUtils:
                 connectURLs = connectTest.read().split(',')
 
             for url in connectURLs:
-                if self.doGetRequest(url, port=torPort) != False:
+                if self.doGetRequest(url, port=torPort, ignoreAPI=True) != False:
                     retData = True
                     break
         except FileNotFoundError:

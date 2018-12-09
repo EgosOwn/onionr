@@ -17,8 +17,8 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import nacl.signing, nacl.encoding, nacl.public, nacl.hash, nacl.secret, os, binascii, base64, hashlib, logger, onionrproofs, time, math, sys
-
+import nacl.signing, nacl.encoding, nacl.public, nacl.hash, nacl.pwhash, nacl.utils, nacl.secret, os, binascii, base64, hashlib, logger, onionrproofs, time, math, sys, hmac
+import onionrexceptions, keymanager
 # secrets module was added into standard lib in 3.6+
 if sys.version_info[0] == 3 and sys.version_info[1] < 6:
     from dependencies import secrets
@@ -36,20 +36,22 @@ class OnionrCrypto:
 
         self.secrets = secrets
         
+        self.deterministicRequirement = 25 # Min deterministic password/phrase length
         self.HASH_ID_ROUNDS = 2000
+        self.keyManager = keymanager.KeyManager(self)
 
         # Load our own pub/priv Ed25519 keys, gen & save them if they don't exist
         if os.path.exists(self._keyFile):
-            with open(self._core.dataDir + 'keys.txt', 'r') as keys:
-                keys = keys.read().split(',')
-                self.pubKey = keys[0]
-                self.privKey = keys[1]
+            if len(config.get('general.public_key', '')) > 0:
+                self.pubKey = config.get('general.public_key')
+            else:
+                self.pubKey = self.keyManager.getPubkeyList()[0]
+            self.privKey = self.keyManager.getPrivkey(self.pubKey)
         else:
             keys = self.generatePubKey()
             self.pubKey = keys[0]
             self.privKey = keys[1]
-            with open(self._keyFile, 'w') as keyfile:
-                keyfile.write(self.pubKey + ',' + self.privKey)
+            self.keyManager.addKey(self.pubKey, self.privKey)
         return
 
     def edVerify(self, data, key, sig, encodedData=True):
@@ -196,6 +198,27 @@ class OnionrCrypto:
         private_key = nacl.signing.SigningKey.generate()
         public_key = private_key.verify_key.encode(encoder=nacl.encoding.Base32Encoder())
         return (public_key.decode(), private_key.encode(encoder=nacl.encoding.Base32Encoder()).decode())
+    
+    def generateDeterministic(self, passphrase, bypassCheck=False):
+        '''Generate a Ed25519 public key pair from a password'''
+        passStrength = self.deterministicRequirement
+        passphrase = self._core._utils.strToBytes(passphrase) # Convert to bytes if not already
+        # Validate passphrase length
+        if not bypassCheck:
+            if len(passphrase) < passStrength:
+                raise onionrexceptions.PasswordStrengthError("Passphase must be at least %s characters" % (passStrength,))
+        # KDF values
+        kdf = nacl.pwhash.argon2id.kdf
+        salt = b"U81Q7llrQcdTP0Ux" # Does not need to be unique or secret, but must be 16 bytes
+        ops = nacl.pwhash.argon2id.OPSLIMIT_SENSITIVE
+        mem = nacl.pwhash.argon2id.MEMLIMIT_SENSITIVE
+        
+        key = kdf(nacl.secret.SecretBox.KEY_SIZE, passphrase, salt, opslimit=ops, memlimit=mem)
+        key = nacl.public.PrivateKey(key, nacl.encoding.RawEncoder())
+        publicKey = key.public_key
+
+        return (publicKey.encode(encoder=nacl.encoding.Base32Encoder()),
+        key.encode(encoder=nacl.encoding.Base32Encoder()))
 
     def pubKeyHashID(self, pubkey=''):
         '''Accept a ed25519 public key, return a truncated result of X many sha3_256 hash rounds'''
@@ -262,3 +285,6 @@ class OnionrCrypto:
             logger.debug("Invalid token, bad proof")
 
         return retData
+    
+    def safeCompare(self, one, two):
+        return hmac.compare_digest(one, two)

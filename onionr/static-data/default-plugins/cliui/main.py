@@ -33,7 +33,8 @@ class OnionrCLIUI:
 
     def subCommand(self, command):
             try:
-                subprocess.run(["./onionr.py", command])
+                #subprocess.run(["./onionr.py", command])
+                subprocess.Popen(['./onionr.py', command], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
             except KeyboardInterrupt:
                 pass
 

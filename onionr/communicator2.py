@@ -21,7 +21,7 @@
 '''
 import sys, os, core, config, json, requests, time, logger, threading, base64, onionr, uuid
 import onionrexceptions, onionrpeers, onionrevents as events, onionrplugins as plugins, onionrblockapi as block
-import onionrdaemontools, onionrsockets, onionrchat, onionr
+import onionrdaemontools, onionrsockets, onionrchat, onionr, onionrproofs
 from dependencies import secrets
 from defusedxml import minidom
 
@@ -70,6 +70,9 @@ class OnionrCommunicatorDaemon:
         # list of blocks currently downloading, avoid s
         self.currentDownloading = []
 
+        # timestamp when the last online node was seen
+        self.lastNodeSeen = None
+
         # Clear the daemon queue for any dead messages
         if os.path.exists(self._core.queueDB):
             self._core.clearDaemonQueue()
@@ -98,23 +101,31 @@ class OnionrCommunicatorDaemon:
         OnionrCommunicatorTimers(self, self.lookupAdders, 60, requiresPeer=True)
         OnionrCommunicatorTimers(self, self.daemonTools.cooldownPeer, 30, requiresPeer=True)
         OnionrCommunicatorTimers(self, self.uploadBlock, 10, requiresPeer=True, maxThreads=1)
+        OnionrCommunicatorTimers(self, self.daemonCommands, 6, maxThreads=1)
+        deniableBlockTimer = OnionrCommunicatorTimers(self, self.daemonTools.insertDeniableBlock, 180, requiresPeer=True, maxThreads=1)
+
         netCheckTimer = OnionrCommunicatorTimers(self, self.daemonTools.netCheck, 600)
-        announceTimer = OnionrCommunicatorTimers(self, self.daemonTools.announceNode, 305, requiresPeer=True, maxThreads=1)
+        if config.get('general.security_level') == 0:
+            announceTimer = OnionrCommunicatorTimers(self, self.daemonTools.announceNode, 86400, requiresPeer=True, maxThreads=1)
+            announceTimer.count = (announceTimer.frequency - 120)
+        else:
+            logger.debug('Will not announce node.')
         cleanupTimer = OnionrCommunicatorTimers(self, self.peerCleanup, 300, requiresPeer=True)
         forwardSecrecyTimer = OnionrCommunicatorTimers(self, self.daemonTools.cleanKeys, 15)
 
         # set loop to execute instantly to load up peer pool (replaced old pool init wait)
         peerPoolTimer.count = (peerPoolTimer.frequency - 1)
         cleanupTimer.count = (cleanupTimer.frequency - 60)
-        announceTimer.count = (cleanupTimer.frequency - 60)
+        deniableBlockTimer.count = (deniableBlockTimer.frequency - 175)
         #forwardSecrecyTimer.count = (forwardSecrecyTimer.frequency - 990)
 
-        self.socketServer = threading.Thread(target=onionrsockets.OnionrSocketServer, args=(self._core,))
-        self.socketServer.start()
-        self.socketClient = onionrsockets.OnionrSocketClient(self._core)
+        if config.get('general.socket_servers'):
+            self.socketServer = threading.Thread(target=onionrsockets.OnionrSocketServer, args=(self._core,))
+            self.socketServer.start()
+            self.socketClient = onionrsockets.OnionrSocketClient(self._core)
 
-        # Loads chat messages into memory
-        threading.Thread(target=self._chat.chatHandler).start()
+            # Loads chat messages into memory
+            threading.Thread(target=self._chat.chatHandler).start()
 
         # Main daemon loop, mainly for calling timers, don't do any complex operations here to avoid locking
         try:
@@ -187,8 +198,8 @@ class OnionrCommunicatorDaemon:
                             if not i in existingBlocks:
                                 # if block does not exist on disk and is not already in block queue
                                 if i not in self.blockQueue and not self._core._blacklist.inBlacklist(i):
-                                    # TODO ensure block starts with minimum difficulty before adding to queue
-                                    self.blockQueue.append(i) # add blocks to download queue
+                                    if onionrproofs.hashMeetsDifficulty(i):
+                                        self.blockQueue.append(i) # add blocks to download queue
         self.decrementThreadCount('lookupBlocks')
         return
 
@@ -230,7 +241,6 @@ class OnionrCommunicatorDaemon:
                     content = content.decode() # decode here because sha3Hash needs bytes above
                     metas = self._core._utils.getBlockMetadataFromData(content) # returns tuple(metadata, meta), meta is also in metadata
                     metadata = metas[0]
-                    #meta = metas[1]
                     if self._core._utils.validateMetadata(metadata, metas[2]): # check if metadata is valid, and verify nonce
                         if self._core._crypto.verifyPow(content): # check if POW is enough/correct
                             logger.info('Attempting to save block %s...' % blockHash)
@@ -317,11 +327,14 @@ class OnionrCommunicatorDaemon:
                 self.connectNewPeer(useBootstrap=True)
             else:
                 self.connectNewPeer()
+
             if self.shutdown:
                 break
         else:
             if len(self.onlinePeers) == 0:
-                logger.debug('Couldn\'t connect to any peers.')
+                logger.debug('Couldn\'t connect to any peers.' + (' Last node seen %s ago.' % self.daemonTools.humanReadableTime(time.time() - self.lastNodeSeen) if not self.lastNodeSeen is None else ''))
+            else:
+                self.lastNodeSeen = time.time()
         self.decrementThreadCount('getOnlinePeers')
 
     def addBootstrapListToPeerList(self, peerList):
@@ -352,7 +365,7 @@ class OnionrCommunicatorDaemon:
             self.addBootstrapListToPeerList(peerList)
 
         for address in peerList:
-            if not config.get('tor.v3_onions') and len(address) == 62:
+            if not config.get('tor.v3onions') and len(address) == 62:
                 continue
             if len(address) == 0 or address in tried or address in self.onlinePeers or address in self.cooldownPeer:
                 continue
@@ -445,7 +458,7 @@ class OnionrCommunicatorDaemon:
     def heartbeat(self):
         '''Show a heartbeat debug message'''
         currentTime = self._core._utils.getEpoch() - self.startTime
-        logger.debug('Heartbeat. Node online for %s.' % self.daemonTools.humanReadableTime(currentTime))
+        logger.debug('Heartbeat. Node running for %s.' % self.daemonTools.humanReadableTime(currentTime))
         self.decrementThreadCount('heartbeat')
 
     def daemonCommands(self):
@@ -456,14 +469,13 @@ class OnionrCommunicatorDaemon:
 
         if cmd is not False:
             events.event('daemon_command', onionr = None, data = {'cmd' : cmd})
-
             if cmd[0] == 'shutdown':
                 self.shutdown = True
             elif cmd[0] == 'announceNode':
                 if len(self.onlinePeers) > 0:
                     self.announce(cmd[1])
                 else:
-                    logger.warn("Not introducing, since I have no connected nodes.")
+                    logger.debug("No nodes connected. Will not introduce node.")
             elif cmd[0] == 'runCheck': # deprecated
                 logger.debug('Status check; looks good.')
                 open(self._core.dataDir + '.runcheck', 'w+').close()
@@ -584,7 +596,7 @@ class OnionrCommunicatorTimers:
                 if self.makeThread:
                     for i in range(self.threadAmount):
                         if self.daemonInstance.threadCounts[self.timerFunction.__name__] >= self.maxThreads:
-                            logger.warn('%s is currently using the maximum number of threads, not starting another.' % self.timerFunction.__name__)
+                            logger.debug('%s is currently using the maximum number of threads, not starting another.' % self.timerFunction.__name__)
                         else:
                             self.daemonInstance.threadCounts[self.timerFunction.__name__] += 1
                             newThread = threading.Thread(target=self.timerFunction)

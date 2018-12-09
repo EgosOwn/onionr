@@ -151,7 +151,7 @@ def check():
 # plugin management
 
 def sanitize(name):
-    return re.sub('[^0-9a-zA-Z]+', '', str(name).lower())[:255]
+    return re.sub('[^0-9a-zA-Z_]+', '', str(name).lower())[:255]
 
 def blockToPlugin(block):
     try:

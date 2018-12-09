@@ -4,14 +4,9 @@
         "display_header" : true,
         "minimum_block_pow": 5,
         "minimum_send_pow": 5,
-
-        "minimum_block_pow": 5,
-        "minimum_send_pow": 5,
-
-        "direct_connect" : {
-            "respond" : true,
-            "execute_callbacks" : true
-        }
+        "socket_servers": false,
+        "security_level": 0,
+        "public_key": ""
     },
 
     "www" : {
@@ -52,7 +47,7 @@
         "verbosity" : "default",
 
         "file": {
-            "output": false,
+            "output": true,
             "path": "data/output.log"
         },
 
@@ -63,7 +58,7 @@
     },
 
     "tor" : {
-        "v3onions" : false
+        "v3onions" : true
     },
 
     "i2p" : {
@@ -86,7 +81,7 @@
     },
 
     "timers" : {
-        "lookup_blocks" : 25,
-        "get_blocks" : 30
+        "lookupBlocks" : 25,
+        "getBlocks" : 30
     }
 }

@@ -44,7 +44,8 @@ class DBCreator:
             failure int,
             lastConnect int,
             lastConnectAttempt int,
-            trust int
+            trust int,
+            introduced int
             );
         ''')
         conn.commit()
@@ -62,11 +63,8 @@ class DBCreator:
             name text,
             adders text,
             dateSeen not null,
-            bytesStored int,
             trust int,
-            pubkeyExchanged int,
-            hashID text,
-            pow text not null);
+            hashID text);
         ''')
         c.execute('''CREATE TABLE forwardKeys(
         peerKey text not null,

@@ -23,7 +23,7 @@
 
 import sys
 if sys.version_info[0] == 2 or sys.version_info[1] < 5:
-    print('Error, Onionr requires Python 3.4+')
+    print('Error, Onionr requires Python 3.5+')
     sys.exit(1)
 import os, base64, random, getpass, shutil, subprocess, requests, time, platform, datetime, re, json, getpass, sqlite3
 import webbrowser
@@ -40,7 +40,7 @@ except ImportError:
     raise Exception("You need the PySocks module (for use with socks5 proxy to use Tor)")
 
 ONIONR_TAGLINE = 'Anonymous P2P Platform - GPLv3 - https://Onionr.VoidNet.Tech'
-ONIONR_VERSION = '0.3.2' # for debugging and stuff
+ONIONR_VERSION = '0.5.0' # for debugging and stuff
 ONIONR_VERSION_TUPLE = tuple(ONIONR_VERSION.split('.')) # (MAJOR, MINOR, VERSION)
 API_VERSION = '5' # increments of 1; only change when something fundemental about how the API works changes. This way other nodes know how to communicate without learning too much information about you.
 
@@ -103,8 +103,8 @@ class Onionr:
             self.onionrCore.createAddressDB()
 
         # Get configuration
-        if type(config.get('client.hmac')) is type(None):
-            config.set('client.hmac', base64.b16encode(os.urandom(32)).decode('utf-8'), savefile=True)
+        if type(config.get('client.webpassword')) is type(None):
+            config.set('client.webpassword', base64.b16encode(os.urandom(32)).decode('utf-8'), savefile=True)
         if type(config.get('client.port')) is type(None):
             randomPort = 0
             while randomPort < 1024:
@@ -114,7 +114,6 @@ class Onionr:
             config.set('client.participate', True, savefile=True)
         if type(config.get('client.api_version')) is type(None):
             config.set('client.api_version', API_VERSION, savefile=True)
-
 
         self.cmds = {
             '': self.showHelpSuggestion,
@@ -168,6 +167,10 @@ class Onionr:
 
             'add-file': self.addFile,
             'addfile': self.addFile,
+            'addhtml': self.addWebpage,
+            'add-html': self.addWebpage,
+            'add-site': self.addWebpage,
+            'addsite': self.addWebpage,
 
             'get-file': self.getFile,
             'getfile': self.getFile,
@@ -197,7 +200,9 @@ class Onionr:
 
             'chat': self.startChat,
 
-            'friend': self.friendCmd
+            'friend': self.friendCmd,
+            'add-id': self.addID,
+            'change-id': self.changeID
         }
 
         self.cmdhelp = {
@@ -226,7 +231,9 @@ class Onionr:
             'pex': 'exchange addresses with peers (done automatically)',
             'blacklist-block': 'deletes a block by hash and permanently removes it from your node',
             'introduce': 'Introduce your node to the public Onionr network',
-            'friend': '[add|remove] [public key/id]'
+            'friend': '[add|remove] [public key/id]',
+            'add-id': 'Generate a new ID (key pair)',
+            'change-id': 'Change active ID'
         }
 
         # initialize plugins
@@ -256,6 +263,48 @@ class Onionr:
 
         for detail in details:
             logger.info('%s%s: \n%s%s\n' % (logger.colors.fg.lightgreen, detail, logger.colors.fg.green, details[detail]), sensitive = True)
+
+    def addID(self):
+        try:
+            sys.argv[2]
+            assert sys.argv[2] == 'true'
+        except (IndexError, AssertionError) as e:
+            newID = self.onionrCore._crypto.keyManager.addKey()[0]
+        else:
+            logger.warn('Deterministic keys require random and long passphrases.')
+            logger.warn('If a good password is not used, your key can be easily stolen.')
+            pass1 = getpass.getpass(prompt='Enter at least %s characters: ' % (self.onionrCore._crypto.deterministicRequirement,))
+            pass2 = getpass.getpass(prompt='Confirm entry: ')
+            if self.onionrCore._crypto.safeCompare(pass1, pass2):
+                try:
+                    logger.info('Generating deterministic key. This can take a while.')
+                    newID, privKey = self.onionrCore._crypto.generateDeterministic(pass1)
+                except onionrexceptions.PasswordStrengthError:
+                    logger.error('Must use at least 25 characters.')
+                    sys.exit(1)
+            else:
+                logger.error('Passwords do not match.')
+                sys.exit(1)
+            self.onionrCore._crypto.keyManager.addKey(pubKey=newID, 
+            privKey=privKey)
+        logger.info('Added ID: %s' % (self.onionrUtils.bytesToStr(newID),))
+    
+    def changeID(self):
+        try:
+            key = sys.argv[2]
+        except IndexError:
+            logger.error('Specify pubkey to use')
+        else:
+            if self.onionrUtils.validatePubKey(key):
+                if key in self.onionrCore._crypto.keyManager.getPubkeyList():
+                    config.set('general.public_key', key)
+                    config.save()
+                    logger.info('Set active key to: %s' % (key,))
+                    logger.info('Restart Onionr if it is running.')
+                else:
+                    logger.error('That key does not exist')
+            else:
+                logger.error('Invalid key %s' % (key,))
 
     def startChat(self):
         try:
@@ -334,13 +383,9 @@ class Onionr:
                     friend = sys.argv[3]
                     if not self.onionrUtils.validatePubKey(friend):
                         raise onionrexceptions.InvalidPubkey('Public key is invalid')
-                    if friend not in self.onionrCore.listPeers():
-                        raise onionrexceptions.KeyNotKnown
                     friend = onionrusers.OnionrUser(self.onionrCore, friend)
                 except IndexError:
                     logger.error('Friend ID is required.')
-                except onionrexceptions.KeyNotKnown:
-                    logger.error('That peer is not in our database')
                 else:
                     if action == 'add':
                         friend.setTrust(1)
@@ -381,7 +426,7 @@ class Onionr:
             logger.info(i)
 
     def getWebPassword(self):
-        return config.get('client.hmac')
+        return config.get('client.webpassword')
 
     def printWebPassword(self):
         logger.info(self.getWebPassword(), sensitive = True)
@@ -506,6 +551,7 @@ class Onionr:
 
         try:
             newAddress = sys.argv[2]
+            newAddress = newAddress.replace('http:', '').replace('/', '')
         except:
             pass
         else:
@@ -589,7 +635,7 @@ class Onionr:
 
         if len(sys.argv) >= 3:
             try:
-                plugin_name = re.sub('[^0-9a-zA-Z]+', '', str(sys.argv[2]).lower())
+                plugin_name = re.sub('[^0-9a-zA-Z_]+', '', str(sys.argv[2]).lower())
 
                 if not plugins.exists(plugin_name):
                     logger.info('Creating plugin "%s"...' % plugin_name)
@@ -672,17 +718,26 @@ class Onionr:
             time.sleep(1)
             self.onionrUtils.localCommand('shutdown')
         else:
+            apiHost = '127.0.0.1'
             if apiThread.isAlive():
-                # configure logger and stuff
+                try:
+                    with open(self.onionrCore.dataDir + 'host.txt', 'r') as hostFile:
+                        apiHost = hostFile.read()
+                except FileNotFoundError:
+                    pass
                 Onionr.setupConfig('data/', self = self)
 
                 if self._developmentMode:
                     logger.warn('DEVELOPMENT MODE ENABLED (THIS IS LESS SECURE!)', timestamp = False)
-                net = NetController(config.get('client.port', 59496))
+                net = NetController(config.get('client.port', 59496), apiServerIP=apiHost)
                 logger.debug('Tor is starting...')
                 if not net.startTor():
+                    self.onionrUtils.localCommand('shutdown')
                     sys.exit(1)
-                logger.debug('Started .onion service: %s' % (logger.colors.underline + net.myID))
+                if len(net.myID) > 0 and config.get('general.security_level') == 0:
+                    logger.debug('Started .onion service: %s' % (logger.colors.underline + net.myID))
+                else:
+                    logger.debug('.onion service disabled')
                 logger.debug('Using public key: %s' % (logger.colors.underline + self.onionrCore._crypto.pubKey))
                 time.sleep(1)
 
@@ -717,7 +772,7 @@ class Onionr:
             Shutdown the Onionr daemon
         '''
 
-        logger.warn('Killing the running daemon...', timestamp = False)
+        logger.warn('Stopping the running daemon...', timestamp = False)
         try:
             events.event('daemon_stop', onionr = self)
             net = NetController(config.get('client.port', 59496))
@@ -729,7 +784,6 @@ class Onionr:
             net.killTor()
         except Exception as e:
             logger.error('Failed to shutdown daemon.', error = e, timestamp = False)
-
         return
 
     def showStats(self):
@@ -822,6 +876,8 @@ class Onionr:
         try:
             with open('./' + self.dataDir + 'hs/hostname', 'r') as hostname:
                 return hostname.read().strip()
+        except FileNotFoundError:
+            return "Not Generated"
         except Exception:
             return None
 
@@ -863,7 +919,13 @@ class Onionr:
             Block.mergeChain(bHash, fileName)
         return
 
-    def addFile(self):
+    def addWebpage(self):
+        '''
+            Add a webpage to the onionr network
+        '''
+        self.addFile(singleBlock=True, blockType='html')
+
+    def addFile(self, singleBlock=False, blockType='txt'):
         '''
             Adds a file to the onionr network
         '''
@@ -877,7 +939,11 @@ class Onionr:
                 return
             logger.info('Adding file... this might take a long time.')
             try:
-                blockhash = Block.createChain(file = filename)
+                if singleBlock:
+                    with open(filename, 'rb') as singleFile:
+                        blockhash = self.onionrCore.insertBlock(base64.b64encode(singleFile.read()), header=blockType)
+                else:
+                    blockhash = Block.createChain(file = filename)
                 logger.info('File %s saved in block %s.' % (filename, blockhash))
             except:
                 logger.error('Failed to save file in block.', timestamp = False)

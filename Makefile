@@ -18,7 +18,7 @@ uninstall:
 	rm -f $(DESTDIR)$(PREFIX)/bin/onionr
 
 test:
-	@./RUN-LINUX.sh stop
+	@./run-linux stop
 	@sleep 1
 	@rm -rf onionr/data-backup
 	@mv onionr/data onionr/data-backup | true > /dev/null 2>&1
@@ -29,7 +29,7 @@ test:
 soft-reset:
 	@echo "Soft-resetting Onionr..."
 	rm -f onionr/data/blocks/*.dat onionr/data/*.db onionr/data/block-nonces.dat | true > /dev/null 2>&1
-	@./RUN-LINUX.sh version | grep -v "Failed" --color=always
+	@./run-linux version | grep -v "Failed" --color=always
 
 reset:
 	@echo "Hard-resetting Onionr..."
@@ -40,4 +40,4 @@ reset:
 plugins-reset:
 	@echo "Resetting plugins..."
 	rm -rf onionr/data/plugins/ | true > /dev/null 2>&1
-	@./RUN-LINUX.sh version | grep -v "Failed" --color=always
+	@./run-linux version | grep -v "Failed" --color=always
