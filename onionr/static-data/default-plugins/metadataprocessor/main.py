@@ -42,8 +42,9 @@ def _processUserInfo(api, newBlock):
     except onionrexceptions.InvalidMetadata:
         pass
     else:
-        api.get_core().setPeerInfo(signer, 'name', peerName)
-        logger.info('%s is now using the name %s.' % (signer, api.get_utils().escapeAnsi(peerName)))
+        if signer in self.api.get_core().listPeers():
+            api.get_core().setPeerInfo(signer, 'name', peerName)
+            logger.info('%s is now using the name %s.' % (signer, api.get_utils().escapeAnsi(peerName)))
 
 def _processForwardKey(api, myBlock):
     '''

@@ -30,6 +30,8 @@ def getHashDifficulty(h):
     for character in h:
         if character == '0':
             difficulty += 1
+        else:
+            break
     return difficulty
 
 def hashMeetsDifficulty(h):
@@ -38,7 +40,10 @@ def hashMeetsDifficulty(h):
     '''
     config.reload()
     hashDifficulty = getHashDifficulty(h)
-    expected = int(config.get('minimum_block_pow'))
+    try:
+        expected = int(config.get('general.minimum_block_pow'))
+    except TypeError:
+        raise ValueError('Missing general.minimum_block_pow config')
     if hashDifficulty >= expected:
         return True
     else:

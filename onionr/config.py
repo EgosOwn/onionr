@@ -30,7 +30,7 @@ except KeyError:
 _configfile = os.path.abspath(dataDir + 'config.json')
 _config = {}
 
-def get(key, default = None):
+def get(key, default = None, save = False):
     '''
         Gets the key from configuration, or returns `default`
     '''
@@ -46,6 +46,8 @@ def get(key, default = None):
         data = data[item]
 
     if not last in data:
+        if save:
+            set(key, default, savefile = True)
         return default
 
     return data[last]

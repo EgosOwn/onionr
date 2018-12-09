@@ -192,7 +192,7 @@ def get_enabled_plugins():
 
     config.reload()
 
-    return config.get('plugins.enabled', list())
+    return list(config.get('plugins.enabled', list()))
 
 def is_enabled(name):
     '''
@@ -212,7 +212,7 @@ def get_plugins_folder(name = None, absolute = True):
         path = _pluginsfolder
     else:
         # only allow alphanumeric characters
-        path = _pluginsfolder + re.sub('[^0-9a-zA-Z]+', '', str(name).lower())
+        path = _pluginsfolder + re.sub('[^0-9a-zA-Z_]+', '', str(name).lower())
 
     if absolute is True:
         path = os.path.abspath(path)

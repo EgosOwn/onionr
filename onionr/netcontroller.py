@@ -27,7 +27,7 @@ class NetController:
         This class handles hidden service setup on Tor and I2P
     '''
 
-    def __init__(self, hsPort):
+    def __init__(self, hsPort, apiServerIP='127.0.0.1'):
         try:
             self.dataDir = os.environ['ONIONR_HOME']
             if not self.dataDir.endswith('/'):
@@ -41,6 +41,7 @@ class NetController:
         self.hsPort = hsPort
         self._torInstnace = ''
         self.myID = ''
+        self.apiServerIP = apiServerIP
 
         if os.path.exists('./tor'):
             self.torBinary = './tor'
@@ -65,9 +66,9 @@ class NetController:
             Generate a torrc file for our tor instance
         '''
         hsVer = '# v2 onions'
-        if config.get('tor.v3_onions'):
+        if config.get('tor.v3onions'):
             hsVer = 'HiddenServiceVersion 3'
-            logger.info('Using v3 onions :)')
+            logger.debug('Using v3 onions :)')
 
         if os.path.exists(self.torConfigLocation):
             os.remove(self.torConfigLocation)
@@ -88,14 +89,16 @@ class NetController:
                 break
 
         torrcData = '''SocksPort ''' + str(self.socksPort) + '''
-HiddenServiceDir ''' + self.dataDir + '''hs/
-\n''' + hsVer + '''\n
-HiddenServicePort 80 127.0.0.1:''' + str(self.hsPort) + '''
 DataDirectory ''' + self.dataDir + '''tordata/
 CookieAuthentication 1
 ControlPort ''' + str(controlPort) + '''
 HashedControlPassword ''' + str(password) + '''
         '''
+        if config.get('general.security_level') == 0:
+            torrcData += '''\nHiddenServiceDir ''' + self.dataDir + '''hs/
+\n''' + hsVer + '''\n
+HiddenServicePort 80 ''' + self.apiServerIP + ''':''' + str(self.hsPort)
+
         torrc = open(self.torConfigLocation, 'w')
         torrc.write(torrcData)
         torrc.close()
@@ -143,13 +146,16 @@ HashedControlPassword ''' + str(password) + '''
         except KeyboardInterrupt:
             logger.fatal('Got keyboard interrupt.', timestamp = false, level = logger.LEVEL_IMPORTANT)
             return False
-
+        
         logger.debug('Finished starting Tor.', timestamp=True)
         self.readyState = True
 
-        myID = open(self.dataDir + 'hs/hostname', 'r')
-        self.myID = myID.read().replace('\n', '')
-        myID.close()
+        try:
+            myID = open(self.dataDir + 'hs/hostname', 'r')
+            self.myID = myID.read().replace('\n', '')
+            myID.close()
+        except FileNotFoundError:
+            self.myID = ""
 
         torPidFile = open(self.dataDir + 'torPid.txt', 'w')
         torPidFile.write(str(tor.pid))

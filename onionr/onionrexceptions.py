@@ -40,6 +40,9 @@ class KeyNotKnown(Exception):
 class DecryptionError(Exception):
     pass
 
+class PasswordStrengthError(Exception):
+    pass
+
 # block exceptions
 class InvalidMetadata(Exception):
     pass

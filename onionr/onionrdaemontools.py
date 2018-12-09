@@ -23,6 +23,9 @@ import base64, sqlite3, os
 from dependencies import secrets
 
 class DaemonTools:
+    '''
+        Class intended for use by Onionr Communicator
+    '''
     def __init__(self, daemon):
             self.daemon = daemon
             self.announceCache = {}
@@ -30,7 +33,8 @@ class DaemonTools:
     def announceNode(self):
         '''Announce our node to our peers'''
         retData = False
-
+        announceFail = False
+        
         # Announce to random online peers
         for i in self.daemon.onlinePeers:
             if not i in self.announceCache:
@@ -50,14 +54,21 @@ class DaemonTools:
             data['random'] = self.announceCache[peer]
         else:
             proof = onionrproofs.DataPOW(combinedNodes, forceDifficulty=4)
-            data['random'] = base64.b64encode(proof.waitForResult()[1])
-            self.announceCache[peer] = data['random']
-
-        logger.info('Announcing node to ' + url)
-        if self.daemon._core._utils.doPostRequest(url, data) == 'Success':
-            logger.info('Successfully introduced node to ' + peer)
-            retData = True
-        self.daemon.decrementThreadCount('announceNode')
+            try:
+                data['random'] = base64.b64encode(proof.waitForResult()[1])
+            except TypeError:
+                # Happens when we failed to produce a proof
+                logger.error("Failed to produce a pow for announcing to " + peer)
+                announceFail = True
+            else:
+                self.announceCache[peer] = data['random']
+        if not announceFail:
+            logger.info('Announcing node to ' + url)
+            if self.daemon._core._utils.doPostRequest(url, data) == 'Success':
+                logger.info('Successfully introduced node to ' + peer)
+                retData = True
+                self.daemon._core.setAddressInfo(peer, 'introduced', 1)
+            self.daemon.decrementThreadCount('announceNode')
         return retData
 
     def netCheck(self):
@@ -66,6 +77,8 @@ class DaemonTools:
             if not self.daemon._core._utils.checkNetwork(torPort=self.daemon.proxyPort):
                 logger.warn('Network check failed, are you connected to the internet?')
                 self.daemon.isOnline = False
+            else:
+                self.daemon.isOnline = True
         self.daemon.decrementThreadCount('netCheck')
 
     def cleanOldBlocks(self):
@@ -92,11 +105,11 @@ class DaemonTools:
         deleteKeys = []
 
         for entry in c.execute("SELECT * FROM forwardKeys WHERE expire <= ?", (time,)):
-            logger.info(entry[1])
+            logger.debug('Forward key: %s' % entry[1])
             deleteKeys.append(entry[1])
 
         for key in deleteKeys:
-            logger.info('Deleting forward key '+ key)
+            logger.debug('Deleting forward key %s' % key)
             c.execute("DELETE from forwardKeys where forwardKey = ?", (key,))
         conn.commit()
         conn.close()
@@ -120,7 +133,7 @@ class DaemonTools:
                 del self.daemon.cooldownPeer[peer]
 
         # Cool down a peer, if we have max connections alive for long enough
-        if onlinePeerAmount >= self.daemon._core.config.get('peers.max_connect', 10):
+        if onlinePeerAmount >= self.daemon._core.config.get('peers.max_connect', 10, save = True):
             finding = True
 
             while finding:
@@ -164,3 +177,13 @@ class DaemonTools:
                 build += '%s %s' % (amnt_unit, unit) + ('s' if amnt_unit != 1 else '') + ' '
 
         return build.strip()
+
+    def insertDeniableBlock(self):
+        '''Insert a fake block in order to make it more difficult to track real blocks'''
+        fakePeer = self.daemon._core._crypto.generatePubKey()[0]
+        chance = 10
+        if secrets.randbelow(chance) == (chance - 1):
+            data = secrets.token_hex(secrets.randbelow(500) + 1)
+            self.daemon._core.insertBlock(data, header='pm', encryptType='asym', asymPeer=fakePeer)
+        self.daemon.decrementThreadCount('insertDeniableBlock')
+        return

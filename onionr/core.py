@@ -113,7 +113,7 @@ class Core:
             with open(self.dataDir + '/hs/hostname', 'r') as hs:
                 self.hsAddress = hs.read().strip()
 
-    def addPeer(self, peerID, powID, name=''):
+    def addPeer(self, peerID, name=''):
         '''
             Adds a public key to the key database (misleading function name)
         '''
@@ -121,16 +121,13 @@ class Core:
         # This function simply adds a peer to the DB
         if not self._utils.validatePubKey(peerID):
             return False
-        if sys.getsizeof(powID) > 120:
-            logger.warn("POW token for pubkey base64 representation exceeded 120 bytes, is " + str(sys.getsizeof(powID)))
-            return False
 
         events.event('pubkey_add', data = {'key': peerID}, onionr = None)
 
         conn = sqlite3.connect(self.peerDB, timeout=10)
         hashID = self._crypto.pubKeyHashID(peerID)
         c = conn.cursor()
-        t = (peerID, name, 'unknown', hashID, powID, 0)
+        t = (peerID, name, 'unknown', hashID, 0)
 
         for i in c.execute("SELECT * FROM peers WHERE id = ?;", (peerID,)):
             try:
@@ -141,7 +138,7 @@ class Core:
                 pass
             except IndexError:
                 pass
-        c.execute('INSERT INTO peers (id, name, dateSeen, pow, hashID, trust) VALUES(?, ?, ?, ?, ?, ?);', t)
+        c.execute('INSERT INTO peers (id, name, dateSeen, hashID, trust) VALUES(?, ?, ?, ?, ?);', t)
         conn.commit()
         conn.close()
 
@@ -153,6 +150,8 @@ class Core:
         '''
 
         if address == config.get('i2p.ownAddr', None) or address == self.hsAddress:
+            return False
+        if type(address) is type(None) or len(address) == 0:
             return False
         if self._utils.validateID(address):
             conn = sqlite3.connect(self.addressDB, timeout=10)
@@ -231,21 +230,18 @@ class Core:
         '''
             Generate the address database
         '''
-
         self.dbCreate.createAddressDB()
 
     def createPeerDB(self):
         '''
             Generate the peer sqlite3 database and populate it with the peers table.
         '''
-
         self.dbCreate.createPeerDB()
 
     def createBlockDB(self):
         '''
             Create a database for blocks
         '''
-
         self.dbCreate.createBlockDB()
 
     def addToBlockDB(self, newHash, selfInsert=False, dataSaved=False):
@@ -374,7 +370,6 @@ class Core:
             retData = False
             self.daemonQueue()
         events.event('queue_push', data = {'command': command, 'data': data}, onionr = None)
-
         return retData
 
     def clearDaemonQueue(self):
@@ -464,18 +459,14 @@ class Core:
             name text,          1
             adders text,        2
             dateSeen not null,  3
-            bytesStored int,    4
-            trust int           5
-            pubkeyExchanged int 6
-            hashID text         7
-            pow text            8
+            trust int           4
+            hashID text         5
         '''
         conn = sqlite3.connect(self.peerDB, timeout=10)
         c = conn.cursor()
 
         command = (peer,)
-
-        infoNumbers = {'id': 0, 'name': 1, 'adders': 2, 'dateSeen': 3, 'bytesStored': 4, 'trust': 5, 'pubkeyExchanged': 6, 'hashID': 7}
+        infoNumbers = {'id': 0, 'name': 1, 'adders': 2, 'dateSeen': 3, 'trust': 4, 'hashID': 5}
         info = infoNumbers[info]
         iterCount = 0
         retVal = ''
@@ -503,7 +494,7 @@ class Core:
         command = (data, peer)
 
         # TODO: validate key on whitelist
-        if key not in ('id', 'name', 'pubkey', 'blockDBHash', 'forwardKey', 'dateSeen', 'bytesStored', 'trust'):
+        if key not in ('id', 'name', 'pubkey', 'forwardKey', 'dateSeen', 'trust'):
             raise Exception("Got invalid database key when setting peer info")
 
         c.execute('UPDATE peers SET ' + key + ' = ? WHERE id=?', command)
@@ -524,13 +515,15 @@ class Core:
             DBHash text, 5
             failure int 6
             lastConnect 7
+            trust       8
+            introduced  9
         '''
 
         conn = sqlite3.connect(self.addressDB, timeout=10)
         c = conn.cursor()
 
         command = (address,)
-        infoNumbers = {'address': 0, 'type': 1, 'knownPeer': 2, 'speed': 3, 'success': 4, 'DBHash': 5, 'failure': 6, 'lastConnect': 7}
+        infoNumbers = {'address': 0, 'type': 1, 'knownPeer': 2, 'speed': 3, 'success': 4, 'DBHash': 5, 'failure': 6, 'lastConnect': 7, 'trust': 8, 'introduced': 9}
         info = infoNumbers[info]
         iterCount = 0
         retVal = ''
@@ -555,9 +548,8 @@ class Core:
         c = conn.cursor()
 
         command = (data, address)
-
-        # TODO: validate key on whitelist
-        if key not in ('address', 'type', 'knownPeer', 'speed', 'success', 'DBHash', 'failure', 'lastConnect', 'lastConnectAttempt'):
+        
+        if key not in ('address', 'type', 'knownPeer', 'speed', 'success', 'DBHash', 'failure', 'lastConnect', 'lastConnectAttempt', 'trust', 'introduced'):
             raise Exception("Got invalid database key when setting address info")
         else:
             c.execute('UPDATE adders SET ' + key + ' = ? WHERE address=?', command)
@@ -679,7 +671,7 @@ class Core:
 
         return True
 
-    def insertBlock(self, data, header='txt', sign=False, encryptType='', symKey='', asymPeer='', meta = None, expire=None):
+    def insertBlock(self, data, header='txt', sign=False, encryptType='', symKey='', asymPeer='', meta = {}, expire=None):
         '''
             Inserts a block into the network
             encryptType must be specified to encrypt a block
@@ -710,9 +702,8 @@ class Core:
         # metadata is full block metadata, meta is internal, user specified metadata
 
         # only use header if not set in provided meta
-        if not header is None:
-            meta['type'] = header
-        meta['type'] = str(meta['type'])
+
+        meta['type'] = str(header)
 
         if encryptType in ('asym', 'sym', ''):
             metadata['encryptType'] = encryptType
@@ -731,8 +722,6 @@ class Core:
                 meta['forwardEnc'] = True
             except onionrexceptions.InvalidPubkey:
                 onionrusers.OnionrUser(self, asymPeer).generateForwardKey()
-            else:
-                logger.info(forwardEncrypted)
             onionrusers.OnionrUser(self, asymPeer).generateForwardKey()
             fsKey = onionrusers.OnionrUser(self, asymPeer).getGeneratedForwardKeys()[0]
             meta['newFSKey'] = fsKey[0]
@@ -763,6 +752,7 @@ class Core:
                 data = self._crypto.pubKeyEncrypt(data, asymPeer, encodedData=True, anonymous=True).decode()
                 signature = self._crypto.pubKeyEncrypt(signature, asymPeer, encodedData=True, anonymous=True).decode()
                 signer = self._crypto.pubKeyEncrypt(signer, asymPeer, encodedData=True, anonymous=True).decode()
+                onionrusers.OnionrUser(self, asymPeer, saveUser=True)
             else:
                 raise onionrexceptions.InvalidPubkey(asymPeer + ' is not a valid base32 encoded ed25519 key')
 
@@ -770,7 +760,7 @@ class Core:
         metadata['meta'] = jsonMeta
         metadata['sig'] = signature
         metadata['signer'] = signer
-        metadata['time'] = str(self._utils.getEpoch())
+        metadata['time'] = self._utils.getRoundedEpoch() + self._crypto.secrets.randbelow(301)
 
         # ensure expire is integer and of sane length
         if type(expire) is not type(None):
@@ -798,7 +788,7 @@ class Core:
             Introduces our node into the network by telling X many nodes our HS address
         '''
 
-        if(self._utils.isCommunicatorRunning()):
+        if(self._utils.isCommunicatorRunning(timeout=30)):
             announceAmount = 2
             nodeList = self.listAdders()
 
