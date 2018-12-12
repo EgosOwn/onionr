@@ -34,7 +34,8 @@ class OnionrCLIUI:
     def subCommand(self, command):
             try:
                 #subprocess.run(["./onionr.py", command])
-                subprocess.Popen(['./onionr.py', command], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+                #subprocess.Popen(['./onionr.py', command], stdin=subprocess.STD, stdout=subprocess.STDOUT, stderr=subprocess.STDOUT)
+                subprocess.call(['./onionr.py', command])
             except KeyboardInterrupt:
                 pass
 
@@ -52,24 +53,17 @@ class OnionrCLIUI:
             firstRun = False
 
         while showMenu:
-            if firstRun:
-                logger.info('Please wait while Onionr starts...')
-                daemon = subprocess.Popen(["./onionr.py", "start"], stdin=subprocess.PIPE, stdout=subprocess.DEVNULL)
-                time.sleep(30)
-                firstRun = False
-
             if self.myCore._utils.localCommand('ping') == 'pong':
                 isOnline = "Yes"
             else:
                 isOnline = "No"
 
-            logger.info('''Daemon Running: ''' + isOnline + '''
+            print('''Daemon Running: ''' + isOnline + '''
 1. Flow (Anonymous public chat, use at your own risk)
 2. Mail (Secure email-like service)
 3. File Sharing
 4. User Settings
-5. Start/Stop Daemon
-6. Quit (Does not shutdown daemon)
+5. Quit (Does not shutdown daemon)
             ''')
             try:
                 choice = input(">").strip().lower()
@@ -81,25 +75,13 @@ class OnionrCLIUI:
             elif choice in ("2", "mail"):
                 self.subCommand("mail")
             elif choice in ("3", "file sharing", "file"):
-                logger.warn("Not supported yet")
+                print("Not supported yet")
             elif choice in ("4", "user settings", "settings"):
                 try:
                     self.setName()
                 except (KeyboardInterrupt, EOFError) as e:
                     pass
-            elif choice in ("5", "daemon"):
-                if isOnline == "Yes":
-                    logger.info("Onionr daemon will shutdown...")
-                    self.myCore.daemonQueueAdd('shutdown')
-
-                    try:
-                        daemon.kill()
-                    except UnboundLocalError:
-                        pass
-                else:
-                    logger.info("Starting Daemon...")
-                    daemon = subprocess.Popen(["./onionr.py", "start"], stdin=subprocess.PIPE, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
-            elif choice in ("6", "quit"):
+            elif choice in ("5", "quit"):
                 showMenu = False
             elif choice == "":
                 pass
