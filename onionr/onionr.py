@@ -182,7 +182,6 @@ class Onionr:
 
             'introduce': self.onionrCore.introduceNode,
             'connect': self.addAddress,
-            'kex': self.doKEX,
             'pex': self.doPEX,
 
             'ui' : self.openUI,
@@ -227,7 +226,6 @@ class Onionr:
             'get-file': 'Get a file from Onionr blocks',
             'import-blocks': 'import blocks from the disk (Onionr is transport-agnostic!)',
             'listconn': 'list connected peers',
-            'kex': 'exchange keys with peers (done automatically)',
             'pex': 'exchange addresses with peers (done automatically)',
             'blacklist-block': 'deletes a block by hash and permanently removes it from your node',
             'introduce': 'Introduce your node to the public Onionr network',
@@ -495,11 +493,6 @@ class Onionr:
 
         return
 
-    def doKEX(self):
-        '''make communicator do kex'''
-        logger.info('Sending kex to command queue...')
-        self.onionrCore.daemonQueueAdd('kex')
-
     def doPEX(self):
         '''make communicator do pex'''
         logger.info('Sending pex to command queue...')
@@ -694,7 +687,10 @@ class Onionr:
             self.daemon()
             self.running = False
             if not self.debug and not self._developmentMode:
-                os.remove('.onionr-lock')
+                try:
+                    os.remove('.onionr-lock')
+                except FileNotFoundError:
+                    pass
 
     def daemon(self):
         '''
@@ -728,7 +724,7 @@ class Onionr:
                 Onionr.setupConfig('data/', self = self)
 
                 if self._developmentMode:
-                    logger.warn('DEVELOPMENT MODE ENABLED (THIS IS LESS SECURE!)', timestamp = False)
+                    logger.warn('DEVELOPMENT MODE ENABLED (LESS SECURE)', timestamp = False)
                 net = NetController(config.get('client.port', 59496), apiServerIP=apiHost)
                 logger.debug('Tor is starting...')
                 if not net.startTor():
