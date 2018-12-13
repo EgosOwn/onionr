@@ -49,9 +49,14 @@ class DaemonTools:
         data = {'node': ourID}
 
         combinedNodes = ourID + peer
+        existingRand = self.daemon._core.getAddressInfo(peer, 'powValue')
+        if type(existingRand) is type(None):
+            existingRand = ''
 
         if peer in self.announceCache:
             data['random'] = self.announceCache[peer]
+        elif len(existingRand) > 0:
+            data['random'] = existingRand
         else:
             proof = onionrproofs.DataPOW(combinedNodes, forceDifficulty=4)
             try:
@@ -68,6 +73,7 @@ class DaemonTools:
                 logger.info('Successfully introduced node to ' + peer)
                 retData = True
                 self.daemon._core.setAddressInfo(peer, 'introduced', 1)
+                self.daemon._core.setAddressInfo(peer, 'powValue', data['random'])
             self.daemon.decrementThreadCount('announceNode')
         return retData
 
@@ -152,8 +158,8 @@ class DaemonTools:
         self.daemon.decrementThreadCount('cooldownPeer')
 
     def runCheck(self):
-        if os.path.isfile('data/.runcheck'):
-            os.remove('data/.runcheck')
+        if os.path.isfile(self.daemon._core.dataDir + '.runcheck'):
+            os.remove(self.daemon._core.dataDir + '.runcheck')
             return True
 
         return False
