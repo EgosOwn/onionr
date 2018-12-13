@@ -513,17 +513,18 @@ class Core:
             speed int, 3
             success int, 4
             DBHash text, 5
-            failure int 6
-            lastConnect 7
-            trust       8
-            introduced  9
+            powValue    6
+            failure int 7
+            lastConnect 8
+            trust       9
+            introduced  10
         '''
 
         conn = sqlite3.connect(self.addressDB, timeout=10)
         c = conn.cursor()
 
         command = (address,)
-        infoNumbers = {'address': 0, 'type': 1, 'knownPeer': 2, 'speed': 3, 'success': 4, 'DBHash': 5, 'failure': 6, 'lastConnect': 7, 'trust': 8, 'introduced': 9}
+        infoNumbers = {'address': 0, 'type': 1, 'knownPeer': 2, 'speed': 3, 'success': 4, 'DBHash': 5, 'powValue': 6, 'failure': 7, 'lastConnect': 8, 'trust': 9, 'introduced': 10}
         info = infoNumbers[info]
         iterCount = 0
         retVal = ''
@@ -549,7 +550,7 @@ class Core:
 
         command = (data, address)
         
-        if key not in ('address', 'type', 'knownPeer', 'speed', 'success', 'DBHash', 'failure', 'lastConnect', 'lastConnectAttempt', 'trust', 'introduced'):
+        if key not in ('address', 'type', 'knownPeer', 'speed', 'success', 'DBHash', 'failure', 'powValue', 'lastConnect', 'lastConnectAttempt', 'trust', 'introduced'):
             raise Exception("Got invalid database key when setting address info")
         else:
             c.execute('UPDATE adders SET ' + key + ' = ? WHERE address=?', command)
