@@ -23,7 +23,6 @@ import nacl.signing, nacl.encoding
 from onionrblockapi import Block
 import onionrexceptions
 from onionr import API_VERSION
-from defusedxml import minidom
 import onionrevents
 import pgpwords, onionrusers, storagecounter
 if sys.version_info < (3, 6):
@@ -651,28 +650,6 @@ class OnionrUtils:
             if not 'ConnectTimeoutError' in str(e) and not 'Request rejected or failed' in str(e):
                 logger.debug('Error: %s' % str(e))
             retData = False
-        return retData
-
-    def getNistBeaconSalt(self, torPort=0, rounding=3600):
-        '''
-            Get the token for the current hour from the NIST randomness beacon
-        '''
-        if torPort == 0:
-            try:
-                sys.argv[2]
-            except IndexError:
-                raise onionrexceptions.MissingPort('Missing Tor socks port')
-        retData = ''
-        curTime = self.getRoundedEpoch(rounding)
-        self.nistSaltTimestamp = curTime
-        data = self.doGetRequest('https://beacon.nist.gov/rest/record/' + str(curTime), port = torPort)
-        dataXML = minidom.parseString(data, forbid_dtd = True, forbid_entities = True, forbid_external = True)
-        try:
-            retData = dataXML.getElementsByTagName('outputValue')[0].childNodes[0].data
-        except ValueError:
-            logger.warn('Failed to get the NIST beacon value.')
-        else:
-            self.powSalt = retData
         return retData
 
     def strToBytes(self, data):

@@ -678,7 +678,6 @@ class Core:
         '''
 
         retData = False
-
         # check nonce
         dataNonce = self._utils.bytesToStr(self._crypto.sha3Hash(data))
         try:
