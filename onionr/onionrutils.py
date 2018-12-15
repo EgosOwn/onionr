@@ -371,6 +371,7 @@ class OnionrUtils:
                 pass
 
         # Validate metadata dict for invalid keys to sizes that are too large
+        maxAge = config.get("general.max_block_age", 2678400)
         if type(metadata) is dict:
             for i in metadata:
                 try:
@@ -394,6 +395,8 @@ class OnionrUtils:
                     if metadata[i] > self.getEpoch():
                         logger.warn('Block metadata time stamp is set for the future, which is not allowed.')
                         break
+                    if (self.getEpoch() - metadata[i]) > maxAge:
+                        logger.warn('Block is older than allowed: %s' % (maxAge,))
                 elif i == 'expire':
                     try:
                         assert int(metadata[i]) > self.getEpoch()
