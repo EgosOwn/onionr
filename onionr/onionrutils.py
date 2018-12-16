@@ -392,7 +392,7 @@ class OnionrUtils:
                     if not self.isIntegerString(metadata[i]):
                         logger.warn('Block metadata time stamp is not integer string')
                         break
-                    if metadata[i] > self.getEpoch():
+                    if (metadata[i] - self.getEpoch()) > 30:
                         logger.warn('Block metadata time stamp is set for the future, which is not allowed.')
                         break
                     if (self.getEpoch() - metadata[i]) > maxAge:

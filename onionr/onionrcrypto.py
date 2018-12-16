@@ -33,9 +33,7 @@ class OnionrCrypto:
         self._keyFile = self._core.dataDir + 'keys.txt'
         self.pubKey = None
         self.privKey = None
-
         self.secrets = secrets
-        
         self.deterministicRequirement = 25 # Min deterministic password/phrase length
         self.HASH_ID_ROUNDS = 2000
         self.keyManager = keymanager.KeyManager(self)
@@ -99,7 +97,6 @@ class OnionrCrypto:
     def pubKeyEncrypt(self, data, pubkey, anonymous=True, encodedData=False):
         '''Encrypt to a public key (Curve25519, taken from base32 Ed25519 pubkey)'''
         retVal = ''
-
         try:
             pubkey = pubkey.encode()
         except AttributeError:
@@ -198,7 +195,7 @@ class OnionrCrypto:
         private_key = nacl.signing.SigningKey.generate()
         public_key = private_key.verify_key.encode(encoder=nacl.encoding.Base32Encoder())
         return (public_key.decode(), private_key.encode(encoder=nacl.encoding.Base32Encoder()).decode())
-    
+
     def generateDeterministic(self, passphrase, bypassCheck=False):
         '''Generate a Ed25519 public key pair from a password'''
         passStrength = self.deterministicRequirement
@@ -212,7 +209,7 @@ class OnionrCrypto:
         salt = b"U81Q7llrQcdTP0Ux" # Does not need to be unique or secret, but must be 16 bytes
         ops = nacl.pwhash.argon2id.OPSLIMIT_SENSITIVE
         mem = nacl.pwhash.argon2id.MEMLIMIT_SENSITIVE
-        
+
         key = kdf(nacl.secret.SecretBox.KEY_SIZE, passphrase, salt, opslimit=ops, memlimit=mem)
         key = nacl.public.PrivateKey(key, nacl.encoding.RawEncoder())
         publicKey = key.public_key
@@ -285,6 +282,6 @@ class OnionrCrypto:
             logger.debug("Invalid token, bad proof")
 
         return retData
-    
+
     def safeCompare(self, one, two):
         return hmac.compare_digest(one, two)
