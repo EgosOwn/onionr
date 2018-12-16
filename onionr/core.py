@@ -48,6 +48,7 @@ class Core:
             self.queueDB = self.dataDir + 'queue.db'
             self.peerDB = self.dataDir + 'peers.db'
             self.blockDB = self.dataDir + 'blocks.db'
+            self.blockDataDB = self.dataDir + 'block-data.db'
             self.blockDataLocation = self.dataDir + 'blocks/'
             self.addressDB = self.dataDir + 'address.db'
             self.hsAddress = ''

@@ -96,7 +96,7 @@ class DBCreator:
         conn = sqlite3.connect(self.core.blockDB)
         c = conn.cursor()
         c.execute('''CREATE TABLE hashes(
-            hash text not null,
+            hash text distinct not null,
             dateReceived int,
             decrypted int,
             dataType text,
@@ -111,6 +111,19 @@ class DBCreator:
         conn.commit()
         conn.close()
         return
+    
+    def createBlockDataDB(self):
+        if os.path.exists(self.core.blockDataDB):
+            raise Exception("Block data database already exists")
+        conn = sqlite3.connect(self.core.blockDataDB)
+        c = conn.cursor()
+        c.execute('''CREATE TABLE blockData(
+            hash text distinct not null,
+            data blob not null
+            );
+        ''')
+        conn.commit()
+        conn.close()
 
     def createForwardKeyDB(self):
         '''

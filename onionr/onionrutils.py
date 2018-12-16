@@ -362,6 +362,7 @@ class OnionrUtils:
         '''Validate metadata meets onionr spec (does not validate proof value computation), take in either dictionary or json string'''
         # TODO, make this check sane sizes
         retData = False
+        maxClockDifference = 60
 
         # convert to dict if it is json string
         if type(metadata) is str:
@@ -390,13 +391,14 @@ class OnionrUtils:
                         break
                 if i == 'time':
                     if not self.isIntegerString(metadata[i]):
-                        logger.warn('Block metadata time stamp is not integer string')
+                        logger.warn('Block metadata time stamp is not integer string or int')
                         break
-                    if (metadata[i] - self.getEpoch()) > 30:
-                        logger.warn('Block metadata time stamp is set for the future, which is not allowed.')
+                    isFuture = (metadata[i] - self.getEpoch())
+                    if isFuture > maxClockDifference:
+                        logger.warn('Block timestamp is skewed to the future over the max %s: %s' (maxClockDifference, isFuture))
                         break
                     if (self.getEpoch() - metadata[i]) > maxAge:
-                        logger.warn('Block is older than allowed: %s' % (maxAge,))
+                        logger.warn('Block is outdated: %s' % (metadata[i],))
                 elif i == 'expire':
                     try:
                         assert int(metadata[i]) > self.getEpoch()
@@ -440,7 +442,7 @@ class OnionrUtils:
         return retVal
 
     def isIntegerString(self, data):
-        '''Check if a string is a valid base10 integer'''
+        '''Check if a string is a valid base10 integer (also returns true if already an int)'''
         try:
             int(data)
         except ValueError:
