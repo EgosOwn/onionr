@@ -23,7 +23,6 @@ import nacl.signing, nacl.encoding
 from onionrblockapi import Block
 import onionrexceptions
 from onionr import API_VERSION
-from defusedxml import minidom
 import onionrevents
 import pgpwords, onionrusers, storagecounter
 if sys.version_info < (3, 6):
@@ -372,6 +371,7 @@ class OnionrUtils:
                 pass
 
         # Validate metadata dict for invalid keys to sizes that are too large
+        maxAge = config.get("general.max_block_age", 2678400)
         if type(metadata) is dict:
             for i in metadata:
                 try:
@@ -392,6 +392,11 @@ class OnionrUtils:
                     if not self.isIntegerString(metadata[i]):
                         logger.warn('Block metadata time stamp is not integer string')
                         break
+                    if (metadata[i] - self.getEpoch()) > 30:
+                        logger.warn('Block metadata time stamp is set for the future, which is not allowed.')
+                        break
+                    if (self.getEpoch() - metadata[i]) > maxAge:
+                        logger.warn('Block is older than allowed: %s' % (maxAge,))
                 elif i == 'expire':
                     try:
                         assert int(metadata[i]) > self.getEpoch()
@@ -651,28 +656,6 @@ class OnionrUtils:
             if not 'ConnectTimeoutError' in str(e) and not 'Request rejected or failed' in str(e):
                 logger.debug('Error: %s' % str(e))
             retData = False
-        return retData
-
-    def getNistBeaconSalt(self, torPort=0, rounding=3600):
-        '''
-            Get the token for the current hour from the NIST randomness beacon
-        '''
-        if torPort == 0:
-            try:
-                sys.argv[2]
-            except IndexError:
-                raise onionrexceptions.MissingPort('Missing Tor socks port')
-        retData = ''
-        curTime = self.getRoundedEpoch(rounding)
-        self.nistSaltTimestamp = curTime
-        data = self.doGetRequest('https://beacon.nist.gov/rest/record/' + str(curTime), port = torPort)
-        dataXML = minidom.parseString(data, forbid_dtd = True, forbid_entities = True, forbid_external = True)
-        try:
-            retData = dataXML.getElementsByTagName('outputValue')[0].childNodes[0].data
-        except ValueError:
-            logger.warn('Failed to get the NIST beacon value.')
-        else:
-            self.powSalt = retData
         return retData
 
     def strToBytes(self, data):

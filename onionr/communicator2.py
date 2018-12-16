@@ -82,7 +82,6 @@ class OnionrCommunicatorDaemon:
 
         # daemon tools are misc daemon functions, e.g. announce to online peers
         # intended only for use by OnionrCommunicatorDaemon
-        #self.daemonTools = onionrdaemontools.DaemonTools(self)
         self.daemonTools = onionrdaemontools.DaemonTools(self)
 
         self._chat = onionrchat.OnionrChat(self)
