@@ -28,7 +28,7 @@ if sys.version_info[0] == 2 or sys.version_info[1] < 5:
 import os, base64, random, getpass, shutil, subprocess, requests, time, platform, datetime, re, json, getpass, sqlite3
 import webbrowser
 from threading import Thread
-import api, core, config, logger, onionrplugins as plugins, onionrevents as events
+import api, apimanager, core, config, logger, onionrplugins as plugins, onionrevents as events
 import onionrutils
 from netcontroller import NetController
 from onionrblockapi import Block
@@ -704,7 +704,12 @@ class Onionr:
             logger.debug('Runcheck file found on daemon start, deleting in advance.')
             os.remove('data/.runcheck')
 
-        apiThread = Thread(target = api.API, args = (self.debug, API_VERSION))
+        apiTarget = api.API
+        if config.get('general.use_new_api_server', False):
+            apiTarget = apimanager.APIManager
+            apiThread = Thread(target = apiTarget, args = (self.onionrCore))
+        else:
+            apiThread = Thread(target = apiTarget, args = (self.debug, API_VERSION))
         apiThread.start()
 
         try:
