@@ -21,11 +21,20 @@ import flask, apimanager
 from flask import request, Response, abort, send_from_directory
 from gevent.pywsgi import WSGIServer
 
+
 class APIPublic:
     def __init__(self, managerInst):
         assert isinstance(managerInst, apimanager.APIManager)
-        self.app = flask.Flask(__name__) # The flask application, which recieves data from the greenlet wsgiserver
-        self.httpServer = WSGIServer((managerInst.publicIP, managerInst.publicPort), self.app, log=None)
+        app = flask.Flask(__name__)
+        @app.route('/')
+        def banner():
+            try:
+                with open('static-data/index.html', 'r') as html:
+                    resp = Response(html.read(), mimetype='text/html')
+            except FileNotFoundError:
+                resp = Response("")
+            return resp
+        self.httpServer = WSGIServer((managerInst.publicIP, managerInst.publicPort), app)
 
     def run(self):
         self.httpServer.serve_forever()

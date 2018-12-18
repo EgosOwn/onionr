@@ -49,6 +49,8 @@ class Core:
             self.peerDB = self.dataDir + 'peers.db'
             self.blockDB = self.dataDir + 'blocks.db'
             self.blockDataLocation = self.dataDir + 'blocks/'
+            self.publicApiHostFile = self.dataDir + 'public-host.txt'
+            self.privateApiHostFile = self.dataDir + 'private-host.txt'
             self.addressDB = self.dataDir + 'address.db'
             self.hsAddress = ''
             self.bootstrapFileLocation = 'static-data/bootstrap-nodes.txt'

@@ -30,7 +30,7 @@ def getOpenPort():
     p = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     p.bind(("127.0.0.1",0))
     p.listen(1)
-    port = s.getsockname()[1]
+    port = p.getsockname()[1]
     p.close()
     return port
 
@@ -43,9 +43,9 @@ def getRandomLocalIP():
 class APIManager:
     def __init__(self, coreInst):
         assert isinstance(coreInst, core.Core)
-        self.core = core
-        self.utils = core._utils
-        self.crypto = core._crypto
+        self.core = coreInst
+        self.utils = coreInst._utils
+        self.crypto = coreInst._crypto
         
         # if this gets set to true, both the public and private apis will shutdown
         self.shutdown = False
@@ -63,12 +63,12 @@ class APIManager:
         # Make official the IPs and Ports
         self.publicIP = publicIP
         self.privateIP = privateIP
-        self.publicPort = getOpenPort()
-        self.privatePort = getOpenPort()
+        self.publicPort = config.get('client.port', 59496)
+        self.privatePort = config.get('client.port', 59496)
 
         # Run the API servers in new threads
-        self.publicAPI = apipublic.APIPublic()
-        self.privateAPI = apiprivate.privateAPI()
+        self.publicAPI = apipublic.APIPublic(self)
+        self.privateAPI = apiprivate.APIPrivate(self)
         threading.Thread(target=self.publicAPI.run).start()
         threading.Thread(target=self.privateAPI.run).start()
         while not self.shutdown:

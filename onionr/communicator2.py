@@ -19,6 +19,8 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
+import gevent.monkey
+gevent.monkey.patch_all()
 import sys, os, core, config, json, requests, time, logger, threading, base64, onionr, uuid
 import onionrexceptions, onionrpeers, onionrevents as events, onionrplugins as plugins, onionrblockapi as block
 import onionrdaemontools, onionrsockets, onionrchat, onionr, onionrproofs

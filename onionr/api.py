@@ -19,53 +19,70 @@
 '''
 import flask
 from flask import request, Response, abort, send_from_directory
-from multiprocessing import Process
 from gevent.pywsgi import WSGIServer
 import sys, random, threading, hmac, hashlib, base64, time, math, os, json
 import core
 from onionrblockapi import Block
 import onionrutils, onionrexceptions, onionrcrypto, blockimporter, onionrevents as events, logger, config, onionr
 
+def guessMime(path):
+    '''
+        Guesses the mime type from the input filename
+    '''
+    mimetypes = {
+        'html' : 'text/html',
+        'js' : 'application/javascript',
+        'css' : 'text/css',
+        'png' : 'image/png',
+        'jpg' : 'image/jpeg'
+    }
+
+    for mimetype in mimetypes:
+        if path.endswith('.%s' % mimetype):
+            return mimetypes[mimetype]
+
+    return 'text/plain'
+
+def setBindIP(filePath):
+    '''Set a random localhost IP to a specified file (intended for private or public API localhost IPs)'''
+    hostOctets = [str(127), str(random.randint(0x02, 0xFF)), str(random.randint(0x02, 0xFF)), str(random.randint(0x02, 0xFF))]
+    data = '.'.join(hostOctets)
+
+    with open(filePath, 'w') as bindFile:
+        bindFile.write(data)
+    return data
+
+class PublicAPI:
+    '''
+        The new client api server, isolated from the public api
+    '''
+    def __init__(self, clientAPI):
+        assert isinstance(clientAPI, API)
+        app = flask.Flask('PublicAPI')
+        self.i2pEnabled = config.get('i2p.host', False)
+        self.hideBlocks = [] # Blocks to be denied sharing
+        self.host = setBindIP(clientAPI._core.publicApiHostFile)
+        bindPort = config.get('client.public.port')
+
+        @app.route('/')
+        def banner():
+            #validateHost('public')
+            try:
+                with open('static-data/index.html', 'r') as html:
+                    resp = Response(html.read(), mimetype='text/html')
+            except FileNotFoundError:
+                resp = Response("")
+            return resp
+        clientAPI.setPublicAPIInstance(self)
+        self.httpServer = WSGIServer((self.host, bindPort), app, log=None)
+        self.httpServer.serve_forever()
+
 class API:
     '''
-        Main HTTP API (Flask)
+        Client HTTP api
     '''
 
     callbacks = {'public' : {}, 'private' : {}}
-
-    def validateToken(self, token):
-        '''
-            Validate that the client token matches the given token
-        '''
-        if len(self.clientToken) == 0:
-            logger.error("client password needs to be set")
-            return False
-        try:
-            if not hmac.compare_digest(self.clientToken, token):
-                return False
-            else:
-                return True
-        except TypeError:
-            return False
-
-    def guessMime(path):
-        '''
-            Guesses the mime type from the input filename
-        '''
-
-        mimetypes = {
-            'html' : 'text/html',
-            'js' : 'application/javascript',
-            'css' : 'text/css',
-            'png' : 'image/png',
-            'jpg' : 'image/jpeg'
-        }
-
-        for mimetype in mimetypes:
-            if path.endswith('.%s' % mimetype):
-                return mimetypes[mimetype]
-
-        return 'text/plain'
 
     def __init__(self, debug, API_VERSION):
         '''
@@ -84,520 +101,49 @@ class API:
         self._crypto = onionrcrypto.OnionrCrypto(self._core)
         self._utils = onionrutils.OnionrUtils(self._core)
         app = flask.Flask(__name__)
-        bindPort = int(config.get('client.port', 59496))
+        bindPort = int(config.get('client.client.port', 59496))
         self.bindPort = bindPort
+
         self.clientToken = config.get('client.webpassword')
         self.timeBypassToken = base64.b16encode(os.urandom(32)).decode()
 
-        self.i2pEnabled = config.get('i2p.host', False)
-
-        self.hideBlocks = [] # Blocks to be denied sharing
-
-        with open(self._core.dataDir + 'time-bypass.txt', 'w') as bypass:
-            bypass.write(self.timeBypassToken)
-
-        if not debug and not self._developmentMode:
-            hostOctets = [str(127), str(random.randint(0x02, 0xFF)), str(random.randint(0x02, 0xFF)), str(random.randint(0x02, 0xFF))]
-            self.host = '.'.join(hostOctets)
-        else:
-            self.host = '127.0.0.1'
-
-        with open(self._core.dataDir + 'host.txt', 'w') as file:
-            file.write(self.host)
-
-        @app.before_request
-        def beforeReq():
-            '''
-                Simply define the request as not having yet failed, before every request.
-            '''
-            self.requestFailed = False
-            return
-
-        @app.after_request
-        def afterReq(resp):
-            if not self.requestFailed:
-                resp.headers['Access-Control-Allow-Origin'] = '*'
-            #else:
-            #    resp.headers['server'] = 'Onionr'
-            resp.headers["Content-Security-Policy"] =  "default-src 'none'; script-src 'none'; object-src 'none'; style-src data: 'unsafe-inline'; img-src data:; media-src 'none'; frame-src 'none'; font-src 'none'; connect-src 'none'"
-            resp.headers['X-Frame-Options'] = 'deny'
-            resp.headers['X-Content-Type-Options'] = "nosniff"
-            resp.headers['X-API'] = API_VERSION
-            resp.headers['Date'] = 'Thu, 1 Jan 1970 00:00:00 GMT' # Clock info is probably useful to attackers. Set to unix epoch.
-            return resp
-
-        @app.route('/site/<path:block>')
-        def site(block):
-            self.validateHost('private')
-            bHash = block
-            resp = 'Not Found'
-            if self._core._utils.validateHash(bHash):
-                resp = Block(bHash).bcontent
-                try:
-                    resp = base64.b64decode(resp)
-                except:
-                    pass
-            return Response(resp)
-
-        @app.route('/www/private/<path:path>')
-        def www_private(path):
-            startTime = math.floor(time.time())
-
-            if request.args.get('timingToken') is None:
-                timingToken = ''
-            else:
-                timingToken = request.args.get('timingToken')
-
-            if not config.get("www.private.run", True):
-                abort(403)
-
-            self.validateHost('private')
-
-            endTime = math.floor(time.time())
-            elapsed = endTime - startTime
-
-            if not hmac.compare_digest(timingToken, self.timeBypassToken):
-                if (elapsed < self._privateDelayTime) and config.get('www.private.timing_protection', True):
-                    time.sleep(self._privateDelayTime - elapsed)
-
-            return send_from_directory(config.get('www.private.path', 'static-data/www/private/'), path)
-
-        @app.route('/www/public/<path:path>')
-        def www_public(path):
-            if not config.get("www.public.run", True):
-                abort(403)
-
-            self.validateHost('public')
-
-            return send_from_directory(config.get('www.public.path', 'static-data/www/public/'), path)
-
-        @app.route('/ui/<path:path>')
-        def ui_private(path):
-            startTime = math.floor(time.time())
-
-            '''
-            if request.args.get('timingToken') is None:
-                timingToken = ''
-            else:
-                timingToken = request.args.get('timingToken')
-            '''
-
-            if not config.get("www.ui.run", True):
-                abort(403)
-
-            if config.get("www.ui.private", True):
-                self.validateHost('private')
-            else:
-                self.validateHost('public')
-
-            '''
-            endTime = math.floor(time.time())
-            elapsed = endTime - startTime
-
-            if not hmac.compare_digest(timingToken, self.timeBypassToken):
-                if elapsed < self._privateDelayTime:
-                    time.sleep(self._privateDelayTime - elapsed)
-            '''
-
-            mime = API.guessMime(path)
-
-            logger.debug('Serving %s (mime: %s)' % (path, mime))
-
-            return send_from_directory('static-data/www/ui/dist/', path)
-
-        @app.route('/client/')
-        def private_handler():
-            if request.args.get('timingToken') is None:
-                timingToken = ''
-            else:
-                timingToken = request.args.get('timingToken')
-            data = request.args.get('data')
-            try:
-                data = data
-            except:
-                data = ''
-            startTime = math.floor(time.time())
-
-            action = request.args.get('action')
-            #if not self.debug:
-            token = request.args.get('token')
-
-            if not self.validateToken(token):
-                abort(403)
-
-            events.event('webapi_private', onionr = None, data = {'action' : action, 'data' : data, 'timingToken' : timingToken, 'token' : token})
-
-            self.validateHost('private')
-            if action == 'hello':
-                resp = Response('Hello, World! ' + request.host)
-            elif action == 'getIP':
-                resp = Response(self.host)
-            elif action == 'waitForShare':
-                if self._core._utils.validateHash(data):
-                    if data not in self.hideBlocks:
-                        self.hideBlocks.append(data)
-                    else:
-                        self.hideBlocks.remove(data)
-                    resp = "success"
-                else:
-                    resp = "failed to validate hash"
-            elif action == 'shutdown':
-                # request.environ.get('werkzeug.server.shutdown')()
-                self.http_server.stop()
-                resp = Response('Goodbye')
-            elif action == 'ping':
-                resp = Response('pong')
-            elif action == 'info':
-                resp = Response(json.dumps({'pubkey' : self._core._crypto.pubKey, 'host' : self._core.hsAddress}), mimetype='text/plain')
-            elif action == "insertBlock":
-                response = {'success' : False, 'reason' : 'An unknown error occurred'}
-
-                if not ((data is None) or (len(str(data).strip()) == 0)):
-                    try:
-                        decoded = json.loads(data)
-
-                        block = Block()
-
-                        sign = False
-
-                        for key in decoded:
-                            val = decoded[key]
-
-                            key = key.lower()
-
-                            if key == 'type':
-                                block.setType(val)
-                            elif key in ['body', 'content']:
-                                block.setContent(val)
-                            elif key == 'parent':
-                                block.setParent(val)
-                            elif key == 'sign':
-                                sign = (str(val).lower() == 'true')
-
-                        hash = block.save(sign = sign)
-
-                        if not hash is False:
-                            response['success'] = True
-                            response['hash'] = hash
-                            response['reason'] = 'Successfully wrote block to file'
-                        else:
-                            response['reason'] = 'Failed to save the block'
-                    except Exception as e:
-                        logger.warn('insertBlock api request failed', error = e)
-                        logger.debug('Here\'s the request: %s' % data)
-                else:
-                    response = {'success' : False, 'reason' : 'Missing `data` parameter.', 'blocks' : {}}
-
-                resp = Response(json.dumps(response))
-            elif action == 'searchBlocks':
-                response = {'success' : False, 'reason' : 'An unknown error occurred', 'blocks' : {}}
-
-                if not ((data is None) or (len(str(data).strip()) == 0)):
-                    try:
-                        decoded = json.loads(data)
-
-                        type = None
-                        signer = None
-                        signed = None
-                        parent = None
-                        reverse = False
-                        limit = None
-
-                        for key in decoded:
-                            val = decoded[key]
-
-                            key = key.lower()
-
-                            if key == 'type':
-                                type = str(val)
-                            elif key == 'signer':
-                                if isinstance(val, list):
-                                    signer = val
-                                else:
-                                    signer = str(val)
-                            elif key == 'signed':
-                                signed = (str(val).lower() == 'true')
-                            elif key == 'parent':
-                                parent = str(val)
-                            elif key == 'reverse':
-                                reverse = (str(val).lower() == 'true')
-                            elif key == 'limit':
-                                limit = 10000
-
-                                if val is None:
-                                    val = limit
-
-                                limit = min(limit, int(val))
-
-                        blockObjects = Block.getBlocks(type = type, signer = signer, signed = signed, parent = parent, reverse = reverse, limit = limit)
-
-                        logger.debug('%s results for query %s' % (len(blockObjects), decoded))
-
-                        blocks = list()
-
-                        for block in blockObjects:
-                            blocks.append({
-                                'hash' : block.getHash(),
-                                'type' : block.getType(),
-                                'content' : block.getContent(),
-                                'signature' : block.getSignature(),
-                                'signedData' : block.getSignedData(),
-                                'signed' : block.isSigned(),
-                                'valid' : block.isValid(),
-                                'date' : (int(block.getDate().strftime("%s")) if not block.getDate() is None else None),
-                                'parent' : (block.getParent().getHash() if not block.getParent() is None else None),
-                                'metadata' : block.getMetadata(),
-                                'header' : block.getHeader()
-                            })
-
-                        response['success'] = True
-                        response['blocks'] = blocks
-                        response['reason'] = 'Success'
-                    except Exception as e:
-                        logger.warn('searchBlock api request failed', error = e)
-                        logger.debug('Here\'s the request: %s' % data)
-                else:
-                    response = {'success' : False, 'reason' : 'Missing `data` parameter.', 'blocks' : {}}
-
-                resp = Response(json.dumps(response), mimetype='text/plain')
-
-            elif action in API.callbacks['private']:
-                resp = Response(str(getCallback(action, scope = 'private')(request)), mimetype='text/plain')
-            else:
-                resp = Response('invalid command')
-            endTime = math.floor(time.time())
-            elapsed = endTime - startTime
-
-            # if bypass token not used, delay response to prevent timing attacks
-            if not hmac.compare_digest(timingToken, self.timeBypassToken):
-                if elapsed < self._privateDelayTime:
-                    time.sleep(self._privateDelayTime - elapsed)
-
-            return resp
+        self.publicAPI = None # gets set when the thread calls our setter... bad hack but kinda necessary with flask
+        threading.Thread(target=PublicAPI, args=(self,)).start()
+        self.host = setBindIP(self._core.privateApiHostFile)
+        logger.info('Running api on %s:%s' % (self.host, self.bindPort))
+        self.httpServer = ''
 
         @app.route('/')
-        def banner():
-            self.validateHost('public')
+        def hello():
+            return Response("hello client")
+        
+        @app.route('/shutdown')
+        def shutdown():
             try:
-                with open('static-data/index.html', 'r') as html:
-                    resp = Response(html.read(), mimetype='text/html')
-            except FileNotFoundError:
-                resp = Response("")
-            return resp
-
-        @app.route('/public/upload/', methods=['POST'])
-        def blockUpload():
-            self.validateHost('public')
-            resp = 'failure'
-            try:
-                data = request.form['block']
-            except KeyError:
-                logger.warn('No block specified for upload')
+                self.publicAPI.httpServer.stop()
+                self.httpServer.stop()
+            except AttributeError:
                 pass
-            else:
-                if sys.getsizeof(data) < 100000000:
-                    try:
-                        if blockimporter.importBlockFromData(data, self._core):
-                            resp = 'success'
-                        else:
-                            logger.warn('Error encountered importing uploaded block')
-                    except onionrexceptions.BlacklistedBlock:
-                        logger.debug('uploaded block is blacklisted')
-                        pass
+            return Response("bye")
+        
+        self.httpServer = WSGIServer((self.host, bindPort), app, log=None)
+        self.httpServer.serve_forever()
+    
+    def setPublicAPIInstance(self, inst):
+        assert isinstance(inst, PublicAPI)
+        self.publicAPI = inst
 
-            resp = Response(resp)
-            return resp
-
-        @app.route('/public/announce/', methods=['POST'])
-        def acceptAnnounce():
-            self.validateHost('public')
-            resp = 'failure'
-            powHash = ''
-            randomData = ''
-            newNode = ''
-            ourAdder = self._core.hsAddress.encode()
-            try:
-                newNode = request.form['node'].encode()
-            except KeyError:
-                logger.warn('No block specified for upload')
-                pass
-            else:
-                try:
-                    randomData = request.form['random']
-                    randomData = base64.b64decode(randomData)
-                except KeyError:
-                    logger.warn('No random data specified for upload')
-                else:
-                    nodes = newNode + self._core.hsAddress.encode()
-                    nodes = self._core._crypto.blake2bHash(nodes)
-                    powHash = self._core._crypto.blake2bHash(randomData + nodes)
-                    try:
-                        powHash = powHash.decode()
-                    except AttributeError:
-                        pass
-                    if powHash.startswith('0000'):
-                        try:
-                            newNode = newNode.decode()
-                        except AttributeError:
-                            pass
-                        if self._core.addAddress(newNode):
-                            resp = 'Success'
-                    else:
-                        logger.warn(newNode.decode() + ' failed to meet POW: ' + powHash)
-            resp = Response(resp)
-            return resp
-
-        @app.route('/public/')
-        def public_handler():
-            # Public means it is publicly network accessible
-            self.validateHost('public')
-            if config.get('general.security_level') != 0:
-                abort(403)
-            action = request.args.get('action')
-            requestingPeer = request.args.get('myID')
-            data = request.args.get('data')
-            try:
-                data = data
-            except:
-                data = ''
-
-            events.event('webapi_public', onionr = None, data = {'action' : action, 'data' : data, 'requestingPeer' : requestingPeer, 'request' : request})
-
-            if action == 'firstConnect':
-                pass
-            elif action == 'ping':
-                resp = Response("pong!")
-            elif action == 'getSymmetric':
-                resp = Response(self._crypto.generateSymmetric())
-            elif action == 'getDBHash':
-                resp = Response(self._utils.getBlockDBHash())
-            elif action == 'getBlockHashes':
-                bList = self._core.getBlockList()
-                for b in self.hideBlocks:
-                    if b in bList:
-                        bList.remove(b)
-                resp = Response('\n'.join(bList))
-            # setData should be something the communicator initiates, not this api
-            elif action == 'getData':
-                resp = ''
-                if self._utils.validateHash(data):
-                    if data not in self.hideBlocks:
-                        if os.path.exists(self._core.dataDir + 'blocks/' + data + '.dat'):
-                            block = Block(hash=data.encode(), core=self._core)
-                            resp = base64.b64encode(block.getRaw().encode()).decode()
-                if len(resp) == 0:
-                    abort(404)
-                    resp = ""
-                resp = Response(resp)
-            elif action == 'pex':
-                response = ','.join(self._core.listAdders())
-                if len(response) == 0:
-                    response = 'none'
-                resp = Response(response)
-            elif action == 'kex':
-                peers = self._core.listPeers(getPow=True)
-                response = ','.join(peers)
-                resp = Response(response)
-            elif action in API.callbacks['public']:
-                resp = Response(str(getCallback(action, scope = 'public')(request)))
-            else:
-                resp = Response("")
-
-            return resp
-
-        @app.errorhandler(404)
-        def notfound(err):
-            self.requestFailed = True
-            resp = Response("")
-
-            return resp
-
-        @app.errorhandler(403)
-        def authFail(err):
-            self.requestFailed = True
-            resp = Response("403")
-            return resp
-
-        @app.errorhandler(401)
-        def clientError(err):
-            self.requestFailed = True
-            resp = Response("Invalid request")
-
-            return resp
-
-        logger.info('Starting client on ' + self.host + ':' + str(bindPort), timestamp=False)
-
+    def validateToken(self, token):
+        '''
+            Validate that the client token matches the given token
+        '''
+        if len(self.clientToken) == 0:
+            logger.error("client password needs to be set")
+            return False
         try:
-            while len(self._core.hsAddress) == 0:
-                self._core.refreshFirstStartVars()
-                time.sleep(0.5)
-            self.http_server = WSGIServer((self.host, bindPort), app, log=None)
-            self.http_server.serve_forever()
-        except KeyboardInterrupt:
-            pass
-        except Exception as e:
-            logger.error(str(e))
-            logger.fatal('Failed to start client on ' + self.host + ':' + str(bindPort) + ', exiting...')
-
-    def validateHost(self, hostType):
-        '''
-            Validate various features of the request including:
-
-            If private (/client/), is the host header local?
-            If public (/public/), is the host header onion or i2p?
-
-            Was X-Request-With used?
-        '''
-        if self.debug:
-            return
-        # Validate host header, to protect against DNS rebinding attacks
-        host = self.host
-        if hostType == 'private':
-            if not request.host.startswith('127') and not self._utils.checkIsIP(request.host):
-                abort(403)
-        elif hostType == 'public':
-            if not request.host.endswith('onion') and not request.host.endswith('i2p'):
-                abort(403)
-        # Validate x-requested-with, to protect against CSRF/metadata leaks
-
-        if not self.i2pEnabled and request.host.endswith('i2p'):
-            abort(403)
-
-        '''
-        if not self._developmentMode:
-            try:
-                request.headers['X-Requested-With']
-            except:
-                pass
-            # we exit rather than abort to avoid fingerprinting
-            logger.debug('Avoiding fingerprinting, exiting...')
-                #sys.exit(1)
-        '''
-
-    def setCallback(action, callback, scope = 'public'):
-        if not scope in API.callbacks:
+            if not hmac.compare_digest(self.clientToken, token):
+                return False
+            else:
+                return True
+        except TypeError:
             return False
-
-        API.callbacks[scope][action] = callback
-
-        return True
-
-    def removeCallback(action, scope = 'public'):
-        if (not scope in API.callbacks) or (not action in API.callbacks[scope]):
-            return False
-
-        del API.callbacks[scope][action]
-
-        return True
-
-    def getCallback(action, scope = 'public'):
-        if (not scope in API.callbacks) or (not action in API.callbacks[scope]):
-            return None
-
-        return API.callbacks[scope][action]
-
-    def getCallbacks(scope = None):
-        if (not scope is None) and (scope in API.callbacks):
-            return API.callbacks[scope]
-
-        return API.callbacks

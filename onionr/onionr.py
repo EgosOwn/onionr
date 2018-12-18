@@ -20,7 +20,8 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-
+import gevent.monkey
+gevent.monkey.patch_all()
 import sys
 if sys.version_info[0] == 2 or sys.version_info[1] < 5:
     print('Error, Onionr requires Python 3.5+')
@@ -28,8 +29,9 @@ if sys.version_info[0] == 2 or sys.version_info[1] < 5:
 import os, base64, random, getpass, shutil, subprocess, requests, time, platform, datetime, re, json, getpass, sqlite3
 import webbrowser
 from threading import Thread
-import api, apimanager, core, config, logger, onionrplugins as plugins, onionrevents as events
+import api, core, config, logger, onionrplugins as plugins, onionrevents as events
 import onionrutils
+import netcontroller
 from netcontroller import NetController
 from onionrblockapi import Block
 import onionrproofs, onionrexceptions, onionrusers
@@ -105,11 +107,12 @@ class Onionr:
         # Get configuration
         if type(config.get('client.webpassword')) is type(None):
             config.set('client.webpassword', base64.b16encode(os.urandom(32)).decode('utf-8'), savefile=True)
-        if type(config.get('client.port')) is type(None):
-            randomPort = 0
-            while randomPort < 1024:
-                randomPort = self.onionrCore._crypto.secrets.randbelow(65535)
-            config.set('client.port', randomPort, savefile=True)
+        if type(config.get('client.client.port')) is type(None):
+            randomPort = netcontroller.getOpenPort()
+            config.set('client.client.port', randomPort, savefile=True)
+        if type(config.get('client.public.port')) is type(None):
+            randomPort = netcontroller.getOpenPort()
+            config.set('client.public.port', randomPort, savefile=True)
         if type(config.get('client.participate')) is type(None):
             config.set('client.participate', True, savefile=True)
         if type(config.get('client.api_version')) is type(None):
@@ -705,11 +708,7 @@ class Onionr:
             os.remove('data/.runcheck')
 
         apiTarget = api.API
-        if config.get('general.use_new_api_server', False):
-            apiTarget = apimanager.APIManager
-            apiThread = Thread(target = apiTarget, args = (self.onionrCore))
-        else:
-            apiThread = Thread(target = apiTarget, args = (self.debug, API_VERSION))
+        apiThread = Thread(target = apiTarget, args = (self.debug, API_VERSION))
         apiThread.start()
 
         try:
@@ -722,7 +721,7 @@ class Onionr:
             apiHost = '127.0.0.1'
             if apiThread.isAlive():
                 try:
-                    with open(self.onionrCore.dataDir + 'host.txt', 'r') as hostFile:
+                    with open(self.onionrCore.publicApiHostFile, 'r') as hostFile:
                         apiHost = hostFile.read()
                 except FileNotFoundError:
                     pass
@@ -730,7 +729,7 @@ class Onionr:
 
                 if self._developmentMode:
                     logger.warn('DEVELOPMENT MODE ENABLED (LESS SECURE)', timestamp = False)
-                net = NetController(config.get('client.port', 59496), apiServerIP=apiHost)
+                net = NetController(config.get('client.public.port', 59497), apiServerIP=apiHost)
                 logger.debug('Tor is starting...')
                 if not net.startTor():
                     self.onionrUtils.localCommand('shutdown')

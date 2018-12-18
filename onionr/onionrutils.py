@@ -160,13 +160,17 @@ class OnionrUtils:
         self.getTimeBypassToken()
         # TODO: URL encode parameters, just as an extra measure. May not be needed, but should be added regardless.
         try:
-            with open(self._core.dataDir + 'host.txt', 'r') as host:
+            with open(self._core.privateApiHostFile, 'r') as host:
                 hostname = host.read()
         except FileNotFoundError:
             return False
-        payload = 'http://%s:%s/client/?action=%s&token=%s&timingToken=%s' % (hostname, config.get('client.port'), command, config.get('client.webpassword'), self.timingToken)
         if data != '':
-            payload += '&data=' + urllib.parse.quote_plus(data)
+            data = '&data=' + urllib.parse.quote_plus(data)
+        payload = 'http://%s:%s/%s%s' % (hostname, config.get('client.client.port'), command, data)
+        logger.info(payload)
+        #payload = 'http://%s:%s/client/?action=%s&token=%s&timingToken=%s' % (hostname, config.get('client.client.port'), command, config.get('client.webpassword'), self.timingToken)
+        #if data != '':
+        #    payload += '&data=' + urllib.parse.quote_plus(data)
         try:
             retData = requests.get(payload).text
         except Exception as error:
