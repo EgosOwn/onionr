@@ -25,9 +25,11 @@ import core
 from onionrblockapi import Block
 import onionrutils, onionrexceptions, onionrcrypto, blockimporter, onionrevents as events, logger, config, onionr
 
+API_VERSION = 0
+
 def guessMime(path):
     '''
-        Guesses the mime type from the input filename
+        Guesses the mime type of a file from the input filename
     '''
     mimetypes = {
         'html' : 'text/html',
@@ -113,10 +115,45 @@ class API:
         logger.info('Running api on %s:%s' % (self.host, self.bindPort))
         self.httpServer = ''
 
+        @app.before_request
+        def validateRequest():
+            '''Validate request has set password and is the correct hostname'''
+            if request.host != '%s:%s' % (self.host, self.bindPort):
+                abort(403)
+            try:
+                if not hmac.compare_digest(request.headers['token'], self.clientToken):
+                    abort(403)
+            except KeyError:
+                abort(403)
+        
+        @app.after_request
+        def afterReq(resp):
+            resp.headers["Content-Security-Policy"] =  "default-src 'none'; script-src 'none'; object-src 'none'; style-src data: 'unsafe-inline'; img-src data:; media-src 'none'; frame-src 'none'; font-src 'none'; connect-src 'none'"
+            resp.headers['X-Frame-Options'] = 'deny'
+            resp.headers['X-Content-Type-Options'] = "nosniff"
+            resp.headers['X-API'] = API_VERSION
+            resp.headers['Server'] = 'nginx'
+            resp.headers['Date'] = 'Thu, 1 Jan 1970 00:00:00 GMT' # Clock info is probably useful to attackers. Set to unix epoch.
+            return resp
+
+        @app.route('/ping')
+        def ping():
+            return Respose("pong!")
+
         @app.route('/')
         def hello():
             return Response("hello client")
         
+        @app.route('/waitforshare/<name>', methods='post')
+        def waitforshare():
+            assert name.isalnum()
+            if name in self.publicAPI.hideBlocks:
+                self.publicAPI.hideBlocks.remove(name)
+                return Response("removed")
+            else:
+                self.publicAPI.hideBlocks.append(name)
+                return Response("added")
+
         @app.route('/shutdown')
         def shutdown():
             try:

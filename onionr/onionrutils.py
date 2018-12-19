@@ -167,12 +167,11 @@ class OnionrUtils:
         if data != '':
             data = '&data=' + urllib.parse.quote_plus(data)
         payload = 'http://%s:%s/%s%s' % (hostname, config.get('client.client.port'), command, data)
-        logger.info(payload)
         #payload = 'http://%s:%s/client/?action=%s&token=%s&timingToken=%s' % (hostname, config.get('client.client.port'), command, config.get('client.webpassword'), self.timingToken)
         #if data != '':
         #    payload += '&data=' + urllib.parse.quote_plus(data)
         try:
-            retData = requests.get(payload).text
+            retData = requests.get(payload, headers={'token': config.get('client.webpassword')}).text
         except Exception as error:
             if not silent:
                 logger.error('Failed to make local request (command: %s):%s' % (command, error))
