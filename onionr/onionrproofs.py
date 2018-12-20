@@ -238,6 +238,7 @@ class POW:
                     break
                 else:
                     time.sleep(2)
+                print('boi')
         except KeyboardInterrupt:
             self.shutdown()
             logger.warn('Got keyboard interrupt while waiting for POW result, stopping')

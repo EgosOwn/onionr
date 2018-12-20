@@ -20,8 +20,6 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import gevent.monkey
-gevent.monkey.patch_all()
 import sys
 if sys.version_info[0] == 2 or sys.version_info[1] < 5:
     print('Error, Onionr requires Python 3.5+')
@@ -70,6 +68,9 @@ class Onionr:
 
         self.onionrCore = core.Core()
         self.onionrUtils = onionrutils.OnionrUtils(self.onionrCore)
+
+        self.clientAPIInst = '' # Client http api instance
+        self.publicAPIInst = '' # Public http api instance
 
         # Handle commands
 
