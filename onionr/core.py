@@ -53,6 +53,7 @@ class Core:
             self.privateApiHostFile = self.dataDir + 'private-host.txt'
             self.addressDB = self.dataDir + 'address.db'
             self.hsAddress = ''
+            self.i2pAddress = config.get('i2p.ownAddr', None)
             self.bootstrapFileLocation = 'static-data/bootstrap-nodes.txt'
             self.bootstrapList = []
             self.requirements = onionrvalues.OnionrValues()
@@ -775,7 +776,7 @@ class Core:
         if payload != False:
             retData = self.setData(payload)
             # Tell the api server through localCommand to wait for the daemon to upload this block to make stastical analysis more difficult
-            self._utils.localCommand('waitForShare', data=retData)
+            self._utils.localCommand('waitforshare/' + retData)
             self.addToBlockDB(retData, selfInsert=True, dataSaved=True)
             #self.setBlockType(retData, meta['type'])
             self._utils.processBlockMetadata(retData)

@@ -64,19 +64,99 @@ class PublicAPI:
         self.i2pEnabled = config.get('i2p.host', False)
         self.hideBlocks = [] # Blocks to be denied sharing
         self.host = setBindIP(clientAPI._core.publicApiHostFile)
-        bindPort = config.get('client.public.port')
+        self.torAdder = clientAPI._core.hsAddress
+        self.i2pAdder = clientAPI._core.i2pAddress
+        self.bindPort = config.get('client.public.port')
+
+        @app.before_request
+        def validateRequest():
+            '''Validate request has the correct hostname'''
+            if type(self.torAdder) is None and type(self.i2pAdder) is None:
+                # abort if our hs addresses are not known
+                abort(403)
+            if request.host not in (self.i2pAdder, self.torAdder):
+                abort(403)
+
+        @app.after_request
+        def sendHeaders(resp):
+            '''Send api, access control headers'''
+            resp.headers['Date'] = 'Thu, 1 Jan 1970 00:00:00 GMT' # Clock info is probably useful to attackers. Set to unix epoch.
+            resp.headers["Content-Security-Policy"] =  "default-src 'none'; script-src 'none'; object-src 'none'; style-src data: 'unsafe-inline'; img-src data:; media-src 'none'; frame-src 'none'; font-src 'none'; connect-src 'none'"
+            resp.headers['X-Frame-Options'] = 'deny'
+            resp.headers['X-Content-Type-Options'] = "nosniff"
+            resp.headers['X-API'] = API_VERSION
+            return resp
 
         @app.route('/')
         def banner():
-            #validateHost('public')
             try:
                 with open('static-data/index.html', 'r') as html:
                     resp = Response(html.read(), mimetype='text/html')
             except FileNotFoundError:
                 resp = Response("")
             return resp
+
+        @app.route('/getblocklist')
+        def getBlockList():
+            bList = clientAPI._core.getBlockList()
+            for b in self.hideBlocks:
+                if b in bList:
+                    bList.remove(b)
+            return Response('\n'.join(bList))
+
+        @app.route('/getdata/<name>')
+        def getBlockData():
+            resp = ''
+            if clientAPI._utils.validateHash(data):
+                if data not in self.hideBlocks:
+                    if os.path.exists(clientAPI._core.dataDir + 'blocks/' + data + '.dat'):
+                        block = Block(hash=data.encode(), core=clientAPI._core)
+                        resp = base64.b64encode(block.getRaw().encode()).decode()
+            if len(resp) == 0:
+                abort(404)
+                resp = ""
+            return Response(resp)
+
+        @app.route('/ping')
+        def ping():
+            return Response("pong!")
+        
+        @app.route('/getdbhash')
+        def getDBHash():
+            return Response(clientAPI._utils.getBlockDBHash())
+        
+        @app.route('/pex')
+        def peerExchange():
+            response = ','.join(self._core.listAdders())
+            if len(response) == 0:
+                response = 'none'
+            resp = Response(response)
+
+        @app.route('/upload', methods=['post'])
+        def upload():
+            resp = 'failure'
+            try:
+                data = request.form['block']
+            except KeyError:
+                logger.warn('No block specified for upload')
+                pass
+            else:
+                if sys.getsizeof(data) < 100000000:
+                    try:
+                        if blockimporter.importBlockFromData(data, clientAPI._core):
+                            resp = 'success'
+                        else:
+                            logger.warn('Error encountered importing uploaded block')
+                    except onionrexceptions.BlacklistedBlock:
+                        logger.debug('uploaded block is blacklisted')
+                        pass
+            if resp == 'failure':
+                abort(400)
+            resp = Response(resp)
+            return resp
+
         clientAPI.setPublicAPIInstance(self)
-        self.httpServer = WSGIServer((self.host, bindPort), app, log=None)
+        self.httpServer = WSGIServer((self.host, self.bindPort), app, log=None)
         self.httpServer.serve_forever()
 
 class API:
@@ -143,8 +223,22 @@ class API:
         @app.route('/')
         def hello():
             return Response("hello client")
-        
-        @app.route('/waitforshare/<name>', methods='post')
+
+        @app.route('/site/<name>')
+        def site():
+            bHash = block
+            resp = 'Not Found'
+            if self._core._utils.validateHash(bHash):
+                resp = Block(bHash).bcontent
+                try:
+                    resp = base64.b64decode(resp)
+                except:
+                    pass
+            if resp == 'Not Found':
+                abourt(404)
+            return Response(resp)
+
+        @app.route('/waitforshare/<name>', methods=['post'])
         def waitforshare():
             assert name.isalnum()
             if name in self.publicAPI.hideBlocks:

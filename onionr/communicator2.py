@@ -180,14 +180,14 @@ class OnionrCommunicatorDaemon:
                     break
                 else:
                     continue
-            newDBHash = self.peerAction(peer, 'getDBHash') # get their db hash
+            newDBHash = self.peerAction(peer, 'getdbhash') # get their db hash
             if newDBHash == False or not self._core._utils.validateHash(newDBHash):
                 continue # if request failed, restart loop (peer is added to offline peers automatically)
             triedPeers.append(peer)
             if newDBHash != self._core.getAddressInfo(peer, 'DBHash'):
                 self._core.setAddressInfo(peer, 'DBHash', newDBHash)
                 try:
-                    newBlocks = self.peerAction(peer, 'getBlockHashes') # get list of new block hashes
+                    newBlocks = self.peerAction(peer, 'getblocklist') # get list of new block hashes
                 except Exception as error:
                     logger.warn('Could not get new blocks from %s.' % peer, error = error)
                     newBlocks = False
@@ -226,7 +226,7 @@ class OnionrCommunicatorDaemon:
             self.currentDownloading.append(blockHash) # So we can avoid concurrent downloading in other threads of same block
             logger.info("Attempting to download %s..." % blockHash)
             peerUsed = self.pickOnlinePeer()
-            content = self.peerAction(peerUsed, 'getData', data=blockHash) # block content from random peer (includes metadata)
+            content = self.peerAction(peerUsed, 'getdata/' + blockHash) # block content from random peer (includes metadata)
             if content != False and len(content) > 0:
                 try:
                     content = content.encode()
@@ -423,7 +423,7 @@ class OnionrCommunicatorDaemon:
         if len(peer) == 0:
             return False
         #logger.debug('Performing ' + action + ' with ' + peer + ' on port ' + str(self.proxyPort))
-        url = 'http://' + peer + '/public/?action=' + action
+        url = 'http://' + peer + '/' + action
         if len(data) > 0:
             url += '&data=' + data
 
@@ -520,7 +520,7 @@ class OnionrCommunicatorDaemon:
                     if peer in triedPeers:
                         continue
                     triedPeers.append(peer)
-                    url = 'http://' + peer + '/public/upload/'
+                    url = 'http://' + peer + '/upload'
                     data = {'block': block.Block(bl).getRaw()}
                     proxyType = ''
                     if peer.endswith('.onion'):
@@ -529,7 +529,7 @@ class OnionrCommunicatorDaemon:
                         proxyType = 'i2p'
                     logger.info("Uploading block to " + peer)
                     if not self._core._utils.doPostRequest(url, data=data, proxyType=proxyType) == False:
-                        self._core._utils.localCommand('waitForShare', data=bl)
+                        self._core._utils.localCommand('waitforshare/' + bl)
                         finishedUploads.append(bl)
                         break
         for x in finishedUploads:
