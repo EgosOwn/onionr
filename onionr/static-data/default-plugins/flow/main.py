@@ -47,7 +47,7 @@ class OnionrFlow:
                 message = logger.readline('\nInsert message into flow:').strip().replace('\n', '\\n').replace('\r', '\\r')
             except EOFError:
                 pass
-            except KeyboardInterrupt:
+            except KeyboardInterrupt as e:
                 self.flowRunning = False
             else:
                 if message == "q":

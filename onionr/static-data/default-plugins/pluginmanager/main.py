@@ -21,7 +21,7 @@
 # useful libraries
 import logger, config
 import os, sys, json, time, random, shutil, base64, getpass, datetime, re
-from onionrblockapi import Block
+from onionrblockapi import *
 
 plugin_name = 'pluginmanager'
 
@@ -151,7 +151,7 @@ def check():
 # plugin management
 
 def sanitize(name):
-    return re.sub('[^0-9a-zA-Z_]+', '', str(name).lower())[:255]
+    return pluginapi.plugins.sanitize_name(name)
 
 def blockToPlugin(block):
     try:
