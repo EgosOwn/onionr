@@ -73,6 +73,9 @@ class PluginAPI:
     def get_enabled_plugins(self):
         return onionrplugins.get_enabled()
 
+    def sanitize_name(self, name):
+        return onionrplugins.sanitizeName(name)
+
     def get_folder(self, name = None, absolute = True):
         return onionrplugins.get_plugins_folder(name = name, absolute = absolute)
 

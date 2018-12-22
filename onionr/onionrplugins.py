@@ -156,6 +156,13 @@ def stop(name, onionr = None):
 
     return None
 
+def sanitizeName(name):
+    '''
+        Filters name (supports EXT* and FAT fs)
+    '''
+
+    return re.sub('[^0-9a-zA-Z_]+', '', str(name)).lower()
+
 def get_plugin(name):
     '''
         Returns the instance of a module
@@ -212,7 +219,7 @@ def get_plugins_folder(name = None, absolute = True):
         path = _pluginsfolder
     else:
         # only allow alphanumeric characters
-        path = _pluginsfolder + re.sub('[^0-9a-zA-Z_]+', '', str(name).lower())
+        path = _pluginsfolder + sanitizeName(name)
 
     if absolute is True:
         path = os.path.abspath(path)

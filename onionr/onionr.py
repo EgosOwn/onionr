@@ -285,10 +285,10 @@ class Onionr:
             else:
                 logger.error('Passwords do not match.')
                 sys.exit(1)
-            self.onionrCore._crypto.keyManager.addKey(pubKey=newID, 
+            self.onionrCore._crypto.keyManager.addKey(pubKey=newID,
             privKey=privKey)
         logger.info('Added ID: %s' % (self.onionrUtils.bytesToStr(newID),))
-    
+
     def changeID(self):
         try:
             key = sys.argv[2]
@@ -634,7 +634,7 @@ class Onionr:
 
         if len(sys.argv) >= 3:
             try:
-                plugin_name = re.sub('[^0-9a-zA-Z_]+', '', str(sys.argv[2]).lower())
+                plugin_name = plugins.sanitizeName(sys.argv[2])
 
                 if not plugins.exists(plugin_name):
                     logger.info('Creating plugin "%s"...' % plugin_name)
