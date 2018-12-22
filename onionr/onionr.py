@@ -67,6 +67,7 @@ class Onionr:
         data_exists = Onionr.setupConfig(self.dataDir, self = self)
 
         self.onionrCore = core.Core()
+        #self.deleteRunFiles()
         self.onionrUtils = onionrutils.OnionrUtils(self.onionrCore)
 
         self.clientAPIInst = '' # Client http api instance
@@ -399,6 +400,16 @@ class Onionr:
                 logger.info('Syntax: friend add/remove/list [address]')
 
 
+    def deleteRunFiles(self):
+        try:
+            os.remove(self.onionrCore.publicApiHostFile)
+        except FileNotFoundError:
+            pass
+        try:
+            os.remove(self.onionrCore.privateApiHostFile)
+        except FileNotFoundError:
+            pass
+
     def banBlock(self):
         try:
             ban = sys.argv[2]
@@ -695,6 +706,13 @@ class Onionr:
                     os.remove('.onionr-lock')
                 except FileNotFoundError:
                     pass
+    def setClientAPIInst(self, inst):
+        self.clientAPIInst = inst
+
+    def getClientApi(self):
+        while self.clientAPIInst == '':
+            time.sleep(0.5)
+        return self.clientAPIInst
 
     def daemon(self):
         '''
@@ -708,64 +726,66 @@ class Onionr:
             logger.debug('Runcheck file found on daemon start, deleting in advance.')
             os.remove('data/.runcheck')
 
-        apiTarget = api.API
-        apiThread = Thread(target = apiTarget, args = (self.debug, API_VERSION))
-        apiThread.start()
-
+        Thread(target=api.API, args=(self, self.debug, API_VERSION)).start()
+        Thread(target=api.PublicAPI, args=[self.getClientApi()]).start()
         try:
-            time.sleep(3)
+            time.sleep(0)
         except KeyboardInterrupt:
             logger.debug('Got keyboard interrupt, shutting down...')
             time.sleep(1)
             self.onionrUtils.localCommand('shutdown')
+
+        apiHost = ''
+        while apiHost == '':
+            try:
+                with open(self.onionrCore.publicApiHostFile, 'r') as hostFile:
+                    apiHost = hostFile.read()
+            except FileNotFoundError:
+                pass
+            time.sleep(0.5)
+        Onionr.setupConfig('data/', self = self)
+
+        if self._developmentMode:
+            logger.warn('DEVELOPMENT MODE ENABLED (LESS SECURE)', timestamp = False)
+        net = NetController(config.get('client.public.port', 59497), apiServerIP=apiHost)
+        logger.debug('Tor is starting...')
+        if not net.startTor():
+            self.onionrUtils.localCommand('shutdown')
+            sys.exit(1)
+        if len(net.myID) > 0 and config.get('general.security_level') == 0:
+            logger.debug('Started .onion service: %s' % (logger.colors.underline + net.myID))
         else:
-            apiHost = '127.0.0.1'
-            if apiThread.isAlive():
-                try:
-                    with open(self.onionrCore.publicApiHostFile, 'r') as hostFile:
-                        apiHost = hostFile.read()
-                except FileNotFoundError:
-                    pass
-                Onionr.setupConfig('data/', self = self)
+            logger.debug('.onion service disabled')
+        logger.debug('Using public key: %s' % (logger.colors.underline + self.onionrCore._crypto.pubKey))
+        time.sleep(1)
 
-                if self._developmentMode:
-                    logger.warn('DEVELOPMENT MODE ENABLED (LESS SECURE)', timestamp = False)
-                net = NetController(config.get('client.public.port', 59497), apiServerIP=apiHost)
-                logger.debug('Tor is starting...')
-                if not net.startTor():
-                    self.onionrUtils.localCommand('shutdown')
-                    sys.exit(1)
-                if len(net.myID) > 0 and config.get('general.security_level') == 0:
-                    logger.debug('Started .onion service: %s' % (logger.colors.underline + net.myID))
-                else:
-                    logger.debug('.onion service disabled')
-                logger.debug('Using public key: %s' % (logger.colors.underline + self.onionrCore._crypto.pubKey))
-                time.sleep(1)
+        # TODO: make runable on windows
+        communicatorProc = subprocess.Popen([communicatorDaemon, 'run', str(net.socksPort)])
 
-                # TODO: make runable on windows
-                communicatorProc = subprocess.Popen([communicatorDaemon, 'run', str(net.socksPort)])
+        # print nice header thing :)
+        if config.get('general.display_header', True):
+            self.header()
 
-                # print nice header thing :)
-                if config.get('general.display_header', True):
-                    self.header()
+        # print out debug info
+        self.version(verbosity = 5, function = logger.debug)
+        logger.debug('Python version %s' % platform.python_version())
 
-                # print out debug info
-                self.version(verbosity = 5, function = logger.debug)
-                logger.debug('Python version %s' % platform.python_version())
+        logger.debug('Started communicator.')
 
-                logger.debug('Started communicator.')
+        events.event('daemon_start', onionr = self)
+        try:
+            while True:
+                time.sleep(5)
 
-                events.event('daemon_start', onionr = self)
-                try:
-                    while True:
-                        time.sleep(5)
-
-                        # Break if communicator process ends, so we don't have left over processes
-                        if communicatorProc.poll() is not None:
-                            break
-                except KeyboardInterrupt:
-                    self.onionrCore.daemonQueueAdd('shutdown')
-                    self.onionrUtils.localCommand('shutdown')
+                # Break if communicator process ends, so we don't have left over processes
+                if communicatorProc.poll() is not None:
+                    break
+        except KeyboardInterrupt:
+            self.onionrCore.daemonQueueAdd('shutdown')
+            self.onionrUtils.localCommand('shutdown')
+        time.sleep(3)
+        self.deleteRunFiles()
+        net.killTor()
         return
 
     def killDaemon(self):

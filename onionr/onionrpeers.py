@@ -79,27 +79,29 @@ def peerCleanup(coreInst):
     logger.info('Cleaning peers...')
     config.reload()
 
-    minScore = int(config.get('peers.minimum_score', -100))
-    maxPeers = int(config.get('peers.max_stored', 5000))
-
     adders = getScoreSortedPeerList(coreInst)
     adders.reverse()
+    
+    if len(adders) > 1:
 
-    for address in adders:
-        # Remove peers that go below the negative score
-        if PeerProfiles(address, coreInst).score < minScore:
-            coreInst.removeAddress(address)
-            try:
-                if (int(coreInst._utils.getEpoch()) - int(coreInst.getPeerInfo(address, 'dateSeen'))) >= 600:
-                    expireTime = 600
-                else:
-                    expireTime = 86400
-                coreInst._blacklist.addToDB(address, dataType=1, expire=expireTime)
-            except sqlite3.IntegrityError: #TODO just make sure its not a unique constraint issue
-                pass
-            except ValueError:
-                pass
-            logger.warn('Removed address ' + address + '.')
+        minScore = int(config.get('peers.minimum_score', -100))
+        maxPeers = int(config.get('peers.max_stored', 5000))
+
+        for address in adders:
+            # Remove peers that go below the negative score
+            if PeerProfiles(address, coreInst).score < minScore:
+                coreInst.removeAddress(address)
+                try:
+                    if (int(coreInst._utils.getEpoch()) - int(coreInst.getPeerInfo(address, 'dateSeen'))) >= 600:
+                        expireTime = 600
+                    else:
+                        expireTime = 86400
+                    coreInst._blacklist.addToDB(address, dataType=1, expire=expireTime)
+                except sqlite3.IntegrityError: #TODO just make sure its not a unique constraint issue
+                    pass
+                except ValueError:
+                    pass
+                logger.warn('Removed address ' + address + '.')
 
     # Unban probably not malicious peers TODO improve
     coreInst._blacklist.deleteExpired(dataType=1)

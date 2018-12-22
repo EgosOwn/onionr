@@ -154,7 +154,7 @@ class Core:
 
         if address == config.get('i2p.ownAddr', None) or address == self.hsAddress:
             return False
-        if type(address) is type(None) or len(address) == 0:
+        if type(address) is None or len(address) == 0:
             return False
         if self._utils.validateID(address):
             conn = sqlite3.connect(self.addressDB, timeout=10)

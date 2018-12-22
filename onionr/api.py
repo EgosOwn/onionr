@@ -25,8 +25,6 @@ import core
 from onionrblockapi import Block
 import onionrutils, onionrexceptions, onionrcrypto, blockimporter, onionrevents as events, logger, config, onionr
 
-API_VERSION = 0
-
 def guessMime(path):
     '''
         Guesses the mime type of a file from the input filename
@@ -67,6 +65,7 @@ class PublicAPI:
         self.torAdder = clientAPI._core.hsAddress
         self.i2pAdder = clientAPI._core.i2pAddress
         self.bindPort = config.get('client.public.port')
+        logger.info('Running public api on %s:%s' % (self.host, self.bindPort))
 
         @app.before_request
         def validateRequest():
@@ -84,7 +83,7 @@ class PublicAPI:
             resp.headers["Content-Security-Policy"] =  "default-src 'none'; script-src 'none'; object-src 'none'; style-src data: 'unsafe-inline'; img-src data:; media-src 'none'; frame-src 'none'; font-src 'none'; connect-src 'none'"
             resp.headers['X-Frame-Options'] = 'deny'
             resp.headers['X-Content-Type-Options'] = "nosniff"
-            resp.headers['X-API'] = API_VERSION
+            resp.headers['X-API'] = onionr.API_VERSION
             return resp
 
         @app.route('/')
@@ -105,8 +104,9 @@ class PublicAPI:
             return Response('\n'.join(bList))
 
         @app.route('/getdata/<name>')
-        def getBlockData():
+        def getBlockData(name):
             resp = ''
+            data = name
             if clientAPI._utils.validateHash(data):
                 if data not in self.hideBlocks:
                     if os.path.exists(clientAPI._core.dataDir + 'blocks/' + data + '.dat'):
@@ -117,20 +117,64 @@ class PublicAPI:
                 resp = ""
             return Response(resp)
 
+        @app.route('/www/<path:path>')
+        def wwwPublic(path):
+            if not config.get("www.public.run", True):
+                abort(403)
+            return send_from_directory(config.get('www.public.path', 'static-data/www/public/'), path)
+
         @app.route('/ping')
         def ping():
             return Response("pong!")
-        
+
         @app.route('/getdbhash')
         def getDBHash():
             return Response(clientAPI._utils.getBlockDBHash())
-        
+
         @app.route('/pex')
         def peerExchange():
-            response = ','.join(self._core.listAdders())
+            response = ','.join(clientAPI._core.listAdders())
             if len(response) == 0:
                 response = 'none'
-            resp = Response(response)
+            return Response(response)
+        
+        @app.route('/announce', methods=['post'])
+        def acceptAnnounce():
+            resp = 'failure'
+            powHash = ''
+            randomData = ''
+            newNode = ''
+            ourAdder = clientAPI._core.hsAddress.encode()
+            try:
+                newNode = request.form['node'].encode()
+            except KeyError:
+                logger.warn('No block specified for upload')
+                pass
+            else:
+                try:
+                    randomData = request.form['random']
+                    randomData = base64.b64decode(randomData)
+                except KeyError:
+                    logger.warn('No random data specified for upload')
+                else:
+                    nodes = newNode + clientAPI._core.hsAddress.encode()
+                    nodes = clientAPI._core._crypto.blake2bHash(nodes)
+                    powHash = clientAPI._core._crypto.blake2bHash(randomData + nodes)
+                    try:
+                        powHash = powHash.decode()
+                    except AttributeError:
+                        pass
+                    if powHash.startswith('0000'):
+                        try:
+                            newNode = newNode.decode()
+                        except AttributeError:
+                            pass
+                        if clientAPI._core.addAddress(newNode):
+                            resp = 'Success'
+                    else:
+                        logger.warn(newNode.decode() + ' failed to meet POW: ' + powHash)
+            resp = Response(resp)
+            return resp
 
         @app.route('/upload', methods=['post'])
         def upload():
@@ -156,6 +200,10 @@ class PublicAPI:
             return resp
 
         clientAPI.setPublicAPIInstance(self)
+        while self.torAdder == '':
+            clientAPI._core.refreshFirstStartVars()
+            self.torAdder = clientAPI._core.hsAddress
+            time.sleep(1)
         self.httpServer = WSGIServer((self.host, self.bindPort), app, log=None)
         self.httpServer.serve_forever()
 
@@ -166,7 +214,7 @@ class API:
 
     callbacks = {'public' : {}, 'private' : {}}
 
-    def __init__(self, debug, API_VERSION):
+    def __init__(self, onionrInst, debug, API_VERSION):
         '''
             Initialize the api server, preping variables for later use
 
@@ -190,10 +238,11 @@ class API:
         self.timeBypassToken = base64.b16encode(os.urandom(32)).decode()
 
         self.publicAPI = None # gets set when the thread calls our setter... bad hack but kinda necessary with flask
-        threading.Thread(target=PublicAPI, args=(self,)).start()
+        #threading.Thread(target=PublicAPI, args=(self,)).start()
         self.host = setBindIP(self._core.privateApiHostFile)
         logger.info('Running api on %s:%s' % (self.host, self.bindPort))
         self.httpServer = ''
+        onionrInst.setClientAPIInst(self)
 
         @app.before_request
         def validateRequest():
@@ -205,20 +254,20 @@ class API:
                     abort(403)
             except KeyError:
                 abort(403)
-        
+
         @app.after_request
         def afterReq(resp):
             resp.headers["Content-Security-Policy"] =  "default-src 'none'; script-src 'none'; object-src 'none'; style-src data: 'unsafe-inline'; img-src data:; media-src 'none'; frame-src 'none'; font-src 'none'; connect-src 'none'"
             resp.headers['X-Frame-Options'] = 'deny'
             resp.headers['X-Content-Type-Options'] = "nosniff"
-            resp.headers['X-API'] = API_VERSION
-            resp.headers['Server'] = 'nginx'
+            resp.headers['X-API'] = onionr.API_VERSION
+            resp.headers['Server'] = ''
             resp.headers['Date'] = 'Thu, 1 Jan 1970 00:00:00 GMT' # Clock info is probably useful to attackers. Set to unix epoch.
             return resp
 
         @app.route('/ping')
         def ping():
-            return Respose("pong!")
+            return Response("pong!")
 
         @app.route('/')
         def hello():
@@ -256,10 +305,10 @@ class API:
             except AttributeError:
                 pass
             return Response("bye")
-        
+
         self.httpServer = WSGIServer((self.host, bindPort), app, log=None)
         self.httpServer.serve_forever()
-    
+
     def setPublicAPIInstance(self, inst):
         assert isinstance(inst, PublicAPI)
         self.publicAPI = inst

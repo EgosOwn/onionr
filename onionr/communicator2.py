@@ -19,11 +19,10 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-#import gevent.monkey
-#gevent.monkey.patch_all()
 import sys, os, core, config, json, requests, time, logger, threading, base64, onionr, uuid
 import onionrexceptions, onionrpeers, onionrevents as events, onionrplugins as plugins, onionrblockapi as block
 import onionrdaemontools, onionrsockets, onionrchat, onionr, onionrproofs
+import binascii
 from dependencies import secrets
 from defusedxml import minidom
 
@@ -103,6 +102,7 @@ class OnionrCommunicatorDaemon:
         OnionrCommunicatorTimers(self, self.daemonTools.cooldownPeer, 30, requiresPeer=True)
         OnionrCommunicatorTimers(self, self.uploadBlock, 10, requiresPeer=True, maxThreads=1)
         OnionrCommunicatorTimers(self, self.daemonCommands, 6, maxThreads=1)
+        OnionrCommunicatorTimers(self, self.detectAPICrash, 5, maxThreads=1)
         deniableBlockTimer = OnionrCommunicatorTimers(self, self.daemonTools.insertDeniableBlock, 180, requiresPeer=True, maxThreads=1)
 
         netCheckTimer = OnionrCommunicatorTimers(self, self.daemonTools.netCheck, 600)
@@ -232,7 +232,10 @@ class OnionrCommunicatorDaemon:
                     content = content.encode()
                 except AttributeError:
                     pass
-                content = base64.b64decode(content) # content is base64 encoded in transport
+                try:
+                    content = base64.b64decode(content) # content is base64 encoded in transport
+                except binascii.Error:
+                    pass
                 realHash = self._core._crypto.sha3Hash(content)
                 try:
                     realHash = realHash.decode() # bytes on some versions for some reason
@@ -423,7 +426,7 @@ class OnionrCommunicatorDaemon:
         if len(peer) == 0:
             return False
         #logger.debug('Performing ' + action + ' with ' + peer + ' on port ' + str(self.proxyPort))
-        url = 'http://' + peer + '/' + action
+        url = 'http://%s/%s' % (peer, action)
         if len(data) > 0:
             url += '&data=' + data
 
@@ -546,9 +549,9 @@ class OnionrCommunicatorDaemon:
 
     def detectAPICrash(self):
         '''exit if the api server crashes/stops'''
-        if self._core._utils.localCommand('ping', silent=False) != 'pong':
+        if self._core._utils.localCommand('ping', silent=False) not in ('pong', 'pong!'):
             for i in range(5):
-                if self._core._utils.localCommand('ping') == 'pong':
+                if self._core._utils.localCommand('ping') in ('pong', 'pong!'):
                     break # break for loop
                 time.sleep(1)
             else:
