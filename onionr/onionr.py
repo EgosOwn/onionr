@@ -181,6 +181,7 @@ class Onionr:
             'getfile': self.getFile,
 
             'listconn': self.listConn,
+            'list-conn': self.listConn,
 
             'import-blocks': self.onionrUtils.importNewBlocks,
             'importblocks': self.onionrUtils.importNewBlocks,

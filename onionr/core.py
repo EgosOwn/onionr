@@ -260,7 +260,7 @@ class Core:
             return
         conn = sqlite3.connect(self.blockDB, timeout=10)
         c = conn.cursor()
-        currentTime = self._utils.getEpoch()
+        currentTime = self._utils.getEpoch() + self._crypto.secrets.randbelow(301)
         if selfInsert or dataSaved:
             selfInsert = 1
         else:
@@ -763,7 +763,7 @@ class Core:
         metadata['meta'] = jsonMeta
         metadata['sig'] = signature
         metadata['signer'] = signer
-        metadata['time'] = self._utils.getRoundedEpoch() + self._crypto.secrets.randbelow(301)
+        metadata['time'] = self._utils.getRoundedEpoch()
 
         # ensure expire is integer and of sane length
         if type(expire) is not type(None):
