@@ -719,7 +719,6 @@ class Onionr:
         '''
             Starts the Onionr communication daemon
         '''
-
         communicatorDaemon = './communicator2.py'
 
         # remove runcheck if it exists

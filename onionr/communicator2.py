@@ -102,7 +102,7 @@ class OnionrCommunicatorDaemon:
         OnionrCommunicatorTimers(self, self.daemonTools.cooldownPeer, 30, requiresPeer=True)
         OnionrCommunicatorTimers(self, self.uploadBlock, 10, requiresPeer=True, maxThreads=1)
         OnionrCommunicatorTimers(self, self.daemonCommands, 6, maxThreads=1)
-        OnionrCommunicatorTimers(self, self.detectAPICrash, 5, maxThreads=1)
+        OnionrCommunicatorTimers(self, self.detectAPICrash, 30, maxThreads=1)
         deniableBlockTimer = OnionrCommunicatorTimers(self, self.daemonTools.insertDeniableBlock, 180, requiresPeer=True, maxThreads=1)
 
         netCheckTimer = OnionrCommunicatorTimers(self, self.daemonTools.netCheck, 600)

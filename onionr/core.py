@@ -680,7 +680,10 @@ class Core:
             Inserts a block into the network
             encryptType must be specified to encrypt a block
         '''
-
+        allocationReachedMessage = 'Cannot insert block, disk allocation reached.'
+        if self._utils.storageCounter.isFull():
+            logger.error(allocationReachedMessage)
+            return False
         retData = False
         # check nonce
         dataNonce = self._utils.bytesToStr(self._crypto.sha3Hash(data))
@@ -774,13 +777,18 @@ class Core:
         proof = onionrproofs.POW(metadata, data)
         payload = proof.waitForResult()
         if payload != False:
-            retData = self.setData(payload)
-            # Tell the api server through localCommand to wait for the daemon to upload this block to make stastical analysis more difficult
-            self._utils.localCommand('waitforshare/' + retData)
-            self.addToBlockDB(retData, selfInsert=True, dataSaved=True)
-            #self.setBlockType(retData, meta['type'])
-            self._utils.processBlockMetadata(retData)
-            self.daemonQueueAdd('uploadBlock', retData)
+            try:
+                retData = self.setData(payload)
+            except onionrexceptions.DiskAllocationReached:
+                logger.error(allocationReachedMessage)
+                retData = False
+            else:
+                # Tell the api server through localCommand to wait for the daemon to upload this block to make stastical analysis more difficult
+                self._utils.localCommand('waitforshare/' + retData)
+                self.addToBlockDB(retData, selfInsert=True, dataSaved=True)
+                #self.setBlockType(retData, meta['type'])
+                self._utils.processBlockMetadata(retData)
+                self.daemonQueueAdd('uploadBlock', retData)
 
         if retData != False:
             events.event('insertBlock', onionr = None, threaded = False)

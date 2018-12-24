@@ -1,14 +1,13 @@
 {
     "general" : {
         "dev_mode" : true,
-        "display_header" : true,
-        "minimum_block_pow": 5,
-        "minimum_send_pow": 5,
+        "display_header" : false,
+        "minimum_block_pow": 4,
+        "minimum_send_pow": 4,
         "socket_servers": false,
         "security_level": 0,
         "max_block_age": 2678400,
-        "public_key": "",
-        "use_new_api_server": false
+        "public_key": ""
     },
 
     "www" : {
@@ -70,7 +69,7 @@
      },
 
     "allocations" : {
-        "disk" : 10000000000,
+        "disk" : 2000,
         "net_total" : 1000000000,
         "blockCache" : 5000000,
         "blockCacheTotal" : 50000000
