@@ -1,0 +1,2 @@
+#!/usr/bin/sh
+nohup ./run-linux start & disown

@@ -268,7 +268,7 @@ class OnionrCrypto:
             blockHash = blockHash.decode() # bytes on some versions for some reason
         except AttributeError:
             pass
-
+        
         difficulty = onionrproofs.getDifficultyForNewBlock(blockContent, ourBlock=False)
         
         if difficulty < int(config.get('general.minimum_block_pow')):

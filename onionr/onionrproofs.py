@@ -57,6 +57,8 @@ def getDifficultyForNewBlock(data, ourBlock=True):
         dataSize = len(data.getRaw().encode('utf-8'))
     elif isinstance(data, str):
         dataSize = len(data.encode('utf-8'))
+    elif isinstance(data, bytes):
+        dataSize = len(data)
     elif isinstance(data, int):
         dataSize = data
     else:
