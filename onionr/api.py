@@ -222,7 +222,6 @@ class API:
             This also saves the used host (random localhost IP address) to the data folder in host.txt
         '''
         # assert isinstance(onionrInst, onionr.Onionr)
-        print(type(onionrInst))
         # configure logger and stuff
         onionr.Onionr.setupConfig('data/', self = self)
 
@@ -235,7 +234,7 @@ class API:
         bindPort = int(config.get('client.client.port', 59496))
         self.bindPort = bindPort
 
-        self.whitelistEndpoints = ('site', 'www', 'onionrhome', 'board', 'boardContent')
+        self.whitelistEndpoints = ('site', 'www', 'onionrhome', 'board', 'boardContent', 'sharedContent')
 
         self.clientToken = config.get('client.webpassword')
         self.timeBypassToken = base64.b16encode(os.urandom(32)).decode()
@@ -278,6 +277,9 @@ class API:
         @app.route('/board/<path:path>', endpoint='boardContent')
         def boardContent(path):
             return send_from_directory('static-data/www/board/', path)
+        @app.route('/shared/<path:path>', endpoint='sharedContent')
+        def sharedContent(path):
+            return send_from_directory('static-data/www/shared/', path)
 
         @app.route('/www/<path:path>', endpoint='www')
         def wwwPublic(path):

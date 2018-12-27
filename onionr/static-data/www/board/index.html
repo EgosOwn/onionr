@@ -5,12 +5,17 @@
         <title>
             OnionrBoard
         </title>
+        <link rel='stylesheet' href='theme.css'>
     </head>
-    <body>
-        <h1>Onionr Board</h1>
-        <input id='webpassword' type='password' placeholder="Web password for daemon">
+    <body>    
+        <div id='webpassWindow' class='hidden'>
+                <p>Welcome to OnionrBoard</p>
+                <p>Please enter the webpassword. You can get this from running the 'details' command in Onionr.</p>
+                <input id='webpassword' type='password' placeholder="Web password for daemon" value='7AF13568657CE63D6DB7E686BF05537D36598ED739B21E3F023E3FD3DEA2FC8F'>
+                <button id='registerPassword'>Unlock Onionr</button>
+        </div>
         <input type='button' id='refreshFeed' value='Refresh Feed'>
-        <div id='feed'></div>
+        <div id='feed'><span id='none'>None Yet :)</span></div>
         <script src='board.js'></script>
     </body>
 </html>
