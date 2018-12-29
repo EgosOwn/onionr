@@ -20,7 +20,6 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-
 import sys
 if sys.version_info[0] == 2 or sys.version_info[1] < 5:
     print('Error, Onionr requires Python 3.5+')
@@ -30,6 +29,7 @@ import webbrowser
 from threading import Thread
 import api, core, config, logger, onionrplugins as plugins, onionrevents as events
 import onionrutils
+import netcontroller
 from netcontroller import NetController
 from onionrblockapi import Block
 import onionrproofs, onionrexceptions, onionrusers
@@ -67,7 +67,11 @@ class Onionr:
         data_exists = Onionr.setupConfig(self.dataDir, self = self)
 
         self.onionrCore = core.Core()
+        #self.deleteRunFiles()
         self.onionrUtils = onionrutils.OnionrUtils(self.onionrCore)
+
+        self.clientAPIInst = '' # Client http api instance
+        self.publicAPIInst = '' # Public http api instance
 
         # Handle commands
 
@@ -105,11 +109,12 @@ class Onionr:
         # Get configuration
         if type(config.get('client.webpassword')) is type(None):
             config.set('client.webpassword', base64.b16encode(os.urandom(32)).decode('utf-8'), savefile=True)
-        if type(config.get('client.port')) is type(None):
-            randomPort = 0
-            while randomPort < 1024:
-                randomPort = self.onionrCore._crypto.secrets.randbelow(65535)
-            config.set('client.port', randomPort, savefile=True)
+        if type(config.get('client.client.port')) is type(None):
+            randomPort = netcontroller.getOpenPort()
+            config.set('client.client.port', randomPort, savefile=True)
+        if type(config.get('client.public.port')) is type(None):
+            randomPort = netcontroller.getOpenPort()
+            config.set('client.public.port', randomPort, savefile=True)
         if type(config.get('client.participate')) is type(None):
             config.set('client.participate', True, savefile=True)
         if type(config.get('client.api_version')) is type(None):
@@ -176,6 +181,7 @@ class Onionr:
             'getfile': self.getFile,
 
             'listconn': self.listConn,
+            'list-conn': self.listConn,
 
             'import-blocks': self.onionrUtils.importNewBlocks,
             'importblocks': self.onionrUtils.importNewBlocks,
@@ -345,46 +351,9 @@ class Onionr:
                 except IndexError:
                     logger.error('Friend ID is required.')
                 except onionrexceptions.KeyNotKnown:
-                    logger.error('That peer is not in our database')
-                else:
-                    if action == 'add':
-                        friend.setTrust(1)
-                        logger.info('Added %s as friend.' % (friend.publicKey,))
-                    else:
-                        friend.setTrust(0)
-                        logger.info('Removed %s as friend.' % (friend.publicKey,))
-            else:
-                logger.info('Syntax: friend add/remove/list [address]')
-
-
-    def friendCmd(self):
-        '''List, add, or remove friend(s)
-        Changes their peer DB entry.
-        '''
-        friend = ''
-        try:
-            # Get the friend command
-            action = sys.argv[2]
-        except IndexError:
-            logger.info('Syntax: friend add/remove/list [address]')
-        else:
-            action = action.lower()
-            if action == 'list':
-                # List out peers marked as our friend
-                for friend in self.onionrCore.listPeers(randomOrder=False, trust=1):
-                    if friend == self.onionrCore._crypto.pubKey: # do not list our key
-                        continue
-                    friendProfile = onionrusers.OnionrUser(self.onionrCore, friend)
-                    logger.info(friend + ' - ' + friendProfile.getName())
-            elif action in ('add', 'remove'):
-                try:
-                    friend = sys.argv[3]
-                    if not self.onionrUtils.validatePubKey(friend):
-                        raise onionrexceptions.InvalidPubkey('Public key is invalid')
+                    self.onionrCore.addPeer(friend)
                     friend = onionrusers.OnionrUser(self.onionrCore, friend)
-                except IndexError:
-                    logger.error('Friend ID is required.')
-                else:
+                finally:
                     if action == 'add':
                         friend.setTrust(1)
                         logger.info('Added %s as friend.' % (friend.publicKey,))
@@ -394,6 +363,15 @@ class Onionr:
             else:
                 logger.info('Syntax: friend add/remove/list [address]')
 
+    def deleteRunFiles(self):
+        try:
+            os.remove(self.onionrCore.publicApiHostFile)
+        except FileNotFoundError:
+            pass
+        try:
+            os.remove(self.onionrCore.privateApiHostFile)
+        except FileNotFoundError:
+            pass
 
     def banBlock(self):
         try:
@@ -691,12 +669,18 @@ class Onionr:
                     os.remove('.onionr-lock')
                 except FileNotFoundError:
                     pass
+    def setClientAPIInst(self, inst):
+        self.clientAPIInst = inst
+
+    def getClientApi(self):
+        while self.clientAPIInst == '':
+            time.sleep(0.5)
+        return self.clientAPIInst
 
     def daemon(self):
         '''
             Starts the Onionr communication daemon
         '''
-
         communicatorDaemon = './communicator2.py'
 
         # remove runcheck if it exists
@@ -704,63 +688,66 @@ class Onionr:
             logger.debug('Runcheck file found on daemon start, deleting in advance.')
             os.remove('data/.runcheck')
 
-        apiThread = Thread(target = api.API, args = (self.debug, API_VERSION))
-        apiThread.start()
-
+        Thread(target=api.API, args=(self, self.debug, API_VERSION)).start()
+        Thread(target=api.PublicAPI, args=[self.getClientApi()]).start()
         try:
-            time.sleep(3)
+            time.sleep(0)
         except KeyboardInterrupt:
             logger.debug('Got keyboard interrupt, shutting down...')
             time.sleep(1)
             self.onionrUtils.localCommand('shutdown')
+
+        apiHost = ''
+        while apiHost == '':
+            try:
+                with open(self.onionrCore.publicApiHostFile, 'r') as hostFile:
+                    apiHost = hostFile.read()
+            except FileNotFoundError:
+                pass
+            time.sleep(0.5)
+        Onionr.setupConfig('data/', self = self)
+
+        if self._developmentMode:
+            logger.warn('DEVELOPMENT MODE ENABLED (LESS SECURE)', timestamp = False)
+        net = NetController(config.get('client.public.port', 59497), apiServerIP=apiHost)
+        logger.debug('Tor is starting...')
+        if not net.startTor():
+            self.onionrUtils.localCommand('shutdown')
+            sys.exit(1)
+        if len(net.myID) > 0 and config.get('general.security_level') == 0:
+            logger.debug('Started .onion service: %s' % (logger.colors.underline + net.myID))
         else:
-            apiHost = '127.0.0.1'
-            if apiThread.isAlive():
-                try:
-                    with open(self.onionrCore.dataDir + 'host.txt', 'r') as hostFile:
-                        apiHost = hostFile.read()
-                except FileNotFoundError:
-                    pass
-                Onionr.setupConfig('data/', self = self)
+            logger.debug('.onion service disabled')
+        logger.debug('Using public key: %s' % (logger.colors.underline + self.onionrCore._crypto.pubKey))
+        time.sleep(1)
 
-                if self._developmentMode:
-                    logger.warn('DEVELOPMENT MODE ENABLED (LESS SECURE)', timestamp = False)
-                net = NetController(config.get('client.port', 59496), apiServerIP=apiHost)
-                logger.debug('Tor is starting...')
-                if not net.startTor():
-                    self.onionrUtils.localCommand('shutdown')
-                    sys.exit(1)
-                if len(net.myID) > 0 and config.get('general.security_level') == 0:
-                    logger.debug('Started .onion service: %s' % (logger.colors.underline + net.myID))
-                else:
-                    logger.debug('.onion service disabled')
-                logger.debug('Using public key: %s' % (logger.colors.underline + self.onionrCore._crypto.pubKey))
-                time.sleep(1)
+        # TODO: make runable on windows
+        communicatorProc = subprocess.Popen([communicatorDaemon, 'run', str(net.socksPort)])
 
-                # TODO: make runable on windows
-                communicatorProc = subprocess.Popen([communicatorDaemon, 'run', str(net.socksPort)])
+        # print nice header thing :)
+        if config.get('general.display_header', True):
+            self.header()
 
-                # print nice header thing :)
-                if config.get('general.display_header', True):
-                    self.header()
+        # print out debug info
+        self.version(verbosity = 5, function = logger.debug)
+        logger.debug('Python version %s' % platform.python_version())
 
-                # print out debug info
-                self.version(verbosity = 5, function = logger.debug)
-                logger.debug('Python version %s' % platform.python_version())
+        logger.debug('Started communicator.')
 
-                logger.debug('Started communicator.')
+        events.event('daemon_start', onionr = self)
+        try:
+            while True:
+                time.sleep(5)
 
-                events.event('daemon_start', onionr = self)
-                try:
-                    while True:
-                        time.sleep(5)
-
-                        # Break if communicator process ends, so we don't have left over processes
-                        if communicatorProc.poll() is not None:
-                            break
-                except KeyboardInterrupt:
-                    self.onionrCore.daemonQueueAdd('shutdown')
-                    self.onionrUtils.localCommand('shutdown')
+                # Break if communicator process ends, so we don't have left over processes
+                if communicatorProc.poll() is not None:
+                    break
+        except KeyboardInterrupt:
+            self.onionrCore.daemonQueueAdd('shutdown')
+            self.onionrUtils.localCommand('shutdown')
+        time.sleep(3)
+        self.deleteRunFiles()
+        net.killTor()
         return
 
     def killDaemon(self):

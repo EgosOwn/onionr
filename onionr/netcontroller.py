@@ -18,10 +18,19 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 
-import subprocess, os, random, sys, logger, time, signal, config, base64
+import subprocess, os, random, sys, logger, time, signal, config, base64, socket
 from stem.control import Controller
 from onionrblockapi import Block
 from dependencies import secrets
+
+def getOpenPort():
+    # taken from (but modified) https://stackoverflow.com/a/2838309
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.bind(("127.0.0.1",0))
+    s.listen(1)
+    port = s.getsockname()[1]
+    s.close()
+    return port
 class NetController:
     '''
         This class handles hidden service setup on Tor and I2P
@@ -37,7 +46,7 @@ class NetController:
 
         self.torConfigLocation = self.dataDir + 'torrc'
         self.readyState = False
-        self.socksPort = random.randint(1024, 65535)
+        self.socksPort = getOpenPort()
         self.hsPort = hsPort
         self._torInstnace = ''
         self.myID = ''
@@ -68,7 +77,7 @@ class NetController:
         hsVer = '# v2 onions'
         if config.get('tor.v3onions'):
             hsVer = 'HiddenServiceVersion 3'
-            logger.debug('Using v3 onions :)')
+            logger.debug('Using v3 onions')
 
         if os.path.exists(self.torConfigLocation):
             os.remove(self.torConfigLocation)
@@ -78,7 +87,7 @@ class NetController:
         config.set('tor.controlpassword', plaintext, savefile=True)
         config.set('tor.socksport', self.socksPort, savefile=True)
 
-        controlPort = random.randint(1025, 65535)
+        controlPort = getOpenPort()
 
         config.set('tor.controlPort', controlPort, savefile=True)
 

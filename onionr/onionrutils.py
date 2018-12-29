@@ -155,20 +155,26 @@ class OnionrUtils:
         '''
             Send a command to the local http API server, securely. Intended for local clients, DO NOT USE for remote peers.
         '''
-
         config.reload()
         self.getTimeBypassToken()
         # TODO: URL encode parameters, just as an extra measure. May not be needed, but should be added regardless.
-        try:
-            with open(self._core.dataDir + 'host.txt', 'r') as host:
-                hostname = host.read()
-        except FileNotFoundError:
-            return False
-        payload = 'http://%s:%s/client/?action=%s&token=%s&timingToken=%s' % (hostname, config.get('client.port'), command, config.get('client.webpassword'), self.timingToken)
+        hostname = ''
+        maxWait = 5
+        waited = 0
+        while hostname == '':
+            try:
+                with open(self._core.privateApiHostFile, 'r') as host:
+                    hostname = host.read()
+            except FileNotFoundError:
+                time.sleep(1)
+                waited += 1
+                if waited == maxWait:
+                    return False
         if data != '':
-            payload += '&data=' + urllib.parse.quote_plus(data)
+            data = '&data=' + urllib.parse.quote_plus(data)
+        payload = 'http://%s:%s/%s%s' % (hostname, config.get('client.client.port'), command, data)
         try:
-            retData = requests.get(payload).text
+            retData = requests.get(payload, headers={'token': config.get('client.webpassword')}).text
         except Exception as error:
             if not silent:
                 logger.error('Failed to make local request (command: %s):%s' % (command, error))

@@ -45,7 +45,7 @@ class DaemonTools:
 
         ourID = self.daemon._core.hsAddress.strip()
 
-        url = 'http://' + peer + '/public/announce/'
+        url = 'http://' + peer + '/announce'
         data = {'node': ourID}
 
         combinedNodes = ourID + peer

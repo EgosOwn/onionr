@@ -268,8 +268,9 @@ class OnionrCrypto:
             blockHash = blockHash.decode() # bytes on some versions for some reason
         except AttributeError:
             pass
-
-        difficulty = math.floor(dataLen / 1000000)
+        
+        difficulty = onionrproofs.getDifficultyForNewBlock(blockContent, ourBlock=False)
+        
         if difficulty < int(config.get('general.minimum_block_pow')):
             difficulty = int(config.get('general.minimum_block_pow'))
         mainHash = '0000000000000000000000000000000000000000000000000000000000000000'#nacl.hash.blake2b(nacl.utils.random()).decode()
