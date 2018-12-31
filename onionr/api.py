@@ -17,7 +17,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import flask
+import flask, cgi
 from flask import request, Response, abort, send_from_directory
 from gevent.pywsgi import WSGIServer
 import sys, random, threading, hmac, hashlib, base64, time, math, os, json
@@ -221,7 +221,7 @@ class API:
             This initilization defines all of the API entry points and handlers for the endpoints and errors
             This also saves the used host (random localhost IP address) to the data folder in host.txt
         '''
-
+        # assert isinstance(onionrInst, onionr.Onionr)
         # configure logger and stuff
         onionr.Onionr.setupConfig('data/', self = self)
 
@@ -233,6 +233,8 @@ class API:
         app = flask.Flask(__name__)
         bindPort = int(config.get('client.client.port', 59496))
         self.bindPort = bindPort
+
+        self.whitelistEndpoints = ('site', 'www', 'onionrhome', 'board', 'boardContent', 'sharedContent')
 
         self.clientToken = config.get('client.webpassword')
         self.timeBypassToken = base64.b16encode(os.urandom(32)).decode()
@@ -249,6 +251,8 @@ class API:
             '''Validate request has set password and is the correct hostname'''
             if request.host != '%s:%s' % (self.host, self.bindPort):
                 abort(403)
+            if request.endpoint in self.whitelistEndpoints:
+                return
             try:
                 if not hmac.compare_digest(request.headers['token'], self.clientToken):
                     abort(403)
@@ -257,7 +261,8 @@ class API:
 
         @app.after_request
         def afterReq(resp):
-            resp.headers["Content-Security-Policy"] =  "default-src 'none'; script-src 'none'; object-src 'none'; style-src data: 'unsafe-inline'; img-src data:; media-src 'none'; frame-src 'none'; font-src 'none'; connect-src 'none'"
+            #resp.headers["Content-Security-Policy"] =  "default-src 'none'; script-src 'none'; object-src 'none'; style-src data: 'unsafe-inline'; img-src data:; media-src 'none'; frame-src 'none'; font-src 'none'; connect-src 'none'"
+            resp.headers['Content-Security-Policy'] = "default-src 'none'; script-src 'self'; object-src 'none'; style-src 'self'; img-src 'self'; media-src 'none'; frame-src 'none'; font-src 'none'; connect-src 'self'"
             resp.headers['X-Frame-Options'] = 'deny'
             resp.headers['X-Content-Type-Options'] = "nosniff"
             resp.headers['X-API'] = onionr.API_VERSION
@@ -265,20 +270,57 @@ class API:
             resp.headers['Date'] = 'Thu, 1 Jan 1970 00:00:00 GMT' # Clock info is probably useful to attackers. Set to unix epoch.
             return resp
 
+        @app.route('/board/', endpoint='board')
+        def loadBoard():
+            return send_from_directory('static-data/www/board/', "index.html")
+
+        @app.route('/board/<path:path>', endpoint='boardContent')
+        def boardContent(path):
+            return send_from_directory('static-data/www/board/', path)
+        @app.route('/shared/<path:path>', endpoint='sharedContent')
+        def sharedContent(path):
+            return send_from_directory('static-data/www/shared/', path)
+
+        @app.route('/www/<path:path>', endpoint='www')
+        def wwwPublic(path):
+            if not config.get("www.private.run", True):
+                abort(403)
+            return send_from_directory(config.get('www.private.path', 'static-data/www/private/'), path)
+
         @app.route('/ping')
         def ping():
             return Response("pong!")
 
-        @app.route('/')
+        @app.route('/', endpoint='onionrhome')
         def hello():
-            return Response("hello client")
+            return Response("Welcome to Onionr")
+        
+        @app.route('/getblocksbytype/<name>')
+        def getBlocksByType(name):
+            blocks = self._core.getBlocksByType(name)
+            return Response(','.join(blocks))
+        
+        @app.route('/gethtmlsafeblockdata/<name>')
+        def getData(name):
+            resp = ''
+            if self._core._utils.validateHash(name):
+                try:
+                    resp =  cgi.escape(Block(name).bcontent, quote=True)
+                except TypeError:
+                    pass
+            else:
+                abort(404)
+            return Response(resp)
 
-        @app.route('/site/<name>')
-        def site():
-            bHash = block
+        @app.route('/site/<name>', endpoint='site')
+        def site(name):
+            bHash = name
             resp = 'Not Found'
             if self._core._utils.validateHash(bHash):
-                resp = Block(bHash).bcontent
+                try:
+                    resp = Block(bHash).bcontent
+                except TypeError:
+                    pass
                 try:
                     resp = base64.b64decode(resp)
                 except:
