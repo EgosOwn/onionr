@@ -19,7 +19,7 @@
 '''
 
 import core as onionrcore, logger, config, onionrexceptions, nacl.exceptions, onionrusers
-import json, os, sys, datetime, base64
+import json, os, sys, datetime, base64, onionrstorage
 
 class Block:
     blockCacheOrder = list() # NEVER write your own code that writes to this!
@@ -164,13 +164,13 @@ class Block:
                         filelocation = self.core.dataDir + 'blocks/%s.dat' % self.getHash()
 
                 if readfile:
-                    with open(filelocation, 'rb') as f:
-                        blockdata = f.read().decode()
+                    blockdata = onionrstorage.getData(self.core, self.getHash()).decode()
+                    #with open(filelocation, 'rb') as f:
+                    #blockdata = f.read().decode()
 
                 self.blockFile = filelocation
             else:
                 self.blockFile = None
-
             # parse block
             self.raw = str(blockdata)
             self.bheader = json.loads(self.getRaw()[:self.getRaw().index('\n')])
@@ -241,8 +241,9 @@ class Block:
         try:
             if self.isValid() is True:
                 if (not self.getBlockFile() is None) and (recreate is True):
-                    with open(self.getBlockFile(), 'wb') as blockFile:
-                        blockFile.write(self.getRaw().encode())
+                    onionrstorage.store(self.core, self.getRaw().encode())
+                    #with open(self.getBlockFile(), 'wb') as blockFile:
+                    #    blockFile.write(self.getRaw().encode())
                 else:
                     self.hash = self.getCore().insertBlock(self.getContent(), header = self.getType(), sign = sign, meta = self.getMetadata(), expire = self.getExpire())
                 if self.hash != False:

@@ -273,7 +273,9 @@ class OnionrCommunicatorDaemon:
                         pass
                     # Punish peer for sharing invalid block (not always malicious, but is bad regardless)
                     onionrpeers.PeerProfiles(peerUsed, self._core).addScore(-50)
-                    logger.warn('Block hash validation failed for ' + blockHash + ' got ' + tempHash)
+                    if tempHash != 'ed55e34cb828232d6c14da0479709bfa10a0923dca2b380496e6b2ed4f7a0253':
+                        # Dumb hack for 404 response from peer. Don't log it if 404 since its likely not malicious or a critical error.
+                        logger.warn('Block hash validation failed for ' + blockHash + ' got ' + tempHash)
                 if removeFromQueue:
                     try:
                         self.blockQueue.remove(blockHash) # remove from block queue both if success or false

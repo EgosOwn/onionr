@@ -22,7 +22,7 @@ from onionrblockapi import Block
 
 import onionrutils, onionrcrypto, onionrproofs, onionrevents as events, onionrexceptions, onionrvalues
 import onionrblacklist, onionrchat, onionrusers
-import dbcreator
+import dbcreator, onionrstorage
 
 if sys.version_info < (3, 6):
     try:
@@ -278,6 +278,7 @@ class Core:
             Simply return the data associated to a hash
         '''
 
+        '''
         try:
             # logger.debug('Opening %s' % (str(self.blockDataLocation) + str(hash) + '.dat'))
             dataFile = open(self.blockDataLocation + hash + '.dat', 'rb')
@@ -285,6 +286,8 @@ class Core:
             dataFile.close()
         except FileNotFoundError:
             data = False
+        '''
+        data = onionrstorage.getData(self, hash)
 
         return data
 
@@ -309,9 +312,10 @@ class Core:
             #raise Exception("Data is already set for " + dataHash)
         else:
             if self._utils.storageCounter.addBytes(dataSize) != False:
-                blockFile = open(blockFileName, 'wb')
-                blockFile.write(data)
-                blockFile.close()
+                #blockFile = open(blockFileName, 'wb')
+                #blockFile.write(data)
+                #blockFile.close()
+                onionrstorage.store(self, data, blockHash=dataHash)
                 conn = sqlite3.connect(self.blockDB, timeout=10)
                 c = conn.cursor()
                 c.execute("UPDATE hashes SET dataSaved=1 WHERE hash = ?;", (dataHash,))
