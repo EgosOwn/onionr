@@ -17,15 +17,51 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import core
-class OnionrStorage:
-    def __init__(self, coreInst):
-        assert isinstance(coreInst, core.Core)
-        self._core = coreInst
-        return
+import core, sys, sqlite3, os
+
+DB_ENTRY_SIZE_LIMIT = 10000 # Will be a config option
+
+def _dbInsert(coreInst, blockHash, data):
+    assert isinstance(core, core.Core)
+    conn = sqlite3.connect(coreInst.blockDataDB, timeout=10)
+    c = conn.cursor()
+    data = (blockHash, data)
+    c.execute('INSERT INTO blockData (hash, data) VALUES(?, ?);', data)
+    conn.commit()
+    conn.close()
+
+def _dbFetch(coreInst, blockHash):
+    conn = sqlite3.connect(coreInst.blockDataDB, timeout=10)
+    c = conn.cursor()
+    for i in c.execute('SELECT data from blockData where hash = ?', (blockHash,)):
+        return i[0]
+    conn.commit()
+    conn.close()
+    return None
+
+def store(coreInst, blockHash, data):
+    assert isinstance(coreInst, core.Core)
+    assert self._core._utils.validateHash(blockHash)
+    assert self._core._crypto.sha3Hash(data) == blockHash
     
-    def store(self, hash, data):
-        return
-    
-    def getData(self, hash):
-        return
+    if DB_ENTRY_SIZE_LIMIT >= sys.getsizeof(data):
+        _dbInsert(coreInst, blockHash, data)
+    else:
+        with open('%s/%s.dat' % (coreInst.blockDataLocation, blockHash), 'w') as blockFile:
+            blockFile.write(data)
+
+def getData(coreInst, bHash):
+    assert isinstance(coreInst, core.Core)
+    assert self._core._utils.validateHash(blockHash)
+
+    # First check DB for data entry by hash
+    # if no entry, check disk
+    # If no entry in either, raise an exception
+    retData = ''
+    fileLocation = '%s/%s.dat' % (coreInst.blockDataLocation, bHash)
+    if os.path.exists(fileLocation):
+        with open(fileLocation, 'r') as block:
+            retData = block.read()
+    else:
+        retData = _dbFetch(coreInst, bHash)
+    return

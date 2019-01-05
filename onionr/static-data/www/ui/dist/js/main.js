@@ -704,7 +704,7 @@ if(tt !== null && tt !== undefined) {
 if(getWebPassword() === null) {
     var password = "";
     while(password.length != 64) {
-        password = prompt("Please enter the web password (run `./RUN-LINUX.sh --get-password`)");
+        password = prompt("Please enter the web password (run `./RUN-LINUX.sh --details`)");
     }
 
     setWebPassword(password);
