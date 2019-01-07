@@ -397,11 +397,15 @@ class Onionr:
         randID = str(uuid.uuid4())
         self.onionrCore.daemonQueueAdd('connectedPeers', responseID=randID)
         while True:
-            time.sleep(1)
-            peers = self.onionrCore.daemonQueueGetResponse(randID)
-            if peers not in ('', None):
-                print(peers)
+            try:
+                time.sleep(3)
+                peers = self.onionrCore.daemonQueueGetResponse(randID)
+            except KeyboardInterrupt:
                 break
+            if not type(peers) is None:
+                if peers not in ('', None):
+                    print(peers)
+                    break
 
     def listPeers(self):
         logger.info('Peer transport address list:')

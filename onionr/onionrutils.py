@@ -173,7 +173,6 @@ class OnionrUtils:
         if data != '':
             data = '&data=' + urllib.parse.quote_plus(data)
         payload = 'http://%s:%s/%s%s' % (hostname, config.get('client.client.port'), command, data)
-
         try:
             if post:
                 retData = requests.post(payload, data=postData, headers={'token': config.get('client.webpassword')}).text

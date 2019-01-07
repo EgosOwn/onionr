@@ -296,10 +296,13 @@ class API:
         
         @app.route('/queueResponse/<name>')
         def queueResponse(name):
+            resp = ''
             try:
-                res = self.queueResponse[name]
+                resp = self.queueResponse[name]
             except KeyError:
-                resp = ''
+                pass
+            else:
+                del self.queueResponse[name]
             return Response(resp)
             
         @app.route('/ping')

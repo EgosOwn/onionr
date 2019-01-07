@@ -384,7 +384,8 @@ class Core:
             Get a response sent by communicator to the API, by requesting to the API
         '''
         assert len(responseID) > 0
-        resp = self._utils.localCommand('queueResponse', data='/' + responseID, post=True)
+        resp = self._utils.localCommand('queueResponse/' + responseID)
+        return resp
 
     def clearDaemonQueue(self):
         '''

@@ -507,9 +507,10 @@ class OnionrCommunicatorDaemon:
             else:
                 logger.info('Recieved daemonQueue command:' + cmd[0])
 
-            if cmd[4] != '':
+            if cmd[4] != '' and cmd[0] not in ('', None):
                 if response != '':
-                    self._core._utils.localCommand('queueResponseAdd', data='/' + cmd[4], post=True, postData=response)
+                    self._core._utils.localCommand('queueResponseAdd/' + cmd[4], post=True, postData={'data': response})
+            response = ''
 
         self.decrementThreadCount('daemonCommands')
 
