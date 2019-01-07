@@ -109,7 +109,7 @@ class PublicAPI:
             data = name
             if clientAPI._utils.validateHash(data):
                 if data not in self.hideBlocks:
-                    if os.path.exists(clientAPI._core.dataDir + 'blocks/' + data + '.dat'):
+                    if data in clientAPI._core.getBlockList():
                         block = Block(hash=data.encode(), core=clientAPI._core)
                         resp = base64.b64encode(block.getRaw().encode()).decode()
             if len(resp) == 0:
@@ -244,6 +244,8 @@ class API:
         self.host = setBindIP(self._core.privateApiHostFile)
         logger.info('Running api on %s:%s' % (self.host, self.bindPort))
         self.httpServer = ''
+
+        self.queueResponse = {}
         onionrInst.setClientAPIInst(self)
 
         @app.before_request
@@ -287,6 +289,19 @@ class API:
                 abort(403)
             return send_from_directory(config.get('www.private.path', 'static-data/www/private/'), path)
 
+        @app.route('/queueResponseAdd/<name>', methods=['post'])
+        def queueResponseAdd(name):
+            self.queueResponse[name] = request.form['data']
+            return Response('success')
+        
+        @app.route('/queueResponse/<name>')
+        def queueResponse(name):
+            try:
+                res = self.queueResponse[name]
+            except KeyError:
+                resp = ''
+            return Response(resp)
+            
         @app.route('/ping')
         def ping():
             return Response("pong!")

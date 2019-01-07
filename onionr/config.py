@@ -129,7 +129,7 @@ def reload():
         with open(get_config_file(), 'r', encoding="utf8") as configfile:
             set_config(json.loads(configfile.read()))
     except:
-        logger.warn('Failed to parse configuration file.')
+        logger.debug('Failed to parse configuration file.')
 
 def get_config():
     '''

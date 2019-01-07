@@ -472,7 +472,7 @@ class OnionrCommunicatorDaemon:
             Process daemon commands from daemonQueue
         '''
         cmd = self._core.daemonQueue()
-
+        response = ''
         if cmd is not False:
             events.event('daemon_command', onionr = None, data = {'cmd' : cmd})
             if cmd[0] == 'shutdown':
@@ -486,7 +486,7 @@ class OnionrCommunicatorDaemon:
                 logger.debug('Status check; looks good.')
                 open(self._core.dataDir + '.runcheck', 'w+').close()
             elif cmd[0] == 'connectedPeers':
-                self.printOnlinePeers()
+                response = '\n'.join(list(self.onlinePeers)).strip()
             elif cmd[0] == 'pex':
                 for i in self.timers:
                     if i.timerFunction.__name__ == 'lookupAdders':
@@ -506,6 +506,10 @@ class OnionrCommunicatorDaemon:
                 threading.Thread(target=self.socketClient.startSocket, args=(peer, reason)).start()
             else:
                 logger.info('Recieved daemonQueue command:' + cmd[0])
+
+            if cmd[4] != '':
+                if response != '':
+                    self._core._utils.localCommand('queueResponseAdd', data='/' + cmd[4], post=True, postData=response)
 
         self.decrementThreadCount('daemonCommands')
 

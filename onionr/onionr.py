@@ -25,7 +25,7 @@ if sys.version_info[0] == 2 or sys.version_info[1] < 5:
     print('Error, Onionr requires Python 3.5+')
     sys.exit(1)
 import os, base64, random, getpass, shutil, subprocess, requests, time, platform, datetime, re, json, getpass, sqlite3
-import webbrowser
+import webbrowser, uuid
 from threading import Thread
 import api, core, config, logger, onionrplugins as plugins, onionrevents as events
 import onionrutils
@@ -394,7 +394,14 @@ class Onionr:
         return
 
     def listConn(self):
-        self.onionrCore.daemonQueueAdd('connectedPeers')
+        randID = str(uuid.uuid4())
+        self.onionrCore.daemonQueueAdd('connectedPeers', responseID=randID)
+        while True:
+            time.sleep(1)
+            peers = self.onionrCore.daemonQueueGetResponse(randID)
+            if peers not in ('', None):
+                print(peers)
+                break
 
     def listPeers(self):
         logger.info('Peer transport address list:')

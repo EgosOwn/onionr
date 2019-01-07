@@ -152,7 +152,6 @@ class DBCreator:
         conn = sqlite3.connect(self.core.queueDB, timeout=10)
         c = conn.cursor()
         # Create table
-        c.execute('''CREATE TABLE commands
-                    (id integer primary key autoincrement, command text, data text, date text)''')
+        c.execute('''CREATE TABLE commands (id integer primary key autoincrement, command text, data text, date text, responseID text)''')
         conn.commit()
         conn.close()

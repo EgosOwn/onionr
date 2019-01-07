@@ -17,7 +17,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import sqlite3, os, sys, time, math, base64, tarfile, nacl, logger, json, netcontroller, math, config
+import sqlite3, os, sys, time, math, base64, tarfile, nacl, logger, json, netcontroller, math, config, uuid
 from onionrblockapi import Block
 
 import onionrutils, onionrcrypto, onionrproofs, onionrevents as events, onionrexceptions, onionrvalues
@@ -342,7 +342,7 @@ class Core:
             conn = sqlite3.connect(self.queueDB, timeout=10)
             c = conn.cursor()
             try:
-                for row in c.execute('SELECT command, data, date, min(ID) FROM commands group by id'):
+                for row in c.execute('SELECT command, data, date, min(ID), responseID FROM commands group by id'):
                     retData = row
                     break
             except sqlite3.OperationalError:
@@ -357,21 +357,20 @@ class Core:
 
         return retData
 
-    def daemonQueueAdd(self, command, data=''):
+    def daemonQueueAdd(self, command, data='', responseID=''):
         '''
             Add a command to the daemon queue, used by the communication daemon (communicator.py)
         '''
 
         retData = True
-        # Intended to be used by the web server
 
         date = self._utils.getEpoch()
         conn = sqlite3.connect(self.queueDB, timeout=10)
         c = conn.cursor()
-        t = (command, data, date)
+        t = (command, data, date, responseID)
 
         try:
-            c.execute('INSERT INTO commands (command, data, date) VALUES(?, ?, ?)', t)
+            c.execute('INSERT INTO commands (command, data, date, responseID) VALUES(?, ?, ?, ?)', t)
             conn.commit()
             conn.close()
         except sqlite3.OperationalError:
@@ -379,6 +378,13 @@ class Core:
             self.daemonQueue()
         events.event('queue_push', data = {'command': command, 'data': data}, onionr = None)
         return retData
+    
+    def daemonQueueGetResponse(self, responseID=''):
+        '''
+            Get a response sent by communicator to the API, by requesting to the API
+        '''
+        assert len(responseID) > 0
+        resp = self._utils.localCommand('queueResponse', data='/' + responseID, post=True)
 
     def clearDaemonQueue(self):
         '''

@@ -240,12 +240,14 @@ class Block:
 
         try:
             if self.isValid() is True:
+                '''
                 if (not self.getBlockFile() is None) and (recreate is True):
                     onionrstorage.store(self.core, self.getRaw().encode())
                     #with open(self.getBlockFile(), 'wb') as blockFile:
                     #    blockFile.write(self.getRaw().encode())
                 else:
-                    self.hash = self.getCore().insertBlock(self.getContent(), header = self.getType(), sign = sign, meta = self.getMetadata(), expire = self.getExpire())
+                '''
+                self.hash = self.getCore().insertBlock(self.getRaw(), header = self.getType(), sign = sign, meta = self.getMetadata(), expire = self.getExpire())
                 if self.hash != False:
                     self.update()
 
@@ -751,13 +753,16 @@ class Block:
         # no input data? scrap it.
         if hash is None:
             return False
-
+        '''
         if type(hash) == Block:
             blockfile = hash.getBlockFile()
         else:
             blockfile = onionrcore.Core().dataDir + 'blocks/%s.dat' % hash
+        '''
 
-        return os.path.exists(blockfile) and os.path.isfile(blockfile)
+        ret = isinstance(onionrstorage.getData(onionrcore.Core(), hash.getHash()), type(None))
+
+        return not ret
 
     def getCache(hash = None):
         # give a list of the hashes of the cached blocks

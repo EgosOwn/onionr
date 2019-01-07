@@ -67,10 +67,12 @@ def getData(coreInst, bHash):
     assert isinstance(coreInst, core.Core)
     assert coreInst._utils.validateHash(bHash)
 
+    bHash = coreInst._utils.bytesToStr(bHash)
+
     # First check DB for data entry by hash
     # if no entry, check disk
     # If no entry in either, raise an exception
-    retData = ''
+    retData = None
     fileLocation = '%s/%s.dat' % (coreInst.blockDataLocation, bHash)
     if os.path.exists(fileLocation):
         with open(fileLocation, 'rb') as block:
