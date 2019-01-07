@@ -169,7 +169,9 @@ class OnionrUser:
 
     def addForwardKey(self, newKey, expire=604800):
         if not self._core._utils.validatePubKey(newKey):
-            raise onionrexceptions.InvalidPubkey
+            raise onionrexceptions.InvalidPubkey(newKey)
+        if newKey in self._getForwardKeys():
+            return False
         # Add a forward secrecy key for the peer
         conn = sqlite3.connect(self._core.peerDB, timeout=10)
         c = conn.cursor()

@@ -182,7 +182,7 @@ class Core:
 
             return True
         else:
-            logger.debug('Invalid ID: %s' % address)
+            #logger.debug('Invalid ID: %s' % address)
             return False
 
     def removeAddress(self, address):
@@ -739,10 +739,11 @@ class Core:
                 data = forwardEncrypted[0]
                 meta['forwardEnc'] = True
             except onionrexceptions.InvalidPubkey:
-                onionrusers.OnionrUser(self, asymPeer).generateForwardKey()
-            onionrusers.OnionrUser(self, asymPeer).generateForwardKey()
-            fsKey = onionrusers.OnionrUser(self, asymPeer).getGeneratedForwardKeys()[0]
-            meta['newFSKey'] = fsKey[0]
+                pass
+                #onionrusers.OnionrUser(self, asymPeer).generateForwardKey()
+            fsKey = onionrusers.OnionrUser(self, asymPeer).generateForwardKey()
+            #fsKey = onionrusers.OnionrUser(self, asymPeer).getGeneratedForwardKeys().reverse()
+            meta['newFSKey'] = fsKey
         jsonMeta = json.dumps(meta)
         if sign:
             signature = self._crypto.edSign(jsonMeta.encode() + data, key=self._crypto.privKey, encodeResult=True)
