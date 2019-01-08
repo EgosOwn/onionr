@@ -49,8 +49,11 @@ class Core:
             self.peerDB = self.dataDir + 'peers.db'
             self.blockDB = self.dataDir + 'blocks.db'
             self.blockDataLocation = self.dataDir + 'blocks/'
+            self.publicApiHostFile = self.dataDir + 'public-host.txt'
+            self.privateApiHostFile = self.dataDir + 'private-host.txt'
             self.addressDB = self.dataDir + 'address.db'
             self.hsAddress = ''
+            self.i2pAddress = config.get('i2p.ownAddr', None)
             self.bootstrapFileLocation = 'static-data/bootstrap-nodes.txt'
             self.bootstrapList = []
             self.requirements = onionrvalues.OnionrValues()
@@ -151,7 +154,7 @@ class Core:
 
         if address == config.get('i2p.ownAddr', None) or address == self.hsAddress:
             return False
-        if type(address) is type(None) or len(address) == 0:
+        if type(address) is None or len(address) == 0:
             return False
         if self._utils.validateID(address):
             conn = sqlite3.connect(self.addressDB, timeout=10)
@@ -257,7 +260,7 @@ class Core:
             return
         conn = sqlite3.connect(self.blockDB, timeout=10)
         c = conn.cursor()
-        currentTime = self._utils.getEpoch()
+        currentTime = self._utils.getEpoch() + self._crypto.secrets.randbelow(301)
         if selfInsert or dataSaved:
             selfInsert = 1
         else:
@@ -760,7 +763,7 @@ class Core:
         metadata['meta'] = jsonMeta
         metadata['sig'] = signature
         metadata['signer'] = signer
-        metadata['time'] = self._utils.getRoundedEpoch() + self._crypto.secrets.randbelow(301)
+        metadata['time'] = self._utils.getRoundedEpoch()
 
         # ensure expire is integer and of sane length
         if type(expire) is not type(None):
@@ -773,7 +776,7 @@ class Core:
         if payload != False:
             retData = self.setData(payload)
             # Tell the api server through localCommand to wait for the daemon to upload this block to make stastical analysis more difficult
-            self._utils.localCommand('waitForShare', data=retData)
+            self._utils.localCommand('waitforshare/' + retData)
             self.addToBlockDB(retData, selfInsert=True, dataSaved=True)
             #self.setBlockType(retData, meta['type'])
             self._utils.processBlockMetadata(retData)
