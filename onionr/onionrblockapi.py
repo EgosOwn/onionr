@@ -737,7 +737,7 @@ class Block:
             return (blocks[-1], blocks)
         return blocks[-1]
 
-    def exists(hash):
+    def exists(bHash):
         '''
             Checks if a block is saved to file or not
 
@@ -751,7 +751,7 @@ class Block:
         '''
 
         # no input data? scrap it.
-        if hash is None:
+        if bHash is None:
             return False
         '''
         if type(hash) == Block:
@@ -759,8 +759,10 @@ class Block:
         else:
             blockfile = onionrcore.Core().dataDir + 'blocks/%s.dat' % hash
         '''
-
-        ret = isinstance(onionrstorage.getData(onionrcore.Core(), hash.getHash()), type(None))
+        if isinstance(bHash, Block):
+            bHash = bHash.getHash()
+        
+        ret = isinstance(onionrstorage.getData(onionrcore.Core(), bHash), type(None))
 
         return not ret
 
