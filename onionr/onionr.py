@@ -25,7 +25,7 @@ if sys.version_info[0] == 2 or sys.version_info[1] < 5:
     print('Error, Onionr requires Python 3.5+')
     sys.exit(1)
 import os, base64, random, getpass, shutil, subprocess, requests, time, platform, datetime, re, json, getpass, sqlite3
-import webbrowser, uuid
+import webbrowser, uuid, signal
 from threading import Thread
 import api, core, config, logger, onionrplugins as plugins, onionrevents as events
 import onionrutils
@@ -51,6 +51,7 @@ class Onionr:
             In general, external programs and plugins should not use this class.
         '''
         self.userRunDir = os.getcwd() # Directory user runs the program from
+        self.killed = False
         try:
             os.chdir(sys.path[0])
         except FileNotFoundError:
@@ -72,6 +73,8 @@ class Onionr:
 
         self.clientAPIInst = '' # Client http api instance
         self.publicAPIInst = '' # Public http api instance
+
+        signal.signal(signal.SIGTERM, self.exitSigterm)
 
         # Handle commands
 
@@ -252,6 +255,9 @@ class Onionr:
             self.execute(command)
 
         return
+    
+    def exitSigterm(self, signum, frame):
+        self.killed = True
 
     '''
         THIS SECTION HANDLES THE COMMANDS
@@ -748,17 +754,20 @@ class Onionr:
         events.event('daemon_start', onionr = self)
         try:
             while True:
-                time.sleep(5)
-
+                time.sleep(3)
                 # Break if communicator process ends, so we don't have left over processes
                 if communicatorProc.poll() is not None:
                     break
+                if self.killed:
+                    break # Break out if sigterm for clean exit
         except KeyboardInterrupt:
+            pass
+        finally:
             self.onionrCore.daemonQueueAdd('shutdown')
             self.onionrUtils.localCommand('shutdown')
+        net.killTor()
         time.sleep(3)
         self.deleteRunFiles()
-        net.killTor()
         return
 
     def killDaemon(self):

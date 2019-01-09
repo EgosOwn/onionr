@@ -95,7 +95,7 @@ class OnionrCommunicatorDaemon:
         peerPoolTimer = OnionrCommunicatorTimers(self, self.getOnlinePeers, 60, maxThreads=1)
         OnionrCommunicatorTimers(self, self.runCheck, 1)
         OnionrCommunicatorTimers(self, self.lookupBlocks, self._core.config.get('timers.lookupBlocks'), requiresPeer=True, maxThreads=1)
-        OnionrCommunicatorTimers(self, self.getBlocks, self._core.config.get('timers.getBlocks'), requiresPeer=True)
+        OnionrCommunicatorTimers(self, self.getBlocks, self._core.config.get('timers.getBlocks'), requiresPeer=True, maxThreads=2)
         OnionrCommunicatorTimers(self, self.clearOfflinePeer, 58)
         OnionrCommunicatorTimers(self, self.daemonTools.cleanOldBlocks, 65)
         OnionrCommunicatorTimers(self, self.lookupAdders, 60, requiresPeer=True)
