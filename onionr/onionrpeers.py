@@ -28,6 +28,7 @@ class PeerProfiles:
         self.friendSigCount = 0
         self.success = 0
         self.failure = 0
+        self.connectTime = None
 
         if not isinstance(coreInst, core.Core):
             raise TypeError("coreInst must be a type of core.Core")
@@ -35,6 +36,7 @@ class PeerProfiles:
         assert isinstance(self.coreInst, core.Core)
 
         self.loadScore()
+        self.getConnectTime()
         return
 
     def loadScore(self):
@@ -44,7 +46,13 @@ class PeerProfiles:
         except (TypeError, ValueError) as e:
             self.success = 0
         self.score = self.success
-
+    
+    def getConnectTime(self):
+        try:
+            self.connectTime = self.coreInst.getAddressInfo(self.address, 'lastConnect')
+        except KeyError:
+            pass
+        
     def saveScore(self):
         '''Save the node's score to the database'''
         self.coreInst.setAddressInfo(self.address, 'success', self.score)
@@ -61,14 +69,21 @@ def getScoreSortedPeerList(coreInst):
 
     peerList = coreInst.listAdders()
     peerScores = {}
+    peerTimes = {}
 
     for address in peerList:
         # Load peer's profiles into a list
         profile = PeerProfiles(address, coreInst)
         peerScores[address] = profile.score
+        if not isinstance(profile.connectTime, type(None)):
+            peerTimes[address] = profile.connectTime
+        else:
+            peerTimes[address] = 9000
 
-    # Sort peers by their score, greatest to least
+    # Sort peers by their score, greatest to least, and then last connected time
     peerList = sorted(peerScores, key=peerScores.get, reverse=True)
+    peerList = sorted(peerTimes, key=peerTimes.get, reverse=True)
+    print(peerList)
     return peerList
 
 def peerCleanup(coreInst):

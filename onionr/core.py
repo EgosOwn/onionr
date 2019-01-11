@@ -405,7 +405,7 @@ class Core:
 
         return
 
-    def listAdders(self, randomOrder=True, i2p=True):
+    def listAdders(self, randomOrder=True, i2p=True, recent=0):
         '''
             Return a list of addresses
         '''
@@ -417,8 +417,17 @@ class Core:
             addresses = c.execute('SELECT * FROM adders;')
         addressList = []
         for i in addresses:
+            if len(i[0].strip()) == 0:
+                continue
             addressList.append(i[0])
         conn.close()
+        testList = list(addressList) # create new list to iterate
+        for address in testList:
+            try:
+                if recent > 0 and (self._utils.getEpoch() - self.getAddressInfo(address, 'lastConnect')) > recent:
+                    raise TypeError # If there is no last-connected date or it was too long ago, don't add peer to list if recent is not 0
+            except TypeError:
+                addressList.remove(address)
         return addressList
 
     def listPeers(self, randomOrder=True, getPow=False, trust=0):

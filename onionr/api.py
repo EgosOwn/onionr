@@ -143,9 +143,9 @@ class PublicAPI:
 
         @app.route('/pex')
         def peerExchange():
-            response = ','.join(clientAPI._core.listAdders())
+            response = ','.join(clientAPI._core.listAdders(recent=3600))
             if len(response) == 0:
-                response = 'none'
+                response = ''
             return Response(response)
         
         @app.route('/announce', methods=['post'])
