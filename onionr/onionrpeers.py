@@ -49,8 +49,8 @@ class PeerProfiles:
     
     def getConnectTime(self):
         try:
-            self.connectTime = self.coreInst.getAddressInfo(self.address, 'lastConnect')
-        except KeyError:
+            self.connectTime = int(self.coreInst.getAddressInfo(self.address, 'lastConnect'))
+        except (KeyError, ValueError, TypeError) as e:
             pass
         
     def saveScore(self):
@@ -83,7 +83,6 @@ def getScoreSortedPeerList(coreInst):
     # Sort peers by their score, greatest to least, and then last connected time
     peerList = sorted(peerScores, key=peerScores.get, reverse=True)
     peerList = sorted(peerTimes, key=peerTimes.get, reverse=True)
-    print(peerList)
     return peerList
 
 def peerCleanup(coreInst):

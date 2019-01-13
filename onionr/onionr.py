@@ -180,6 +180,9 @@ class Onionr:
             'add-site': self.addWebpage,
             'addsite': self.addWebpage,
 
+            'openhome': self.openHome,
+            'open-home': self.openHome,
+
             'get-file': self.getFile,
             'getfile': self.getFile,
 
@@ -240,7 +243,8 @@ class Onionr:
             'introduce': 'Introduce your node to the public Onionr network',
             'friend': '[add|remove] [public key/id]',
             'add-id': 'Generate a new ID (key pair)',
-            'change-id': 'Change active ID'
+            'change-id': 'Change active ID',
+            'open-home': 'Open your node\'s home/info screen'
         }
 
         # initialize plugins
@@ -273,6 +277,14 @@ class Onionr:
 
         for detail in details:
             logger.info('%s%s: \n%s%s\n' % (logger.colors.fg.lightgreen, detail, logger.colors.fg.green, details[detail]), sensitive = True)
+
+    def openHome(self):
+        try:
+            url = self.onionrUtils.getClientAPIServer()
+        except FileNotFoundError:
+            logger.error('Onionr seems to not be running (could not get api host)')
+        else:
+            webbrowser.open_new_tab('http://%s/#%s' % (url, config.get('client.webpassword')))
 
     def addID(self):
         try:
@@ -409,8 +421,11 @@ class Onionr:
             except KeyboardInterrupt:
                 break
             if not type(peers) is None:
-                if peers not in ('', None):
-                    print(peers)
+                if peers not in ('', 'failure', None):
+                    if peers != False:
+                        print(peers)
+                    else:
+                        print('Daemon probably not running. Unable to list connected peers.')
                     break
 
     def listPeers(self):

@@ -19,7 +19,7 @@
 '''
 
 # Imports some useful libraries
-import logger, config, threading, time, uuid, subprocess
+import logger, config, threading, time, uuid, subprocess, sys
 from onionrblockapi import Block
 
 plugin_name = 'cliui'

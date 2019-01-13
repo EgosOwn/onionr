@@ -22,7 +22,7 @@ from onionrblockapi import Block
 
 import onionrutils, onionrcrypto, onionrproofs, onionrevents as events, onionrexceptions, onionrvalues
 import onionrblacklist, onionrchat, onionrusers
-import dbcreator, onionrstorage
+import dbcreator, onionrstorage, serializeddata
 
 if sys.version_info < (3, 6):
     try:
@@ -101,6 +101,7 @@ class Core:
             # Initialize the crypto object
             self._crypto = onionrcrypto.OnionrCrypto(self)
             self._blacklist = onionrblacklist.OnionrBlackList(self)
+            self.serializer = serializeddata.SerializedData(self)
 
         except Exception as error:
             logger.error('Failed to initialize core Onionr library.', error=error)
@@ -386,6 +387,24 @@ class Core:
         assert len(responseID) > 0
         resp = self._utils.localCommand('queueResponse/' + responseID)
         return resp
+    
+    def daemonQueueWaitForResponse(self, responseID='', checkFreqSecs=1):
+        resp = 'failure'
+        while resp == 'failure':
+            resp = self.daemonQueueGetResponse(responseID)
+            time.sleep(1)
+            print(resp)
+        return resp
+    
+    def daemonQueueSimple(self, command, data='', checkFreqSecs=1):
+        '''
+        A simplified way to use the daemon queue. Will register a command (with optional data) and wait, return the data
+        Not always useful, but saves time + LOC in some cases.
+        This is a blocking function, so be careful.
+        '''
+        responseID = str(uuid.uuid4()) # generate unique response ID
+        self.daemonQueueAdd(command, data=data, responseID=responseID)
+        return self.daemonQueueWaitForResponse(responseID, checkFreqSecs)
 
     def clearDaemonQueue(self):
         '''

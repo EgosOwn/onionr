@@ -150,6 +150,17 @@ class OnionrUtils:
         except Exception as error:
             logger.error('Failed to read my address.', error = error)
             return None
+    
+    def getClientAPIServer(self):
+        retData = ''
+        try:
+            with open(self._core.privateApiHostFile, 'r') as host:
+                hostname = host.read()
+        except FileNotFoundError:
+            raise FileNotFoundError
+        else:
+            retData += '%s:%s' % (hostname, config.get('client.client.port'))
+        return retData
 
     def localCommand(self, command, data='', silent = True, post=False, postData = {}):
         '''
@@ -163,8 +174,7 @@ class OnionrUtils:
         waited = 0
         while hostname == '':
             try:
-                with open(self._core.privateApiHostFile, 'r') as host:
-                    hostname = host.read()
+                hostname = self.getClientAPIServer()
             except FileNotFoundError:
                 time.sleep(1)
                 waited += 1
@@ -172,12 +182,13 @@ class OnionrUtils:
                     return False
         if data != '':
             data = '&data=' + urllib.parse.quote_plus(data)
-        payload = 'http://%s:%s/%s%s' % (hostname, config.get('client.client.port'), command, data)
+        payload = 'http://%s/%s%s' % (hostname, command, data)
+        print(payload,config.get('client.webpassword'))
         try:
             if post:
-                retData = requests.post(payload, data=postData, headers={'token': config.get('client.webpassword')}).text
+                retData = requests.post(payload, data=postData, headers={'token': config.get('client.webpassword')}, timeout=(15, 30)).text
             else:
-                retData = requests.get(payload, headers={'token': config.get('client.webpassword')}).text
+                retData = requests.get(payload, headers={'token': config.get('client.webpassword')}, timeout=(15, 30)).text
         except Exception as error:
             if not silent:
                 logger.error('Failed to make local request (command: %s):%s' % (command, error))

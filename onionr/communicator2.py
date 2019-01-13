@@ -486,7 +486,10 @@ class OnionrCommunicatorDaemon:
                 logger.debug('Status check; looks good.')
                 open(self._core.dataDir + '.runcheck', 'w+').close()
             elif cmd[0] == 'connectedPeers':
+                print('yup')
                 response = '\n'.join(list(self.onlinePeers)).strip()
+                if response == '':
+                    response = 'none'
             elif cmd[0] == 'pex':
                 for i in self.timers:
                     if i.timerFunction.__name__ == 'lookupAdders':
@@ -507,7 +510,7 @@ class OnionrCommunicatorDaemon:
             else:
                 logger.info('Recieved daemonQueue command:' + cmd[0])
 
-            if cmd[4] != '' and cmd[0] not in ('', None):
+            if cmd[0] not in ('', None):
                 if response != '':
                     self._core._utils.localCommand('queueResponseAdd/' + cmd[4], post=True, postData={'data': response})
             response = ''

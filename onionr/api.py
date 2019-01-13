@@ -17,9 +17,11 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
+from gevent.pywsgi import WSGIServer
+import gevent.monkey
+gevent.monkey.patch_socket()
 import flask, cgi
 from flask import request, Response, abort, send_from_directory
-from gevent.pywsgi import WSGIServer
 import sys, random, threading, hmac, hashlib, base64, time, math, os, json, socket
 import core
 from onionrblockapi import Block
@@ -238,6 +240,7 @@ class API:
         self.debug = debug
         self._privateDelayTime = 3
         self._core = core.Core()
+        self.startTime = self._core._utils.getEpoch()
         self._crypto = onionrcrypto.OnionrCrypto(self._core)
         self._utils = onionrutils.OnionrUtils(self._core)
         app = flask.Flask(__name__)
@@ -301,18 +304,20 @@ class API:
 
         @app.route('/queueResponseAdd/<name>', methods=['post'])
         def queueResponseAdd(name):
+            print('added',name)
             self.queueResponse[name] = request.form['data']
             return Response('success')
         
         @app.route('/queueResponse/<name>')
         def queueResponse(name):
-            resp = ''
+            resp = 'failure'
             try:
                 resp = self.queueResponse[name]
             except KeyError:
                 pass
             else:
                 del self.queueResponse[name]
+            print(name, resp)
             return Response(resp)
             
         @app.route('/ping')
@@ -321,7 +326,7 @@ class API:
 
         @app.route('/', endpoint='onionrhome')
         def hello():
-            return Response("Welcome to Onionr")
+            return send_from_directory('static-data/www/private/', 'index.html')
         
         @app.route('/getblocksbytype/<name>')
         def getBlocksByType(name):
@@ -375,6 +380,14 @@ class API:
             except AttributeError:
                 pass
             return Response("bye")
+        
+        @app.route('/getstats')
+        def getStats():
+            return Response(self._core.serializer.getStats())
+        
+        @app.route('/getuptime')
+        def showUptime():
+            return Response(str(self.getUptime()))
 
         self.httpServer = WSGIServer((self.host, bindPort), app, log=None)
         self.httpServer.serve_forever()
@@ -397,3 +410,6 @@ class API:
                 return True
         except TypeError:
             return False
+
+    def getUptime(self):
+        return self._utils.getEpoch() - self.startTime
