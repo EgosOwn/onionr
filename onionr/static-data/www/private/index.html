@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset='utf-8'>
+        <title>
+            Onionr
+        </title>
+        <link rel='stylesheet' href='/shared/main/style.css'>
+    </head>
+    <body>
+        <img class='logo' src='/shared/onionr-icon.png' alt='onionr logo'>
+        <span class='logoText'>Onionr Web Control Panel</span>
+        <div class='content'>
+            <a href='shutdown'>Shutdown node</a>
+            <h2>Stats</h2>
+            <p>Uptime: <span id='uptime'></span></p>
+            <p>Stored Blocks: <span id='storedBlocks'></span></p>
+            <p>Connected nodes:</p>
+            <pre id='connectedNodes'></pre>
+        </div>
+    </body>
+    <script src='/shared/misc.js'></script>
+    <script src='/shared/main/stats.js'></script>
+</html>
