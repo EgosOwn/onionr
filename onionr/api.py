@@ -109,7 +109,8 @@ class PublicAPI:
 
         @app.route('/getblocklist')
         def getBlockList():
-            bList = clientAPI._core.getBlockList()
+            dateAdjust = request.args.get('date')
+            bList = clientAPI._core.getBlockList(dateRec=dateAdjust)
             for b in self.hideBlocks:
                 if b in bList:
                     bList.remove(b)
@@ -304,7 +305,6 @@ class API:
 
         @app.route('/queueResponseAdd/<name>', methods=['post'])
         def queueResponseAdd(name):
-            print('added',name)
             self.queueResponse[name] = request.form['data']
             return Response('success')
         
@@ -317,7 +317,6 @@ class API:
                 pass
             else:
                 del self.queueResponse[name]
-            print(name, resp)
             return Response(resp)
             
         @app.route('/ping')
@@ -379,6 +378,12 @@ class API:
                 self.httpServer.stop()
             except AttributeError:
                 pass
+            return Response("bye")
+
+        @app.route('/shutdownclean')
+        def shutdownClean():
+            # good for calling from other clients
+            self._core.daemonQueueAdd('shutdown')
             return Response("bye")
         
         @app.route('/getstats')

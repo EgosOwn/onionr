@@ -21,7 +21,7 @@
 '''
 import sys, os, core, config, json, requests, time, logger, threading, base64, onionr, uuid
 import onionrexceptions, onionrpeers, onionrevents as events, onionrplugins as plugins, onionrblockapi as block
-import onionrdaemontools, onionrsockets, onionrchat, onionr, onionrproofs
+import onionrdaemontools, onionrsockets, onionr, onionrproofs, proofofmemory
 import binascii
 from dependencies import secrets
 from defusedxml import minidom
@@ -74,6 +74,9 @@ class OnionrCommunicatorDaemon:
         # timestamp when the last online node was seen
         self.lastNodeSeen = None
 
+        # Dict of time stamps for peer's block list lookup times, to avoid downloading full lists all the time
+        self.dbTimestamps = {}
+
         # Clear the daemon queue for any dead messages
         if os.path.exists(self._core.queueDB):
             self._core.clearDaemonQueue()
@@ -81,11 +84,12 @@ class OnionrCommunicatorDaemon:
         # Loads in and starts the enabled plugins
         plugins.reload()
 
+        self.proofofmemory = proofofmemory.ProofOfMemory(self)
+
         # daemon tools are misc daemon functions, e.g. announce to online peers
         # intended only for use by OnionrCommunicatorDaemon
         self.daemonTools = onionrdaemontools.DaemonTools(self)
 
-        self._chat = onionrchat.OnionrChat(self)
 
         if debug or developmentMode:
             OnionrCommunicatorTimers(self, self.heartbeat, 30)
@@ -164,7 +168,9 @@ class OnionrCommunicatorDaemon:
         existingBlocks = self._core.getBlockList()
         triedPeers = [] # list of peers we've tried this time around
         maxBacklog = 1560 # Max amount of *new* block hashes to have already in queue, to avoid memory exhaustion
+        lastLookupTime = 0 # Last time we looked up a particular peer's list
         for i in range(tryAmount):
+            listLookupCommand = 'getblocklist' # This is defined here to reset it each time
             if len(self.blockQueue) >= maxBacklog:
                 break
             if not self.isOnline:
@@ -186,11 +192,21 @@ class OnionrCommunicatorDaemon:
             triedPeers.append(peer)
             if newDBHash != self._core.getAddressInfo(peer, 'DBHash'):
                 self._core.setAddressInfo(peer, 'DBHash', newDBHash)
+                # Get the last time we looked up a peer's stamp to only fetch blocks since then.
+                # Saved in memory only for privacy reasons
+                try:
+                    lastLookupTime = self.dbTimestamps[peer]
+                except KeyError:
+                    lastLookupTime = 0
+                else:
+                    listLookupCommand += '?date=%s' % (lastLookupTime,)
                 try:
                     newBlocks = self.peerAction(peer, 'getblocklist') # get list of new block hashes
                 except Exception as error:
                     logger.warn('Could not get new blocks from %s.' % peer, error = error)
                     newBlocks = False
+                else:
+                    self.dbTimestamps[peer] = self._core._utils.getRoundedEpoch(roundS=60)
                 if newBlocks != False:
                     # if request was a success
                     for i in newBlocks.split('\n'):
@@ -224,8 +240,8 @@ class OnionrCommunicatorDaemon:
             if self._core._utils.storageCounter.isFull():
                 break
             self.currentDownloading.append(blockHash) # So we can avoid concurrent downloading in other threads of same block
-            logger.info("Attempting to download %s..." % blockHash)
             peerUsed = self.pickOnlinePeer()
+            logger.info("Attempting to download %s from %s..." % (blockHash[:12], peerUsed))
             content = self.peerAction(peerUsed, 'getdata/' + blockHash) # block content from random peer (includes metadata)
             if content != False and len(content) > 0:
                 try:
@@ -247,7 +263,7 @@ class OnionrCommunicatorDaemon:
                     metadata = metas[0]
                     if self._core._utils.validateMetadata(metadata, metas[2]): # check if metadata is valid, and verify nonce
                         if self._core._crypto.verifyPow(content): # check if POW is enough/correct
-                            logger.info('Attempting to save block %s...' % blockHash)
+                            logger.info('Attempting to save block %s...' % blockHash[:12])
                             try:
                                 self._core.setData(content)
                             except onionrexceptions.DiskAllocationReached:
@@ -401,6 +417,10 @@ class OnionrCommunicatorDaemon:
         '''Remove an online peer'''
         try:
             del self.connectTimes[peer]
+        except KeyError:
+            pass
+        try:
+            del self.dbTimestamps[peer]
         except KeyError:
             pass
         try:

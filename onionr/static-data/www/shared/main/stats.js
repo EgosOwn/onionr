@@ -17,14 +17,11 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>
 */
-
 uptimeDisplay = document.getElementById('uptime')
 connectedDisplay = document.getElementById('connectedNodes')
 storedBlockDisplay = document.getElementById('storedBlocks')
 
-pass = window.location.hash.replace('#', '')
-
-stats = JSON.parse(httpGet('getstats', pass))
+stats = JSON.parse(httpGet('getstats', webpass))
 uptimeDisplay.innerText = stats['uptime'] + ' seconds'
 connectedDisplay.innerText = stats['connectedNodes']
 storedBlockDisplay.innerText = stats['blockCount']

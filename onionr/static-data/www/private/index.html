@@ -5,20 +5,27 @@
         <title>
             Onionr
         </title>
+        <link rel='stylesheet' href='/shared/style/modal.css'>
         <link rel='stylesheet' href='/shared/main/style.css'>
     </head>
     <body>
+        <div id="shutdownNotice" class='overlay'>
+            <div>
+                <p>Your node will shutdown. Thank you for using Onionr.</p>
+            </div>
+        </div>
         <img class='logo' src='/shared/onionr-icon.png' alt='onionr logo'>
         <span class='logoText'>Onionr Web Control Panel</span>
         <div class='content'>
-            <a href='shutdown'>Shutdown node</a>
+            <button id='shutdownNode'>Shutdown Node</button>
             <h2>Stats</h2>
             <p>Uptime: <span id='uptime'></span></p>
             <p>Stored Blocks: <span id='storedBlocks'></span></p>
             <p>Connected nodes:</p>
             <pre id='connectedNodes'></pre>
         </div>
+        <script src='/shared/misc.js'></script>
+        <script src='/shared/main/stats.js'></script>
+        <script src='/shared/panel.js'></script>
     </body>
-    <script src='/shared/misc.js'></script>
-    <script src='/shared/main/stats.js'></script>
 </html>

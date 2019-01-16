@@ -124,3 +124,17 @@ body{
         display: block;
     }
 }
+
+/*https://stackoverflow.com/a/16778646*/
+.overlay {
+    visibility: hidden;
+    position: absolute;
+    left: 0px;
+    top: 0px;
+    width:100%;
+    opacity: 0.9;
+    height:100%;
+    text-align:center;
+    z-index: 1000;
+    background-color: black;
+ }

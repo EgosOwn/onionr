@@ -21,7 +21,7 @@ import sqlite3, os, sys, time, math, base64, tarfile, nacl, logger, json, netcon
 from onionrblockapi import Block
 
 import onionrutils, onionrcrypto, onionrproofs, onionrevents as events, onionrexceptions, onionrvalues
-import onionrblacklist, onionrchat, onionrusers
+import onionrblacklist, onionrusers
 import dbcreator, onionrstorage, serializeddata
 
 if sys.version_info < (3, 6):
@@ -373,11 +373,11 @@ class Core:
         try:
             c.execute('INSERT INTO commands (command, data, date, responseID) VALUES(?, ?, ?, ?)', t)
             conn.commit()
-            conn.close()
         except sqlite3.OperationalError:
             retData = False
             self.daemonQueue()
         events.event('queue_push', data = {'command': command, 'data': data}, onionr = None)
+        conn.close()
         return retData
     
     def daemonQueueGetResponse(self, responseID=''):
@@ -602,24 +602,26 @@ class Core:
 
         return
 
-    def getBlockList(self, unsaved = False): # TODO: Use unsaved??
+    def getBlockList(self, dateRec = None, unsaved = False):
         '''
             Get list of our blocks
         '''
+        if dateRec == None:
+            dateRec = 0
 
         conn = sqlite3.connect(self.blockDB, timeout=10)
         c = conn.cursor()
 
-        if unsaved:
-            execute = 'SELECT hash FROM hashes WHERE dataSaved != 1 ORDER BY RANDOM();'
-        else:
-            execute = 'SELECT hash FROM hashes ORDER BY dateReceived ASC;'
-
+        # if unsaved:
+        #     execute = 'SELECT hash FROM hashes WHERE dataSaved != 1 ORDER BY RANDOM();'
+        # else:
+        #     execute = 'SELECT hash FROM hashes ORDER BY dateReceived ASC;'
+        execute = 'SELECT hash FROM hashes WHERE dateReceived >= ? ORDER BY dateReceived ASC;'
+        args = (dateRec,)
         rows = list()
-        for row in c.execute(execute):
+        for row in c.execute(execute, args):
             for i in row:
                 rows.append(i)
-
         return rows
 
     def getBlockDate(self, blockHash):

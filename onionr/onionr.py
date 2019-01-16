@@ -21,8 +21,9 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 import sys
-if sys.version_info[0] == 2 or sys.version_info[1] < 5:
-    print('Error, Onionr requires Python 3.5+')
+MIN_PY_VERSION = 6
+if sys.version_info[0] == 2 or sys.version_info[1] < MIN_PY_VERSION:
+    print('Error, Onionr requires Python 3.%s+' % (MIN_PY_VERSION,))
     sys.exit(1)
 import os, base64, random, getpass, shutil, subprocess, requests, time, platform, datetime, re, json, getpass, sqlite3
 import webbrowser, uuid, signal
@@ -198,7 +199,6 @@ class Onionr:
 
             'ui' : self.openUI,
             'gui' : self.openUI,
-            'chat': self.startChat,
 
             'getpassword': self.printWebPassword,
             'get-password': self.printWebPassword,
@@ -208,8 +208,6 @@ class Onionr:
             'get-pass': self.printWebPassword,
             'getpasswd': self.printWebPassword,
             'get-passwd': self.printWebPassword,
-
-            'chat': self.startChat,
 
             'friend': self.friendCmd,
             'add-id': self.addID,
@@ -327,14 +325,6 @@ class Onionr:
                     logger.error('That key does not exist')
             else:
                 logger.error('Invalid key %s' % (key,))
-
-    def startChat(self):
-        try:
-            data = json.dumps({'peer': sys.argv[2], 'reason': 'chat'})
-        except IndexError:
-            logger.error('Must specify peer to chat with.')
-        else:
-            self.onionrCore.daemonQueueAdd('startSocket', data)
 
     def getCommands(self):
         return self.cmds
@@ -811,7 +801,7 @@ class Onionr:
 
         try:
             # define stats messages here
-            totalBlocks = len(Block.getBlocks())
+            totalBlocks = len(self.onionrCore.getBlockList())
             signedBlocks = len(Block.getBlocks(signed = True))
             messages = {
                 # info about local client
