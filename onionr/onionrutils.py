@@ -162,7 +162,7 @@ class OnionrUtils:
             retData += '%s:%s' % (hostname, config.get('client.client.port'))
         return retData
 
-    def localCommand(self, command, data='', silent = True, post=False, postData = {}):
+    def localCommand(self, command, data='', silent = True, post=False, postData = {}, maxWait=10):
         '''
             Send a command to the local http API server, securely. Intended for local clients, DO NOT USE for remote peers.
         '''
@@ -170,7 +170,6 @@ class OnionrUtils:
         self.getTimeBypassToken()
         # TODO: URL encode parameters, just as an extra measure. May not be needed, but should be added regardless.
         hostname = ''
-        maxWait = 5
         waited = 0
         while hostname == '':
             try:
@@ -185,9 +184,9 @@ class OnionrUtils:
         payload = 'http://%s/%s%s' % (hostname, command, data)
         try:
             if post:
-                retData = requests.post(payload, data=postData, headers={'token': config.get('client.webpassword')}, timeout=(15, 30)).text
+                retData = requests.post(payload, data=postData, headers={'token': config.get('client.webpassword')}, timeout=(maxWait, 30)).text
             else:
-                retData = requests.get(payload, headers={'token': config.get('client.webpassword')}, timeout=(15, 30)).text
+                retData = requests.get(payload, headers={'token': config.get('client.webpassword')}, timeout=(maxWait, 30)).text
         except Exception as error:
             if not silent:
                 logger.error('Failed to make local request (command: %s):%s' % (command, error))

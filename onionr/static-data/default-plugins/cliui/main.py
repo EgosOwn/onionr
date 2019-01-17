@@ -31,11 +31,14 @@ class OnionrCLIUI:
         self.myCore = apiInst.get_core()
         return
 
-    def subCommand(self, command):
+    def subCommand(self, command, args=None):
             try:
                 #subprocess.run(["./onionr.py", command])
                 #subprocess.Popen(['./onionr.py', command], stdin=subprocess.STD, stdout=subprocess.STDOUT, stderr=subprocess.STDOUT)
-                subprocess.call(['./onionr.py', command])
+                if args != None:
+                    subprocess.call(['./onionr.py', command, args])
+                else:
+                    subprocess.call(['./onionr.py', command])
             except KeyboardInterrupt:
                 pass
 
@@ -48,12 +51,11 @@ class OnionrCLIUI:
         isOnline = 'No'
         firstRun = True
         choice = ''
-
-        if self.myCore._utils.localCommand('ping') == 'pong':
+        if self.myCore._utils.localCommand('ping', maxWait=10) == 'pong!':
             firstRun = False
 
         while showMenu:
-            if self.myCore._utils.localCommand('ping') == 'pong':
+            if self.myCore._utils.localCommand('ping', maxWait=2) == 'pong!':
                 isOnline = "Yes"
             else:
                 isOnline = "No"
@@ -62,8 +64,7 @@ class OnionrCLIUI:
 1. Flow (Anonymous public chat, use at your own risk)
 2. Mail (Secure email-like service)
 3. File Sharing
-4. User Settings
-5. Quit (Does not shutdown daemon)
+4. Quit (Does not shutdown daemon)
             ''')
             try:
                 choice = input(">").strip().lower()
@@ -75,13 +76,9 @@ class OnionrCLIUI:
             elif choice in ("2", "mail"):
                 self.subCommand("mail")
             elif choice in ("3", "file sharing", "file"):
-                print("Not supported yet")
-            elif choice in ("4", "user settings", "settings"):
-                try:
-                    self.setName()
-                except (KeyboardInterrupt, EOFError) as e:
-                    pass
-            elif choice in ("5", "quit"):
+                filename = input("Enter full path to file: ").strip()
+                self.subCommand("addfile", filename)
+            elif choice in ("4", "quit"):
                 showMenu = False
             elif choice == "":
                 pass
@@ -89,14 +86,6 @@ class OnionrCLIUI:
                 logger.error("Invalid choice")
         return
 
-    def setName(self):
-        try:
-            name = input("Enter your name: ")
-            if name != "":
-                self.myCore.insertBlock("userInfo-" + str(uuid.uuid1()), sign=True, header='userInfo', meta={'name': name})
-        except KeyboardInterrupt:
-            pass
-        return
 
 def on_init(api, data = None):
     '''

@@ -201,7 +201,7 @@ class OnionrCommunicatorDaemon:
                 else:
                     listLookupCommand += '?date=%s' % (lastLookupTime,)
                 try:
-                    newBlocks = self.peerAction(peer, 'getblocklist') # get list of new block hashes
+                    newBlocks = self.peerAction(peer, listLookupCommand) # get list of new block hashes
                 except Exception as error:
                     logger.warn('Could not get new blocks from %s.' % peer, error = error)
                     newBlocks = False
@@ -241,7 +241,8 @@ class OnionrCommunicatorDaemon:
                 break
             self.currentDownloading.append(blockHash) # So we can avoid concurrent downloading in other threads of same block
             peerUsed = self.pickOnlinePeer()
-            logger.info("Attempting to download %s from %s..." % (blockHash[:12], peerUsed))
+            if not self.shutdown and peerUsed.strip() != '':
+                logger.info("Attempting to download %s from %s..." % (blockHash[:12], peerUsed))
             content = self.peerAction(peerUsed, 'getdata/' + blockHash) # block content from random peer (includes metadata)
             if content != False and len(content) > 0:
                 try:
@@ -506,7 +507,6 @@ class OnionrCommunicatorDaemon:
                 logger.debug('Status check; looks good.')
                 open(self._core.dataDir + '.runcheck', 'w+').close()
             elif cmd[0] == 'connectedPeers':
-                print('yup')
                 response = '\n'.join(list(self.onlinePeers)).strip()
                 if response == '':
                     response = 'none'

@@ -598,7 +598,7 @@ class Core:
         else:
             c.execute('UPDATE adders SET ' + key + ' = ? WHERE address=?', command)
             conn.commit()
-            conn.close()
+        conn.close()
 
         return
 
@@ -622,6 +622,7 @@ class Core:
         for row in c.execute(execute, args):
             for i in row:
                 rows.append(i)
+        conn.close()
         return rows
 
     def getBlockDate(self, blockHash):
@@ -637,7 +638,7 @@ class Core:
         for row in c.execute(execute, args):
             for i in row:
                 return int(i)
-
+        conn.close()
         return None
 
     def getBlocksByType(self, blockType, orderDate=True):
@@ -659,7 +660,7 @@ class Core:
         for row in c.execute(execute, args):
             for i in row:
                 rows.append(i)
-
+        conn.close()
         return rows
 
     def getExpiredBlocks(self):
@@ -674,6 +675,7 @@ class Core:
         for row in c.execute(execute):
             for i in row:
                 rows.append(i)
+        conn.close()
         return rows
 
     def setBlockType(self, hash, blockType):

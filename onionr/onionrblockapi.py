@@ -647,6 +647,7 @@ class Block:
                 buffer += contents.decode()
             else:
                 file.write(contents)
+        file.close()
 
         return (None if not file is None else buffer)
 
@@ -735,6 +736,7 @@ class Block:
         # return different things depending on verbosity
         if verbose:
             return (blocks[-1], blocks)
+        file.close()
         return blocks[-1]
 
     def exists(bHash):

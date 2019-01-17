@@ -82,6 +82,9 @@ class PublicAPI:
         @app.before_request
         def validateRequest():
             '''Validate request has the correct hostname'''
+            # If high security level, deny requests to public
+            if config.get('general.security_level', default=0) > 0:
+                abort(403)
             if type(self.torAdder) is None and type(self.i2pAdder) is None:
                 # abort if our hs addresses are not known
                 abort(403)
@@ -248,6 +251,7 @@ class API:
         bindPort = int(config.get('client.client.port', 59496))
         self.bindPort = bindPort
 
+        # Be extremely mindful of this
         self.whitelistEndpoints = ('site', 'www', 'onionrhome', 'board', 'boardContent', 'sharedContent')
 
         self.clientToken = config.get('client.webpassword')

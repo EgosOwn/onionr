@@ -1,4 +1,5 @@
 webpass = document.location.hash.replace('#', '')
+nowebpass = false
 if (typeof webpass == "undefined"){
     webpass = localStorage['webpass']
 }
@@ -8,6 +9,7 @@ else{
 }
 if (typeof webpass == "undefined" || webpass == ""){
     alert('Web password was not found in memory or URL')
+    nowebpass = true
 }
 
 function httpGet(theUrl) {
