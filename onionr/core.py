@@ -393,7 +393,6 @@ class Core:
         while resp == 'failure':
             resp = self.daemonQueueGetResponse(responseID)
             time.sleep(1)
-            print(resp)
         return resp
     
     def daemonQueueSimple(self, command, data='', checkFreqSecs=1):
