@@ -68,6 +68,10 @@ class Onionr:
         # Load global configuration data
         data_exists = Onionr.setupConfig(self.dataDir, self = self)
 
+        if netcontroller.torBinary() is None:
+            logger.error('Tor is not installed')
+            sys.exit(1)
+
         self.onionrCore = core.Core()
         #self.deleteRunFiles()
         self.onionrUtils = onionrutils.OnionrUtils(self.onionrCore)
@@ -292,7 +296,8 @@ class Onionr:
             newID = self.onionrCore._crypto.keyManager.addKey()[0]
         else:
             logger.warn('Deterministic keys require random and long passphrases.')
-            logger.warn('If a good password is not used, your key can be easily stolen.')
+            logger.warn('If a good passphrase is not used, your key can be easily stolen.')
+            logger.warn('You should use a series of hard to guess words, see this for reference: https://www.xkcd.com/936/')
             pass1 = getpass.getpass(prompt='Enter at least %s characters: ' % (self.onionrCore._crypto.deterministicRequirement,))
             pass2 = getpass.getpass(prompt='Confirm entry: ')
             if self.onionrCore._crypto.safeCompare(pass1, pass2):
@@ -760,6 +765,9 @@ class Onionr:
         try:
             while True:
                 time.sleep(3)
+                # Debug to print out used FDs (regular and net)
+                #proc = psutil.Process()
+                #print('api-files:',proc.open_files(), len(psutil.net_connections()))
                 # Break if communicator process ends, so we don't have left over processes
                 if communicatorProc.poll() is not None:
                     break

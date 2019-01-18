@@ -99,6 +99,7 @@ class PublicAPI:
             resp.headers['X-Frame-Options'] = 'deny'
             resp.headers['X-Content-Type-Options'] = "nosniff"
             resp.headers['X-API'] = onionr.API_VERSION
+            resp.headers['Connection'] = "close"
             return resp
 
         @app.route('/')
@@ -288,6 +289,7 @@ class API:
             resp.headers['X-API'] = onionr.API_VERSION
             resp.headers['Server'] = ''
             resp.headers['Date'] = 'Thu, 1 Jan 1970 00:00:00 GMT' # Clock info is probably useful to attackers. Set to unix epoch.
+            resp.headers['Connection'] = "close"
             return resp
 
         @app.route('/board/', endpoint='board')

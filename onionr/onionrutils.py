@@ -184,9 +184,9 @@ class OnionrUtils:
         payload = 'http://%s/%s%s' % (hostname, command, data)
         try:
             if post:
-                retData = requests.post(payload, data=postData, headers={'token': config.get('client.webpassword')}, timeout=(maxWait, 30)).text
+                retData = requests.post(payload, data=postData, headers={'token': config.get('client.webpassword'), 'Connection':'close'}, timeout=(maxWait, 30)).text
             else:
-                retData = requests.get(payload, headers={'token': config.get('client.webpassword')}, timeout=(maxWait, 30)).text
+                retData = requests.get(payload, headers={'token': config.get('client.webpassword'), 'Connection':'close'}, timeout=(maxWait, 30)).text
         except Exception as error:
             if not silent:
                 logger.error('Failed to make local request (command: %s):%s' % (command, error))
@@ -624,7 +624,7 @@ class OnionrUtils:
             proxies = {'http': 'http://127.0.0.1:4444'}
         else:
             return
-        headers = {'user-agent': 'PyOnionr'}
+        headers = {'user-agent': 'PyOnionr', 'Connection':'close'}
         try:
             proxies = {'http': 'socks4a://127.0.0.1:' + str(port), 'https': 'socks4a://127.0.0.1:' + str(port)}
             r = requests.post(url, data=data, headers=headers, proxies=proxies, allow_redirects=False, timeout=(15, 30))
@@ -649,11 +649,11 @@ class OnionrUtils:
             proxies = {'http': 'http://127.0.0.1:4444'}
         else:
             return
-        headers = {'user-agent': 'PyOnionr'}
+        headers = {'user-agent': 'PyOnionr', 'Connection':'close'}
         response_headers = dict()
         try:
             proxies = {'http': 'socks4a://127.0.0.1:' + str(port), 'https': 'socks4a://127.0.0.1:' + str(port)}
-            r = requests.get(url, headers=headers, proxies=proxies, allow_redirects=False, timeout=(15, 30))
+            r = requests.get(url, headers=headers, proxies=proxies, allow_redirects=False, timeout=(15, 30), )
             # Check server is using same API version as us
             if not ignoreAPI:
                 try:

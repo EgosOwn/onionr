@@ -140,6 +140,9 @@ class OnionrCommunicatorDaemon:
                         break
                     i.processTimer()
                 time.sleep(self.delay)
+                # Debug to print out used FDs (regular and net)
+                #proc = psutil.Process()
+                #print(proc.open_files(), len(psutil.net_connections()))
         except KeyboardInterrupt:
             self.shutdown = True
             pass
