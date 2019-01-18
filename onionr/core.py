@@ -379,7 +379,7 @@ class Core:
         events.event('queue_push', data = {'command': command, 'data': data}, onionr = None)
         conn.close()
         return retData
-    
+
     def daemonQueueGetResponse(self, responseID=''):
         '''
             Get a response sent by communicator to the API, by requesting to the API
@@ -387,14 +387,14 @@ class Core:
         assert len(responseID) > 0
         resp = self._utils.localCommand('queueResponse/' + responseID)
         return resp
-    
+
     def daemonQueueWaitForResponse(self, responseID='', checkFreqSecs=1):
         resp = 'failure'
         while resp == 'failure':
             resp = self.daemonQueueGetResponse(responseID)
             time.sleep(1)
         return resp
-    
+
     def daemonQueueSimple(self, command, data='', checkFreqSecs=1):
         '''
         A simplified way to use the daemon queue. Will register a command (with optional data) and wait, return the data
@@ -591,7 +591,7 @@ class Core:
         c = conn.cursor()
 
         command = (data, address)
-        
+
         if key not in ('address', 'type', 'knownPeer', 'speed', 'success', 'DBHash', 'failure', 'powValue', 'lastConnect', 'lastConnectAttempt', 'trust', 'introduced'):
             raise Exception("Got invalid database key when setting address info")
         else:
