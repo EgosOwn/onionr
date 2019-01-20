@@ -36,7 +36,7 @@ class SerializedData:
     def getStats(self):
         '''Return statistics about our node'''
         stats = {}
-        stats['uptime'] = int(self._core.daemonQueueSimple('localCommand', 'getuptime'))
-        stats['connectedNodes'] = self._core.daemonQueueSimple('connectedPeers')
+        stats['uptime'] = self._core.onionrInst.communicatorInst.getUptime()
+        stats['connectedNodes'] = '\n'.join(self._core.onionrInst.communicatorInst.onlinePeers)
         stats['blockCount'] = len(self._core.getBlockList())
         return json.dumps(stats)

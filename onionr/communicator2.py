@@ -40,7 +40,7 @@ class OnionrCommunicatorDaemon:
 
         # initalize core with Tor socks port being 3rd argument
         self.proxyPort = proxyPort
-        self._core = core.Core(torPort=self.proxyPort)
+        self._core = onionrInst.onionrCore
 
         # intalize NIST beacon salt and time
         self.nistSaltTimestamp = 0
@@ -93,7 +93,6 @@ class OnionrCommunicatorDaemon:
         self.startTime = self._core._utils.getEpoch()
 
         if developmentMode:
-            print('enabling heartbeat')
             OnionrCommunicatorTimers(self, self.heartbeat, 30)
 
         # Set timers, function reference, seconds
@@ -485,10 +484,12 @@ class OnionrCommunicatorDaemon:
             retData = onionrpeers.PeerProfiles(peer, self._core)
         return retData
 
+    def getUptime(self):
+        return self._core._utils.getEpoch() - self.startTime
+
     def heartbeat(self):
         '''Show a heartbeat debug message'''
-        currentTime = self._core._utils.getEpoch() - self.startTime
-        logger.debug('Heartbeat. Node running for %s.' % self.daemonTools.humanReadableTime(currentTime))
+        logger.debug('Heartbeat. Node running for %s.' % self.daemonTools.humanReadableTime(self.getUptime()))
         self.decrementThreadCount('heartbeat')
 
     def daemonCommands(self):

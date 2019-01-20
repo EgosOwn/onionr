@@ -45,6 +45,7 @@ class Core:
             self.dataDir = 'data/'
 
         try:
+            self.onionrInst = None
             self.queueDB = self.dataDir + 'queue.db'
             self.peerDB = self.dataDir + 'peers.db'
             self.blockDB = self.dataDir + 'blocks.db'

@@ -21,7 +21,10 @@ uptimeDisplay = document.getElementById('uptime')
 connectedDisplay = document.getElementById('connectedNodes')
 storedBlockDisplay = document.getElementById('storedBlocks')
 
-stats = JSON.parse(httpGet('getstats', webpass))
-uptimeDisplay.innerText = stats['uptime'] + ' seconds'
-connectedDisplay.innerText = stats['connectedNodes']
-storedBlockDisplay.innerText = stats['blockCount']
+function getStats(){
+    stats = JSON.parse(httpGet('getstats', webpass))
+    uptimeDisplay.innerText = stats['uptime'] + ' seconds'
+    connectedDisplay.innerText = stats['connectedNodes']
+    storedBlockDisplay.innerText = stats['blockCount']
+}
+getStats()

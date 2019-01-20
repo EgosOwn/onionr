@@ -256,7 +256,7 @@ class API:
 
         self.debug = debug
         self._privateDelayTime = 3
-        self._core = core.Core()
+        self._core = onionrInst.onionrCore
         self.startTime = self._core._utils.getEpoch()
         self._crypto = onionrcrypto.OnionrCrypto(self._core)
         self._utils = onionrutils.OnionrUtils(self._core)

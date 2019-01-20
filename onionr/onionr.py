@@ -74,6 +74,7 @@ class Onionr:
 
         self.communicatorInst = None
         self.onionrCore = core.Core()
+        self.onionrCore.onionrInst = self
         #self.deleteRunFiles()
         self.onionrUtils = onionrutils.OnionrUtils(self.onionrCore)
 
@@ -751,7 +752,7 @@ class Onionr:
 
         # TODO: make runable on windows
         #communicatorProc = subprocess.Popen([communicatorDaemon, 'run', str(net.socksPort)])
-        
+        self.onionrCore.torPort = net.socksPort
         communicatorThread = Thread(target=communicator2.startCommunicator, args=(self, str(net.socksPort)))
         communicatorThread.start()
         
