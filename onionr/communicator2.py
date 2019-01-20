@@ -25,11 +25,13 @@ import onionrdaemontools, onionrsockets, onionr, onionrproofs, proofofmemory
 import binascii
 from dependencies import secrets
 from defusedxml import minidom
-
+config.reload()
 class OnionrCommunicatorDaemon:
-    def __init__(self, debug, developmentMode):
+    def __init__(self, onionrInst, proxyPort, developmentMode=config.get('general.dev_mode', False)):
+        onionrInst.communicatorInst = self
         # configure logger and stuff
         onionr.Onionr.setupConfig('data/', self = self)
+        self.proxyPort = proxyPort
 
         self.isOnline = True # Assume we're connected to the internet
 
@@ -37,7 +39,7 @@ class OnionrCommunicatorDaemon:
         self.timers = []
 
         # initalize core with Tor socks port being 3rd argument
-        self.proxyPort = sys.argv[2]
+        self.proxyPort = proxyPort
         self._core = core.Core(torPort=self.proxyPort)
 
         # intalize NIST beacon salt and time
@@ -48,9 +50,6 @@ class OnionrCommunicatorDaemon:
 
         # loop time.sleep delay in seconds
         self.delay = 1
-
-        # time app started running for info/statistics purposes
-        self.startTime = self._core._utils.getEpoch()
 
         # lists of connected peers and peers we know we can't reach currently
         self.onlinePeers = []
@@ -90,8 +89,11 @@ class OnionrCommunicatorDaemon:
         # intended only for use by OnionrCommunicatorDaemon
         self.daemonTools = onionrdaemontools.DaemonTools(self)
 
+        # time app started running for info/statistics purposes
+        self.startTime = self._core._utils.getEpoch()
 
-        if debug or developmentMode:
+        if developmentMode:
+            print('enabling heartbeat')
             OnionrCommunicatorTimers(self, self.heartbeat, 30)
 
         # Set timers, function reference, seconds
@@ -129,8 +131,6 @@ class OnionrCommunicatorDaemon:
             self.socketServer.start()
             self.socketClient = onionrsockets.OnionrSocketClient(self._core)
 
-            # Loads chat messages into memory
-            threading.Thread(target=self._chat.chatHandler).start()
 
         # Main daemon loop, mainly for calling timers, don't do any complex operations here to avoid locking
         try:
@@ -513,6 +513,8 @@ class OnionrCommunicatorDaemon:
                 response = '\n'.join(list(self.onlinePeers)).strip()
                 if response == '':
                     response = 'none'
+            elif cmd[0] == 'localCommand':
+                response = self._core._utils.localCommand(cmd[1])
             elif cmd[0] == 'pex':
                 for i in self.timers:
                     if i.timerFunction.__name__ == 'lookupAdders':
@@ -643,18 +645,5 @@ class OnionrCommunicatorTimers:
             self.count = -1 # negative 1 because its incremented at bottom
         self.count += 1
 
-shouldRun = False
-debug = True
-developmentMode = False
-if config.get('general.dev_mode', True):
-    developmentMode = True
-try:
-    if sys.argv[1] == 'run':
-        shouldRun = True
-except IndexError:
-    pass
-if shouldRun:
-    try:
-        OnionrCommunicatorDaemon(debug, developmentMode)
-    except Exception as e:
-        logger.error('Error occured in Communicator', error = e, timestamp = False)
+def startCommunicator(onionrInst, proxyPort):
+    OnionrCommunicatorDaemon(onionrInst, proxyPort)

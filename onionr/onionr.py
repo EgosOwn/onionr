@@ -33,7 +33,7 @@ import onionrutils
 import netcontroller
 from netcontroller import NetController
 from onionrblockapi import Block
-import onionrproofs, onionrexceptions, onionrusers
+import onionrproofs, onionrexceptions, onionrusers, communicator2
 
 try:
     from urllib3.contrib.socks import SOCKSProxyManager
@@ -72,6 +72,7 @@ class Onionr:
             logger.error('Tor is not installed')
             sys.exit(1)
 
+        self.communicatorInst = None
         self.onionrCore = core.Core()
         #self.deleteRunFiles()
         self.onionrUtils = onionrutils.OnionrUtils(self.onionrCore)
@@ -749,7 +750,13 @@ class Onionr:
         time.sleep(1)
 
         # TODO: make runable on windows
-        communicatorProc = subprocess.Popen([communicatorDaemon, 'run', str(net.socksPort)])
+        #communicatorProc = subprocess.Popen([communicatorDaemon, 'run', str(net.socksPort)])
+        
+        communicatorThread = Thread(target=communicator2.startCommunicator, args=(self, str(net.socksPort)))
+        communicatorThread.start()
+        
+        while self.communicatorInst is None:
+            time.sleep(0.1)
 
         # print nice header thing :)
         if config.get('general.display_header', True):
@@ -769,7 +776,7 @@ class Onionr:
                 #proc = psutil.Process()
                 #print('api-files:',proc.open_files(), len(psutil.net_connections()))
                 # Break if communicator process ends, so we don't have left over processes
-                if communicatorProc.poll() is not None:
+                if self.communicatorInst.shutdown:
                     break
                 if self.killed:
                     break # Break out if sigterm for clean exit

@@ -406,8 +406,8 @@ class API:
         
         @app.route('/getstats')
         def getStats():
-            return Response("disabled")
-            #return Response(self._core.serializer.getStats())
+            #return Response("disabled")
+            return Response(self._core.serializer.getStats())
         
         @app.route('/getuptime')
         def showUptime():

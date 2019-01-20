@@ -36,7 +36,7 @@ class SerializedData:
     def getStats(self):
         '''Return statistics about our node'''
         stats = {}
-        stats['uptime'] = self._core._utils.localCommand('getuptime')
+        stats['uptime'] = int(self._core.daemonQueueSimple('localCommand', 'getuptime'))
         stats['connectedNodes'] = self._core.daemonQueueSimple('connectedPeers')
         stats['blockCount'] = len(self._core.getBlockList())
         return json.dumps(stats)
