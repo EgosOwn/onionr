@@ -74,7 +74,7 @@ class DaemonTools:
                 retData = True
                 self.daemon._core.setAddressInfo(peer, 'introduced', 1)
                 self.daemon._core.setAddressInfo(peer, 'powValue', data['random'])
-            self.daemon.decrementThreadCount('announceNode')
+        self.daemon.decrementThreadCount('announceNode')
         return retData
 
     def netCheck(self):

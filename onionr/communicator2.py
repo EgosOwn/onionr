@@ -97,7 +97,7 @@ class OnionrCommunicatorDaemon:
         # Set timers, function reference, seconds
         # requiresPeer True means the timer function won't fire if we have no connected peers
         peerPoolTimer = OnionrCommunicatorTimers(self, self.getOnlinePeers, 60, maxThreads=1)
-        OnionrCommunicatorTimers(self, self.runCheck, 1)
+        OnionrCommunicatorTimers(self, self.runCheck, 2, maxThreads=1)
         OnionrCommunicatorTimers(self, self.lookupBlocks, self._core.config.get('timers.lookupBlocks'), requiresPeer=True, maxThreads=1)
         OnionrCommunicatorTimers(self, self.getBlocks, self._core.config.get('timers.getBlocks'), requiresPeer=True, maxThreads=2)
         OnionrCommunicatorTimers(self, self.clearOfflinePeer, 58)

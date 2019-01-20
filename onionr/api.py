@@ -17,15 +17,27 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-from gevent.pywsgi import WSGIServer
-import gevent.monkey
-gevent.monkey.patch_socket()
+from gevent.pywsgi import WSGIServer, WSGIHandler
+from gevent import Timeout
+#import gevent.monkey
+#gevent.monkey.patch_socket()
 import flask, cgi
 from flask import request, Response, abort, send_from_directory
 import sys, random, threading, hmac, hashlib, base64, time, math, os, json, socket
 import core
 from onionrblockapi import Block
 import onionrutils, onionrexceptions, onionrcrypto, blockimporter, onionrevents as events, logger, config, onionr
+
+class FDSafeHandler(WSGIHandler):
+    def handle(self):
+       timeout = Timeout(10, exception=Exception)
+       timeout.start()
+
+       #timeout = gevent.Timeout.start_new(3)
+       try:
+           WSGIHandler.handle(self)
+       except Timeout as ex:
+           raise
 
 def guessMime(path):
     '''
@@ -221,7 +233,7 @@ class PublicAPI:
             clientAPI._core.refreshFirstStartVars()
             self.torAdder = clientAPI._core.hsAddress
             time.sleep(1)
-        self.httpServer = WSGIServer((self.host, self.bindPort), app, log=None)
+        self.httpServer = WSGIServer((self.host, self.bindPort), app, log=None, handler_class=FDSafeHandler)
         self.httpServer.serve_forever()
 
 class API:
@@ -394,13 +406,14 @@ class API:
         
         @app.route('/getstats')
         def getStats():
-            return Response(self._core.serializer.getStats())
+            return Response("disabled")
+            #return Response(self._core.serializer.getStats())
         
         @app.route('/getuptime')
         def showUptime():
             return Response(str(self.getUptime()))
 
-        self.httpServer = WSGIServer((self.host, bindPort), app, log=None)
+        self.httpServer = WSGIServer((self.host, bindPort), app, log=None, handler_class=FDSafeHandler)
         self.httpServer.serve_forever()
 
     def setPublicAPIInstance(self, inst):

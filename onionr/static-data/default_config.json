@@ -50,7 +50,7 @@
 
         "file": {
             "output": true,
-            "path": "data/output.log"
+            "path": "output.log"
         },
 
         "console" : {
