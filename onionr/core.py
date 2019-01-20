@@ -718,7 +718,7 @@ class Core:
 
         return True
 
-    def insertBlock(self, data, header='txt', sign=False, encryptType='', symKey='', asymPeer='', meta = {}, expire=None):
+    def insertBlock(self, data, header='txt', sign=False, encryptType='', symKey='', asymPeer='', meta = {}, expire=None, disableForward=False):
         '''
             Inserts a block into the network
             encryptType must be specified to encrypt a block
@@ -765,16 +765,17 @@ class Core:
             pass
 
         if encryptType == 'asym':
-            try:
-                forwardEncrypted = onionrusers.OnionrUser(self, asymPeer).forwardEncrypt(data)
-                data = forwardEncrypted[0]
-                meta['forwardEnc'] = True
-            except onionrexceptions.InvalidPubkey:
-                pass
-                #onionrusers.OnionrUser(self, asymPeer).generateForwardKey()
-            fsKey = onionrusers.OnionrUser(self, asymPeer).generateForwardKey()
-            #fsKey = onionrusers.OnionrUser(self, asymPeer).getGeneratedForwardKeys().reverse()
-            meta['newFSKey'] = fsKey
+            if not disableForward and asymPeer != self._crypto.pubKey:
+                try:
+                    forwardEncrypted = onionrusers.OnionrUser(self, asymPeer).forwardEncrypt(data)
+                    data = forwardEncrypted[0]
+                    meta['forwardEnc'] = True
+                except onionrexceptions.InvalidPubkey:
+                    pass
+                    #onionrusers.OnionrUser(self, asymPeer).generateForwardKey()
+                fsKey = onionrusers.OnionrUser(self, asymPeer).generateForwardKey()
+                #fsKey = onionrusers.OnionrUser(self, asymPeer).getGeneratedForwardKeys().reverse()
+                meta['newFSKey'] = fsKey
         jsonMeta = json.dumps(meta)
         if sign:
             signature = self._crypto.edSign(jsonMeta.encode() + data, key=self._crypto.privKey, encodeResult=True)

@@ -210,12 +210,9 @@ class OnionrCrypto:
         ops = nacl.pwhash.argon2id.OPSLIMIT_SENSITIVE
         mem = nacl.pwhash.argon2id.MEMLIMIT_SENSITIVE
 
-        key = kdf(nacl.secret.SecretBox.KEY_SIZE, passphrase, salt, opslimit=ops, memlimit=mem)
-        key = nacl.public.PrivateKey(key, nacl.encoding.RawEncoder())
-        publicKey = key.public_key
-
-        return (publicKey.encode(encoder=nacl.encoding.Base32Encoder()),
-        key.encode(encoder=nacl.encoding.Base32Encoder()))
+        key = kdf(32, passphrase, salt, opslimit=ops, memlimit=mem) # Generate seed for ed25519 key
+        key = nacl.signing.SigningKey(key)
+        return (key.verify_key.encode(nacl.encoding.Base32Encoder).decode(), key.encode(nacl.encoding.Base32Encoder).decode())
 
     def pubKeyHashID(self, pubkey=''):
         '''Accept a ed25519 public key, return a truncated result of X many sha3_256 hash rounds'''
