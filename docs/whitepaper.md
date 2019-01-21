@@ -5,7 +5,7 @@
 
 # Introduction
 
-The most important thing in the modern world is information. The ability to communicate freely with others. The internet has provided humanity with the ability to spread information globally, but there are many people who try (and sometimes succeed) to stifle the flow of information.
+One of the most important things in the modern world is information. The ability to communicate freely with others is crucial for maintaining personal liberties. The internet has provided humanity with the ability to spread information globally, but there are many people who try (and sometimes succeed) to stifle the flow of information.
 
 Internet censorship comes in many forms, state censorship, corporate consolidation of media, threats of violence, network exploitation (e.g. denial of service attacks).
 
@@ -14,25 +14,22 @@ To prevent censorship or loss of information, these measures must be in place:
 * Resistance to censorship of underlying infrastructure or of network hosts
 
 * Anonymization of users by default
-   * The Inability to violently coerce human users (personal threats/"doxxing", or totalitarian regime censorship)
+   * The Inability to coerce human users (personal threats/"doxxing", or totalitarian regime censorship)
 
-* Economic availability. A system should not rely on a single device to be constantly online, and should not be overly expensive to use. The majority of people in the world own cell phones, but comparatively few own personal computers, particularly in developing countries.
+* Economic availability. A system should not rely on a single device to be constantly online, and should not be overly expensive to use. The majority of people in the world own cell phones, but comparatively few own personal computers, particularly in developing countries. Internet connectivity can be slow or spotty in many areas.
 
 There are many great projects that tackle decentralization and privacy issues, but there are none which tackle all of the above issues. Some of the existing networks have also not worked well in practice, or are more complicated than they need to be.
 
 # Onionr Design Goals
 
-When designing Onionr we had these goals in mind:
+When designing Onionr we had these main goals in mind:
 
 * Anonymous Blocks
-
- * Difficult to determine block creator or users regardless of transport used
-* Default Anonymous Transport Layer
- * Tor and I2P
+   * Difficult to determine block creator or users regardless of transport used
+* Node-anonymity
 * Transport agnosticism
-* Default global sync, but can configure what blocks to seed
+* Default global sync, but configurable
 * Spam resistance
-* Encrypted blocks
 
 # Onionr Design
 
@@ -40,9 +37,9 @@ When designing Onionr we had these goals in mind:
 
 ## General Overview
 
-At its core, Onionr is merely a description for storing data in self-verifying packages ("blocks"). These blocks can be encrypted to a user (or self), encrypted symmetrically, or not at all. Blocks can be signed by their creator, but regardless, they are self-verifying due to being identified by a sha3-256 hash value; once a block is created, it cannot be modified.
+At its core, Onionr is merely a description for storing data in self-verifying packages ("blocks"). These blocks can be encrypted to a user (or for one's self), encrypted symmetrically, or not at all. Blocks can be signed by their creator, but regardless, they are self-verifying due to being identified by a sha3-256 hash value; once a block is created, it cannot be modified.
 
-Onionr exchanges a list of blocks between all nodes. By default, all nodes download and share all other blocks, however this is configurable.
+Onionr exchanges a list of blocks between all nodes. By default, all nodes download and share all other blocks, however this is configurable. Blocks do not rely on any particular order of reciept or transport mechanism.
 
 ## User IDs
 
@@ -52,11 +49,11 @@ Public keys can be generated deterministicly with a password using a key derivat
 
 ## Nodes
 
-Although Onionr is transport agnostic, the only supported transports in the reference implemetation are Tor .onion services and I2P hidden services. Nodes announce their address on creation.
+Although Onionr is transport agnostic, the only supported transports in the reference implemetation are Tor .onion services and I2P hidden services. Nodes announce their address on creation by connecting to peers specified in a bootstrap file. Peers in the bootstrap file have no special permissions aside from being default peers.
 
 ### Node Profiling
 
-To mitigate maliciously slow or unreliable nodes, Onionr builds a profile on nodes it connects to. Nodes are assigned a score, which raises based on the amount of successful block transfers, speed, and reliabilty of a node, and reduces based on how unreliable a node is. If a node is unreachable for over 24 hours after contact, it is forgotten. Onionr can also prioritize connection to 'friend' nodes.
+To mitigate maliciously slow or unreliable nodes, Onionr builds a profile on nodes it connects to. Nodes are assigned a score, which raises based on the amount of successful block transfers, speed, and reliabilty of a node, and reduces the score based on how unreliable a node is. If a node is unreachable for over 24 hours after contact, it is forgotten. Onionr can also prioritize connection to 'friend' nodes.
 
 ## Block Format
 
@@ -93,5 +90,3 @@ This can be done either by the creator of the block prior to generation, or by a
 In addition, randomness beacons such as the one operated by [NIST](https://beacon.nist.gov/home) or the hash of the latest blocks in a cryptocurrency network could be used to affirm that a block was at least not *created* before a given time.
 
 # Direct Connections
-
-We propose a system to 

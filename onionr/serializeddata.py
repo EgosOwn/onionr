@@ -39,4 +39,5 @@ class SerializedData:
         stats['uptime'] = self._core.onionrInst.communicatorInst.getUptime()
         stats['connectedNodes'] = '\n'.join(self._core.onionrInst.communicatorInst.onlinePeers)
         stats['blockCount'] = len(self._core.getBlockList())
+        stats['blockQueueCount'] = len(self._core.onionrInst.communicatorInst.blockQueue)
         return json.dumps(stats)

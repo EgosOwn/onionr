@@ -20,11 +20,13 @@
 uptimeDisplay = document.getElementById('uptime')
 connectedDisplay = document.getElementById('connectedNodes')
 storedBlockDisplay = document.getElementById('storedBlocks')
+queuedBlockDisplay = document.getElementById('blockQueue')
 
 function getStats(){
     stats = JSON.parse(httpGet('getstats', webpass))
     uptimeDisplay.innerText = stats['uptime'] + ' seconds'
     connectedDisplay.innerText = stats['connectedNodes']
     storedBlockDisplay.innerText = stats['blockCount']
+    queuedBlockDisplay.innerText = stats['blockQueueCount']
 }
 getStats()

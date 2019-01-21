@@ -1,6 +1,6 @@
 ![Onionr logo](./docs/onionr-logo.png)
 
-(***experimental, not safe or easy to use yet***)
+(***experimental, not well tested or easy to use yet***)
 
 [![Open Source Love](https://badges.frapsoft.com/os/v3/open-source.png?v=103)](https://github.com/ellerbrock/open-source-badges/)
 
@@ -10,7 +10,6 @@ Anonymous P2P platform, using Tor & I2P.
 <hr>
 
 **The main repo for this software is at https://gitlab.com/beardog/Onionr/**
-
 
 # Summary
 
@@ -28,7 +27,7 @@ Check the [Gitlab Project](https://gitlab.com/beardog/Onionr/milestones/1) to se
 * [X] End to end encryption of user data
 * [X] Optional non-encrypted blocks, useful for blog posts or public file sharing
 * [X] Easy API system for integration to websites
-* [ ] Metadata analysis resistance (being improved)
+* [X] Metadata analysis resistance
 
 
 ## Other features
