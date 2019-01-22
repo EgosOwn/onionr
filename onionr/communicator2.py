@@ -65,7 +65,7 @@ class OnionrCommunicatorDaemon:
         self.shutdown = False
 
         # list of new blocks to download, added to when new block lists are fetched from peers
-        self.blockQueue = []
+        self.blockQueue = {}
 
         # list of blocks currently downloading, avoid s
         self.currentDownloading = []
@@ -216,16 +216,24 @@ class OnionrCommunicatorDaemon:
                             # if newline seperated string is valid hash
                             if not i in existingBlocks:
                                 # if block does not exist on disk and is not already in block queue
-                                if i not in self.blockQueue and not self._core._blacklist.inBlacklist(i):
-                                    if onionrproofs.hashMeetsDifficulty(i):
+                                if i not in self.blockQueue:
+                                    if onionrproofs.hashMeetsDifficulty(i) and not self._core._blacklist.inBlacklist(i):
                                         if len(self.blockQueue) <= 1000000:
-                                            self.blockQueue.append(i) # add blocks to download queue
+                                            self.blockQueue[i] = [peer] # add blocks to download queue
+                                else:
+                                    if peer not in self.blockQueue[i]:
+                                        self.blockQueue[i].append(peer)
         self.decrementThreadCount('lookupBlocks')
         return
 
     def getBlocks(self):
         '''download new blocks in queue'''
-        for blockHash in self.blockQueue:
+        for blockHash in list(self.blockQueue):
+            triedQueuePeers = [] # List of peers we've tried for a block
+            try:
+                blockPeers = list(self.blockQueue[blockHash])
+            except KeyError:
+                blockPeers = []
             removeFromQueue = True
             if self.shutdown or not self.isOnline:
                 # Exit loop if shutting down or offline
@@ -236,14 +244,19 @@ class OnionrCommunicatorDaemon:
                 continue
             if blockHash in self._core.getBlockList():
                 logger.debug('Block %s is already saved.' % (blockHash,))
-                self.blockQueue.remove(blockHash)
+                del self.blockQueue[blockHash]
                 continue
             if self._core._blacklist.inBlacklist(blockHash):
                 continue
             if self._core._utils.storageCounter.isFull():
                 break
             self.currentDownloading.append(blockHash) # So we can avoid concurrent downloading in other threads of same block
-            peerUsed = self.pickOnlinePeer()
+            if len(blockPeers) == 0:
+                peerUsed = self.pickOnlinePeer()
+            else:
+                blockPeers = self._core._crypto.randomShuffle(blockPeers)
+                peerUsed = blockPeers.pop(0)
+
             if not self.shutdown and peerUsed.strip() != '':
                 logger.info("Attempting to download %s from %s..." % (blockHash[:12], peerUsed))
             content = self.peerAction(peerUsed, 'getdata/' + blockHash) # block content from random peer (includes metadata)
@@ -300,8 +313,8 @@ class OnionrCommunicatorDaemon:
                         removeFromQueue = False # Don't remove from queue if 404
                 if removeFromQueue:
                     try:
-                        self.blockQueue.remove(blockHash) # remove from block queue both if success or false
-                    except ValueError:
+                        del self.blockQueue[blockHash] # remove from block queue both if success or false
+                    except KeyError:
                         pass
             self.currentDownloading.remove(blockHash)
         self.decrementThreadCount('getBlocks')

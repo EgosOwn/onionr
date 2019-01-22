@@ -281,5 +281,20 @@ class OnionrCrypto:
 
         return retData
 
-    def safeCompare(self, one, two):
+    @staticmethod
+    def safeCompare(one, two):
         return hmac.compare_digest(one, two)
+        
+    @staticmethod
+    def randomShuffle(theList):
+        myList = list(theList)
+        shuffledList = []
+        myListLength = len(myList) + 1
+        while myListLength > 0:
+            removed = secrets.randbelow(myListLength)
+            try:
+                shuffledList.append(myList.pop(removed))
+            except IndexError:
+                pass
+            myListLength = len(myList)
+        return shuffledList
