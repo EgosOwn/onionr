@@ -207,22 +207,27 @@ class OnionrMail:
             else:
                 # if -q or ctrl-c/d, exit function here, otherwise we successfully got the public key
                 return
-
-        logger.info('Enter your message, stop by entering -q on a new line.')
+        
+        cancelEnter = False
+        logger.info('Enter your message, stop by entering -q on a new line. -c to cancel')
         while newLine != '-q':
             try:
                 newLine = input()
             except (KeyboardInterrupt, EOFError):
-                pass
+                cancelEnter = True
+            if newLine == '-c':
+                cancelEnter = True
+                break
             if newLine == '-q':
                 continue
             newLine += '\n'
             message += newLine
 
-        logger.info('Inserting encrypted message as Onionr block....')
+        if not cancelEnter:
+            logger.info('Inserting encrypted message as Onionr block....')
 
-        blockID = self.myCore.insertBlock(message, header='pm', encryptType='asym', asymPeer=recip, sign=True)
-        self.sentboxTools.addToSent(blockID, recip, message)
+            blockID = self.myCore.insertBlock(message, header='pm', encryptType='asym', asymPeer=recip, sign=True)
+            self.sentboxTools.addToSent(blockID, recip, message)
     def menu(self):
         choice = ''
         while True:

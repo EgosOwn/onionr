@@ -79,7 +79,7 @@
     "peers" : {
         "minimum_score" : -100,
         "max_stored_peers" : 5000,
-        "max_connect" : 50
+        "max_connect" : 1000
     },
 
     "timers" : {

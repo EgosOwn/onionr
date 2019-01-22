@@ -218,7 +218,8 @@ class OnionrCommunicatorDaemon:
                                 # if block does not exist on disk and is not already in block queue
                                 if i not in self.blockQueue and not self._core._blacklist.inBlacklist(i):
                                     if onionrproofs.hashMeetsDifficulty(i):
-                                        self.blockQueue.append(i) # add blocks to download queue
+                                        if len(self.blockQueue) <= 1000000:
+                                            self.blockQueue.append(i) # add blocks to download queue
         self.decrementThreadCount('lookupBlocks')
         return
 
@@ -295,6 +296,8 @@ class OnionrCommunicatorDaemon:
                     if tempHash != 'ed55e34cb828232d6c14da0479709bfa10a0923dca2b380496e6b2ed4f7a0253':
                         # Dumb hack for 404 response from peer. Don't log it if 404 since its likely not malicious or a critical error.
                         logger.warn('Block hash validation failed for ' + blockHash + ' got ' + tempHash)
+                    else:
+                        removeFromQueue = False # Don't remove from queue if 404
                 if removeFromQueue:
                     try:
                         self.blockQueue.remove(blockHash) # remove from block queue both if success or false
