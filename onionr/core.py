@@ -130,7 +130,7 @@ class Core:
 
         events.event('pubkey_add', data = {'key': peerID}, onionr = None)
 
-        conn = sqlite3.connect(self.peerDB, timeout=10)
+        conn = sqlite3.connect(self.peerDB, timeout=30)
         hashID = self._crypto.pubKeyHashID(peerID)
         c = conn.cursor()
         t = (peerID, name, 'unknown', hashID, 0)
@@ -160,7 +160,7 @@ class Core:
         if type(address) is None or len(address) == 0:
             return False
         if self._utils.validateID(address):
-            conn = sqlite3.connect(self.addressDB, timeout=10)
+            conn = sqlite3.connect(self.addressDB, timeout=30)
             c = conn.cursor()
             # check if address is in database
             # this is safe to do because the address is validated above, but we strip some chars here too just in case
@@ -193,7 +193,7 @@ class Core:
         '''
 
         if self._utils.validateID(address):
-            conn = sqlite3.connect(self.addressDB, timeout=10)
+            conn = sqlite3.connect(self.addressDB, timeout=30)
             c = conn.cursor()
             t = (address,)
             c.execute('Delete from adders where address=?;', t)
@@ -213,7 +213,7 @@ class Core:
         '''
 
         if self._utils.validateHash(block):
-            conn = sqlite3.connect(self.blockDB, timeout=10)
+            conn = sqlite3.connect(self.blockDB, timeout=30)
             c = conn.cursor()
             t = (block,)
             c.execute('Delete from hashes where hash=?;', t)
@@ -261,7 +261,7 @@ class Core:
             raise Exception('Block db does not exist')
         if self._utils.hasBlock(newHash):
             return
-        conn = sqlite3.connect(self.blockDB, timeout=10)
+        conn = sqlite3.connect(self.blockDB, timeout=30)
         c = conn.cursor()
         currentTime = self._utils.getEpoch() + self._crypto.secrets.randbelow(301)
         if selfInsert or dataSaved:
@@ -318,7 +318,7 @@ class Core:
                 #blockFile.write(data)
                 #blockFile.close()
                 onionrstorage.store(self, data, blockHash=dataHash)
-                conn = sqlite3.connect(self.blockDB, timeout=10)
+                conn = sqlite3.connect(self.blockDB, timeout=30)
                 c = conn.cursor()
                 c.execute("UPDATE hashes SET dataSaved=1 WHERE hash = ?;", (dataHash,))
                 conn.commit()
@@ -341,7 +341,7 @@ class Core:
         if not os.path.exists(self.queueDB):
             self.dbCreate.createDaemonDB()
         else:
-            conn = sqlite3.connect(self.queueDB, timeout=10)
+            conn = sqlite3.connect(self.queueDB, timeout=30)
             c = conn.cursor()
             try:
                 for row in c.execute('SELECT command, data, date, min(ID), responseID FROM commands group by id'):
@@ -367,7 +367,7 @@ class Core:
         retData = True
 
         date = self._utils.getEpoch()
-        conn = sqlite3.connect(self.queueDB, timeout=10)
+        conn = sqlite3.connect(self.queueDB, timeout=30)
         c = conn.cursor()
         t = (command, data, date, responseID)
 
@@ -410,7 +410,7 @@ class Core:
         '''
             Clear the daemon queue (somewhat dangerous)
         '''
-        conn = sqlite3.connect(self.queueDB, timeout=10)
+        conn = sqlite3.connect(self.queueDB, timeout=30)
         c = conn.cursor()
 
         try:
@@ -428,7 +428,7 @@ class Core:
         '''
             Return a list of addresses
         '''
-        conn = sqlite3.connect(self.addressDB, timeout=10)
+        conn = sqlite3.connect(self.addressDB, timeout=30)
         c = conn.cursor()
         if randomOrder:
             addresses = c.execute('SELECT * FROM adders ORDER BY RANDOM();')
@@ -456,7 +456,7 @@ class Core:
             randomOrder determines if the list should be in a random order
             trust sets the minimum trust to list
         '''
-        conn = sqlite3.connect(self.peerDB, timeout=10)
+        conn = sqlite3.connect(self.peerDB, timeout=30)
         c = conn.cursor()
 
         payload = ''
@@ -505,7 +505,7 @@ class Core:
             trust int           4
             hashID text         5
         '''
-        conn = sqlite3.connect(self.peerDB, timeout=10)
+        conn = sqlite3.connect(self.peerDB, timeout=30)
         c = conn.cursor()
 
         command = (peer,)
@@ -531,7 +531,7 @@ class Core:
             Update a peer for a key
         '''
 
-        conn = sqlite3.connect(self.peerDB, timeout=10)
+        conn = sqlite3.connect(self.peerDB, timeout=30)
         c = conn.cursor()
 
         command = (data, peer)
@@ -563,7 +563,7 @@ class Core:
             introduced  10
         '''
 
-        conn = sqlite3.connect(self.addressDB, timeout=10)
+        conn = sqlite3.connect(self.addressDB, timeout=30)
         c = conn.cursor()
 
         command = (address,)
@@ -588,7 +588,7 @@ class Core:
             Update an address for a key
         '''
 
-        conn = sqlite3.connect(self.addressDB, timeout=10)
+        conn = sqlite3.connect(self.addressDB, timeout=30)
         c = conn.cursor()
 
         command = (data, address)
@@ -609,7 +609,7 @@ class Core:
         if dateRec == None:
             dateRec = 0
 
-        conn = sqlite3.connect(self.blockDB, timeout=10)
+        conn = sqlite3.connect(self.blockDB, timeout=30)
         c = conn.cursor()
 
         # if unsaved:
@@ -630,7 +630,7 @@ class Core:
             Returns the date a block was received
         '''
 
-        conn = sqlite3.connect(self.blockDB, timeout=10)
+        conn = sqlite3.connect(self.blockDB, timeout=30)
         c = conn.cursor()
 
         execute = 'SELECT dateReceived FROM hashes WHERE hash=?;'
@@ -646,7 +646,7 @@ class Core:
             Returns a list of blocks by the type
         '''
 
-        conn = sqlite3.connect(self.blockDB, timeout=10)
+        conn = sqlite3.connect(self.blockDB, timeout=30)
         c = conn.cursor()
 
         if orderDate:
@@ -665,7 +665,7 @@ class Core:
 
     def getExpiredBlocks(self):
         '''Returns a list of expired blocks'''
-        conn = sqlite3.connect(self.blockDB, timeout=10)
+        conn = sqlite3.connect(self.blockDB, timeout=30)
         c = conn.cursor()
         date = int(self._utils.getEpoch())
 
@@ -683,7 +683,7 @@ class Core:
             Sets the type of block
         '''
 
-        conn = sqlite3.connect(self.blockDB, timeout=10)
+        conn = sqlite3.connect(self.blockDB, timeout=30)
         c = conn.cursor()
         c.execute("UPDATE hashes SET dataType = ? WHERE hash = ?;", (blockType, hash))
         conn.commit()
@@ -710,7 +710,7 @@ class Core:
         if key not in ('dateReceived', 'decrypted', 'dataType', 'dataFound', 'dataSaved', 'sig', 'author', 'dateClaimed', 'expire'):
             return False
 
-        conn = sqlite3.connect(self.blockDB, timeout=10)
+        conn = sqlite3.connect(self.blockDB, timeout=30)
         c = conn.cursor()
         args = (data, hash)
         c.execute("UPDATE hashes SET " + key + " = ? where hash = ?;", args)

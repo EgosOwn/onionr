@@ -105,7 +105,7 @@ def check():
             open(get_config_file(), 'a', encoding="utf8").close()
             save()
     except:
-        logger.warn('Failed to check configuration file.')
+        logger.debug('Failed to check configuration file.')
 
 def save():
     '''
