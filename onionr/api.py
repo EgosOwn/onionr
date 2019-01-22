@@ -30,7 +30,7 @@ import onionrutils, onionrexceptions, onionrcrypto, blockimporter, onionrevents 
 
 class FDSafeHandler(WSGIHandler):
     def handle(self):
-       timeout = Timeout(10, exception=Exception)
+       timeout = Timeout(60, exception=Exception)
        timeout.start()
 
        #timeout = gevent.Timeout.start_new(3)

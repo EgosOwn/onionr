@@ -244,7 +244,10 @@ class OnionrCommunicatorDaemon:
                 continue
             if blockHash in self._core.getBlockList():
                 logger.debug('Block %s is already saved.' % (blockHash,))
-                del self.blockQueue[blockHash]
+                try:
+                    del self.blockQueue[blockHash]
+                except KeyError:
+                    pass
                 continue
             if self._core._blacklist.inBlacklist(blockHash):
                 continue
