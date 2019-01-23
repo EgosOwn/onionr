@@ -87,7 +87,7 @@ Onionr can provide evidence of when a block was inserted by requesting other use
 
 This can be done either by the creator of the block prior to generation, or by any node after insertion.
 
-In addition, randomness beacons such as the one operated by [NIST](https://beacon.nist.gov/home) or the hash of the latest blocks in a cryptocurrency network could be used to affirm that a block was at least not *created* before a given time.
+In addition, randomness beacons such as the one operated by [NIST](https://beacon.nist.gov/home), [Chile](https://beacon.clcert.cl/), or the hash of the latest blocks in a cryptocurrency network could be used to affirm that a block was at least not *created* before a given time.
 
 # Direct Connections
 
