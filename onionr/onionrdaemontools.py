@@ -34,7 +34,7 @@ class DaemonTools:
         '''Announce our node to our peers'''
         retData = False
         announceFail = False
-        if self.daemon._core.config('general.security_level') == 0:
+        if self.daemon._core.config.get('general.security_level', 0) == 0:
             # Announce to random online peers
             for i in self.daemon.onlinePeers:
                 if not i in self.announceCache:

@@ -436,4 +436,9 @@ class API:
             return False
 
     def getUptime(self):
-        return self._utils.getEpoch() - self.startTime
+        while True:
+            try:
+                return self._utils.getEpoch - startTime
+            except AttributeError:
+                # Don't error on race condition with startup
+                pass

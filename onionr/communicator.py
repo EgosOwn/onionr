@@ -574,7 +574,7 @@ class OnionrCommunicatorDaemon:
                     logger.warn('Requested to upload invalid block')
                     self.decrementThreadCount('uploadBlock')
                     return
-                for i in range(max(len(self.onlinePeers), 2)):
+                for i in range(min(len(self.onlinePeers), 6)):
                     peer = self.pickOnlinePeer()
                     if peer in triedPeers:
                         continue
@@ -590,7 +590,6 @@ class OnionrCommunicatorDaemon:
                     if not self._core._utils.doPostRequest(url, data=data, proxyType=proxyType) == False:
                         self._core._utils.localCommand('waitforshare/' + bl)
                         finishedUploads.append(bl)
-                        break
         for x in finishedUploads:
             try:
                 self.blocksToUpload.remove(x)
