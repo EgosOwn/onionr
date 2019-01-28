@@ -99,6 +99,7 @@ class Core:
                 logger.warn('Warning: address bootstrap file not found ' + self.bootstrapFileLocation)
 
             self._utils = onionrutils.OnionrUtils(self)
+            self.blockCache = onionrstorage.BlockCache()
             # Initialize the crypto object
             self._crypto = onionrcrypto.OnionrCrypto(self)
             self._blacklist = onionrblacklist.OnionrBlackList(self)

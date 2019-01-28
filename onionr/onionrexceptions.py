@@ -53,6 +53,9 @@ class BlacklistedBlock(Exception):
 class DataExists(Exception):
     pass
 
+class NoDataAvailable(Exception):
+    pass
+
 class InvalidHexHash(Exception):
     '''When a string is not a valid hex string of appropriate length for a hash value'''
     pass

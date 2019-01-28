@@ -33,7 +33,7 @@ import onionrutils
 import netcontroller
 from netcontroller import NetController
 from onionrblockapi import Block
-import onionrproofs, onionrexceptions, onionrusers, communicator2
+import onionrproofs, onionrexceptions, onionrusers, communicator
 
 try:
     from urllib3.contrib.socks import SOCKSProxyManager
@@ -710,7 +710,6 @@ class Onionr:
         '''
             Starts the Onionr communication daemon
         '''
-        communicatorDaemon = './communicator2.py'
 
         # remove runcheck if it exists
         if os.path.isfile('data/.runcheck'):
@@ -750,10 +749,8 @@ class Onionr:
         logger.debug('Using public key: %s' % (logger.colors.underline + self.onionrCore._crypto.pubKey))
         time.sleep(1)
 
-        # TODO: make runable on windows
-        #communicatorProc = subprocess.Popen([communicatorDaemon, 'run', str(net.socksPort)])
         self.onionrCore.torPort = net.socksPort
-        communicatorThread = Thread(target=communicator2.startCommunicator, args=(self, str(net.socksPort)))
+        communicatorThread = Thread(target=communicator.startCommunicator, args=(self, str(net.socksPort)))
         communicatorThread.start()
         
         while self.communicatorInst is None:
@@ -940,7 +937,8 @@ class Onionr:
                 logger.error('Block hash is invalid')
                 return
 
-            Block.mergeChain(bHash, fileName)
+            with open(fileName, 'wb') as myFile:
+                myFile.write(base64.b64decode(Block(bHash, core=self.onionrCore).bcontent))
         return
 
     def addWebpage(self):
@@ -963,12 +961,9 @@ class Onionr:
                 return
             logger.info('Adding file... this might take a long time.')
             try:
-                if singleBlock:
-                    with open(filename, 'rb') as singleFile:
-                        blockhash = self.onionrCore.insertBlock(base64.b64encode(singleFile.read()), header=blockType)
-                else:
-                    blockhash = Block.createChain(file = filename)
-                logger.info('File %s saved in block %s.' % (filename, blockhash))
+                with open(filename, 'rb') as singleFile:
+                    blockhash = self.onionrCore.insertBlock(base64.b64encode(singleFile.read()), header=blockType)
+                logger.info('File %s saved in block %s' % (filename, blockhash))
             except:
                 logger.error('Failed to save file in block.', timestamp = False)
         else:

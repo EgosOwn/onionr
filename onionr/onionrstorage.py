@@ -21,6 +21,13 @@ import core, sys, sqlite3, os, dbcreator
 
 DB_ENTRY_SIZE_LIMIT = 10000 # Will be a config option
 
+class BlockCache:
+    def __init__(self):
+        self.blocks = {}
+    def cleanCache(self):
+        while sys.getsizeof(self.blocks) > 100000000:
+            self.blocks.pop(list(self.blocks.keys())[0])
+
 def dbCreate(coreInst):
     try:
         dbcreator.DBCreator(coreInst).createBlockDataDB()
@@ -62,6 +69,7 @@ def store(coreInst, data, blockHash=''):
     else:
         with open('%s/%s.dat' % (coreInst.blockDataLocation, blockHash), 'wb') as blockFile:
             blockFile.write(data)
+    coreInst.blockCache.cleanCache()
 
 def getData(coreInst, bHash):
     assert isinstance(coreInst, core.Core)

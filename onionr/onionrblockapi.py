@@ -1,7 +1,7 @@
 '''
     Onionr - P2P Anonymous Storage Network
 
-    This class contains the OnionrBlocks class which is a class for working with Onionr blocks
+    This file contains the OnionrBlocks class which is a class for working with Onionr blocks
 '''
 '''
     This program is free software: you can redistribute it and/or modify
@@ -56,18 +56,7 @@ class Block:
         if self.getCore() is None:
             self.core = onionrcore.Core()
 
-        # update the blocks' contents if it exists
-        if not self.getHash() is None:
-            if not self.core._utils.validateHash(self.hash):
-                logger.debug('Block hash %s is invalid.' % self.getHash())
-                raise onionrexceptions.InvalidHexHash('Block hash is invalid.')
-            elif not self.update():
-                logger.debug('Failed to open block %s.' % self.getHash())
-        else:
-            pass
-            #logger.debug('Did not update block.')
-
-    # logic
+        self.update()
 
     def decrypt(self, anonymous = True, encodedData = True):
         '''
@@ -140,13 +129,15 @@ class Block:
             Outputs:
             - (bool): indicates whether or not the operation was successful
         '''
-
         try:
             # import from string
             blockdata = data
 
             # import from file
             if blockdata is None:
+                blockdata = onionrstorage.getData(self.core, self.getHash()).decode()
+                '''
+                
                 filelocation = file
 
                 readfile = True
@@ -169,6 +160,7 @@ class Block:
                     #blockdata = f.read().decode()
 
                 self.blockFile = filelocation
+                '''
             else:
                 self.blockFile = None
             # parse block
@@ -588,7 +580,7 @@ class Block:
 
         return list()
 
-    def mergeChain(child, file = None, maximumFollows = 32, core = None):
+    def mergeChain(child, file = None, maximumFollows = 1000, core = None):
         '''
             Follows a child Block to its root parent Block, merging content
 
@@ -635,7 +627,7 @@ class Block:
 
             blocks.append(block.getHash())
 
-        buffer = ''
+        buffer = b''
 
         # combine block contents
         for hash in blocks:
@@ -644,100 +636,16 @@ class Block:
             contents = base64.b64decode(contents.encode())
 
             if file is None:
-                buffer += contents.decode()
+                try:
+                    buffer += contents.encode()
+                except AttributeError:
+                    buffer += contents
             else:
                 file.write(contents)
-        file.close()
+        if file is not None:
+            file.close()
 
         return (None if not file is None else buffer)
-
-    def createChain(data = None, chunksize = 99800, file = None, type = 'chunk', sign = True, encrypt = False, verbose = False):
-        '''
-            Creates a chain of blocks to store larger amounts of data
-
-            The chunksize is set to 99800 because it provides the least amount of PoW for the most amount of data.
-
-            Inputs:
-            - data (*): if `file` is None, the data to be stored in blocks
-            - file (file/str): the filename or file object to read from (or None to read `data` instead)
-            - chunksize (int): the number of bytes per block chunk
-            - type (str): the type header for each of the blocks
-            - sign (bool): whether or not to sign each block
-            - encrypt (str): the public key to encrypt to, or False to disable encryption
-            - verbose (bool): whether or not to return a tuple containing more info
-
-            Outputs:
-            - if `verbose`:
-              - (tuple):
-                - (str): the child block hash
-                - (list): all block hashes associated with storing the file
-            - if not `verbose`:
-              - (str): the child block hash
-        '''
-
-        blocks = list()
-
-        # initial datatype checks
-        if data is None and file is None:
-            return blocks
-        elif not (file is None or (isinstance(file, str) and os.path.exists(file))):
-            return blocks
-        elif isinstance(file, str):
-            file = open(file, 'rb')
-        if not isinstance(data, str):
-            data = str(data)
-
-        if not file is None:
-            filesize = os.stat(file.name).st_size
-            offset = filesize % chunksize
-            maxtimes = int(filesize / chunksize)
-
-            for times in range(0, maxtimes + 1):
-                # read chunksize bytes from the file (end -> beginning)
-                if times < maxtimes:
-                    file.seek(- ((times + 1) * chunksize), 2)
-                    content = file.read(chunksize)
-                else:
-                    file.seek(0, 0)
-                    content = file.read(offset)
-
-                # encode it- python is really bad at handling certain bytes that
-                # are often present in binaries.
-                content = base64.b64encode(content).decode()
-
-                # if it is the end of the file, exit
-                if not content:
-                    break
-
-                # create block
-                block = Block()
-                block.setType(type)
-                block.setContent(content)
-                block.setParent((blocks[-1] if len(blocks) != 0 else None))
-                hash = block.save(sign = sign)
-
-                # remember the hash in cache
-                blocks.append(hash)
-        elif not data is None:
-            for content in reversed([data[n:n + chunksize] for n in range(0, len(data), chunksize)]):
-                # encode chunk with base64
-                content = base64.b64encode(content.encode()).decode()
-
-                # create block
-                block = Block()
-                block.setType(type)
-                block.setContent(content)
-                block.setParent((blocks[-1] if len(blocks) != 0 else None))
-                hash = block.save(sign = sign)
-
-                # remember the hash in cache
-                blocks.append(hash)
-
-        # return different things depending on verbosity
-        if verbose:
-            return (blocks[-1], blocks)
-        file.close()
-        return blocks[-1]
 
     def exists(bHash):
         '''
@@ -799,7 +707,7 @@ class Block:
         if block.getHash() in Block.getCache() and not override:
             return False
 
-        # dump old cached blocks if the size exeeds the maximum
+        # dump old cached blocks if the size exceeds the maximum
         if sys.getsizeof(Block.blockCacheOrder) >= config.get('allocations.block_cache_total', 50000000): # 50MB default cache size
             del Block.blockCache[blockCacheOrder.pop(0)]
 

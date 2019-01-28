@@ -567,6 +567,7 @@ class OnionrCommunicatorDaemon:
         # when inserting a block, we try to upload it to a few peers to add some deniability
         triedPeers = []
         finishedUploads = []
+        self.blocksToUpload = self._core._crypto.randomShuffle(self.blocksToUpload)
         if len(self.blocksToUpload) != 0:
             for bl in self.blocksToUpload:
                 if not self._core._utils.validateHash(bl):
