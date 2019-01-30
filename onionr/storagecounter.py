@@ -42,6 +42,8 @@ class StorageCounter:
                 retData = int(dataFile.read())
         except FileNotFoundError:
             pass
+        except ValueError:
+            pass # Possibly happens when the file is empty
         return retData
     
     def getPercent(self):

@@ -30,7 +30,7 @@ import webbrowser, uuid, signal
 from threading import Thread
 import api, core, config, logger, onionrplugins as plugins, onionrevents as events
 import onionrutils
-import netcontroller
+import netcontroller, onionrstorage
 from netcontroller import NetController
 from onionrblockapi import Block
 import onionrproofs, onionrexceptions, onionrusers, communicator
@@ -190,6 +190,9 @@ class Onionr:
             'openhome': self.openHome,
             'open-home': self.openHome,
 
+            'export-block': self.exportBlock,
+            'exportblock': self.exportBlock,
+
             'get-file': self.getFile,
             'getfile': self.getFile,
 
@@ -270,6 +273,31 @@ class Onionr:
     '''
         THIS SECTION HANDLES THE COMMANDS
     '''
+
+    def exportBlock(self):
+        exportDir = self.dataDir + 'block-export/'
+        try:
+            assert self.onionrUtils.validateHash(sys.argv[2])
+        except (IndexError, AssertionError):
+            logger.error('No valid block hash specified.')
+            sys.exit(1)
+        else:
+            bHash = sys.argv[2]
+        try:
+            path = sys.argv[3]
+        except (IndexError):
+            if not os.path.exists(exportDir):
+                if os.path.exists(self.dataDir):
+                    os.mkdir(exportDir)
+                else:
+                    logger.error('Onionr not initialized')
+                    sys.exit(1)
+            path = exportDir
+        data = onionrstorage.getData(self.onionrCore, bHash)
+        with open('%s/%s.dat' % (exportDir, bHash), 'wb') as exportFile:
+            exportFile.write(data)
+
+
 
     def showDetails(self):
         details = {

@@ -265,7 +265,7 @@ class API:
         self.bindPort = bindPort
 
         # Be extremely mindful of this
-        self.whitelistEndpoints = ('site', 'www', 'onionrhome', 'board', 'boardContent', 'sharedContent')
+        self.whitelistEndpoints = ('site', 'www', 'onionrhome', 'board', 'boardContent', 'sharedContent', 'mail', 'mailindex')
 
         self.clientToken = config.get('client.webpassword')
         self.timeBypassToken = base64.b16encode(os.urandom(32)).decode()
@@ -307,6 +307,13 @@ class API:
         @app.route('/board/', endpoint='board')
         def loadBoard():
             return send_from_directory('static-data/www/board/', "index.html")
+
+        @app.route('/mail/<path:path>', endpoint='mail')
+        def loadMail(path):
+            return send_from_directory('static-data/www/mail/', '')
+        @app.route('/mail/', endpoint='mailindex')
+        def loadMailIndex():
+            return send_from_directory('static-data/www/mail/', 'index.html')
 
         @app.route('/board/<path:path>', endpoint='boardContent')
         def boardContent(path):
@@ -407,7 +414,11 @@ class API:
         @app.route('/getstats')
         def getStats():
             #return Response("disabled")
-            return Response(self._core.serializer.getStats())
+            while True:
+                try:    
+                    return Response(self._core.serializer.getStats())
+                except AttributeError:
+                    pass
         
         @app.route('/getuptime')
         def showUptime():
