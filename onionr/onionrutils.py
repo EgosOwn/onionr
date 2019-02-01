@@ -24,7 +24,8 @@ from onionrblockapi import Block
 import onionrexceptions
 from onionr import API_VERSION
 import onionrevents
-import pgpwords, onionrusers, storagecounter
+import onionrusers, storagecounter
+from etc import pgpwords 
 if sys.version_info < (3, 6):
     try:
         import sha3

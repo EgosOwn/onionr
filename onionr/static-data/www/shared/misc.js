@@ -5,7 +5,7 @@ if (typeof webpass == "undefined"){
 }
 else{
     localStorage['webpass'] = webpass
-    document.location.hash = ''
+    //document.location.hash = ''
 }
 if (typeof webpass == "undefined" || webpass == ""){
     alert('Web password was not found in memory or URL')
@@ -28,3 +28,17 @@ function overlay(overlayID) {
     el = document.getElementById(overlayID)
    el.style.visibility = (el.style.visibility == "visible") ? "hidden" : "visible"
  }
+
+var passLinks = document.getElementsByClassName("idLink")
+ for(var i = 0; i < passLinks.length; i++) {
+    passLinks[i].href += '#' + webpass
+ }
+ 
+var refreshLinks = document.getElementsByClassName("refresh")
+
+for(var i = 0; i < refreshLinks.length; i++) {
+    //Can't use .reload because of webpass
+    refreshLinks[i].onclick = function(){
+        location.reload()
+    }
+}

@@ -20,9 +20,10 @@
 import sqlite3, os, sys, time, math, base64, tarfile, nacl, logger, json, netcontroller, math, config, uuid
 from onionrblockapi import Block
 
-import onionrutils, onionrcrypto, onionrproofs, onionrevents as events, onionrexceptions, onionrvalues
+import onionrutils, onionrcrypto, onionrproofs, onionrevents as events, onionrexceptions
 import onionrblacklist, onionrusers
 import dbcreator, onionrstorage, serializeddata
+from etc import onionrvalues
 
 if sys.version_info < (3, 6):
     try:
@@ -868,5 +869,4 @@ class Core:
         else:
             logger.error('Onionr daemon is not running.')
             return False
-
         return

@@ -139,8 +139,8 @@ class PublicAPI:
             if clientAPI._utils.validateHash(data):
                 if data not in self.hideBlocks:
                     if data in clientAPI._core.getBlockList():
-                        block = Block(hash=data.encode(), core=clientAPI._core)
-                        resp = base64.b64encode(block.getRaw().encode()).decode()
+                        block = self.clientAPI.getBlockData(data).encode()
+                        resp = base64.b64encode(block).decode()
             if len(resp) == 0:
                 abort(404)
                 resp = ""
@@ -310,7 +310,7 @@ class API:
 
         @app.route('/mail/<path:path>', endpoint='mail')
         def loadMail(path):
-            return send_from_directory('static-data/www/mail/', '')
+            return send_from_directory('static-data/www/mail/', path)
         @app.route('/mail/', endpoint='mailindex')
         def loadMailIndex():
             return send_from_directory('static-data/www/mail/', 'index.html')
@@ -358,13 +358,28 @@ class API:
             return Response(','.join(blocks))
         
         @app.route('/gethtmlsafeblockdata/<name>')
-        def getData(name):
+        def getSafeData(name):
             resp = ''
             if self._core._utils.validateHash(name):
                 try:
                     resp =  cgi.escape(Block(name).bcontent, quote=True)
                 except TypeError:
                     pass
+            else:
+                abort(404)
+            return Response(resp)
+        
+        @app.route('/getblockdata/<name>')
+        def getData(name):
+            resp = ""
+            if self._core._utils.validateHash(name):
+                if name in self._core.getBlockList():
+                    try:
+                        resp = self.getBlockData(name, decrypt=True)
+                    except ValueError:
+                        pass
+                else:
+                    abort(404)
             else:
                 abort(404)
             return Response(resp)
@@ -453,3 +468,18 @@ class API:
             except AttributeError:
                 # Don't error on race condition with startup
                 pass
+    
+    def getBlockData(self, bHash, decrypt=False):
+        bl = Block(bHash, core=self._core)
+        if decrypt:
+            bl.decrypt()
+            if bl.isEncrypted and not bl.decrypted:
+                raise ValueError
+
+        retData = {'meta':bl.bheader, 'metadata': bl.bmetadata, 'content': bl.bcontent}
+        for x in list(retData.keys()):
+            try:
+                retData[x] = retData[x].decode()
+            except AttributeError:
+                pass
+        return json.dumps(retData)

@@ -4,12 +4,13 @@
 
 </p>
 
+<p align="center">
+    Anonymous P2P storage network
+</p>
+
 (***pre-alpha quality & experimental, not well tested or easy to use yet***)
 
 [![Open Source Love](https://badges.frapsoft.com/os/v3/open-source.png?v=103)](https://github.com/ellerbrock/open-source-badges/)
-
-
-Anonymous P2P platform, using Tor & I2P.
 
 <hr>
 
@@ -19,9 +20,9 @@ Anonymous P2P platform, using Tor & I2P.
 
 Onionr is a decentralized, peer-to-peer data storage network, designed to be anonymous and resistant to (meta)data analysis and spam.
 
-Onionr stores data in independent packages referred to as 'blocks' (not to be confused with a blockchain). The blocks are synced to all other nodes in the network. Blocks and user IDs cannot be easily proven to have been created by particular nodes (only inferred).
+Onionr stores data in independent packages referred to as 'blocks' (not to be confused with a blockchain). The blocks are synced to all other nodes in the network. Blocks and user IDs cannot be easily proven to have been created by particular nodes (only inferred). Even if there is enough evidence to believe a particular node created a block, nodes still operate behind Tor or I2P and as such are not trivially known to be at a particular IP address.
 
-Users are identified by ed25519 public keys, which can be used to sign blocks (optional) or send encrypted data.
+Users are identified by ed25519 public keys, which can be used to sign blocks or send encrypted data.
 
 Onionr can be used for mail, as a social network, instant messenger, file sharing software, or for encrypted group discussion.
 
@@ -33,6 +34,7 @@ Onionr can be used for mail, as a social network, instant messenger, file sharin
 * [X] Optional non-encrypted blocks, useful for blog posts or public file sharing
 * [X] Easy API system for integration to websites
 * [X] Metadata analysis resistance
+* [X] Transport agnosticism
 
 **Onionr API and functionality is subject to non-backwards compatible change during pre-alpha development**
 

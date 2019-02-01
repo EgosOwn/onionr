@@ -25,7 +25,7 @@ class Block:
     blockCacheOrder = list() # NEVER write your own code that writes to this!
     blockCache = dict() # should never be accessed directly, look at Block.getCache()
 
-    def __init__(self, hash = None, core = None, type = None, content = None, expire=None):
+    def __init__(self, hash = None, core = None, type = None, content = None, expire=None, decrypt=False):
         # take from arguments
         # sometimes people input a bytes object instead of str in `hash`
         if (not hash is None) and isinstance(hash, bytes):
@@ -51,6 +51,7 @@ class Block:
         self.decrypted = False
         self.signer = None
         self.validSig = False
+        self.autoDecrypt = decrypt
 
         # handle arguments
         if self.getCore() is None:
@@ -80,6 +81,7 @@ class Block:
                 self.bmetadata = json.loads(bmeta)
                 self.signature = core._crypto.pubKeyDecrypt(self.signature, anonymous=anonymous, encodedData=encodedData)
                 self.signer = core._crypto.pubKeyDecrypt(self.signer, anonymous=anonymous, encodedData=encodedData)
+                self.bheader['signer'] = self.signer.decode()
                 self.signedData =  json.dumps(self.bmetadata) + self.bcontent.decode()
                 try:
                     assert self.bmetadata['forwardEnc'] is True
@@ -190,6 +192,9 @@ class Block:
 
             if len(self.getRaw()) <= config.get('allocations.blockCache', 500000):
                 self.cache()
+            
+            if self.autoDecrypt:
+                self.decrypt()
 
             return True
         except Exception as e:
