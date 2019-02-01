@@ -74,6 +74,7 @@ class OnionrMail:
         logger.info('Decrypting messages...')
         choice = ''
         displayList = []
+        subject = ''
 
         # this could use a lot of memory if someone has recieved a lot of messages
         for blockHash in self.myCore.getBlocksByType('pm'):
@@ -97,7 +98,12 @@ class OnionrMail:
                 senderDisplay = senderKey
 
             blockDate = pmBlocks[blockHash].getDate().strftime("%m/%d %H:%M")
-            displayList.append('%s. %s - %s: %s' % (blockCount, blockDate, senderDisplay[:12], blockHash))
+            try:
+                subject = pmBlocks[blockHash].bmetadata['subject']
+            except KeyError:
+                subject = ''
+            
+            displayList.append('%s. %s - %s - <%s>: %s' % (blockCount, blockDate, senderDisplay[:12], subject[:10], blockHash))
         while choice not in ('-q', 'q', 'quit'):
             for i in displayList:
                 logger.info(i)
@@ -188,6 +194,7 @@ class OnionrMail:
     def draftMessage(self, recip=''):
         message = ''
         newLine = ''
+        subject = ''
         entering = False
         if len(recip) == 0:
             entering = True
@@ -207,6 +214,10 @@ class OnionrMail:
             else:
                 # if -q or ctrl-c/d, exit function here, otherwise we successfully got the public key
                 return
+        try:
+            subject = logger.readline('Message subject: ')
+        except (KeyboardInterrupt, EOFError):
+            pass
         
         cancelEnter = False
         logger.info('Enter your message, stop by entering -q on a new line. -c to cancel')
@@ -226,7 +237,7 @@ class OnionrMail:
         if not cancelEnter:
             logger.info('Inserting encrypted message as Onionr block....')
 
-            blockID = self.myCore.insertBlock(message, header='pm', encryptType='asym', asymPeer=recip, sign=True)
+            blockID = self.myCore.insertBlock(message, header='pm', encryptType='asym', asymPeer=recip, sign=True, meta={'subject': subject})
             self.sentboxTools.addToSent(blockID, recip, message)
     def menu(self):
         choice = ''
