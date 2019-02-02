@@ -39,7 +39,7 @@ class OnionrBlackList:
         for i in self._dbExecute("SELECT * FROM blacklist WHERE hash = ?", (hashed,)):
             retData = True # this only executes if an entry is present by that hash
             break
-        
+
         return retData
 
     def _dbExecute(self, toExec, params = ()):
@@ -82,7 +82,7 @@ class OnionrBlackList:
         return
 
     def clearDB(self):
-        self._dbExecute('''DELETE FROM blacklist;);''')
+        self._dbExecute('''DELETE FROM blacklist;''')
 
     def getList(self):
         data = self._dbExecute('SELECT * FROM blacklist')
