@@ -1,0 +1,31 @@
+h1, h2, h3{
+    font-family: sans-serif;
+}
+.hidden{
+    display: none;
+}
+p{
+    font-family: sans-serif;
+}
+#webpassWindow{
+    background-color: black;
+    border: 1px solid black;
+    border-radius: 5px;
+    width: 100%;
+    z-index: 2;
+    color: white;
+    text-align: center;
+}
+
+.entry{
+    color: red;
+}
+
+#feed{
+    margin-left: 2%;
+    margin-right: 25%;
+    margin-top: 1em;
+    border: 2px solid black;
+    padding: 5px;
+    min-height: 50px;
+}

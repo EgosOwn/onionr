@@ -105,7 +105,8 @@ def check():
             open(get_config_file(), 'a', encoding="utf8").close()
             save()
     except:
-        logger.warn('Failed to check configuration file.')
+        pass
+        #logger.debug('Failed to check configuration file.')
 
 def save():
     '''
@@ -129,7 +130,8 @@ def reload():
         with open(get_config_file(), 'r', encoding="utf8") as configfile:
             set_config(json.loads(configfile.read()))
     except:
-        logger.warn('Failed to parse configuration file.')
+        pass
+        #logger.debug('Failed to parse configuration file.')
 
 def get_config():
     '''

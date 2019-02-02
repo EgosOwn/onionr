@@ -42,7 +42,14 @@ class StorageCounter:
                 retData = int(dataFile.read())
         except FileNotFoundError:
             pass
+        except ValueError:
+            pass # Possibly happens when the file is empty
         return retData
+    
+    def getPercent(self):
+        '''Return percent (decimal/float) of disk space we're using'''
+        amount = self.getAmount()
+        return round(amount / self._core.config.get('allocations.disk'), 2)
 
     def addBytes(self, amount):
         '''Record that we are now using more disk space, unless doing so would exceed configured max'''

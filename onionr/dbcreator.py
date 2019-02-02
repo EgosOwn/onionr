@@ -92,7 +92,7 @@ class DBCreator:
             expire int   - block expire date in epoch
         '''
         if os.path.exists(self.core.blockDB):
-            raise Exception("Block database already exists")
+            raise FileExistsError("Block database already exists")
         conn = sqlite3.connect(self.core.blockDB)
         c = conn.cursor()
         c.execute('''CREATE TABLE hashes(
@@ -111,13 +111,26 @@ class DBCreator:
         conn.commit()
         conn.close()
         return
+    
+    def createBlockDataDB(self):
+        if os.path.exists(self.core.blockDataDB):
+            raise FileExistsError("Block data database already exists")
+        conn = sqlite3.connect(self.core.blockDataDB)
+        c = conn.cursor()
+        c.execute('''CREATE TABLE blockData(
+            hash text not null,
+            data blob not null
+            );
+        ''')
+        conn.commit()
+        conn.close()
 
     def createForwardKeyDB(self):
         '''
             Create the forward secrecy key db (*for *OUR* keys*)
         '''
         if os.path.exists(self.core.forwardKeysFile):
-            raise Exception("Block database already exists")
+            raise FileExistsError("Block database already exists")
         conn = sqlite3.connect(self.core.forwardKeysFile)
         c = conn.cursor()
         c.execute('''CREATE TABLE myForwardKeys(
@@ -139,7 +152,6 @@ class DBCreator:
         conn = sqlite3.connect(self.core.queueDB, timeout=10)
         c = conn.cursor()
         # Create table
-        c.execute('''CREATE TABLE commands
-                    (id integer primary key autoincrement, command text, data text, date text)''')
+        c.execute('''CREATE TABLE commands (id integer primary key autoincrement, command text, data text, date text, responseID text)''')
         conn.commit()
         conn.close()

@@ -21,18 +21,19 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 import sys
-if sys.version_info[0] == 2 or sys.version_info[1] < 5:
-    print('Error, Onionr requires Python 3.5+')
+MIN_PY_VERSION = 6
+if sys.version_info[0] == 2 or sys.version_info[1] < MIN_PY_VERSION:
+    print('Error, Onionr requires Python 3.%s+' % (MIN_PY_VERSION,))
     sys.exit(1)
 import os, base64, random, getpass, shutil, subprocess, requests, time, platform, datetime, re, json, getpass, sqlite3
-import webbrowser
+import webbrowser, uuid, signal
 from threading import Thread
 import api, core, config, logger, onionrplugins as plugins, onionrevents as events
 import onionrutils
-import netcontroller
+import netcontroller, onionrstorage
 from netcontroller import NetController
 from onionrblockapi import Block
-import onionrproofs, onionrexceptions, onionrusers
+import onionrproofs, onionrexceptions, onionrusers, communicator
 
 try:
     from urllib3.contrib.socks import SOCKSProxyManager
@@ -51,6 +52,7 @@ class Onionr:
             In general, external programs and plugins should not use this class.
         '''
         self.userRunDir = os.getcwd() # Directory user runs the program from
+        self.killed = False
         try:
             os.chdir(sys.path[0])
         except FileNotFoundError:
@@ -66,12 +68,20 @@ class Onionr:
         # Load global configuration data
         data_exists = Onionr.setupConfig(self.dataDir, self = self)
 
+        if netcontroller.torBinary() is None:
+            logger.error('Tor is not installed')
+            sys.exit(1)
+
+        self.communicatorInst = None
         self.onionrCore = core.Core()
+        self.onionrCore.onionrInst = self
         #self.deleteRunFiles()
         self.onionrUtils = onionrutils.OnionrUtils(self.onionrCore)
 
         self.clientAPIInst = '' # Client http api instance
         self.publicAPIInst = '' # Public http api instance
+
+        signal.signal(signal.SIGTERM, self.exitSigterm)
 
         # Handle commands
 
@@ -177,6 +187,12 @@ class Onionr:
             'add-site': self.addWebpage,
             'addsite': self.addWebpage,
 
+            'openhome': self.openHome,
+            'open-home': self.openHome,
+
+            'export-block': self.exportBlock,
+            'exportblock': self.exportBlock,
+
             'get-file': self.getFile,
             'getfile': self.getFile,
 
@@ -192,7 +208,6 @@ class Onionr:
 
             'ui' : self.openUI,
             'gui' : self.openUI,
-            'chat': self.startChat,
 
             'getpassword': self.printWebPassword,
             'get-password': self.printWebPassword,
@@ -202,8 +217,6 @@ class Onionr:
             'get-pass': self.printWebPassword,
             'getpasswd': self.printWebPassword,
             'get-passwd': self.printWebPassword,
-
-            'chat': self.startChat,
 
             'friend': self.friendCmd,
             'add-id': self.addID,
@@ -237,7 +250,8 @@ class Onionr:
             'introduce': 'Introduce your node to the public Onionr network',
             'friend': '[add|remove] [public key/id]',
             'add-id': 'Generate a new ID (key pair)',
-            'change-id': 'Change active ID'
+            'change-id': 'Change active ID',
+            'open-home': 'Open your node\'s home/info screen'
         }
 
         # initialize plugins
@@ -252,10 +266,38 @@ class Onionr:
             self.execute(command)
 
         return
+    
+    def exitSigterm(self, signum, frame):
+        self.killed = True
 
     '''
         THIS SECTION HANDLES THE COMMANDS
     '''
+
+    def exportBlock(self):
+        exportDir = self.dataDir + 'block-export/'
+        try:
+            assert self.onionrUtils.validateHash(sys.argv[2])
+        except (IndexError, AssertionError):
+            logger.error('No valid block hash specified.')
+            sys.exit(1)
+        else:
+            bHash = sys.argv[2]
+        try:
+            path = sys.argv[3]
+        except (IndexError):
+            if not os.path.exists(exportDir):
+                if os.path.exists(self.dataDir):
+                    os.mkdir(exportDir)
+                else:
+                    logger.error('Onionr not initialized')
+                    sys.exit(1)
+            path = exportDir
+        data = onionrstorage.getData(self.onionrCore, bHash)
+        with open('%s/%s.dat' % (exportDir, bHash), 'wb') as exportFile:
+            exportFile.write(data)
+
+
 
     def showDetails(self):
         details = {
@@ -268,6 +310,14 @@ class Onionr:
         for detail in details:
             logger.info('%s%s: \n%s%s\n' % (logger.colors.fg.lightgreen, detail, logger.colors.fg.green, details[detail]), sensitive = True)
 
+    def openHome(self):
+        try:
+            url = self.onionrUtils.getClientAPIServer()
+        except FileNotFoundError:
+            logger.error('Onionr seems to not be running (could not get api host)')
+        else:
+            webbrowser.open_new_tab('http://%s/#%s' % (url, config.get('client.webpassword')))
+
     def addID(self):
         try:
             sys.argv[2]
@@ -276,7 +326,8 @@ class Onionr:
             newID = self.onionrCore._crypto.keyManager.addKey()[0]
         else:
             logger.warn('Deterministic keys require random and long passphrases.')
-            logger.warn('If a good password is not used, your key can be easily stolen.')
+            logger.warn('If a good passphrase is not used, your key can be easily stolen.')
+            logger.warn('You should use a series of hard to guess words, see this for reference: https://www.xkcd.com/936/')
             pass1 = getpass.getpass(prompt='Enter at least %s characters: ' % (self.onionrCore._crypto.deterministicRequirement,))
             pass2 = getpass.getpass(prompt='Confirm entry: ')
             if self.onionrCore._crypto.safeCompare(pass1, pass2):
@@ -309,14 +360,6 @@ class Onionr:
                     logger.error('That key does not exist')
             else:
                 logger.error('Invalid key %s' % (key,))
-
-    def startChat(self):
-        try:
-            data = json.dumps({'peer': sys.argv[2], 'reason': 'chat'})
-        except IndexError:
-            logger.error('Must specify peer to chat with.')
-        else:
-            self.onionrCore.daemonQueueAdd('startSocket', data)
 
     def getCommands(self):
         return self.cmds
@@ -351,46 +394,9 @@ class Onionr:
                 except IndexError:
                     logger.error('Friend ID is required.')
                 except onionrexceptions.KeyNotKnown:
-                    logger.error('That peer is not in our database')
-                else:
-                    if action == 'add':
-                        friend.setTrust(1)
-                        logger.info('Added %s as friend.' % (friend.publicKey,))
-                    else:
-                        friend.setTrust(0)
-                        logger.info('Removed %s as friend.' % (friend.publicKey,))
-            else:
-                logger.info('Syntax: friend add/remove/list [address]')
-
-
-    def friendCmd(self):
-        '''List, add, or remove friend(s)
-        Changes their peer DB entry.
-        '''
-        friend = ''
-        try:
-            # Get the friend command
-            action = sys.argv[2]
-        except IndexError:
-            logger.info('Syntax: friend add/remove/list [address]')
-        else:
-            action = action.lower()
-            if action == 'list':
-                # List out peers marked as our friend
-                for friend in self.onionrCore.listPeers(randomOrder=False, trust=1):
-                    if friend == self.onionrCore._crypto.pubKey: # do not list our key
-                        continue
-                    friendProfile = onionrusers.OnionrUser(self.onionrCore, friend)
-                    logger.info(friend + ' - ' + friendProfile.getName())
-            elif action in ('add', 'remove'):
-                try:
-                    friend = sys.argv[3]
-                    if not self.onionrUtils.validatePubKey(friend):
-                        raise onionrexceptions.InvalidPubkey('Public key is invalid')
+                    self.onionrCore.addPeer(friend)
                     friend = onionrusers.OnionrUser(self.onionrCore, friend)
-                except IndexError:
-                    logger.error('Friend ID is required.')
-                else:
+                finally:
                     if action == 'add':
                         friend.setTrust(1)
                         logger.info('Added %s as friend.' % (friend.publicKey,))
@@ -400,6 +406,15 @@ class Onionr:
             else:
                 logger.info('Syntax: friend add/remove/list [address]')
 
+    def deleteRunFiles(self):
+        try:
+            os.remove(self.onionrCore.publicApiHostFile)
+        except FileNotFoundError:
+            pass
+        try:
+            os.remove(self.onionrCore.privateApiHostFile)
+        except FileNotFoundError:
+            pass
 
     def deleteRunFiles(self):
         try:
@@ -432,7 +447,21 @@ class Onionr:
         return
 
     def listConn(self):
-        self.onionrCore.daemonQueueAdd('connectedPeers')
+        randID = str(uuid.uuid4())
+        self.onionrCore.daemonQueueAdd('connectedPeers', responseID=randID)
+        while True:
+            try:
+                time.sleep(3)
+                peers = self.onionrCore.daemonQueueGetResponse(randID)
+            except KeyboardInterrupt:
+                break
+            if not type(peers) is None:
+                if peers not in ('', 'failure', None):
+                    if peers != False:
+                        print(peers)
+                    else:
+                        print('Daemon probably not running. Unable to list connected peers.')
+                    break
 
     def listPeers(self):
         logger.info('Peer transport address list:')
@@ -720,8 +749,6 @@ class Onionr:
             Starts the Onionr communication daemon
         '''
 
-        communicatorDaemon = './communicator2.py'
-
         # remove runcheck if it exists
         if os.path.isfile('data/.runcheck'):
             logger.debug('Runcheck file found on daemon start, deleting in advance.')
@@ -760,8 +787,12 @@ class Onionr:
         logger.debug('Using public key: %s' % (logger.colors.underline + self.onionrCore._crypto.pubKey))
         time.sleep(1)
 
-        # TODO: make runable on windows
-        communicatorProc = subprocess.Popen([communicatorDaemon, 'run', str(net.socksPort)])
+        self.onionrCore.torPort = net.socksPort
+        communicatorThread = Thread(target=communicator.startCommunicator, args=(self, str(net.socksPort)))
+        communicatorThread.start()
+        
+        while self.communicatorInst is None:
+            time.sleep(0.1)
 
         # print nice header thing :)
         if config.get('general.display_header', True):
@@ -776,17 +807,23 @@ class Onionr:
         events.event('daemon_start', onionr = self)
         try:
             while True:
-                time.sleep(5)
-
+                time.sleep(3)
+                # Debug to print out used FDs (regular and net)
+                #proc = psutil.Process()
+                #print('api-files:',proc.open_files(), len(psutil.net_connections()))
                 # Break if communicator process ends, so we don't have left over processes
-                if communicatorProc.poll() is not None:
+                if self.communicatorInst.shutdown:
                     break
+                if self.killed:
+                    break # Break out if sigterm for clean exit
         except KeyboardInterrupt:
+            pass
+        finally:
             self.onionrCore.daemonQueueAdd('shutdown')
             self.onionrUtils.localCommand('shutdown')
+        net.killTor()
         time.sleep(3)
         self.deleteRunFiles()
-        net.killTor()
         return
 
     def killDaemon(self):
@@ -815,7 +852,7 @@ class Onionr:
 
         try:
             # define stats messages here
-            totalBlocks = len(Block.getBlocks())
+            totalBlocks = len(self.onionrCore.getBlockList())
             signedBlocks = len(Block.getBlocks(signed = True))
             messages = {
                 # info about local client
@@ -938,7 +975,8 @@ class Onionr:
                 logger.error('Block hash is invalid')
                 return
 
-            Block.mergeChain(bHash, fileName)
+            with open(fileName, 'wb') as myFile:
+                myFile.write(base64.b64decode(Block(bHash, core=self.onionrCore).bcontent))
         return
 
     def addWebpage(self):
@@ -961,12 +999,9 @@ class Onionr:
                 return
             logger.info('Adding file... this might take a long time.')
             try:
-                if singleBlock:
-                    with open(filename, 'rb') as singleFile:
-                        blockhash = self.onionrCore.insertBlock(base64.b64encode(singleFile.read()), header=blockType)
-                else:
-                    blockhash = Block.createChain(file = filename)
-                logger.info('File %s saved in block %s.' % (filename, blockhash))
+                with open(filename, 'rb') as singleFile:
+                    blockhash = self.onionrCore.insertBlock(base64.b64encode(singleFile.read()), header=blockType)
+                logger.info('File %s saved in block %s' % (filename, blockhash))
             except:
                 logger.error('Failed to save file in block.', timestamp = False)
         else:

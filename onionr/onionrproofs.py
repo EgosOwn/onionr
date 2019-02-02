@@ -19,7 +19,57 @@
 '''
 
 import nacl.encoding, nacl.hash, nacl.utils, time, math, threading, binascii, logger, sys, base64, json
-import core, config
+import core, onionrutils, config
+import onionrblockapi
+
+def getDifficultyModifier(coreOrUtilsInst=None):
+    '''Accepts a core or utils instance returns 
+    the difficulty modifier for block storage based 
+    on a variety of factors, currently only disk use.
+    '''
+    classInst = coreOrUtilsInst
+    retData = 0
+    if isinstance(classInst, core.Core):
+        useFunc = classInst._utils.storageCounter.getPercent
+    elif isinstance(classInst, onionrutils.OnionrUtils):
+        useFunc = classInst.storageCounter.getPercent
+    else:
+        useFunc = core.Core()._utils.storageCounter.getPercent
+
+    percentUse = useFunc()
+
+    if percentUse >= 0.50:
+        retData += 1
+    elif percentUse >= 0.75:
+            retData += 2
+    elif percentUse >= 0.95:
+            retData += 3
+
+    return retData
+
+def getDifficultyForNewBlock(data, ourBlock=True):
+    '''
+    Get difficulty for block. Accepts size in integer, Block instance, or str/bytes full block contents
+    '''
+    retData = 0
+    dataSize = 0
+    if isinstance(data, onionrblockapi.Block):
+        dataSize = len(data.getRaw().encode('utf-8'))
+    elif isinstance(data, str):
+        dataSize = len(data.encode('utf-8'))
+    elif isinstance(data, bytes):
+        dataSize = len(data)
+    elif isinstance(data, int):
+        dataSize = data
+    else:
+        raise ValueError('not Block, str, or int')
+    if ourBlock:
+        minDifficulty = config.get('general.minimum_send_pow')
+    else:
+        minDifficulty = config.get('general.minimum_block_pow')
+
+    retData = max(minDifficulty, math.floor(dataSize / 1000000)) + getDifficultyModifier()
+    return retData
 
 def getHashDifficulty(h):
     '''
@@ -55,6 +105,7 @@ class DataPOW:
         self.difficulty = 0
         self.data = data
         self.threadCount = threadCount
+        self.rounds = 0
         config.reload()
 
         if forceDifficulty == 0:
@@ -96,6 +147,7 @@ class DataPOW:
         while self.hashing:
             rand = nacl.utils.random()
             token = nacl.hash.blake2b(rand + self.data).decode()
+            self.rounds += 1
             #print(token)
             if self.puzzle == token[0:self.difficulty]:
                 self.hashing = False
@@ -106,6 +158,7 @@ class DataPOW:
             endTime = math.floor(time.time())
             if self.reporting:
                 logger.debug('Found token after %s seconds: %s' % (endTime - startTime, token), timestamp=True)
+                logger.debug('Round count: %s' % (self.rounds,))
             self.result = (token, rand)
 
     def shutdown(self):
@@ -146,18 +199,28 @@ class DataPOW:
         return result
 
 class POW:
-    def __init__(self, metadata, data, threadCount = 5):
+    def __init__(self, metadata, data, threadCount = 5, forceDifficulty=0, coreInst=None):
         self.foundHash = False
         self.difficulty = 0
         self.data = data
         self.metadata = metadata
         self.threadCount = threadCount
 
-        dataLen = len(data) + len(json.dumps(metadata))
-        self.difficulty = math.floor(dataLen / 1000000)
-        if self.difficulty <= 2:
-            self.difficulty = int(config.get('general.minimum_block_pow'))
+        try:
+            assert isinstance(coreInst, core.Core)
+        except AssertionError:
+            myCore = core.Core()
+        else:
+            myCore = coreInst
 
+        dataLen = len(data) + len(json.dumps(metadata))
+
+        if forceDifficulty > 0:
+            self.difficulty = forceDifficulty
+        else:
+            # Calculate difficulty. Dumb for now, may use good algorithm in the future.
+            self.difficulty = getDifficultyForNewBlock(dataLen)
+            
         try:
             self.data = self.data.encode()
         except AttributeError:
@@ -167,8 +230,7 @@ class POW:
 
         self.mainHash = '0' * 64
         self.puzzle = self.mainHash[0:min(self.difficulty, len(self.mainHash))]
-        
-        myCore = core.Core()
+
         for i in range(max(1, threadCount)):
             t = threading.Thread(name = 'thread%s' % i, target = self.pow, args = (True,myCore))
             t.start()

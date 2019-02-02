@@ -210,12 +210,9 @@ class OnionrCrypto:
         ops = nacl.pwhash.argon2id.OPSLIMIT_SENSITIVE
         mem = nacl.pwhash.argon2id.MEMLIMIT_SENSITIVE
 
-        key = kdf(nacl.secret.SecretBox.KEY_SIZE, passphrase, salt, opslimit=ops, memlimit=mem)
-        key = nacl.public.PrivateKey(key, nacl.encoding.RawEncoder())
-        publicKey = key.public_key
-
-        return (publicKey.encode(encoder=nacl.encoding.Base32Encoder()),
-        key.encode(encoder=nacl.encoding.Base32Encoder()))
+        key = kdf(32, passphrase, salt, opslimit=ops, memlimit=mem) # Generate seed for ed25519 key
+        key = nacl.signing.SigningKey(key)
+        return (key.verify_key.encode(nacl.encoding.Base32Encoder).decode(), key.encode(nacl.encoding.Base32Encoder).decode())
 
     def pubKeyHashID(self, pubkey=''):
         '''Accept a ed25519 public key, return a truncated result of X many sha3_256 hash rounds'''
@@ -268,8 +265,9 @@ class OnionrCrypto:
             blockHash = blockHash.decode() # bytes on some versions for some reason
         except AttributeError:
             pass
-
-        difficulty = math.floor(dataLen / 1000000)
+        
+        difficulty = onionrproofs.getDifficultyForNewBlock(blockContent, ourBlock=False)
+        
         if difficulty < int(config.get('general.minimum_block_pow')):
             difficulty = int(config.get('general.minimum_block_pow'))
         mainHash = '0000000000000000000000000000000000000000000000000000000000000000'#nacl.hash.blake2b(nacl.utils.random()).decode()
@@ -283,5 +281,20 @@ class OnionrCrypto:
 
         return retData
 
-    def safeCompare(self, one, two):
+    @staticmethod
+    def safeCompare(one, two):
         return hmac.compare_digest(one, two)
+        
+    @staticmethod
+    def randomShuffle(theList):
+        myList = list(theList)
+        shuffledList = []
+        myListLength = len(myList) + 1
+        while myListLength > 0:
+            removed = secrets.randbelow(myListLength)
+            try:
+                shuffledList.append(myList.pop(removed))
+            except IndexError:
+                pass
+            myListLength = len(myList)
+        return shuffledList
