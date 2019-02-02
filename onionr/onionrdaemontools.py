@@ -34,47 +34,47 @@ class DaemonTools:
         '''Announce our node to our peers'''
         retData = False
         announceFail = False
-        
-        # Announce to random online peers
-        for i in self.daemon.onlinePeers:
-            if not i in self.announceCache:
-                peer = i
-                break
-        else:
-            peer = self.daemon.pickOnlinePeer()
-
-        ourID = self.daemon._core.hsAddress.strip()
-
-        url = 'http://' + peer + '/announce'
-        data = {'node': ourID}
-
-        combinedNodes = ourID + peer
-        existingRand = self.daemon._core.getAddressInfo(peer, 'powValue')
-        if type(existingRand) is type(None):
-            existingRand = ''
-
-        if peer in self.announceCache:
-            data['random'] = self.announceCache[peer]
-        elif len(existingRand) > 0:
-            data['random'] = existingRand
-        else:
-            proof = onionrproofs.DataPOW(combinedNodes, forceDifficulty=4)
-            try:
-                data['random'] = base64.b64encode(proof.waitForResult()[1])
-            except TypeError:
-                # Happens when we failed to produce a proof
-                logger.error("Failed to produce a pow for announcing to " + peer)
-                announceFail = True
+        if self.daemon._core.config.get('general.security_level', 0) == 0:
+            # Announce to random online peers
+            for i in self.daemon.onlinePeers:
+                if not i in self.announceCache:
+                    peer = i
+                    break
             else:
-                self.announceCache[peer] = data['random']
-        if not announceFail:
-            logger.info('Announcing node to ' + url)
-            if self.daemon._core._utils.doPostRequest(url, data) == 'Success':
-                logger.info('Successfully introduced node to ' + peer)
-                retData = True
-                self.daemon._core.setAddressInfo(peer, 'introduced', 1)
-                self.daemon._core.setAddressInfo(peer, 'powValue', data['random'])
-            self.daemon.decrementThreadCount('announceNode')
+                peer = self.daemon.pickOnlinePeer()
+
+            ourID = self.daemon._core.hsAddress.strip()
+
+            url = 'http://' + peer + '/announce'
+            data = {'node': ourID}
+
+            combinedNodes = ourID + peer
+            existingRand = self.daemon._core.getAddressInfo(peer, 'powValue')
+            if type(existingRand) is type(None):
+                existingRand = ''
+
+            if peer in self.announceCache:
+                data['random'] = self.announceCache[peer]
+            elif len(existingRand) > 0:
+                data['random'] = existingRand
+            else:
+                proof = onionrproofs.DataPOW(combinedNodes, forceDifficulty=4)
+                try:
+                    data['random'] = base64.b64encode(proof.waitForResult()[1])
+                except TypeError:
+                    # Happens when we failed to produce a proof
+                    logger.error("Failed to produce a pow for announcing to " + peer)
+                    announceFail = True
+                else:
+                    self.announceCache[peer] = data['random']
+            if not announceFail:
+                logger.info('Announcing node to ' + url)
+                if self.daemon._core._utils.doPostRequest(url, data) == 'Success':
+                    logger.info('Successfully introduced node to ' + peer)
+                    retData = True
+                    self.daemon._core.setAddressInfo(peer, 'introduced', 1)
+                    self.daemon._core.setAddressInfo(peer, 'powValue', data['random'])
+        self.daemon.decrementThreadCount('announceNode')
         return retData
 
     def netCheck(self):

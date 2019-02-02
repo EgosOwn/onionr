@@ -27,7 +27,7 @@ And most importantly, please be patient. Onionr is an open source project done b
 
 ## Asking Questions
 
-If you need help with Onionr, you can ask in our
+If you need help with Onionr, you can contact the devs (be polite and remember this is a volunteer-driven non-profit project).
 
 ## Contributing Code
 

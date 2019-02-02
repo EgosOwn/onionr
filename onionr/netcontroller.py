@@ -22,6 +22,7 @@ import subprocess, os, random, sys, logger, time, signal, config, base64, socket
 from stem.control import Controller
 from onionrblockapi import Block
 from dependencies import secrets
+from shutil import which
 
 def getOpenPort():
     # taken from (but modified) https://stackoverflow.com/a/2838309
@@ -31,6 +32,14 @@ def getOpenPort():
     port = s.getsockname()[1]
     s.close()
     return port
+
+def torBinary():
+    '''Return tor binary path or none if not exists'''
+    torPath = './tor'
+    if not os.path.exists(torPath):
+        torPath = which('tor')
+    return torPath
+
 class NetController:
     '''
         This class handles hidden service setup on Tor and I2P

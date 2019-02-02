@@ -24,7 +24,8 @@ from onionrblockapi import Block
 import onionrexceptions
 from onionr import API_VERSION
 import onionrevents
-import pgpwords, onionrusers, storagecounter
+import onionrusers, storagecounter
+from etc import pgpwords 
 if sys.version_info < (3, 6):
     try:
         import sha3
@@ -150,28 +151,43 @@ class OnionrUtils:
         except Exception as error:
             logger.error('Failed to read my address.', error = error)
             return None
+    
+    def getClientAPIServer(self):
+        retData = ''
+        try:
+            with open(self._core.privateApiHostFile, 'r') as host:
+                hostname = host.read()
+        except FileNotFoundError:
+            raise FileNotFoundError
+        else:
+            retData += '%s:%s' % (hostname, config.get('client.client.port'))
+        return retData
 
-    def localCommand(self, command, data='', silent = True):
+    def localCommand(self, command, data='', silent = True, post=False, postData = {}, maxWait=10):
         '''
             Send a command to the local http API server, securely. Intended for local clients, DO NOT USE for remote peers.
         '''
-
         config.reload()
         self.getTimeBypassToken()
         # TODO: URL encode parameters, just as an extra measure. May not be needed, but should be added regardless.
         hostname = ''
+        waited = 0
         while hostname == '':
             try:
-                with open(self._core.privateApiHostFile, 'r') as host:
-                    hostname = host.read()
+                hostname = self.getClientAPIServer()
             except FileNotFoundError:
-                print('wat')
                 time.sleep(1)
+                waited += 1
+                if waited == maxWait:
+                    return False
         if data != '':
             data = '&data=' + urllib.parse.quote_plus(data)
-        payload = 'http://%s:%s/%s%s' % (hostname, config.get('client.client.port'), command, data)
+        payload = 'http://%s/%s%s' % (hostname, command, data)
         try:
-            retData = requests.get(payload, headers={'token': config.get('client.webpassword')}).text
+            if post:
+                retData = requests.post(payload, data=postData, headers={'token': config.get('client.webpassword'), 'Connection':'close'}, timeout=(maxWait, 30)).text
+            else:
+                retData = requests.get(payload, headers={'token': config.get('client.webpassword'), 'Connection':'close'}, timeout=(maxWait, 30)).text
         except Exception as error:
             if not silent:
                 logger.error('Failed to make local request (command: %s):%s' % (command, error))
@@ -365,6 +381,7 @@ class OnionrUtils:
         '''Validate metadata meets onionr spec (does not validate proof value computation), take in either dictionary or json string'''
         # TODO, make this check sane sizes
         retData = False
+        maxClockDifference = 60
 
         # convert to dict if it is json string
         if type(metadata) is str:
@@ -393,13 +410,14 @@ class OnionrUtils:
                         break
                 if i == 'time':
                     if not self.isIntegerString(metadata[i]):
-                        logger.warn('Block metadata time stamp is not integer string')
+                        logger.warn('Block metadata time stamp is not integer string or int')
                         break
-                    if (metadata[i] - self.getEpoch()) > 30:
-                        logger.warn('Block metadata time stamp is set for the future, which is not allowed.')
+                    isFuture = (metadata[i] - self.getEpoch())
+                    if isFuture > maxClockDifference:
+                        logger.warn('Block timestamp is skewed to the future over the max %s: %s' (maxClockDifference, isFuture))
                         break
                     if (self.getEpoch() - metadata[i]) > maxAge:
-                        logger.warn('Block is older than allowed: %s' % (maxAge,))
+                        logger.warn('Block is outdated: %s' % (metadata[i],))
                 elif i == 'expire':
                     try:
                         assert int(metadata[i]) > self.getEpoch()
@@ -443,7 +461,7 @@ class OnionrUtils:
         return retVal
 
     def isIntegerString(self, data):
-        '''Check if a string is a valid base10 integer'''
+        '''Check if a string is a valid base10 integer (also returns true if already an int)'''
         try:
             int(data)
         except ValueError:
@@ -607,7 +625,7 @@ class OnionrUtils:
             proxies = {'http': 'http://127.0.0.1:4444'}
         else:
             return
-        headers = {'user-agent': 'PyOnionr'}
+        headers = {'user-agent': 'PyOnionr', 'Connection':'close'}
         try:
             proxies = {'http': 'socks4a://127.0.0.1:' + str(port), 'https': 'socks4a://127.0.0.1:' + str(port)}
             r = requests.post(url, data=data, headers=headers, proxies=proxies, allow_redirects=False, timeout=(15, 30))
@@ -632,11 +650,11 @@ class OnionrUtils:
             proxies = {'http': 'http://127.0.0.1:4444'}
         else:
             return
-        headers = {'user-agent': 'PyOnionr'}
+        headers = {'user-agent': 'PyOnionr', 'Connection':'close'}
         response_headers = dict()
         try:
             proxies = {'http': 'socks4a://127.0.0.1:' + str(port), 'https': 'socks4a://127.0.0.1:' + str(port)}
-            r = requests.get(url, headers=headers, proxies=proxies, allow_redirects=False, timeout=(15, 30))
+            r = requests.get(url, headers=headers, proxies=proxies, allow_redirects=False, timeout=(15, 30), )
             # Check server is using same API version as us
             if not ignoreAPI:
                 try:

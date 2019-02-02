@@ -17,12 +17,13 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import sqlite3, os, sys, time, math, base64, tarfile, nacl, logger, json, netcontroller, math, config
+import sqlite3, os, sys, time, math, base64, tarfile, nacl, logger, json, netcontroller, math, config, uuid
 from onionrblockapi import Block
 
-import onionrutils, onionrcrypto, onionrproofs, onionrevents as events, onionrexceptions, onionrvalues
-import onionrblacklist, onionrchat, onionrusers
-import dbcreator
+import onionrutils, onionrcrypto, onionrproofs, onionrevents as events, onionrexceptions
+import onionrblacklist, onionrusers
+import dbcreator, onionrstorage, serializeddata
+from etc import onionrvalues
 
 if sys.version_info < (3, 6):
     try:
@@ -45,10 +46,12 @@ class Core:
             self.dataDir = 'data/'
 
         try:
+            self.onionrInst = None
             self.queueDB = self.dataDir + 'queue.db'
             self.peerDB = self.dataDir + 'peers.db'
             self.blockDB = self.dataDir + 'blocks.db'
             self.blockDataLocation = self.dataDir + 'blocks/'
+            self.blockDataDB = self.blockDataLocation + 'block-data.db'
             self.publicApiHostFile = self.dataDir + 'public-host.txt'
             self.privateApiHostFile = self.dataDir + 'private-host.txt'
             self.addressDB = self.dataDir + 'address.db'
@@ -97,9 +100,11 @@ class Core:
                 logger.warn('Warning: address bootstrap file not found ' + self.bootstrapFileLocation)
 
             self._utils = onionrutils.OnionrUtils(self)
+            self.blockCache = onionrstorage.BlockCache()
             # Initialize the crypto object
             self._crypto = onionrcrypto.OnionrCrypto(self)
             self._blacklist = onionrblacklist.OnionrBlackList(self)
+            self.serializer = serializeddata.SerializedData(self)
 
         except Exception as error:
             logger.error('Failed to initialize core Onionr library.', error=error)
@@ -127,7 +132,7 @@ class Core:
 
         events.event('pubkey_add', data = {'key': peerID}, onionr = None)
 
-        conn = sqlite3.connect(self.peerDB, timeout=10)
+        conn = sqlite3.connect(self.peerDB, timeout=30)
         hashID = self._crypto.pubKeyHashID(peerID)
         c = conn.cursor()
         t = (peerID, name, 'unknown', hashID, 0)
@@ -157,7 +162,7 @@ class Core:
         if type(address) is None or len(address) == 0:
             return False
         if self._utils.validateID(address):
-            conn = sqlite3.connect(self.addressDB, timeout=10)
+            conn = sqlite3.connect(self.addressDB, timeout=30)
             c = conn.cursor()
             # check if address is in database
             # this is safe to do because the address is validated above, but we strip some chars here too just in case
@@ -181,7 +186,7 @@ class Core:
 
             return True
         else:
-            logger.debug('Invalid ID: %s' % address)
+            #logger.debug('Invalid ID: %s' % address)
             return False
 
     def removeAddress(self, address):
@@ -190,7 +195,7 @@ class Core:
         '''
 
         if self._utils.validateID(address):
-            conn = sqlite3.connect(self.addressDB, timeout=10)
+            conn = sqlite3.connect(self.addressDB, timeout=30)
             c = conn.cursor()
             t = (address,)
             c.execute('Delete from adders where address=?;', t)
@@ -210,7 +215,7 @@ class Core:
         '''
 
         if self._utils.validateHash(block):
-            conn = sqlite3.connect(self.blockDB, timeout=10)
+            conn = sqlite3.connect(self.blockDB, timeout=30)
             c = conn.cursor()
             t = (block,)
             c.execute('Delete from hashes where hash=?;', t)
@@ -258,7 +263,7 @@ class Core:
             raise Exception('Block db does not exist')
         if self._utils.hasBlock(newHash):
             return
-        conn = sqlite3.connect(self.blockDB, timeout=10)
+        conn = sqlite3.connect(self.blockDB, timeout=30)
         c = conn.cursor()
         currentTime = self._utils.getEpoch() + self._crypto.secrets.randbelow(301)
         if selfInsert or dataSaved:
@@ -277,6 +282,7 @@ class Core:
             Simply return the data associated to a hash
         '''
 
+        '''
         try:
             # logger.debug('Opening %s' % (str(self.blockDataLocation) + str(hash) + '.dat'))
             dataFile = open(self.blockDataLocation + hash + '.dat', 'rb')
@@ -284,6 +290,8 @@ class Core:
             dataFile.close()
         except FileNotFoundError:
             data = False
+        '''
+        data = onionrstorage.getData(self, hash)
 
         return data
 
@@ -308,10 +316,11 @@ class Core:
             #raise Exception("Data is already set for " + dataHash)
         else:
             if self._utils.storageCounter.addBytes(dataSize) != False:
-                blockFile = open(blockFileName, 'wb')
-                blockFile.write(data)
-                blockFile.close()
-                conn = sqlite3.connect(self.blockDB, timeout=10)
+                #blockFile = open(blockFileName, 'wb')
+                #blockFile.write(data)
+                #blockFile.close()
+                onionrstorage.store(self, data, blockHash=dataHash)
+                conn = sqlite3.connect(self.blockDB, timeout=30)
                 c = conn.cursor()
                 c.execute("UPDATE hashes SET dataSaved=1 WHERE hash = ?;", (dataHash,))
                 conn.commit()
@@ -334,10 +343,10 @@ class Core:
         if not os.path.exists(self.queueDB):
             self.dbCreate.createDaemonDB()
         else:
-            conn = sqlite3.connect(self.queueDB, timeout=10)
+            conn = sqlite3.connect(self.queueDB, timeout=30)
             c = conn.cursor()
             try:
-                for row in c.execute('SELECT command, data, date, min(ID) FROM commands group by id'):
+                for row in c.execute('SELECT command, data, date, min(ID), responseID FROM commands group by id'):
                     retData = row
                     break
             except sqlite3.OperationalError:
@@ -352,34 +361,58 @@ class Core:
 
         return retData
 
-    def daemonQueueAdd(self, command, data=''):
+    def daemonQueueAdd(self, command, data='', responseID=''):
         '''
             Add a command to the daemon queue, used by the communication daemon (communicator.py)
         '''
 
         retData = True
-        # Intended to be used by the web server
 
         date = self._utils.getEpoch()
-        conn = sqlite3.connect(self.queueDB, timeout=10)
+        conn = sqlite3.connect(self.queueDB, timeout=30)
         c = conn.cursor()
-        t = (command, data, date)
+        t = (command, data, date, responseID)
 
         try:
-            c.execute('INSERT INTO commands (command, data, date) VALUES(?, ?, ?)', t)
+            c.execute('INSERT INTO commands (command, data, date, responseID) VALUES(?, ?, ?, ?)', t)
             conn.commit()
-            conn.close()
         except sqlite3.OperationalError:
             retData = False
             self.daemonQueue()
         events.event('queue_push', data = {'command': command, 'data': data}, onionr = None)
+        conn.close()
         return retData
+
+    def daemonQueueGetResponse(self, responseID=''):
+        '''
+            Get a response sent by communicator to the API, by requesting to the API
+        '''
+        assert len(responseID) > 0
+        resp = self._utils.localCommand('queueResponse/' + responseID)
+        return resp
+
+    def daemonQueueWaitForResponse(self, responseID='', checkFreqSecs=1):
+        resp = 'failure'
+        while resp == 'failure':
+            resp = self.daemonQueueGetResponse(responseID)
+            time.sleep(1)
+        return resp
+
+    def daemonQueueSimple(self, command, data='', checkFreqSecs=1):
+        '''
+        A simplified way to use the daemon queue. Will register a command (with optional data) and wait, return the data
+        Not always useful, but saves time + LOC in some cases.
+        This is a blocking function, so be careful.
+        '''
+        responseID = str(uuid.uuid4()) # generate unique response ID
+        self.daemonQueueAdd(command, data=data, responseID=responseID)
+        return self.daemonQueueWaitForResponse(responseID, checkFreqSecs)
 
     def clearDaemonQueue(self):
         '''
             Clear the daemon queue (somewhat dangerous)
         '''
-        conn = sqlite3.connect(self.queueDB, timeout=10)
+        conn = sqlite3.connect(self.queueDB, timeout=30)
         c = conn.cursor()
 
         try:
@@ -393,11 +426,11 @@ class Core:
 
         return
 
-    def listAdders(self, randomOrder=True, i2p=True):
+    def listAdders(self, randomOrder=True, i2p=True, recent=0):
         '''
             Return a list of addresses
         '''
-        conn = sqlite3.connect(self.addressDB, timeout=10)
+        conn = sqlite3.connect(self.addressDB, timeout=30)
         c = conn.cursor()
         if randomOrder:
             addresses = c.execute('SELECT * FROM adders ORDER BY RANDOM();')
@@ -405,8 +438,17 @@ class Core:
             addresses = c.execute('SELECT * FROM adders;')
         addressList = []
         for i in addresses:
+            if len(i[0].strip()) == 0:
+                continue
             addressList.append(i[0])
         conn.close()
+        testList = list(addressList) # create new list to iterate
+        for address in testList:
+            try:
+                if recent > 0 and (self._utils.getEpoch() - self.getAddressInfo(address, 'lastConnect')) > recent:
+                    raise TypeError # If there is no last-connected date or it was too long ago, don't add peer to list if recent is not 0
+            except TypeError:
+                addressList.remove(address)
         return addressList
 
     def listPeers(self, randomOrder=True, getPow=False, trust=0):
@@ -416,7 +458,7 @@ class Core:
             randomOrder determines if the list should be in a random order
             trust sets the minimum trust to list
         '''
-        conn = sqlite3.connect(self.peerDB, timeout=10)
+        conn = sqlite3.connect(self.peerDB, timeout=30)
         c = conn.cursor()
 
         payload = ''
@@ -465,7 +507,7 @@ class Core:
             trust int           4
             hashID text         5
         '''
-        conn = sqlite3.connect(self.peerDB, timeout=10)
+        conn = sqlite3.connect(self.peerDB, timeout=30)
         c = conn.cursor()
 
         command = (peer,)
@@ -491,7 +533,7 @@ class Core:
             Update a peer for a key
         '''
 
-        conn = sqlite3.connect(self.peerDB, timeout=10)
+        conn = sqlite3.connect(self.peerDB, timeout=30)
         c = conn.cursor()
 
         command = (data, peer)
@@ -523,7 +565,7 @@ class Core:
             introduced  10
         '''
 
-        conn = sqlite3.connect(self.addressDB, timeout=10)
+        conn = sqlite3.connect(self.addressDB, timeout=30)
         c = conn.cursor()
 
         command = (address,)
@@ -548,38 +590,41 @@ class Core:
             Update an address for a key
         '''
 
-        conn = sqlite3.connect(self.addressDB, timeout=10)
+        conn = sqlite3.connect(self.addressDB, timeout=30)
         c = conn.cursor()
 
         command = (data, address)
-        
+
         if key not in ('address', 'type', 'knownPeer', 'speed', 'success', 'DBHash', 'failure', 'powValue', 'lastConnect', 'lastConnectAttempt', 'trust', 'introduced'):
             raise Exception("Got invalid database key when setting address info")
         else:
             c.execute('UPDATE adders SET ' + key + ' = ? WHERE address=?', command)
             conn.commit()
-            conn.close()
+        conn.close()
 
         return
 
-    def getBlockList(self, unsaved = False): # TODO: Use unsaved??
+    def getBlockList(self, dateRec = None, unsaved = False):
         '''
             Get list of our blocks
         '''
+        if dateRec == None:
+            dateRec = 0
 
-        conn = sqlite3.connect(self.blockDB, timeout=10)
+        conn = sqlite3.connect(self.blockDB, timeout=30)
         c = conn.cursor()
 
-        if unsaved:
-            execute = 'SELECT hash FROM hashes WHERE dataSaved != 1 ORDER BY RANDOM();'
-        else:
-            execute = 'SELECT hash FROM hashes ORDER BY dateReceived ASC;'
-
+        # if unsaved:
+        #     execute = 'SELECT hash FROM hashes WHERE dataSaved != 1 ORDER BY RANDOM();'
+        # else:
+        #     execute = 'SELECT hash FROM hashes ORDER BY dateReceived ASC;'
+        execute = 'SELECT hash FROM hashes WHERE dateReceived >= ? ORDER BY dateReceived ASC;'
+        args = (dateRec,)
         rows = list()
-        for row in c.execute(execute):
+        for row in c.execute(execute, args):
             for i in row:
                 rows.append(i)
-
+        conn.close()
         return rows
 
     def getBlockDate(self, blockHash):
@@ -587,7 +632,7 @@ class Core:
             Returns the date a block was received
         '''
 
-        conn = sqlite3.connect(self.blockDB, timeout=10)
+        conn = sqlite3.connect(self.blockDB, timeout=30)
         c = conn.cursor()
 
         execute = 'SELECT dateReceived FROM hashes WHERE hash=?;'
@@ -595,7 +640,7 @@ class Core:
         for row in c.execute(execute, args):
             for i in row:
                 return int(i)
-
+        conn.close()
         return None
 
     def getBlocksByType(self, blockType, orderDate=True):
@@ -603,7 +648,7 @@ class Core:
             Returns a list of blocks by the type
         '''
 
-        conn = sqlite3.connect(self.blockDB, timeout=10)
+        conn = sqlite3.connect(self.blockDB, timeout=30)
         c = conn.cursor()
 
         if orderDate:
@@ -617,12 +662,12 @@ class Core:
         for row in c.execute(execute, args):
             for i in row:
                 rows.append(i)
-
+        conn.close()
         return rows
 
     def getExpiredBlocks(self):
         '''Returns a list of expired blocks'''
-        conn = sqlite3.connect(self.blockDB, timeout=10)
+        conn = sqlite3.connect(self.blockDB, timeout=30)
         c = conn.cursor()
         date = int(self._utils.getEpoch())
 
@@ -632,6 +677,7 @@ class Core:
         for row in c.execute(execute):
             for i in row:
                 rows.append(i)
+        conn.close()
         return rows
 
     def setBlockType(self, hash, blockType):
@@ -639,7 +685,7 @@ class Core:
             Sets the type of block
         '''
 
-        conn = sqlite3.connect(self.blockDB, timeout=10)
+        conn = sqlite3.connect(self.blockDB, timeout=30)
         c = conn.cursor()
         c.execute("UPDATE hashes SET dataType = ? WHERE hash = ?;", (blockType, hash))
         conn.commit()
@@ -666,7 +712,7 @@ class Core:
         if key not in ('dateReceived', 'decrypted', 'dataType', 'dataFound', 'dataSaved', 'sig', 'author', 'dateClaimed', 'expire'):
             return False
 
-        conn = sqlite3.connect(self.blockDB, timeout=10)
+        conn = sqlite3.connect(self.blockDB, timeout=30)
         c = conn.cursor()
         args = (data, hash)
         c.execute("UPDATE hashes SET " + key + " = ? where hash = ?;", args)
@@ -675,12 +721,15 @@ class Core:
 
         return True
 
-    def insertBlock(self, data, header='txt', sign=False, encryptType='', symKey='', asymPeer='', meta = {}, expire=None):
+    def insertBlock(self, data, header='txt', sign=False, encryptType='', symKey='', asymPeer='', meta = {}, expire=None, disableForward=False):
         '''
             Inserts a block into the network
             encryptType must be specified to encrypt a block
         '''
-
+        allocationReachedMessage = 'Cannot insert block, disk allocation reached.'
+        if self._utils.storageCounter.isFull():
+            logger.error(allocationReachedMessage)
+            return False
         retData = False
         # check nonce
         dataNonce = self._utils.bytesToStr(self._crypto.sha3Hash(data))
@@ -719,15 +768,17 @@ class Core:
             pass
 
         if encryptType == 'asym':
-            try:
-                forwardEncrypted = onionrusers.OnionrUser(self, asymPeer).forwardEncrypt(data)
-                data = forwardEncrypted[0]
-                meta['forwardEnc'] = True
-            except onionrexceptions.InvalidPubkey:
-                onionrusers.OnionrUser(self, asymPeer).generateForwardKey()
-            onionrusers.OnionrUser(self, asymPeer).generateForwardKey()
-            fsKey = onionrusers.OnionrUser(self, asymPeer).getGeneratedForwardKeys()[0]
-            meta['newFSKey'] = fsKey[0]
+            if not disableForward and asymPeer != self._crypto.pubKey:
+                try:
+                    forwardEncrypted = onionrusers.OnionrUser(self, asymPeer).forwardEncrypt(data)
+                    data = forwardEncrypted[0]
+                    meta['forwardEnc'] = True
+                except onionrexceptions.InvalidPubkey:
+                    pass
+                    #onionrusers.OnionrUser(self, asymPeer).generateForwardKey()
+                fsKey = onionrusers.OnionrUser(self, asymPeer).generateForwardKey()
+                #fsKey = onionrusers.OnionrUser(self, asymPeer).getGeneratedForwardKeys().reverse()
+                meta['newFSKey'] = fsKey
         jsonMeta = json.dumps(meta)
         if sign:
             signature = self._crypto.edSign(jsonMeta.encode() + data, key=self._crypto.privKey, encodeResult=True)
@@ -774,13 +825,18 @@ class Core:
         proof = onionrproofs.POW(metadata, data)
         payload = proof.waitForResult()
         if payload != False:
-            retData = self.setData(payload)
-            # Tell the api server through localCommand to wait for the daemon to upload this block to make stastical analysis more difficult
-            self._utils.localCommand('waitforshare/' + retData)
-            self.addToBlockDB(retData, selfInsert=True, dataSaved=True)
-            #self.setBlockType(retData, meta['type'])
-            self._utils.processBlockMetadata(retData)
-            self.daemonQueueAdd('uploadBlock', retData)
+            try:
+                retData = self.setData(payload)
+            except onionrexceptions.DiskAllocationReached:
+                logger.error(allocationReachedMessage)
+                retData = False
+            else:
+                # Tell the api server through localCommand to wait for the daemon to upload this block to make stastical analysis more difficult
+                self._utils.localCommand('waitforshare/' + retData)
+                self.addToBlockDB(retData, selfInsert=True, dataSaved=True)
+                #self.setBlockType(retData, meta['type'])
+                self._utils.processBlockMetadata(retData)
+                self.daemonQueueAdd('uploadBlock', retData)
 
         if retData != False:
             events.event('insertBlock', onionr = None, threaded = False)
@@ -813,5 +869,4 @@ class Core:
         else:
             logger.error('Onionr daemon is not running.')
             return False
-
         return

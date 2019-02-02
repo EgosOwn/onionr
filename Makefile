@@ -18,7 +18,7 @@ uninstall:
 	rm -f $(DESTDIR)$(PREFIX)/bin/onionr
 
 test:
-	@./run-linux stop
+	@./onionr.sh stop
 	@sleep 1
 	@rm -rf onionr/data-backup
 	@mv onionr/data onionr/data-backup | true > /dev/null 2>&1
@@ -29,15 +29,15 @@ test:
 soft-reset:
 	@echo "Soft-resetting Onionr..."
 	rm -f onionr/data/blocks/*.dat onionr/data/*.db onionr/data/block-nonces.dat | true > /dev/null 2>&1
-	@./run-linux version | grep -v "Failed" --color=always
+	@./onionr.sh version | grep -v "Failed" --color=always
 
 reset:
 	@echo "Hard-resetting Onionr..."
 	rm -rf onionr/data/ | true > /dev/null 2>&1
 	cd onionr/static-data/www/ui/; rm -rf ./dist; python compile.py
-	#@./RUN-LINUX.sh version | grep -v "Failed" --color=always
+	#@./onionr.sh.sh version | grep -v "Failed" --color=always
 
 plugins-reset:
 	@echo "Resetting plugins..."
 	rm -rf onionr/data/plugins/ | true > /dev/null 2>&1
-	@./run-linux version | grep -v "Failed" --color=always
+	@./onionr.sh version | grep -v "Failed" --color=always

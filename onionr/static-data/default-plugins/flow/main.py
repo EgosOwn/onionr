@@ -54,9 +54,10 @@ class OnionrFlow:
                     self.flowRunning = False
                 expireTime = self.myCore._utils.getEpoch() + 43200
                 if len(message) > 0:
-                    insertBL = Block(content = message, type = 'txt', expire=expireTime, core = self.myCore)
-                    insertBL.setMetadata('ch', self.channel)
-                    insertBL.save()
+                    self.myCore.insertBlock(message, header='txt', expire=expireTime, meta={'ch': self.channel})
+                    #insertBL = Block(content = message, type = 'txt', expire=expireTime, core = self.myCore)
+                    #insertBL.setMetadata('ch', self.channel)
+                    #insertBL.save()
 
         logger.info("Flow is exiting, goodbye")
         return
@@ -66,10 +67,13 @@ class OnionrFlow:
             time.sleep(1)
         try:
             while self.flowRunning:
-                    for block in Block.getBlocks(type = 'txt', core = self.myCore):
+                    for block in self.myCore.getBlocksByType('txt'):
+                        block = Block(block)
                         if block.getMetadata('ch') != self.channel:
+                            #print('not chan', block.getMetadata('ch'))
                             continue
                         if block.getHash() in self.alreadyOutputed:
+                            #print('already')
                             continue
                         if not self.flowRunning:
                             break
@@ -79,7 +83,7 @@ class OnionrFlow:
                         content = self.myCore._utils.escapeAnsi(content.replace('\n', '\\n').replace('\r', '\\r').strip())
                         logger.info(block.getDate().strftime("%m/%d %H:%M") + ' - ' + logger.colors.reset + content, prompt = False)
                         self.alreadyOutputed.append(block.getHash())
-                        time.sleep(5)
+                    time.sleep(5)
         except KeyboardInterrupt:
             self.flowRunning = False
 
