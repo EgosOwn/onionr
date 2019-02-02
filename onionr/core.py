@@ -56,7 +56,7 @@ class Core:
             self.privateApiHostFile = self.dataDir + 'private-host.txt'
             self.addressDB = self.dataDir + 'address.db'
             self.hsAddress = ''
-            self.i2pAddress = config.get('i2p.ownAddr', None)
+            self.i2pAddress = config.get('i2p.own_addr', None)
             self.bootstrapFileLocation = 'static-data/bootstrap-nodes.txt'
             self.bootstrapList = []
             self.requirements = onionrvalues.OnionrValues()

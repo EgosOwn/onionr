@@ -21,8 +21,7 @@
         "private" : {
             "run" : true,
             "path" : "static-data/www/private/",
-            "guess_mime" : true,
-            "timing_protection" : true
+            "guess_mime" : true
         },
 
         "ui" : {

@@ -141,7 +141,11 @@ class OnionrMail:
                         logger.warn('This message has an INVALID signature. ANYONE could have sent this message.')
                         cancel = logger.readline('Press enter to continue to message, or -q to not open the message (recommended).')
                     if cancel != '-q':
-                        print(draw_border(self.myCore._utils.escapeAnsi(readBlock.bcontent.decode().strip())))
+                        try:
+                            print(draw_border(self.myCore._utils.escapeAnsi(readBlock.bcontent.decode().strip())))
+                        except ValueError:
+                            logger.warn('Error presenting message. This is usually due to a malformed or blank message.')
+                            pass
                         reply = logger.readline("Press enter to continue, or enter %s to reply" % ("-r",))
                         if reply == "-r":
                             self.draftMessage(self.myCore._utils.bytesToStr(readBlock.signer,))
