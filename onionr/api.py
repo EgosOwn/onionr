@@ -139,7 +139,7 @@ class PublicAPI:
             if clientAPI._utils.validateHash(data):
                 if data not in self.hideBlocks:
                     if data in clientAPI._core.getBlockList():
-                        block = self.clientAPI.getBlockData(data).encode()
+                        block = clientAPI.getBlockData(data, raw=True).encode()
                         resp = base64.b64encode(block).decode()
             if len(resp) == 0:
                 abort(404)
@@ -469,17 +469,20 @@ class API:
                 # Don't error on race condition with startup
                 pass
     
-    def getBlockData(self, bHash, decrypt=False):
+    def getBlockData(self, bHash, decrypt=False, raw=False):
         bl = Block(bHash, core=self._core)
         if decrypt:
             bl.decrypt()
             if bl.isEncrypted and not bl.decrypted:
                 raise ValueError
 
-        retData = {'meta':bl.bheader, 'metadata': bl.bmetadata, 'content': bl.bcontent}
-        for x in list(retData.keys()):
-            try:
-                retData[x] = retData[x].decode()
-            except AttributeError:
-                pass
-        return json.dumps(retData)
+        if not raw:
+            retData = {'meta':bl.bheader, 'metadata': bl.bmetadata, 'content': bl.bcontent}
+            for x in list(retData.keys()):
+                try:
+                    retData[x] = retData[x].decode()
+                except AttributeError:
+                    pass
+            return json.dumps(retData)
+        else:
+            return bl.raw

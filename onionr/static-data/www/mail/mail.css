@@ -2,5 +2,6 @@
     padding-top: 1em;
 }
 .threads div span{
-    padding-left: 1em;
+    padding-left: 0.5em;
+    padding-right: 0.5em;
 }
