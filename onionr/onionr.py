@@ -124,6 +124,7 @@ class Onionr:
             config.set('client.client.port', randomPort, savefile=True)
         if type(config.get('client.public.port')) is type(None):
             randomPort = netcontroller.getOpenPort()
+            print(randomPort)
             config.set('client.public.port', randomPort, savefile=True)
         if type(config.get('client.participate')) is type(None):
             config.set('client.participate', True, savefile=True)
@@ -774,7 +775,7 @@ class Onionr:
         Onionr.setupConfig('data/', self = self)
 
         if self._developmentMode:
-            logger.warn('DEVELOPMENT MODE ENABLED (LESS SECURE)', timestamp = False)
+            logger.warn('DEVELOPMENT MODE ENABLED (NOT RECOMMENDED)', timestamp = False)
         net = NetController(config.get('client.public.port', 59497), apiServerIP=apiHost)
         logger.debug('Tor is starting...')
         if not net.startTor():

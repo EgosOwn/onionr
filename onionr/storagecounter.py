@@ -18,7 +18,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 import config
-
+config.reload()
 class StorageCounter:
     def __init__(self, coreInst):
         self._core = coreInst
@@ -27,7 +27,7 @@ class StorageCounter:
 
     def isFull(self):
         retData = False
-        if self._core.config.get('allocations.disk') <= (self.getAmount() + 1000):
+        if self._core.config.get('allocations.disk', 2000000000) <= (self.getAmount() + 1000):
             retData = True
         return retData
 

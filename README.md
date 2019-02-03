@@ -60,6 +60,7 @@ Everyone is welcome to help out. Help is wanted for the following:
 * Testing
 * Running stable nodes
 * Security review/audit
+* Automatic I2P setup
 
 Bitcoin: [1onion55FXzm6h8KQw3zFw2igpHcV7LPq](bitcoin:1onion55FXzm6h8KQw3zFw2igpHcV7LPq)
 USD: [Ko-Fi](https://www.ko-fi.com/beardogkf)

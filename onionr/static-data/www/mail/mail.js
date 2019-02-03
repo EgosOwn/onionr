@@ -1,7 +1,16 @@
 pms = ''
 threadPart = document.getElementById('threads')
+threadPlaceholder = document.getElementById('threadPlaceholder')
 function getInbox(){
+    var showed = false
     for(var i = 0; i < pms.length; i++) {
+        if (pms[i].trim().length == 0){
+            continue
+        }
+        else{
+            threadPlaceholder.style.display = 'none'
+            showed = true
+        }
         fetch('/getblockdata/' + pms[i], {
             headers: {
               "token": webpass
@@ -11,7 +20,7 @@ function getInbox(){
 
             var entry = document.createElement('div')
 
-            var bHashDisplay = document.createElement('a')
+            var bHashDisplay = document.createElement('span')
             var senderInput = document.createElement('input')
             var subjectLine = document.createElement('span')
             var dateStr = document.createElement('span')
@@ -30,12 +39,15 @@ function getInbox(){
             }
             //entry.innerHTML = 'sender ' + resp['meta']['signer'] + ' - ' + resp['meta']['time'] 
             threadPart.appendChild(entry)
-            entry.appendChild(bHashDisplay)
+            //entry.appendChild(bHashDisplay)
             entry.appendChild(senderInput)
             entry.appendChild(subjectLine)
             entry.appendChild(dateStr)
             
           }.bind([pms, i]))
+    }
+    if (! showed){
+        threadPlaceholder.style.display = 'block'
     }
 
 }

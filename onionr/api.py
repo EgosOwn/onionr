@@ -19,8 +19,6 @@
 '''
 from gevent.pywsgi import WSGIServer, WSGIHandler
 from gevent import Timeout
-#import gevent.monkey
-#gevent.monkey.patch_socket()
 import flask, cgi
 from flask import request, Response, abort, send_from_directory
 import sys, random, threading, hmac, hashlib, base64, time, math, os, json, socket

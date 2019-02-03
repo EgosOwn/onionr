@@ -2,6 +2,32 @@
     padding-top: 1em;
 }
 .threads div span{
-    padding-left: 0.5em;
-    padding-right: 0.5em;
+    padding-left: 0.1em;
+    padding-right: 0.1em;
 }
+
+#threadPlaceholder{
+    display: none;
+    margin-top: 1em;
+    font-size: 2em;
+}
+
+input{
+    background-color: white;
+    color: black;
+}
+
+.btn-group button {
+    border: 1px solid black;
+    padding: 10px 24px; /* Some padding */
+    cursor: pointer; /* Pointer/hand icon */
+    float: left; /* Float the buttons side by side */
+  }
+
+  .btn-group button:hover {
+    background-color: darkgray;
+  }
+
+  .btn-group {
+      margin-bottom: 2em;
+  }
