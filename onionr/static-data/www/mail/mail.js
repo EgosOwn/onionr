@@ -21,8 +21,15 @@ pms = ''
 threadPart = document.getElementById('threads')
 threadPlaceholder = document.getElementById('threadPlaceholder')
 tabBtns = document.getElementById('tabBtns')
-
+threadContent = {}
 myPub = httpGet('/getActivePubkey')
+
+function openThread(bHash, sender, date){
+    var messageDisplay = document.getElementById('threadDisplay')
+    stuff = httpGet('/getblockbody/' + bHash)
+    messageDisplay.innerText = stuff
+    overlay('messageDisplay')
+}
 
 function setActiveTab(tabName){
     threadPart.innerHTML = ""
@@ -42,8 +49,52 @@ function setActiveTab(tabName){
     }
 }
 
+function loadInboxEntrys(bHash){
+    fetch('/getblockheader/' + bHash, {
+        headers: {
+          "token": webpass
+        }})
+    .then((resp) => resp.json()) // Transform the data into json
+    .then(function(resp) {
+        console.log(resp)
+        var entry = document.createElement('div')
+        var bHashDisplay = document.createElement('span')
+        var senderInput = document.createElement('input')
+        var subjectLine = document.createElement('span')
+        var dateStr = document.createElement('span')
+        var humanDate = new Date(0)
+        var metadata = resp['metadata']
+        humanDate.setUTCSeconds(resp['meta']['time'])
+        senderInput.value = httpGet('/getHumanReadable/' + resp['meta']['signer'])
+        bHashDisplay.innerText = bHash.substring(0, 10)
+        entry.setAttribute('hash', bHash);
+        senderInput.readOnly = true
+        dateStr.innerText = humanDate.toString()
+        if (metadata['subject'] === undefined || metadata['subject'] === null) {
+            subjectLine.innerText = '()'
+        }
+        else{
+            subjectLine.innerText = '(' + metadata['subject'] + ')'
+        }
+        //entry.innerHTML = 'sender ' + resp['meta']['signer'] + ' - ' + resp['meta']['time'] 
+        threadPart.appendChild(entry)
+        entry.appendChild(bHashDisplay)
+        entry.appendChild(senderInput)
+        entry.appendChild(subjectLine)
+        entry.appendChild(dateStr)
+        entry.classList.add('threadEntry')
+
+        entry.onclick = function(){
+            openThread(entry.getAttribute('hash'), senderInput.value, dateStr.innerText)
+        }
+        
+      }.bind(bHash))
+}
+
+
 function getInbox(){
     var showed = false
+    var requested = ''
     for(var i = 0; i < pms.length; i++) {
         if (pms[i].trim().length == 0){
             continue
@@ -52,47 +103,13 @@ function getInbox(){
             threadPlaceholder.style.display = 'none'
             showed = true
         }
-        fetch('/getblockdata/' + pms[i], {
-            headers: {
-              "token": webpass
-            }})
-        .then((resp) => resp.json()) // Transform the data into json
-        .then(function(resp) {
-
-            var entry = document.createElement('div')
-
-            var bHashDisplay = document.createElement('span')
-            var senderInput = document.createElement('input')
-            var subjectLine = document.createElement('span')
-            var dateStr = document.createElement('span')
-            var humanDate = new Date(0)
-            humanDate.setUTCSeconds(resp['meta']['time'])
-            senderInput.value = httpGet('/getHumanReadable/' + resp['meta']['signer'])
-            bHashDisplay.innerText = pms[i - 1].substring(0, 10)
-            bHashDisplay.setAttribute('hash', pms[i - 1]);
-            senderInput.readOnly = true
-            dateStr.innerText = humanDate.toString()
-            if (resp['metadata']['subject'] === undefined || resp['metadata']['subject'] === null) {
-                subjectLine.innerText = '()'
-            }
-            else{
-                subjectLine.innerText = '(' + resp['metadata']['subject'] + ')'
-            }
-            //entry.innerHTML = 'sender ' + resp['meta']['signer'] + ' - ' + resp['meta']['time'] 
-            threadPart.appendChild(entry)
-            //entry.appendChild(bHashDisplay)
-            entry.appendChild(senderInput)
-            entry.appendChild(subjectLine)
-            entry.appendChild(dateStr)
-            
-          }.bind([pms, i]))
+        loadInboxEntrys(pms[i])
     }
     if (! showed){
         threadPlaceholder.style.display = 'block'
     }
 
 }
-
 
 fetch('/getblocksbytype/pm', {
     headers: {
@@ -113,7 +130,6 @@ tabBtns.onclick = function(event){
     event.target.classList.add('activeTab')
     setActiveTab(event.target.innerText.toLowerCase())
 }
-
 
 var idStrings = document.getElementsByClassName('myPub')
 var myHumanReadable = httpGet('/getHumanReadable/' + myPub)

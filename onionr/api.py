@@ -355,12 +355,13 @@ class API:
             blocks = self._core.getBlocksByType(name)
             return Response(','.join(blocks))
         
-        @app.route('/gethtmlsafeblockdata/<name>')
-        def getSafeData(name):
+        @app.route('/getblockbody/<name>')
+        def getBlockBodyData(name):
             resp = ''
             if self._core._utils.validateHash(name):
                 try:
-                    resp =  cgi.escape(Block(name).bcontent, quote=True)
+                    resp = Block(name, decrypt=True).bcontent
+                    #resp =  cgi.escape(Block(name, decrypt=True).bcontent, quote=True)
                 except TypeError:
                     pass
             else:
@@ -380,6 +381,11 @@ class API:
                     abort(404)
             else:
                 abort(404)
+            return Response(resp)
+
+        @app.route('/getblockheader/<name>')
+        def getBlockHeader(name):
+            resp = self.getBlockData(name, decrypt=True, headerOnly=True)
             return Response(resp)
 
         @app.route('/site/<name>', endpoint='site')
@@ -475,7 +481,8 @@ class API:
                 # Don't error on race condition with startup
                 pass
     
-    def getBlockData(self, bHash, decrypt=False, raw=False):
+    def getBlockData(self, bHash, decrypt=False, raw=False, headerOnly=False):
+        assert self._core._utils.validateHash(bHash)
         bl = Block(bHash, core=self._core)
         if decrypt:
             bl.decrypt()
@@ -483,12 +490,16 @@ class API:
                 raise ValueError
 
         if not raw:
-            retData = {'meta':bl.bheader, 'metadata': bl.bmetadata, 'content': bl.bcontent}
-            for x in list(retData.keys()):
-                try:
-                    retData[x] = retData[x].decode()
-                except AttributeError:
-                    pass
+            if not headerOnly:
+                retData = {'meta':bl.bheader, 'metadata': bl.bmetadata, 'content': bl.bcontent}
+                for x in list(retData.keys()):
+                    try:
+                        retData[x] = retData[x].decode()
+                    except AttributeError:
+                        pass
+            else:
+                bl.bheader['meta'] = ''
+                retData = {'meta': bl.bheader, 'metadata': bl.bmetadata}
             return json.dumps(retData)
         else:
             return bl.raw
