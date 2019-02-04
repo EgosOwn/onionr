@@ -31,3 +31,13 @@ input{
   .btn-group {
       margin-bottom: 2em;
   }
+
+#tabBtns{
+    margin-bottom: 3em;
+    display: block;
+}
+
+  .activeTab{
+      color: black;
+      background-color: gray;
+  }

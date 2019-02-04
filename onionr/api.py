@@ -436,6 +436,14 @@ class API:
         @app.route('/getuptime')
         def showUptime():
             return Response(str(self.getUptime()))
+        
+        @app.route('/getActivePubkey')
+        def getActivePubkey():
+            return Response(self._core._crypto.pubKey)
+
+        @app.route('/getHumanReadable/<name>')
+        def getHumanReadable(name):
+            return Response(self._core._utils.getHumanReadableID(name))
 
         self.httpServer = WSGIServer((self.host, bindPort), app, log=None, handler_class=FDSafeHandler)
         self.httpServer.serve_forever()

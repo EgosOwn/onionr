@@ -15,10 +15,10 @@
         <img class='logo' src='/shared/onionr-icon.png' alt='onionr logo'>
         <span class='logoText'>Onionr Mail</span>
         <div class='content'>
-            <button class='refresh'>Refresh</button>
+            <div>Current Used Identity: <input class='myPub' type='text' readonly> <button class='refresh'>Refresh Page</button></div>
             <br><br>
-            <div class="btn-group">
-                <button>Inbox</button><button>Sentbox</button><button>Drafts</button>
+            <div class="btn-group" id='tabBtns'>
+                <button class='activeTab'>Inbox</button><button>Sentbox</button><button>Drafts</button><button>Send Message</button>
             </div>
             <div id='threads' class='threads'>
                 <div id='threadPlaceholder'>Nothing here yet 😞</div>

@@ -1,6 +1,47 @@
+/*
+    Onionr - P2P Anonymous Storage Network
+
+    This file handles the mail interface
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+*/
+
 pms = ''
 threadPart = document.getElementById('threads')
 threadPlaceholder = document.getElementById('threadPlaceholder')
+tabBtns = document.getElementById('tabBtns')
+
+myPub = httpGet('/getActivePubkey')
+
+function setActiveTab(tabName){
+    threadPart.innerHTML = ""
+    switch(tabName){
+        case 'inbox':
+            getInbox();
+            break
+        case 'sentbox':
+            console.log(tabName)
+            break
+        case 'drafts':
+            console.log(tabName)
+            break
+        case 'send message':
+            console.log(tabName)
+            break
+    }
+}
+
 function getInbox(){
     var showed = false
     for(var i = 0; i < pms.length; i++) {
@@ -26,7 +67,7 @@ function getInbox(){
             var dateStr = document.createElement('span')
             var humanDate = new Date(0)
             humanDate.setUTCSeconds(resp['meta']['time'])
-            senderInput.value = resp['meta']['signer']
+            senderInput.value = httpGet('/getHumanReadable/' + resp['meta']['signer'])
             bHashDisplay.innerText = pms[i - 1].substring(0, 10)
             bHashDisplay.setAttribute('hash', pms[i - 1]);
             senderInput.readOnly = true
@@ -52,6 +93,7 @@ function getInbox(){
 
 }
 
+
 fetch('/getblocksbytype/pm', {
     headers: {
       "token": webpass
@@ -59,6 +101,31 @@ fetch('/getblocksbytype/pm', {
 .then((resp) => resp.text()) // Transform the data into json
 .then(function(data) {
     pms = data.split(',')
-    getInbox(pms)
+    setActiveTab('inbox')
   })
 
+tabBtns.onclick = function(event){
+    var children = tabBtns.children
+    for (var i = 0; i < children.length; i++) {
+        var btn = children[i]
+        btn.classList.remove('activeTab')
+    }
+    event.target.classList.add('activeTab')
+    setActiveTab(event.target.innerText.toLowerCase())
+}
+
+
+var idStrings = document.getElementsByClassName('myPub')
+var myHumanReadable = httpGet('/getHumanReadable/' + myPub)
+for (var i = 0; i < idStrings.length; i++){
+    if (idStrings[i].tagName.toLowerCase() == 'input'){
+        idStrings[i].value = myHumanReadable
+    }
+    else{
+        idStrings[i].innerText = myHumanReadable
+    }
+}
+
+for (var i = 0; i < document.getElementsByClassName('refresh').length; i++){
+    document.getElementsByClassName('refresh')[i].style.float = 'right'
+}
