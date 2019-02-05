@@ -221,7 +221,7 @@ class OnionrUtils:
         if pub == '':
             pub = self._core._crypto.pubKey
         pub = base64.b16encode(base64.b32decode(pub)).decode()
-        return '-'.join(pgpwords.wordify(pub))
+        return ' '.join(pgpwords.wordify(pub))
 
     def getBlockMetadataFromData(self, blockData):
         '''

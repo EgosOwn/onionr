@@ -48,14 +48,14 @@ class MailStrings:
         self.mailInstance = mailInstance
 
         self.programTag = 'OnionrMail v%s' % (PLUGIN_VERSION)
-        choices = ['view inbox', 'view sentbox', 'send message', 'quit']
+        choices = ['view inbox', 'view sentbox', 'send message', 'toggle pseudonymity', 'quit']
         self.mainMenuChoices = choices
-        self.mainMenu = '''\n
------------------
-1. %s
-2. %s
-3. %s
-4. %s''' % (choices[0], choices[1], choices[2], choices[3])
+        self.mainMenu = '''-----------------
+    1. %s
+    2. %s
+    3. %s
+    4. %s
+    5. %s''' % (choices[0], choices[1], choices[2], choices[3], choices[4])
 
 class OnionrMail:
     def __init__(self, pluginapi):
@@ -65,6 +65,7 @@ class OnionrMail:
         self.sentboxTools = sentboxdb.SentBox(self.myCore)
         self.sentboxList = []
         self.sentMessages = {}
+        self.doSigs = True
         return
 
     def inbox(self):
@@ -133,12 +134,14 @@ class OnionrMail:
                 else:
                     cancel = ''
                     readBlock.verifySig()
-
-                    logger.info('Message recieved from %s' % (self.myCore._utils.bytesToStr(readBlock.signer,)))
+                    senderDisplay = self.myCore._utils.bytesToStr(readBlock.signer)
+                    if len(senderDisplay.strip()) == 0:
+                        senderDisplay = 'Anonymous'
+                    logger.info('Message received from %s' % (senderDisplay,))
                     logger.info('Valid signature: %s' % readBlock.validSig)
 
                     if not readBlock.validSig:
-                        logger.warn('This message has an INVALID signature. ANYONE could have sent this message.')
+                        logger.warn('This message has an INVALID/NO signature. ANYONE could have sent this message.')
                         cancel = logger.readline('Press enter to continue to message, or -q to not open the message (recommended).')
                     if cancel != '-q':
                         try:
@@ -147,6 +150,7 @@ class OnionrMail:
                             logger.warn('Error presenting message. This is usually due to a malformed or blank message.')
                             pass
                         reply = logger.readline("Press enter to continue, or enter %s to reply" % ("-r",))
+                        print('')
                         if reply == "-r":
                             self.draftMessage(self.myCore._utils.bytesToStr(readBlock.signer,))
         return
@@ -241,14 +245,27 @@ class OnionrMail:
         if not cancelEnter:
             logger.info('Inserting encrypted message as Onionr block....')
 
-            blockID = self.myCore.insertBlock(message, header='pm', encryptType='asym', asymPeer=recip, sign=True, meta={'subject': subject})
+            blockID = self.myCore.insertBlock(message, header='pm', encryptType='asym', asymPeer=recip, sign=self.doSigs, meta={'subject': subject})
             self.sentboxTools.addToSent(blockID, recip, message)
+    
+    def toggleSigning(self):
+        self.doSigs = not self.doSigs
+    
     def menu(self):
         choice = ''
         while True:
+            sigMsg = 'Message Signing: %s'
 
-            logger.info(self.strings.programTag + '\n\nOur ID: ' + self.myCore._crypto.pubKey + self.strings.mainMenu.title()) # print out main menu
-
+            logger.info(self.strings.programTag + '\n\nUser ID: ' + self.myCore._crypto.pubKey)
+            if self.doSigs:
+                sigMsg = sigMsg % ('enabled',)
+            else:
+                sigMsg = sigMsg % ('disabled (Your messages cannot be trusted)',)
+            if self.doSigs:
+                logger.info(sigMsg)
+            else:
+                logger.warn(sigMsg)
+            logger.info(self.strings.mainMenu.title()) # print out main menu
             try:
                 choice = logger.readline('Enter 1-%s:\n' % (len(self.strings.mainMenuChoices))).lower().strip()
             except (KeyboardInterrupt, EOFError):
@@ -261,6 +278,8 @@ class OnionrMail:
             elif choice in (self.strings.mainMenuChoices[2], '3'):
                 self.draftMessage()
             elif choice in (self.strings.mainMenuChoices[3], '4'):
+                self.toggleSigning()
+            elif choice in (self.strings.mainMenuChoices[4], '5'):
                 logger.info('Goodbye.')
                 break
             elif choice == '':
