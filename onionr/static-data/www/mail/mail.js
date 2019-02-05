@@ -63,10 +63,22 @@ function loadInboxEntrys(bHash){
         var senderInput = document.createElement('input')
         var subjectLine = document.createElement('span')
         var dateStr = document.createElement('span')
+        var validSig = document.createElement('span')
         var humanDate = new Date(0)
         var metadata = resp['metadata']
         humanDate.setUTCSeconds(resp['meta']['time'])
         senderInput.value = httpGet('/getHumanReadable/' + resp['meta']['signer'])
+        alert(resp['meta']['validSig'])
+        if (resp['meta']['validSig']){
+            validSig.innerText = 'Signature Validity: Good'
+        }
+        else{
+            validSig.innerText = 'Signature Validity: Bad'
+            validSig.style.color = 'red';
+        }
+        if (senderInput.value == ''){
+            senderInput.value = 'Anonymous'
+        }
         bHashDisplay.innerText = bHash.substring(0, 10)
         entry.setAttribute('hash', bHash);
         senderInput.readOnly = true
@@ -81,6 +93,7 @@ function loadInboxEntrys(bHash){
         threadPart.appendChild(entry)
         entry.appendChild(bHashDisplay)
         entry.appendChild(senderInput)
+        entry.appendChild(validSig)
         entry.appendChild(subjectLine)
         entry.appendChild(dateStr)
         entry.classList.add('threadEntry')
