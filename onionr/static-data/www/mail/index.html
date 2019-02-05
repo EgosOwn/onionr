@@ -24,7 +24,15 @@
             <div id='threads' class='threads'>
                 <div id='threadPlaceholder'>Nothing here yet 😞</div>
             </div>
-            <div id='messageDisplay' class='overlay'><div id='threadDisplay'></div></div>
+            <div id='messageDisplay' class='overlay'>
+                <span class='closeOverlay' overlay='messageDisplay'></span>
+                <div class='overlayContent'>
+                    <div>From: <input type='text' id='fromUser' readonly>
+                    </div>
+                    <div id='threadDisplay'>
+                    </div>
+                </div>
+            </div>
         </div>
         <script src='/shared/base64.min.js'></script>
         <script src='/shared/misc.js'></script>

@@ -26,8 +26,9 @@ myPub = httpGet('/getActivePubkey')
 
 function openThread(bHash, sender, date){
     var messageDisplay = document.getElementById('threadDisplay')
-    stuff = httpGet('/getblockbody/' + bHash)
-    messageDisplay.innerText = stuff
+    blockContent = httpGet('/getblockbody/' + bHash)
+    document.getElementById('fromUser').value = sender
+    messageDisplay.innerText = blockContent
     overlay('messageDisplay')
 }
 
@@ -91,7 +92,6 @@ function loadInboxEntrys(bHash){
       }.bind(bHash))
 }
 
-
 function getInbox(){
     var showed = false
     var requested = ''
@@ -145,3 +145,10 @@ for (var i = 0; i < idStrings.length; i++){
 for (var i = 0; i < document.getElementsByClassName('refresh').length; i++){
     document.getElementsByClassName('refresh')[i].style.float = 'right'
 }
+
+for (var i = 0; i < document.getElementsByClassName('closeOverlay').length; i++){
+    document.getElementsByClassName('closeOverlay')[i].onclick = function(e){
+        document.getElementById(e.target.getAttribute('overlay')).style.visibility = 'hidden'
+    }
+}
+

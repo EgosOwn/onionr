@@ -41,3 +41,15 @@ input{
       color: black;
       background-color: gray;
   }
+
+  .overlayContent{
+      background-color: lightgray;
+      border: 3px solid black;
+      border-radius: 3px;
+      opacity: 1.0;
+      color: black;
+      font-family: Verdana, Geneva, Tahoma, sans-serif;
+      min-height: 100%;
+      padding: 1em;
+      margin: 1em;
+  }
