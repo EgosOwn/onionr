@@ -138,11 +138,13 @@ class PublicAPI:
                 if data not in self.hideBlocks:
                     if data in clientAPI._core.getBlockList():
                         block = clientAPI.getBlockData(data, raw=True).encode()
-                        resp = base64.b64encode(block).decode()
+                        block = clientAPI._core._utils.strToBytes(block)
+                        resp = block
+                        #resp = base64.b64encode(block).decode()
             if len(resp) == 0:
                 abort(404)
                 resp = ""
-            return Response(resp)
+            return Response(resp, mimetype='application/octet-stream')
 
         @app.route('/www/<path:path>')
         def wwwPublic(path):
@@ -500,7 +502,7 @@ class API:
             else:
                 validSig = False
                 signer = self._core._utils.bytesToStr(bl.signer)
-                print(signer, bl.isSigned(), self._core._utils.validatePubKey(signer), bl.isSigner(signer))
+                #print(signer, bl.isSigned(), self._core._utils.validatePubKey(signer), bl.isSigner(signer))
                 if bl.isSigned() and self._core._utils.validatePubKey(signer) and bl.isSigner(signer):
                     validSig = True                    
                 bl.bheader['validSig'] = validSig

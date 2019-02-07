@@ -40,7 +40,7 @@ try:
 except ImportError:
     raise Exception("You need the PySocks module (for use with socks5 proxy to use Tor)")
 
-ONIONR_TAGLINE = 'Anonymous P2P Platform - GPLv3 - https://Onionr.VoidNet.Tech'
+ONIONR_TAGLINE = 'Anonymous P2P Platform - GPLv3 - https://Onionr.net'
 ONIONR_VERSION = '0.5.0' # for debugging and stuff
 ONIONR_VERSION_TUPLE = tuple(ONIONR_VERSION.split('.')) # (MAJOR, MINOR, VERSION)
 API_VERSION = '5' # increments of 1; only change when something fundemental about how the API works changes. This way other nodes know how to communicate without learning too much information about you.
@@ -986,7 +986,7 @@ class Onionr:
         '''
         self.addFile(singleBlock=True, blockType='html')
 
-    def addFile(self, singleBlock=False, blockType='txt'):
+    def addFile(self, singleBlock=False, blockType='bin'):
         '''
             Adds a file to the onionr network
         '''

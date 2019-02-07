@@ -24,11 +24,23 @@ tabBtns = document.getElementById('tabBtns')
 threadContent = {}
 myPub = httpGet('/getActivePubkey')
 
-function openThread(bHash, sender, date){
+function openThread(bHash, sender, date, sigBool){
     var messageDisplay = document.getElementById('threadDisplay')
-    blockContent = httpGet('/getblockbody/' + bHash)
+    var blockContent = httpGet('/getblockbody/' + bHash)
     document.getElementById('fromUser').value = sender
     messageDisplay.innerText = blockContent
+    var sigEl = document.getElementById('sigValid')
+    var sigMsg = 'signature'
+
+    if (sigBool){
+        sigMsg = 'Good ' + sigMsg
+        sigEl.classList.remove('danger')
+    }
+    else{
+        sigMsg = 'Bad/no ' + sigMsg + ' (message could be fake)'
+        sigEl.classList.add('danger')
+    }
+    sigEl.innerText = sigMsg
     overlay('messageDisplay')
 }
 
@@ -68,7 +80,6 @@ function loadInboxEntrys(bHash){
         var metadata = resp['metadata']
         humanDate.setUTCSeconds(resp['meta']['time'])
         senderInput.value = httpGet('/getHumanReadable/' + resp['meta']['signer'])
-        alert(resp['meta']['validSig'])
         if (resp['meta']['validSig']){
             validSig.innerText = 'Signature Validity: Good'
         }
@@ -99,7 +110,7 @@ function loadInboxEntrys(bHash){
         entry.classList.add('threadEntry')
 
         entry.onclick = function(){
-            openThread(entry.getAttribute('hash'), senderInput.value, dateStr.innerText)
+            openThread(entry.getAttribute('hash'), senderInput.value, dateStr.innerText, resp['meta']['validSig'])
         }
         
       }.bind(bHash))

@@ -2,7 +2,7 @@
     padding-top: 1em;
 }
 .threads div span{
-    padding-left: 0.1em;
+    padding-left: 0.2em;
     padding-right: 0.2em;
 }
 
@@ -53,3 +53,15 @@ input{
       padding: 1em;
       margin: 1em;
   }
+
+.danger{
+    color: red;
+}
+
+.warn{
+    color: orange;
+}
+
+.good{
+    color: greenyellow;
+}

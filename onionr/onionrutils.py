@@ -309,7 +309,8 @@ class OnionrUtils:
             else:
                 self._core.updateBlockInfo(blockHash, 'expire', expireTime)
         else:
-            logger.debug('Not processing metadata on encrypted block we cannot decrypt.')
+            pass
+            #logger.debug('Not processing metadata on encrypted block we cannot decrypt.')
 
     def escapeAnsi(self, line):
         '''

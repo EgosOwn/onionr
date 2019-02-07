@@ -94,7 +94,8 @@ class Block:
                         logger.error(str(e))
                         pass
             except nacl.exceptions.CryptoError:
-                logger.debug('Could not decrypt block. Either invalid key or corrupted data')
+                pass
+                #logger.debug('Could not decrypt block. Either invalid key or corrupted data')
             else:
                 retData = True
                 self.decrypted = True

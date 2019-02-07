@@ -222,7 +222,8 @@ class OnionrCommunicatorDaemon:
                                             self.blockQueue[i] = [peer] # add blocks to download queue
                                 else:
                                     if peer not in self.blockQueue[i]:
-                                        self.blockQueue[i].append(peer)
+                                        if len(self.blockQueue[i]) < 10:
+                                            self.blockQueue[i].append(peer)
         self.decrementThreadCount('lookupBlocks')
         return
 
@@ -240,10 +241,10 @@ class OnionrCommunicatorDaemon:
                 break
             # Do not download blocks being downloaded or that are already saved (edge cases)
             if blockHash in self.currentDownloading:
-                logger.debug('Already downloading block %s...' % blockHash)
+                #logger.debug('Already downloading block %s...' % blockHash)
                 continue
             if blockHash in self._core.getBlockList():
-                logger.debug('Block %s is already saved.' % (blockHash,))
+                #logger.debug('Block %s is already saved.' % (blockHash,))
                 try:
                     del self.blockQueue[blockHash]
                 except KeyError:
