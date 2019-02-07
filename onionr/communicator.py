@@ -269,10 +269,7 @@ class OnionrCommunicatorDaemon:
                     content = content.encode()
                 except AttributeError:
                     pass
-                try:
-                    content = base64.b64decode(content) # content is base64 encoded in transport
-                except binascii.Error:
-                    pass
+
                 realHash = self._core._crypto.sha3Hash(content)
                 try:
                     realHash = realHash.decode() # bytes on some versions for some reason

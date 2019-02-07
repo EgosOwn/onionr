@@ -1002,7 +1002,8 @@ class Onionr:
             try:
                 with open(filename, 'rb') as singleFile:
                     blockhash = self.onionrCore.insertBlock(base64.b64encode(singleFile.read()), header=blockType)
-                logger.info('File %s saved in block %s' % (filename, blockhash))
+                if len(blockhash) > 0:
+                    logger.info('File %s saved in block %s' % (filename, blockhash))
             except:
                 logger.error('Failed to save file in block.', timestamp = False)
         else:

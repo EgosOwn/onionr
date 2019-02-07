@@ -41,9 +41,9 @@ def getDifficultyModifier(coreOrUtilsInst=None):
     if percentUse >= 0.50:
         retData += 1
     elif percentUse >= 0.75:
-            retData += 2
+        retData += 2
     elif percentUse >= 0.95:
-            retData += 3
+        retData += 3
 
     return retData
 
@@ -68,7 +68,7 @@ def getDifficultyForNewBlock(data, ourBlock=True):
     else:
         minDifficulty = config.get('general.minimum_block_pow')
 
-    retData = max(minDifficulty, math.floor(dataSize / 1000000)) + getDifficultyModifier()
+    retData = max(minDifficulty, math.floor(dataSize / 100000)) + getDifficultyModifier()
     return retData
 
 def getHashDifficulty(h):

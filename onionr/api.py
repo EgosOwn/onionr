@@ -294,8 +294,10 @@ class API:
 
         @app.after_request
         def afterReq(resp):
-            #resp.headers["Content-Security-Policy"] =  "default-src 'none'; script-src 'none'; object-src 'none'; style-src data: 'unsafe-inline'; img-src data:; media-src 'none'; frame-src 'none'; font-src 'none'; connect-src 'none'"
-            resp.headers['Content-Security-Policy'] = "default-src 'none'; script-src 'self'; object-src 'none'; style-src 'self'; img-src 'self'; media-src 'none'; frame-src 'none'; font-src 'none'; connect-src 'self'"
+            if request.endpoint == 'site':
+                resp.headers['Content-Security-Policy'] = "default-src 'none'; style-src data: 'unsafe-inline'; img-src data:"
+            else:
+                resp.headers['Content-Security-Policy'] = "default-src 'none'; script-src 'self'; object-src 'none'; style-src 'self'; img-src 'self'; media-src 'none'; frame-src 'none'; font-src 'none'; connect-src 'self'"
             resp.headers['X-Frame-Options'] = 'deny'
             resp.headers['X-Content-Type-Options'] = "nosniff"
             resp.headers['X-API'] = onionr.API_VERSION
