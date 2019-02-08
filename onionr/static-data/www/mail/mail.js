@@ -18,6 +18,7 @@
 */
 
 pms = ''
+sentbox = ''
 threadPart = document.getElementById('threads')
 threadPlaceholder = document.getElementById('threadPlaceholder')
 tabBtns = document.getElementById('tabBtns')
@@ -48,10 +49,10 @@ function setActiveTab(tabName){
     threadPart.innerHTML = ""
     switch(tabName){
         case 'inbox':
-            getInbox();
+            getInbox()
             break
         case 'sentbox':
-            console.log(tabName)
+            getSentbox()
             break
         case 'drafts':
             console.log(tabName)
@@ -132,7 +133,17 @@ function getInbox(){
     if (! showed){
         threadPlaceholder.style.display = 'block'
     }
+}
 
+function getSentbox(){
+    fetch('/apipoints/mail/sentbox', {
+        headers: {
+          "token": webpass
+        }})
+    .then((resp) => resp.text()) // Transform the data into json
+    .then(function(data) {
+        sentbox = data
+      })
 }
 
 fetch('/getblocksbytype/pm', {

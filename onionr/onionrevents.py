@@ -61,10 +61,9 @@ def call(plugin, event_name, data = None, pluginapi = None):
         try:
             attribute = 'on_' + str(event_name).lower()
 
-            # TODO: Use multithreading perhaps?
             if hasattr(plugin, attribute):
                 #logger.debug('Calling event ' + str(event_name))
-                getattr(plugin, attribute)(pluginapi)
+                getattr(plugin, attribute)(pluginapi, data)
 
             return True
         except Exception as e:

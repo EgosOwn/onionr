@@ -19,7 +19,7 @@
 '''
 from gevent.pywsgi import WSGIServer, WSGIHandler
 from gevent import Timeout
-import flask, cgi
+import flask, cgi, uuid
 from flask import request, Response, abort, send_from_directory
 import sys, random, threading, hmac, hashlib, base64, time, math, os, json, socket
 import core
@@ -276,6 +276,7 @@ class API:
         logger.info('Running api on %s:%s' % (self.host, self.bindPort))
         self.httpServer = ''
 
+        self.pluginResponses = {}
         self.queueResponse = {}
         onionrInst.setClientAPIInst(self)
 
@@ -458,14 +459,28 @@ class API:
         @app.route('/apipoints/<path:subpath>')
         def pluginEndpoints(subpath=''):
             # TODO have a variable for the plugin to set data to that we can use for the response
+            pluginResponseCode = str(uuid.uuid4())
+            resp = 'success'
+            responseTimeout = 5
+            startTime = self._core._utils.getEpoch()
             if len(subpath) > 1:
                 data = subpath.split('/')
                 if len(data) > 1:
                     plName = data[0]
-                    events.event('pluginRequest', plName, subpath)
+                    events.event('pluginRequest', {'name': plName, 'path': subpath, 'pluginResponse': pluginResponseCode}, onionr=onionrInst)
+                    while True:
+                        try:
+                            resp = self.pluginResponses[pluginResponseCode]
+                        except KeyError:
+                            time.sleep(0.2)
+                            if self._core._utils.getEpoch() - startTime > responseTimeout:
+                                abort(504)
+                                break
+                        else:
+                            break
             else:
                 abort(404)
-            return Response('Success')
+            return Response(resp)
 
         self.httpServer = WSGIServer((self.host, bindPort), app, log=None, handler_class=FDSafeHandler)
         self.httpServer.serve_forever()

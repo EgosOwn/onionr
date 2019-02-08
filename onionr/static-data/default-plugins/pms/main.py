@@ -22,7 +22,7 @@
 import logger, config, threading, time, readline, datetime
 from onionrblockapi import Block
 import onionrexceptions, onionrusers
-import locale, sys, os
+import locale, sys, os, json
 
 locale.setlocale(locale.LC_ALL, '')
 
@@ -161,7 +161,7 @@ class OnionrMail:
         '''
         entering = True
         while entering:
-            self.getSentList()
+            self.get_sent_list()
             logger.info('Enter a block number or -q to return')
             try:
                 choice = input('>')
@@ -188,18 +188,19 @@ class OnionrMail:
 
         return
 
-    def getSentList(self):
+    def get_sent_list(self, display=True):
         count = 1
         self.sentboxList = []
         self.sentMessages = {}
         for i in self.sentboxTools.listSent():
             self.sentboxList.append(i['hash'])
             self.sentMessages[i['hash']] = (i['message'], i['peer'])
-
-            logger.info('%s. %s - %s - %s' % (count, i['hash'], i['peer'][:12], i['date']))
+            if display:
+                logger.info('%s. %s - %s - %s' % (count, i['hash'], i['peer'][:12], i['date']))
             count += 1
+        return json.dumps(self.sentMessages)
 
-    def draftMessage(self, recip=''):
+    def draft_message(self, recip=''):
         message = ''
         newLine = ''
         subject = ''
@@ -248,7 +249,7 @@ class OnionrMail:
             blockID = self.myCore.insertBlock(message, header='pm', encryptType='asym', asymPeer=recip, sign=self.doSigs, meta={'subject': subject})
             self.sentboxTools.addToSent(blockID, recip, message)
     
-    def toggleSigning(self):
+    def toggle_signing(self):
         self.doSigs = not self.doSigs
     
     def menu(self):
@@ -276,9 +277,9 @@ class OnionrMail:
             elif choice in (self.strings.mainMenuChoices[1], '2'):
                 self.sentbox()
             elif choice in (self.strings.mainMenuChoices[2], '3'):
-                self.draftMessage()
+                self.draft_message()
             elif choice in (self.strings.mainMenuChoices[3], '4'):
-                self.toggleSigning()
+                self.toggle_signing()
             elif choice in (self.strings.mainMenuChoices[4], '5'):
                 logger.info('Goodbye.')
                 break
@@ -288,6 +289,12 @@ class OnionrMail:
                 logger.warn('Invalid choice.')
         return
 
+def on_pluginrequest(api, data=None):
+    if data['name'] == 'mail':
+        path = data['path']
+        if path.split('/')[1] == 'sentbox':
+            api.get_onionr().clientAPIInst.pluginResponses[data['pluginResponse']] = OnionrMail(api).get_sent_list(display=False)
+    return
 
 def on_init(api, data = None):
     '''
