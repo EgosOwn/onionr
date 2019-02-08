@@ -65,3 +65,13 @@ input{
 .good{
     color: greenyellow;
 }
+
+.pre{
+    padding-top: 1em;
+    word-wrap: break-word;
+    font-family: monospace;
+    white-space: pre;
+}
+.messageContent{
+    font-size: 1.5em;
+}

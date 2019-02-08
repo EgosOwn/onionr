@@ -586,7 +586,7 @@ class OnionrCommunicatorDaemon:
                         proxyType = 'i2p'
                     logger.info("Uploading block to " + peer)
                     if not self._core._utils.doPostRequest(url, data=data, proxyType=proxyType) == False:
-                        self._core._utils.localCommand('waitforshare/' + bl)
+                        self._core._utils.localCommand('waitforshare/' + bl, post=True)
                         finishedUploads.append(bl)
         for x in finishedUploads:
             try:

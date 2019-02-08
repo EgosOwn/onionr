@@ -410,7 +410,7 @@ class API:
             return Response(resp)
 
         @app.route('/waitforshare/<name>', methods=['post'])
-        def waitforshare():
+        def waitforshare(name):
             assert name.isalnum()
             if name in self.publicAPI.hideBlocks:
                 self.publicAPI.hideBlocks.remove(name)
@@ -454,6 +454,18 @@ class API:
         @app.route('/getHumanReadable/<name>')
         def getHumanReadable(name):
             return Response(self._core._utils.getHumanReadableID(name))
+        
+        @app.route('/apipoints/<path:subpath>')
+        def pluginEndpoints(subpath=''):
+            # TODO have a variable for the plugin to set data to that we can use for the response
+            if len(subpath) > 1:
+                data = subpath.split('/')
+                if len(data) > 1:
+                    plName = data[0]
+                    events.event('pluginRequest', plName, subpath)
+            else:
+                abort(404)
+            return Response('Success')
 
         self.httpServer = WSGIServer((self.host, bindPort), app, log=None, handler_class=FDSafeHandler)
         self.httpServer.serve_forever()

@@ -832,7 +832,7 @@ class Core:
                 retData = False
             else:
                 # Tell the api server through localCommand to wait for the daemon to upload this block to make stastical analysis more difficult
-                self._utils.localCommand('waitforshare/' + retData)
+                self._utils.localCommand('/waitforshare/' + retData, post=True)
                 self.addToBlockDB(retData, selfInsert=True, dataSaved=True)
                 #self.setBlockType(retData, meta['type'])
                 self._utils.processBlockMetadata(retData)
