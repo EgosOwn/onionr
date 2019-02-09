@@ -54,11 +54,8 @@ function setActiveTab(tabName){
         case 'sentbox':
             getSentbox()
             break
-        case 'drafts':
-            console.log(tabName)
-            break
         case 'send message':
-            console.log(tabName)
+            overlay('sendMessage')
             break
     }
 }
@@ -70,7 +67,7 @@ function loadInboxEntrys(bHash){
         }})
     .then((resp) => resp.json()) // Transform the data into json
     .then(function(resp) {
-        console.log(resp)
+        //console.log(resp)
         var entry = document.createElement('div')
         var bHashDisplay = document.createElement('span')
         var senderInput = document.createElement('input')
@@ -86,13 +83,13 @@ function loadInboxEntrys(bHash){
         }
         else{
             validSig.innerText = 'Signature Validity: Bad'
-            validSig.style.color = 'red';
+            validSig.style.color = 'red'
         }
         if (senderInput.value == ''){
             senderInput.value = 'Anonymous'
         }
         bHashDisplay.innerText = bHash.substring(0, 10)
-        entry.setAttribute('hash', bHash);
+        entry.setAttribute('hash', bHash)
         senderInput.readOnly = true
         dateStr.innerText = humanDate.toString()
         if (metadata['subject'] === undefined || metadata['subject'] === null) {
@@ -140,10 +137,40 @@ function getSentbox(){
         headers: {
           "token": webpass
         }})
-    .then((resp) => resp.text()) // Transform the data into json
-    .then(function(data) {
-        sentbox = data
-      })
+    .then((resp) => resp.json()) // Transform the data into json
+    .then(function(resp) {
+        var keys = [];
+        var entry = document.createElement('div')
+        var entryUsed;
+        for(var k in resp) keys.push(k);
+        for (var i = 0; i < keys.length; i++){
+            var entry = document.createElement('div')
+            var obj = resp[i];
+            var toLabel = document.createElement('span')
+            toLabel.innerText = 'To: '
+            var toEl = document.createElement('input')
+            var preview = document.createElement('span')
+            toEl.readOnly = true
+            toEl.value = resp[keys[i]][1]
+            preview.innerText = resp[keys[i]][0].split('\n')[0];
+            entry.appendChild(toLabel)
+            entry.appendChild(toEl)
+            entry.appendChild(preview)
+            entryUsed = resp[keys[i]]
+            entry.onclick = function(){
+                console.log(resp)
+                showSentboxWindow(toEl.value, entryUsed[0])
+            }
+            threadPart.appendChild(entry)
+        } 
+        threadPart.appendChild(entry)
+      }.bind(threadPart))
+}
+
+function showSentboxWindow(to, content){
+    document.getElementById('toID').value = to
+    document.getElementById('sentboxDisplayText').innerText = content
+    overlay('sentboxDisplay')
 }
 
 fetch('/getblocksbytype/pm', {

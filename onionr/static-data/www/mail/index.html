@@ -14,12 +14,12 @@
         <div id="infoOverlay" class='overlay'>
         </div>
         <img class='logo' src='/shared/onionr-icon.png' alt='onionr logo'>
-        <span class='logoText'>Onionr Mail</span>
+        <span class='logoText'>Onionr Mail ✉️</span>
         <div class='content'>
             <div>Current Used Identity: <input class='myPub' type='text' readonly> <button class='refresh'>Refresh Page</button></div>
             <br><br>
             <div class="btn-group" id='tabBtns'>
-                <button class='activeTab'>Inbox</button><button>Sentbox</button><button>Drafts</button><button>Send Message</button>
+                <button class='activeTab'>Inbox</button><button>Sentbox</button><button>Send Message</button>
             </div>
             <div id='threads' class='threads'>
                 <div id='threadPlaceholder'>Nothing here yet 😞</div>
@@ -33,6 +33,22 @@
                     <div id='signatureValidity'></div>
                     <div id='threadDisplay' class='pre messageContent'>
                     </div>
+                </div>
+            </div>
+            <div id='sentboxDisplay' class='overlay'>
+                <div class='overlayContent'>
+                    <span class='closeOverlay' overlay='sentboxDisplay'></span>
+                    To: <input id='toID' readonly type='text'>
+                    <div id='sentboxDisplayText' class='pre messageContent'>
+                    </div>
+                </div>
+            </div>
+            <div id='sendMessage' class='overlay'>
+                <div class='overlayContent'>
+                    <span class='closeOverlay' overlay='sendMessage'></span>
+                    To: <input id='draftID' type='text'>
+                    <textarea rows=10 cols=10 placeholder='type your message...' id='draftText'></textarea>
+                    <button id='sendMail' class='successBtn'>Send</button>
                 </div>
             </div>
         </div>
