@@ -40,6 +40,9 @@ class OnionrUser:
             Takes an instance of onionr core, a base32 encoded ed25519 public key, and a bool saveUser
             saveUser determines if we should add a user to our peer database or not.
         '''
+        if ' ' in coreInst._utils.bytesToStr(publicKey).strip():
+            publicKey = coreInst._utils.convertHumanReadableID(publicKey)
+
         self.trust = 0
         self._core = coreInst
         self.publicKey = publicKey

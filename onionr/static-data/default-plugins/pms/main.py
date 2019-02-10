@@ -290,10 +290,8 @@ class OnionrMail:
         return
 
 def on_insertblock(api, data={}):
-    print(data)
     sentboxTools = sentboxdb.SentBox(api.get_core())
     meta = json.dumps(data['meta'])
-    print('on_insertblock', data)
     sentboxTools.addToSent(data['hash'], data['peer'], data['content'])
 
 def on_pluginrequest(api, data=None):

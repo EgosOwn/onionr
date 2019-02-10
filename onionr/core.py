@@ -748,6 +748,7 @@ class Core:
             data = data.decode()
         data = str(data)
         plaintext = data
+        plaintextMeta = {}
 
         # Convert asym peer human readable key to base32 if set
         if ' ' in asymPeer.strip():
@@ -774,7 +775,7 @@ class Core:
             pass
 
         if encryptType == 'asym':
-            if not disableForward and asymPeer != self._crypto.pubKey:
+            if not disableForward and sign and asymPeer != self._crypto.pubKey:
                 try:
                     forwardEncrypted = onionrusers.OnionrUser(self, asymPeer).forwardEncrypt(data)
                     data = forwardEncrypted[0]
@@ -786,6 +787,7 @@ class Core:
                 #fsKey = onionrusers.OnionrUser(self, asymPeer).getGeneratedForwardKeys().reverse()
                 meta['newFSKey'] = fsKey
         jsonMeta = json.dumps(meta)
+        plaintextMeta = jsonMeta
         if sign:
             signature = self._crypto.edSign(jsonMeta.encode() + data, key=self._crypto.privKey, encodeResult=True)
             signer = self._crypto.pubKey
@@ -845,7 +847,7 @@ class Core:
                 self.daemonQueueAdd('uploadBlock', retData)
 
         if retData != False:
-            events.event('insertblock', {'content': plaintext, 'meta': jsonMeta, 'hash': retData, 'peer': self._utils.bytesToStr(asymPeer)}, onionr = self.onionrInst, threaded = False)
+            events.event('insertblock', {'content': plaintext, 'meta': plaintextMeta, 'hash': retData, 'peer': self._utils.bytesToStr(asymPeer)}, onionr = self.onionrInst, threaded = True)
         return retData
 
     def introduceNode(self):

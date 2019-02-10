@@ -32,6 +32,7 @@ function httpGet(theUrl) {
 function overlay(overlayID) {
     el = document.getElementById(overlayID)
    el.style.visibility = (el.style.visibility == "visible") ? "hidden" : "visible"
+   scroll(0,0)
  }
 
 var passLinks = document.getElementsByClassName("idLink")

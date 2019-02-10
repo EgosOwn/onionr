@@ -48,6 +48,7 @@
                     <form method='post' action='/apipoints/mail/send' id='sendForm' enctype="application/x-www-form-urlencoded">
                         <span class='closeOverlay' overlay='sendMessage'></span>
                         To: <input id='draftID' type='text' name='to' placeholder='pubkey' required>
+                        Subject: <input name='subject' id='draftSubject' maxlength=25 type='text' placeholder='message subject'>
                         <textarea name='message' placeholder='type your message...' id='draftText' required></textarea>
                         <input type='submit' value='Send' class='successBtn'>
                     </form>
