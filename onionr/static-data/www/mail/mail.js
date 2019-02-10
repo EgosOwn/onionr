@@ -77,7 +77,9 @@ function loadInboxEntrys(bHash){
         var humanDate = new Date(0)
         var metadata = resp['metadata']
         humanDate.setUTCSeconds(resp['meta']['time'])
-        senderInput.value = httpGet('/getHumanReadable/' + resp['meta']['signer'])
+        if (resp['meta']['signer'] != ''){
+            senderInput.value = httpGet('/getHumanReadable/' + resp['meta']['signer'])
+        }
         if (resp['meta']['validSig']){
             validSig.innerText = 'Signature Validity: Good'
         }

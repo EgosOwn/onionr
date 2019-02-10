@@ -45,15 +45,17 @@
             </div>
             <div id='sendMessage' class='overlay'>
                 <div class='overlayContent'>
-                    <span class='closeOverlay' overlay='sendMessage'></span>
-                    To: <input id='draftID' type='text'>
-                    <textarea rows=10 cols=10 placeholder='type your message...' id='draftText'></textarea>
-                    <button id='sendMail' class='successBtn'>Send</button>
+                    <form method='post' action='/apipoints/mail/send' id='sendForm' enctype="application/x-www-form-urlencoded">
+                        <span class='closeOverlay' overlay='sendMessage'></span>
+                        To: <input id='draftID' type='text' name='to' placeholder='pubkey' required>
+                        <textarea name='message' placeholder='type your message...' id='draftText' required></textarea>
+                        <input type='submit' value='Send' class='successBtn'>
+                    </form>
                 </div>
             </div>
         </div>
-        <script src='/shared/base64.min.js'></script>
         <script src='/shared/misc.js'></script>
         <script src='/mail/mail.js'></script>
+        <script src='/mail/sendmail.js'></script>
     </body>
 </html>

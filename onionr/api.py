@@ -455,19 +455,31 @@ class API:
         @app.route('/getHumanReadable/<name>')
         def getHumanReadable(name):
             return Response(self._core._utils.getHumanReadableID(name))
+
+        @app.route('/insertblock', methods=['POST'])
+        def insertBlock():
+            bData = request.get_json(force=True)
+            message = bData['message']
+            to = bData['to']
+            subject = 'temp'
+            return Response(self._core.insertBlock(message, header='pm', encryptType='asym', sign=True, asymPeer=to, meta={'subject': subject}))
         
-        @app.route('/apipoints/<path:subpath>')
+        @app.route('/apipoints/<path:subpath>', methods=['POST', 'GET'])
         def pluginEndpoints(subpath=''):
             # TODO have a variable for the plugin to set data to that we can use for the response
             pluginResponseCode = str(uuid.uuid4())
             resp = 'success'
-            responseTimeout = 5
+            responseTimeout = 20
             startTime = self._core._utils.getEpoch()
+            postData = {}
+            if request.method == 'POST':
+                postData = request.form['postData']
             if len(subpath) > 1:
                 data = subpath.split('/')
                 if len(data) > 1:
                     plName = data[0]
-                    events.event('pluginRequest', {'name': plName, 'path': subpath, 'pluginResponse': pluginResponseCode}, onionr=onionrInst)
+
+                    events.event('pluginRequest', {'name': plName, 'path': subpath, 'pluginResponse': pluginResponseCode, 'postData': postData}, onionr=onionrInst)
                     while True:
                         try:
                             resp = self.pluginResponses[pluginResponseCode]

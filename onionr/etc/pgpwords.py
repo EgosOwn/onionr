@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*- (because 0xFF, even : "Yucatán")
 
-import os, re, sys
+import os, re, sys, binascii, base64
 
 _words = [
     ["aardvark", "adroitness"],
@@ -277,6 +277,22 @@ def wordify(seq):
     for i in range(0, len(seq), 2):
         ret.append(_words[int(seq[i:i+2], 16)][(i//2)%2])
     return ret
+
+def hexify(seq, delim=' '):
+    ret = b''
+    sentence = seq
+    try:
+        sentence = seq.split(delim)
+    except AttributeError:
+        pass
+    count = 0
+    for word in sentence:
+        count = 0
+        for wordPair in _words:
+            if word in wordPair:
+                ret += bytes([(count)])
+            count += 1
+    return binascii.hexlify(ret)
 
 def usage():
     print("Usage:")

@@ -222,6 +222,10 @@ class OnionrUtils:
             pub = self._core._crypto.pubKey
         pub = base64.b16encode(base64.b32decode(pub)).decode()
         return ' '.join(pgpwords.wordify(pub))
+    
+    def convertHumanReadableID(self, pub):
+        '''Convert a human readable pubkey id to base32'''
+        return base64.b32encode(binascii.unhexlify(pgpwords.hexify(pub)))
 
     def getBlockMetadataFromData(self, blockData):
         '''

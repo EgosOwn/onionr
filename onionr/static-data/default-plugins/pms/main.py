@@ -290,11 +290,28 @@ class OnionrMail:
         return
 
 def on_pluginrequest(api, data=None):
+    resp = ''
+    subject = ''
+    recip = ''
+    message = ''
+    postData = {}
+    blockID = ''
+    sentboxTools = sentboxdb.SentBox(api.get_core())
     if data['name'] == 'mail':
         path = data['path']
-        if path.split('/')[1] == 'sentbox':
-            api.get_onionr().clientAPIInst.pluginResponses[data['pluginResponse']] = OnionrMail(api).get_sent_list(display=False)
-    return
+        cmd = path.split('/')[1]
+        if cmd == 'sentbox':
+            resp = OnionrMail(api).get_sent_list(display=False)
+        elif cmd == 'send':
+            print(data['postData'])
+            postData = json.loads(data['postData'])
+            message = postData['message']
+            recip = postData['to']
+            subject = 'temp'
+            blockID = api.get_core().insertBlock(message, header='pm', encryptType='asym', sign=True, asymPeer=recip, meta={'subject': subject})
+            sentboxTools.addToSent(blockID, recip, message)
+    if resp != '':
+        api.get_onionr().clientAPIInst.pluginResponses[data['pluginResponse']] = resp
 
 def on_init(api, data = None):
     '''
