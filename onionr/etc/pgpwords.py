@@ -259,7 +259,7 @@ _words = [
     ["wayside", "Wilmington"],
     ["willow", "Wyoming"],
     ["woodlark", "yesteryear"],
-    ["Zulu", "Yucatán"]]
+    ["Zulu", "Yucatan"]]
 
 hexre = re.compile("[a-fA-F0-9]+")
 

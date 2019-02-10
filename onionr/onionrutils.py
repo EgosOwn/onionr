@@ -163,7 +163,7 @@ class OnionrUtils:
             retData += '%s:%s' % (hostname, config.get('client.client.port'))
         return retData
 
-    def localCommand(self, command, data='', silent = True, post=False, postData = {}, maxWait=10):
+    def localCommand(self, command, data='', silent = True, post=False, postData = {}, maxWait=20):
         '''
             Send a command to the local http API server, securely. Intended for local clients, DO NOT USE for remote peers.
         '''
@@ -185,9 +185,9 @@ class OnionrUtils:
         payload = 'http://%s/%s%s' % (hostname, command, data)
         try:
             if post:
-                retData = requests.post(payload, data=postData, headers={'token': config.get('client.webpassword'), 'Connection':'close'}, timeout=(maxWait, 30)).text
+                retData = requests.post(payload, data=postData, headers={'token': config.get('client.webpassword'), 'Connection':'close'}, timeout=(maxWait, maxWait)).text
             else:
-                retData = requests.get(payload, headers={'token': config.get('client.webpassword'), 'Connection':'close'}, timeout=(maxWait, 30)).text
+                retData = requests.get(payload, headers={'token': config.get('client.webpassword'), 'Connection':'close'}, timeout=(maxWait, maxWait)).text
         except Exception as error:
             if not silent:
                 logger.error('Failed to make local request (command: %s):%s' % (command, error))
@@ -225,7 +225,7 @@ class OnionrUtils:
     
     def convertHumanReadableID(self, pub):
         '''Convert a human readable pubkey id to base32'''
-        return base64.b32encode(binascii.unhexlify(pgpwords.hexify(pub)))
+        return self.bytesToStr(base64.b32encode(binascii.unhexlify(pgpwords.hexify(pub.strip()))))
 
     def getBlockMetadataFromData(self, blockData):
         '''

@@ -192,7 +192,7 @@ class DataPOW:
                 if not self.hashing:
                     break
                 else:
-                    time.sleep(2)
+                    time.sleep(1)
         except KeyboardInterrupt:
             self.shutdown()
             logger.warn('Got keyboard interrupt while waiting for POW result, stopping')
@@ -299,7 +299,7 @@ class POW:
                 if not self.hashing:
                     break
                 else:
-                    time.sleep(2)
+                    time.sleep(1)
         except KeyboardInterrupt:
             self.shutdown()
             logger.warn('Got keyboard interrupt while waiting for POW result, stopping')

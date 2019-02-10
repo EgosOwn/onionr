@@ -458,11 +458,35 @@ class API:
 
         @app.route('/insertblock', methods=['POST'])
         def insertBlock():
+            encrypt = False
             bData = request.get_json(force=True)
             message = bData['message']
-            to = bData['to']
             subject = 'temp'
-            return Response(self._core.insertBlock(message, header='pm', encryptType='asym', sign=True, asymPeer=to, meta={'subject': subject}))
+            encryptType = ''
+            sign = True
+            meta = {}
+            to = ''
+            try:
+                if bData['encrypt']:
+                    to = bData['to']
+                    encrypt = True
+                    encryptType = 'asym'
+            except KeyError:
+                pass
+            try:
+                if not bData['sign']:
+                    sign = False
+            except KeyError:
+                pass
+            try:
+                bType = bData['type']
+            except KeyError:
+                bType = 'bin'
+            try:
+                meta = json.loads(bData['meta'])
+            except KeyError:
+                pass
+            return Response(self._core.insertBlock(message, header=bType, encryptType=encryptType, sign=sign, asymPeer=to, meta=meta))
         
         @app.route('/apipoints/<path:subpath>', methods=['POST', 'GET'])
         def pluginEndpoints(subpath=''):

@@ -731,6 +731,7 @@ class Core:
             logger.error(allocationReachedMessage)
             return False
         retData = False
+
         # check nonce
         dataNonce = self._utils.bytesToStr(self._crypto.sha3Hash(data))
         try:
@@ -746,6 +747,11 @@ class Core:
         if type(data) is bytes:
             data = data.decode()
         data = str(data)
+        plaintext = data
+
+        # Convert asym peer human readable key to base32 if set
+        if ' ' in asymPeer.strip():
+            asymPeer = self._utils.convertHumanReadableID(asymPeer)
 
         retData = ''
         signature = ''
@@ -839,7 +845,7 @@ class Core:
                 self.daemonQueueAdd('uploadBlock', retData)
 
         if retData != False:
-            events.event('insertBlock', onionr = None, threaded = False)
+            events.event('insertblock', {'content': plaintext, 'meta': jsonMeta, 'hash': retData, 'peer': self._utils.bytesToStr(asymPeer)}, onionr = self.onionrInst, threaded = False)
         return retData
 
     def introduceNode(self):

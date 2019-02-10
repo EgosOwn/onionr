@@ -194,7 +194,7 @@ class OnionrMail:
         self.sentMessages = {}
         for i in self.sentboxTools.listSent():
             self.sentboxList.append(i['hash'])
-            self.sentMessages[i['hash']] = (i['message'], i['peer'])
+            self.sentMessages[i['hash']] = (self.myCore._utils.bytesToStr(i['message']), i['peer'])
             if display:
                 logger.info('%s. %s - %s - %s' % (count, i['hash'], i['peer'][:12], i['date']))
             count += 1
@@ -289,6 +289,13 @@ class OnionrMail:
                 logger.warn('Invalid choice.')
         return
 
+def on_insertblock(api, data={}):
+    print(data)
+    sentboxTools = sentboxdb.SentBox(api.get_core())
+    meta = json.dumps(data['meta'])
+    print('on_insertblock', data)
+    sentboxTools.addToSent(data['hash'], data['peer'], data['content'])
+
 def on_pluginrequest(api, data=None):
     resp = ''
     subject = ''
@@ -302,14 +309,6 @@ def on_pluginrequest(api, data=None):
         cmd = path.split('/')[1]
         if cmd == 'sentbox':
             resp = OnionrMail(api).get_sent_list(display=False)
-        elif cmd == 'send':
-            print(data['postData'])
-            postData = json.loads(data['postData'])
-            message = postData['message']
-            recip = postData['to']
-            subject = 'temp'
-            blockID = api.get_core().insertBlock(message, header='pm', encryptType='asym', sign=True, asymPeer=recip, meta={'subject': subject})
-            sentboxTools.addToSent(blockID, recip, message)
     if resp != '':
         api.get_onionr().clientAPIInst.pluginResponses[data['pluginResponse']] = resp
 
