@@ -27,6 +27,7 @@ from onionrblockapi import Block
 import onionrutils, onionrexceptions, onionrcrypto, blockimporter, onionrevents as events, logger, config, onionr
 
 class FDSafeHandler(WSGIHandler):
+    '''Our WSGI handler. Doesn't do much non-default except timeouts'''
     def handle(self):
        timeout = Timeout(60, exception=Exception)
        timeout.start()
@@ -36,24 +37,6 @@ class FDSafeHandler(WSGIHandler):
            WSGIHandler.handle(self)
        except Timeout as ex:
            raise
-
-def guessMime(path):
-    '''
-        Guesses the mime type of a file from the input filename
-    '''
-    mimetypes = {
-        'html' : 'text/html',
-        'js' : 'application/javascript',
-        'css' : 'text/css',
-        'png' : 'image/png',
-        'jpg' : 'image/jpeg'
-    }
-
-    for mimetype in mimetypes:
-        if path.endswith('.%s' % mimetype):
-            return mimetypes[mimetype]
-
-    return 'text/plain'
 
 def setBindIP(filePath):
     '''Set a random localhost IP to a specified file (intended for private or public API localhost IPs)'''
@@ -65,6 +48,7 @@ def setBindIP(filePath):
     try:
         s.bind((data, 0))
     except OSError:
+        # if mac/non-bindable, show warning and default to 127.0.0.1
         logger.warn('Your platform appears to not support random local host addresses 127.x.x.x. Falling back to 127.0.0.1.')
         data = '127.0.0.1'
     s.close()
@@ -486,7 +470,8 @@ class API:
                 meta = json.loads(bData['meta'])
             except KeyError:
                 pass
-            return Response(self._core.insertBlock(message, header=bType, encryptType=encryptType, sign=sign, asymPeer=to, meta=meta))
+            threading.Thread(target=self._core.insertBlock, args=(message,), kwargs={'header': bType, 'encryptType': encryptType, 'sign':sign, 'asymPeer': to, 'meta': meta}).start()
+            return Response('success')
         
         @app.route('/apipoints/<path:subpath>', methods=['POST', 'GET'])
         def pluginEndpoints(subpath=''):

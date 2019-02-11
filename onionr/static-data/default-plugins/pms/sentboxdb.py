@@ -37,6 +37,7 @@ class SentBox:
             hash id not null,
             peer text not null,
             message text not null,
+            subject text not null,
             date int not null
             );
         ''')
@@ -46,12 +47,12 @@ class SentBox:
     def listSent(self):
         retData = []
         for entry in self.cursor.execute('SELECT * FROM sent;'):
-            retData.append({'hash': entry[0], 'peer': entry[1], 'message': entry[2], 'date': entry[3]})
+            retData.append({'hash': entry[0], 'peer': entry[1], 'message': entry[2], 'subject': entry[3], 'date': entry[4]})
         return retData
 
-    def addToSent(self, blockID, peer, message):
-        args = (blockID, peer, message, self.core._utils.getEpoch())
-        self.cursor.execute('INSERT INTO sent VALUES(?, ?, ?, ?)', args)
+    def addToSent(self, blockID, peer, message, subject=''):
+        args = (blockID, peer, message, subject, self.core._utils.getEpoch())
+        self.cursor.execute('INSERT INTO sent VALUES(?, ?, ?, ?, ?)', args)
         self.conn.commit()
         return
 

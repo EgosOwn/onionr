@@ -154,7 +154,7 @@ function getSentbox(){
             var preview = document.createElement('span')
             toEl.readOnly = true
             toEl.value = resp[keys[i]][1]
-            preview.innerText = resp[keys[i]][0].split('\n')[0];
+            preview.innerText = '(' + resp[keys[i]][2] + ')'
             entry.appendChild(toLabel)
             entry.appendChild(toEl)
             entry.appendChild(preview)

@@ -194,9 +194,9 @@ class OnionrMail:
         self.sentMessages = {}
         for i in self.sentboxTools.listSent():
             self.sentboxList.append(i['hash'])
-            self.sentMessages[i['hash']] = (self.myCore._utils.bytesToStr(i['message']), i['peer'])
+            self.sentMessages[i['hash']] = (self.myCore._utils.bytesToStr(i['message']), i['peer'], i['subject'])
             if display:
-                logger.info('%s. %s - %s - %s' % (count, i['hash'], i['peer'][:12], i['date']))
+                logger.info('%s. %s - %s - (%s) - %s' % (count, i['hash'], i['peer'][:12], i['subject'], i['date']))
             count += 1
         return json.dumps(self.sentMessages)
 
@@ -247,7 +247,6 @@ class OnionrMail:
             logger.info('Inserting encrypted message as Onionr block....')
 
             blockID = self.myCore.insertBlock(message, header='pm', encryptType='asym', asymPeer=recip, sign=self.doSigs, meta={'subject': subject})
-            self.sentboxTools.addToSent(blockID, recip, message)
     
     def toggle_signing(self):
         self.doSigs = not self.doSigs
@@ -291,8 +290,8 @@ class OnionrMail:
 
 def on_insertblock(api, data={}):
     sentboxTools = sentboxdb.SentBox(api.get_core())
-    meta = json.dumps(data['meta'])
-    sentboxTools.addToSent(data['hash'], data['peer'], data['content'])
+    meta = json.loads(data['meta'])
+    sentboxTools.addToSent(data['hash'], data['peer'], data['content'], meta['subject'])
 
 def on_pluginrequest(api, data=None):
     resp = ''
