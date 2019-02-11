@@ -21,6 +21,7 @@
 import onionrexceptions, onionrpeers, onionrproofs, logger, onionrusers
 import base64, sqlite3, os
 from dependencies import secrets
+from utils import netutils
 
 class DaemonTools:
     '''
@@ -86,7 +87,7 @@ class DaemonTools:
     def netCheck(self):
         '''Check if we are connected to the internet or not when we can't connect to any peers'''
         if len(self.daemon.onlinePeers) == 0:
-            if not self.daemon._core._utils.checkNetwork(torPort=self.daemon.proxyPort):
+            if not netutils.checkNetwork(self.daemon._core._utils, torPort=self.daemon.proxyPort):
                 logger.warn('Network check failed, are you connected to the internet?')
                 self.daemon.isOnline = False
             else:
@@ -192,10 +193,11 @@ class DaemonTools:
 
     def insertDeniableBlock(self):
         '''Insert a fake block in order to make it more difficult to track real blocks'''
-        fakePeer = self.daemon._core._crypto.generatePubKey()[0]
+        fakePeer = ''
         chance = 10
         if secrets.randbelow(chance) == (chance - 1):
+            fakePeer = self.daemon._core._crypto.generatePubKey()[0]
             data = secrets.token_hex(secrets.randbelow(500) + 1)
-            self.daemon._core.insertBlock(data, header='pm', encryptType='asym', asymPeer=fakePeer)
+            self.daemon._core.insertBlock(data, header='pm', encryptType='asym', asymPeer=fakePeer, meta={'subject': 'foo'})
         self.daemon.decrementThreadCount('insertDeniableBlock')
         return

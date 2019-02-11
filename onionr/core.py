@@ -125,6 +125,7 @@ class Core:
         '''
             Adds a public key to the key database (misleading function name)
         '''
+        assert peerID not in self.listPeers()
 
         # This function simply adds a peer to the DB
         if not self._utils.validatePubKey(peerID):

@@ -18,7 +18,9 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 
-import re, sys, time, traceback
+import re, sys, time, traceback, os
+
+MAX_LOG_SIZE = 100000000
 
 class colors:
     '''
@@ -132,11 +134,12 @@ def raw(data, fd = sys.stdout, sensitive = False):
     if get_settings() & OUTPUT_TO_CONSOLE:
         ts = fd.write('%s\n' % data)
     if get_settings() & OUTPUT_TO_FILE and not sensitive:
-        try:
-            with open(_outputfile, "a+") as f:
-                f.write(colors.filter(data) + '\n')
-        except OSError:
-            pass
+        if os.path.getsize(_outputfile) < MAX_LOG_SIZE:
+            try:
+                with open(_outputfile, "a+") as f:
+                    f.write(colors.filter(data) + '\n')
+            except OSError:
+                pass
 
 def log(prefix, data, color = '', timestamp=True, fd = sys.stdout, prompt = True, sensitive = False):
     '''

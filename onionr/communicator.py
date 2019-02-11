@@ -25,6 +25,8 @@ import onionrdaemontools, onionrsockets, onionr, onionrproofs, proofofmemory
 import binascii
 from dependencies import secrets
 from defusedxml import minidom
+from utils import networkmerger
+
 config.reload()
 class OnionrCommunicatorDaemon:
     def __init__(self, onionrInst, proxyPort, developmentMode=config.get('general.dev_mode', False)):
@@ -130,7 +132,6 @@ class OnionrCommunicatorDaemon:
             self.socketServer.start()
             self.socketClient = onionrsockets.OnionrSocketClient(self._core)
 
-
         # Main daemon loop, mainly for calling timers, don't do any complex operations here to avoid locking
         try:
             while not self.shutdown:
@@ -159,7 +160,7 @@ class OnionrCommunicatorDaemon:
             # Download new peer address list from random online peers
             peer = self.pickOnlinePeer()
             newAdders = self.peerAction(peer, action='pex')
-            self._core._utils.mergeAdders(newAdders)
+            networkmerger.mergeAdders(newAdders, self._core)
         self.decrementThreadCount('lookupAdders')
 
     def lookupBlocks(self):

@@ -563,24 +563,12 @@ class Onionr:
             if self.onionrUtils.hasKey(newPeer):
                 logger.info('We already have that key')
                 return
-            if not '-' in newPeer:
-                logger.info('Since no POW token was supplied for that key, one is being generated')
-                proof = onionrproofs.DataPOW(newPeer)
-                while True:
-                    result = proof.getResult()
-                    if result == False:
-                        time.sleep(0.5)
-                    else:
-                        break
-                newPeer += '-' + base64.b64encode(result[1]).decode()
-                logger.info(newPeer)
-
             logger.info("Adding peer: " + logger.colors.underline + newPeer)
-            if self.onionrUtils.mergeKeys(newPeer):
-                logger.info('Successfully added key')
-            else:
+            try:
+                if self.onionrCore.addPeer(newPeer):
+                    logger.info('Successfully added key')
+            except AssertionError:
                 logger.error('Failed to add key')
-
         return
 
     def addAddress(self):

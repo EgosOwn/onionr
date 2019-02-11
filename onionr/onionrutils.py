@@ -67,90 +67,6 @@ class OnionrUtils:
         '''
         epoch = self.getEpoch()
         return epoch - (epoch % roundS)
-
-    def mergeKeys(self, newKeyList):
-        '''
-            Merge ed25519 key list to our database, comma seperated string
-        '''
-        try:
-            retVal = False
-            if newKeyList != False:
-                for key in newKeyList.split(','):
-                    key = key.split('-')
-                    # Test if key is valid
-                    try:
-                        if len(key[0]) > 60 or len(key[1]) > 1000:
-                            logger.warn('%s or its pow value is too large.' % key[0])
-                            continue
-                    except IndexError:
-                        logger.warn('No pow token')
-                        continue
-                    try:
-                        value = base64.b64decode(key[1])
-                    except binascii.Error:
-                        continue
-                    # Load the pow token
-                    hashedKey = self._core._crypto.blake2bHash(key[0])
-                    powHash = self._core._crypto.blake2bHash(value + hashedKey)
-                    try:
-                        powHash = powHash.encode()
-                    except AttributeError:
-                        pass
-                    # if POW meets required difficulty, TODO make configurable/dynamic
-                    if powHash.startswith(b'0000'):
-                        # if we don't already have the key and its not our key, add it.
-                        if not key[0] in self._core.listPeers(randomOrder=False) and type(key) != None and key[0] != self._core._crypto.pubKey:
-                            if self._core.addPeer(key[0], key[1]):
-                                # Check if the peer has a set username already
-                                onionrusers.OnionrUser(self._core, key[0]).findAndSetID()
-                                retVal = True
-                            else:
-                                logger.warn("Failed to add key")
-                    else:
-                        pass
-                        #logger.debug('%s pow failed' % key[0])
-            return retVal
-        except Exception as error:
-            logger.error('Failed to merge keys.', error=error)
-            return False
-
-
-    def mergeAdders(self, newAdderList):
-        '''
-            Merge peer adders list to our database
-        '''
-        try:
-            retVal = False
-            if newAdderList != False:
-                for adder in newAdderList.split(','):
-                    adder = adder.strip()
-                    if not adder in self._core.listAdders(randomOrder = False) and adder != self.getMyAddress() and not self._core._blacklist.inBlacklist(adder):
-                        if not config.get('tor.v3onions') and len(adder) == 62:
-                            continue
-                        if self._core.addAddress(adder):
-                            # Check if we have the maxmium amount of allowed stored peers
-                            if config.get('peers.max_stored_peers') > len(self._core.listAdders()):
-                                logger.info('Added %s to db.' % adder, timestamp = True)
-                                retVal = True
-                            else:
-                                logger.warn('Reached the maximum amount of peers in the net database as allowed by your config.')
-                    else:
-                        pass
-                        #logger.debug('%s is either our address or already in our DB' % adder)
-            return retVal
-        except Exception as error:
-            logger.error('Failed to merge adders.', error = error)
-            return False
-
-    def getMyAddress(self):
-        try:
-            with open('./' + self._core.dataDir + 'hs/hostname', 'r') as hostname:
-                return hostname.read().strip()
-        except FileNotFoundError:
-            return ""
-        except Exception as error:
-            logger.error('Failed to read my address.', error = error)
-            return None
     
     def getClientAPIServer(self):
         retData = ''
@@ -195,27 +111,6 @@ class OnionrUtils:
 
         return retData
 
-    def getPassword(self, message='Enter password: ', confirm = True):
-        '''
-            Get a password without showing the users typing and confirm the input
-        '''
-        # Get a password safely with confirmation and return it
-        while True:
-            print(message)
-            pass1 = getpass.getpass()
-            if confirm:
-                print('Confirm password: ')
-                pass2 = getpass.getpass()
-                if pass1 != pass2:
-                    logger.error("Passwords do not match.")
-                    logger.readline()
-                else:
-                    break
-            else:
-                break
-
-        return pass1
-
     def getHumanReadableID(self, pub=''):
         '''gets a human readable ID from a public key'''
         if pub == '':
@@ -225,12 +120,14 @@ class OnionrUtils:
     
     def convertHumanReadableID(self, pub):
         '''Convert a human readable pubkey id to base32'''
+        pub = pub.lower()
         return self.bytesToStr(base64.b32encode(binascii.unhexlify(pgpwords.hexify(pub.strip()))))
 
     def getBlockMetadataFromData(self, blockData):
         '''
-            accepts block contents as string, returns a tuple of metadata, meta (meta being internal metadata, which will be returned as an encrypted base64 string if it is encrypted, dict if not).
-
+            accepts block contents as string, returns a tuple of 
+            metadata, meta (meta being internal metadata, which will be 
+            returned as an encrypted base64 string if it is encrypted, dict if not).
         '''
         meta = {}
         metadata = {}
@@ -254,34 +151,6 @@ class OnionrUtils:
                     pass
             meta = metadata['meta']
         return (metadata, meta, data)
-
-    def checkPort(self, port, host=''):
-        '''
-            Checks if a port is available, returns bool
-        '''
-        # inspired by https://www.reddit.com/r/learnpython/comments/2i4qrj/how_to_write_a_python_script_that_checks_to_see/ckzarux/
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        retVal = False
-        try:
-            sock.bind((host, port))
-        except OSError as e:
-            if e.errno is 98:
-                retVal = True
-        finally:
-            sock.close()
-
-        return retVal
-
-    def checkIsIP(self, ip):
-        '''
-            Check if a string is a valid IPv4 address
-        '''
-        try:
-            socket.inet_aton(ip)
-        except:
-            return False
-        else:
-            return True
 
     def processBlockMetadata(self, blockHash):
         '''
@@ -366,7 +235,7 @@ class OnionrUtils:
 
     def validateHash(self, data, length=64):
         '''
-            Validate if a string is a valid hex formatted hash
+            Validate if a string is a valid hash hex digest (does not compare, just checks length and charset)
         '''
         retVal = True
         if data == False or data == True:
@@ -533,22 +402,6 @@ class OnionrUtils:
         except:
             return False
 
-    def getPeerByHashId(self, hash):
-        '''
-            Return the pubkey of the user if known from the hash
-        '''
-        if self._core._crypto.pubKeyHashID() == hash:
-            retData = self._core._crypto.pubKey
-            return retData
-        conn = sqlite3.connect(self._core.peerDB)
-        c = conn.cursor()
-        command = (hash,)
-        retData = ''
-        for row in c.execute('SELECT id FROM peers WHERE hashID = ?', command):
-            if row[0] != '':
-                retData = row[0]
-        return retData
-
     def isCommunicatorRunning(self, timeout = 5, interval = 0.1):
         try:
             runcheck_file = self._core.dataDir + '.runcheck'
@@ -568,13 +421,6 @@ class OnionrUtils:
                     return False
         except:
             return False
-
-    def token(self, size = 32):
-        '''
-            Generates a secure random hex encoded token
-        '''
-
-        return binascii.hexlify(os.urandom(size))
 
     def importNewBlocks(self, scanDir=''):
         '''
@@ -696,22 +542,6 @@ class OnionrUtils:
         except AttributeError:
             pass
         return data
-
-    def checkNetwork(self, torPort=0):
-        '''Check if we are connected to the internet (through Tor)'''
-        retData = False
-        connectURLs = []
-        try:
-            with open('static-data/connect-check.txt', 'r') as connectTest:
-                connectURLs = connectTest.read().split(',')
-
-            for url in connectURLs:
-                if self.doGetRequest(url, port=torPort, ignoreAPI=True) != False:
-                    retData = True
-                    break
-        except FileNotFoundError:
-            pass
-        return retData
 
 def size(path='.'):
     '''
