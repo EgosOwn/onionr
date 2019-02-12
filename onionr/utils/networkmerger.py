@@ -28,11 +28,11 @@ def mergeAdders(newAdderList, coreInst):
             for adder in newAdderList.split(','):
                 adder = adder.strip()
                 if not adder in coreInst.listAdders(randomOrder = False) and adder != coreInst.hsAddress and not coreInst._blacklist.inBlacklist(adder):
-                    if not config.get('tor.v3onions') and len(adder) == 62:
+                    if not coreInst.config.get('tor.v3onions') and len(adder) == 62:
                         continue
                     if coreInst.addAddress(adder):
                         # Check if we have the maxmium amount of allowed stored peers
-                        if config.get('peers.max_stored_peers') > len(coreInst.listAdders()):
+                        if coreInst.config.get('peers.max_stored_peers') > len(coreInst.listAdders()):
                             logger.info('Added %s to db.' % adder, timestamp = True)
                             retVal = True
                         else:

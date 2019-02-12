@@ -194,21 +194,6 @@ class OnionrUtils:
         ansi_escape = re.compile(r'(\x9B|\x1B\[)[0-?]*[ -/]*[@-~]')
         return ansi_escape.sub('', line)
 
-    def getBlockDBHash(self):
-        '''
-            Return a sha3_256 hash of the blocks DB
-        '''
-        try:
-            with open(self._core.blockDB, 'rb') as data:
-                data = data.read()
-            hasher = hashlib.sha3_256()
-            hasher.update(data)
-            dataHash = hasher.hexdigest()
-
-            return dataHash
-        except Exception as error:
-            logger.error('Failed to get block DB hash.', error=error)
-
     def hasBlock(self, hash):
         '''
             Check for new block in the list
@@ -334,15 +319,6 @@ class OnionrUtils:
             retVal = True
         return retVal
 
-    def isIntegerString(self, data):
-        '''Check if a string is a valid base10 integer (also returns true if already an int)'''
-        try:
-            int(data)
-        except ValueError:
-            return False
-        else:
-            return True
-
     def validateID(self, id):
         '''
             Validate if an address is a valid tor or i2p hidden service
@@ -401,6 +377,15 @@ class OnionrUtils:
             return retVal
         except:
             return False
+
+    def isIntegerString(self, data):
+        '''Check if a string is a valid base10 integer (also returns true if already an int)'''
+        try:
+            int(data)
+        except ValueError:
+            return False
+        else:
+            return True
 
     def isCommunicatorRunning(self, timeout = 5, interval = 0.1):
         try:

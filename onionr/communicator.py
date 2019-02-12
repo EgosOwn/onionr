@@ -189,42 +189,38 @@ class OnionrCommunicatorDaemon:
                     break
                 else:
                     continue
-            newDBHash = self.peerAction(peer, 'getdbhash') # get their db hash
-            if newDBHash == False or not self._core._utils.validateHash(newDBHash):
-                continue # if request failed, restart loop (peer is added to offline peers automatically)
             triedPeers.append(peer)
-            if newDBHash != self._core.getAddressInfo(peer, 'DBHash'):
-                self._core.setAddressInfo(peer, 'DBHash', newDBHash)
-                # Get the last time we looked up a peer's stamp to only fetch blocks since then.
-                # Saved in memory only for privacy reasons
-                try:
-                    lastLookupTime = self.dbTimestamps[peer]
-                except KeyError:
-                    lastLookupTime = 0
-                else:
-                    listLookupCommand += '?date=%s' % (lastLookupTime,)
-                try:
-                    newBlocks = self.peerAction(peer, listLookupCommand) # get list of new block hashes
-                except Exception as error:
-                    logger.warn('Could not get new blocks from %s.' % peer, error = error)
-                    newBlocks = False
-                else:
-                    self.dbTimestamps[peer] = self._core._utils.getRoundedEpoch(roundS=60)
-                if newBlocks != False:
-                    # if request was a success
-                    for i in newBlocks.split('\n'):
-                        if self._core._utils.validateHash(i):
-                            # if newline seperated string is valid hash
-                            if not i in existingBlocks:
-                                # if block does not exist on disk and is not already in block queue
-                                if i not in self.blockQueue:
-                                    if onionrproofs.hashMeetsDifficulty(i) and not self._core._blacklist.inBlacklist(i):
-                                        if len(self.blockQueue) <= 1000000:
-                                            self.blockQueue[i] = [peer] # add blocks to download queue
-                                else:
-                                    if peer not in self.blockQueue[i]:
-                                        if len(self.blockQueue[i]) < 10:
-                                            self.blockQueue[i].append(peer)
+
+            # Get the last time we looked up a peer's stamp to only fetch blocks since then.
+            # Saved in memory only for privacy reasons
+            try:
+                lastLookupTime = self.dbTimestamps[peer]
+            except KeyError:
+                lastLookupTime = 0
+            else:
+                listLookupCommand += '?date=%s' % (lastLookupTime,)
+            try:
+                newBlocks = self.peerAction(peer, listLookupCommand) # get list of new block hashes
+            except Exception as error:
+                logger.warn('Could not get new blocks from %s.' % peer, error = error)
+                newBlocks = False
+            else:
+                self.dbTimestamps[peer] = self._core._utils.getRoundedEpoch(roundS=60)
+            if newBlocks != False:
+                # if request was a success
+                for i in newBlocks.split('\n'):
+                    if self._core._utils.validateHash(i):
+                        # if newline seperated string is valid hash
+                        if not i in existingBlocks:
+                            # if block does not exist on disk and is not already in block queue
+                            if i not in self.blockQueue:
+                                if onionrproofs.hashMeetsDifficulty(i) and not self._core._blacklist.inBlacklist(i):
+                                    if len(self.blockQueue) <= 1000000:
+                                        self.blockQueue[i] = [peer] # add blocks to download queue
+                            else:
+                                if peer not in self.blockQueue[i]:
+                                    if len(self.blockQueue[i]) < 10:
+                                        self.blockQueue[i].append(peer)
         self.decrementThreadCount('lookupBlocks')
         return
 

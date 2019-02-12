@@ -55,6 +55,21 @@ def _dbFetch(coreInst, blockHash):
     conn.close()
     return None
 
+def deleteBlock(coreInst, blockHash):
+    # You should call core.removeBlock if you automatically want to remove storage byte count
+    assert isinstance(coreInst, core.Core)
+    if os.path.exists('%s/%s.dat' % (coreInst.blockDataLocation, blockHash)):
+        os.remove('%s/%s.dat' % (coreInst.blockDataLocation, blockHash))
+        return True
+    dbCreate(coreInst)
+    conn = sqlite3.connect(coreInst.blockDataDB, timeout=10)
+    c = conn.cursor()
+    data = (blockHash,)
+    c.execute('DELETE FROM blockData where hash = ?', data)
+    conn.commit()
+    conn.close()
+    return True
+
 def store(coreInst, data, blockHash=''):
     assert isinstance(coreInst, core.Core)
     assert coreInst._utils.validateHash(blockHash)

@@ -31,8 +31,6 @@ class FDSafeHandler(WSGIHandler):
     def handle(self):
        timeout = Timeout(60, exception=Exception)
        timeout.start()
-
-       #timeout = gevent.Timeout.start_new(3)
        try:
            WSGIHandler.handle(self)
        except Timeout as ex:
@@ -76,28 +74,35 @@ class PublicAPI:
         @app.before_request
         def validateRequest():
             '''Validate request has the correct hostname'''
-            # If high security level, deny requests to public
+            # If high security level, deny requests to public (HS should be disabled anyway for Tor, but might not be for I2P)
             if config.get('general.security_level', default=0) > 0:
                 abort(403)
             if type(self.torAdder) is None and type(self.i2pAdder) is None:
                 # abort if our hs addresses are not known
                 abort(403)
             if request.host not in (self.i2pAdder, self.torAdder):
+                # Disallow connection if wrong HTTP hostname, in order to prevent DNS rebinding attacks
                 abort(403)
 
         @app.after_request
         def sendHeaders(resp):
             '''Send api, access control headers'''
-            resp.headers['Date'] = 'Thu, 1 Jan 1970 00:00:00 GMT' # Clock info is probably useful to attackers. Set to unix epoch.
+            resp.headers['Date'] = 'Thu, 1 Jan 1970 00:00:00 GMT' # Clock info is probably useful to attackers. Set to unix epoch, since we can't fully remove the header.
+            # CSP to prevent XSS. Mainly for client side attacks (if hostname protection could somehow be bypassed)
             resp.headers["Content-Security-Policy"] =  "default-src 'none'; script-src 'none'; object-src 'none'; style-src data: 'unsafe-inline'; img-src data:; media-src 'none'; frame-src 'none'; font-src 'none'; connect-src 'none'"
+            # Prevent click jacking
             resp.headers['X-Frame-Options'] = 'deny'
+            # No sniff is possibly not needed
             resp.headers['X-Content-Type-Options'] = "nosniff"
+            # Network API version
             resp.headers['X-API'] = onionr.API_VERSION
+            # Close connections to limit FD use
             resp.headers['Connection'] = "close"
             return resp
 
         @app.route('/')
         def banner():
+            # Display a bit of information to people who visit a node address in their browser
             try:
                 with open('static-data/index.html', 'r') as html:
                     resp = Response(html.read(), mimetype='text/html')
@@ -107,21 +112,28 @@ class PublicAPI:
 
         @app.route('/getblocklist')
         def getBlockList():
+            # Provide a list of our blocks, with a date offset
             dateAdjust = request.args.get('date')
             bList = clientAPI._core.getBlockList(dateRec=dateAdjust)
             for b in self.hideBlocks:
                 if b in bList:
+                    # Don't share blocks we created if they haven't been *uploaded* yet, makes it harder to find who created a block
                     bList.remove(b)
             return Response('\n'.join(bList))
 
         @app.route('/getdata/<name>')
         def getBlockData(name):
+            # Share data for a block if we have it
             resp = ''
             data = name
             if clientAPI._utils.validateHash(data):
                 if data not in self.hideBlocks:
                     if data in clientAPI._core.getBlockList():
-                        block = clientAPI.getBlockData(data, raw=True).encode()
+                        block = clientAPI.getBlockData(data, raw=True)
+                        try:
+                            block = block.encode()
+                        except AttributeError:
+                            abort(404)
                         block = clientAPI._core._utils.strToBytes(block)
                         resp = block
                         #resp = base64.b64encode(block).decode()
@@ -132,17 +144,15 @@ class PublicAPI:
 
         @app.route('/www/<path:path>')
         def wwwPublic(path):
+            # A way to share files directly over your .onion
             if not config.get("www.public.run", True):
                 abort(403)
             return send_from_directory(config.get('www.public.path', 'static-data/www/public/'), path)
 
         @app.route('/ping')
         def ping():
+            # Endpoint to test if nodes are up
             return Response("pong!")
-
-        @app.route('/getdbhash')
-        def getDBHash():
-            return Response(clientAPI._utils.getBlockDBHash())
 
         @app.route('/pex')
         def peerExchange():
@@ -191,6 +201,9 @@ class PublicAPI:
 
         @app.route('/upload', methods=['post'])
         def upload():
+            '''Accept file uploads. In the future this will be done more often than on creation 
+            to speed up block sync
+            '''
             resp = 'failure'
             try:
                 data = request.form['block']
@@ -212,6 +225,7 @@ class PublicAPI:
             resp = Response(resp)
             return resp
 
+        # Set instances, then startup our public api server
         clientAPI.setPublicAPIInstance(self)
         while self.torAdder == '':
             clientAPI._core.refreshFirstStartVars()
@@ -239,7 +253,6 @@ class API:
         onionr.Onionr.setupConfig('data/', self = self)
 
         self.debug = debug
-        self._privateDelayTime = 3
         self._core = onionrInst.onionrCore
         self.startTime = self._core._utils.getEpoch()
         self._crypto = onionrcrypto.OnionrCrypto(self._core)
@@ -248,7 +261,7 @@ class API:
         bindPort = int(config.get('client.client.port', 59496))
         self.bindPort = bindPort
 
-        # Be extremely mindful of this
+        # Be extremely mindful of this. These are endpoints available without a password
         self.whitelistEndpoints = ('site', 'www', 'onionrhome', 'board', 'boardContent', 'sharedContent', 'mail', 'mailindex')
 
         self.clientToken = config.get('client.webpassword')
@@ -260,13 +273,14 @@ class API:
         logger.info('Running api on %s:%s' % (self.host, self.bindPort))
         self.httpServer = ''
 
-        self.pluginResponses = {}
+        self.pluginResponses = {} # Responses for plugin endpoints
         self.queueResponse = {}
         onionrInst.setClientAPIInst(self)
 
         @app.before_request
         def validateRequest():
             '''Validate request has set password and is the correct hostname'''
+            # For the purpose of preventing DNS rebinding attacks
             if request.host != '%s:%s' % (self.host, self.bindPort):
                 abort(403)
             if request.endpoint in self.whitelistEndpoints:
@@ -279,13 +293,13 @@ class API:
 
         @app.after_request
         def afterReq(resp):
+            # Security headers
             if request.endpoint == 'site':
                 resp.headers['Content-Security-Policy'] = "default-src 'none'; style-src data: 'unsafe-inline'; img-src data:"
             else:
                 resp.headers['Content-Security-Policy'] = "default-src 'none'; script-src 'self'; object-src 'none'; style-src 'self'; img-src 'self'; media-src 'none'; frame-src 'none'; font-src 'none'; connect-src 'self'"
             resp.headers['X-Frame-Options'] = 'deny'
             resp.headers['X-Content-Type-Options'] = "nosniff"
-            resp.headers['X-API'] = onionr.API_VERSION
             resp.headers['Server'] = ''
             resp.headers['Date'] = 'Thu, 1 Jan 1970 00:00:00 GMT' # Clock info is probably useful to attackers. Set to unix epoch.
             resp.headers['Connection'] = "close"
@@ -317,11 +331,13 @@ class API:
 
         @app.route('/queueResponseAdd/<name>', methods=['post'])
         def queueResponseAdd(name):
+            # Responses from the daemon. TODO: change to direct var access instead of http endpoint
             self.queueResponse[name] = request.form['data']
             return Response('success')
         
         @app.route('/queueResponse/<name>')
         def queueResponse(name):
+            # Fetch a daemon queue response
             resp = 'failure'
             try:
                 resp = self.queueResponse[name]
@@ -333,10 +349,12 @@ class API:
             
         @app.route('/ping')
         def ping():
+            # Used to check if client api is working
             return Response("pong!")
 
         @app.route('/', endpoint='onionrhome')
         def hello():
+            # ui home
             return send_from_directory('static-data/www/private/', 'index.html')
         
         @app.route('/getblocksbytype/<name>')
@@ -396,6 +414,7 @@ class API:
 
         @app.route('/waitforshare/<name>', methods=['post'])
         def waitforshare(name):
+            '''Used to prevent the **public** api from sharing blocks we just created'''
             assert name.isalnum()
             if name in self.publicAPI.hideBlocks:
                 self.publicAPI.hideBlocks.remove(name)
@@ -421,6 +440,7 @@ class API:
         
         @app.route('/getstats')
         def getStats():
+            # returns node stats
             #return Response("disabled")
             while True:
                 try:    
@@ -475,6 +495,7 @@ class API:
         
         @app.route('/apipoints/<path:subpath>', methods=['POST', 'GET'])
         def pluginEndpoints(subpath=''):
+            '''Send data to plugins'''
             # TODO have a variable for the plugin to set data to that we can use for the response
             pluginResponseCode = str(uuid.uuid4())
             resp = 'success'
@@ -512,7 +533,7 @@ class API:
 
     def validateToken(self, token):
         '''
-            Validate that the client token matches the given token
+            Validate that the client token matches the given token. Used to prevent CSRF and data exfiltration
         '''
         if len(self.clientToken) == 0:
             logger.error("client password needs to be set")

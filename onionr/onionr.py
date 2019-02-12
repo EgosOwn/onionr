@@ -43,7 +43,7 @@ except ImportError:
 ONIONR_TAGLINE = 'Anonymous P2P Platform - GPLv3 - https://Onionr.net'
 ONIONR_VERSION = '0.5.0' # for debugging and stuff
 ONIONR_VERSION_TUPLE = tuple(ONIONR_VERSION.split('.')) # (MAJOR, MINOR, VERSION)
-API_VERSION = '5' # increments of 1; only change when something fundemental about how the API works changes. This way other nodes know how to communicate without learning too much information about you.
+API_VERSION = '5' # increments of 1; only change when something fundamental about how the API works changes. This way other nodes know how to communicate without learning too much information about you.
 
 class Onionr:
     def __init__(self):
@@ -587,7 +587,6 @@ class Onionr:
                 logger.info("Successfully added address.")
             else:
                 logger.warn("Unable to add address.")
-
         return
 
     def addMessage(self, header="txt"):

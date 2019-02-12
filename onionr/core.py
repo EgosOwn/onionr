@@ -222,18 +222,8 @@ class Core:
             c.execute('Delete from hashes where hash=?;', t)
             conn.commit()
             conn.close()
-            blockFile = self.dataDir + '/blocks/%s.dat' % block
-            dataSize = 0
-            try:
-                ''' Get size of data when loaded as an object/var, rather than on disk,
-                    to avoid conflict with getsizeof when saving blocks
-                '''
-                with open(blockFile, 'r') as data:
-                    dataSize = sys.getsizeof(data.read())
-                self._utils.storageCounter.removeBytes(dataSize)
-                os.remove(blockFile)
-            except FileNotFoundError:
-                pass
+            dataSize = sys.getsizeof(onionrstorage.getData(self, block))
+            self._utils.storageCounter.removeBytes(dataSize)
 
     def createAddressDB(self):
         '''
@@ -317,9 +307,6 @@ class Core:
             #raise Exception("Data is already set for " + dataHash)
         else:
             if self._utils.storageCounter.addBytes(dataSize) != False:
-                #blockFile = open(blockFileName, 'wb')
-                #blockFile.write(data)
-                #blockFile.close()
                 onionrstorage.store(self, data, blockHash=dataHash)
                 conn = sqlite3.connect(self.blockDB, timeout=30)
                 c = conn.cursor()
@@ -558,19 +545,18 @@ class Core:
             knownPeer text, 2
             speed int, 3
             success int, 4
-            DBHash text, 5
-            powValue    6
-            failure int 7
-            lastConnect 8
-            trust       9
-            introduced  10
+            powValue    5
+            failure int 6
+            lastConnect 7
+            trust       8
+            introduced  9
         '''
 
         conn = sqlite3.connect(self.addressDB, timeout=30)
         c = conn.cursor()
 
         command = (address,)
-        infoNumbers = {'address': 0, 'type': 1, 'knownPeer': 2, 'speed': 3, 'success': 4, 'DBHash': 5, 'powValue': 6, 'failure': 7, 'lastConnect': 8, 'trust': 9, 'introduced': 10}
+        infoNumbers = {'address': 0, 'type': 1, 'knownPeer': 2, 'speed': 3, 'success': 4, 'powValue': 5, 'failure': 6, 'lastConnect': 7, 'trust': 8, 'introduced': 9}
         info = infoNumbers[info]
         iterCount = 0
         retVal = ''
@@ -596,7 +582,7 @@ class Core:
 
         command = (data, address)
 
-        if key not in ('address', 'type', 'knownPeer', 'speed', 'success', 'DBHash', 'failure', 'powValue', 'lastConnect', 'lastConnectAttempt', 'trust', 'introduced'):
+        if key not in ('address', 'type', 'knownPeer', 'speed', 'success', 'failure', 'powValue', 'lastConnect', 'lastConnectAttempt', 'trust', 'introduced'):
             raise Exception("Got invalid database key when setting address info")
         else:
             c.execute('UPDATE adders SET ' + key + ' = ? WHERE address=?', command)
@@ -680,19 +666,6 @@ class Core:
                 rows.append(i)
         conn.close()
         return rows
-
-    def setBlockType(self, hash, blockType):
-        '''
-            Sets the type of block
-        '''
-
-        conn = sqlite3.connect(self.blockDB, timeout=30)
-        c = conn.cursor()
-        c.execute("UPDATE hashes SET dataType = ? WHERE hash = ?;", (blockType, hash))
-        conn.commit()
-        conn.close()
-
-        return
 
     def updateBlockInfo(self, hash, key, data):
         '''
