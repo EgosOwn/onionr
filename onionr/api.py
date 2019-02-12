@@ -188,11 +188,9 @@ class PublicAPI:
                     except AttributeError:
                         pass
                     if powHash.startswith('0000'):
-                        try:
-                            newNode = newNode.decode()
-                        except AttributeError:
-                            pass
-                        if clientAPI._core.addAddress(newNode):
+                        newNode = clientAPI._core._utils.bytesToStr(newNode)
+                        if clientAPI._core._utils.validateID(newNode) and not newNode in clientAPI._core.onionrInst.communicatorInst.newPeers:
+                            clientAPI._core.onionrInst.communicatorInst.newPeers.append(newNode)
                             resp = 'Success'
                     else:
                         logger.warn(newNode.decode() + ' failed to meet POW: ' + powHash)

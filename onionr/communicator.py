@@ -40,11 +40,11 @@ class OnionrCommunicatorDaemon:
         # list of timer instances
         self.timers = []
 
-        # initalize core with Tor socks port being 3rd argument
+        # initialize core with Tor socks port being 3rd argument
         self.proxyPort = proxyPort
         self._core = onionrInst.onionrCore
 
-        # intalize NIST beacon salt and time
+        # initialize NIST beacon salt and time
         self.nistSaltTimestamp = 0
         self.powSalt = 0
 
@@ -59,11 +59,12 @@ class OnionrCommunicatorDaemon:
         self.cooldownPeer = {}
         self.connectTimes = {}
         self.peerProfiles = [] # list of peer's profiles (onionrpeers.PeerProfile instances)
+        self.newPeers = [] # Peers merged to us. Don't add to db until we know they're reachable
 
         # amount of threads running by name, used to prevent too many
         self.threadCounts = {}
 
-        # set true when shutdown command recieved
+        # set true when shutdown command received
         self.shutdown = False
 
         # list of new blocks to download, added to when new block lists are fetched from peers
@@ -156,11 +157,27 @@ class OnionrCommunicatorDaemon:
         '''Lookup new peer addresses'''
         logger.info('Looking up new addresses...')
         tryAmount = 1
+        newPeers = []
         for i in range(tryAmount):
             # Download new peer address list from random online peers
+            if len(newPeers) > 10000:
+                # Dont get new peers if we have too many queued up
+                break
             peer = self.pickOnlinePeer()
             newAdders = self.peerAction(peer, action='pex')
-            networkmerger.mergeAdders(newAdders, self._core)
+            try:
+                newPeers = newAdders.split(',')
+            except AttributeError:
+                pass
+        else:
+            # Validate new peers are good format and not already in queue
+            invalid = []
+            for x in newPeers:
+                if not self._core._utils.validateID(x) or x in self.newPeers:
+                    invalid.append(x)
+            for x in invalid:
+                newPeers.remove(x)
+            self.newPeers.extend(newPeers)
         self.decrementThreadCount('lookupAdders')
 
     def lookupBlocks(self):
@@ -397,8 +414,18 @@ class OnionrCommunicatorDaemon:
         else:
             peerList = self._core.listAdders()
 
+        mainPeerList = self._core.listAdders()
         peerList = onionrpeers.getScoreSortedPeerList(self._core)
 
+        if len(peerList) < 8 or secrets.randbelow(4) == 3:
+            tryingNew = []
+            for x in self.newPeers:
+                if x not in peerList:
+                    peerList.append(x)
+                    tryingNew.append(x)
+            for i in tryingNew:
+                self.newPeers.remove(i)
+        
         if len(peerList) == 0 or useBootstrap:
             # Avoid duplicating bootstrap addresses in peerList
             self.addBootstrapListToPeerList(peerList)
@@ -413,6 +440,8 @@ class OnionrCommunicatorDaemon:
             if self.peerAction(address, 'ping') == 'pong!':
                 logger.info('Connected to ' + address)
                 time.sleep(0.1)
+                if address not in mainPeerList:
+                    networkmerger.mergeAdders(address, self._core)
                 if address not in self.onlinePeers:
                     self.onlinePeers.append(address)
                     self.connectTimes[address] = self._core._utils.getEpoch()
