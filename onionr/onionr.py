@@ -207,9 +207,6 @@ class Onionr:
             'connect': self.addAddress,
             'pex': self.doPEX,
 
-            'ui' : self.openUI,
-            'gui' : self.openUI,
-
             'getpassword': self.printWebPassword,
             'get-password': self.printWebPassword,
             'getpwd': self.printWebPassword,
@@ -297,8 +294,6 @@ class Onionr:
         data = onionrstorage.getData(self.onionrCore, bHash)
         with open('%s/%s.dat' % (exportDir, bHash), 'wb') as exportFile:
             exportFile.write(data)
-
-
 
     def showDetails(self):
         details = {
@@ -1061,12 +1056,6 @@ class Onionr:
                 logger.warn('Verbosity level %s is not valid, using default verbosity.' % verbosity)
 
         return data_exists
-
-    def openUI(self):
-        url = 'http://127.0.0.1:%s/ui/index.html?timingToken=%s' % (config.get('client.port', 59496), self.onionrUtils.getTimeBypassToken())
-
-        logger.info('Opening %s ...' % url)
-        webbrowser.open(url, new = 1, autoraise = True)
 
     def header(self, message = logger.colors.fg.pink + logger.colors.bold + 'Onionr' + logger.colors.reset + logger.colors.fg.pink + ' has started.'):
         if os.path.exists('static-data/header.txt') and logger.get_level() <= logger.LEVEL_INFO:
