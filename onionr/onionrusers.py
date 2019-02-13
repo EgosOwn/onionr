@@ -48,7 +48,10 @@ class OnionrUser:
         self.publicKey = publicKey
 
         if saveUser:
-            self._core.addPeer(publicKey)
+            try:
+                self._core.addPeer(publicKey)
+            except AssertionError:
+                pass
 
         self.trust = self._core.getPeerInfo(self.publicKey, 'trust')
         return
