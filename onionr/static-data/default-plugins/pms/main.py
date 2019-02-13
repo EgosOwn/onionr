@@ -152,7 +152,7 @@ class OnionrMail:
                         reply = logger.readline("Press enter to continue, or enter %s to reply" % ("-r",))
                         print('')
                         if reply == "-r":
-                            self.draftMessage(self.myCore._utils.bytesToStr(readBlock.signer,))
+                            self.draft_message(self.myCore._utils.bytesToStr(readBlock.signer,))
         return
 
     def sentbox(self):
