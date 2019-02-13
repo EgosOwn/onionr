@@ -134,8 +134,11 @@ def raw(data, fd = sys.stdout, sensitive = False):
     if get_settings() & OUTPUT_TO_CONSOLE:
         ts = fd.write('%s\n' % data)
     if get_settings() & OUTPUT_TO_FILE and not sensitive:
-        if os.path.getsize(_outputfile) >= MAX_LOG_SIZE:
-            return
+        try:
+            if os.path.getsize(_outputfile) >= MAX_LOG_SIZE:
+                return
+        except FileNotFoundError:
+            pass
     try:
         with open(_outputfile, "a+") as f:
             f.write(colors.filter(data) + '\n')
