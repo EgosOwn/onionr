@@ -18,7 +18,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 # Misc functions that do not fit in the main api, but are useful
-import getpass, sys, requests, os, socket, hashlib, logger, sqlite3, config, binascii, time, base64, json, glob, shutil, math, json, re, urllib.parse
+import getpass, sys, requests, os, socket, hashlib, logger, sqlite3, config, binascii, time, base64, json, glob, shutil, math, json, re, urllib.parse, string
 import nacl.signing, nacl.encoding
 from onionrblockapi import Block
 import onionrexceptions
@@ -309,6 +309,8 @@ class OnionrUtils:
             Validate if a string is a valid base32 encoded Ed25519 key
         '''
         retVal = False
+        if type(key) is type(None):
+            return False
         try:
             nacl.signing.SigningKey(seed=key, encoder=nacl.encoding.Base32Encoder)
         except nacl.exceptions.ValueError:
@@ -363,16 +365,9 @@ class OnionrUtils:
                     retVal = False
 
                 # Validate address is valid base32 (when capitalized and minus extension); v2/v3 onions and .b32.i2p use base32
-                try:
-                    base64.b32decode(idNoDomain.upper().encode())
-                except binascii.Error:
-                    retVal = False
-
-                # Validate address is valid base32 (when capitalized and minus extension); v2/v3 onions and .b32.i2p use base32
-                try:
-                    base64.b32decode(idNoDomain.upper().encode())
-                except binascii.Error:
-                    retVal = False
+                for x in idNoDomain.upper():
+                    if x not in string.ascii_uppercase and x not in '234567':
+                        retVal = False
 
             return retVal
         except:
@@ -382,7 +377,7 @@ class OnionrUtils:
         '''Check if a string is a valid base10 integer (also returns true if already an int)'''
         try:
             int(data)
-        except ValueError:
+        except (ValueError, TypeError) as e:
             return False
         else:
             return True

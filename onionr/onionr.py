@@ -110,12 +110,6 @@ class Onionr:
                 except:
                     plugins.disable(name, onionr = self, stop_event = False)
 
-        if not os.path.exists(self.onionrCore.peerDB):
-            self.onionrCore.createPeerDB()
-            pass
-        if not os.path.exists(self.onionrCore.addressDB):
-            self.onionrCore.createAddressDB()
-
         # Get configuration
         if type(config.get('client.webpassword')) is type(None):
             config.set('client.webpassword', base64.b16encode(os.urandom(32)).decode('utf-8'), savefile=True)
@@ -1014,7 +1008,6 @@ class Onionr:
             settings = settings | logger.OUTPUT_TO_CONSOLE
         if config.get('log.file.output', True):
             settings = settings | logger.OUTPUT_TO_FILE
-            logger.set_file(config.get('log.file.path', '/tmp/onionr.log').replace('data/', dataDir))
         logger.set_settings(settings)
 
         if not self is None:

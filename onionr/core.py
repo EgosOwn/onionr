@@ -85,6 +85,10 @@ class Core:
                 self.createBlockDB()
             if not os.path.exists(self.forwardKeysFile):
                 self.dbCreate.createForwardKeyDB()
+            if not os.path.exists(self.peerDB):
+                self.createPeerDB()
+            if not os.path.exists(self.addressDB):
+                self.createAddressDB()
 
             if os.path.exists(self.dataDir + '/hs/hostname'):
                 with open(self.dataDir + '/hs/hostname', 'r') as hs:
@@ -273,15 +277,6 @@ class Core:
             Simply return the data associated to a hash
         '''
 
-        '''
-        try:
-            # logger.debug('Opening %s' % (str(self.blockDataLocation) + str(hash) + '.dat'))
-            dataFile = open(self.blockDataLocation + hash + '.dat', 'rb')
-            data = dataFile.read()
-            dataFile.close()
-        except FileNotFoundError:
-            data = False
-        '''
         data = onionrstorage.getData(self, hash)
 
         return data

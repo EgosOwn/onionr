@@ -79,8 +79,12 @@ LEVEL_IMPORTANT = 6
 
 _type = OUTPUT_TO_CONSOLE | USE_ANSI # the default settings for logging
 _level = LEVEL_DEBUG # the lowest level to log
-_outputfile = './output.log' # the file to log to
-
+dataFolder = os.getenv('ONIONR_HOME')
+if type(dataFolder) is type(None):
+    dataFolder = 'data/'
+if not dataFolder.endswith('/'):
+    dataFolder += '/'
+_outputfile = dataFolder + 'output.log' # the file to log to
 def set_settings(type):
     '''
         Set the settings for the logger using bitwise operators

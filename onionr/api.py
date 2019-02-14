@@ -69,6 +69,7 @@ class PublicAPI:
         self.torAdder = clientAPI._core.hsAddress
         self.i2pAdder = clientAPI._core.i2pAddress
         self.bindPort = config.get('client.public.port')
+        self.lastRequest = 0
         logger.info('Running public api on %s:%s' % (self.host, self.bindPort))
 
         @app.before_request
@@ -98,6 +99,7 @@ class PublicAPI:
             resp.headers['X-API'] = onionr.API_VERSION
             # Close connections to limit FD use
             resp.headers['Connection'] = "close"
+            self.lastRequest = clientAPI._core._utils.getRoundedEpoch(roundS=5)
             return resp
 
         @app.route('/')
@@ -392,6 +394,10 @@ class API:
         def getBlockHeader(name):
             resp = self.getBlockData(name, decrypt=True, headerOnly=True)
             return Response(resp)
+
+        @app.route('/lastconnect')
+        def lastConnect():
+            return Response(str(self.publicAPI.lastRequest))
 
         @app.route('/site/<name>', endpoint='site')
         def site(name):

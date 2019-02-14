@@ -21,7 +21,7 @@
 '''
 import sys, os, core, config, json, requests, time, logger, threading, base64, onionr, uuid
 import onionrexceptions, onionrpeers, onionrevents as events, onionrplugins as plugins, onionrblockapi as block
-import onionrdaemontools, onionrsockets, onionr, onionrproofs, proofofmemory
+import onionrdaemontools, onionrsockets, onionr, onionrproofs
 import binascii
 from dependencies import secrets
 from defusedxml import minidom
@@ -85,8 +85,6 @@ class OnionrCommunicatorDaemon:
 
         # Loads in and starts the enabled plugins
         plugins.reload()
-
-        self.proofofmemory = proofofmemory.ProofOfMemory(self)
 
         # daemon tools are misc daemon functions, e.g. announce to online peers
         # intended only for use by OnionrCommunicatorDaemon
@@ -630,7 +628,7 @@ class OnionrCommunicatorDaemon:
         '''exit if the api server crashes/stops'''
         if self._core._utils.localCommand('ping', silent=False) not in ('pong', 'pong!'):
             for i in range(8):
-                if self._core._utils.localCommand('ping') in ('pong', 'pong!'):
+                if self._core._utils.localCommand('ping') in ('pong', 'pong!') or self.shutdown:
                     break # break for loop
                 time.sleep(1)
             else:
