@@ -18,7 +18,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 import nacl.signing, nacl.encoding, nacl.public, nacl.hash, nacl.pwhash, nacl.utils, nacl.secret, os, binascii, base64, hashlib, logger, onionrproofs, time, math, sys, hmac
-import onionrexceptions, keymanager
+import onionrexceptions, keymanager, core
 # secrets module was added into standard lib in 3.6+
 if sys.version_info[0] == 3 and sys.version_info[1] < 6:
     from dependencies import secrets
@@ -180,12 +180,6 @@ class OnionrCrypto:
             decrypted = base64.b64encode(decrypted)
         return decrypted
 
-    def generateSymmetricPeer(self, peer):
-        '''Generate symmetric key for a peer and save it to the peer database'''
-        key = self.generateSymmetric()
-        self._core.setPeerInfo(peer, 'forwardKey', key)
-        return
-
     def generateSymmetric(self):
         '''Generate a symmetric key (bytes) and return it'''
         return binascii.hexlify(nacl.utils.random(nacl.secret.SecretBox.KEY_SIZE))
@@ -283,6 +277,15 @@ class OnionrCrypto:
 
     @staticmethod
     def safeCompare(one, two):
+        # Do encode here to avoid spawning core
+        try:
+            one = one.encode()
+        except AttributeError:
+            pass
+        try:
+            two = two.encode()
+        except AttributeError:
+            pass
         return hmac.compare_digest(one, two)
         
     @staticmethod

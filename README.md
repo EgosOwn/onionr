@@ -11,6 +11,7 @@
 (***pre-alpha & experimental, not well tested or easy to use yet***)
 
 [![Open Source Love](https://badges.frapsoft.com/os/v3/open-source.png?v=103)](https://github.com/ellerbrock/open-source-badges/)
+<img src='https://gitlab.com/beardog/Onionr/badges/master/build.svg'>
 
 <hr>
 

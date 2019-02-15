@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
 import sys, os
 sys.path.append(".")
-import unittest, uuid, sqlite3
+import unittest, uuid
 TEST_DIR = 'testdata/%s-%s' % (uuid.uuid4(), os.path.basename(__file__)) + '/'
 print("Test directory:", TEST_DIR)
 os.environ["ONIONR_HOME"] = TEST_DIR
-from urllib.request import pathname2url
 import core, onionr
 
 core.Core()
@@ -37,7 +36,7 @@ class OnionrValidations(unittest.TestCase):
         self.assertTrue(c._utils.validatePubKey(valid))
 
         for x in invalid:
-            print('testing', x)
+            #print('testing', x)
             self.assertFalse(c._utils.validatePubKey(x))
     
     def test_integer_string(self):
@@ -46,13 +45,11 @@ class OnionrValidations(unittest.TestCase):
         c = core.Core()
 
         for x in valid:
-            print('testing', x)
+            #print('testing', x)
             self.assertTrue(c._utils.isIntegerString(x))   
         
         for x in invalid:
-            print('testing', x)
+            #print('testing', x)
             self.assertFalse(c._utils.isIntegerString(x))
     
-    
-
 unittest.main()
