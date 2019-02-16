@@ -18,8 +18,9 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 
-import core as onionrcore, logger, config, onionrexceptions, nacl.exceptions, onionrusers
+import core as onionrcore, logger, config, onionrexceptions, nacl.exceptions
 import json, os, sys, datetime, base64, onionrstorage
+from onionrusers import onionrusers
 
 class Block:
     blockCacheOrder = list() # NEVER write your own code that writes to this!

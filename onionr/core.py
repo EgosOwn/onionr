@@ -21,7 +21,8 @@ import sqlite3, os, sys, time, math, base64, tarfile, nacl, logger, json, netcon
 from onionrblockapi import Block
 
 import onionrutils, onionrcrypto, onionrproofs, onionrevents as events, onionrexceptions
-import onionrblacklist, onionrusers
+import onionrblacklist
+from onionrusers import onionrusers
 import dbcreator, onionrstorage, serializeddata
 from etc import onionrvalues
 
