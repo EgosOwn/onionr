@@ -20,8 +20,6 @@
 
 import re, sys, time, traceback, os
 
-MAX_LOG_SIZE = 100000000
-
 class colors:
     '''
         This class allows you to set the color if ANSI codes are supported
@@ -66,7 +64,10 @@ class colors:
 '''
     Use the bitwise operators to merge these settings
 '''
-USE_ANSI = 0b100
+if os.name == 'nt':
+    USE_ANSI = 0b000
+else:
+    USE_ANSI = 0b100
 OUTPUT_TO_CONSOLE = 0b010
 OUTPUT_TO_FILE = 0b001
 
@@ -79,12 +80,8 @@ LEVEL_IMPORTANT = 6
 
 _type = OUTPUT_TO_CONSOLE | USE_ANSI # the default settings for logging
 _level = LEVEL_DEBUG # the lowest level to log
-dataFolder = os.getenv('ONIONR_HOME')
-if type(dataFolder) is type(None):
-    dataFolder = 'data/'
-if not dataFolder.endswith('/'):
-    dataFolder += '/'
-_outputfile = dataFolder + 'output.log' # the file to log to
+_outputfile = './output.log' # the file to log to
+
 def set_settings(type):
     '''
         Set the settings for the logger using bitwise operators
@@ -139,15 +136,10 @@ def raw(data, fd = sys.stdout, sensitive = False):
         ts = fd.write('%s\n' % data)
     if get_settings() & OUTPUT_TO_FILE and not sensitive:
         try:
-            if os.path.getsize(_outputfile) >= MAX_LOG_SIZE:
-                return
-        except FileNotFoundError:
+            with open(_outputfile, "a+") as f:
+                f.write(colors.filter(data) + '\n')
+        except OSError:
             pass
-    try:
-        with open(_outputfile, "a+") as f:
-            f.write(colors.filter(data) + '\n')
-    except OSError:
-        pass
 
 def log(prefix, data, color = '', timestamp=True, fd = sys.stdout, prompt = True, sensitive = False):
     '''
