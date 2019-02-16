@@ -94,52 +94,41 @@ class OnionrCrypto:
             retData = key.sign(data).signature
         return retData
 
-    def pubKeyEncrypt(self, data, pubkey, anonymous=True, encodedData=False):
+    def pubKeyEncrypt(self, data, pubkey, encodedData=False):
         '''Encrypt to a public key (Curve25519, taken from base32 Ed25519 pubkey)'''
         retVal = ''
-        try:
-            pubkey = pubkey.encode()
-        except AttributeError:
-            pass
+        box = None
+        data = self._core._utils.strToBytes(data)
+        
+        pubkey = nacl.signing.VerifyKey(pubkey, encoder=nacl.encoding.Base32Encoder()).to_curve25519_public_key()
 
         if encodedData:
             encoding = nacl.encoding.Base64Encoder
         else:
             encoding = nacl.encoding.RawEncoder
+        
+        box = nacl.public.SealedBox(pubkey)
+        retVal = box.encrypt(data, encoder=encoding)
 
-        if self.privKey != None and not anonymous:
-            ownKey = nacl.signing.SigningKey(seed=self.privKey, encoder=nacl.encoding.Base32Encoder).to_curve25519_private_key()
-            key = nacl.signing.VerifyKey(key=pubkey, encoder=nacl.encoding.Base32Encoder).to_curve25519_public_key()
-            ourBox = nacl.public.Box(ownKey, key)
-            retVal = ourBox.encrypt(data.encode(), encoder=encoding)
-        elif anonymous:
-            key = nacl.signing.VerifyKey(key=pubkey, encoder=nacl.encoding.Base32Encoder).to_curve25519_public_key()
-            anonBox = nacl.public.SealedBox(key)
-            try:
-                data = data.encode()
-            except AttributeError:
-                pass
-            retVal = anonBox.encrypt(data, encoder=encoding)
         return retVal
 
-    def pubKeyDecrypt(self, data, pubkey='', privkey='', anonymous=False, encodedData=False):
+    def pubKeyDecrypt(self, data, pubkey='', privkey='', encodedData=False):
         '''pubkey decrypt (Curve25519, taken from Ed25519 pubkey)'''
         decrypted = False
         if encodedData:
             encoding = nacl.encoding.Base64Encoder
         else:
             encoding = nacl.encoding.RawEncoder
-        ownKey = nacl.signing.SigningKey(seed=self.privKey, encoder=nacl.encoding.Base32Encoder()).to_curve25519_private_key()
-        if self.privKey != None and not anonymous:
-            ourBox = nacl.public.Box(ownKey, pubkey)
-            decrypted = ourBox.decrypt(data, encoder=encoding)
-        elif anonymous:
-            if self._core._utils.validatePubKey(privkey):
-                privkey = nacl.signing.SigningKey(seed=privkey, encoder=nacl.encoding.Base32Encoder()).to_curve25519_private_key()
-                anonBox = nacl.public.SealedBox(privkey)
-            else:
-                anonBox = nacl.public.SealedBox(ownKey)
-            decrypted = anonBox.decrypt(data, encoder=encoding)
+        if privkey == '':
+            privkey = self.privKey
+        ownKey = nacl.signing.SigningKey(seed=privkey, encoder=nacl.encoding.Base32Encoder()).to_curve25519_private_key()
+
+        if self._core._utils.validatePubKey(privkey):
+            privkey = nacl.signing.SigningKey(seed=privkey, encoder=nacl.encoding.Base32Encoder()).to_curve25519_private_key()
+            anonBox = nacl.public.SealedBox(privkey)
+        else:
+            anonBox = nacl.public.SealedBox(ownKey)
+        decrypted = anonBox.decrypt(data, encoder=encoding)
         return decrypted
 
     def symmetricEncrypt(self, data, key, encodedKey=False, returnEncoded=True):

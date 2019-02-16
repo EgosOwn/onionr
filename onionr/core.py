@@ -779,10 +779,10 @@ class Core:
             if self._utils.validatePubKey(asymPeer):
                 # Encrypt block data with forward secrecy key first, but not meta
                 jsonMeta = json.dumps(meta)
-                jsonMeta = self._crypto.pubKeyEncrypt(jsonMeta, asymPeer, encodedData=True, anonymous=True).decode()
-                data = self._crypto.pubKeyEncrypt(data, asymPeer, encodedData=True, anonymous=True).decode()
-                signature = self._crypto.pubKeyEncrypt(signature, asymPeer, encodedData=True, anonymous=True).decode()
-                signer = self._crypto.pubKeyEncrypt(signer, asymPeer, encodedData=True, anonymous=True).decode()
+                jsonMeta = self._crypto.pubKeyEncrypt(jsonMeta, asymPeer, encodedData=True).decode()
+                data = self._crypto.pubKeyEncrypt(data, asymPeer, encodedData=True).decode()
+                signature = self._crypto.pubKeyEncrypt(signature, asymPeer, encodedData=True).decode()
+                signer = self._crypto.pubKeyEncrypt(signer, asymPeer, encodedData=True).decode()
                 onionrusers.OnionrUser(self, asymPeer, saveUser=True)
             else:
                 raise onionrexceptions.InvalidPubkey(asymPeer + ' is not a valid base32 encoded ed25519 key')

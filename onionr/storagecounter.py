@@ -49,13 +49,13 @@ class StorageCounter:
     def getPercent(self):
         '''Return percent (decimal/float) of disk space we're using'''
         amount = self.getAmount()
-        return round(amount / self._core.config.get('allocations.disk'), 2)
+        return round(amount / self._core.config.get('allocations.disk', 2000000000), 2)
 
     def addBytes(self, amount):
         '''Record that we are now using more disk space, unless doing so would exceed configured max'''
         newAmount = amount + self.getAmount()
         retData = newAmount
-        if newAmount > self._core.config.get('allocations.disk'):
+        if newAmount > self._core.config.get('allocations.disk', 2000000000):
             retData = False
         else:
             self._update(newAmount)

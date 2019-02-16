@@ -69,7 +69,7 @@ class PlainEncryption:
             data['data'] = plaintext
             data = json.dumps(data)
             plaintext = data
-            encrypted = self.api.get_core()._crypto.pubKeyEncrypt(plaintext, pubkey, anonymous=True, encodedData=True)
+            encrypted = self.api.get_core()._crypto.pubKeyEncrypt(plaintext, pubkey, encodedData=True)
             encrypted = self.api.get_core()._utils.bytesToStr(encrypted)
             logger.info('Encrypted Message: \n\nONIONR ENCRYPTED DATA %s END ENCRYPTED DATA' % (encrypted,))
 

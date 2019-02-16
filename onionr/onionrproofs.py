@@ -64,9 +64,9 @@ def getDifficultyForNewBlock(data, ourBlock=True):
     else:
         raise ValueError('not Block, str, or int')
     if ourBlock:
-        minDifficulty = config.get('general.minimum_send_pow')
+        minDifficulty = config.get('general.minimum_send_pow', 4)
     else:
-        minDifficulty = config.get('general.minimum_block_pow')
+        minDifficulty = config.get('general.minimum_block_pow', 4)
 
     retData = max(minDifficulty, math.floor(dataSize / 100000)) + getDifficultyModifier()
     return retData

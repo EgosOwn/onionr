@@ -87,7 +87,7 @@ class OnionrUser:
         retData = ''
         forwardKey = self._getLatestForwardKey()
         if self._core._utils.validatePubKey(forwardKey):
-            retData = self._core._crypto.pubKeyEncrypt(data, forwardKey, encodedData=True, anonymous=True)
+            retData = self._core._crypto.pubKeyEncrypt(data, forwardKey, encodedData=True)
         else:
             raise onionrexceptions.InvalidPubkey("No valid forward secrecy key available for this user")
         #self.generateForwardKey()
