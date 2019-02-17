@@ -86,8 +86,6 @@ class OnionrCommunicatorDaemon:
         # Loads in and starts the enabled plugins
         plugins.reload()
 
-        self.proofofmemory = proofofmemory.ProofOfMemory(self)
-
         # daemon tools are misc daemon functions, e.g. announce to online peers
         # intended only for use by OnionrCommunicatorDaemon
         self.daemonTools = onionrdaemontools.DaemonTools(self)
