@@ -14,6 +14,6 @@ c = core.Core()
 class OnionrBlockTests(unittest.TestCase):
     def test_plaintext_insert(self):
         message = 'hello world'
-        #c.insertBlock(message)
+        c.insertBlock(message)
 
 unittest.main()
