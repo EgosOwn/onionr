@@ -17,16 +17,20 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import os, json
+import os, json, onionrexceptions
 from onionrusers import onionrusers
 
 class ContactManager(onionrusers.OnionrUser):
-    def __init__(self, coreInst, publicKey, saveUser=False):
+    def __init__(self, coreInst, publicKey, saveUser=False, recordExpireSeconds=5):
         super(ContactManager, self).__init__(coreInst, publicKey, saveUser=saveUser)
-        self.data = {}
         self.dataDir = coreInst.dataDir + '/contacts/'
-        self.dataFile = coreInst.dataFile = publicKey + '.json'
-        if not os.path.exists(self.dataFile):
+        self.dataFile = '%s/contacts/%s.json' % (coreInst.dataDir, publicKey)
+        self.lastRead = 0
+        self.recordExpire = recordExpireSeconds
+        self.data = self._loadData()
+        self.deleted = False
+        
+        if not os.path.exists(self.dataDir):
             os.mkdir(self.dataDir)
     
     def _writeData(self):
@@ -34,10 +38,35 @@ class ContactManager(onionrusers.OnionrUser):
         with open(self.dataFile, 'w') as dataFile:
             dataFile.write(data)
 
-    def set_info(self, key, value):
-        return
-    def add_contact(self):
-        return
-    def delete_contact(self):
+    def _loadData(self):
+        self.lastRead = self._core._utils.getEpoch()
+        retData = {}
+        if os.path.exists(self.dataFile):
+            with open(self.dataFile, 'r') as dataFile:
+                retData = json.loads(dataFile.read())
+        return retData
+
+    def set_info(self, key, value, autoWrite=True):
+        if self.deleted:
+            raise onionrexceptions.ContactDeleted
+
+        self.data[key] = value
+        if autoWrite:
+            self._writeData()
         return
     
+    def get_info(self, key, forceReload=False):
+        if self.deleted:
+            raise onionrexceptions.ContactDeleted
+
+        if (self._core._utils.getEpoch() - self.lastRead >= self.recordExpire) or forceReload:
+            self.data = self._loadData()
+        try:
+            return self.data[key]
+        except KeyError:
+            return None
+
+    def delete_contact(self):
+        self.deleted = True
+        if os.path.exists(self.dataFile):
+            os.remove(self.dataFile)

@@ -87,3 +87,8 @@ class DiskAllocationReached(Exception):
 
 class MissingAddress(Exception):
     pass
+
+# Contact exceptions
+
+class ContactDeleted(Exception):
+    pass
