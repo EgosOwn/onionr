@@ -144,16 +144,21 @@ class OnionrMail:
                     if not readBlock.validSig:
                         logger.warn('This message has an INVALID/NO signature. ANYONE could have sent this message.')
                         cancel = logger.readline('Press enter to continue to message, or -q to not open the message (recommended).')
+                        print('')
                     if cancel != '-q':
                         try:
                             print(draw_border(self.myCore._utils.escapeAnsi(readBlock.bcontent.decode().strip())))
                         except ValueError:
                             logger.warn('Error presenting message. This is usually due to a malformed or blank message.')
                             pass
-                        reply = logger.readline("Press enter to continue, or enter %s to reply" % ("-r",))
-                        print('')
-                        if reply == "-r":
-                            self.draft_message(self.myCore._utils.bytesToStr(readBlock.signer,))
+                        if readBlock.validSig:
+                            reply = logger.readline("Press enter to continue, or enter %s to reply" % ("-r",))
+                            print('')
+                            if reply == "-r":
+                                self.draft_message(self.myCore._utils.bytesToStr(readBlock.signer,))
+                        else:
+                            logger.readline("Press enter to continue")
+                            print('')
         return
 
     def sentbox(self):
