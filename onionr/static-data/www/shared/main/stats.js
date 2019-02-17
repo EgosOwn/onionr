@@ -21,10 +21,7 @@ uptimeDisplay = document.getElementById('uptime')
 connectedDisplay = document.getElementById('connectedNodes')
 storedBlockDisplay = document.getElementById('storedBlocks')
 queuedBlockDisplay = document.getElementById('blockQueue')
-<<<<<<< HEAD
-=======
 lastIncoming = document.getElementById('lastIncoming')
->>>>>>> contacts
 
 function getStats(){
     stats = JSON.parse(httpGet('getstats', webpass))
@@ -32,8 +29,6 @@ function getStats(){
     connectedDisplay.innerText = stats['connectedNodes']
     storedBlockDisplay.innerText = stats['blockCount']
     queuedBlockDisplay.innerText = stats['blockQueueCount']
-<<<<<<< HEAD
-=======
     var lastConnect = httpGet('/lastconnect')
     if (lastConnect > 0){
         var humanDate = new Date(0)
@@ -44,6 +39,5 @@ function getStats(){
         lastConnect = 'Unknown'
     }
     lastIncoming.innerText = lastConnect
->>>>>>> contacts
 }
 getStats()

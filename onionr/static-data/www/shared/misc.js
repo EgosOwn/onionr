@@ -1,7 +1,3 @@
-<<<<<<< HEAD
-webpass = document.location.hash.replace('#', '')
-nowebpass = false
-=======
 /*
     Onionr - P2P Anonymous Storage Network
 
@@ -24,7 +20,6 @@ nowebpass = false
 webpass = document.location.hash.replace('#', '')
 nowebpass = false
 
->>>>>>> contacts
 if (typeof webpass == "undefined"){
     webpass = localStorage['webpass']
 }
@@ -37,13 +32,10 @@ if (typeof webpass == "undefined" || webpass == ""){
     nowebpass = true
 }
 
-<<<<<<< HEAD
-=======
 function arrayContains(needle, arrhaystack) {
     return (arrhaystack.indexOf(needle) > -1);
 }
 
->>>>>>> contacts
 function httpGet(theUrl) {
     var xmlHttp = new XMLHttpRequest()
     xmlHttp.open( "GET", theUrl, false ) // false for synchronous request
@@ -59,10 +51,7 @@ function httpGet(theUrl) {
 function overlay(overlayID) {
     el = document.getElementById(overlayID)
    el.style.visibility = (el.style.visibility == "visible") ? "hidden" : "visible"
-<<<<<<< HEAD
-=======
    scroll(0,0)
->>>>>>> contacts
  }
 
 var passLinks = document.getElementsByClassName("idLink")

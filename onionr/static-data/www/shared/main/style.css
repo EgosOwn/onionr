@@ -37,11 +37,7 @@ body{
     align-items:center;
  }
  .logo{
-<<<<<<< HEAD
-    max-width: 25%;
-=======
     max-width: 20%;
->>>>>>> contacts
     vertical-align: middle;
  }
  .logoText{
@@ -136,14 +132,6 @@ body{
     left: 0px;
     top: 0px;
     width:100%;
-<<<<<<< HEAD
-    opacity: 0.9;
-    height:100%;
-    text-align:center;
-    z-index: 1000;
-    background-color: black;
- }
-=======
     height:100%;
     text-align:left;
     z-index: 1000;
@@ -163,4 +151,3 @@ body{
      content: '❌';
      padding: 5px;
  }
->>>>>>> contacts

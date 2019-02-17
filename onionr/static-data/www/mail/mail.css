@@ -2,10 +2,6 @@
     padding-top: 1em;
 }
 .threads div span{
-<<<<<<< HEAD
-    padding-left: 0.5em;
-    padding-right: 0.5em;
-=======
     padding-left: 0.2em;
     padding-right: 0.2em;
 }
@@ -98,5 +94,4 @@ input{
     color: black;
     font-size: 1.5em;
     width: 10%;
->>>>>>> contacts
 }
