@@ -44,6 +44,10 @@ class PasswordStrengthError(Exception):
     pass
 
 # block exceptions
+
+class DifficultyTooLarge(Exception):
+    pass
+
 class InvalidMetadata(Exception):
     pass
 

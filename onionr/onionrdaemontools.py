@@ -18,10 +18,11 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 
-import onionrexceptions, onionrpeers, onionrproofs, logger, onionrusers
+import onionrexceptions, onionrpeers, onionrproofs, logger
 import base64, sqlite3, os
 from dependencies import secrets
 from utils import netutils
+from onionrusers import onionrusers
 
 class DaemonTools:
     '''

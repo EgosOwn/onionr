@@ -69,6 +69,7 @@ def getDifficultyForNewBlock(data, ourBlock=True):
         minDifficulty = config.get('general.minimum_block_pow', 4)
 
     retData = max(minDifficulty, math.floor(dataSize / 100000)) + getDifficultyModifier()
+
     return retData
 
 def getHashDifficulty(h):
@@ -245,11 +246,10 @@ class POW:
         answer = ''
         heartbeat = 200000
         hbCount = 0
-        
+        nonce = int(binascii.hexlify(nacl.utils.random(2)), 16)
         while self.hashing:
-            rand = nacl.utils.random()
             #token = nacl.hash.blake2b(rand + self.data).decode()
-            self.metadata['powRandomToken'] = base64.b64encode(rand).decode()
+            self.metadata['powRandomToken'] = nonce
             payload = json.dumps(self.metadata).encode() + b'\n' + self.data
             token = myCore._crypto.sha3Hash(payload)
             try:
@@ -262,6 +262,7 @@ class POW:
                 iFound = True
                 self.result = payload
                 break
+            nonce += 1
                 
         if iFound:
             endTime = math.floor(time.time())
