@@ -17,10 +17,23 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-
-import onionrusers
+import os, json
+from onionrusers import onionrusers
 
 class ContactManager(onionrusers.OnionrUser):
+    def __init__(self, coreInst, publicKey, saveUser=False):
+        super(ContactManager, self).__init__(coreInst, publicKey, saveUser=saveUser)
+        self.data = {}
+        self.dataDir = coreInst.dataDir + '/contacts/'
+        self.dataFile = coreInst.dataFile = publicKey + '.json'
+        if not os.path.exists(self.dataFile):
+            os.mkdir(self.dataDir)
+    
+    def _writeData(self):
+        data = json.dumps(self.data)
+        with open(self.dataFile, 'w') as dataFile:
+            dataFile.write(data)
+
     def set_info(self, key, value):
         return
     def add_contact(self):

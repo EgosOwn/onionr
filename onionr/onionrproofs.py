@@ -244,7 +244,6 @@ class POW:
         self.reporting = reporting
         iFound = False # if current thread is the one that found the answer
         answer = ''
-        heartbeat = 200000
         hbCount = 0
         nonce = int(binascii.hexlify(nacl.utils.random(2)), 16)
         while self.hashing:
