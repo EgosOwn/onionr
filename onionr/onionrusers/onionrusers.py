@@ -79,7 +79,7 @@ class OnionrUser:
         encrypted = coreInst._crypto.pubKeyEncrypt(data, self.publicKey, encodedData=True)
         return encrypted
 
-    def decrypt(self, data, anonymous=True):
+    def decrypt(self, data):
         decrypted = coreInst._crypto.pubKeyDecrypt(data, self.publicKey, encodedData=True)
         return decrypted
 
@@ -97,7 +97,7 @@ class OnionrUser:
         retData = ""
         for key in self.getGeneratedForwardKeys(False):
             try:
-                retData = self._core._crypto.pubKeyDecrypt(encrypted, privkey=key[1], anonymous=True, encodedData=True)
+                retData = self._core._crypto.pubKeyDecrypt(encrypted, privkey=key[1], encodedData=True)
             except nacl.exceptions.CryptoError:
                 retData = False
             else:

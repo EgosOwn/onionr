@@ -88,7 +88,7 @@ class PlainEncryption:
             return
         encrypted = data.replace('ONIONR ENCRYPTED DATA ', '').replace('END ENCRYPTED DATA', '')
         myPub = self.api.get_core()._crypto.pubKey
-        decrypted = self.api.get_core()._crypto.pubKeyDecrypt(encrypted, privkey=self.api.get_core()._crypto.privKey, anonymous=True, encodedData=True)
+        decrypted = self.api.get_core()._crypto.pubKeyDecrypt(encrypted, privkey=self.api.get_core()._crypto.privKey, encodedData=True)
         if decrypted == False:
             logger.error("Decryption failed")
         else:

@@ -21,7 +21,8 @@
 # Imports some useful libraries
 import logger, config, threading, time, readline, datetime
 from onionrblockapi import Block
-import onionrexceptions, onionrusers
+import onionrexceptions
+from onionrusers import onionrusers
 import locale, sys, os, json
 
 locale.setlocale(locale.LC_ALL, '')
