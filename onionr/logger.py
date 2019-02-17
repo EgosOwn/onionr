@@ -18,7 +18,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 
-import re, sys, time, traceback
+import re, sys, time, traceback, os
 
 class colors:
     '''
@@ -64,7 +64,10 @@ class colors:
 '''
     Use the bitwise operators to merge these settings
 '''
-USE_ANSI = 0b100
+if os.name == 'nt':
+    USE_ANSI = 0b000
+else:
+    USE_ANSI = 0b100
 OUTPUT_TO_CONSOLE = 0b010
 OUTPUT_TO_FILE = 0b001
 

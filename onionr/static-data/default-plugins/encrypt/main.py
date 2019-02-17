@@ -69,7 +69,7 @@ class PlainEncryption:
             data['data'] = plaintext
             data = json.dumps(data)
             plaintext = data
-            encrypted = self.api.get_core()._crypto.pubKeyEncrypt(plaintext, pubkey, anonymous=True, encodedData=True)
+            encrypted = self.api.get_core()._crypto.pubKeyEncrypt(plaintext, pubkey, encodedData=True)
             encrypted = self.api.get_core()._utils.bytesToStr(encrypted)
             logger.info('Encrypted Message: \n\nONIONR ENCRYPTED DATA %s END ENCRYPTED DATA' % (encrypted,))
 
@@ -88,7 +88,7 @@ class PlainEncryption:
             return
         encrypted = data.replace('ONIONR ENCRYPTED DATA ', '').replace('END ENCRYPTED DATA', '')
         myPub = self.api.get_core()._crypto.pubKey
-        decrypted = self.api.get_core()._crypto.pubKeyDecrypt(encrypted, privkey=self.api.get_core()._crypto.privKey, anonymous=True, encodedData=True)
+        decrypted = self.api.get_core()._crypto.pubKeyDecrypt(encrypted, privkey=self.api.get_core()._crypto.privKey, encodedData=True)
         if decrypted == False:
             logger.error("Decryption failed")
         else:

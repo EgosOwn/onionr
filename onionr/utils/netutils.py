@@ -1,7 +1,7 @@
 '''
-    Onionr - P2P Anonymous Storage Network
+    Onionr - P2P Microblogging Platform & Social network
 
-    Handle incoming commands from the client. Intended for localhost use
+    OnionrUtils offers various useful functions to Onionr networking.
 '''
 '''
     This program is free software: you can redistribute it and/or modify
@@ -17,16 +17,18 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import flask, apimanager
-from flask import request, Response, abort, send_from_directory
-from gevent.pywsgi import WSGIServer
+def checkNetwork(utilsInst, torPort=0):
+    '''Check if we are connected to the internet (through Tor)'''
+    retData = False
+    connectURLs = []
+    try:
+        with open('static-data/connect-check.txt', 'r') as connectTest:
+            connectURLs = connectTest.read().split(',')
 
-class APIPrivate:
-    def __init__(self, managerInst):
-        assert isinstance(managerInst, apimanager.APIManager)
-        self.app = flask.Flask(__name__) # The flask application, which recieves data from the greenlet wsgiserver
-        self.httpServer = WSGIServer((managerInst.privateIP, managerInst.privatePort), self.app, log=None)
-
-    def run(self):
-        self.httpServer.serve_forever()
-        return
+        for url in connectURLs:
+            if utilsInst.doGetRequest(url, port=torPort, ignoreAPI=True) != False:
+                retData = True
+                break
+    except FileNotFoundError:
+        pass
+    return retData

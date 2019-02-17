@@ -18,8 +18,9 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 
-import core as onionrcore, logger, config, onionrexceptions, nacl.exceptions, onionrusers
+import core as onionrcore, logger, config, onionrexceptions, nacl.exceptions
 import json, os, sys, datetime, base64, onionrstorage
+from onionrusers import onionrusers
 
 class Block:
     blockCacheOrder = list() # NEVER write your own code that writes to this!
@@ -59,7 +60,7 @@ class Block:
 
         self.update()
 
-    def decrypt(self, anonymous = True, encodedData = True):
+    def decrypt(self, encodedData = True):
         '''
             Decrypt a block, loading decrypted data into their vars
         '''
@@ -71,16 +72,16 @@ class Block:
         # decrypt data
         if self.getHeader('encryptType') == 'asym':
             try:
-                self.bcontent = core._crypto.pubKeyDecrypt(self.bcontent, anonymous=anonymous, encodedData=encodedData)
-                bmeta = core._crypto.pubKeyDecrypt(self.bmetadata, anonymous=anonymous, encodedData=encodedData)
+                self.bcontent = core._crypto.pubKeyDecrypt(self.bcontent, encodedData=encodedData)
+                bmeta = core._crypto.pubKeyDecrypt(self.bmetadata, encodedData=encodedData)
                 try:
                     bmeta = bmeta.decode()
                 except AttributeError:
                     # yet another bytes fix
                     pass
                 self.bmetadata = json.loads(bmeta)
-                self.signature = core._crypto.pubKeyDecrypt(self.signature, anonymous=anonymous, encodedData=encodedData)
-                self.signer = core._crypto.pubKeyDecrypt(self.signer, anonymous=anonymous, encodedData=encodedData)
+                self.signature = core._crypto.pubKeyDecrypt(self.signature, encodedData=encodedData)
+                self.signer = core._crypto.pubKeyDecrypt(self.signer, encodedData=encodedData)
                 self.bheader['signer'] = self.signer.decode()
                 self.signedData =  json.dumps(self.bmetadata) + self.bcontent.decode()
                 try:
@@ -94,7 +95,8 @@ class Block:
                         logger.error(str(e))
                         pass
             except nacl.exceptions.CryptoError:
-                logger.debug('Could not decrypt block. Either invalid key or corrupted data')
+                pass
+                #logger.debug('Could not decrypt block. Either invalid key or corrupted data')
             else:
                 retData = True
                 self.decrypted = True

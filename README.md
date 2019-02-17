@@ -11,6 +11,7 @@
 (***pre-alpha & experimental, not well tested or easy to use yet***)
 
 [![Open Source Love](https://badges.frapsoft.com/os/v3/open-source.png?v=103)](https://github.com/ellerbrock/open-source-badges/)
+<img src='https://gitlab.com/beardog/Onionr/badges/master/build.svg'>
 
 <hr>
 
@@ -60,6 +61,7 @@ Everyone is welcome to help out. Help is wanted for the following:
 * Testing
 * Running stable nodes
 * Security review/audit
+* Automatic I2P setup
 
 Bitcoin: [1onion55FXzm6h8KQw3zFw2igpHcV7LPq](bitcoin:1onion55FXzm6h8KQw3zFw2igpHcV7LPq)
 USD: [Ko-Fi](https://www.ko-fi.com/beardogkf)

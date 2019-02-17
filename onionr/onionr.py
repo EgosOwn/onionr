@@ -25,7 +25,7 @@ MIN_PY_VERSION = 6
 if sys.version_info[0] == 2 or sys.version_info[1] < MIN_PY_VERSION:
     print('Error, Onionr requires Python 3.%s+' % (MIN_PY_VERSION,))
     sys.exit(1)
-import os, base64, random, getpass, shutil, subprocess, requests, time, platform, datetime, re, json, getpass, sqlite3
+import os, base64, random, getpass, shutil, time, platform, datetime, re, json, getpass, sqlite3
 import webbrowser, uuid, signal
 from threading import Thread
 import api, core, config, logger, onionrplugins as plugins, onionrevents as events
@@ -33,17 +33,18 @@ import onionrutils
 import netcontroller, onionrstorage
 from netcontroller import NetController
 from onionrblockapi import Block
-import onionrproofs, onionrexceptions, onionrusers, communicator
+import onionrproofs, onionrexceptions, communicator
+from onionrusers import onionrusers
 
 try:
     from urllib3.contrib.socks import SOCKSProxyManager
 except ImportError:
     raise Exception("You need the PySocks module (for use with socks5 proxy to use Tor)")
 
-ONIONR_TAGLINE = 'Anonymous P2P Platform - GPLv3 - https://Onionr.VoidNet.Tech'
+ONIONR_TAGLINE = 'Anonymous P2P Platform - GPLv3 - https://Onionr.net'
 ONIONR_VERSION = '0.5.0' # for debugging and stuff
 ONIONR_VERSION_TUPLE = tuple(ONIONR_VERSION.split('.')) # (MAJOR, MINOR, VERSION)
-API_VERSION = '5' # increments of 1; only change when something fundemental about how the API works changes. This way other nodes know how to communicate without learning too much information about you.
+API_VERSION = '5' # increments of 1; only change when something fundamental about how the API works changes. This way other nodes know how to communicate without learning too much information about you.
 
 class Onionr:
     def __init__(self):
@@ -110,12 +111,6 @@ class Onionr:
                 except:
                     plugins.disable(name, onionr = self, stop_event = False)
 
-        if not os.path.exists(self.onionrCore.peerDB):
-            self.onionrCore.createPeerDB()
-            pass
-        if not os.path.exists(self.onionrCore.addressDB):
-            self.onionrCore.createAddressDB()
-
         # Get configuration
         if type(config.get('client.webpassword')) is type(None):
             config.set('client.webpassword', base64.b16encode(os.urandom(32)).decode('utf-8'), savefile=True)
@@ -124,6 +119,7 @@ class Onionr:
             config.set('client.client.port', randomPort, savefile=True)
         if type(config.get('client.public.port')) is type(None):
             randomPort = netcontroller.getOpenPort()
+            print(randomPort)
             config.set('client.public.port', randomPort, savefile=True)
         if type(config.get('client.participate')) is type(None):
             config.set('client.participate', True, savefile=True)
@@ -205,9 +201,6 @@ class Onionr:
             'introduce': self.onionrCore.introduceNode,
             'connect': self.addAddress,
             'pex': self.doPEX,
-
-            'ui' : self.openUI,
-            'gui' : self.openUI,
 
             'getpassword': self.printWebPassword,
             'get-password': self.printWebPassword,
@@ -296,8 +289,6 @@ class Onionr:
         data = onionrstorage.getData(self.onionrCore, bHash)
         with open('%s/%s.dat' % (exportDir, bHash), 'wb') as exportFile:
             exportFile.write(data)
-
-
 
     def showDetails(self):
         details = {
@@ -562,24 +553,12 @@ class Onionr:
             if self.onionrUtils.hasKey(newPeer):
                 logger.info('We already have that key')
                 return
-            if not '-' in newPeer:
-                logger.info('Since no POW token was supplied for that key, one is being generated')
-                proof = onionrproofs.DataPOW(newPeer)
-                while True:
-                    result = proof.getResult()
-                    if result == False:
-                        time.sleep(0.5)
-                    else:
-                        break
-                newPeer += '-' + base64.b64encode(result[1]).decode()
-                logger.info(newPeer)
-
             logger.info("Adding peer: " + logger.colors.underline + newPeer)
-            if self.onionrUtils.mergeKeys(newPeer):
-                logger.info('Successfully added key')
-            else:
+            try:
+                if self.onionrCore.addPeer(newPeer):
+                    logger.info('Successfully added key')
+            except AssertionError:
                 logger.error('Failed to add key')
-
         return
 
     def addAddress(self):
@@ -598,7 +577,6 @@ class Onionr:
                 logger.info("Successfully added address.")
             else:
                 logger.warn("Unable to add address.")
-
         return
 
     def addMessage(self, header="txt"):
@@ -774,7 +752,7 @@ class Onionr:
         Onionr.setupConfig('data/', self = self)
 
         if self._developmentMode:
-            logger.warn('DEVELOPMENT MODE ENABLED (LESS SECURE)', timestamp = False)
+            logger.warn('DEVELOPMENT MODE ENABLED (NOT RECOMMENDED)', timestamp = False)
         net = NetController(config.get('client.public.port', 59497), apiServerIP=apiHost)
         logger.debug('Tor is starting...')
         if not net.startTor():
@@ -985,7 +963,7 @@ class Onionr:
         '''
         self.addFile(singleBlock=True, blockType='html')
 
-    def addFile(self, singleBlock=False, blockType='txt'):
+    def addFile(self, singleBlock=False, blockType='bin'):
         '''
             Adds a file to the onionr network
         '''
@@ -1001,7 +979,8 @@ class Onionr:
             try:
                 with open(filename, 'rb') as singleFile:
                     blockhash = self.onionrCore.insertBlock(base64.b64encode(singleFile.read()), header=blockType)
-                logger.info('File %s saved in block %s' % (filename, blockhash))
+                if len(blockhash) > 0:
+                    logger.info('File %s saved in block %s' % (filename, blockhash))
             except:
                 logger.error('Failed to save file in block.', timestamp = False)
         else:
@@ -1030,7 +1009,6 @@ class Onionr:
             settings = settings | logger.OUTPUT_TO_CONSOLE
         if config.get('log.file.output', True):
             settings = settings | logger.OUTPUT_TO_FILE
-            logger.set_file(config.get('log.file.path', '/tmp/onionr.log').replace('data/', dataDir))
         logger.set_settings(settings)
 
         if not self is None:
@@ -1072,12 +1050,6 @@ class Onionr:
                 logger.warn('Verbosity level %s is not valid, using default verbosity.' % verbosity)
 
         return data_exists
-
-    def openUI(self):
-        url = 'http://127.0.0.1:%s/ui/index.html?timingToken=%s' % (config.get('client.port', 59496), self.onionrUtils.getTimeBypassToken())
-
-        logger.info('Opening %s ...' % url)
-        webbrowser.open(url, new = 1, autoraise = True)
 
     def header(self, message = logger.colors.fg.pink + logger.colors.bold + 'Onionr' + logger.colors.reset + logger.colors.fg.pink + ' has started.'):
         if os.path.exists('static-data/header.txt') and logger.get_level() <= logger.LEVEL_INFO:

@@ -116,4 +116,7 @@ class OnionrBlackList:
             return
         insert = (hashed,)
         blacklistDate = self._core._utils.getEpoch()
-        self._dbExecute("INSERT INTO blacklist (hash, dataType, blacklistDate, expire) VALUES(?, ?, ?, ?);", (str(hashed), dataType, blacklistDate, expire))
+        try:
+            self._dbExecute("INSERT INTO blacklist (hash, dataType, blacklistDate, expire) VALUES(?, ?, ?, ?);", (str(hashed), dataType, blacklistDate, expire))
+        except sqlite3.IntegrityError:
+            pass

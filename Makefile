@@ -18,26 +18,20 @@ uninstall:
 	rm -f $(DESTDIR)$(PREFIX)/bin/onionr
 
 test:
-	@./onionr.sh stop
-	@sleep 1
-	@rm -rf onionr/data-backup
-	@mv onionr/data onionr/data-backup | true > /dev/null 2>&1
-	-@cd onionr; ./tests.py;
-	@rm -rf onionr/data
-	@mv onionr/data-backup onionr/data | true > /dev/null 2>&1
+	./run_tests.sh
 
 soft-reset:
 	@echo "Soft-resetting Onionr..."
-	rm -f onionr/data/blocks/*.dat onionr/data/*.db onionr/data/block-nonces.dat | true > /dev/null 2>&1
+	rm -f onionr/$(ONIONR_HOME)/blocks/*.dat onionr/data/*.db onionr/$(ONIONR_HOME)/block-nonces.dat | true > /dev/null 2>&1
 	@./onionr.sh version | grep -v "Failed" --color=always
 
 reset:
 	@echo "Hard-resetting Onionr..."
-	rm -rf onionr/data/ | true > /dev/null 2>&1
+	rm -rf onionr/$(ONIONR_HOME)/ | true > /dev/null 2>&1
 	cd onionr/static-data/www/ui/; rm -rf ./dist; python compile.py
 	#@./onionr.sh.sh version | grep -v "Failed" --color=always
 
 plugins-reset:
 	@echo "Resetting plugins..."
-	rm -rf onionr/data/plugins/ | true > /dev/null 2>&1
+	rm -rf onionr/$(ONIONR_HOME)/plugins/ | true > /dev/null 2>&1
 	@./onionr.sh version | grep -v "Failed" --color=always

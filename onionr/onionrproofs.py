@@ -41,9 +41,9 @@ def getDifficultyModifier(coreOrUtilsInst=None):
     if percentUse >= 0.50:
         retData += 1
     elif percentUse >= 0.75:
-            retData += 2
+        retData += 2
     elif percentUse >= 0.95:
-            retData += 3
+        retData += 3
 
     return retData
 
@@ -64,11 +64,12 @@ def getDifficultyForNewBlock(data, ourBlock=True):
     else:
         raise ValueError('not Block, str, or int')
     if ourBlock:
-        minDifficulty = config.get('general.minimum_send_pow')
+        minDifficulty = config.get('general.minimum_send_pow', 4)
     else:
-        minDifficulty = config.get('general.minimum_block_pow')
+        minDifficulty = config.get('general.minimum_block_pow', 4)
 
-    retData = max(minDifficulty, math.floor(dataSize / 1000000)) + getDifficultyModifier()
+    retData = max(minDifficulty, math.floor(dataSize / 100000)) + getDifficultyModifier()
+
     return retData
 
 def getHashDifficulty(h):
@@ -192,7 +193,7 @@ class DataPOW:
                 if not self.hashing:
                     break
                 else:
-                    time.sleep(2)
+                    time.sleep(1)
         except KeyboardInterrupt:
             self.shutdown()
             logger.warn('Got keyboard interrupt while waiting for POW result, stopping')
@@ -243,13 +244,11 @@ class POW:
         self.reporting = reporting
         iFound = False # if current thread is the one that found the answer
         answer = ''
-        heartbeat = 200000
         hbCount = 0
-        
+        nonce = int(binascii.hexlify(nacl.utils.random(2)), 16)
         while self.hashing:
-            rand = nacl.utils.random()
             #token = nacl.hash.blake2b(rand + self.data).decode()
-            self.metadata['powRandomToken'] = base64.b64encode(rand).decode()
+            self.metadata['powRandomToken'] = nonce
             payload = json.dumps(self.metadata).encode() + b'\n' + self.data
             token = myCore._crypto.sha3Hash(payload)
             try:
@@ -262,6 +261,7 @@ class POW:
                 iFound = True
                 self.result = payload
                 break
+            nonce += 1
                 
         if iFound:
             endTime = math.floor(time.time())
@@ -299,7 +299,7 @@ class POW:
                 if not self.hashing:
                     break
                 else:
-                    time.sleep(2)
+                    time.sleep(1)
         except KeyboardInterrupt:
             self.shutdown()
             logger.warn('Got keyboard interrupt while waiting for POW result, stopping')

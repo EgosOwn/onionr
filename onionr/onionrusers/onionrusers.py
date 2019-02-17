@@ -40,12 +40,18 @@ class OnionrUser:
             Takes an instance of onionr core, a base32 encoded ed25519 public key, and a bool saveUser
             saveUser determines if we should add a user to our peer database or not.
         '''
+        if ' ' in coreInst._utils.bytesToStr(publicKey).strip():
+            publicKey = coreInst._utils.convertHumanReadableID(publicKey)
+
         self.trust = 0
         self._core = coreInst
         self.publicKey = publicKey
 
         if saveUser:
-            self._core.addPeer(publicKey)
+            try:
+                self._core.addPeer(publicKey)
+            except AssertionError:
+                pass
 
         self.trust = self._core.getPeerInfo(self.publicKey, 'trust')
         return
@@ -73,7 +79,7 @@ class OnionrUser:
         encrypted = coreInst._crypto.pubKeyEncrypt(data, self.publicKey, encodedData=True)
         return encrypted
 
-    def decrypt(self, data, anonymous=True):
+    def decrypt(self, data):
         decrypted = coreInst._crypto.pubKeyDecrypt(data, self.publicKey, encodedData=True)
         return decrypted
 
@@ -81,7 +87,7 @@ class OnionrUser:
         retData = ''
         forwardKey = self._getLatestForwardKey()
         if self._core._utils.validatePubKey(forwardKey):
-            retData = self._core._crypto.pubKeyEncrypt(data, forwardKey, encodedData=True, anonymous=True)
+            retData = self._core._crypto.pubKeyEncrypt(data, forwardKey, encodedData=True)
         else:
             raise onionrexceptions.InvalidPubkey("No valid forward secrecy key available for this user")
         #self.generateForwardKey()
@@ -91,7 +97,7 @@ class OnionrUser:
         retData = ""
         for key in self.getGeneratedForwardKeys(False):
             try:
-                retData = self._core._crypto.pubKeyDecrypt(encrypted, privkey=key[1], anonymous=True, encodedData=True)
+                retData = self._core._crypto.pubKeyDecrypt(encrypted, privkey=key[1], encodedData=True)
             except nacl.exceptions.CryptoError:
                 retData = False
             else:

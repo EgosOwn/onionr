@@ -19,9 +19,7 @@
 '''
 from gevent.pywsgi import WSGIServer, WSGIHandler
 from gevent import Timeout
-#import gevent.monkey
-#gevent.monkey.patch_socket()
-import flask, cgi
+import flask, cgi, uuid
 from flask import request, Response, abort, send_from_directory
 import sys, random, threading, hmac, hashlib, base64, time, math, os, json, socket
 import core
@@ -29,33 +27,14 @@ from onionrblockapi import Block
 import onionrutils, onionrexceptions, onionrcrypto, blockimporter, onionrevents as events, logger, config, onionr
 
 class FDSafeHandler(WSGIHandler):
+    '''Our WSGI handler. Doesn't do much non-default except timeouts'''
     def handle(self):
        timeout = Timeout(60, exception=Exception)
        timeout.start()
-
-       #timeout = gevent.Timeout.start_new(3)
        try:
            WSGIHandler.handle(self)
        except Timeout as ex:
            raise
-
-def guessMime(path):
-    '''
-        Guesses the mime type of a file from the input filename
-    '''
-    mimetypes = {
-        'html' : 'text/html',
-        'js' : 'application/javascript',
-        'css' : 'text/css',
-        'png' : 'image/png',
-        'jpg' : 'image/jpeg'
-    }
-
-    for mimetype in mimetypes:
-        if path.endswith('.%s' % mimetype):
-            return mimetypes[mimetype]
-
-    return 'text/plain'
 
 def setBindIP(filePath):
     '''Set a random localhost IP to a specified file (intended for private or public API localhost IPs)'''
@@ -67,6 +46,7 @@ def setBindIP(filePath):
     try:
         s.bind((data, 0))
     except OSError:
+        # if mac/non-bindable, show warning and default to 127.0.0.1
         logger.warn('Your platform appears to not support random local host addresses 127.x.x.x. Falling back to 127.0.0.1.')
         data = '127.0.0.1'
     s.close()
@@ -89,33 +69,42 @@ class PublicAPI:
         self.torAdder = clientAPI._core.hsAddress
         self.i2pAdder = clientAPI._core.i2pAddress
         self.bindPort = config.get('client.public.port')
+        self.lastRequest = 0
         logger.info('Running public api on %s:%s' % (self.host, self.bindPort))
 
         @app.before_request
         def validateRequest():
             '''Validate request has the correct hostname'''
-            # If high security level, deny requests to public
+            # If high security level, deny requests to public (HS should be disabled anyway for Tor, but might not be for I2P)
             if config.get('general.security_level', default=0) > 0:
                 abort(403)
             if type(self.torAdder) is None and type(self.i2pAdder) is None:
                 # abort if our hs addresses are not known
                 abort(403)
             if request.host not in (self.i2pAdder, self.torAdder):
+                # Disallow connection if wrong HTTP hostname, in order to prevent DNS rebinding attacks
                 abort(403)
 
         @app.after_request
         def sendHeaders(resp):
             '''Send api, access control headers'''
-            resp.headers['Date'] = 'Thu, 1 Jan 1970 00:00:00 GMT' # Clock info is probably useful to attackers. Set to unix epoch.
+            resp.headers['Date'] = 'Thu, 1 Jan 1970 00:00:00 GMT' # Clock info is probably useful to attackers. Set to unix epoch, since we can't fully remove the header.
+            # CSP to prevent XSS. Mainly for client side attacks (if hostname protection could somehow be bypassed)
             resp.headers["Content-Security-Policy"] =  "default-src 'none'; script-src 'none'; object-src 'none'; style-src data: 'unsafe-inline'; img-src data:; media-src 'none'; frame-src 'none'; font-src 'none'; connect-src 'none'"
+            # Prevent click jacking
             resp.headers['X-Frame-Options'] = 'deny'
+            # No sniff is possibly not needed
             resp.headers['X-Content-Type-Options'] = "nosniff"
+            # Network API version
             resp.headers['X-API'] = onionr.API_VERSION
+            # Close connections to limit FD use
             resp.headers['Connection'] = "close"
+            self.lastRequest = clientAPI._core._utils.getRoundedEpoch(roundS=5)
             return resp
 
         @app.route('/')
         def banner():
+            # Display a bit of information to people who visit a node address in their browser
             try:
                 with open('static-data/index.html', 'r') as html:
                     resp = Response(html.read(), mimetype='text/html')
@@ -125,40 +114,47 @@ class PublicAPI:
 
         @app.route('/getblocklist')
         def getBlockList():
+            # Provide a list of our blocks, with a date offset
             dateAdjust = request.args.get('date')
             bList = clientAPI._core.getBlockList(dateRec=dateAdjust)
             for b in self.hideBlocks:
                 if b in bList:
+                    # Don't share blocks we created if they haven't been *uploaded* yet, makes it harder to find who created a block
                     bList.remove(b)
             return Response('\n'.join(bList))
 
         @app.route('/getdata/<name>')
         def getBlockData(name):
+            # Share data for a block if we have it
             resp = ''
             data = name
             if clientAPI._utils.validateHash(data):
                 if data not in self.hideBlocks:
                     if data in clientAPI._core.getBlockList():
-                        block = clientAPI.getBlockData(data, raw=True).encode()
-                        resp = base64.b64encode(block).decode()
+                        block = clientAPI.getBlockData(data, raw=True)
+                        try:
+                            block = block.encode()
+                        except AttributeError:
+                            abort(404)
+                        block = clientAPI._core._utils.strToBytes(block)
+                        resp = block
+                        #resp = base64.b64encode(block).decode()
             if len(resp) == 0:
                 abort(404)
                 resp = ""
-            return Response(resp)
+            return Response(resp, mimetype='application/octet-stream')
 
         @app.route('/www/<path:path>')
         def wwwPublic(path):
+            # A way to share files directly over your .onion
             if not config.get("www.public.run", True):
                 abort(403)
             return send_from_directory(config.get('www.public.path', 'static-data/www/public/'), path)
 
         @app.route('/ping')
         def ping():
+            # Endpoint to test if nodes are up
             return Response("pong!")
-
-        @app.route('/getdbhash')
-        def getDBHash():
-            return Response(clientAPI._utils.getBlockDBHash())
 
         @app.route('/pex')
         def peerExchange():
@@ -194,11 +190,9 @@ class PublicAPI:
                     except AttributeError:
                         pass
                     if powHash.startswith('0000'):
-                        try:
-                            newNode = newNode.decode()
-                        except AttributeError:
-                            pass
-                        if clientAPI._core.addAddress(newNode):
+                        newNode = clientAPI._core._utils.bytesToStr(newNode)
+                        if clientAPI._core._utils.validateID(newNode) and not newNode in clientAPI._core.onionrInst.communicatorInst.newPeers:
+                            clientAPI._core.onionrInst.communicatorInst.newPeers.append(newNode)
                             resp = 'Success'
                     else:
                         logger.warn(newNode.decode() + ' failed to meet POW: ' + powHash)
@@ -207,6 +201,9 @@ class PublicAPI:
 
         @app.route('/upload', methods=['post'])
         def upload():
+            '''Accept file uploads. In the future this will be done more often than on creation 
+            to speed up block sync
+            '''
             resp = 'failure'
             try:
                 data = request.form['block']
@@ -228,6 +225,7 @@ class PublicAPI:
             resp = Response(resp)
             return resp
 
+        # Set instances, then startup our public api server
         clientAPI.setPublicAPIInstance(self)
         while self.torAdder == '':
             clientAPI._core.refreshFirstStartVars()
@@ -255,7 +253,6 @@ class API:
         onionr.Onionr.setupConfig('data/', self = self)
 
         self.debug = debug
-        self._privateDelayTime = 3
         self._core = onionrInst.onionrCore
         self.startTime = self._core._utils.getEpoch()
         self._crypto = onionrcrypto.OnionrCrypto(self._core)
@@ -264,7 +261,7 @@ class API:
         bindPort = int(config.get('client.client.port', 59496))
         self.bindPort = bindPort
 
-        # Be extremely mindful of this
+        # Be extremely mindful of this. These are endpoints available without a password
         self.whitelistEndpoints = ('site', 'www', 'onionrhome', 'board', 'boardContent', 'sharedContent', 'mail', 'mailindex')
 
         self.clientToken = config.get('client.webpassword')
@@ -276,12 +273,14 @@ class API:
         logger.info('Running api on %s:%s' % (self.host, self.bindPort))
         self.httpServer = ''
 
+        self.pluginResponses = {} # Responses for plugin endpoints
         self.queueResponse = {}
         onionrInst.setClientAPIInst(self)
 
         @app.before_request
         def validateRequest():
             '''Validate request has set password and is the correct hostname'''
+            # For the purpose of preventing DNS rebinding attacks
             if request.host != '%s:%s' % (self.host, self.bindPort):
                 abort(403)
             if request.endpoint in self.whitelistEndpoints:
@@ -294,11 +293,13 @@ class API:
 
         @app.after_request
         def afterReq(resp):
-            #resp.headers["Content-Security-Policy"] =  "default-src 'none'; script-src 'none'; object-src 'none'; style-src data: 'unsafe-inline'; img-src data:; media-src 'none'; frame-src 'none'; font-src 'none'; connect-src 'none'"
-            resp.headers['Content-Security-Policy'] = "default-src 'none'; script-src 'self'; object-src 'none'; style-src 'self'; img-src 'self'; media-src 'none'; frame-src 'none'; font-src 'none'; connect-src 'self'"
+            # Security headers
+            if request.endpoint == 'site':
+                resp.headers['Content-Security-Policy'] = "default-src 'none'; style-src data: 'unsafe-inline'; img-src data:"
+            else:
+                resp.headers['Content-Security-Policy'] = "default-src 'none'; script-src 'self'; object-src 'none'; style-src 'self'; img-src 'self'; media-src 'none'; frame-src 'none'; font-src 'none'; connect-src 'self'"
             resp.headers['X-Frame-Options'] = 'deny'
             resp.headers['X-Content-Type-Options'] = "nosniff"
-            resp.headers['X-API'] = onionr.API_VERSION
             resp.headers['Server'] = ''
             resp.headers['Date'] = 'Thu, 1 Jan 1970 00:00:00 GMT' # Clock info is probably useful to attackers. Set to unix epoch.
             resp.headers['Connection'] = "close"
@@ -330,11 +331,13 @@ class API:
 
         @app.route('/queueResponseAdd/<name>', methods=['post'])
         def queueResponseAdd(name):
+            # Responses from the daemon. TODO: change to direct var access instead of http endpoint
             self.queueResponse[name] = request.form['data']
             return Response('success')
         
         @app.route('/queueResponse/<name>')
         def queueResponse(name):
+            # Fetch a daemon queue response
             resp = 'failure'
             try:
                 resp = self.queueResponse[name]
@@ -346,10 +349,12 @@ class API:
             
         @app.route('/ping')
         def ping():
+            # Used to check if client api is working
             return Response("pong!")
 
         @app.route('/', endpoint='onionrhome')
         def hello():
+            # ui home
             return send_from_directory('static-data/www/private/', 'index.html')
         
         @app.route('/getblocksbytype/<name>')
@@ -357,12 +362,13 @@ class API:
             blocks = self._core.getBlocksByType(name)
             return Response(','.join(blocks))
         
-        @app.route('/gethtmlsafeblockdata/<name>')
-        def getSafeData(name):
+        @app.route('/getblockbody/<name>')
+        def getBlockBodyData(name):
             resp = ''
             if self._core._utils.validateHash(name):
                 try:
-                    resp =  cgi.escape(Block(name).bcontent, quote=True)
+                    resp = Block(name, decrypt=True).bcontent
+                    #resp =  cgi.escape(Block(name, decrypt=True).bcontent, quote=True)
                 except TypeError:
                     pass
             else:
@@ -384,6 +390,15 @@ class API:
                 abort(404)
             return Response(resp)
 
+        @app.route('/getblockheader/<name>')
+        def getBlockHeader(name):
+            resp = self.getBlockData(name, decrypt=True, headerOnly=True)
+            return Response(resp)
+
+        @app.route('/lastconnect')
+        def lastConnect():
+            return Response(str(self.publicAPI.lastRequest))
+
         @app.route('/site/<name>', endpoint='site')
         def site(name):
             bHash = name
@@ -402,7 +417,8 @@ class API:
             return Response(resp)
 
         @app.route('/waitforshare/<name>', methods=['post'])
-        def waitforshare():
+        def waitforshare(name):
+            '''Used to prevent the **public** api from sharing blocks we just created'''
             assert name.isalnum()
             if name in self.publicAPI.hideBlocks:
                 self.publicAPI.hideBlocks.remove(name)
@@ -428,6 +444,7 @@ class API:
         
         @app.route('/getstats')
         def getStats():
+            # returns node stats
             #return Response("disabled")
             while True:
                 try:    
@@ -438,6 +455,78 @@ class API:
         @app.route('/getuptime')
         def showUptime():
             return Response(str(self.getUptime()))
+        
+        @app.route('/getActivePubkey')
+        def getActivePubkey():
+            return Response(self._core._crypto.pubKey)
+
+        @app.route('/getHumanReadable/<name>')
+        def getHumanReadable(name):
+            return Response(self._core._utils.getHumanReadableID(name))
+
+        @app.route('/insertblock', methods=['POST'])
+        def insertBlock():
+            encrypt = False
+            bData = request.get_json(force=True)
+            message = bData['message']
+            subject = 'temp'
+            encryptType = ''
+            sign = True
+            meta = {}
+            to = ''
+            try:
+                if bData['encrypt']:
+                    to = bData['to']
+                    encrypt = True
+                    encryptType = 'asym'
+            except KeyError:
+                pass
+            try:
+                if not bData['sign']:
+                    sign = False
+            except KeyError:
+                pass
+            try:
+                bType = bData['type']
+            except KeyError:
+                bType = 'bin'
+            try:
+                meta = json.loads(bData['meta'])
+            except KeyError:
+                pass
+            threading.Thread(target=self._core.insertBlock, args=(message,), kwargs={'header': bType, 'encryptType': encryptType, 'sign':sign, 'asymPeer': to, 'meta': meta}).start()
+            return Response('success')
+        
+        @app.route('/apipoints/<path:subpath>', methods=['POST', 'GET'])
+        def pluginEndpoints(subpath=''):
+            '''Send data to plugins'''
+            # TODO have a variable for the plugin to set data to that we can use for the response
+            pluginResponseCode = str(uuid.uuid4())
+            resp = 'success'
+            responseTimeout = 20
+            startTime = self._core._utils.getEpoch()
+            postData = {}
+            if request.method == 'POST':
+                postData = request.form['postData']
+            if len(subpath) > 1:
+                data = subpath.split('/')
+                if len(data) > 1:
+                    plName = data[0]
+
+                    events.event('pluginRequest', {'name': plName, 'path': subpath, 'pluginResponse': pluginResponseCode, 'postData': postData}, onionr=onionrInst)
+                    while True:
+                        try:
+                            resp = self.pluginResponses[pluginResponseCode]
+                        except KeyError:
+                            time.sleep(0.2)
+                            if self._core._utils.getEpoch() - startTime > responseTimeout:
+                                abort(504)
+                                break
+                        else:
+                            break
+            else:
+                abort(404)
+            return Response(resp)
 
         self.httpServer = WSGIServer((self.host, bindPort), app, log=None, handler_class=FDSafeHandler)
         self.httpServer.serve_forever()
@@ -448,7 +537,7 @@ class API:
 
     def validateToken(self, token):
         '''
-            Validate that the client token matches the given token
+            Validate that the client token matches the given token. Used to prevent CSRF and data exfiltration
         '''
         if len(self.clientToken) == 0:
             logger.error("client password needs to be set")
@@ -469,7 +558,8 @@ class API:
                 # Don't error on race condition with startup
                 pass
     
-    def getBlockData(self, bHash, decrypt=False, raw=False):
+    def getBlockData(self, bHash, decrypt=False, raw=False, headerOnly=False):
+        assert self._core._utils.validateHash(bHash)
         bl = Block(bHash, core=self._core)
         if decrypt:
             bl.decrypt()
@@ -477,12 +567,22 @@ class API:
                 raise ValueError
 
         if not raw:
-            retData = {'meta':bl.bheader, 'metadata': bl.bmetadata, 'content': bl.bcontent}
-            for x in list(retData.keys()):
-                try:
-                    retData[x] = retData[x].decode()
-                except AttributeError:
-                    pass
+            if not headerOnly:
+                retData = {'meta':bl.bheader, 'metadata': bl.bmetadata, 'content': bl.bcontent}
+                for x in list(retData.keys()):
+                    try:
+                        retData[x] = retData[x].decode()
+                    except AttributeError:
+                        pass
+            else:
+                validSig = False
+                signer = self._core._utils.bytesToStr(bl.signer)
+                #print(signer, bl.isSigned(), self._core._utils.validatePubKey(signer), bl.isSigner(signer))
+                if bl.isSigned() and self._core._utils.validatePubKey(signer) and bl.isSigner(signer):
+                    validSig = True                    
+                bl.bheader['validSig'] = validSig
+                bl.bheader['meta'] = ''
+                retData = {'meta': bl.bheader, 'metadata': bl.bmetadata}
             return json.dumps(retData)
         else:
             return bl.raw

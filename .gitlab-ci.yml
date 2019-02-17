@@ -1,0 +1,7 @@
+test:
+  image: ubuntu:bionic
+  script:
+  - apt-get update -qy
+  - apt-get install -y python3-pip tor
+  - pip3 install -r requirements.txt
+  - make test

@@ -44,6 +44,10 @@ class PasswordStrengthError(Exception):
     pass
 
 # block exceptions
+
+class DifficultyTooLarge(Exception):
+    pass
+
 class InvalidMetadata(Exception):
     pass
 
@@ -82,4 +86,9 @@ class DiskAllocationReached(Exception):
 # onionrsocket exceptions
 
 class MissingAddress(Exception):
+    pass
+
+# Contact exceptions
+
+class ContactDeleted(Exception):
     pass

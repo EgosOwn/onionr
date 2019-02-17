@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*- (because 0xFF, even : "Yucatán")
 
-import os, re, sys
+'''This file is adapted from https://github.com/thblt/pgp-words by github user 'thblt' ('Thibault Polge), GPL v3 license'''
+
+import os, re, sys, binascii
 
 _words = [
     ["aardvark", "adroitness"],
@@ -259,7 +261,7 @@ _words = [
     ["wayside", "Wilmington"],
     ["willow", "Wyoming"],
     ["woodlark", "yesteryear"],
-    ["Zulu", "Yucatán"]]
+    ["Zulu", "Yucatan"]]
 
 hexre = re.compile("[a-fA-F0-9]+")
 
@@ -275,41 +277,21 @@ def wordify(seq):
 
     ret = []
     for i in range(0, len(seq), 2):
-        ret.append(_words[int(seq[i:i+2], 16)][(i//2)%2])
+        ret.append(_words[int(seq[i:i+2], 16)][(i//2)%2].lower())
     return ret
 
-def usage():
-    print("Usage:")
-    print("  {0} [fingerprint...]".format(os.path.basename(sys.argv[0])))
-    print("")
-    print("If called with multiple arguments, they will be concatenated")
-    print("and treated as a single fingerprint.")
-    print("")
-    print("If called with no arguments, input is read from stdin,")
-    print("and each line is treated as a single fingerprint.  In this")
-    print("mode, invalid values are silently ignored.")
-    exit(1)
-
-if __name__ == '__main__':
-    if 1 == len(sys.argv):
-        fps = sys.stdin.readlines()
-    else:
-        fps = [" ".join(sys.argv[1:])]
-    for fp in fps:
-        try:
-            words = wordify(fp)
-            print("\n{0}: ".format(fp.strip()))
-            sys.stdout.write("\t")
-            for i in range(0, len(words)):
-                sys.stdout.write(words[i] + " ")
-                if (not (i+1) % 4) and  not i == len(words)-1:
-                    sys.stdout.write("\n\t")
-            print("")
-
-        except Exception as e:
-            if len(fps) == 1:
-                print (e)
-                usage()
-
-    print("")
-
+def hexify(seq, delim=' '):
+    ret = b''
+    sentence = seq
+    try:
+        sentence = seq.split(delim)
+    except AttributeError:
+        pass
+    count = 0
+    for word in sentence:
+        count = 0
+        for wordPair in _words:
+            if word in wordPair:
+                ret += bytes([(count)])
+            count += 1
+    return binascii.hexlify(ret)

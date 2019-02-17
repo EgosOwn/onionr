@@ -21,7 +21,8 @@ import sqlite3, os, sys, time, math, base64, tarfile, nacl, logger, json, netcon
 from onionrblockapi import Block
 
 import onionrutils, onionrcrypto, onionrproofs, onionrevents as events, onionrexceptions
-import onionrblacklist, onionrusers
+import onionrblacklist
+from onionrusers import onionrusers
 import dbcreator, onionrstorage, serializeddata
 from etc import onionrvalues
 
@@ -56,7 +57,7 @@ class Core:
             self.privateApiHostFile = self.dataDir + 'private-host.txt'
             self.addressDB = self.dataDir + 'address.db'
             self.hsAddress = ''
-            self.i2pAddress = config.get('i2p.ownAddr', None)
+            self.i2pAddress = config.get('i2p.own_addr', None)
             self.bootstrapFileLocation = 'static-data/bootstrap-nodes.txt'
             self.bootstrapList = []
             self.requirements = onionrvalues.OnionrValues()
@@ -85,6 +86,10 @@ class Core:
                 self.createBlockDB()
             if not os.path.exists(self.forwardKeysFile):
                 self.dbCreate.createForwardKeyDB()
+            if not os.path.exists(self.peerDB):
+                self.createPeerDB()
+            if not os.path.exists(self.addressDB):
+                self.createAddressDB()
 
             if os.path.exists(self.dataDir + '/hs/hostname'):
                 with open(self.dataDir + '/hs/hostname', 'r') as hs:
@@ -125,6 +130,7 @@ class Core:
         '''
             Adds a public key to the key database (misleading function name)
         '''
+        assert peerID not in self.listPeers()
 
         # This function simply adds a peer to the DB
         if not self._utils.validatePubKey(peerID):
@@ -221,18 +227,8 @@ class Core:
             c.execute('Delete from hashes where hash=?;', t)
             conn.commit()
             conn.close()
-            blockFile = self.dataDir + '/blocks/%s.dat' % block
-            dataSize = 0
-            try:
-                ''' Get size of data when loaded as an object/var, rather than on disk,
-                    to avoid conflict with getsizeof when saving blocks
-                '''
-                with open(blockFile, 'r') as data:
-                    dataSize = sys.getsizeof(data.read())
-                self._utils.storageCounter.removeBytes(dataSize)
-                os.remove(blockFile)
-            except FileNotFoundError:
-                pass
+            dataSize = sys.getsizeof(onionrstorage.getData(self, block))
+            self._utils.storageCounter.removeBytes(dataSize)
 
     def createAddressDB(self):
         '''
@@ -282,15 +278,6 @@ class Core:
             Simply return the data associated to a hash
         '''
 
-        '''
-        try:
-            # logger.debug('Opening %s' % (str(self.blockDataLocation) + str(hash) + '.dat'))
-            dataFile = open(self.blockDataLocation + hash + '.dat', 'rb')
-            data = dataFile.read()
-            dataFile.close()
-        except FileNotFoundError:
-            data = False
-        '''
         data = onionrstorage.getData(self, hash)
 
         return data
@@ -316,9 +303,6 @@ class Core:
             #raise Exception("Data is already set for " + dataHash)
         else:
             if self._utils.storageCounter.addBytes(dataSize) != False:
-                #blockFile = open(blockFileName, 'wb')
-                #blockFile.write(data)
-                #blockFile.close()
                 onionrstorage.store(self, data, blockHash=dataHash)
                 conn = sqlite3.connect(self.blockDB, timeout=30)
                 c = conn.cursor()
@@ -557,19 +541,18 @@ class Core:
             knownPeer text, 2
             speed int, 3
             success int, 4
-            DBHash text, 5
-            powValue    6
-            failure int 7
-            lastConnect 8
-            trust       9
-            introduced  10
+            powValue    5
+            failure int 6
+            lastConnect 7
+            trust       8
+            introduced  9
         '''
 
         conn = sqlite3.connect(self.addressDB, timeout=30)
         c = conn.cursor()
 
         command = (address,)
-        infoNumbers = {'address': 0, 'type': 1, 'knownPeer': 2, 'speed': 3, 'success': 4, 'DBHash': 5, 'powValue': 6, 'failure': 7, 'lastConnect': 8, 'trust': 9, 'introduced': 10}
+        infoNumbers = {'address': 0, 'type': 1, 'knownPeer': 2, 'speed': 3, 'success': 4, 'powValue': 5, 'failure': 6, 'lastConnect': 7, 'trust': 8, 'introduced': 9}
         info = infoNumbers[info]
         iterCount = 0
         retVal = ''
@@ -595,7 +578,7 @@ class Core:
 
         command = (data, address)
 
-        if key not in ('address', 'type', 'knownPeer', 'speed', 'success', 'DBHash', 'failure', 'powValue', 'lastConnect', 'lastConnectAttempt', 'trust', 'introduced'):
+        if key not in ('address', 'type', 'knownPeer', 'speed', 'success', 'failure', 'powValue', 'lastConnect', 'lastConnectAttempt', 'trust', 'introduced'):
             raise Exception("Got invalid database key when setting address info")
         else:
             c.execute('UPDATE adders SET ' + key + ' = ? WHERE address=?', command)
@@ -680,19 +663,6 @@ class Core:
         conn.close()
         return rows
 
-    def setBlockType(self, hash, blockType):
-        '''
-            Sets the type of block
-        '''
-
-        conn = sqlite3.connect(self.blockDB, timeout=30)
-        c = conn.cursor()
-        c.execute("UPDATE hashes SET dataType = ? WHERE hash = ?;", (blockType, hash))
-        conn.commit()
-        conn.close()
-
-        return
-
     def updateBlockInfo(self, hash, key, data):
         '''
             sets info associated with a block
@@ -731,6 +701,7 @@ class Core:
             logger.error(allocationReachedMessage)
             return False
         retData = False
+
         # check nonce
         dataNonce = self._utils.bytesToStr(self._crypto.sha3Hash(data))
         try:
@@ -746,6 +717,12 @@ class Core:
         if type(data) is bytes:
             data = data.decode()
         data = str(data)
+        plaintext = data
+        plaintextMeta = {}
+
+        # Convert asym peer human readable key to base32 if set
+        if ' ' in asymPeer.strip():
+            asymPeer = self._utils.convertHumanReadableID(asymPeer)
 
         retData = ''
         signature = ''
@@ -768,7 +745,7 @@ class Core:
             pass
 
         if encryptType == 'asym':
-            if not disableForward and asymPeer != self._crypto.pubKey:
+            if not disableForward and sign and asymPeer != self._crypto.pubKey:
                 try:
                     forwardEncrypted = onionrusers.OnionrUser(self, asymPeer).forwardEncrypt(data)
                     data = forwardEncrypted[0]
@@ -780,6 +757,7 @@ class Core:
                 #fsKey = onionrusers.OnionrUser(self, asymPeer).getGeneratedForwardKeys().reverse()
                 meta['newFSKey'] = fsKey
         jsonMeta = json.dumps(meta)
+        plaintextMeta = jsonMeta
         if sign:
             signature = self._crypto.edSign(jsonMeta.encode() + data, key=self._crypto.privKey, encodeResult=True)
             signer = self._crypto.pubKey
@@ -802,10 +780,10 @@ class Core:
             if self._utils.validatePubKey(asymPeer):
                 # Encrypt block data with forward secrecy key first, but not meta
                 jsonMeta = json.dumps(meta)
-                jsonMeta = self._crypto.pubKeyEncrypt(jsonMeta, asymPeer, encodedData=True, anonymous=True).decode()
-                data = self._crypto.pubKeyEncrypt(data, asymPeer, encodedData=True, anonymous=True).decode()
-                signature = self._crypto.pubKeyEncrypt(signature, asymPeer, encodedData=True, anonymous=True).decode()
-                signer = self._crypto.pubKeyEncrypt(signer, asymPeer, encodedData=True, anonymous=True).decode()
+                jsonMeta = self._crypto.pubKeyEncrypt(jsonMeta, asymPeer, encodedData=True).decode()
+                data = self._crypto.pubKeyEncrypt(data, asymPeer, encodedData=True).decode()
+                signature = self._crypto.pubKeyEncrypt(signature, asymPeer, encodedData=True).decode()
+                signer = self._crypto.pubKeyEncrypt(signer, asymPeer, encodedData=True).decode()
                 onionrusers.OnionrUser(self, asymPeer, saveUser=True)
             else:
                 raise onionrexceptions.InvalidPubkey(asymPeer + ' is not a valid base32 encoded ed25519 key')
@@ -832,14 +810,14 @@ class Core:
                 retData = False
             else:
                 # Tell the api server through localCommand to wait for the daemon to upload this block to make stastical analysis more difficult
-                self._utils.localCommand('waitforshare/' + retData)
+                self._utils.localCommand('/waitforshare/' + retData, post=True)
                 self.addToBlockDB(retData, selfInsert=True, dataSaved=True)
                 #self.setBlockType(retData, meta['type'])
                 self._utils.processBlockMetadata(retData)
                 self.daemonQueueAdd('uploadBlock', retData)
 
         if retData != False:
-            events.event('insertBlock', onionr = None, threaded = False)
+            events.event('insertblock', {'content': plaintext, 'meta': plaintextMeta, 'hash': retData, 'peer': self._utils.bytesToStr(asymPeer)}, onionr = self.onionrInst, threaded = True)
         return retData
 
     def introduceNode(self):

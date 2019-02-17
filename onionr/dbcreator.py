@@ -39,7 +39,6 @@ class DBCreator:
             knownPeer text,
             speed int,
             success int,
-            DBHash text,
             powValue text,
             failure int,
             lastConnect int,

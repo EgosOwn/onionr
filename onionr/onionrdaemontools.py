@@ -18,9 +18,11 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 
-import onionrexceptions, onionrpeers, onionrproofs, logger, onionrusers
+import onionrexceptions, onionrpeers, onionrproofs, logger
 import base64, sqlite3, os
 from dependencies import secrets
+from utils import netutils
+from onionrusers import onionrusers
 
 class DaemonTools:
     '''
@@ -43,44 +45,50 @@ class DaemonTools:
             else:
                 peer = self.daemon.pickOnlinePeer()
 
-            ourID = self.daemon._core.hsAddress.strip()
-
-            url = 'http://' + peer + '/announce'
-            data = {'node': ourID}
-
-            combinedNodes = ourID + peer
-            existingRand = self.daemon._core.getAddressInfo(peer, 'powValue')
-            if type(existingRand) is type(None):
-                existingRand = ''
-
-            if peer in self.announceCache:
-                data['random'] = self.announceCache[peer]
-            elif len(existingRand) > 0:
-                data['random'] = existingRand
-            else:
-                proof = onionrproofs.DataPOW(combinedNodes, forceDifficulty=4)
-                try:
-                    data['random'] = base64.b64encode(proof.waitForResult()[1])
-                except TypeError:
-                    # Happens when we failed to produce a proof
-                    logger.error("Failed to produce a pow for announcing to " + peer)
-                    announceFail = True
+            for x in range(1):
+                if x == 1 and self.daemon._core.config.get('i2p.host'):
+                    ourID = self.daemon._core.config.get('i2p.own_addr').strip()
                 else:
-                    self.announceCache[peer] = data['random']
-            if not announceFail:
-                logger.info('Announcing node to ' + url)
-                if self.daemon._core._utils.doPostRequest(url, data) == 'Success':
-                    logger.info('Successfully introduced node to ' + peer)
-                    retData = True
-                    self.daemon._core.setAddressInfo(peer, 'introduced', 1)
-                    self.daemon._core.setAddressInfo(peer, 'powValue', data['random'])
+                    ourID = self.daemon._core.hsAddress.strip()
+
+                url = 'http://' + peer + '/announce'
+                data = {'node': ourID}
+
+                combinedNodes = ourID + peer
+                if ourID != 1:
+                    #TODO: Extend existingRand for i2p
+                    existingRand = self.daemon._core.getAddressInfo(peer, 'powValue')
+                    if type(existingRand) is type(None):
+                        existingRand = ''
+
+                if peer in self.announceCache:
+                    data['random'] = self.announceCache[peer]
+                elif len(existingRand) > 0:
+                    data['random'] = existingRand
+                else:
+                    proof = onionrproofs.DataPOW(combinedNodes, forceDifficulty=4)
+                    try:
+                        data['random'] = base64.b64encode(proof.waitForResult()[1])
+                    except TypeError:
+                        # Happens when we failed to produce a proof
+                        logger.error("Failed to produce a pow for announcing to " + peer)
+                        announceFail = True
+                    else:
+                        self.announceCache[peer] = data['random']
+                if not announceFail:
+                    logger.info('Announcing node to ' + url)
+                    if self.daemon._core._utils.doPostRequest(url, data) == 'Success':
+                        logger.info('Successfully introduced node to ' + peer)
+                        retData = True
+                        self.daemon._core.setAddressInfo(peer, 'introduced', 1)
+                        self.daemon._core.setAddressInfo(peer, 'powValue', data['random'])
         self.daemon.decrementThreadCount('announceNode')
         return retData
 
     def netCheck(self):
         '''Check if we are connected to the internet or not when we can't connect to any peers'''
         if len(self.daemon.onlinePeers) == 0:
-            if not self.daemon._core._utils.checkNetwork(torPort=self.daemon.proxyPort):
+            if not netutils.checkNetwork(self.daemon._core._utils, torPort=self.daemon.proxyPort):
                 logger.warn('Network check failed, are you connected to the internet?')
                 self.daemon.isOnline = False
             else:
@@ -186,10 +194,11 @@ class DaemonTools:
 
     def insertDeniableBlock(self):
         '''Insert a fake block in order to make it more difficult to track real blocks'''
-        fakePeer = self.daemon._core._crypto.generatePubKey()[0]
+        fakePeer = ''
         chance = 10
         if secrets.randbelow(chance) == (chance - 1):
+            fakePeer = self.daemon._core._crypto.generatePubKey()[0]
             data = secrets.token_hex(secrets.randbelow(500) + 1)
-            self.daemon._core.insertBlock(data, header='pm', encryptType='asym', asymPeer=fakePeer)
+            self.daemon._core.insertBlock(data, header='pm', encryptType='asym', asymPeer=fakePeer, meta={'subject': 'foo'})
         self.daemon.decrementThreadCount('insertDeniableBlock')
         return

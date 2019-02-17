@@ -21,8 +21,9 @@
 # Imports some useful libraries
 import logger, config, threading, time, readline, datetime
 from onionrblockapi import Block
-import onionrexceptions, onionrusers
-import locale, sys, os
+import onionrexceptions
+from onionrusers import onionrusers
+import locale, sys, os, json
 
 locale.setlocale(locale.LC_ALL, '')
 
@@ -48,14 +49,14 @@ class MailStrings:
         self.mailInstance = mailInstance
 
         self.programTag = 'OnionrMail v%s' % (PLUGIN_VERSION)
-        choices = ['view inbox', 'view sentbox', 'send message', 'quit']
+        choices = ['view inbox', 'view sentbox', 'send message', 'toggle pseudonymity', 'quit']
         self.mainMenuChoices = choices
-        self.mainMenu = '''\n
------------------
-1. %s
-2. %s
-3. %s
-4. %s''' % (choices[0], choices[1], choices[2], choices[3])
+        self.mainMenu = '''-----------------
+    1. %s
+    2. %s
+    3. %s
+    4. %s
+    5. %s''' % (choices[0], choices[1], choices[2], choices[3], choices[4])
 
 class OnionrMail:
     def __init__(self, pluginapi):
@@ -65,6 +66,7 @@ class OnionrMail:
         self.sentboxTools = sentboxdb.SentBox(self.myCore)
         self.sentboxList = []
         self.sentMessages = {}
+        self.doSigs = True
         return
 
     def inbox(self):
@@ -133,18 +135,30 @@ class OnionrMail:
                 else:
                     cancel = ''
                     readBlock.verifySig()
-
-                    logger.info('Message recieved from %s' % (self.myCore._utils.bytesToStr(readBlock.signer,)))
+                    senderDisplay = self.myCore._utils.bytesToStr(readBlock.signer)
+                    if len(senderDisplay.strip()) == 0:
+                        senderDisplay = 'Anonymous'
+                    logger.info('Message received from %s' % (senderDisplay,))
                     logger.info('Valid signature: %s' % readBlock.validSig)
 
                     if not readBlock.validSig:
-                        logger.warn('This message has an INVALID signature. ANYONE could have sent this message.')
+                        logger.warn('This message has an INVALID/NO signature. ANYONE could have sent this message.')
                         cancel = logger.readline('Press enter to continue to message, or -q to not open the message (recommended).')
+                        print('')
                     if cancel != '-q':
-                        print(draw_border(self.myCore._utils.escapeAnsi(readBlock.bcontent.decode().strip())))
-                        reply = logger.readline("Press enter to continue, or enter %s to reply" % ("-r",))
-                        if reply == "-r":
-                            self.draftMessage(self.myCore._utils.bytesToStr(readBlock.signer,))
+                        try:
+                            print(draw_border(self.myCore._utils.escapeAnsi(readBlock.bcontent.decode().strip())))
+                        except ValueError:
+                            logger.warn('Error presenting message. This is usually due to a malformed or blank message.')
+                            pass
+                        if readBlock.validSig:
+                            reply = logger.readline("Press enter to continue, or enter %s to reply" % ("-r",))
+                            print('')
+                            if reply == "-r":
+                                self.draft_message(self.myCore._utils.bytesToStr(readBlock.signer,))
+                        else:
+                            logger.readline("Press enter to continue")
+                            print('')
         return
 
     def sentbox(self):
@@ -153,7 +167,7 @@ class OnionrMail:
         '''
         entering = True
         while entering:
-            self.getSentList()
+            self.get_sent_list()
             logger.info('Enter a block number or -q to return')
             try:
                 choice = input('>')
@@ -180,18 +194,19 @@ class OnionrMail:
 
         return
 
-    def getSentList(self):
+    def get_sent_list(self, display=True):
         count = 1
         self.sentboxList = []
         self.sentMessages = {}
         for i in self.sentboxTools.listSent():
             self.sentboxList.append(i['hash'])
-            self.sentMessages[i['hash']] = (i['message'], i['peer'])
-
-            logger.info('%s. %s - %s - %s' % (count, i['hash'], i['peer'][:12], i['date']))
+            self.sentMessages[i['hash']] = (self.myCore._utils.bytesToStr(i['message']), i['peer'], i['subject'])
+            if display:
+                logger.info('%s. %s - %s - (%s) - %s' % (count, i['hash'], i['peer'][:12], i['subject'], i['date']))
             count += 1
+        return json.dumps(self.sentMessages)
 
-    def draftMessage(self, recip=''):
+    def draft_message(self, recip=''):
         message = ''
         newLine = ''
         subject = ''
@@ -237,14 +252,26 @@ class OnionrMail:
         if not cancelEnter:
             logger.info('Inserting encrypted message as Onionr block....')
 
-            blockID = self.myCore.insertBlock(message, header='pm', encryptType='asym', asymPeer=recip, sign=True, meta={'subject': subject})
-            self.sentboxTools.addToSent(blockID, recip, message)
+            blockID = self.myCore.insertBlock(message, header='pm', encryptType='asym', asymPeer=recip, sign=self.doSigs, meta={'subject': subject})
+    
+    def toggle_signing(self):
+        self.doSigs = not self.doSigs
+    
     def menu(self):
         choice = ''
         while True:
+            sigMsg = 'Message Signing: %s'
 
-            logger.info(self.strings.programTag + '\n\nOur ID: ' + self.myCore._crypto.pubKey + self.strings.mainMenu.title()) # print out main menu
-
+            logger.info(self.strings.programTag + '\n\nUser ID: ' + self.myCore._crypto.pubKey)
+            if self.doSigs:
+                sigMsg = sigMsg % ('enabled',)
+            else:
+                sigMsg = sigMsg % ('disabled (Your messages cannot be trusted)',)
+            if self.doSigs:
+                logger.info(sigMsg)
+            else:
+                logger.warn(sigMsg)
+            logger.info(self.strings.mainMenu.title()) # print out main menu
             try:
                 choice = logger.readline('Enter 1-%s:\n' % (len(self.strings.mainMenuChoices))).lower().strip()
             except (KeyboardInterrupt, EOFError):
@@ -255,8 +282,10 @@ class OnionrMail:
             elif choice in (self.strings.mainMenuChoices[1], '2'):
                 self.sentbox()
             elif choice in (self.strings.mainMenuChoices[2], '3'):
-                self.draftMessage()
+                self.draft_message()
             elif choice in (self.strings.mainMenuChoices[3], '4'):
+                self.toggle_signing()
+            elif choice in (self.strings.mainMenuChoices[4], '5'):
                 logger.info('Goodbye.')
                 break
             elif choice == '':
@@ -265,6 +294,26 @@ class OnionrMail:
                 logger.warn('Invalid choice.')
         return
 
+def on_insertblock(api, data={}):
+    sentboxTools = sentboxdb.SentBox(api.get_core())
+    meta = json.loads(data['meta'])
+    sentboxTools.addToSent(data['hash'], data['peer'], data['content'], meta['subject'])
+
+def on_pluginrequest(api, data=None):
+    resp = ''
+    subject = ''
+    recip = ''
+    message = ''
+    postData = {}
+    blockID = ''
+    sentboxTools = sentboxdb.SentBox(api.get_core())
+    if data['name'] == 'mail':
+        path = data['path']
+        cmd = path.split('/')[1]
+        if cmd == 'sentbox':
+            resp = OnionrMail(api).get_sent_list(display=False)
+    if resp != '':
+        api.get_onionr().clientAPIInst.pluginResponses[data['pluginResponse']] = resp
 
 def on_init(api, data = None):
     '''

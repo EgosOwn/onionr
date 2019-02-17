@@ -18,7 +18,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 import nacl.signing, nacl.encoding, nacl.public, nacl.hash, nacl.pwhash, nacl.utils, nacl.secret, os, binascii, base64, hashlib, logger, onionrproofs, time, math, sys, hmac
-import onionrexceptions, keymanager
+import onionrexceptions, keymanager, core
 # secrets module was added into standard lib in 3.6+
 if sys.version_info[0] == 3 and sys.version_info[1] < 6:
     from dependencies import secrets
@@ -94,52 +94,41 @@ class OnionrCrypto:
             retData = key.sign(data).signature
         return retData
 
-    def pubKeyEncrypt(self, data, pubkey, anonymous=True, encodedData=False):
+    def pubKeyEncrypt(self, data, pubkey, encodedData=False):
         '''Encrypt to a public key (Curve25519, taken from base32 Ed25519 pubkey)'''
         retVal = ''
-        try:
-            pubkey = pubkey.encode()
-        except AttributeError:
-            pass
+        box = None
+        data = self._core._utils.strToBytes(data)
+        
+        pubkey = nacl.signing.VerifyKey(pubkey, encoder=nacl.encoding.Base32Encoder()).to_curve25519_public_key()
 
         if encodedData:
             encoding = nacl.encoding.Base64Encoder
         else:
             encoding = nacl.encoding.RawEncoder
+        
+        box = nacl.public.SealedBox(pubkey)
+        retVal = box.encrypt(data, encoder=encoding)
 
-        if self.privKey != None and not anonymous:
-            ownKey = nacl.signing.SigningKey(seed=self.privKey, encoder=nacl.encoding.Base32Encoder).to_curve25519_private_key()
-            key = nacl.signing.VerifyKey(key=pubkey, encoder=nacl.encoding.Base32Encoder).to_curve25519_public_key()
-            ourBox = nacl.public.Box(ownKey, key)
-            retVal = ourBox.encrypt(data.encode(), encoder=encoding)
-        elif anonymous:
-            key = nacl.signing.VerifyKey(key=pubkey, encoder=nacl.encoding.Base32Encoder).to_curve25519_public_key()
-            anonBox = nacl.public.SealedBox(key)
-            try:
-                data = data.encode()
-            except AttributeError:
-                pass
-            retVal = anonBox.encrypt(data, encoder=encoding)
         return retVal
 
-    def pubKeyDecrypt(self, data, pubkey='', privkey='', anonymous=False, encodedData=False):
+    def pubKeyDecrypt(self, data, pubkey='', privkey='', encodedData=False):
         '''pubkey decrypt (Curve25519, taken from Ed25519 pubkey)'''
         decrypted = False
         if encodedData:
             encoding = nacl.encoding.Base64Encoder
         else:
             encoding = nacl.encoding.RawEncoder
-        ownKey = nacl.signing.SigningKey(seed=self.privKey, encoder=nacl.encoding.Base32Encoder()).to_curve25519_private_key()
-        if self.privKey != None and not anonymous:
-            ourBox = nacl.public.Box(ownKey, pubkey)
-            decrypted = ourBox.decrypt(data, encoder=encoding)
-        elif anonymous:
-            if self._core._utils.validatePubKey(privkey):
-                privkey = nacl.signing.SigningKey(seed=privkey, encoder=nacl.encoding.Base32Encoder()).to_curve25519_private_key()
-                anonBox = nacl.public.SealedBox(privkey)
-            else:
-                anonBox = nacl.public.SealedBox(ownKey)
-            decrypted = anonBox.decrypt(data, encoder=encoding)
+        if privkey == '':
+            privkey = self.privKey
+        ownKey = nacl.signing.SigningKey(seed=privkey, encoder=nacl.encoding.Base32Encoder()).to_curve25519_private_key()
+
+        if self._core._utils.validatePubKey(privkey):
+            privkey = nacl.signing.SigningKey(seed=privkey, encoder=nacl.encoding.Base32Encoder()).to_curve25519_private_key()
+            anonBox = nacl.public.SealedBox(privkey)
+        else:
+            anonBox = nacl.public.SealedBox(ownKey)
+        decrypted = anonBox.decrypt(data, encoder=encoding)
         return decrypted
 
     def symmetricEncrypt(self, data, key, encodedKey=False, returnEncoded=True):
@@ -179,12 +168,6 @@ class OnionrCrypto:
         if returnEncoded:
             decrypted = base64.b64encode(decrypted)
         return decrypted
-
-    def generateSymmetricPeer(self, peer):
-        '''Generate symmetric key for a peer and save it to the peer database'''
-        key = self.generateSymmetric()
-        self._core.setPeerInfo(peer, 'forwardKey', key)
-        return
 
     def generateSymmetric(self):
         '''Generate a symmetric key (bytes) and return it'''
@@ -283,6 +266,15 @@ class OnionrCrypto:
 
     @staticmethod
     def safeCompare(one, two):
+        # Do encode here to avoid spawning core
+        try:
+            one = one.encode()
+        except AttributeError:
+            pass
+        try:
+            two = two.encode()
+        except AttributeError:
+            pass
         return hmac.compare_digest(one, two)
         
     @staticmethod

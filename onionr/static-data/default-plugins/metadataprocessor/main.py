@@ -41,7 +41,7 @@ def _processForwardKey(api, myBlock):
     else:
         raise onionrexceptions.InvalidPubkey("%s is nota valid pubkey key" % (key,))
 
-def on_processblocks(api):
+def on_processblocks(api, data=None):
     # Generally fired by utils.
     myBlock = api.data['block']
     blockType = api.data['type']
