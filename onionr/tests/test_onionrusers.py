@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import sys, os
 sys.path.append(".")
-import unittest, uuid, hashlib
+import unittest, uuid
 import json
 TEST_DIR = 'testdata/%s-%s' % (uuid.uuid4(), os.path.basename(__file__)) + '/'
 print("Test directory:", TEST_DIR)

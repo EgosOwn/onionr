@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 import sys, os
 sys.path.append(".")
-import unittest, uuid, hashlib
+import unittest, uuid, hashlib, base64
 import nacl.exceptions
 import nacl.signing, nacl.hash, nacl.encoding
 TEST_DIR = 'testdata/%s-%s' % (uuid.uuid4(), os.path.basename(__file__)) + '/'
 print("Test directory:", TEST_DIR)
 os.environ["ONIONR_HOME"] = TEST_DIR
-import core, onionr
+import core, onionr, onionrexceptions
 
 c = core.Core()
 crypto = c._crypto
@@ -126,5 +126,31 @@ class OnionrCryptoTests(unittest.TestCase):
             pass
         else:
             self.assertFalse(True)
+    
+    def test_deterministic(self):
+        password = os.urandom(32)
+        gen = crypto.generateDeterministic(password)
+        self.assertTrue(c._utils.validatePubKey(gen[0]))
+        try:
+            crypto.generateDeterministic('weakpassword')
+        except onionrexceptions.PasswordStrengthError:
+            pass
+        else:
+            self.assertFalse(True)
+        try:
+            crypto.generateDeterministic(None)
+        except TypeError:
+            pass
+        else:
+            self.assertFalse(True)
+        
+        gen = crypto.generateDeterministic('weakpassword', bypassCheck=True)
+        
+        password = base64.b64encode(os.urandom(32))
+        gen1 = crypto.generateDeterministic(password)
+        gen2 = crypto.generateDeterministic(password)
+        self.assertFalse(gen == gen1)
+        self.assertTrue(gen1 == gen2)
+        self.assertTrue(c._utils.validatePubKey(gen1[0]))
 
 unittest.main()

@@ -54,10 +54,12 @@ class Onionr:
         '''
         self.userRunDir = os.getcwd() # Directory user runs the program from
         self.killed = False
-        try:
-            os.chdir(sys.path[0])
-        except FileNotFoundError:
-            pass
+
+        if sys.argv[0] == os.path.basename(__file__):
+            try:
+                os.chdir(sys.path[0])
+            except FileNotFoundError:
+                pass
 
         try:
             self.dataDir = os.environ['ONIONR_HOME']
@@ -267,6 +269,17 @@ class Onionr:
         THIS SECTION HANDLES THE COMMANDS
     '''
 
+    def doExport(self, bHash):
+        exportDir = self.dataDir + 'block-export/'
+        if not os.path.exists(exportDir):
+            if os.path.exists(self.dataDir):
+                os.mkdir(exportDir)
+            else:
+                logger.error('Onionr Not initialized')
+        data = onionrstorage.getData(self.onionrCore, bHash)
+        with open('%s/%s.dat' % (exportDir, bHash), 'wb') as exportFile:
+            exportFile.write(data)
+
     def exportBlock(self):
         exportDir = self.dataDir + 'block-export/'
         try:
@@ -276,19 +289,7 @@ class Onionr:
             sys.exit(1)
         else:
             bHash = sys.argv[2]
-        try:
-            path = sys.argv[3]
-        except (IndexError):
-            if not os.path.exists(exportDir):
-                if os.path.exists(self.dataDir):
-                    os.mkdir(exportDir)
-                else:
-                    logger.error('Onionr not initialized')
-                    sys.exit(1)
-            path = exportDir
-        data = onionrstorage.getData(self.onionrCore, bHash)
-        with open('%s/%s.dat' % (exportDir, bHash), 'wb') as exportFile:
-            exportFile.write(data)
+            self.doExport(bHash)
 
     def showDetails(self):
         details = {
@@ -691,8 +692,8 @@ class Onionr:
         '''
             Displays a message suggesting help
         '''
-
-        logger.info('Do ' + logger.colors.bold + sys.argv[0] + ' --help' + logger.colors.reset + logger.colors.fg.green + ' for Onionr help.')
+        if __name__ == '__main__':            
+            logger.info('Do ' + logger.colors.bold + sys.argv[0] + ' --help' + logger.colors.reset + logger.colors.fg.green + ' for Onionr help.')
 
     def start(self, input = False, override = False):
         '''
@@ -993,7 +994,9 @@ class Onionr:
             os.mkdir(dataDir)
 
         if os.path.exists('static-data/default_config.json'):
-            config.set_config(json.loads(open('static-data/default_config.json').read())) # this is the default config, it will be overwritten if a config file already exists. Else, it saves it
+            # this is the default config, it will be overwritten if a config file already exists. Else, it saves it
+            with open('static-data/default_config.json', 'r') as configReadIn:
+                config.set_config(json.loads(configReadIn.read())) 
         else:
             # the default config file doesn't exist, try hardcoded config
             logger.warn('Default configuration file does not exist, switching to hardcoded fallback configuration!')

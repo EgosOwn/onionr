@@ -190,17 +190,3 @@ class OnionrUser:
         conn.commit()
         conn.close()
         return
-
-    def findAndSetID(self):
-        '''Find any info about the user from existing blocks and cache it to their DB entry'''
-        infoBlocks = []
-        for bHash in self._core.getBlocksByType('userInfo'):
-            block = onionrblockapi.Block(bHash, core=self._core)
-            if block.signer == self.publicKey:
-                if block.verifySig():
-                    newName = block.getMetadata('name')
-                    if newName.isalnum():
-                        logger.info('%s is now using the name %s.' % (self.publicKey, self._core._utils.escapeAnsi(newName)))
-                        self._core.setPeerInfo(self.publicKey, 'name', newName)
-            else:
-                raise onionrexceptions.InvalidPubkey
