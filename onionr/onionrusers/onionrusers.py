@@ -112,7 +112,8 @@ class OnionrUser:
         conn = sqlite3.connect(self._core.peerDB, timeout=10)
         c = conn.cursor()
 
-        for row in c.execute("SELECT forwardKey FROM forwardKeys WHERE peerKey = ? ORDER BY date DESC", (self.publicKey,)):
+        # TODO: account for keys created at the same time (same epoch)
+        for row in c.execute("SELECT forwardKey, max(DATE) FROM forwardKeys WHERE peerKey = ?", (self.publicKey,)):
             key = row[0]
             break
 
@@ -189,4 +190,4 @@ class OnionrUser:
 
         conn.commit()
         conn.close()
-        return
+        return True
