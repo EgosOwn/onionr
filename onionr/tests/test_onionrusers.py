@@ -44,7 +44,7 @@ class OnionrUserTests(unittest.TestCase):
             data = data.read()
         
         data = json.loads(data)
-        self.assertTrue(data['alias'] == 'bob')
+        self.assertEqual(data['alias'], 'bob')
     
     def test_contact_get_info(self):
         contact = c._crypto.generatePubKey()[0]
@@ -54,9 +54,16 @@ class OnionrUserTests(unittest.TestCase):
         with open(fileLocation, 'w') as contactFile:
             contactFile.write('{"alias": "bob"}')
         
-        self.assertTrue(contact.get_info('alias', forceReload=True) == 'bob')
-        self.assertTrue(contact.get_info('fail', forceReload=True) == None)
-        self.assertTrue(contact.get_info('fail') == None)
+        self.assertEqual(contact.get_info('alias', forceReload=True), 'bob')
+        self.assertEqual(contact.get_info('fail', forceReload=True), None)
+        self.assertEqual(contact.get_info('fail'), None)
+    
+    def test_encrypt(self):
+        contactPair = c._crypto.generatePubKey()
+        contact = contactmanager.ContactManager(c, contactPair[0], saveUser=True)
+        encrypted = contact.encrypt('test')
+        decrypted = c._crypto.pubKeyDecrypt(encrypted, privkey=contactPair[1], encodedData=True).decode()
+        self.assertEqual('test', decrypted)
     
     def test_delete_contact(self):
         contact = c._crypto.generatePubKey()[0]

@@ -14,10 +14,10 @@ crypto = c._crypto
 class OnionrCryptoTests(unittest.TestCase):
     
     def test_blake2b(self):
-        self.assertTrue(crypto.blake2bHash('test') == crypto.blake2bHash(b'test'))
-        self.assertTrue(crypto.blake2bHash(b'test') == crypto.blake2bHash(b'test'))
+        self.assertEqual(crypto.blake2bHash('test'), crypto.blake2bHash(b'test'))
+        self.assertEqual(crypto.blake2bHash(b'test'), crypto.blake2bHash(b'test'))
 
-        self.assertFalse(crypto.blake2bHash('') == crypto.blake2bHash(b'test'))
+        self.assertNotEqual(crypto.blake2bHash(''), crypto.blake2bHash(b'test'))
         try:
             crypto.blake2bHash(None)
         except nacl.exceptions.TypeError:
@@ -25,14 +25,14 @@ class OnionrCryptoTests(unittest.TestCase):
         else:
             self.assertTrue(False)
         
-        self.assertTrue(nacl.hash.blake2b(b'test') == crypto.blake2bHash(b'test'))
+        self.assertEqual(nacl.hash.blake2b(b'test'), crypto.blake2bHash(b'test'))
     
     def test_sha3256(self):
         hasher = hashlib.sha3_256()
-        self.assertTrue(crypto.sha3Hash('test') == crypto.sha3Hash(b'test'))
-        self.assertTrue(crypto.sha3Hash(b'test') == crypto.sha3Hash(b'test'))
+        self.assertEqual(crypto.sha3Hash('test'), crypto.sha3Hash(b'test'))
+        self.assertEqual(crypto.sha3Hash(b'test'), crypto.sha3Hash(b'test'))
 
-        self.assertFalse(crypto.sha3Hash('') == crypto.sha3Hash(b'test'))
+        self.assertNotEqual(crypto.sha3Hash(''), crypto.sha3Hash(b'test'))
         try:
             crypto.sha3Hash(None)
         except TypeError:
@@ -42,7 +42,7 @@ class OnionrCryptoTests(unittest.TestCase):
         
         hasher.update(b'test')
         normal = hasher.hexdigest()
-        self.assertTrue(crypto.sha3Hash(b'test') == normal)
+        self.assertEqual(crypto.sha3Hash(b'test'), normal)
         
     def valid_default_id(self):
         self.assertTrue(c._utils.validatePubKey(crypto.pubKey))
@@ -73,8 +73,8 @@ class OnionrCryptoTests(unittest.TestCase):
         # Small chance that the randomized list will be same. Rerun test a couple times if it fails
         startList = ['cat', 'dog', 'moose', 'rabbit', 'monkey', 'crab', 'human', 'dolphin', 'whale', 'etc'] * 10
 
-        self.assertFalse(startList == list(crypto.randomShuffle(startList)))
-        self.assertTrue(len(startList) == len(startList))
+        self.assertNotEqual(startList, list(crypto.randomShuffle(startList)))
+        self.assertTrue(len(list(crypto.randomShuffle(startList))) == len(startList))
 
     def test_asymmetric(self):
         keyPair = crypto.generatePubKey()

@@ -230,7 +230,7 @@ class PublicAPI:
         while self.torAdder == '':
             clientAPI._core.refreshFirstStartVars()
             self.torAdder = clientAPI._core.hsAddress
-            time.sleep(1)
+            time.sleep(0.1)
         self.httpServer = WSGIServer((self.host, self.bindPort), app, log=None, handler_class=FDSafeHandler)
         self.httpServer.serve_forever()
 
