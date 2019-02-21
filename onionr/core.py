@@ -121,7 +121,6 @@ class Core:
         '''
             Hack to refresh some vars which may not be set on first start
         '''
-
         if os.path.exists(self.dataDir + '/hs/hostname'):
             with open(self.dataDir + '/hs/hostname', 'r') as hs:
                 self.hsAddress = hs.read().strip()
@@ -597,10 +596,6 @@ class Core:
         conn = sqlite3.connect(self.blockDB, timeout=30)
         c = conn.cursor()
 
-        # if unsaved:
-        #     execute = 'SELECT hash FROM hashes WHERE dataSaved != 1 ORDER BY RANDOM();'
-        # else:
-        #     execute = 'SELECT hash FROM hashes ORDER BY dateReceived ASC;'
         execute = 'SELECT hash FROM hashes WHERE dateReceived >= ? ORDER BY dateReceived ASC;'
         args = (dateRec,)
         rows = list()

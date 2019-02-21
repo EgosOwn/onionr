@@ -171,7 +171,8 @@ class OnionrCommunicatorDaemon:
             # Validate new peers are good format and not already in queue
             invalid = []
             for x in newPeers:
-                if not self._core._utils.validateID(x) or x in self.newPeers:
+                x = x.strip()
+                if not self._core._utils.validateID(x) or x in self.newPeers or x == self._core.hsAddress:
                     invalid.append(x)
             for x in invalid:
                 newPeers.remove(x)
@@ -430,6 +431,8 @@ class OnionrCommunicatorDaemon:
 
         for address in peerList:
             if not config.get('tor.v3onions') and len(address) == 62:
+                continue
+            if address == self._core.hsAddress:
                 continue
             if len(address) == 0 or address in tried or address in self.onlinePeers or address in self.cooldownPeer:
                 continue

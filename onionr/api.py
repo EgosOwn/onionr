@@ -21,10 +21,12 @@ from gevent.pywsgi import WSGIServer, WSGIHandler
 from gevent import Timeout
 import flask, cgi, uuid
 from flask import request, Response, abort, send_from_directory
-import sys, random, threading, hmac, hashlib, base64, time, math, os, json, socket
+import sys, random, threading, hmac, base64, time, os, json, socket
 import core
 from onionrblockapi import Block
-import onionrutils, onionrexceptions, onionrcrypto, blockimporter, onionrevents as events, logger, config, onionr
+import onionrutils, onionrexceptions, onionrcrypto, blockimporter, onionrevents as events, logger, config
+from httpapi import friendsapi
+import onionr
 
 class FDSafeHandler(WSGIHandler):
     '''Our WSGI handler. Doesn't do much non-default except timeouts'''
@@ -250,7 +252,7 @@ class API:
         '''
         # assert isinstance(onionrInst, onionr.Onionr)
         # configure logger and stuff
-        onionr.Onionr.setupConfig('data/', self = self)
+        #onionr.Onionr.setupConfig('data/', self = self)
 
         self.debug = debug
         self._core = onionrInst.onionrCore
@@ -262,7 +264,7 @@ class API:
         self.bindPort = bindPort
 
         # Be extremely mindful of this. These are endpoints available without a password
-        self.whitelistEndpoints = ('site', 'www', 'onionrhome', 'board', 'boardContent', 'sharedContent', 'mail', 'mailindex')
+        self.whitelistEndpoints = ('site', 'www', 'onionrhome', 'board', 'boardContent', 'sharedContent', 'mail', 'mailindex', 'friends', 'friendsindex')
 
         self.clientToken = config.get('client.webpassword')
         self.timeBypassToken = base64.b16encode(os.urandom(32)).decode()
@@ -276,6 +278,7 @@ class API:
         self.pluginResponses = {} # Responses for plugin endpoints
         self.queueResponse = {}
         onionrInst.setClientAPIInst(self)
+        app.register_blueprint(friendsapi.friends)
 
         @app.before_request
         def validateRequest():
@@ -315,6 +318,14 @@ class API:
         @app.route('/mail/', endpoint='mailindex')
         def loadMailIndex():
             return send_from_directory('static-data/www/mail/', 'index.html')
+        
+        @app.route('/friends/<path:path>', endpoint='friends')
+        def loadContacts(path):
+            return send_from_directory('static-data/www/friends/', path)
+
+        @app.route('/friends/', endpoint='friendsindex')
+        def loadContacts():
+            return send_from_directory('static-data/www/friends/', 'index.html')
 
         @app.route('/board/<path:path>', endpoint='boardContent')
         def boardContent(path):
