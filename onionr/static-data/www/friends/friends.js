@@ -18,6 +18,24 @@
 */
 
 friendListDisplay = document.getElementById('friendList')
+addForm = document.getElementById('addFriend')
+
+addForm.onsubmit = function(){
+    var friend = document.getElementsByName('addKey')[0]
+    var alias = document.getElementsByName('data')[0]
+
+    fetch('/friends/add/' + friend.value, {
+        method: 'POST',
+        headers: {
+          "token": webpass
+        }}).then(function(data) {
+            if (alias.value.trim().length > 0){
+            post_to_url('/friends/setinfo/' + friend.value + '/name', {'data': alias.value, 'token': webpass})
+            }
+        })
+
+    return false
+}
 
 fetch('/friends/list', {
     headers: {
@@ -28,16 +46,26 @@ fetch('/friends/list', {
     var keys = [];
     for(var k in resp) keys.push(k);
     console.log(keys)
+    friendListDisplay.innerHTML = 'Click name to view info<br><br>'
     for (var i = 0; i < keys.length; i++){
-        friendListDisplay.innerText = ''
         var peer = keys[i]
         var name = resp[keys[i]]['name']
         if (name === null || name === ''){
-            name = 'Anonymous'
+            name = peer
         }
         var entry = document.createElement('div')
+        var nameText = document.createElement('input')
+        removeButton = document.createElement('button')
+        removeButton.classList.add('friendRemove')
+        removeButton.classList.add('dangerBtn')
+        entry.setAttribute('data-pubkey', peer)
+        removeButton.innerText = 'X'
+        nameText.value = name
+        nameText.readOnly = true
+        nameText.style.fontStyle = "italic"
         entry.style.paddingTop = '8px'
-        entry.innerText = name + ' - ' + peer
+        entry.appendChild(removeButton)
+        entry.appendChild(nameText)
         friendListDisplay.appendChild(entry)
     }
   })

@@ -290,9 +290,11 @@ class API:
                 return
             try:
                 if not hmac.compare_digest(request.headers['token'], self.clientToken):
-                    abort(403)
+                    if not hmac.compare_digest(request.form['token'], self.clientToken):
+                        abort(403)
             except KeyError:
-                abort(403)
+                if not hmac.compare_digest(request.form['token'], self.clientToken):
+                    abort(403)
 
         @app.after_request
         def afterReq(resp):
@@ -417,14 +419,16 @@ class API:
             if self._core._utils.validateHash(bHash):
                 try:
                     resp = Block(bHash).bcontent
+                except onionrexceptions.NoDataAvailable:
+                    abort(404)
                 except TypeError:
                     pass
                 try:
                     resp = base64.b64decode(resp)
                 except:
                     pass
-            if resp == 'Not Found':
-                abourt(404)
+            if resp == 'Not Found' or not resp:
+                abort(404)
             return Response(resp)
 
         @app.route('/waitforshare/<name>', methods=['post'])

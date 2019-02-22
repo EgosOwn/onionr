@@ -89,7 +89,8 @@ class DaemonTools:
         '''Check if we are connected to the internet or not when we can't connect to any peers'''
         if len(self.daemon.onlinePeers) == 0:
             if not netutils.checkNetwork(self.daemon._core._utils, torPort=self.daemon.proxyPort):
-                logger.warn('Network check failed, are you connected to the internet?')
+                if not self.daemon.shutdown:
+                    logger.warn('Network check failed, are you connected to the internet?')
                 self.daemon.isOnline = False
             else:
                 self.daemon.isOnline = True

@@ -139,32 +139,10 @@ class Block:
 
             # import from file
             if blockdata is None:
-                blockdata = onionrstorage.getData(self.core, self.getHash()).decode()
-                '''
-                
-                filelocation = file
-
-                readfile = True
-
-                if filelocation is None:
-                    if self.getHash() is None:
-                        return False
-                    elif self.getHash() in Block.getCache():
-                        # get the block from cache, if it's in it
-                        blockdata = Block.getCache(self.getHash())
-                        readfile = False
-
-                    # read from file if it's still None
-                    if blockdata is None:
-                        filelocation = self.core.dataDir + 'blocks/%s.dat' % self.getHash()
-
-                if readfile:
+                try:
                     blockdata = onionrstorage.getData(self.core, self.getHash()).decode()
-                    #with open(filelocation, 'rb') as f:
-                    #blockdata = f.read().decode()
-
-                self.blockFile = filelocation
-                '''
+                except AttributeError:
+                    raise onionrexceptions.NoDataAvailable('Block does not exist')
             else:
                 self.blockFile = None
             # parse block
@@ -200,11 +178,11 @@ class Block:
 
             return True
         except Exception as e:
-            logger.error('Failed to parse block %s.' % self.getHash(), error = e, timestamp = False)
+            logger.warn('Failed to parse block %s.' % self.getHash(), error = e, timestamp = False)
 
             # if block can't be parsed, it's a waste of precious space. Throw it away.
             if not self.delete():
-                logger.error('Failed to delete invalid block %s.' % self.getHash(), error = e)
+                logger.warn('Failed to delete invalid block %s.' % self.getHash(), error = e)
             else:
                 logger.debug('Deleted invalid block %s.' % self.getHash(), timestamp = False)
 

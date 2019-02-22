@@ -13,3 +13,14 @@ form label{
     margin-top: 0.5em;
     margin-bottom: 0.5em;
 }
+
+#friendList{
+    display: inline;
+}
+#friendList span{
+    text-align: center;
+}
+#friendList button{
+    display: inline;
+    margin-right: 10px;
+}
