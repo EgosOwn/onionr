@@ -34,6 +34,6 @@ def on_init(api, data = None):
     # Doing this makes it so that the other functions can access the api object
     # by simply referencing the variable `pluginapi`.
     pluginapi = api
-    ui = OnionrCLIUI(api)
+    ui = OnionrContactManager(api)
     #api.commands.register('interactive', ui.start)
     return

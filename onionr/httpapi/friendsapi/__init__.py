@@ -17,11 +17,19 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import core
+import core, json
 from onionrusers import contactmanager
 from flask import Blueprint, Response, request, abort
 
 friends = Blueprint('friends', __name__)
+
+@friends.route('/friends/list')
+def list_friends():
+    pubkey_list = {}
+    friend_list = contactmanager.ContactManager.list_friends(core.Core())
+    for friend in friend_list:
+        pubkey_list[friend.publicKey] = {'name': friend.get_info('name')}
+    return json.dumps(pubkey_list)
 
 @friends.route('/friends/add/<pubkey>', methods=['POST'])
 def add_friend(pubkey):

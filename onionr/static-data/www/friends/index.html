@@ -10,11 +10,6 @@
         <link rel='stylesheet' href='/friends/style.css'>
     </head>
     <body>
-        <div id="shutdownNotice" class='overlay'>
-            <div>
-                <p>Your node will shutdown. Thank you for using Onionr.</p>
-            </div>
-        </div>
         <div class='content'>
             <img class='logo' src='/shared/onionr-icon.png' alt='onionr logo'>
             <span class='logoText'>Onionr Web Control Panel</span>
@@ -24,7 +19,8 @@
                 <label>Set Alias: <input type='text' name='addAlias' placeholder='what to call them' required></label>
                 <input type='submit' value='Add Friend'>
             </form>
-            <div id='friendList'></div>
+            <h2>Friend List:</h2>
+            <div id='friendList'>None Yet :(</div>
         </div>
         <script src='/shared/misc.js'></script>
         <script src='/friends/friends.js'></script>

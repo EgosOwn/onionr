@@ -201,3 +201,10 @@ class OnionrUser:
         conn.commit()
         conn.close()
         return True
+    
+    @classmethod
+    def list_friends(cls, coreInst):
+        friendList = []
+        for x in coreInst.listPeers(trust=1):
+            friendList.append(cls(coreInst, x))
+        return list(friendList)

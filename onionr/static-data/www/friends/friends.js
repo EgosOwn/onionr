@@ -19,3 +19,25 @@
 
 friendListDisplay = document.getElementById('friendList')
 
+fetch('/friends/list', {
+    headers: {
+      "token": webpass
+    }})
+.then((resp) => resp.json()) // Transform the data into json
+.then(function(resp) {
+    var keys = [];
+    for(var k in resp) keys.push(k);
+    console.log(keys)
+    for (var i = 0; i < keys.length; i++){
+        friendListDisplay.innerText = ''
+        var peer = keys[i]
+        var name = resp[keys[i]]['name']
+        if (name === null || name === ''){
+            name = 'Anonymous'
+        }
+        var entry = document.createElement('div')
+        entry.style.paddingTop = '8px'
+        entry.innerText = name + ' - ' + peer
+        friendListDisplay.appendChild(entry)
+    }
+  })
