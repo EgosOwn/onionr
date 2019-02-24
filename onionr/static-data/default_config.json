@@ -8,7 +8,8 @@
         "security_level": 0,
         "max_block_age": 2678400,
         "bypass_tor_check": false,
-        "public_key": ""
+        "public_key": "",
+        "random_bind_ip": true
     },
 
     "www" : {
@@ -48,7 +49,7 @@
         "verbosity" : "default",
 
         "file": {
-            "output": true,
+            "output": false,
             "path": "output.log"
         },
 

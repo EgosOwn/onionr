@@ -200,6 +200,6 @@ class DaemonTools:
         if secrets.randbelow(chance) == (chance - 1):
             fakePeer = self.daemon._core._crypto.generatePubKey()[0]
             data = secrets.token_hex(secrets.randbelow(500) + 1)
-            self.daemon._core.insertBlock(data, header='pm', encryptType='asym', asymPeer=fakePeer, meta={'subject': 'foo'})
+            self.daemon._core.insertBlock(data, header='db', encryptType='asym', asymPeer=fakePeer, meta={'subject': 'foo'})
         self.daemon.decrementThreadCount('insertDeniableBlock')
         return

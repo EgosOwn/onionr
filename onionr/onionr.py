@@ -308,7 +308,9 @@ class Onionr:
         except FileNotFoundError:
             logger.error('Onionr seems to not be running (could not get api host)')
         else:
-            webbrowser.open_new_tab('http://%s/#%s' % (url, config.get('client.webpassword')))
+            url = 'http://%s/#%s' % (url, config.get('client.webpassword'))
+            print('If Onionr does not open automatically, use this URL:', url)
+            webbrowser.open_new_tab(url)
 
     def addID(self):
         try:

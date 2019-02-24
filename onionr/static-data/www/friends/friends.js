@@ -20,6 +20,10 @@
 friendListDisplay = document.getElementById('friendList')
 addForm = document.getElementById('addFriend')
 
+function removeFriend(pubkey){
+    post_to_url('/friends/remove/' + pubkey, {'token': webpass})
+}
+
 addForm.onsubmit = function(){
     var friend = document.getElementsByName('addKey')[0]
     var alias = document.getElementsByName('data')[0]
@@ -67,5 +71,15 @@ fetch('/friends/list', {
         entry.appendChild(removeButton)
         entry.appendChild(nameText)
         friendListDisplay.appendChild(entry)
+    }
+    // If friend delete buttons are pressed
+
+    var friendRemoveBtns = document.getElementsByClassName('friendRemove')
+
+    for (var x = 0; x < friendRemoveBtns.length; x++){
+        var friendKey = friendRemoveBtns[x].parentElement.getAttribute('data-pubkey')
+        friendRemoveBtns[x].onclick = function(){
+            removeFriend(friendKey)
+        }
     }
   })

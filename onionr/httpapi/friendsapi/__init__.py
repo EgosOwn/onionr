@@ -34,12 +34,12 @@ def list_friends():
 @friends.route('/friends/add/<pubkey>', methods=['POST'])
 def add_friend(pubkey):
     contactmanager.ContactManager(core.Core(), pubkey, saveUser=True).setTrust(1)
-    return 'success'
+    return redirect(request.referrer + '#' + request.form['token'])
 
 @friends.route('/friends/remove/<pubkey>', methods=['POST'])
 def remove_friend(pubkey):
     contactmanager.ContactManager(core.Core(), pubkey).setTrust(0)
-    return 'success'
+    return redirect(request.referrer + '#' + request.form['token'])
 
 @friends.route('/friends/setinfo/<pubkey>/<key>', methods=['POST'])
 def set_info(pubkey, key):
