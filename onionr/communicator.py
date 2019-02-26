@@ -670,7 +670,7 @@ class OnionrCommunicatorTimers:
             self.daemonInstance.threadCounts[self.timerFunction.__name__] = 0
 
         # execute thread if it is time, and we are not missing *required* online peer
-        if self.count == self.frequency:
+        if self.count == self.frequency and not self.daemonInstance.shutdown:
             try:
                 if self.requiresPeer and len(self.daemonInstance.onlinePeers) == 0:
                     raise onionrexceptions.OnlinePeerNeeded
