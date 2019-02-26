@@ -78,7 +78,7 @@ function loadInboxEntrys(bHash){
         var metadata = resp['metadata']
         humanDate.setUTCSeconds(resp['meta']['time'])
         if (resp['meta']['signer'] != ''){
-            senderInput.value = httpGet('/getHumanReadable/' + resp['meta']['signer'])
+            senderInput.value = httpGet('/friends/getinfo/' + resp['meta']['signer'] + '/name')
         }
         if (resp['meta']['validSig']){
             validSig.innerText = 'Signature Validity: Good'
@@ -88,7 +88,7 @@ function loadInboxEntrys(bHash){
             validSig.style.color = 'red'
         }
         if (senderInput.value == ''){
-            senderInput.value = 'Anonymous'
+            senderInput.value = resp['meta']['signer']
         }
         bHashDisplay.innerText = bHash.substring(0, 10)
         entry.setAttribute('hash', bHash)
@@ -195,16 +195,17 @@ tabBtns.onclick = function(event){
     setActiveTab(event.target.innerText.toLowerCase())
 }
 
+
 var idStrings = document.getElementsByClassName('myPub')
-var myHumanReadable = httpGet('/getHumanReadable/' + myPub)
 for (var i = 0; i < idStrings.length; i++){
     if (idStrings[i].tagName.toLowerCase() == 'input'){
-        idStrings[i].value = myHumanReadable
+        idStrings[i].value = myPub
     }
     else{
-        idStrings[i].innerText = myHumanReadable
+        idStrings[i].innerText = myPub
     }
 }
+
 
 for (var i = 0; i < document.getElementsByClassName('refresh').length; i++){
     document.getElementsByClassName('refresh')[i].style.float = 'right'
@@ -216,3 +217,34 @@ for (var i = 0; i < document.getElementsByClassName('closeOverlay').length; i++)
     }
 }
 
+fetch('/friends/list', {
+    headers: {
+      "token": webpass
+    }})
+.then((resp) => resp.json()) // Transform the data into json
+.then(function(resp) {
+    var friendSelectParent = document.getElementById('friendSelect')
+    var keys = [];
+    var friend
+    for(var k in resp) keys.push(k);
+
+    friendSelectParent.appendChild(document.createElement('option'))
+    for (var i = 0; i < keys.length; i++) {
+        var option = document.createElement("option")
+        var name = resp[keys[i]]['name']
+        option.value = keys[i]
+        if (name.length == 0){
+            option.text = keys[i]
+        }
+        else{
+            option.text = name
+        }
+        friendSelectParent.appendChild(option)
+    }
+
+    for (var i = 0; i < keys.length; i++){
+        
+        //friendSelectParent
+        //alert(resp[keys[i]]['name'])
+    }
+})

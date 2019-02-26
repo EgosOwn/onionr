@@ -18,6 +18,10 @@
 */
 
 var sendbutton = document.getElementById('sendMail')
+messageContent = document.getElementById('draftText')
+to = document.getElementById('draftID')
+subject = document.getElementById('draftSubject')
+friendPicker = document.getElementById('friendSelect')
 
 function sendMail(to, message, subject){
     //postData = {"postData": '{"to": "' + to + '", "message": "' + message + '"}'} // galaxy brain
@@ -35,11 +39,19 @@ function sendMail(to, message, subject){
       })
 }
 
-sendForm.onsubmit = function(){
-    var messageContent = document.getElementById('draftText')
-    var to = document.getElementById('draftID')
-    var subject = document.getElementById('draftSubject')
+var friendPicker = document.getElementById('friendSelect')
+friendPicker.onchange = function(){
+    to.value = friendPicker.value
+}
 
+sendForm.onsubmit = function(){
+    if (friendPicker.value.trim().length !== 0 && to.value.trim().length !== 0){
+        if (friendPicker.value !== to.value){
+            alert('You have selected both a friend and entered a public key manually.')
+            return false
+        }
+    }
+    
     sendMail(to.value, messageContent.value, subject.value)
-    return false;
+    return false
 }

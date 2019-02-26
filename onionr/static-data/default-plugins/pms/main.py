@@ -43,7 +43,6 @@ def draw_border(text):
     res.append('└' + '─' * width + '┘')
     return '\n'.join(res)
 
-
 class MailStrings:
     def __init__(self, mailInstance):
         self.mailInstance = mailInstance

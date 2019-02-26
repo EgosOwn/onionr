@@ -689,6 +689,8 @@ class Core:
             return False
         retData = False
 
+        createTime = self._utils.getRoundedEpoch()
+
         # check nonce
         dataNonce = self._utils.bytesToStr(self._crypto.sha3Hash(data))
         try:
@@ -706,10 +708,7 @@ class Core:
         data = str(data)
         plaintext = data
         plaintextMeta = {}
-
-        # Convert asym peer human readable key to base32 if set
-        if ' ' in asymPeer.strip():
-            asymPeer = self._utils.convertHumanReadableID(asymPeer)
+        plaintextPeer = asymPeer
 
         retData = ''
         signature = ''
@@ -732,6 +731,7 @@ class Core:
             pass
 
         if encryptType == 'asym':
+            meta['rply'] = createTime # Duplicate the time in encrypted messages to prevent replays
             if not disableForward and sign and asymPeer != self._crypto.pubKey:
                 try:
                     forwardEncrypted = onionrusers.OnionrUser(self, asymPeer).forwardEncrypt(data)
@@ -779,7 +779,7 @@ class Core:
         metadata['meta'] = jsonMeta
         metadata['sig'] = signature
         metadata['signer'] = signer
-        metadata['time'] = self._utils.getRoundedEpoch()
+        metadata['time'] = createTime
 
         # ensure expire is integer and of sane length
         if type(expire) is not type(None):
@@ -804,7 +804,10 @@ class Core:
                 self.daemonQueueAdd('uploadBlock', retData)
 
         if retData != False:
-            events.event('insertblock', {'content': plaintext, 'meta': plaintextMeta, 'hash': retData, 'peer': self._utils.bytesToStr(asymPeer)}, onionr = self.onionrInst, threaded = True)
+            if plaintextPeer == 'OVPCZLOXD6DC5JHX4EQ3PSOGAZ3T24F75HQLIUZSDSMYPEOXCPFA====':
+                events.event('insertdeniable', {'content': plaintext, 'meta': plaintextMeta, 'hash': retData, 'peer': self._utils.bytesToStr(asymPeer)}, onionr = self.onionrInst, threaded = True)
+            else:
+                events.event('insertblock', {'content': plaintext, 'meta': plaintextMeta, 'hash': retData, 'peer': self._utils.bytesToStr(asymPeer)}, onionr = self.onionrInst, threaded = True)
         return retData
 
     def introduceNode(self):

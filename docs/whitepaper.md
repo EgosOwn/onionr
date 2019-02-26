@@ -91,6 +91,22 @@ In addition, randomness beacons such as the one operated by [NIST](https://beaco
 
 # Direct Connections
 
-We propose a method of using Onionr's block sync system to enable direct connections between peers by having one peer request to connect to another using the peer's public key. Since the request is within a standard block, proof of work must be used to request connection. If the requested peer is available and wishes to accept the connection,Onionr will generate a temporary .onion address for the other peer to connect to. Alternatively, a reverse connection may be formed, which is faster to establish but requires a message brokering system instead of a standard socket.
+We propose a method of using Onionr's block sync system to enable direct connections between peers by having one peer request to connect to another using the peer's public key. Since the request is within a standard block, proof of work must be used to request connection. If the requested peer is available and wishes to accept the connection, Onionr will generate a temporary .onion address for the other peer to connect to. Alternatively, a reverse connection may be formed, which is faster to establish but requires a message brokering system instead of a standard socket.
 
 The benefits of such a system are increased privacy, and the ability to anonymously communicate from multiple devices at once. In a traditional onion service, one's online status can be monitored and more easily correlated.
+
+# Threat Model
+
+The goal of Onionr is to provide a method of distributing information in a manner in which the difficulty of discovering the identity of those sending and receiving the information is greatly increased. In this section we detail what information we want to protect and who we're protecting it from. 
+
+In this threat model, "protected" means available in plaintext only to those which it was intended, and regardless non-malleable
+
+## Threat Actors
+
+Onionr assumes that traffic/data is being surveilled by a multitude of actors on every level but the local machine. Some examples of threat actors that we seek to protect against include Internet service providers, local area network administrators,
+
+## Assumptions
+
+We assume that Tor onion services (v3) and I2P services cannot be trivially deanonymized, and that the cryptographic algorithms we employ cannot be broken in any manner faster than brute force unless a quantum computer is used. 
+
+Once supposed quantum safe algorithms are more mature and have relatively high level libraries, they will be deployed.

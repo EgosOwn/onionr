@@ -284,6 +284,12 @@ class OnionrUtils:
                     except AssertionError:
                         logger.warn('Block is expired')
                         break
+                elif i == 'encryptType':
+                    try:
+                        assert metadata[i] in ('asym', 'sym', '')
+                    except AssertionError:
+                        logger.warn('Invalid encryption mode')
+                        break
             else:
                 # if metadata loop gets no errors, it does not break, therefore metadata is valid
                 # make sure we do not have another block with the same data content (prevent data duplication and replay attacks)
