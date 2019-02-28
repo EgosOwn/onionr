@@ -24,8 +24,27 @@ threadPlaceholder = document.getElementById('threadPlaceholder')
 tabBtns = document.getElementById('tabBtns')
 threadContent = {}
 myPub = httpGet('/getActivePubkey')
+replyBtn = document.getElementById('replyBtn')
 
-function openThread(bHash, sender, date, sigBool){
+function openReply(bHash){
+    var inbox = document.getElementsByClassName('threadEntry')
+    var entry = ''
+    var friendName = ''
+    var key = ''
+    for(var i = 0; i < inbox.length; i++) {
+        if (inbox[i].getAttribute('data-hash') === bHash){
+            entry = inbox[i]
+        }
+    }
+    if (entry.getAttribute('data-nameSet') == 'true'){
+        document.getElementById('friendSelect').value = entry.getElementsByTagName('input')[0].value
+    }
+    key = entry.getAttribute('data-pubkey')
+    document.getElementById('draftID').value = key
+    setActiveTab('send message')
+}
+
+function openThread(bHash, sender, date, sigBool, pubkey){
     var messageDisplay = document.getElementById('threadDisplay')
     var blockContent = httpGet('/getblockbody/' + bHash)
     document.getElementById('fromUser').value = sender
@@ -43,6 +62,9 @@ function openThread(bHash, sender, date, sigBool){
     }
     sigEl.innerText = sigMsg
     overlay('messageDisplay')
+    replyBtn.onclick = function(){
+        openReply(bHash)
+    }
 }
 
 function setActiveTab(tabName){
@@ -60,7 +82,7 @@ function setActiveTab(tabName){
     }
 }
 
-function loadInboxEntrys(bHash){
+function loadInboxEntries(bHash){
     fetch('/getblockheader/' + bHash, {
         headers: {
           "token": webpass
@@ -87,11 +109,14 @@ function loadInboxEntrys(bHash){
             validSig.innerText = 'Signature Validity: Bad'
             validSig.style.color = 'red'
         }
+        entry.setAttribute('data-nameSet', true)
         if (senderInput.value == ''){
             senderInput.value = resp['meta']['signer']
+            entry.setAttribute('data-nameSet', false)
         }
         bHashDisplay.innerText = bHash.substring(0, 10)
-        entry.setAttribute('hash', bHash)
+        entry.setAttribute('data-hash', bHash)
+        entry.setAttribute('data-pubkey', resp['meta']['signer'])
         senderInput.readOnly = true
         dateStr.innerText = humanDate.toString()
         if (metadata['subject'] === undefined || metadata['subject'] === null) {
@@ -110,7 +135,7 @@ function loadInboxEntrys(bHash){
         entry.classList.add('threadEntry')
 
         entry.onclick = function(){
-            openThread(entry.getAttribute('hash'), senderInput.value, dateStr.innerText, resp['meta']['validSig'])
+            openThread(entry.getAttribute('data-hash'), senderInput.value, dateStr.innerText, resp['meta']['validSig'], entry.getAttribute('data-pubkey'))
         }
         
       }.bind(bHash))
@@ -127,7 +152,7 @@ function getInbox(){
             threadPlaceholder.style.display = 'none'
             showed = true
         }
-        loadInboxEntrys(pms[i])
+        loadInboxEntries(pms[i])
     }
     if (! showed){
         threadPlaceholder.style.display = 'block'
@@ -145,6 +170,9 @@ function getSentbox(){
         var entry = document.createElement('div')
         var entryUsed;
         for(var k in resp) keys.push(k);
+        if (keys.length == 0){
+            threadPart.innerHTML = "nothing to show here yet."
+        }
         for (var i = 0; i < keys.length; i++){
             var entry = document.createElement('div')
             var obj = resp[i];
@@ -194,7 +222,6 @@ tabBtns.onclick = function(event){
     event.target.classList.add('activeTab')
     setActiveTab(event.target.innerText.toLowerCase())
 }
-
 
 var idStrings = document.getElementsByClassName('myPub')
 for (var i = 0; i < idStrings.length; i++){

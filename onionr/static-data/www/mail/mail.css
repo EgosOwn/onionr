@@ -87,6 +87,17 @@ input{
     color: black;
 }
 
+#replyBtn{
+    margin-top: 1em;
+}
+
+.primaryBtn{
+    border-radius: 3px;
+    padding: 3px;
+    color: black;
+    width: 5%;
+}
+
 .successBtn{
     background-color: #28a745;
     border-radius: 3px;

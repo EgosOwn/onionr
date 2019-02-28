@@ -21,11 +21,15 @@
 '''
 import sys, os, core, config, json, requests, time, logger, threading, base64, onionr, uuid
 import onionrexceptions, onionrpeers, onionrevents as events, onionrplugins as plugins, onionrblockapi as block
-import onionrdaemontools, onionrsockets, onionr, onionrproofs
+from communicatorutils import onionrdaemontools
+import onionrsockets, onionr, onionrproofs
 import binascii
+from communicatorutils import onionrcommunicatortimers
 from dependencies import secrets
 from defusedxml import minidom
 from utils import networkmerger
+
+OnionrCommunicatorTimers = onionrcommunicatortimers.OnionrCommunicatorTimers
 
 config.reload()
 class OnionrCommunicatorDaemon:
@@ -646,49 +650,6 @@ class OnionrCommunicatorDaemon:
             logger.debug('Status check; looks good.')
 
         self.decrementThreadCount('runCheck')
-
-class OnionrCommunicatorTimers:
-    def __init__(self, daemonInstance, timerFunction, frequency, makeThread=True, threadAmount=1, maxThreads=5, requiresPeer=False):
-        self.timerFunction = timerFunction
-        self.frequency = frequency
-        self.threadAmount = threadAmount
-        self.makeThread = makeThread
-        self.requiresPeer = requiresPeer
-        self.daemonInstance = daemonInstance
-        self.maxThreads = maxThreads
-        self._core = self.daemonInstance._core
-
-        self.daemonInstance.timers.append(self)
-        self.count = 0
-
-    def processTimer(self):
-
-        # mark how many instances of a thread we have (decremented at thread end)
-        try:
-            self.daemonInstance.threadCounts[self.timerFunction.__name__]
-        except KeyError:
-            self.daemonInstance.threadCounts[self.timerFunction.__name__] = 0
-
-        # execute thread if it is time, and we are not missing *required* online peer
-        if self.count == self.frequency and not self.daemonInstance.shutdown:
-            try:
-                if self.requiresPeer and len(self.daemonInstance.onlinePeers) == 0:
-                    raise onionrexceptions.OnlinePeerNeeded
-            except onionrexceptions.OnlinePeerNeeded:
-                pass
-            else:
-                if self.makeThread:
-                    for i in range(self.threadAmount):
-                        if self.daemonInstance.threadCounts[self.timerFunction.__name__] >= self.maxThreads:
-                            logger.debug('%s is currently using the maximum number of threads, not starting another.' % self.timerFunction.__name__)
-                        else:
-                            self.daemonInstance.threadCounts[self.timerFunction.__name__] += 1
-                            newThread = threading.Thread(target=self.timerFunction)
-                            newThread.start()
-                else:
-                    self.timerFunction()
-            self.count = -1 # negative 1 because its incremented at bottom
-        self.count += 1
 
 def startCommunicator(onionrInst, proxyPort):
     OnionrCommunicatorDaemon(onionrInst, proxyPort)

@@ -175,7 +175,7 @@ class PublicAPI:
             try:
                 newNode = request.form['node'].encode()
             except KeyError:
-                logger.warn('No block specified for upload')
+                logger.warn('No node specified for upload')
                 pass
             else:
                 try:
