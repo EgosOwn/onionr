@@ -23,21 +23,16 @@ import logger, config, threading, time, readline, datetime
 from onionrblockapi import Block
 import onionrexceptions
 from onionrusers import onionrusers
-from flask import Response, request, redirect, Blueprint
 import locale, sys, os, json
 
 locale.setlocale(locale.LC_ALL, '')
 
 plugin_name = 'pms'
 PLUGIN_VERSION = '0.0.1'
-flask_blueprint = Blueprint('mail', __name__)
 
 sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
-import sentboxdb # import after path insert
-
-@flask_blueprint.route('/mailhello')
-def mailhello():
-    return "hello world from mail"
+import sentboxdb, mailapi, loadinbox # import after path insert
+flask_blueprint = mailapi.flask_blueprint
 
 def draw_border(text):
     #https://stackoverflow.com/a/20757491
@@ -83,7 +78,7 @@ class OnionrMail:
         displayList = []
         subject = ''
 
-        # this could use a lot of memory if someone has recieved a lot of messages
+        # this could use a lot of memory if someone has received a lot of messages
         for blockHash in self.myCore.getBlocksByType('pm'):
             pmBlocks[blockHash] = Block(blockHash, core=self.myCore)
             pmBlocks[blockHash].decrypt()
@@ -327,10 +322,6 @@ def on_pluginrequest(api, data=None):
         cmd = path.split('/')[1]
         if cmd == 'sentbox':
             resp = OnionrMail(api).get_sent_list(display=False)
-        elif cmd == 'deletemsg':
-            print('path', data['path'])
-            #add_deleted(keyStore, data['path'].split('/')[2])
-            resp = 'success'
     if resp != '':
         api.get_onionr().clientAPIInst.pluginResponses[data['pluginResponse']] = resp
 
@@ -345,5 +336,4 @@ def on_init(api, data = None):
     mail = OnionrMail(pluginapi)
     api.commands.register(['mail'], mail.menu)
     api.commands.register_help('mail', 'Interact with OnionrMail')
-    print("YEET2")
     return

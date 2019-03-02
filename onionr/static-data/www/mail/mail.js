@@ -203,7 +203,7 @@ function showSentboxWindow(to, content){
     overlay('sentboxDisplay')
 }
 
-fetch('/getblocksbytype/pm', {
+fetch('/mail/getinbox', {
     headers: {
       "token": webpass
     }})

@@ -251,9 +251,6 @@ class API:
             This initilization defines all of the API entry points and handlers for the endpoints and errors
             This also saves the used host (random localhost IP address) to the data folder in host.txt
         '''
-        # assert isinstance(onionrInst, onionr.Onionr)
-        # configure logger and stuff
-        #onionr.Onionr.setupConfig('data/', self = self)
 
         self.debug = debug
         self._core = onionrInst.onionrCore
@@ -524,7 +521,6 @@ class API:
             responseTimeout = 20
             startTime = self._core._utils.getEpoch()
             postData = {}
-            print('spth', subpath)
             if request.method == 'POST':
                 postData = request.form['postData']
             if len(subpath) > 1:

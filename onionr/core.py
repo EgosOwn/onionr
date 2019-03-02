@@ -65,7 +65,7 @@ class Core:
             self.dataNonceFile = self.dataDir + 'block-nonces.dat'
             self.dbCreate = dbcreator.DBCreator(self)
             self.forwardKeysFile = self.dataDir + 'forward-keys.db'
-            #self.keyStore = simplekv.DeadSimpleKV(self.dataDir + 'cachedstorage.dat', refresh_seconds=5)
+            self.keyStore = simplekv.DeadSimpleKV(self.dataDir + 'cachedstorage.dat', refresh_seconds=5)
 
             # Socket data, defined here because of multithreading constraints with gevent
             self.killSockets = False
