@@ -233,7 +233,6 @@ for (var i = 0; i < idStrings.length; i++){
     }
 }
 
-
 for (var i = 0; i < document.getElementsByClassName('refresh').length; i++){
     document.getElementsByClassName('refresh')[i].style.float = 'right'
 }

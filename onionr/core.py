@@ -19,7 +19,7 @@
 '''
 import sqlite3, os, sys, time, math, base64, tarfile, nacl, logger, json, netcontroller, math, config, uuid
 from onionrblockapi import Block
-
+import deadsimplekv as simplekv
 import onionrutils, onionrcrypto, onionrproofs, onionrevents as events, onionrexceptions
 import onionrblacklist
 from onionrusers import onionrusers
@@ -65,6 +65,7 @@ class Core:
             self.dataNonceFile = self.dataDir + 'block-nonces.dat'
             self.dbCreate = dbcreator.DBCreator(self)
             self.forwardKeysFile = self.dataDir + 'forward-keys.db'
+            #self.keyStore = simplekv.DeadSimpleKV(self.dataDir + 'cachedstorage.dat', refresh_seconds=5)
 
             # Socket data, defined here because of multithreading constraints with gevent
             self.killSockets = False
@@ -105,7 +106,6 @@ class Core:
                 logger.warn('Warning: address bootstrap file not found ' + self.bootstrapFileLocation)
 
             self._utils = onionrutils.OnionrUtils(self)
-            self.blockCache = onionrstorage.BlockCache()
             # Initialize the crypto object
             self._crypto = onionrcrypto.OnionrCrypto(self)
             self._blacklist = onionrblacklist.OnionrBlackList(self)

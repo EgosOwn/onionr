@@ -25,7 +25,8 @@ import sys, random, threading, hmac, base64, time, os, json, socket
 import core
 from onionrblockapi import Block
 import onionrutils, onionrexceptions, onionrcrypto, blockimporter, onionrevents as events, logger, config
-from httpapi import friendsapi
+import httpapi
+from httpapi import friendsapi, simplecache
 import onionr
 
 class FDSafeHandler(WSGIHandler):
@@ -279,6 +280,8 @@ class API:
         self.queueResponse = {}
         onionrInst.setClientAPIInst(self)
         app.register_blueprint(friendsapi.friends)
+        app.register_blueprint(simplecache.simplecache)
+        httpapi.load_plugin_blueprints(app)
 
         @app.before_request
         def validateRequest():
@@ -521,13 +524,13 @@ class API:
             responseTimeout = 20
             startTime = self._core._utils.getEpoch()
             postData = {}
+            print('spth', subpath)
             if request.method == 'POST':
                 postData = request.form['postData']
             if len(subpath) > 1:
                 data = subpath.split('/')
                 if len(data) > 1:
                     plName = data[0]
-
                     events.event('pluginRequest', {'name': plName, 'path': subpath, 'pluginResponse': pluginResponseCode, 'postData': postData}, onionr=onionrInst)
                     while True:
                         try:

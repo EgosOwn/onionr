@@ -2,6 +2,9 @@ PREFIX = /usr/local
 
 .DEFAULT_GOAL := setup
 
+SHELL  := env ONIONR_HOME=$(ONIONR_HOME) $(SHELL)
+ONIONR_HOME ?= "data"
+
 setup:
 	sudo pip3 install -r requirements.txt
 	-@cd onionr/static-data/ui/; ./compile.py

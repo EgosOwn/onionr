@@ -59,7 +59,6 @@ def reload(onionr = None, stop_event = True):
 
     return False
 
-
 def enable(name, onionr = None, start_event = True):
     '''
         Enables a plugin

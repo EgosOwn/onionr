@@ -6,3 +6,4 @@ defusedxml==0.5.0
 Flask==1.0.2
 PySocks==1.6.8
 stem==1.6.0
+deadsimplekv==0.0.1
