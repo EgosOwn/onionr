@@ -307,23 +307,6 @@ def on_insertblock(api, data={}):
     meta = json.loads(data['meta'])
     sentboxTools.addToSent(data['hash'], data['peer'], data['content'], meta['subject'])
 
-def on_pluginrequest(api, data=None):
-    resp = ''
-    subject = ''
-    recip = ''
-    message = ''
-    postData = {}
-    blockID = ''
-    sentboxTools = sentboxdb.SentBox(api.get_core())
-    keyStore = api.get_core().keyStore
-    if data['name'] == 'mail':
-        path = data['path']
-        print(cmd)
-        cmd = path.split('/')[1]
-        if cmd == 'sentbox':
-            resp = OnionrMail(api).get_sent_list(display=False)
-    if resp != '':
-        api.get_onionr().clientAPIInst.pluginResponses[data['pluginResponse']] = resp
 
 def on_init(api, data = None):
     '''

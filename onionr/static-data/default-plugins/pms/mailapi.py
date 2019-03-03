@@ -17,11 +17,11 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import sys, os
-from flask import Response, request, redirect, Blueprint
+import sys, os, json
+from flask import Response, request, redirect, Blueprint, abort
 import core
 sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
-import loadinbox
+import loadinbox, sentboxdb
 
 flask_blueprint = Blueprint('mail', __name__)
 c = core.Core()
@@ -29,7 +29,8 @@ kv = c.keyStore
 
 @flask_blueprint.route('/mail/deletemsg/<block>', methods=['POST'])
 def mail_delete(block):
-    assert c._utils.validateHash(block)
+    if not c._utils.validateHash(block):
+        abort(504)
     existing = kv.get('deleted_mail')
     if existing is None:
         existing = []
@@ -41,3 +42,22 @@ def mail_delete(block):
 @flask_blueprint.route('/mail/getinbox')
 def list_inbox():
     return ','.join(loadinbox.load_inbox(c))
+
+@flask_blueprint.route('/mail/getsentbox')
+def list_sentbox():
+    sentbox_list = sentboxdb.SentBox(c).listSent()
+    sentbox_list_copy = list(sentbox_list)
+    deleted = kv.get('deleted_mail')
+    if deleted is None:
+        deleted = []
+    for x in range(len(sentbox_list_copy)):
+        if sentbox_list_copy[x]['hash'] in deleted:
+            sentbox_list.pop(x)
+
+    '''
+    hash_list = []
+    for x in sentbox_list:
+        hash_list.append({x['hash'])
+    return ','.join(hash_list)
+    '''
+    return json.dumps(sentbox_list)

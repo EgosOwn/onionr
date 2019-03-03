@@ -71,6 +71,7 @@ function setActiveTab(tabName){
     threadPart.innerHTML = ""
     switch(tabName){
         case 'inbox':
+            refreshPms()
             getInbox()
             break
         case 'sentbox':
@@ -80,6 +81,17 @@ function setActiveTab(tabName){
             overlay('sendMessage')
             break
     }
+}
+
+function deleteMessage(bHash){
+    fetch('/mail/deletemsg/' + bHash, {
+        "method": "post",
+        headers: {
+            "token": webpass
+        }})
+    .then((resp) => resp.text()) // Transform the data into json
+    .then(function(resp) {
+    })
 }
 
 function loadInboxEntries(bHash){
@@ -96,6 +108,7 @@ function loadInboxEntries(bHash){
         var subjectLine = document.createElement('span')
         var dateStr = document.createElement('span')
         var validSig = document.createElement('span')
+        var deleteBtn = document.createElement('button')
         var humanDate = new Date(0)
         var metadata = resp['metadata']
         humanDate.setUTCSeconds(resp['meta']['time'])
@@ -119,6 +132,8 @@ function loadInboxEntries(bHash){
         entry.setAttribute('data-pubkey', resp['meta']['signer'])
         senderInput.readOnly = true
         dateStr.innerText = humanDate.toString()
+        deleteBtn.innerText = 'X'
+        deleteBtn.classList.add('dangerBtn', 'deleteBtn')
         if (metadata['subject'] === undefined || metadata['subject'] === null) {
             subjectLine.innerText = '()'
         }
@@ -127,6 +142,7 @@ function loadInboxEntries(bHash){
         }
         //entry.innerHTML = 'sender ' + resp['meta']['signer'] + ' - ' + resp['meta']['time'] 
         threadPart.appendChild(entry)
+        entry.appendChild(deleteBtn)
         entry.appendChild(bHashDisplay)
         entry.appendChild(senderInput)
         entry.appendChild(validSig)
@@ -134,8 +150,16 @@ function loadInboxEntries(bHash){
         entry.appendChild(dateStr)
         entry.classList.add('threadEntry')
 
-        entry.onclick = function(){
+        entry.onclick = function(event){
+            if (event.target.classList.contains('deleteBtn')){
+                return
+            }
             openThread(entry.getAttribute('data-hash'), senderInput.value, dateStr.innerText, resp['meta']['validSig'], entry.getAttribute('data-pubkey'))
+        }
+
+        deleteBtn.onclick = function(){
+            entry.parentNode.removeChild(entry);
+            deleteMessage(entry.getAttribute('data-hash'))
         }
         
       }.bind(bHash))
@@ -160,7 +184,7 @@ function getInbox(){
 }
 
 function getSentbox(){
-    fetch('/apipoints/mail/sentbox', {
+    fetch('/mail/getsentbox', {
         headers: {
           "token": webpass
         }})
@@ -180,16 +204,27 @@ function getSentbox(){
             toLabel.innerText = 'To: '
             var toEl = document.createElement('input')
             var preview = document.createElement('span')
+            var deleteBtn = document.createElement('button')
+            deleteBtn.classList.add('deleteBtn', 'dangerBtn')
+            deleteBtn.innerText = 'X'
             toEl.readOnly = true
-            toEl.value = resp[keys[i]][1]
-            preview.innerText = '(' + resp[keys[i]][2] + ')'
+            toEl.value = resp[i]['peer']
+            preview.innerText = '(' + resp[i]['subject'] + ')'
+            entry.setAttribute('data-hash', resp[i]['hash'])
+            entry.appendChild(deleteBtn)
             entry.appendChild(toLabel)
             entry.appendChild(toEl)
             entry.appendChild(preview)
-            entryUsed = resp[keys[i]]
+            entryUsed = resp[i]['message']
             entry.onclick = function(){
                 console.log(resp)
-                showSentboxWindow(toEl.value, entryUsed[0])
+                if (! entry.target.classList.contains('deleteBtn')){
+                    showSentboxWindow(toEl.value, entryUsed)
+                }
+            }
+            deleteBtn.onclick = function(){
+                entry.parentNode.removeChild(entry);
+                deleteMessage(entry.getAttribute('data-hash'))
             }
             threadPart.appendChild(entry)
         } 
@@ -203,6 +238,7 @@ function showSentboxWindow(to, content){
     overlay('sentboxDisplay')
 }
 
+function refreshPms(){
 fetch('/mail/getinbox', {
     headers: {
       "token": webpass
@@ -210,8 +246,8 @@ fetch('/mail/getinbox', {
 .then((resp) => resp.text()) // Transform the data into json
 .then(function(data) {
     pms = data.split(',')
-    setActiveTab('inbox')
   })
+}
 
 tabBtns.onclick = function(event){
     var children = tabBtns.children
@@ -274,3 +310,5 @@ fetch('/friends/list', {
         //alert(resp[keys[i]]['name'])
     }
 })
+
+setActiveTab('inbox')
