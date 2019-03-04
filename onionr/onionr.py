@@ -844,9 +844,9 @@ class Onionr:
 
                 # count stats
                 'div2' : True,
-                'Known Peers Count' : str(len(self.onionrCore.listPeers()) - 1),
-                'Enabled Plugins Count' : str(len(config.get('plugins.enabled', list()))) + ' / ' + str(len(os.listdir(self.dataDir + 'plugins/'))),
-                'Known Blocks Count' : str(totalBlocks),
+                'Known Peers' : str(len(self.onionrCore.listPeers()) - 1),
+                'Enabled Plugins' : str(len(config.get('plugins.enabled', list()))) + ' / ' + str(len(os.listdir(self.dataDir + 'plugins/'))),
+                'Stored Blocks' : str(totalBlocks),
                 'Percent Blocks Signed' : str(round(100 * signedBlocks / max(totalBlocks, 1), 2)) + '%'
             }
 

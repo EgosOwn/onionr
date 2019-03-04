@@ -52,12 +52,7 @@ def list_sentbox():
         deleted = []
     for x in range(len(sentbox_list_copy)):
         if sentbox_list_copy[x]['hash'] in deleted:
+            x -= 1
             sentbox_list.pop(x)
 
-    '''
-    hash_list = []
-    for x in sentbox_list:
-        hash_list.append({x['hash'])
-    return ','.join(hash_list)
-    '''
     return json.dumps(sentbox_list)

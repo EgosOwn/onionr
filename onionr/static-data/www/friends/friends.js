@@ -33,8 +33,9 @@ addForm.onsubmit = function(){
         headers: {
           "token": webpass
         }}).then(function(data) {
+
             if (alias.value.trim().length > 0){
-            post_to_url('/friends/setinfo/' + friend.value + '/name', {'data': alias.value, 'token': webpass})
+                post_to_url('/friends/setinfo/' + friend.value + '/name', {'data': alias.value, 'token': webpass})
             }
         })
 

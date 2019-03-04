@@ -57,8 +57,9 @@ function openThread(bHash, sender, date, sigBool, pubkey){
         sigEl.classList.remove('danger')
     }
     else{
-        sigMsg = 'Bad/no ' + sigMsg + ' (message could be fake)'
+        sigMsg = 'Bad/no ' + sigMsg + ' (message could be impersonating someone)'
         sigEl.classList.add('danger')
+        replyBtn.style.display = 'none'
     }
     sigEl.innerText = sigMsg
     overlay('messageDisplay')
@@ -72,7 +73,6 @@ function setActiveTab(tabName){
     switch(tabName){
         case 'inbox':
             refreshPms()
-            getInbox()
             break
         case 'sentbox':
             getSentbox()
@@ -112,13 +112,12 @@ function loadInboxEntries(bHash){
         var humanDate = new Date(0)
         var metadata = resp['metadata']
         humanDate.setUTCSeconds(resp['meta']['time'])
+        validSig.style.display = 'none'
         if (resp['meta']['signer'] != ''){
             senderInput.value = httpGet('/friends/getinfo/' + resp['meta']['signer'] + '/name')
         }
-        if (resp['meta']['validSig']){
-            validSig.innerText = 'Signature Validity: Good'
-        }
-        else{
+        if (! resp['meta']['validSig']){
+            validSig.style.display = 'inline'
             validSig.innerText = 'Signature Validity: Bad'
             validSig.style.color = 'red'
         }
@@ -145,9 +144,9 @@ function loadInboxEntries(bHash){
         entry.appendChild(deleteBtn)
         entry.appendChild(bHashDisplay)
         entry.appendChild(senderInput)
-        entry.appendChild(validSig)
         entry.appendChild(subjectLine)
         entry.appendChild(dateStr)
+        entry.appendChild(validSig)
         entry.classList.add('threadEntry')
 
         entry.onclick = function(event){
@@ -246,6 +245,7 @@ fetch('/mail/getinbox', {
 .then((resp) => resp.text()) // Transform the data into json
 .then(function(data) {
     pms = data.split(',')
+    getInbox()
   })
 }
 
@@ -310,5 +310,4 @@ fetch('/friends/list', {
         //alert(resp[keys[i]]['name'])
     }
 })
-
 setActiveTab('inbox')
