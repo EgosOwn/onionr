@@ -19,15 +19,13 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import sys, os, core, config, json, requests, time, logger, threading, base64, onionr, uuid
+import sys, os, core, config, json, requests, time, logger, threading, base64, onionr, uuid, binascii
+from dependencies import secrets
+from utils import networkmerger
 import onionrexceptions, onionrpeers, onionrevents as events, onionrplugins as plugins, onionrblockapi as block
 from communicatorutils import onionrdaemontools
 import onionrsockets, onionr, onionrproofs
-import binascii
-from communicatorutils import onionrcommunicatortimers
-from dependencies import secrets
-from defusedxml import minidom
-from utils import networkmerger
+from communicatorutils import onionrcommunicatortimers, proxypicker
 
 OnionrCommunicatorTimers = onionrcommunicatortimers.OnionrCommunicatorTimers
 
@@ -47,10 +45,6 @@ class OnionrCommunicatorDaemon:
         # initialize core with Tor socks port being 3rd argument
         self.proxyPort = proxyPort
         self._core = onionrInst.onionrCore
-
-        # initialize NIST beacon salt and time
-        self.nistSaltTimestamp = 0
-        self.powSalt = 0
 
         self.blocksToUpload = []
 
@@ -610,11 +604,7 @@ class OnionrCommunicatorDaemon:
                     triedPeers.append(peer)
                     url = 'http://' + peer + '/upload'
                     data = {'block': block.Block(bl).getRaw()}
-                    proxyType = ''
-                    if peer.endswith('.onion'):
-                        proxyType = 'tor'
-                    elif peer.endswith('.i2p'):
-                        proxyType = 'i2p'
+                    proxyType = proxypicker.pick_proxy(peer)
                     logger.info("Uploading block to " + peer)
                     if not self._core._utils.doPostRequest(url, data=data, proxyType=proxyType) == False:
                         self._core._utils.localCommand('waitforshare/' + bl, post=True)

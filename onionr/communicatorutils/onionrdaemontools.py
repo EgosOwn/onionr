@@ -30,16 +30,22 @@ class DaemonTools:
     '''
     def __init__(self, daemon):
             self.daemon = daemon
+            self.announceProgress = {}
             self.announceCache = {}
 
     def announceNode(self):
         '''Announce our node to our peers'''
         retData = False
         announceFail = False
+        
+        # Do not let announceCache get too large
+        if len(self.announceCache) >= 10000:
+            self.announceCache.popitem()
+
         if self.daemon._core.config.get('general.security_level', 0) == 0:
             # Announce to random online peers
             for i in self.daemon.onlinePeers:
-                if not i in self.announceCache:
+                if not i in self.announceCache and not i in self.announceProgress:
                     peer = i
                     break
             else:
@@ -66,7 +72,9 @@ class DaemonTools:
                 elif len(existingRand) > 0:
                     data['random'] = existingRand
                 else:
+                    self.announceProgress[peer] = True
                     proof = onionrproofs.DataPOW(combinedNodes, forceDifficulty=4)
+                    del self.announceProgress[peer]
                     try:
                         data['random'] = base64.b64encode(proof.waitForResult()[1])
                     except TypeError:
