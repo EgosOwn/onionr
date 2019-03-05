@@ -5,13 +5,13 @@
 
 # Introduction
 
-One of the most important things in the modern world is information. The ability to communicate freely with others is crucial for maintaining personal liberties. The internet has provided humanity with the ability to spread information globally, but there are many people who try (and sometimes succeed) to stifle the flow of information.
+One of the most important things in the modern world is information. The ability to communicate freely with others is crucial for maintaining societal and personal liberty. The internet has provided humanity with the ability to spread information globally, but there are many people who try (and sometimes succeed) to stifle the flow of information.
 
-Internet censorship comes in many forms, state censorship, corporate consolidation of media, threats of violence, network exploitation (e.g. denial of service attacks).
+Internet censorship comes in many forms, state censorship, corporate consolidation of media, threats of violence, network exploitation (e.g. denial of service attacks) and other threats.
 
-To prevent censorship or loss of information, these measures must be in place:
+To prevent censorship and loss of information, these measures must be in place:
 
-* Resistance to censorship of underlying infrastructure or of network hosts
+* Resistance to censorship of underlying infrastructure or of particular network hosts
 
 * Anonymization of users by default
    * The Inability to coerce human users (personal threats/"doxxing", or totalitarian regime censorship)
@@ -124,10 +124,11 @@ We seek to protect the following information:
 * Data specifically inserted as plaintext is available to the public
 * The public key of signed plaintext blocks
 * The fact that one is using Tor or I2P
-   * The fact that one is using Onionr can likely be discovered using long term traffic analysis
+   * The fact that one is using Onionr specifically can likely be discovered using long term traffic analysis
+   * Intense traffic analysis may be able to discover what node created a block. For this reason we offer a high security setting to only share blocks via uploads that we recommend for those who need the best privacy.
 
 ## Assumptions
 
-We assume that Tor onion services (v3) and I2P services cannot be trivially deanonymized, and that the cryptographic algorithms we employ cannot be broken in any manner faster than brute force unless a quantum computer is used. 
+We assume that Tor onion services (v3) and I2P services cannot be trivially deanonymized, and that the underlying cryptographic primitives we employ cannot be broken in any manner faster than brute force unless a quantum computer is used. 
 
 Once quantum safe algorithms are more mature and have relatively high level libraries, they will be deployed.

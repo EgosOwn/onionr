@@ -31,14 +31,28 @@ Onionr can be used for mail, as a social network, instant messenger, file sharin
 
 ## Main Features
 
-* [X] Fully p2p/decentralized, no trackers or other single points of failure
-* [X] End to end encryption of user data
-* [X] Optional non-encrypted blocks, useful for blog posts or public file sharing
-* [X] Easy API system for integration to websites
-* [X] Metadata analysis resistance
-* [X] Transport agnosticism (no internet required)
+* [X] 🌐 Fully p2p/decentralized, no trackers or other single points of failure
+* [X] 🔒 End to end encryption of user data
+* [X] 📢 Optional non-encrypted blocks, useful for blog posts or public file sharing
+* [X] 👩🏾‍💻 Easy API system for integration to websites
+* [X] 🕵️ Metadata analysis resistance and anonymity
+* [X] 📡 Transport agnosticism (no internet required)
 
 **Onionr API and functionality is subject to non-backwards compatible change during pre-alpha development**
+
+# Screenshots
+
+<img alt='Node statistics page screenshot' src='docs/onionr-1.png' width=600>
+
+Node statistics
+
+<img alt='Friend/contact manager screenshot' src='docs/onionr-2.png' width=600>
+
+Friend/contact manager
+
+<img alt='Encrypted, metadata-masking mail application screenshot' src='docs/onionr-3.png' width=600>
+
+Encrypted, metadata-masking mail application.
 
 # Install and Run on Linux
 
@@ -54,17 +68,27 @@ The following applies to Ubuntu Bionic. Other distros may have different package
 Everyone is welcome to help out. Help is wanted for the following:
 
 * Development (Get in touch first)
-    * Creation of a lib for use from other languages and faster proof-of-work
+    * Creation of a shared lib for use from other languages and faster proof-of-work
     * Android and IOS development
-    * Windows and Mac support
+    * Windows and Mac support (already partially supported, testers needed)
     * General bug fixes and development of new features
 * Testing
+* UI/UX design
 * Running stable nodes
 * Security review/audit
 * Automatic I2P setup
 
-Bitcoin: [1onion55FXzm6h8KQw3zFw2igpHcV7LPq](bitcoin:1onion55FXzm6h8KQw3zFw2igpHcV7LPq)
-USD: [Ko-Fi](https://www.ko-fi.com/beardogkf)
+Contribute money:
+
+Donating at least $5 gets you cool Onionr stickers. Get in touch if you want them.
+
+Bitcoin: [1onion55FXzm6h8KQw3zFw2igpHcV7LPq](bitcoin:1onion55FXzm6h8KQw3zFw2igpHcV7LPq) (Contact us for privacy coins like Monero)
+
+USD (Card/Paypal): [Ko-Fi](https://www.ko-fi.com/beardogkf)
+
+## Contact
+
+beardog [ at ] mailbox.org
 
 ## Disclaimer
 
