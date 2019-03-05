@@ -34,7 +34,7 @@ Onionr can be used for mail, as a social network, instant messenger, file sharin
 * [X] 🌐 Fully p2p/decentralized, no trackers or other single points of failure
 * [X] 🔒 End to end encryption of user data
 * [X] 📢 Optional non-encrypted blocks, useful for blog posts or public file sharing
-* [X] 👩🏾‍💻 Easy API system for integration to websites
+* [X] 💻 Easy API system for integration to websites
 * [X] 🕵️ Metadata analysis resistance and anonymity
 * [X] 📡 Transport agnosticism (no internet required)
 
