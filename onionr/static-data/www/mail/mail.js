@@ -191,36 +191,41 @@ function getSentbox(){
     .then(function(resp) {
         var keys = [];
         var entry = document.createElement('div')
-        var entryUsed;
         for(var k in resp) keys.push(k);
         if (keys.length == 0){
             threadPart.innerHTML = "nothing to show here yet."
         }
         for (var i = 0; i < keys.length; i++){
             var entry = document.createElement('div')
-            var obj = resp[i];
+            var obj = resp[i]
             var toLabel = document.createElement('span')
             toLabel.innerText = 'To: '
             var toEl = document.createElement('input')
             var preview = document.createElement('span')
             var deleteBtn = document.createElement('button')
+            var message = resp[i]['message']
             deleteBtn.classList.add('deleteBtn', 'dangerBtn')
             deleteBtn.innerText = 'X'
             toEl.readOnly = true
-            toEl.value = resp[i]['peer']
+            if (resp[i]['name'] == null){
+                toEl.value = resp[i]['peer']
+            }
+            else{
+                toEl.value = resp[i]['name']
+            }
             preview.innerText = '(' + resp[i]['subject'] + ')'
             entry.setAttribute('data-hash', resp[i]['hash'])
             entry.appendChild(deleteBtn)
             entry.appendChild(toLabel)
             entry.appendChild(toEl)
             entry.appendChild(preview)
-            entryUsed = resp[i]['message']
-            entry.onclick = function(){
+            entry.onclick = (function(tree, el, msg) {return function() {
                 console.log(resp)
-                if (! entry.target.classList.contains('deleteBtn')){
-                    showSentboxWindow(toEl.value, entryUsed)
+                if (! entry.classList.contains('deleteBtn')){
+                    showSentboxWindow(el.value, msg)
                 }
-            }
+            };})(entry, toEl, message);
+            
             deleteBtn.onclick = function(){
                 entry.parentNode.removeChild(entry);
                 deleteMessage(entry.getAttribute('data-hash'))

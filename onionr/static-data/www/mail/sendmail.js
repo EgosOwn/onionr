@@ -27,6 +27,7 @@ function sendMail(to, message, subject){
     //postData = {"postData": '{"to": "' + to + '", "message": "' + message + '"}'} // galaxy brain
     postData = {'message': message, 'to': to, 'type': 'pm', 'encrypt': true, 'meta': JSON.stringify({'subject': subject})}
     postData = JSON.stringify(postData)
+    sendForm.style.display = 'none'
     fetch('/insertblock', {
         method: 'POST',
         body: postData,
@@ -36,6 +37,8 @@ function sendMail(to, message, subject){
         }})
     .then((resp) => resp.text()) // Transform the data into json
     .then(function(data) {
+        sendForm.style.display = 'block'
+        alert('Queued for sending!')
       })
 }
 
@@ -51,7 +54,6 @@ sendForm.onsubmit = function(){
             return false
         }
     }
-    
     sendMail(to.value, messageContent.value, subject.value)
     return false
 }

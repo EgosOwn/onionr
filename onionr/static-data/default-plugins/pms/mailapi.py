@@ -20,6 +20,7 @@
 import sys, os, json
 from flask import Response, request, redirect, Blueprint, abort
 import core
+from onionrusers import contactmanager
 sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
 import loadinbox, sentboxdb
 
@@ -54,5 +55,7 @@ def list_sentbox():
         if sentbox_list_copy[x]['hash'] in deleted:
             x -= 1
             sentbox_list.pop(x)
+        else:
+            sentbox_list[x]['name'] = contactmanager.ContactManager(c, sentbox_list[x]['peer'], saveUser=False).get_info('name')
 
     return json.dumps(sentbox_list)
