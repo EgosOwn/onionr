@@ -86,6 +86,8 @@ Bitcoin: [1onion55FXzm6h8KQw3zFw2igpHcV7LPq](bitcoin:1onion55FXzm6h8KQw3zFw2igpH
 
 USD (Card/Paypal): [Ko-Fi](https://www.ko-fi.com/beardogkf)
 
+Note: probably not tax deductible
+
 ## Contact
 
 beardog [ at ] mailbox.org
