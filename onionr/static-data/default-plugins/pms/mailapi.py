@@ -51,11 +51,11 @@ def list_sentbox():
     deleted = kv.get('deleted_mail')
     if deleted is None:
         deleted = []
-    for x in range(len(sentbox_list_copy)):
+    for x in range(len(sentbox_list_copy) - 1):
         if sentbox_list_copy[x]['hash'] in deleted:
             x -= 1
             sentbox_list.pop(x)
         else:
-            sentbox_list[x]['name'] = contactmanager.ContactManager(c, sentbox_list[x]['peer'], saveUser=False).get_info('name')
+            sentbox_list[x]['name'] = contactmanager.ContactManager(c, sentbox_list_copy[x]['peer'], saveUser=False).get_info('name')
 
     return json.dumps(sentbox_list)
