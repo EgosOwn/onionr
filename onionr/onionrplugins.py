@@ -72,6 +72,8 @@ def enable(name, onionr = None, start_event = True):
             try:
                 events.call(get_plugin(name), 'enable', onionr)
             except ImportError: # Was getting import error on Gitlab CI test "data"
+                # NOTE: If you are experiencing issues with plugins not being enabled, it might be this resulting from an error in the module
+                # can happen inconsistenly (especially between versions)
                 return False
             else:
                 enabled_plugins.append(name)

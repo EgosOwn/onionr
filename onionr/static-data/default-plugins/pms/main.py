@@ -19,7 +19,7 @@
 '''
 
 # Imports some useful libraries
-import logger, config, threading, time, readline, datetime
+import logger, config, threading, time, datetime
 from onionrblockapi import Block
 import onionrexceptions
 from onionrusers import onionrusers
