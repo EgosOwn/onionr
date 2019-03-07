@@ -147,7 +147,8 @@ HiddenServicePort 80 ''' + self.apiServerIP + ''':''' + str(self.hsPort)
             torVersion = subprocess.Popen([self.torBinary, '--version'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             for line in iter(torVersion.stdout.readline, b''):
                 if 'Tor 0.2.' in line.decode():
-                    logger.warn("Running 0.2.x Tor series, no support for v3 onion peers")
+                    logger.error('Tor 0.3+ required')
+                    sys.exit(1)
                     break
             torVersion.kill()
 

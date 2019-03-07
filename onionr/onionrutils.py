@@ -278,6 +278,7 @@ class OnionrUtils:
                         break
                     if (self.getEpoch() - metadata[i]) > maxAge:
                         logger.warn('Block is outdated: %s' % (metadata[i],))
+                        break
                 elif i == 'expire':
                     try:
                         assert int(metadata[i]) > self.getEpoch()

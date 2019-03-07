@@ -75,6 +75,29 @@ class Onionr:
             logger.error('Tor is not installed')
             sys.exit(1)
 
+        # If data folder does not exist
+        if not data_exists:
+            if not os.path.exists(self.dataDir + 'blocks/'):
+                os.mkdir(self.dataDir + 'blocks/')
+
+        # Copy default plugins into plugins folder
+        if not os.path.exists(plugins.get_plugins_folder()):
+            if os.path.exists('static-data/default-plugins/'):
+                names = [f for f in os.listdir("static-data/default-plugins/")]
+                shutil.copytree('static-data/default-plugins/', plugins.get_plugins_folder())
+
+                # Enable plugins
+                for name in names:
+                    if not name in plugins.get_enabled_plugins():
+                        plugins.enable(name, self)
+
+        for name in plugins.get_enabled_plugins():
+            if not os.path.exists(plugins.get_plugin_data_folder(name)):
+                try:
+                    os.mkdir(plugins.get_plugin_data_folder(name))
+                except:
+                    plugins.disable(name, onionr = self, stop_event = False)
+
         self.communicatorInst = None
         self.onionrCore = core.Core()
         self.onionrCore.onionrInst = self
@@ -89,29 +112,6 @@ class Onionr:
         # Handle commands
 
         self.debug = False # Whole application debugging
-
-        # If data folder does not exist
-        if not data_exists:
-            if not os.path.exists(self.dataDir + 'blocks/'):
-                os.mkdir(self.dataDir + 'blocks/')
-
-        # Copy default plugins into plugins folder
-        if not os.path.exists(plugins.get_plugins_folder()):
-            if os.path.exists('static-data/default-plugins/'):
-                names = [f for f in os.listdir("static-data/default-plugins/") if not os.path.isfile(f)]
-                shutil.copytree('static-data/default-plugins/', plugins.get_plugins_folder())
-
-                # Enable plugins
-                for name in names:
-                    if not name in plugins.get_enabled_plugins():
-                        plugins.enable(name, self)
-
-        for name in plugins.get_enabled_plugins():
-            if not os.path.exists(plugins.get_plugin_data_folder(name)):
-                try:
-                    os.mkdir(plugins.get_plugin_data_folder(name))
-                except:
-                    plugins.disable(name, onionr = self, stop_event = False)
 
         # Get configuration
         if type(config.get('client.webpassword')) is type(None):
