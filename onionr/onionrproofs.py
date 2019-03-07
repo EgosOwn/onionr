@@ -101,7 +101,7 @@ def hashMeetsDifficulty(h):
         return False
 
 class DataPOW:
-    def __init__(self, data, forceDifficulty=0, threadCount = 5):
+    def __init__(self, data, forceDifficulty=0, threadCount = 1):
         self.foundHash = False
         self.difficulty = 0
         self.data = data
@@ -200,7 +200,7 @@ class DataPOW:
         return result
 
 class POW:
-    def __init__(self, metadata, data, threadCount = 5, forceDifficulty=0, coreInst=None):
+    def __init__(self, metadata, data, threadCount = 1, forceDifficulty=0, coreInst=None):
         self.foundHash = False
         self.difficulty = 0
         self.data = data
