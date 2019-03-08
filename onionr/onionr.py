@@ -236,21 +236,7 @@ class Onionr:
         return
 
     def listConn(self):
-        randID = str(uuid.uuid4())
-        self.onionrCore.daemonQueueAdd('connectedPeers', responseID=randID)
-        while True:
-            try:
-                time.sleep(3)
-                peers = self.onionrCore.daemonQueueGetResponse(randID)
-            except KeyboardInterrupt:
-                break
-            if not type(peers) is None:
-                if peers not in ('', 'failure', None):
-                    if peers != False:
-                        print(peers)
-                    else:
-                        print('Daemon probably not running. Unable to list connected peers.')
-                    break
+        commands.onionrstatistics.show_peers(self)
 
     def listPeers(self):
         logger.info('Peer transport address list:')
@@ -293,7 +279,6 @@ class Onionr:
         else:
             logger.info(logger.colors.bold + 'Get a value: ' + logger.colors.reset + sys.argv[0] + ' ' + sys.argv[1] + ' <key>')
             logger.info(logger.colors.bold + 'Set a value: ' + logger.colors.reset + sys.argv[0] + ' ' + sys.argv[1] + ' <key> <value>')
-
 
     def execute(self, argument):
         '''
@@ -475,22 +460,8 @@ class Onionr:
         '''
             Starts the Onionr daemon
         '''
+        commands.daemonlaunch.start(self, input, override)
 
-        if os.path.exists('.onionr-lock') and not override:
-            logger.fatal('Cannot start. Daemon is already running, or it did not exit cleanly.\n(if you are sure that there is not a daemon running, delete .onionr-lock & try again).')
-        else:
-            if not self.debug and not self._developmentMode:
-                lockFile = open('.onionr-lock', 'w')
-                lockFile.write('')
-                lockFile.close()
-            self.running = True
-            self.daemon()
-            self.running = False
-            if not self.debug and not self._developmentMode:
-                try:
-                    os.remove('.onionr-lock')
-                except FileNotFoundError:
-                    pass
     def setClientAPIInst(self, inst):
         self.clientAPIInst = inst
 
@@ -521,22 +492,7 @@ class Onionr:
         '''
             Show help for Onionr
         '''
-
-        helpmenu = self.getHelp()
-
-        if command is None and len(sys.argv) >= 3:
-            for cmd in sys.argv[2:]:
-                self.showHelp(cmd)
-        elif not command is None:
-            if command.lower() in helpmenu:
-                logger.info(logger.colors.bold + command  + logger.colors.reset + logger.colors.fg.blue + ' : ' + logger.colors.reset +  helpmenu[command.lower()], timestamp = False)
-            else:
-                logger.warn(logger.colors.bold + command  + logger.colors.reset + logger.colors.fg.blue + ' : ' + logger.colors.reset + 'No help menu entry was found', timestamp = False)
-        else:
-            self.version(0)
-            for command, helpmessage in helpmenu.items():
-                self.showHelp(command)
-        return
+        commands.show_help(self, command)
 
     def get_hostname(self):
         try:
@@ -566,25 +522,7 @@ class Onionr:
         '''
             Get a file from onionr blocks
         '''
-        try:
-            fileName = sys.argv[2]
-            bHash = sys.argv[3]
-        except IndexError:
-            logger.error("Syntax %s %s" % (sys.argv[0], '/path/to/filename <blockhash>'))
-        else:
-            logger.info(fileName)
-
-            contents = None
-            if os.path.exists(fileName):
-                logger.error("File already exists")
-                return
-            if not self.onionrUtils.validateHash(bHash):
-                logger.error('Block hash is invalid')
-                return
-
-            with open(fileName, 'wb') as myFile:
-                myFile.write(base64.b64decode(Block(bHash, core=self.onionrCore).bcontent))
-        return
+        commands.filecommands.getFile(self)
 
     def addWebpage(self):
         '''
