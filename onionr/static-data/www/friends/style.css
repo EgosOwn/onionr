@@ -26,11 +26,16 @@ form label{
 }
 
 #friendInfo .overlayContent{
+    background-color: lightgray;
+    border: 3px solid black;
+    border-radius: 3px;
+    color: black;
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+    min-height: 100%;
     padding: 1em;
-    text-align: center;
+    margin: 1em;
 }
 #defriend{
     display: block;
-    margin-left: 50%;
-    margin-bottom: 1em;
+    margin-top: 1em;
 }

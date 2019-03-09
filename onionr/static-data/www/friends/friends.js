@@ -33,7 +33,6 @@ addForm.onsubmit = function(){
         headers: {
           "token": webpass
         }}).then(function(data) {
-
             if (alias.value.trim().length > 0){
                 post_to_url('/friends/setinfo/' + friend.value + '/name', {'data': alias.value, 'token': webpass})
             }
@@ -73,8 +72,13 @@ fetch('/friends/list', {
         entry.appendChild(nameText)
         friendListDisplay.appendChild(entry)
         entry.onclick = (function(entry, nameText, peer) {return function() {
+            if (nameText.length == 0){
+                nameText = 'Anonymous'
+            }
+            document.getElementById('friendPubkey').value = peer
+            document.getElementById('friendName').innerText = nameText
             overlay('friendInfo')
-        };})(entry, nameText, peer);
+        };})(entry, nameText.value, peer);
     }
     // If friend delete buttons are pressed
 
@@ -87,3 +91,7 @@ fetch('/friends/list', {
         }
     }
   })
+
+  document.getElementById('defriend').onclick = function(){
+      removeFriend(document.getElementById('friendPubkey').value)
+  }

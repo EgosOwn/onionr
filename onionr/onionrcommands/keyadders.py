@@ -17,10 +17,12 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
+import sys
+import logger
 def add_peer(o_inst):
     try:
         newPeer = sys.argv[2]
-    except:
+    except IndexError:
         pass
     else:
         if o_inst.onionrUtils.hasKey(newPeer):
@@ -37,7 +39,7 @@ def add_address(o_inst):
     try:
         newAddress = sys.argv[2]
         newAddress = newAddress.replace('http:', '').replace('/', '')
-    except:
+    except IndexError:
         pass
     else:
         logger.info("Adding address: " + logger.colors.underline + newAddress)
