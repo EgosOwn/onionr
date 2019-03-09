@@ -156,7 +156,7 @@ class Onionr:
             with open('static-data/header.txt', 'rb') as file:
                 # only to stdout, not file or log or anything
                 sys.stderr.write(file.read().decode().replace('P', logger.colors.fg.pink).replace('W', logger.colors.reset + logger.colors.bold).replace('G', logger.colors.fg.green).replace('\n', logger.colors.reset + '\n').replace('B', logger.colors.bold).replace('A', '%s' % API_VERSION).replace('V', ONIONR_VERSION))
-                logger.info(logger.colors.fg.lightgreen + '-> ' + str(message) + logger.colors.reset + logger.colors.fg.lightgreen + ' <-\n')
+                logger.info(logger.colors.fg.lightgreen + '-> ' + str(message) + logger.colors.reset + logger.colors.fg.lightgreen + ' <-\n', sensitive=True)
 
     def doExport(self, bHash):
         exportDir = self.dataDir + 'block-export/'

@@ -72,6 +72,9 @@ fetch('/friends/list', {
         entry.appendChild(removeButton)
         entry.appendChild(nameText)
         friendListDisplay.appendChild(entry)
+        entry.onclick = (function(entry, nameText, peer) {return function() {
+            overlay('friendInfo')
+        };})(entry, nameText, peer);
     }
     // If friend delete buttons are pressed
 

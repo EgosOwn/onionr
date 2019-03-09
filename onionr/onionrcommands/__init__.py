@@ -122,7 +122,6 @@ def get_commands(onionr_inst):
     'importblocks': onionr_inst.onionrUtils.importNewBlocks,
 
     'introduce': onionr_inst.onionrCore.introduceNode,
-    'connect': onionr_inst.addAddress,
     'pex': onionr_inst.doPEX,
 
     'getpassword': onionr_inst.printWebPassword,

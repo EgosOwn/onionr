@@ -24,3 +24,13 @@ form label{
     display: inline;
     margin-right: 10px;
 }
+
+#friendInfo .overlayContent{
+    padding: 1em;
+    text-align: center;
+}
+#defriend{
+    display: block;
+    margin-left: 50%;
+    margin-bottom: 1em;
+}

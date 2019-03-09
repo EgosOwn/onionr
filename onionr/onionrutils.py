@@ -415,12 +415,14 @@ class OnionrUtils:
             This function is intended to scan for new blocks ON THE DISK and import them
         '''
         blockList = self._core.getBlockList()
+        exist = False
         if scanDir == '':
             scanDir = self._core.blockDataLocation
         if not scanDir.endswith('/'):
             scanDir += '/'
         for block in glob.glob(scanDir + "*.dat"):
             if block.replace(scanDir, '').replace('.dat', '') not in blockList:
+                exist = True
                 logger.info('Found new block on dist %s' % block)
                 with open(block, 'rb') as newBlock:
                     block = block.replace(scanDir, '').replace('.dat', '')
@@ -430,6 +432,8 @@ class OnionrUtils:
                         self._core._utils.processBlockMetadata(block)
                     else:
                         logger.warn('Failed to verify hash for %s' % block)
+        if not exist:
+            print('No blocks found to import')
 
     def progressBar(self, value = 0, endvalue = 100, width = None):
         '''

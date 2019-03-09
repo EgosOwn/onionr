@@ -1,24 +1,24 @@
 <p align="center">
- <img src="onionr-logo.png" alt="<h1>Onionr</h1>">
+ <img src="onionr-logo.png" alt="<h1>Onionr</h1>" width=200>
 </p>
 <p align="center">Anonymous, Decentralized, Distributed Network</p>
 
 # Introduction
 
-One of the most important things in the modern world is information. The ability to communicate freely with others is crucial for maintaining societal and personal liberty. The internet has provided humanity with the ability to spread information globally, but there are many people who try (and sometimes succeed) to stifle the flow of information.
+We believe that the ability to communicate freely with others is crucial for maintaining societal and personal liberty. The internet has provided humanity with the ability to spread information globally, but there are many persons and organizations who try to stifle the flow of information, sometimes with success.
 
 Internet censorship comes in many forms, state censorship, corporate consolidation of media, threats of violence, network exploitation (e.g. denial of service attacks) and other threats.
 
-To prevent censorship and loss of information, these measures must be in place:
+We hold that in order to protect individual privacy, users must have the ability to communicate anonymously and with decentralization. 
+
+We believe that in order to prevent censorship and loss of information, these measures must be in place:
 
 * Resistance to censorship of underlying infrastructure or of particular network hosts
 
 * Anonymization of users by default
-   * The Inability to coerce human users (personal threats/"doxxing", or totalitarian regime censorship)
+   * The Inability to coerce users (personal threats/"doxxing", or totalitarian regime censorship)
 
 * Economic availability. A system should not rely on a single device to be constantly online, and should not be overly expensive to use. The majority of people in the world own cell phones, but comparatively few own personal computers, particularly in developing countries. Internet connectivity can be slow or spotty in many areas.
-
-There are many great projects that tackle decentralization and privacy issues, but there are none which tackle all of the above issues. Some of the existing networks have also not worked well in practice, or are more complicated than they need to be.
 
 # Onionr Design Goals
 
@@ -131,4 +131,4 @@ We seek to protect the following information:
 
 We assume that Tor onion services (v3) and I2P services cannot be trivially deanonymized, and that the underlying cryptographic primitives we employ cannot be broken in any manner faster than brute force unless a quantum computer is used. 
 
-Once quantum safe algorithms are more mature and have relatively high level libraries, they will be deployed.
+Once quantum safe algorithms are more mature and have decent high level libraries, they will be deployed.

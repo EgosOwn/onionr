@@ -61,7 +61,9 @@ The following applies to Ubuntu Bionic. Other distros may have different package
 * Have python3.6+, python3-pip, Tor (daemon, not browser) installed (python3-dev recommended)
 * Clone the git repo: `$ git clone https://gitlab.com/beardog/onionr`
 * cd into install direction: `$ cd onionr/`
-* Install the Python dependencies ([virtualenv strongly recommended](https://virtualenv.pypa.io/en/stable/userguide/)): `$ pip3 install -r requirements.txt`
+* Install the Python dependencies ([virtualenv strongly recommended](https://virtualenv.pypa.io/en/stable/userguide/)): `$ pip3 install --require-hashes -r requirements.txt`
+
+(--require-hashes is intended to prevent exploitation via compromise of Pypi/CA certificates)
 
 ## Help out
 
@@ -94,6 +96,8 @@ beardog [ at ] mailbox.org
 
 ## Disclaimer
 
-The Tor Project, I2P developers, and anyone else do not own, create, or endorse this project, and are not otherwise involved.
+The Tor Project and I2P developers do not own, create, or endorse this project, and are not otherwise involved.
+
+Tor is a trademark for the Tor Project. We do not own it.
 
 The 'open source badge' is by Maik Ellerbrock and is licensed under a Creative Commons Attribution 4.0 International License.
