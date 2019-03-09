@@ -58,7 +58,7 @@ Encrypted, metadata-masking mail application.
 
 The following applies to Ubuntu Bionic. Other distros may have different package or command names.
 
-* Have python3.5+, python3-pip, Tor (daemon, not browser) installed (python3-dev recommended)
+* Have python3.6+, python3-pip, Tor (daemon, not browser) installed (python3-dev recommended)
 * Clone the git repo: `$ git clone https://gitlab.com/beardog/onionr`
 * cd into install direction: `$ cd onionr/`
 * Install the Python dependencies ([virtualenv strongly recommended](https://virtualenv.pypa.io/en/stable/userguide/)): `$ pip3 install -r requirements.txt`

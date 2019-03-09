@@ -33,7 +33,7 @@ import onionrutils
 import netcontroller, onionrstorage
 from netcontroller import NetController
 from onionrblockapi import Block
-import onionrproofs, onionrexceptions, communicator
+import onionrproofs, onionrexceptions, communicator, setupconfig
 from onionrusers import onionrusers
 import onionrcommands as commands # Many command definitions are here
 
@@ -148,9 +148,15 @@ class Onionr:
     def exitSigterm(self, signum, frame):
         self.killed = True
 
-    '''
-        THIS SECTION HANDLES THE COMMANDS
-    '''
+    def setupConfig(dataDir, self = None):
+        setupconfig.setup_config(dataDir, self)
+
+    def header(self, message = logger.colors.fg.pink + logger.colors.bold + 'Onionr' + logger.colors.reset + logger.colors.fg.pink + ' has started.'):
+        if os.path.exists('static-data/header.txt') and logger.get_level() <= logger.LEVEL_INFO:
+            with open('static-data/header.txt', 'rb') as file:
+                # only to stdout, not file or log or anything
+                sys.stderr.write(file.read().decode().replace('P', logger.colors.fg.pink).replace('W', logger.colors.reset + logger.colors.bold).replace('G', logger.colors.fg.green).replace('\n', logger.colors.reset + '\n').replace('B', logger.colors.bold).replace('A', '%s' % API_VERSION).replace('V', ONIONR_VERSION))
+                logger.info(logger.colors.fg.lightgreen + '-> ' + str(message) + logger.colors.reset + logger.colors.fg.lightgreen + ' <-\n')
 
     def doExport(self, bHash):
         exportDir = self.dataDir + 'block-export/'
@@ -162,6 +168,44 @@ class Onionr:
         data = onionrstorage.getData(self.onionrCore, bHash)
         with open('%s/%s.dat' % (exportDir, bHash), 'wb') as exportFile:
             exportFile.write(data)
+
+    def deleteRunFiles(self):
+        try:
+            os.remove(self.onionrCore.publicApiHostFile)
+        except FileNotFoundError:
+            pass
+        try:
+            os.remove(self.onionrCore.privateApiHostFile)
+        except FileNotFoundError:
+            pass
+
+    def get_hostname(self):
+        try:
+            with open('./' + self.dataDir + 'hs/hostname', 'r') as hostname:
+                return hostname.read().strip()
+        except FileNotFoundError:
+            return "Not Generated"
+        except Exception:
+            return None
+
+    def getConsoleWidth(self):
+        '''
+            Returns an integer, the width of the terminal/cmd window
+        '''
+
+        columns = 80
+
+        try:
+            columns = int(os.popen('stty size', 'r').read().split()[1])
+        except:
+            # if it errors, it's probably windows, so default to 80.
+            pass
+
+        return columns
+
+    '''
+        THIS SECTION HANDLES THE COMMANDS
+    '''
 
     def exportBlock(self):
         exportDir = self.dataDir + 'block-export/'
@@ -195,26 +239,6 @@ class Onionr:
         '''
         commands.pubkeymanager.friend_command(self)
 
-    def deleteRunFiles(self):
-        try:
-            os.remove(self.onionrCore.publicApiHostFile)
-        except FileNotFoundError:
-            pass
-        try:
-            os.remove(self.onionrCore.privateApiHostFile)
-        except FileNotFoundError:
-            pass
-
-    def deleteRunFiles(self):
-        try:
-            os.remove(self.onionrCore.publicApiHostFile)
-        except FileNotFoundError:
-            pass
-        try:
-            os.remove(self.onionrCore.privateApiHostFile)
-        except FileNotFoundError:
-            pass
-
     def banBlock(self):
         try:
             ban = sys.argv[2]
@@ -233,7 +257,6 @@ class Onionr:
                 logger.warn('That block is already blacklisted')
         else:
             logger.error('Invalid block hash')
-        return
 
     def listConn(self):
         commands.onionrstatistics.show_peers(self)
@@ -293,12 +316,6 @@ class Onionr:
         command = commands.get(argument, self.notFound)
         command()
 
-        return
-
-    '''
-        THIS SECTION DEFINES THE COMMANDS
-    '''
-
     def version(self, verbosity = 5, function = logger.info):
         '''
             Displays the Onionr version
@@ -310,8 +327,6 @@ class Onionr:
         if verbosity >= 2:
             function('Running on %s %s' % (platform.platform(), platform.release()))
 
-        return
-
     def doPEX(self):
         '''make communicator do pex'''
         logger.info('Sending pex to command queue...')
@@ -321,126 +336,43 @@ class Onionr:
         '''
             Displays a list of keys (used to be called peers) (?)
         '''
-
         logger.info('%sPublic keys in database: \n%s%s' % (logger.colors.fg.lightgreen, logger.colors.fg.green, '\n'.join(self.onionrCore.listPeers())))
 
     def addPeer(self):
         '''
             Adds a peer (?)
         '''
-        try:
-            newPeer = sys.argv[2]
-        except:
-            pass
-        else:
-            if self.onionrUtils.hasKey(newPeer):
-                logger.info('We already have that key')
-                return
-            logger.info("Adding peer: " + logger.colors.underline + newPeer)
-            try:
-                if self.onionrCore.addPeer(newPeer):
-                    logger.info('Successfully added key')
-            except AssertionError:
-                logger.error('Failed to add key')
-        return
+        commands.keyadders.add_peer(self)
 
     def addAddress(self):
         '''
             Adds a Onionr node address
         '''
-
-        try:
-            newAddress = sys.argv[2]
-            newAddress = newAddress.replace('http:', '').replace('/', '')
-        except:
-            pass
-        else:
-            logger.info("Adding address: " + logger.colors.underline + newAddress)
-            if self.onionrCore.addAddress(newAddress):
-                logger.info("Successfully added address.")
-            else:
-                logger.warn("Unable to add address.")
-        return
+        commands.keyadders.add_address(self)
 
     def enablePlugin(self):
         '''
             Enables and starts the given plugin
         '''
-
-        if len(sys.argv) >= 3:
-            plugin_name = sys.argv[2]
-            logger.info('Enabling plugin "%s"...' % plugin_name)
-            plugins.enable(plugin_name, self)
-        else:
-            logger.info('%s %s <plugin>' % (sys.argv[0], sys.argv[1]))
-
-        return
+        commands.plugincommands.enable_plugin(self)
 
     def disablePlugin(self):
         '''
             Disables and stops the given plugin
         '''
-
-        if len(sys.argv) >= 3:
-            plugin_name = sys.argv[2]
-            logger.info('Disabling plugin "%s"...' % plugin_name)
-            plugins.disable(plugin_name, self)
-        else:
-            logger.info('%s %s <plugin>' % (sys.argv[0], sys.argv[1]))
-
-        return
+        commands.plugincommands.disable_plugin(self)
 
     def reloadPlugin(self):
         '''
             Reloads (stops and starts) all plugins, or the given plugin
         '''
-
-        if len(sys.argv) >= 3:
-            plugin_name = sys.argv[2]
-            logger.info('Reloading plugin "%s"...' % plugin_name)
-            plugins.stop(plugin_name, self)
-            plugins.start(plugin_name, self)
-        else:
-            logger.info('Reloading all plugins...')
-            plugins.reload(self)
-
-        return
+        commands.plugincommands.reload_plugin(self)
 
     def createPlugin(self):
         '''
             Creates the directory structure for a plugin name
         '''
-
-        if len(sys.argv) >= 3:
-            try:
-                plugin_name = re.sub('[^0-9a-zA-Z_]+', '', str(sys.argv[2]).lower())
-
-                if not plugins.exists(plugin_name):
-                    logger.info('Creating plugin "%s"...' % plugin_name)
-
-                    os.makedirs(plugins.get_plugins_folder(plugin_name))
-                    with open(plugins.get_plugins_folder(plugin_name) + '/main.py', 'a') as main:
-                        contents = ''
-                        with open('static-data/default_plugin.py', 'rb') as file:
-                            contents = file.read().decode()
-
-                        # TODO: Fix $user. os.getlogin() is   B U G G Y
-                        main.write(contents.replace('$user', 'some random developer').replace('$date', datetime.datetime.now().strftime('%Y-%m-%d')).replace('$name', plugin_name))
-
-                    with open(plugins.get_plugins_folder(plugin_name) + '/info.json', 'a') as main:
-                        main.write(json.dumps({'author' : 'anonymous', 'description' : 'the default description of the plugin', 'version' : '1.0'}))
-
-                    logger.info('Enabling plugin "%s"...' % plugin_name)
-                    plugins.enable(plugin_name, self)
-                else:
-                    logger.warn('Cannot create plugin directory structure; plugin "%s" exists.' % plugin_name)
-
-            except Exception as e:
-                logger.error('Failed to create plugin directory structure.', e)
-        else:
-            logger.info('%s %s <plugin>' % (sys.argv[0], sys.argv[1]))
-
-        return
+        commands.plugincommands.create_plugin(self)
 
     def notFound(self):
         '''
@@ -494,30 +426,6 @@ class Onionr:
         '''
         commands.show_help(self, command)
 
-    def get_hostname(self):
-        try:
-            with open('./' + self.dataDir + 'hs/hostname', 'r') as hostname:
-                return hostname.read().strip()
-        except FileNotFoundError:
-            return "Not Generated"
-        except Exception:
-            return None
-
-    def getConsoleWidth(self):
-        '''
-            Returns an integer, the width of the terminal/cmd window
-        '''
-
-        columns = 80
-
-        try:
-            columns = int(os.popen('stty size', 'r').read().split()[1])
-        except:
-            # if it errors, it's probably windows, so default to 80.
-            pass
-
-        return columns
-
     def getFile(self):
         '''
             Get a file from onionr blocks
@@ -535,80 +443,6 @@ class Onionr:
             Adds a file to the onionr network
         '''
         commands.filecommands.add_file(self, singleBlock, blockType)
-
-    def setupConfig(dataDir, self = None):
-        data_exists = os.path.exists(dataDir)
-
-        if not data_exists:
-            os.mkdir(dataDir)
-
-        if os.path.exists('static-data/default_config.json'):
-            # this is the default config, it will be overwritten if a config file already exists. Else, it saves it
-            with open('static-data/default_config.json', 'r') as configReadIn:
-                config.set_config(json.loads(configReadIn.read())) 
-        else:
-            # the default config file doesn't exist, try hardcoded config
-            logger.warn('Default configuration file does not exist, switching to hardcoded fallback configuration!')
-            config.set_config({'dev_mode': True, 'log': {'file': {'output': True, 'path': dataDir + 'output.log'}, 'console': {'output': True, 'color': True}}})
-        if not data_exists:
-            config.save()
-        config.reload() # this will read the configuration file into memory
-
-        settings = 0b000
-        if config.get('log.console.color', True):
-            settings = settings | logger.USE_ANSI
-        if config.get('log.console.output', True):
-            settings = settings | logger.OUTPUT_TO_CONSOLE
-        if config.get('log.file.output', True):
-            settings = settings | logger.OUTPUT_TO_FILE
-        logger.set_settings(settings)
-
-        if not self is None:
-            if str(config.get('general.dev_mode', True)).lower() == 'true':
-                self._developmentMode = True
-                logger.set_level(logger.LEVEL_DEBUG)
-            else:
-                self._developmentMode = False
-                logger.set_level(logger.LEVEL_INFO)
-
-        verbosity = str(config.get('log.verbosity', 'default')).lower().strip()
-        if not verbosity in ['default', 'null', 'none', 'nil']:
-            map = {
-                str(logger.LEVEL_DEBUG) : logger.LEVEL_DEBUG,
-                'verbose' : logger.LEVEL_DEBUG,
-                'debug' : logger.LEVEL_DEBUG,
-                str(logger.LEVEL_INFO) : logger.LEVEL_INFO,
-                'info' : logger.LEVEL_INFO,
-                'information' : logger.LEVEL_INFO,
-                str(logger.LEVEL_WARN) : logger.LEVEL_WARN,
-                'warn' : logger.LEVEL_WARN,
-                'warning' : logger.LEVEL_WARN,
-                'warnings' : logger.LEVEL_WARN,
-                str(logger.LEVEL_ERROR) : logger.LEVEL_ERROR,
-                'err' : logger.LEVEL_ERROR,
-                'error' : logger.LEVEL_ERROR,
-                'errors' : logger.LEVEL_ERROR,
-                str(logger.LEVEL_FATAL) : logger.LEVEL_FATAL,
-                'fatal' : logger.LEVEL_FATAL,
-                str(logger.LEVEL_IMPORTANT) : logger.LEVEL_IMPORTANT,
-                'silent' : logger.LEVEL_IMPORTANT,
-                'quiet' : logger.LEVEL_IMPORTANT,
-                'important' : logger.LEVEL_IMPORTANT
-            }
-
-            if verbosity in map:
-                logger.set_level(map[verbosity])
-            else:
-                logger.warn('Verbosity level %s is not valid, using default verbosity.' % verbosity)
-
-        return data_exists
-
-    def header(self, message = logger.colors.fg.pink + logger.colors.bold + 'Onionr' + logger.colors.reset + logger.colors.fg.pink + ' has started.'):
-        if os.path.exists('static-data/header.txt') and logger.get_level() <= logger.LEVEL_INFO:
-            with open('static-data/header.txt', 'rb') as file:
-                # only to stdout, not file or log or anything
-                sys.stderr.write(file.read().decode().replace('P', logger.colors.fg.pink).replace('W', logger.colors.reset + logger.colors.bold).replace('G', logger.colors.fg.green).replace('\n', logger.colors.reset + '\n').replace('B', logger.colors.bold).replace('A', '%s' % API_VERSION).replace('V', ONIONR_VERSION))
-                logger.info(logger.colors.fg.lightgreen + '-> ' + str(message) + logger.colors.reset + logger.colors.fg.lightgreen + ' <-\n')
 
 if __name__ == "__main__":
     Onionr()

@@ -17,7 +17,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import os
+import os, uuid, time
 import logger, onionrutils
 from onionrblockapi import Block
 import onionr
@@ -91,3 +91,20 @@ def show_details(o_inst):
 
     for detail in details:
         logger.info('%s%s: \n%s%s\n' % (logger.colors.fg.lightgreen, detail, logger.colors.fg.green, details[detail]), sensitive = True)
+
+def show_peers(o_inst):
+    randID = str(uuid.uuid4())
+    o_inst.onionrCore.daemonQueueAdd('connectedPeers', responseID=randID)
+    while True:
+        try:
+            time.sleep(3)
+            peers = o_inst.onionrCore.daemonQueueGetResponse(randID)
+        except KeyboardInterrupt:
+            break
+        if not type(peers) is None:
+            if peers not in ('', 'failure', None):
+                if peers != False:
+                    print(peers)
+                else:
+                    print('Daemon probably not running. Unable to list connected peers.')
+                break

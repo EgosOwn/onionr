@@ -103,3 +103,20 @@ def kill_daemon(o_inst):
     except Exception as e:
         logger.error('Failed to shutdown daemon.', error = e, timestamp = False)
     return
+
+def start(o_inst, input = False, override = False):
+    if os.path.exists('.onionr-lock') and not override:
+        logger.fatal('Cannot start. Daemon is already running, or it did not exit cleanly.\n(if you are sure that there is not a daemon running, delete .onionr-lock & try again).')
+    else:
+        if not o_inst.debug and not o_inst._developmentMode:
+            lockFile = open('.onionr-lock', 'w')
+            lockFile.write('')
+            lockFile.close()
+        o_inst.running = True
+        o_inst.daemon()
+        o_inst.running = False
+        if not o_inst.debug and not o_inst._developmentMode:
+            try:
+                os.remove('.onionr-lock')
+            except FileNotFoundError:
+                pass

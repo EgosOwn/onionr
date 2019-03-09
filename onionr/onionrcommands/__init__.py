@@ -18,9 +18,26 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 
-import webbrowser
+import webbrowser, sys
 import logger
-from . import pubkeymanager, onionrstatistics, daemonlaunch, filecommands
+from . import pubkeymanager, onionrstatistics, daemonlaunch, filecommands, plugincommands, keyadders
+
+def show_help(o_inst, command):
+
+    helpmenu = o_inst.getHelp()
+
+    if command is None and len(sys.argv) >= 3:
+        for cmd in sys.argv[2:]:
+            o_inst.showHelp(cmd)
+    elif not command is None:
+        if command.lower() in helpmenu:
+            logger.info(logger.colors.bold + command  + logger.colors.reset + logger.colors.fg.blue + ' : ' + logger.colors.reset +  helpmenu[command.lower()], timestamp = False)
+        else:
+            logger.warn(logger.colors.bold + command  + logger.colors.reset + logger.colors.fg.blue + ' : ' + logger.colors.reset + 'No help menu entry was found', timestamp = False)
+    else:
+        o_inst.version(0)
+        for command, helpmessage in helpmenu.items():
+            o_inst.showHelp(command)
 
 def open_home(o_inst):
     try:
@@ -28,7 +45,7 @@ def open_home(o_inst):
     except FileNotFoundError:
         logger.error('Onionr seems to not be running (could not get api host)')
     else:
-        url = 'http://%s/#%s' % (url, config.get('client.webpassword'))
+        url = 'http://%s/#%s' % (url, o_inst.onionrCore.config.get('client.webpassword'))
         print('If Onionr does not open automatically, use this URL:', url)
         webbrowser.open_new_tab(url)
 

@@ -17,10 +17,8 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-
-import nacl.encoding, nacl.hash, nacl.utils, time, math, threading, binascii, logger, sys, base64, json
-import core, onionrutils, config
-import onionrblockapi
+import multiprocessing, nacl.encoding, nacl.hash, nacl.utils, time, math, threading, binascii, sys, base64, json
+import core, onionrutils, config, logger, onionrblockapi
 
 def getDifficultyModifier(coreOrUtilsInst=None):
     '''Accepts a core or utils instance returns 
