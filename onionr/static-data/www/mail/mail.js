@@ -94,6 +94,27 @@ function deleteMessage(bHash){
     })
 }
 
+function mailPing(){
+    fetch('/mail/ping', {
+        "method": "get",
+        headers: {
+            "token": webpass
+        }})
+    .then(function(resp) {
+        var pings = document.getElementsByClassName('mailPing')
+        if (resp.ok){
+            for (var i=0; i < pings.length; i++){
+                pings[i].style.display = 'none';
+            }
+        }
+        else{
+            for (var i=0; i < pings.length; i++){
+                pings[i].style.display = 'block';
+            }
+        }
+    })
+}
+
 function loadInboxEntries(bHash){
     fetch('/getblockheader/' + bHash, {
         headers: {
@@ -201,12 +222,16 @@ function getSentbox(){
             var toLabel = document.createElement('span')
             toLabel.innerText = 'To: '
             var toEl = document.createElement('input')
+            var sentDate = document.createElement('span')
+            var humanDate = new Date(0)
+            humanDate.setUTCSeconds(resp[i]['date'])
             var preview = document.createElement('span')
             var deleteBtn = document.createElement('button')
             var message = resp[i]['message']
             deleteBtn.classList.add('deleteBtn', 'dangerBtn')
             deleteBtn.innerText = 'X'
             toEl.readOnly = true
+            sentDate.innerText = humanDate
             if (resp[i]['name'] == null){
                 toEl.value = resp[i]['peer']
             }
@@ -219,6 +244,7 @@ function getSentbox(){
             entry.appendChild(toLabel)
             entry.appendChild(toEl)
             entry.appendChild(preview)
+            entry.appendChild(sentDate)
             entry.onclick = (function(tree, el, msg) {return function() {
                 console.log(resp)
                 if (! entry.classList.contains('deleteBtn')){
@@ -316,3 +342,6 @@ fetch('/friends/list', {
     }
 })
 setActiveTab('inbox')
+
+setInterval(function(){mailPing()}, 10000)
+mailPing()

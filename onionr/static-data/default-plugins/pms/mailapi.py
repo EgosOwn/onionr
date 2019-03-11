@@ -28,6 +28,10 @@ flask_blueprint = Blueprint('mail', __name__)
 c = core.Core()
 kv = c.keyStore
 
+@flask_blueprint.route('/mail/ping')
+def mail_ping():
+    return 'pong!'
+
 @flask_blueprint.route('/mail/deletemsg/<block>', methods=['POST'])
 def mail_delete(block):
     if not c._utils.validateHash(block):

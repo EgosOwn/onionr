@@ -488,7 +488,7 @@ class OnionrCommunicatorDaemon:
                 score = str(self.getPeerProfileInstance(i).score)
                 logger.info(i + ', score: ' + score)
 
-    def peerAction(self, peer, action, data=''):
+    def peerAction(self, peer, action, data='', returnHeaders=False):
         '''Perform a get request to a peer'''
         if len(peer) == 0:
             return False
@@ -512,7 +512,7 @@ class OnionrCommunicatorDaemon:
         else:
             self._core.setAddressInfo(peer, 'lastConnect', self._core._utils.getEpoch())
             self.getPeerProfileInstance(peer).addScore(1)
-        return retData
+        return retData # If returnHeaders, returns tuple of data, headers. if not, just data string
 
     def getPeerProfileInstance(self, peer):
         '''Gets a peer profile instance from the list of profiles, by address name'''

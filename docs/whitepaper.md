@@ -132,3 +132,13 @@ We seek to protect the following information:
 We assume that Tor onion services (v3) and I2P services cannot be trivially deanonymized, and that the underlying cryptographic primitives we employ cannot be broken in any manner faster than brute force unless a quantum computer is used. 
 
 Once quantum safe algorithms are more mature and have decent high level libraries, they will be deployed.
+
+# Comparisons to other P2P software
+
+Since Onionr is far from the first to implement many of these ideas (on their own), this section compares Onionr to other networks
+
+![network comparison image](network-comparison.png)
+
+# Conclusion
+
+If successful, Onionr will be a complete decentralized platform for anonymous computing, complete with limited metadata exposure, both node and user anonymity, and spam prevention

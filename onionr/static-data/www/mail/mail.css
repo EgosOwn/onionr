@@ -53,6 +53,11 @@ input{
       margin: 1em;
   }
 
+  .mailPing{
+      display: none;
+      color: orange;
+  }
+
 .danger{
     color: red;
 }

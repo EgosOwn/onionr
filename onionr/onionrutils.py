@@ -480,7 +480,7 @@ class OnionrUtils:
             retData = False
         return retData
 
-    def doGetRequest(self, url, port=0, proxyType='tor', ignoreAPI=False):
+    def doGetRequest(self, url, port=0, proxyType='tor', ignoreAPI=False, returnHeaders=False):
         '''
         Do a get request through a local tor or i2p instance
         '''
@@ -520,7 +520,10 @@ class OnionrUtils:
             if not 'ConnectTimeoutError' in str(e) and not 'Request rejected or failed' in str(e):
                 logger.debug('Error: %s' % str(e))
             retData = False
-        return retData
+        if returnHeaders:
+            return (retData, response_headers)
+        else:
+            return retData
 
     def strToBytes(self, data):
         try:
