@@ -23,7 +23,7 @@ import deadsimplekv as simplekv
 import onionrutils, onionrcrypto, onionrproofs, onionrevents as events, onionrexceptions
 import onionrblacklist
 from onionrusers import onionrusers
-import dbcreator, onionrstorage, serializeddata
+import dbcreator, onionrstorage, serializeddata, subprocesspow
 from etc import onionrvalues
 
 if sys.version_info < (3, 6):
@@ -787,8 +787,7 @@ class Core:
             metadata['expire'] = expire
 
         # send block data (and metadata) to POW module to get tokenized block data
-        proof = onionrproofs.POW(metadata, data)
-        payload = proof.waitForResult()
+        payload = subprocesspow.SubprocessPOW(data, metadata, self).start()
         if payload != False:
             try:
                 retData = self.setData(payload)

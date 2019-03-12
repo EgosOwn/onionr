@@ -244,6 +244,7 @@ class POW:
         answer = ''
         hbCount = 0
         nonce = int(binascii.hexlify(nacl.utils.random(2)), 16)
+        startNonce = nonce
         while self.hashing:
             #token = nacl.hash.blake2b(rand + self.data).decode()
             self.metadata['powRandomToken'] = nonce
@@ -258,6 +259,7 @@ class POW:
                 self.hashing = False
                 iFound = True
                 self.result = payload
+                print('count', nonce - startNonce)
                 break
             nonce += 1
                 
