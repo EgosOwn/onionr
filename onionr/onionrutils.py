@@ -278,11 +278,18 @@ class OnionrUtils:
                         break
                     if (self.getEpoch() - metadata[i]) > maxAge:
                         logger.warn('Block is outdated: %s' % (metadata[i],))
+                        break
                 elif i == 'expire':
                     try:
                         assert int(metadata[i]) > self.getEpoch()
                     except AssertionError:
                         logger.warn('Block is expired')
+                        break
+                elif i == 'encryptType':
+                    try:
+                        assert metadata[i] in ('asym', 'sym', '')
+                    except AssertionError:
+                        logger.warn('Invalid encryption mode')
                         break
             else:
                 # if metadata loop gets no errors, it does not break, therefore metadata is valid
@@ -408,12 +415,14 @@ class OnionrUtils:
             This function is intended to scan for new blocks ON THE DISK and import them
         '''
         blockList = self._core.getBlockList()
+        exist = False
         if scanDir == '':
             scanDir = self._core.blockDataLocation
         if not scanDir.endswith('/'):
             scanDir += '/'
         for block in glob.glob(scanDir + "*.dat"):
             if block.replace(scanDir, '').replace('.dat', '') not in blockList:
+                exist = True
                 logger.info('Found new block on dist %s' % block)
                 with open(block, 'rb') as newBlock:
                     block = block.replace(scanDir, '').replace('.dat', '')
@@ -423,6 +432,8 @@ class OnionrUtils:
                         self._core._utils.processBlockMetadata(block)
                     else:
                         logger.warn('Failed to verify hash for %s' % block)
+        if not exist:
+            print('No blocks found to import')
 
     def progressBar(self, value = 0, endvalue = 100, width = None):
         '''
@@ -469,7 +480,7 @@ class OnionrUtils:
             retData = False
         return retData
 
-    def doGetRequest(self, url, port=0, proxyType='tor', ignoreAPI=False):
+    def doGetRequest(self, url, port=0, proxyType='tor', ignoreAPI=False, returnHeaders=False):
         '''
         Do a get request through a local tor or i2p instance
         '''
@@ -509,7 +520,10 @@ class OnionrUtils:
             if not 'ConnectTimeoutError' in str(e) and not 'Request rejected or failed' in str(e):
                 logger.debug('Error: %s' % str(e))
             retData = False
-        return retData
+        if returnHeaders:
+            return (retData, response_headers)
+        else:
+            return retData
 
     def strToBytes(self, data):
         try:

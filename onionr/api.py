@@ -21,10 +21,13 @@ from gevent.pywsgi import WSGIServer, WSGIHandler
 from gevent import Timeout
 import flask, cgi, uuid
 from flask import request, Response, abort, send_from_directory
-import sys, random, threading, hmac, hashlib, base64, time, math, os, json, socket
+import sys, random, threading, hmac, base64, time, os, json, socket
 import core
 from onionrblockapi import Block
-import onionrutils, onionrexceptions, onionrcrypto, blockimporter, onionrevents as events, logger, config, onionr
+import onionrutils, onionrexceptions, onionrcrypto, blockimporter, onionrevents as events, logger, config
+import httpapi
+from httpapi import friendsapi, simplecache
+import onionr
 
 class FDSafeHandler(WSGIHandler):
     '''Our WSGI handler. Doesn't do much non-default except timeouts'''
@@ -38,22 +41,22 @@ class FDSafeHandler(WSGIHandler):
 
 def setBindIP(filePath):
     '''Set a random localhost IP to a specified file (intended for private or public API localhost IPs)'''
-    hostOctets = [str(127), str(random.randint(0x02, 0xFF)), str(random.randint(0x02, 0xFF)), str(random.randint(0x02, 0xFF))]
-    data = '.'.join(hostOctets)
-    
-    # Try to bind IP. Some platforms like Mac block non normal 127.x.x.x
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    try:
-        s.bind((data, 0))
-    except OSError:
-        # if mac/non-bindable, show warning and default to 127.0.0.1
-        logger.warn('Your platform appears to not support random local host addresses 127.x.x.x. Falling back to 127.0.0.1.')
+    if config.get('general.random_bind_ip', True):
+        hostOctets = [str(127), str(random.randint(0x02, 0xFF)), str(random.randint(0x02, 0xFF)), str(random.randint(0x02, 0xFF))]
+        data = '.'.join(hostOctets)
+        # Try to bind IP. Some platforms like Mac block non normal 127.x.x.x
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        try:
+            s.bind((data, 0))
+        except OSError:
+            # if mac/non-bindable, show warning and default to 127.0.0.1
+            logger.warn('Your platform appears to not support random local host addresses 127.x.x.x. Falling back to 127.0.0.1.')
+            data = '127.0.0.1'
+        s.close()
+    else:
         data = '127.0.0.1'
-    s.close()
-    
     with open(filePath, 'w') as bindFile:
         bindFile.write(data)
-
     return data
 
 class PublicAPI:
@@ -173,7 +176,7 @@ class PublicAPI:
             try:
                 newNode = request.form['node'].encode()
             except KeyError:
-                logger.warn('No block specified for upload')
+                logger.warn('No node specified for upload')
                 pass
             else:
                 try:
@@ -230,7 +233,7 @@ class PublicAPI:
         while self.torAdder == '':
             clientAPI._core.refreshFirstStartVars()
             self.torAdder = clientAPI._core.hsAddress
-            time.sleep(1)
+            time.sleep(0.1)
         self.httpServer = WSGIServer((self.host, self.bindPort), app, log=None, handler_class=FDSafeHandler)
         self.httpServer.serve_forever()
 
@@ -248,9 +251,6 @@ class API:
             This initilization defines all of the API entry points and handlers for the endpoints and errors
             This also saves the used host (random localhost IP address) to the data folder in host.txt
         '''
-        # assert isinstance(onionrInst, onionr.Onionr)
-        # configure logger and stuff
-        onionr.Onionr.setupConfig('data/', self = self)
 
         self.debug = debug
         self._core = onionrInst.onionrCore
@@ -262,7 +262,7 @@ class API:
         self.bindPort = bindPort
 
         # Be extremely mindful of this. These are endpoints available without a password
-        self.whitelistEndpoints = ('site', 'www', 'onionrhome', 'board', 'boardContent', 'sharedContent', 'mail', 'mailindex')
+        self.whitelistEndpoints = ('site', 'www', 'onionrhome', 'board', 'boardContent', 'sharedContent', 'mail', 'mailindex', 'friends', 'friendsindex')
 
         self.clientToken = config.get('client.webpassword')
         self.timeBypassToken = base64.b16encode(os.urandom(32)).decode()
@@ -276,6 +276,9 @@ class API:
         self.pluginResponses = {} # Responses for plugin endpoints
         self.queueResponse = {}
         onionrInst.setClientAPIInst(self)
+        app.register_blueprint(friendsapi.friends)
+        app.register_blueprint(simplecache.simplecache)
+        httpapi.load_plugin_blueprints(app)
 
         @app.before_request
         def validateRequest():
@@ -287,9 +290,11 @@ class API:
                 return
             try:
                 if not hmac.compare_digest(request.headers['token'], self.clientToken):
-                    abort(403)
+                    if not hmac.compare_digest(request.form['token'], self.clientToken):
+                        abort(403)
             except KeyError:
-                abort(403)
+                if not hmac.compare_digest(request.form['token'], self.clientToken):
+                    abort(403)
 
         @app.after_request
         def afterReq(resp):
@@ -315,6 +320,14 @@ class API:
         @app.route('/mail/', endpoint='mailindex')
         def loadMailIndex():
             return send_from_directory('static-data/www/mail/', 'index.html')
+        
+        @app.route('/friends/<path:path>', endpoint='friends')
+        def loadContacts(path):
+            return send_from_directory('static-data/www/friends/', path)
+
+        @app.route('/friends/', endpoint='friendsindex')
+        def loadContacts():
+            return send_from_directory('static-data/www/friends/', 'index.html')
 
         @app.route('/board/<path:path>', endpoint='boardContent')
         def boardContent(path):
@@ -406,14 +419,16 @@ class API:
             if self._core._utils.validateHash(bHash):
                 try:
                     resp = Block(bHash).bcontent
+                except onionrexceptions.NoDataAvailable:
+                    abort(404)
                 except TypeError:
                     pass
                 try:
                     resp = base64.b64decode(resp)
                 except:
                     pass
-            if resp == 'Not Found':
-                abourt(404)
+            if resp == 'Not Found' or not resp:
+                abort(404)
             return Response(resp)
 
         @app.route('/waitforshare/<name>', methods=['post'])
@@ -512,7 +527,6 @@ class API:
                 data = subpath.split('/')
                 if len(data) > 1:
                     plName = data[0]
-
                     events.event('pluginRequest', {'name': plName, 'path': subpath, 'pluginResponse': pluginResponseCode, 'postData': postData}, onionr=onionrInst)
                     while True:
                         try:

@@ -151,3 +151,31 @@ body{
      content: '❌';
      padding: 5px;
  }
+
+ .btn, .warnBtn, .dangerBtn, .successBtn{
+     padding: 5px;
+     border-radius: 5px;
+     border: 2px solid black;
+ }
+.warnBtn{
+    background-color: orange;
+    color: black;
+}
+.dangerBtn{
+    background-color: #f44336;
+    color: black;
+}
+.successBtn{
+    background-color: #4CAF50;
+    color: black;
+}
+
+.primaryBtn{
+    background-color:#396BAC;    
+}
+
+.openSiteBtn{
+    padding: 5px;
+    border: 1px solid black;
+    border-radius: 5px;
+}

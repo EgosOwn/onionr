@@ -17,7 +17,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import onionrblockapi, logger, onionrexceptions, json, sqlite3
+import onionrblockapi, logger, onionrexceptions, json, sqlite3, time
 import nacl.exceptions
 
 def deleteExpiredKeys(coreInst):
@@ -76,11 +76,11 @@ class OnionrUser:
         return retData
 
     def encrypt(self, data):
-        encrypted = coreInst._crypto.pubKeyEncrypt(data, self.publicKey, encodedData=True)
+        encrypted = self._core._crypto.pubKeyEncrypt(data, self.publicKey, encodedData=True)
         return encrypted
 
     def decrypt(self, data):
-        decrypted = coreInst._crypto.pubKeyDecrypt(data, self.publicKey, encodedData=True)
+        decrypted = self._core._crypto.pubKeyDecrypt(data, self.publicKey, encodedData=True)
         return decrypted
 
     def forwardEncrypt(self, data):
@@ -112,7 +112,8 @@ class OnionrUser:
         conn = sqlite3.connect(self._core.peerDB, timeout=10)
         c = conn.cursor()
 
-        for row in c.execute("SELECT forwardKey FROM forwardKeys WHERE peerKey = ? ORDER BY date DESC", (self.publicKey,)):
+        # TODO: account for keys created at the same time (same epoch)
+        for row in c.execute("SELECT forwardKey, max(DATE) FROM forwardKeys WHERE peerKey = ?", (self.publicKey,)):
             key = row[0]
             break
 
@@ -126,9 +127,8 @@ class OnionrUser:
         c = conn.cursor()
         keyList = []
 
-        for row in c.execute("SELECT forwardKey FROM forwardKeys WHERE peerKey = ? ORDER BY date DESC", (self.publicKey,)):
-            key = row[0]
-            keyList.append(key)
+        for row in c.execute("SELECT forwardKey, date FROM forwardKeys WHERE peerKey = ? ORDER BY date DESC", (self.publicKey,)):
+            keyList.append((row[0], row[1]))
 
         conn.commit()
         conn.close()
@@ -175,32 +175,36 @@ class OnionrUser:
 
     def addForwardKey(self, newKey, expire=604800):
         if not self._core._utils.validatePubKey(newKey):
+            # Do not add if something went wrong with the key
             raise onionrexceptions.InvalidPubkey(newKey)
-        if newKey in self._getForwardKeys():
-            return False
-        # Add a forward secrecy key for the peer
+
         conn = sqlite3.connect(self._core.peerDB, timeout=10)
         c = conn.cursor()
+
+        # Get the time we're inserting the key at
+        timeInsert = self._core._utils.getEpoch()
+
+        # Look at our current keys for duplicate key data or time
+        for entry in self._getForwardKeys():
+            if entry[0] == newKey:
+                return False
+            if entry[1] == timeInsert:
+                timeInsert += 1
+                time.sleep(1) # Sleep if our time is the same in order to prevent duplicate time records
+
+        # Add a forward secrecy key for the peer
         # Prepare the insert
-        time = self._core._utils.getEpoch()
-        command = (self.publicKey, newKey, time, time + expire)
+        command = (self.publicKey, newKey, timeInsert, timeInsert + expire)
 
         c.execute("INSERT INTO forwardKeys VALUES(?, ?, ?, ?);", command)
 
         conn.commit()
         conn.close()
-        return
-
-    def findAndSetID(self):
-        '''Find any info about the user from existing blocks and cache it to their DB entry'''
-        infoBlocks = []
-        for bHash in self._core.getBlocksByType('userInfo'):
-            block = onionrblockapi.Block(bHash, core=self._core)
-            if block.signer == self.publicKey:
-                if block.verifySig():
-                    newName = block.getMetadata('name')
-                    if newName.isalnum():
-                        logger.info('%s is now using the name %s.' % (self.publicKey, self._core._utils.escapeAnsi(newName)))
-                        self._core.setPeerInfo(self.publicKey, 'name', newName)
-            else:
-                raise onionrexceptions.InvalidPubkey
+        return True
+    
+    @classmethod
+    def list_friends(cls, coreInst):
+        friendList = []
+        for x in coreInst.listPeers(trust=1):
+            friendList.append(cls(coreInst, x))
+        return list(friendList)

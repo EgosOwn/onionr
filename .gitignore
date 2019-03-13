@@ -3,6 +3,7 @@ onionr/data/config.ini
 onionr/data/*.db
 onionr/data-old/*
 onionr/data*
+onionr/testdata
 onionr/*.pyc
 onionr/*.log
 onionr/data/hs/hostname

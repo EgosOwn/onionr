@@ -53,6 +53,11 @@ input{
       margin: 1em;
   }
 
+  .mailPing{
+      display: none;
+      color: orange;
+  }
+
 .danger{
     color: red;
 }
@@ -85,6 +90,17 @@ input{
     min-height: 5%;
     background: white;
     color: black;
+}
+
+#replyBtn{
+    margin-top: 1em;
+}
+
+.primaryBtn{
+    border-radius: 3px;
+    padding: 3px;
+    color: black;
+    width: 5%;
 }
 
 .successBtn{

@@ -45,6 +45,9 @@ class PasswordStrengthError(Exception):
 
 # block exceptions
 
+class ReplayAttack(Exception):
+    pass
+
 class DifficultyTooLarge(Exception):
     pass
 

@@ -24,8 +24,27 @@ threadPlaceholder = document.getElementById('threadPlaceholder')
 tabBtns = document.getElementById('tabBtns')
 threadContent = {}
 myPub = httpGet('/getActivePubkey')
+replyBtn = document.getElementById('replyBtn')
 
-function openThread(bHash, sender, date, sigBool){
+function openReply(bHash){
+    var inbox = document.getElementsByClassName('threadEntry')
+    var entry = ''
+    var friendName = ''
+    var key = ''
+    for(var i = 0; i < inbox.length; i++) {
+        if (inbox[i].getAttribute('data-hash') === bHash){
+            entry = inbox[i]
+        }
+    }
+    if (entry.getAttribute('data-nameSet') == 'true'){
+        document.getElementById('friendSelect').value = entry.getElementsByTagName('input')[0].value
+    }
+    key = entry.getAttribute('data-pubkey')
+    document.getElementById('draftID').value = key
+    setActiveTab('send message')
+}
+
+function openThread(bHash, sender, date, sigBool, pubkey){
     var messageDisplay = document.getElementById('threadDisplay')
     var blockContent = httpGet('/getblockbody/' + bHash)
     document.getElementById('fromUser').value = sender
@@ -38,18 +57,22 @@ function openThread(bHash, sender, date, sigBool){
         sigEl.classList.remove('danger')
     }
     else{
-        sigMsg = 'Bad/no ' + sigMsg + ' (message could be fake)'
+        sigMsg = 'Bad/no ' + sigMsg + ' (message could be impersonating someone)'
         sigEl.classList.add('danger')
+        replyBtn.style.display = 'none'
     }
     sigEl.innerText = sigMsg
     overlay('messageDisplay')
+    replyBtn.onclick = function(){
+        openReply(bHash)
+    }
 }
 
 function setActiveTab(tabName){
     threadPart.innerHTML = ""
     switch(tabName){
         case 'inbox':
-            getInbox()
+            refreshPms()
             break
         case 'sentbox':
             getSentbox()
@@ -60,7 +83,39 @@ function setActiveTab(tabName){
     }
 }
 
-function loadInboxEntrys(bHash){
+function deleteMessage(bHash){
+    fetch('/mail/deletemsg/' + bHash, {
+        "method": "post",
+        headers: {
+            "token": webpass
+        }})
+    .then((resp) => resp.text()) // Transform the data into json
+    .then(function(resp) {
+    })
+}
+
+function mailPing(){
+    fetch('/mail/ping', {
+        "method": "get",
+        headers: {
+            "token": webpass
+        }})
+    .then(function(resp) {
+        var pings = document.getElementsByClassName('mailPing')
+        if (resp.ok){
+            for (var i=0; i < pings.length; i++){
+                pings[i].style.display = 'none';
+            }
+        }
+        else{
+            for (var i=0; i < pings.length; i++){
+                pings[i].style.display = 'block';
+            }
+        }
+    })
+}
+
+function loadInboxEntries(bHash){
     fetch('/getblockheader/' + bHash, {
         headers: {
           "token": webpass
@@ -74,26 +129,31 @@ function loadInboxEntrys(bHash){
         var subjectLine = document.createElement('span')
         var dateStr = document.createElement('span')
         var validSig = document.createElement('span')
+        var deleteBtn = document.createElement('button')
         var humanDate = new Date(0)
         var metadata = resp['metadata']
         humanDate.setUTCSeconds(resp['meta']['time'])
+        validSig.style.display = 'none'
         if (resp['meta']['signer'] != ''){
-            senderInput.value = httpGet('/getHumanReadable/' + resp['meta']['signer'])
+            senderInput.value = httpGet('/friends/getinfo/' + resp['meta']['signer'] + '/name')
         }
-        if (resp['meta']['validSig']){
-            validSig.innerText = 'Signature Validity: Good'
-        }
-        else{
+        if (! resp['meta']['validSig']){
+            validSig.style.display = 'inline'
             validSig.innerText = 'Signature Validity: Bad'
             validSig.style.color = 'red'
         }
+        entry.setAttribute('data-nameSet', true)
         if (senderInput.value == ''){
-            senderInput.value = 'Anonymous'
+            senderInput.value = resp['meta']['signer']
+            entry.setAttribute('data-nameSet', false)
         }
         bHashDisplay.innerText = bHash.substring(0, 10)
-        entry.setAttribute('hash', bHash)
+        entry.setAttribute('data-hash', bHash)
+        entry.setAttribute('data-pubkey', resp['meta']['signer'])
         senderInput.readOnly = true
         dateStr.innerText = humanDate.toString()
+        deleteBtn.innerText = 'X'
+        deleteBtn.classList.add('dangerBtn', 'deleteBtn')
         if (metadata['subject'] === undefined || metadata['subject'] === null) {
             subjectLine.innerText = '()'
         }
@@ -102,15 +162,24 @@ function loadInboxEntrys(bHash){
         }
         //entry.innerHTML = 'sender ' + resp['meta']['signer'] + ' - ' + resp['meta']['time'] 
         threadPart.appendChild(entry)
+        entry.appendChild(deleteBtn)
         entry.appendChild(bHashDisplay)
         entry.appendChild(senderInput)
-        entry.appendChild(validSig)
         entry.appendChild(subjectLine)
         entry.appendChild(dateStr)
+        entry.appendChild(validSig)
         entry.classList.add('threadEntry')
 
-        entry.onclick = function(){
-            openThread(entry.getAttribute('hash'), senderInput.value, dateStr.innerText, resp['meta']['validSig'])
+        entry.onclick = function(event){
+            if (event.target.classList.contains('deleteBtn')){
+                return
+            }
+            openThread(entry.getAttribute('data-hash'), senderInput.value, dateStr.innerText, resp['meta']['validSig'], entry.getAttribute('data-pubkey'))
+        }
+
+        deleteBtn.onclick = function(){
+            entry.parentNode.removeChild(entry);
+            deleteMessage(entry.getAttribute('data-hash'))
         }
         
       }.bind(bHash))
@@ -127,7 +196,7 @@ function getInbox(){
             threadPlaceholder.style.display = 'none'
             showed = true
         }
-        loadInboxEntrys(pms[i])
+        loadInboxEntries(pms[i])
     }
     if (! showed){
         threadPlaceholder.style.display = 'block'
@@ -135,7 +204,7 @@ function getInbox(){
 }
 
 function getSentbox(){
-    fetch('/apipoints/mail/sentbox', {
+    fetch('/mail/getsentbox', {
         headers: {
           "token": webpass
         }})
@@ -143,25 +212,49 @@ function getSentbox(){
     .then(function(resp) {
         var keys = [];
         var entry = document.createElement('div')
-        var entryUsed;
         for(var k in resp) keys.push(k);
+        if (keys.length == 0){
+            threadPart.innerHTML = "nothing to show here yet."
+        }
         for (var i = 0; i < keys.length; i++){
             var entry = document.createElement('div')
-            var obj = resp[i];
+            var obj = resp[i]
             var toLabel = document.createElement('span')
             toLabel.innerText = 'To: '
             var toEl = document.createElement('input')
+            var sentDate = document.createElement('span')
+            var humanDate = new Date(0)
+            humanDate.setUTCSeconds(resp[i]['date'])
             var preview = document.createElement('span')
+            var deleteBtn = document.createElement('button')
+            var message = resp[i]['message']
+            deleteBtn.classList.add('deleteBtn', 'dangerBtn')
+            deleteBtn.innerText = 'X'
             toEl.readOnly = true
-            toEl.value = resp[keys[i]][1]
-            preview.innerText = '(' + resp[keys[i]][2] + ')'
+            sentDate.innerText = humanDate
+            if (resp[i]['name'] == null){
+                toEl.value = resp[i]['peer']
+            }
+            else{
+                toEl.value = resp[i]['name']
+            }
+            preview.innerText = '(' + resp[i]['subject'] + ')'
+            entry.setAttribute('data-hash', resp[i]['hash'])
+            entry.appendChild(deleteBtn)
             entry.appendChild(toLabel)
             entry.appendChild(toEl)
             entry.appendChild(preview)
-            entryUsed = resp[keys[i]]
-            entry.onclick = function(){
+            entry.appendChild(sentDate)
+            entry.onclick = (function(tree, el, msg) {return function() {
                 console.log(resp)
-                showSentboxWindow(toEl.value, entryUsed[0])
+                if (! entry.classList.contains('deleteBtn')){
+                    showSentboxWindow(el.value, msg)
+                }
+            };})(entry, toEl, message);
+            
+            deleteBtn.onclick = function(){
+                entry.parentNode.removeChild(entry);
+                deleteMessage(entry.getAttribute('data-hash'))
             }
             threadPart.appendChild(entry)
         } 
@@ -175,15 +268,17 @@ function showSentboxWindow(to, content){
     overlay('sentboxDisplay')
 }
 
-fetch('/getblocksbytype/pm', {
+function refreshPms(){
+fetch('/mail/getinbox', {
     headers: {
       "token": webpass
     }})
 .then((resp) => resp.text()) // Transform the data into json
 .then(function(data) {
     pms = data.split(',')
-    setActiveTab('inbox')
+    getInbox()
   })
+}
 
 tabBtns.onclick = function(event){
     var children = tabBtns.children
@@ -196,13 +291,12 @@ tabBtns.onclick = function(event){
 }
 
 var idStrings = document.getElementsByClassName('myPub')
-var myHumanReadable = httpGet('/getHumanReadable/' + myPub)
 for (var i = 0; i < idStrings.length; i++){
     if (idStrings[i].tagName.toLowerCase() == 'input'){
-        idStrings[i].value = myHumanReadable
+        idStrings[i].value = myPub
     }
     else{
-        idStrings[i].innerText = myHumanReadable
+        idStrings[i].innerText = myPub
     }
 }
 
@@ -210,9 +304,39 @@ for (var i = 0; i < document.getElementsByClassName('refresh').length; i++){
     document.getElementsByClassName('refresh')[i].style.float = 'right'
 }
 
-for (var i = 0; i < document.getElementsByClassName('closeOverlay').length; i++){
-    document.getElementsByClassName('closeOverlay')[i].onclick = function(e){
-        document.getElementById(e.target.getAttribute('overlay')).style.visibility = 'hidden'
-    }
-}
 
+fetch('/friends/list', {
+    headers: {
+      "token": webpass
+    }})
+.then((resp) => resp.json()) // Transform the data into json
+.then(function(resp) {
+    var friendSelectParent = document.getElementById('friendSelect')
+    var keys = [];
+    var friend
+    for(var k in resp) keys.push(k);
+
+    friendSelectParent.appendChild(document.createElement('option'))
+    for (var i = 0; i < keys.length; i++) {
+        var option = document.createElement("option")
+        var name = resp[keys[i]]['name']
+        option.value = keys[i]
+        if (name.length == 0){
+            option.text = keys[i]
+        }
+        else{
+            option.text = name
+        }
+        friendSelectParent.appendChild(option)
+    }
+
+    for (var i = 0; i < keys.length; i++){
+        
+        //friendSelectParent
+        //alert(resp[keys[i]]['name'])
+    }
+})
+setActiveTab('inbox')
+
+setInterval(function(){mailPing()}, 10000)
+mailPing()

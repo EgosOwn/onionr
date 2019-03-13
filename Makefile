@@ -1,3 +1,6 @@
+ONIONR_HOME ?= data
+all:;: '$(ONIONR_HOME)'
+
 PREFIX = /usr/local
 
 .DEFAULT_GOAL := setup

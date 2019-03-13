@@ -26,7 +26,7 @@ class Block:
     blockCacheOrder = list() # NEVER write your own code that writes to this!
     blockCache = dict() # should never be accessed directly, look at Block.getCache()
 
-    def __init__(self, hash = None, core = None, type = None, content = None, expire=None, decrypt=False):
+    def __init__(self, hash = None, core = None, type = None, content = None, expire=None, decrypt=False, bypassReplayCheck=False):
         # take from arguments
         # sometimes people input a bytes object instead of str in `hash`
         if (not hash is None) and isinstance(hash, bytes):
@@ -37,6 +37,7 @@ class Block:
         self.btype = type
         self.bcontent = content
         self.expire = expire
+        self.bypassReplayCheck = bypassReplayCheck
 
         # initialize variables
         self.valid = True
@@ -84,6 +85,20 @@ class Block:
                 self.signer = core._crypto.pubKeyDecrypt(self.signer, encodedData=encodedData)
                 self.bheader['signer'] = self.signer.decode()
                 self.signedData =  json.dumps(self.bmetadata) + self.bcontent.decode()
+
+                # Check for replay attacks
+                try:
+                    if self.core._utils.getEpoch() - self.core.getBlockDate(self.hash) < 60:
+                        assert self.core._crypto.replayTimestampValidation(self.bmetadata['rply'])
+                except (AssertionError, KeyError) as e:
+                    if not self.bypassReplayCheck:
+                        # Zero out variables to prevent reading of replays
+                        self.bmetadata = {}
+                        self.signer = ''
+                        self.bheader['signer'] = ''
+                        self.signedData = ''
+                        self.signature = ''
+                        raise onionrexceptions.ReplayAttack('Signature is too old. possible replay attack')
                 try:
                     assert self.bmetadata['forwardEnc'] is True
                 except (AssertionError, KeyError) as e:
@@ -97,6 +112,8 @@ class Block:
             except nacl.exceptions.CryptoError:
                 pass
                 #logger.debug('Could not decrypt block. Either invalid key or corrupted data')
+            except onionrexceptions.ReplayAttack:
+                logger.warn('%s is possibly a replay attack' % (self.hash,))
             else:
                 retData = True
                 self.decrypted = True
@@ -139,32 +156,10 @@ class Block:
 
             # import from file
             if blockdata is None:
-                blockdata = onionrstorage.getData(self.core, self.getHash()).decode()
-                '''
-                
-                filelocation = file
-
-                readfile = True
-
-                if filelocation is None:
-                    if self.getHash() is None:
-                        return False
-                    elif self.getHash() in Block.getCache():
-                        # get the block from cache, if it's in it
-                        blockdata = Block.getCache(self.getHash())
-                        readfile = False
-
-                    # read from file if it's still None
-                    if blockdata is None:
-                        filelocation = self.core.dataDir + 'blocks/%s.dat' % self.getHash()
-
-                if readfile:
+                try:
                     blockdata = onionrstorage.getData(self.core, self.getHash()).decode()
-                    #with open(filelocation, 'rb') as f:
-                    #blockdata = f.read().decode()
-
-                self.blockFile = filelocation
-                '''
+                except AttributeError:
+                    raise onionrexceptions.NoDataAvailable('Block does not exist')
             else:
                 self.blockFile = None
             # parse block
@@ -200,11 +195,11 @@ class Block:
 
             return True
         except Exception as e:
-            logger.error('Failed to parse block %s.' % self.getHash(), error = e, timestamp = False)
+            logger.warn('Failed to parse block %s.' % self.getHash(), error = e, timestamp = False)
 
             # if block can't be parsed, it's a waste of precious space. Throw it away.
             if not self.delete():
-                logger.error('Failed to delete invalid block %s.' % self.getHash(), error = e)
+                logger.warn('Failed to delete invalid block %s.' % self.getHash(), error = e)
             else:
                 logger.debug('Deleted invalid block %s.' % self.getHash(), timestamp = False)
 

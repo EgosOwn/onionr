@@ -19,11 +19,11 @@
 '''
 import sqlite3, os, sys, time, math, base64, tarfile, nacl, logger, json, netcontroller, math, config, uuid
 from onionrblockapi import Block
-
+import deadsimplekv as simplekv
 import onionrutils, onionrcrypto, onionrproofs, onionrevents as events, onionrexceptions
 import onionrblacklist
 from onionrusers import onionrusers
-import dbcreator, onionrstorage, serializeddata
+import dbcreator, onionrstorage, serializeddata, subprocesspow
 from etc import onionrvalues
 
 if sys.version_info < (3, 6):
@@ -65,6 +65,7 @@ class Core:
             self.dataNonceFile = self.dataDir + 'block-nonces.dat'
             self.dbCreate = dbcreator.DBCreator(self)
             self.forwardKeysFile = self.dataDir + 'forward-keys.db'
+            self.keyStore = simplekv.DeadSimpleKV(self.dataDir + 'cachedstorage.dat', refresh_seconds=5)
 
             # Socket data, defined here because of multithreading constraints with gevent
             self.killSockets = False
@@ -105,7 +106,6 @@ class Core:
                 logger.warn('Warning: address bootstrap file not found ' + self.bootstrapFileLocation)
 
             self._utils = onionrutils.OnionrUtils(self)
-            self.blockCache = onionrstorage.BlockCache()
             # Initialize the crypto object
             self._crypto = onionrcrypto.OnionrCrypto(self)
             self._blacklist = onionrblacklist.OnionrBlackList(self)
@@ -121,7 +121,6 @@ class Core:
         '''
             Hack to refresh some vars which may not be set on first start
         '''
-
         if os.path.exists(self.dataDir + '/hs/hostname'):
             with open(self.dataDir + '/hs/hostname', 'r') as hs:
                 self.hsAddress = hs.read().strip()
@@ -468,14 +467,6 @@ class Core:
             except TypeError:
                 pass
 
-        if getPow:
-            try:
-                peerList.append(self._crypto.pubKey + '-' + self._crypto.pubKeyPowToken)
-            except TypeError:
-                pass
-        else:
-            peerList.append(self._crypto.pubKey)
-
         conn.close()
 
         return peerList
@@ -597,10 +588,6 @@ class Core:
         conn = sqlite3.connect(self.blockDB, timeout=30)
         c = conn.cursor()
 
-        # if unsaved:
-        #     execute = 'SELECT hash FROM hashes WHERE dataSaved != 1 ORDER BY RANDOM();'
-        # else:
-        #     execute = 'SELECT hash FROM hashes ORDER BY dateReceived ASC;'
         execute = 'SELECT hash FROM hashes WHERE dateReceived >= ? ORDER BY dateReceived ASC;'
         args = (dateRec,)
         rows = list()
@@ -702,6 +689,8 @@ class Core:
             return False
         retData = False
 
+        createTime = self._utils.getRoundedEpoch()
+
         # check nonce
         dataNonce = self._utils.bytesToStr(self._crypto.sha3Hash(data))
         try:
@@ -719,10 +708,7 @@ class Core:
         data = str(data)
         plaintext = data
         plaintextMeta = {}
-
-        # Convert asym peer human readable key to base32 if set
-        if ' ' in asymPeer.strip():
-            asymPeer = self._utils.convertHumanReadableID(asymPeer)
+        plaintextPeer = asymPeer
 
         retData = ''
         signature = ''
@@ -745,6 +731,7 @@ class Core:
             pass
 
         if encryptType == 'asym':
+            meta['rply'] = createTime # Duplicate the time in encrypted messages to prevent replays
             if not disableForward and sign and asymPeer != self._crypto.pubKey:
                 try:
                     forwardEncrypted = onionrusers.OnionrUser(self, asymPeer).forwardEncrypt(data)
@@ -792,7 +779,7 @@ class Core:
         metadata['meta'] = jsonMeta
         metadata['sig'] = signature
         metadata['signer'] = signer
-        metadata['time'] = self._utils.getRoundedEpoch()
+        metadata['time'] = createTime
 
         # ensure expire is integer and of sane length
         if type(expire) is not type(None):
@@ -800,8 +787,7 @@ class Core:
             metadata['expire'] = expire
 
         # send block data (and metadata) to POW module to get tokenized block data
-        proof = onionrproofs.POW(metadata, data)
-        payload = proof.waitForResult()
+        payload = subprocesspow.SubprocessPOW(data, metadata, self).start()
         if payload != False:
             try:
                 retData = self.setData(payload)
@@ -817,7 +803,10 @@ class Core:
                 self.daemonQueueAdd('uploadBlock', retData)
 
         if retData != False:
-            events.event('insertblock', {'content': plaintext, 'meta': plaintextMeta, 'hash': retData, 'peer': self._utils.bytesToStr(asymPeer)}, onionr = self.onionrInst, threaded = True)
+            if plaintextPeer == 'OVPCZLOXD6DC5JHX4EQ3PSOGAZ3T24F75HQLIUZSDSMYPEOXCPFA====':
+                events.event('insertdeniable', {'content': plaintext, 'meta': plaintextMeta, 'hash': retData, 'peer': self._utils.bytesToStr(asymPeer)}, onionr = self.onionrInst, threaded = True)
+            else:
+                events.event('insertblock', {'content': plaintext, 'meta': plaintextMeta, 'hash': retData, 'peer': self._utils.bytesToStr(asymPeer)}, onionr = self.onionrInst, threaded = True)
         return retData
 
     def introduceNode(self):

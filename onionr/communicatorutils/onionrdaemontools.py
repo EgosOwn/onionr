@@ -30,16 +30,22 @@ class DaemonTools:
     '''
     def __init__(self, daemon):
             self.daemon = daemon
+            self.announceProgress = {}
             self.announceCache = {}
 
     def announceNode(self):
         '''Announce our node to our peers'''
         retData = False
         announceFail = False
+        
+        # Do not let announceCache get too large
+        if len(self.announceCache) >= 10000:
+            self.announceCache.popitem()
+
         if self.daemon._core.config.get('general.security_level', 0) == 0:
             # Announce to random online peers
             for i in self.daemon.onlinePeers:
-                if not i in self.announceCache:
+                if not i in self.announceCache and not i in self.announceProgress:
                     peer = i
                     break
             else:
@@ -66,7 +72,9 @@ class DaemonTools:
                 elif len(existingRand) > 0:
                     data['random'] = existingRand
                 else:
+                    self.announceProgress[peer] = True
                     proof = onionrproofs.DataPOW(combinedNodes, forceDifficulty=4)
+                    del self.announceProgress[peer]
                     try:
                         data['random'] = base64.b64encode(proof.waitForResult()[1])
                     except TypeError:
@@ -89,7 +97,8 @@ class DaemonTools:
         '''Check if we are connected to the internet or not when we can't connect to any peers'''
         if len(self.daemon.onlinePeers) == 0:
             if not netutils.checkNetwork(self.daemon._core._utils, torPort=self.daemon.proxyPort):
-                logger.warn('Network check failed, are you connected to the internet?')
+                if not self.daemon.shutdown:
+                    logger.warn('Network check failed, are you connected to the internet?')
                 self.daemon.isOnline = False
             else:
                 self.daemon.isOnline = True
@@ -197,7 +206,7 @@ class DaemonTools:
         fakePeer = ''
         chance = 10
         if secrets.randbelow(chance) == (chance - 1):
-            fakePeer = self.daemon._core._crypto.generatePubKey()[0]
+            fakePeer = 'OVPCZLOXD6DC5JHX4EQ3PSOGAZ3T24F75HQLIUZSDSMYPEOXCPFA===='
             data = secrets.token_hex(secrets.randbelow(500) + 1)
             self.daemon._core.insertBlock(data, header='pm', encryptType='asym', asymPeer=fakePeer, meta={'subject': 'foo'})
         self.daemon.decrementThreadCount('insertDeniableBlock')

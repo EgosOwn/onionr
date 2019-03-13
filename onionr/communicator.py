@@ -19,13 +19,15 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import sys, os, core, config, json, requests, time, logger, threading, base64, onionr, uuid
-import onionrexceptions, onionrpeers, onionrevents as events, onionrplugins as plugins, onionrblockapi as block
-import onionrdaemontools, onionrsockets, onionr, onionrproofs
-import binascii
+import sys, os, core, config, json, requests, time, logger, threading, base64, onionr, uuid, binascii
 from dependencies import secrets
-from defusedxml import minidom
 from utils import networkmerger
+import onionrexceptions, onionrpeers, onionrevents as events, onionrplugins as plugins, onionrblockapi as block
+from communicatorutils import onionrdaemontools
+import onionrsockets, onionr, onionrproofs
+from communicatorutils import onionrcommunicatortimers, proxypicker
+
+OnionrCommunicatorTimers = onionrcommunicatortimers.OnionrCommunicatorTimers
 
 config.reload()
 class OnionrCommunicatorDaemon:
@@ -43,10 +45,6 @@ class OnionrCommunicatorDaemon:
         # initialize core with Tor socks port being 3rd argument
         self.proxyPort = proxyPort
         self._core = onionrInst.onionrCore
-
-        # initialize NIST beacon salt and time
-        self.nistSaltTimestamp = 0
-        self.powSalt = 0
 
         self.blocksToUpload = []
 
@@ -171,7 +169,8 @@ class OnionrCommunicatorDaemon:
             # Validate new peers are good format and not already in queue
             invalid = []
             for x in newPeers:
-                if not self._core._utils.validateID(x) or x in self.newPeers:
+                x = x.strip()
+                if not self._core._utils.validateID(x) or x in self.newPeers or x == self._core.hsAddress:
                     invalid.append(x)
             for x in invalid:
                 newPeers.remove(x)
@@ -431,16 +430,18 @@ class OnionrCommunicatorDaemon:
         for address in peerList:
             if not config.get('tor.v3onions') and len(address) == 62:
                 continue
+            if address == self._core.hsAddress:
+                continue
             if len(address) == 0 or address in tried or address in self.onlinePeers or address in self.cooldownPeer:
                 continue
             if self.shutdown:
                 return
             if self.peerAction(address, 'ping') == 'pong!':
-                logger.info('Connected to ' + address)
                 time.sleep(0.1)
                 if address not in mainPeerList:
                     networkmerger.mergeAdders(address, self._core)
                 if address not in self.onlinePeers:
+                    logger.info('Connected to ' + address)
                     self.onlinePeers.append(address)
                     self.connectTimes[address] = self._core._utils.getEpoch()
                 retData = address
@@ -487,7 +488,7 @@ class OnionrCommunicatorDaemon:
                 score = str(self.getPeerProfileInstance(i).score)
                 logger.info(i + ', score: ' + score)
 
-    def peerAction(self, peer, action, data=''):
+    def peerAction(self, peer, action, data='', returnHeaders=False):
         '''Perform a get request to a peer'''
         if len(peer) == 0:
             return False
@@ -511,7 +512,7 @@ class OnionrCommunicatorDaemon:
         else:
             self._core.setAddressInfo(peer, 'lastConnect', self._core._utils.getEpoch())
             self.getPeerProfileInstance(peer).addScore(1)
-        return retData
+        return retData # If returnHeaders, returns tuple of data, headers. if not, just data string
 
     def getPeerProfileInstance(self, peer):
         '''Gets a peer profile instance from the list of profiles, by address name'''
@@ -603,11 +604,7 @@ class OnionrCommunicatorDaemon:
                     triedPeers.append(peer)
                     url = 'http://' + peer + '/upload'
                     data = {'block': block.Block(bl).getRaw()}
-                    proxyType = ''
-                    if peer.endswith('.onion'):
-                        proxyType = 'tor'
-                    elif peer.endswith('.i2p'):
-                        proxyType = 'i2p'
+                    proxyType = proxypicker.pick_proxy(peer)
                     logger.info("Uploading block to " + peer)
                     if not self._core._utils.doPostRequest(url, data=data, proxyType=proxyType) == False:
                         self._core._utils.localCommand('waitforshare/' + bl, post=True)
@@ -643,49 +640,6 @@ class OnionrCommunicatorDaemon:
             logger.debug('Status check; looks good.')
 
         self.decrementThreadCount('runCheck')
-
-class OnionrCommunicatorTimers:
-    def __init__(self, daemonInstance, timerFunction, frequency, makeThread=True, threadAmount=1, maxThreads=5, requiresPeer=False):
-        self.timerFunction = timerFunction
-        self.frequency = frequency
-        self.threadAmount = threadAmount
-        self.makeThread = makeThread
-        self.requiresPeer = requiresPeer
-        self.daemonInstance = daemonInstance
-        self.maxThreads = maxThreads
-        self._core = self.daemonInstance._core
-
-        self.daemonInstance.timers.append(self)
-        self.count = 0
-
-    def processTimer(self):
-
-        # mark how many instances of a thread we have (decremented at thread end)
-        try:
-            self.daemonInstance.threadCounts[self.timerFunction.__name__]
-        except KeyError:
-            self.daemonInstance.threadCounts[self.timerFunction.__name__] = 0
-
-        # execute thread if it is time, and we are not missing *required* online peer
-        if self.count == self.frequency:
-            try:
-                if self.requiresPeer and len(self.daemonInstance.onlinePeers) == 0:
-                    raise onionrexceptions.OnlinePeerNeeded
-            except onionrexceptions.OnlinePeerNeeded:
-                pass
-            else:
-                if self.makeThread:
-                    for i in range(self.threadAmount):
-                        if self.daemonInstance.threadCounts[self.timerFunction.__name__] >= self.maxThreads:
-                            logger.debug('%s is currently using the maximum number of threads, not starting another.' % self.timerFunction.__name__)
-                        else:
-                            self.daemonInstance.threadCounts[self.timerFunction.__name__] += 1
-                            newThread = threading.Thread(target=self.timerFunction)
-                            newThread.start()
-                else:
-                    self.timerFunction()
-            self.count = -1 # negative 1 because its incremented at bottom
-        self.count += 1
 
 def startCommunicator(onionrInst, proxyPort):
     OnionrCommunicatorDaemon(onionrInst, proxyPort)

@@ -19,7 +19,7 @@
 '''
 
 # Imports some useful libraries
-import logger, config, threading, time, readline, datetime
+import logger, config, threading, time, datetime
 from onionrblockapi import Block
 import onionrexceptions
 from onionrusers import onionrusers
@@ -27,11 +27,12 @@ import locale, sys, os, json
 
 locale.setlocale(locale.LC_ALL, '')
 
-sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
-import sentboxdb # import after path insert
-
 plugin_name = 'pms'
 PLUGIN_VERSION = '0.0.1'
+
+sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
+import sentboxdb, mailapi, loadinbox # import after path insert
+flask_blueprint = mailapi.flask_blueprint
 
 def draw_border(text):
     #https://stackoverflow.com/a/20757491
@@ -42,7 +43,6 @@ def draw_border(text):
         res.append('│' + (s + ' ' * width)[:width] + '│')
     res.append('└' + '─' * width + '┘')
     return '\n'.join(res)
-
 
 class MailStrings:
     def __init__(self, mailInstance):
@@ -78,7 +78,7 @@ class OnionrMail:
         displayList = []
         subject = ''
 
-        # this could use a lot of memory if someone has recieved a lot of messages
+        # this could use a lot of memory if someone has received a lot of messages
         for blockHash in self.myCore.getBlocksByType('pm'):
             pmBlocks[blockHash] = Block(blockHash, core=self.myCore)
             pmBlocks[blockHash].decrypt()
@@ -191,7 +191,6 @@ class OnionrMail:
                 finally:
                     if choice == '-q':
                         entering = False
-
         return
 
     def get_sent_list(self, display=True):
@@ -294,26 +293,20 @@ class OnionrMail:
                 logger.warn('Invalid choice.')
         return
 
+def add_deleted(keyStore, bHash):
+    existing = keyStore.get('deleted_mail')
+    if existing is None:
+        existing = []
+    else:
+        if bHash in existing:
+            return
+    keyStore.put('deleted_mail', existing.append(bHash))
+
 def on_insertblock(api, data={}):
     sentboxTools = sentboxdb.SentBox(api.get_core())
     meta = json.loads(data['meta'])
     sentboxTools.addToSent(data['hash'], data['peer'], data['content'], meta['subject'])
 
-def on_pluginrequest(api, data=None):
-    resp = ''
-    subject = ''
-    recip = ''
-    message = ''
-    postData = {}
-    blockID = ''
-    sentboxTools = sentboxdb.SentBox(api.get_core())
-    if data['name'] == 'mail':
-        path = data['path']
-        cmd = path.split('/')[1]
-        if cmd == 'sentbox':
-            resp = OnionrMail(api).get_sent_list(display=False)
-    if resp != '':
-        api.get_onionr().clientAPIInst.pluginResponses[data['pluginResponse']] = resp
 
 def on_init(api, data = None):
     '''

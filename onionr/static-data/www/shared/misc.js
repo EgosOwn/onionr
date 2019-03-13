@@ -20,6 +20,25 @@
 webpass = document.location.hash.replace('#', '')
 nowebpass = false
 
+function post_to_url(path, params) {
+
+    var form = document.createElement("form")
+
+    form.setAttribute("method", "POST")
+    form.setAttribute("action", path)
+
+    for(var key in params) {
+        var hiddenField = document.createElement("input")
+        hiddenField.setAttribute("type", "hidden")
+        hiddenField.setAttribute("name", key)
+        hiddenField.setAttribute("value", params[key])
+        form.appendChild(hiddenField)
+    }
+
+    document.body.appendChild(form)
+    form.submit() 
+}
+
 if (typeof webpass == "undefined"){
     webpass = localStorage['webpass']
 }
@@ -65,5 +84,11 @@ for(var i = 0; i < refreshLinks.length; i++) {
     //Can't use .reload because of webpass
     refreshLinks[i].onclick = function(){
         location.reload()
+    }
+}
+
+for (var i = 0; i < document.getElementsByClassName('closeOverlay').length; i++){
+    document.getElementsByClassName('closeOverlay')[i].onclick = function(e){
+        document.getElementById(e.target.getAttribute('overlay')).style.visibility = 'hidden'
     }
 }

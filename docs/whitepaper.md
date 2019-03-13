@@ -1,24 +1,24 @@
 <p align="center">
- <img src="onionr-logo.png" alt="<h1>Onionr</h1>">
+ <img src="onionr-logo.png" alt="<h1>Onionr</h1>" width=200>
 </p>
 <p align="center">Anonymous, Decentralized, Distributed Network</p>
 
 # Introduction
 
-One of the most important things in the modern world is information. The ability to communicate freely with others is crucial for maintaining personal liberties. The internet has provided humanity with the ability to spread information globally, but there are many people who try (and sometimes succeed) to stifle the flow of information.
+We believe that the ability to communicate freely with others is crucial for maintaining societal and personal liberty. The internet has provided humanity with the ability to spread information globally, but there are many persons and organizations who try to stifle the flow of information, sometimes with success.
 
-Internet censorship comes in many forms, state censorship, corporate consolidation of media, threats of violence, network exploitation (e.g. denial of service attacks).
+Internet censorship comes in many forms, state censorship, corporate consolidation of media, threats of violence, network exploitation (e.g. denial of service attacks) and other threats.
 
-To prevent censorship or loss of information, these measures must be in place:
+We hold that in order to protect individual privacy, users must have the ability to communicate anonymously and with decentralization. 
 
-* Resistance to censorship of underlying infrastructure or of network hosts
+We believe that in order to prevent censorship and loss of information, these measures must be in place:
+
+* Resistance to censorship of underlying infrastructure or of particular network hosts
 
 * Anonymization of users by default
-   * The Inability to coerce human users (personal threats/"doxxing", or totalitarian regime censorship)
+   * The Inability to coerce users (personal threats/"doxxing", or totalitarian regime censorship)
 
 * Economic availability. A system should not rely on a single device to be constantly online, and should not be overly expensive to use. The majority of people in the world own cell phones, but comparatively few own personal computers, particularly in developing countries. Internet connectivity can be slow or spotty in many areas.
-
-There are many great projects that tackle decentralization and privacy issues, but there are none which tackle all of the above issues. Some of the existing networks have also not worked well in practice, or are more complicated than they need to be.
 
 # Onionr Design Goals
 
@@ -91,6 +91,54 @@ In addition, randomness beacons such as the one operated by [NIST](https://beaco
 
 # Direct Connections
 
-We propose a method of using Onionr's block sync system to enable direct connections between peers by having one peer request to connect to another using the peer's public key. Since the request is within a standard block, proof of work must be used to request connection. If the requested peer is available and wishes to accept the connection,Onionr will generate a temporary .onion address for the other peer to connect to. Alternatively, a reverse connection may be formed, which is faster to establish but requires a message brokering system instead of a standard socket.
+We propose a method of using Onionr's block sync system to enable direct connections between peers by having one peer request to connect to another using the peer's public key. Since the request is within a standard block, proof of work must be used to request connection. If the requested peer is available and wishes to accept the connection, Onionr will generate a temporary .onion address for the other peer to connect to. Alternatively, a reverse connection may be formed, which is faster to establish but requires a message brokering system instead of a standard socket.
 
 The benefits of such a system are increased privacy, and the ability to anonymously communicate from multiple devices at once. In a traditional onion service, one's online status can be monitored and more easily correlated.
+
+# Threat Model
+
+The goal of Onionr is to provide a method of distributing information in a manner in which the difficulty of discovering the identity of those sending and receiving the information is greatly increased. In this section we detail what information we want to protect and who we're protecting it from. 
+
+In this threat model, "protected" means available in plaintext only to those which it was intended, and regardless non-malleable
+
+## Threat Actors
+
+Onionr assumes that traffic/data is being surveilled by powerful actors on every level but the user's device.
+
+We also assume that the actors are capable of the following:
+
+* Running tens of thousands of Onionr nodes
+* Surveiling most of the Tor and I2P networks
+
+## Protected Data
+
+We seek to protect the following information:
+
+* Contents of private data. E.g. 'mail' messages and secret files
+* Relationship metadata. Unless something is desired to be published publicly, we seek to hide the creator and recipients of such data.
+* Physical location/IP address of nodes on the network
+* All block data from tampering
+
+### Data we cannot or do not protect
+
+* Data specifically inserted as plaintext is available to the public
+* The public key of signed plaintext blocks
+* The fact that one is using Tor or I2P
+   * The fact that one is using Onionr specifically can likely be discovered using long term traffic analysis
+   * Intense traffic analysis may be able to discover what node created a block. For this reason we offer a high security setting to only share blocks via uploads that we recommend for those who need the best privacy.
+
+## Assumptions
+
+We assume that Tor onion services (v3) and I2P services cannot be trivially deanonymized, and that the underlying cryptographic primitives we employ cannot be broken in any manner faster than brute force unless a quantum computer is used. 
+
+Once quantum safe algorithms are more mature and have decent high level libraries, they will be deployed.
+
+# Comparisons to other P2P software
+
+Since Onionr is far from the first to implement many of these ideas (on their own), this section compares Onionr to other networks, using points we consider to be the most important.
+
+![network comparison image](network-comparison.png)
+
+# Conclusion
+
+If successful, Onionr will be a complete decentralized platform for anonymous computing, complete with limited metadata exposure, both node and user anonymity, and spam prevention

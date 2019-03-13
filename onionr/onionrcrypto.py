@@ -265,6 +265,13 @@ class OnionrCrypto:
         return retData
 
     @staticmethod
+    def replayTimestampValidation(timestamp):
+        if core.Core()._utils.getEpoch() - int(timestamp) > 2419200:
+            return False
+        else:
+            return True
+
+    @staticmethod
     def safeCompare(one, two):
         # Do encode here to avoid spawning core
         try:

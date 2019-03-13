@@ -31,43 +31,79 @@ Onionr can be used for mail, as a social network, instant messenger, file sharin
 
 ## Main Features
 
-* [X] Fully p2p/decentralized, no trackers or other single points of failure
-* [X] End to end encryption of user data
-* [X] Optional non-encrypted blocks, useful for blog posts or public file sharing
-* [X] Easy API system for integration to websites
-* [X] Metadata analysis resistance
-* [X] Transport agnosticism (no internet required)
+* [X] 🌐 Fully p2p/decentralized, no trackers or other single points of failure
+* [X] 🔒 End to end encryption of user data
+* [X] 📢 Optional non-encrypted blocks, useful for blog posts or public file sharing
+* [X] 💻 Easy API system for integration to websites
+* [X] 🕵️ Metadata analysis resistance and anonymity
+* [X] 📡 Transport agnosticism (no internet required)
 
 **Onionr API and functionality is subject to non-backwards compatible change during pre-alpha development**
+
+# Screenshots
+
+<img alt='Node statistics page screenshot' src='docs/onionr-1.png' width=600>
+
+Node statistics
+
+<img alt='Friend/contact manager screenshot' src='docs/onionr-2.png' width=600>
+
+Friend/contact manager
+
+<img alt='Encrypted, metadata-masking mail application screenshot' src='docs/onionr-3.png' width=600>
+
+Encrypted, metadata-masking mail application.
 
 # Install and Run on Linux
 
 The following applies to Ubuntu Bionic. Other distros may have different package or command names.
 
-* Have python3.5+, python3-pip, Tor (daemon, not browser) installed (python3-dev recommended)
+* Have python3.6+, python3-pip, Tor (daemon, not browser) installed (python3-dev recommended)
 * Clone the git repo: `$ git clone https://gitlab.com/beardog/onionr`
 * cd into install direction: `$ cd onionr/`
-* Install the Python dependencies ([virtualenv strongly recommended](https://virtualenv.pypa.io/en/stable/userguide/)): `$ pip3 install -r requirements.txt`
+* Install the Python dependencies ([virtualenv strongly recommended](https://virtualenv.pypa.io/en/stable/userguide/)): `$ pip3 install --require-hashes -r requirements.txt`
+
+(--require-hashes is intended to prevent exploitation via compromise of Pypi/CA certificates)
 
 ## Help out
 
 Everyone is welcome to help out. Help is wanted for the following:
 
 * Development (Get in touch first)
-    * Creation of a lib for use from other languages and faster proof-of-work
+    * Creation of a shared lib for use from other languages and faster proof-of-work
     * Android and IOS development
-    * Windows and Mac support
+    * Windows and Mac support (already partially supported, testers needed)
     * General bug fixes and development of new features
 * Testing
+* UI/UX design
 * Running stable nodes
 * Security review/audit
 * Automatic I2P setup
 
-Bitcoin: [1onion55FXzm6h8KQw3zFw2igpHcV7LPq](bitcoin:1onion55FXzm6h8KQw3zFw2igpHcV7LPq)
-USD: [Ko-Fi](https://www.ko-fi.com/beardogkf)
+Contribute money:
+
+Donating at least $5 gets you cool Onionr stickers. Get in touch if you want them.
+
+Bitcoin: [1onion55FXzm6h8KQw3zFw2igpHcV7LPq](bitcoin:1onion55FXzm6h8KQw3zFw2igpHcV7LPq) (Contact us for privacy coins like Monero)
+
+USD (Card/Paypal): [Ko-Fi](https://www.ko-fi.com/beardogkf)
+
+Note: probably not tax deductible
+
+## Contact
+
+beardog [ at ] mailbox.org
 
 ## Disclaimer
 
-The Tor Project, I2P developers, and anyone else do not own, create, or endorse this project, and are not otherwise involved.
+The Tor Project and I2P developers do not own, create, or endorse this project, and are not otherwise involved.
+
+Tor is a trademark for the Tor Project. We do not own it.
 
 The 'open source badge' is by Maik Ellerbrock and is licensed under a Creative Commons Attribution 4.0 International License.
+
+## Logo
+
+The Onionr logo was created by [Anhar Ismail](https://github.com/anharismail) under the [Creative Commons Attribution 4.0 International License](https://creativecommons.org/licenses/by/4.0/). 
+
+If you modify and redistribute our code ("forking"), please use a different logo and project name to avoid confusion. Please do not use our logo in a way that makes it seem like we endorse you without permission.

@@ -19,8 +19,10 @@
 '''
 
 # Imports some useful libraries
-import logger, config, threading, time, uuid, subprocess, sys
+import threading, time, uuid, subprocess, sys
+import config, logger
 from onionrblockapi import Block
+import onionrplugins
 
 plugin_name = 'cliui'
 PLUGIN_VERSION = '0.0.1'
@@ -29,7 +31,11 @@ class OnionrCLIUI:
     def __init__(self, apiInst):
         self.api = apiInst
         self.myCore = apiInst.get_core()
-        return
+        self.shutdown = False
+        self.running = 'undetermined'
+        enabled = onionrplugins.get_enabled_plugins()
+        self.mail_enabled = 'pms' in enabled
+        self.flow_enabled = 'flow' in enabled
 
     def subCommand(self, command, args=None):
             try:
@@ -41,6 +47,14 @@ class OnionrCLIUI:
                     subprocess.call(['./onionr.py', command])
             except KeyboardInterrupt:
                 pass
+    
+    def isRunning(self):
+        while not self.shutdown:
+            if self.myCore._utils.localCommand('ping', maxWait=5) == 'pong!':
+                self.running = 'Yes'
+            else:
+                self.running = 'No'
+            time.sleep(5)
 
     def refresh(self):
             print('\n' * 80 + logger.colors.reset)
@@ -48,20 +62,13 @@ class OnionrCLIUI:
     def start(self):
         '''Main CLI UI interface menu'''
         showMenu = True
-        isOnline = 'No'
-        firstRun = True
         choice = ''
-        if self.myCore._utils.localCommand('ping', maxWait=10) == 'pong!':
-            firstRun = False
+        threading.Thread(target=self.isRunning).start()
 
         while showMenu:
-            if self.myCore._utils.localCommand('ping', maxWait=2) == 'pong!':
-                isOnline = "Yes"
-            else:
-                isOnline = "No"
-
-            print('''Daemon Running: ''' + isOnline + '''
-1. Flow (Anonymous public chat, use at your own risk)
+            print('Onionr\n------')
+            print('''Daemon Running: ''' + self.running + '''
+1. Flow (Anonymous public shout box, use at your own risk)
 2. Mail (Secure email-like service)
 3. File Sharing
 4. Quit (Does not shutdown daemon)
@@ -72,20 +79,26 @@ class OnionrCLIUI:
                 choice = "quit"
 
             if choice in ("flow", "1"):
-                self.subCommand("flow")
+                if self.flow_enabled:
+                    self.subCommand("flow")
+                else:
+                    print('Plugin not enabled')
             elif choice in ("2", "mail"):
-                self.subCommand("mail")
+                if self.mail_enabled:
+                    self.subCommand("mail")
+                else:
+                    print('Plugin not enabled')
             elif choice in ("3", "file sharing", "file"):
                 filename = input("Enter full path to file: ").strip()
                 self.subCommand("addfile", filename)
             elif choice in ("4", "quit"):
                 showMenu = False
+                self.shutdown = True
             elif choice == "":
                 pass
             else:
                 logger.error("Invalid choice")
         return
-
 
 def on_init(api, data = None):
     '''

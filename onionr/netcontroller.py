@@ -147,7 +147,8 @@ HiddenServicePort 80 ''' + self.apiServerIP + ''':''' + str(self.hsPort)
             torVersion = subprocess.Popen([self.torBinary, '--version'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             for line in iter(torVersion.stdout.readline, b''):
                 if 'Tor 0.2.' in line.decode():
-                    logger.warn("Running 0.2.x Tor series, no support for v3 onion peers")
+                    logger.error('Tor 0.3+ required')
+                    sys.exit(1)
                     break
             torVersion.kill()
 
@@ -162,7 +163,7 @@ HiddenServicePort 80 ''' + self.apiServerIP + ''':''' + str(self.hsPort)
                 logger.fatal('Failed to start Tor. Maybe a stray instance of Tor used by Onionr is still running?')
                 return False
         except KeyboardInterrupt:
-            logger.fatal('Got keyboard interrupt.', timestamp = false, level = logger.LEVEL_IMPORTANT)
+            logger.fatal('Got keyboard interrupt.', timestamp = False, level = logger.LEVEL_IMPORTANT)
             return False
         
         logger.debug('Finished starting Tor.', timestamp=True)

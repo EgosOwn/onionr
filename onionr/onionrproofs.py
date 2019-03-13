@@ -17,10 +17,8 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-
-import nacl.encoding, nacl.hash, nacl.utils, time, math, threading, binascii, logger, sys, base64, json
-import core, onionrutils, config
-import onionrblockapi
+import multiprocessing, nacl.encoding, nacl.hash, nacl.utils, time, math, threading, binascii, sys, base64, json
+import core, onionrutils, config, logger, onionrblockapi
 
 def getDifficultyModifier(coreOrUtilsInst=None):
     '''Accepts a core or utils instance returns 
@@ -101,7 +99,7 @@ def hashMeetsDifficulty(h):
         return False
 
 class DataPOW:
-    def __init__(self, data, forceDifficulty=0, threadCount = 5):
+    def __init__(self, data, forceDifficulty=0, threadCount = 1):
         self.foundHash = False
         self.difficulty = 0
         self.data = data
@@ -200,7 +198,7 @@ class DataPOW:
         return result
 
 class POW:
-    def __init__(self, metadata, data, threadCount = 5, forceDifficulty=0, coreInst=None):
+    def __init__(self, metadata, data, threadCount = 1, forceDifficulty=0, coreInst=None):
         self.foundHash = False
         self.difficulty = 0
         self.data = data
@@ -246,6 +244,7 @@ class POW:
         answer = ''
         hbCount = 0
         nonce = int(binascii.hexlify(nacl.utils.random(2)), 16)
+        startNonce = nonce
         while self.hashing:
             #token = nacl.hash.blake2b(rand + self.data).decode()
             self.metadata['powRandomToken'] = nonce
@@ -260,6 +259,7 @@ class POW:
                 self.hashing = False
                 iFound = True
                 self.result = payload
+                print('count', nonce - startNonce)
                 break
             nonce += 1
                 
