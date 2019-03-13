@@ -304,11 +304,6 @@ for (var i = 0; i < document.getElementsByClassName('refresh').length; i++){
     document.getElementsByClassName('refresh')[i].style.float = 'right'
 }
 
-for (var i = 0; i < document.getElementsByClassName('closeOverlay').length; i++){
-    document.getElementsByClassName('closeOverlay')[i].onclick = function(e){
-        document.getElementById(e.target.getAttribute('overlay')).style.visibility = 'hidden'
-    }
-}
 
 fetch('/friends/list', {
     headers: {

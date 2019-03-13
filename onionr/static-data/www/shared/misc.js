@@ -87,3 +87,8 @@ for(var i = 0; i < refreshLinks.length; i++) {
     }
 }
 
+for (var i = 0; i < document.getElementsByClassName('closeOverlay').length; i++){
+    document.getElementsByClassName('closeOverlay')[i].onclick = function(e){
+        document.getElementById(e.target.getAttribute('overlay')).style.visibility = 'hidden'
+    }
+}
