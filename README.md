@@ -101,3 +101,9 @@ The Tor Project and I2P developers do not own, create, or endorse this project, 
 Tor is a trademark for the Tor Project. We do not own it.
 
 The 'open source badge' is by Maik Ellerbrock and is licensed under a Creative Commons Attribution 4.0 International License.
+
+## Logo
+
+The Onionr logo was created by [Anhar Ismail](https://github.com/anharismail) under the [Creative Commons Attribution 4.0 International License](https://creativecommons.org/licenses/by/4.0/). 
+
+If you modify and redistribute our code ("forking"), please use a different logo and project name to avoid confusion. Please do not use our logo in a way that makes it seem like we endorse you without permission.

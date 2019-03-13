@@ -437,11 +437,11 @@ class OnionrCommunicatorDaemon:
             if self.shutdown:
                 return
             if self.peerAction(address, 'ping') == 'pong!':
-                logger.info('Connected to ' + address)
                 time.sleep(0.1)
                 if address not in mainPeerList:
                     networkmerger.mergeAdders(address, self._core)
                 if address not in self.onlinePeers:
+                    logger.info('Connected to ' + address)
                     self.onlinePeers.append(address)
                     self.connectTimes[address] = self._core._utils.getEpoch()
                 retData = address

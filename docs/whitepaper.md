@@ -135,7 +135,7 @@ Once quantum safe algorithms are more mature and have decent high level librarie
 
 # Comparisons to other P2P software
 
-Since Onionr is far from the first to implement many of these ideas (on their own), this section compares Onionr to other networks
+Since Onionr is far from the first to implement many of these ideas (on their own), this section compares Onionr to other networks, using points we consider to be the most important.
 
 ![network comparison image](network-comparison.png)
 
