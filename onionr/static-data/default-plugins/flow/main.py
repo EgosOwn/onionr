@@ -55,9 +55,6 @@ class OnionrFlow:
                 expireTime = self.myCore._utils.getEpoch() + 43200
                 if len(message) > 0:
                     self.myCore.insertBlock(message, header='txt', expire=expireTime, meta={'ch': self.channel})
-                    #insertBL = Block(content = message, type = 'txt', expire=expireTime, core = self.myCore)
-                    #insertBL.setMetadata('ch', self.channel)
-                    #insertBL.save()
 
         logger.info("Flow is exiting, goodbye")
         return

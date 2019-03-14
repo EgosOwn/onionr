@@ -32,7 +32,20 @@ def deleteExpiredKeys(coreInst):
     conn.close()
     return
 
+def deleteTheirExpiredKeys(coreInst, pubkey):
+    conn = sqlite3.connect(self._core.peerDB, timeout=10)
+    c = conn.cursor()
+
+    # Prepare the insert
+    command = (pubkey, coreInst._utils.getEpoch())
+
+    c.execute("DELETE from forwardKeys where peerKey = ? and expire <= ?", command)
+
+    conn.commit()
+    conn.close()
+
 DEFAULT_KEY_EXPIRE = 604800
+#DEFAULT_KEY_EXPIRE = 600
 
 class OnionrUser:
     def __init__(self, coreInst, publicKey, saveUser=False):
@@ -149,7 +162,6 @@ class OnionrUser:
         newPub = self._core._utils.bytesToStr(newKeys[0])
         newPriv = self._core._utils.bytesToStr(newKeys[1])
 
-        time = self._core._utils.getEpoch()
         command = (self.publicKey, newPub, newPriv, time, expire + time)
 
         c.execute("INSERT INTO myForwardKeys VALUES(?, ?, ?, ?, ?);", command)
