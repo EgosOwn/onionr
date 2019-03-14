@@ -737,6 +737,8 @@ class Core:
                     forwardEncrypted = onionrusers.OnionrUser(self, asymPeer).forwardEncrypt(data)
                     data = forwardEncrypted[0]
                     meta['forwardEnc'] = True
+                    expire = forwardEncrypted[2] # Expire time of key. no sense keeping block after that
+                    print(expire, self._utils.getEpoch())
                 except onionrexceptions.InvalidPubkey:
                     pass
                     #onionrusers.OnionrUser(self, asymPeer).generateForwardKey()

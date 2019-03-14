@@ -281,7 +281,7 @@ class OnionrUtils:
                         break
                 elif i == 'expire':
                     try:
-                        assert int(metadata[i]) > self.getEpoch()
+                        assert int(metadata[i]) < self.getEpoch()
                     except AssertionError:
                         logger.warn('Block is expired')
                         break

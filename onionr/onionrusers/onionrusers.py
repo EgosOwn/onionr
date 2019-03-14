@@ -32,6 +32,8 @@ def deleteExpiredKeys(coreInst):
     conn.close()
     return
 
+DEFAULT_KEY_EXPIRE = 604800
+
 class OnionrUser:
     def __init__(self, coreInst, publicKey, saveUser=False):
         '''
@@ -84,14 +86,15 @@ class OnionrUser:
         return decrypted
 
     def forwardEncrypt(self, data):
+        deleteExpiredKeys(self._core)
         retData = ''
         forwardKey = self._getLatestForwardKey()
-        if self._core._utils.validatePubKey(forwardKey):
-            retData = self._core._crypto.pubKeyEncrypt(data, forwardKey, encodedData=True)
+        if self._core._utils.validatePubKey(forwardKey[0]):
+            retData = self._core._crypto.pubKeyEncrypt(data, forwardKey[0], encodedData=True)
         else:
             raise onionrexceptions.InvalidPubkey("No valid forward secrecy key available for this user")
         #self.generateForwardKey()
-        return (retData, forwardKey)
+        return (retData, forwardKey[0], forwardKey[1])
 
     def forwardDecrypt(self, encrypted):
         retData = ""
@@ -114,7 +117,7 @@ class OnionrUser:
 
         # TODO: account for keys created at the same time (same epoch)
         for row in c.execute("SELECT forwardKey, max(DATE) FROM forwardKeys WHERE peerKey = ?", (self.publicKey,)):
-            key = row[0]
+            key = (row[0], row[1])
             break
 
         conn.commit()
@@ -135,7 +138,7 @@ class OnionrUser:
 
         return list(keyList)
 
-    def generateForwardKey(self, expire=604800):
+    def generateForwardKey(self, expire=DEFAULT_KEY_EXPIRE):
 
         # Generate a forward secrecy key for the peer
         conn = sqlite3.connect(self._core.forwardKeysFile, timeout=10)
@@ -173,7 +176,7 @@ class OnionrUser:
                 keyList = self.getGeneratedForwardKeys()
         return list(keyList)
 
-    def addForwardKey(self, newKey, expire=604800):
+    def addForwardKey(self, newKey, expire=DEFAULT_KEY_EXPIRE):
         if not self._core._utils.validatePubKey(newKey):
             # Do not add if something went wrong with the key
             raise onionrexceptions.InvalidPubkey(newKey)
