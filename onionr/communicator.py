@@ -116,7 +116,7 @@ class OnionrCommunicatorDaemon:
         else:
             logger.debug('Will not announce node.')
         cleanupTimer = OnionrCommunicatorTimers(self, self.peerCleanup, 300, requiresPeer=True)
-        forwardSecrecyTimer = OnionrCommunicatorTimers(self, self.daemonTools.cleanKeys, 15)
+        forwardSecrecyTimer = OnionrCommunicatorTimers(self, self.daemonTools.cleanKeys, 15, maxThreads=1)
 
         # set loop to execute instantly to load up peer pool (replaced old pool init wait)
         peerPoolTimer.count = (peerPoolTimer.frequency - 1)

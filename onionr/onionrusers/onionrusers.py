@@ -111,6 +111,7 @@ class OnionrUser:
         return (retData, forwardKey[0], forwardKey[1])
 
     def forwardDecrypt(self, encrypted):
+        deleteExpiredKeys(self._core)
         retData = ""
         for key in self.getGeneratedForwardKeys(False):
             try:
