@@ -101,7 +101,7 @@ class OnionrCommunicatorDaemon:
         OnionrCommunicatorTimers(self, self.lookupBlocks, self._core.config.get('timers.lookupBlocks'), requiresPeer=True, maxThreads=1)
         OnionrCommunicatorTimers(self, self.getBlocks, self._core.config.get('timers.getBlocks'), requiresPeer=True, maxThreads=2)
         OnionrCommunicatorTimers(self, self.clearOfflinePeer, 58)
-        OnionrCommunicatorTimers(self, self.daemonTools.cleanOldBlocks, 65)
+        blockCleanupTimer = OnionrCommunicatorTimers(self, self.daemonTools.cleanOldBlocks, 65)
         OnionrCommunicatorTimers(self, self.lookupAdders, 60, requiresPeer=True)
         OnionrCommunicatorTimers(self, self.daemonTools.cooldownPeer, 30, requiresPeer=True)
         OnionrCommunicatorTimers(self, self.uploadBlock, 10, requiresPeer=True, maxThreads=1)
@@ -122,6 +122,7 @@ class OnionrCommunicatorDaemon:
         peerPoolTimer.count = (peerPoolTimer.frequency - 1)
         cleanupTimer.count = (cleanupTimer.frequency - 60)
         deniableBlockTimer.count = (deniableBlockTimer.frequency - 175)
+        blockCleanupTimer.count = (blockCleanupTimer.frequency - 5)
         #forwardSecrecyTimer.count = (forwardSecrecyTimer.frequency - 990)
 
         if config.get('general.socket_servers'):

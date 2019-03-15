@@ -44,8 +44,8 @@ def deleteTheirExpiredKeys(coreInst, pubkey):
     conn.commit()
     conn.close()
 
-#DEFAULT_KEY_EXPIRE = 604800
-DEFAULT_KEY_EXPIRE = 600
+DEFAULT_KEY_EXPIRE = 604800
+#DEFAULT_KEY_EXPIRE = 600
 
 class OnionrUser:
     def __init__(self, coreInst, publicKey, saveUser=False):
@@ -111,7 +111,6 @@ class OnionrUser:
         return (retData, forwardKey[0], forwardKey[1])
 
     def forwardDecrypt(self, encrypted):
-        deleteExpiredKeys(self._core)
         retData = ""
         for key in self.getGeneratedForwardKeys(False):
             try:
