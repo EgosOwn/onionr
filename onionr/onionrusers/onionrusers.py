@@ -33,7 +33,7 @@ def deleteExpiredKeys(coreInst):
     return
 
 def deleteTheirExpiredKeys(coreInst, pubkey):
-    conn = sqlite3.connect(self._core.peerDB, timeout=10)
+    conn = sqlite3.connect(coreInst.peerDB, timeout=10)
     c = conn.cursor()
 
     # Prepare the insert
@@ -44,8 +44,8 @@ def deleteTheirExpiredKeys(coreInst, pubkey):
     conn.commit()
     conn.close()
 
-DEFAULT_KEY_EXPIRE = 604800
-#DEFAULT_KEY_EXPIRE = 600
+#DEFAULT_KEY_EXPIRE = 604800
+DEFAULT_KEY_EXPIRE = 600
 
 class OnionrUser:
     def __init__(self, coreInst, publicKey, saveUser=False):
@@ -99,6 +99,7 @@ class OnionrUser:
         return decrypted
 
     def forwardEncrypt(self, data):
+        deleteTheirExpiredKeys(self._core, self.publicKey)
         deleteExpiredKeys(self._core)
         retData = ''
         forwardKey = self._getLatestForwardKey()
@@ -129,7 +130,7 @@ class OnionrUser:
         c = conn.cursor()
 
         # TODO: account for keys created at the same time (same epoch)
-        for row in c.execute("SELECT forwardKey, max(DATE) FROM forwardKeys WHERE peerKey = ?", (self.publicKey,)):
+        for row in c.execute("SELECT forwardKey, max(EXPIRE) FROM forwardKeys WHERE peerKey = ? ORDER BY expire DESC", (self.publicKey,)):
             key = (row[0], row[1])
             break
 
@@ -143,7 +144,7 @@ class OnionrUser:
         c = conn.cursor()
         keyList = []
 
-        for row in c.execute("SELECT forwardKey, date FROM forwardKeys WHERE peerKey = ? ORDER BY date DESC", (self.publicKey,)):
+        for row in c.execute("SELECT forwardKey, date FROM forwardKeys WHERE peerKey = ? ORDER BY expire DESC", (self.publicKey,)):
             keyList.append((row[0], row[1]))
 
         conn.commit()

@@ -18,7 +18,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 
-import sys
+import sys, getpass
 import logger
 from onionrusers import onionrusers
 def add_ID(o_inst):
