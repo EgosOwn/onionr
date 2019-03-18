@@ -17,12 +17,11 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-
-import subprocess, os, random, sys, logger, time, signal, config, base64, socket
-from stem.control import Controller
+import subprocess, os, random, sys, time, signal, base64, socket
+from shutil import which
+import logger, config
 from onionrblockapi import Block
 from dependencies import secrets
-from shutil import which
 
 def getOpenPort():
     # taken from (but modified) https://stackoverflow.com/a/2838309
@@ -69,13 +68,6 @@ class NetController:
             self.torBinary = 'tor'
 
         config.reload()
-        '''
-            if os.path.exists(self.torConfigLocation):
-                torrc = open(self.torConfigLocation, 'r')
-                if not str(self.hsPort) in torrc.read():
-                    os.remove(self.torConfigLocation)
-                torrc.close()
-        '''
 
         return
 
