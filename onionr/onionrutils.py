@@ -329,7 +329,8 @@ class OnionrUtils:
             retVal = True
         return retVal
 
-    def validateID(self, id):
+    @staticmethod
+    def validateID(id):
         '''
             Validate if an address is a valid tor or i2p hidden service
         '''
@@ -381,7 +382,8 @@ class OnionrUtils:
         except:
             return False
 
-    def isIntegerString(self, data):
+    @staticmethod
+    def isIntegerString(data):
         '''Check if a string is a valid base10 integer (also returns true if already an int)'''
         try:
             int(data)
