@@ -353,7 +353,6 @@ class Core:
         conn = sqlite3.connect(self.queueDB, timeout=30)
         c = conn.cursor()
         t = (command, data, date, responseID)
-
         try:
             c.execute('INSERT INTO commands (command, data, date, responseID) VALUES(?, ?, ?, ?)', t)
             conn.commit()

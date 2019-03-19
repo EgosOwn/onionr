@@ -24,7 +24,7 @@ from dependencies import secrets
 from utils import networkmerger
 import onionrexceptions, onionrpeers, onionrevents as events, onionrplugins as plugins, onionrblockapi as block
 from communicatorutils import onionrdaemontools
-import onionrsockets, onionr, onionrproofs
+import onionrservices, onionr, onionrproofs
 from communicatorutils import onionrcommunicatortimers, proxypicker
 
 OnionrCommunicatorTimers = onionrcommunicatortimers.OnionrCommunicatorTimers
@@ -126,9 +126,9 @@ class OnionrCommunicatorDaemon:
         #forwardSecrecyTimer.count = (forwardSecrecyTimer.frequency - 990)
 
         if config.get('general.socket_servers'):
-            self.socketServer = threading.Thread(target=onionrsockets.OnionrSocketServer, args=(self._core,))
-            self.socketServer.start()
-            self.socketClient = onionrsockets.OnionrSocketClient(self._core)
+            self.services = onionrservices.OnionrServices(self._core)
+        else:
+            self.services = None
 
         # Main daemon loop, mainly for calling timers, don't do any complex operations here to avoid locking
         try:
@@ -565,19 +565,6 @@ class OnionrCommunicatorDaemon:
                         i.count = (i.frequency - 1)
             elif cmd[0] == 'uploadBlock':
                 self.blocksToUpload.append(cmd[1])
-            elif cmd[0] == 'startSocket':
-                # Create our own socket server
-                socketInfo = json.loads(cmd[1])
-                socketInfo['id'] = uuid.uuid4()
-                self._core.startSocket = socketInfo
-            elif cmd[0] == 'addSocket':
-                # Socket server was created for us
-                socketInfo = json.loads(cmd[1])
-                peer = socketInfo['peer']
-                reason = socketInfo['reason']
-                threading.Thread(target=self.socketClient.startSocket, args=(peer, reason)).start()
-            else:
-                logger.info('Recieved daemonQueue command:' + cmd[0])
 
             if cmd[0] not in ('', None):
                 if response != '':

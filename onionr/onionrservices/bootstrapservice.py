@@ -23,7 +23,7 @@ from flask import Flask
 import core
 from netcontroller import getOpenPort        
 
-def bootstrap_client_service(peer, core_inst=None):
+def bootstrap_client_service(peer, core_inst=None, bootstrap_timeout=120):
     '''
         Bootstrap client services
     '''
@@ -32,10 +32,10 @@ def bootstrap_client_service(peer, core_inst=None):
     
     if not core_inst._utils.validatePubKey(peer):
         raise ValueError('Peer must be valid base32 ed25519 public key')
-    
-    http_server = WSGIServer(('127.0.0.1', bootstrap_port), bootstrap_app, log=None)
+
     bootstrap_port = getOpenPort()
-    bootstrap_app = flask.Flask(__name__)
+    bootstrap_app = Flask(__name__)
+    http_server = WSGIServer(('127.0.0.1', bootstrap_port), bootstrap_app, log=None)
     
     bootstrap_address = ''
 
@@ -50,14 +50,14 @@ def bootstrap_client_service(peer, core_inst=None):
             bootstrap_address = address
             http_server.stop()
 
-    with Controller.from_port() as controller:
+    with Controller.from_port(port=core_inst.config.get('tor.controlPort')) as controller:
         # Connect to the Tor process for Onionr
-        controller.authenticate()
+        controller.authenticate(core_inst.config.get('tor.controlpassword'))
         # Create the v3 onion service
-        response = controller.create_ephemeral_hidden_service({80: bootstrap_port}, await_publication = True, key_type='ED25519-V3')
+        response = controller.create_ephemeral_hidden_service({80: bootstrap_port}, await_publication = True, key_content = 'ED25519-V3')
 
-        core_inst.insertBlock(response.hostname, header='con', sign=True, encryptType='asym', 
-        asymPeer=peer, disableForward=True)
+        core_inst.insertBlock(response.service_id, header='con', sign=True, encryptType='asym', 
+        asymPeer=peer, disableForward=True, expire=(core_inst._utils.getEpoch() + bootstrap_timeout))
         
         # Run the bootstrap server
         http_server.serve_forever()
