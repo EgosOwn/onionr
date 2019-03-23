@@ -182,6 +182,8 @@ class OnionrUtils:
                 pass
             else:
                 self._core.updateBlockInfo(blockHash, 'expire', expireTime)
+            if not blockType is None:
+                self._core.updateBlockInfo(blockHash, 'dataType', blockType)
         else:
             pass
             #logger.debug('Not processing metadata on encrypted block we cannot decrypt.')
