@@ -22,6 +22,6 @@ class ConnectionServer:
             # Connect to the Tor process for Onionr
             controller.authenticate(core_inst.config.get('tor.controlpassword'))
             # Create the v3 onion service
-            response = controller.create_ephemeral_hidden_service({80: service_port}, await_publication = True, key_type='ED25519-V3')
+            response = controller.create_ephemeral_hidden_service({80: service_port}, await_publication = True, key_type='NEW')
             logger.info('hosting on ' + response.service_id)
             http_server.serve_forever()

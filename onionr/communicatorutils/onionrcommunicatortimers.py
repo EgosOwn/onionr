@@ -20,7 +20,7 @@
 '''
 import threading, onionrexceptions, logger
 class OnionrCommunicatorTimers:
-    def __init__(self, daemonInstance, timerFunction, frequency, makeThread=True, threadAmount=1, maxThreads=5, requiresPeer=False):
+    def __init__(self, daemonInstance, timerFunction, frequency, makeThread=True, threadAmount=1, maxThreads=5, requiresPeer=False, myArgs=[]):
         self.timerFunction = timerFunction
         self.frequency = frequency
         self.threadAmount = threadAmount
@@ -29,6 +29,7 @@ class OnionrCommunicatorTimers:
         self.daemonInstance = daemonInstance
         self.maxThreads = maxThreads
         self._core = self.daemonInstance._core
+        self.args = myArgs
 
         self.daemonInstance.timers.append(self)
         self.count = 0
@@ -55,7 +56,7 @@ class OnionrCommunicatorTimers:
                             logger.debug('%s is currently using the maximum number of threads, not starting another.' % self.timerFunction.__name__)
                         else:
                             self.daemonInstance.threadCounts[self.timerFunction.__name__] += 1
-                            newThread = threading.Thread(target=self.timerFunction)
+                            newThread = threading.Thread(target=self.timerFunction, args=self.args)
                             newThread.start()
                 else:
                     self.timerFunction()

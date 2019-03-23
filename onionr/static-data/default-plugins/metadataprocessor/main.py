@@ -55,14 +55,7 @@ def on_processblocks(api, data=None):
     if blockType == 'forwardKey':
         if api.data['validSig'] == True:
             _processForwardKey(api, myBlock)
-    # socket blocks
-    elif blockType == 'con':
-        if api.data['validSig'] == True and myBlock.decrypted: # we check if it is decrypted as a way of seeing if it was for us
-            myBlock.bcontent = utils.bytesToStr(myBlock.bcontent)
-            if utils.validateID('%s.onion' % (myBlock.bcontent,)):
-                logger.info('Detected socket advertised to us...')
-                core.keyStore.put('con', (myBlock.content, myBlock.signer))
-
+    
 def on_init(api, data = None):
 
     pluginapi = api

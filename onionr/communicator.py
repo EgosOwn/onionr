@@ -24,6 +24,7 @@ from dependencies import secrets
 from utils import networkmerger
 import onionrexceptions, onionrpeers, onionrevents as events, onionrplugins as plugins, onionrblockapi as block
 from communicatorutils import onionrdaemontools
+from communicatorutils import servicecreator
 import onionrservices, onionr, onionrproofs
 from communicatorutils import onionrcommunicatortimers, proxypicker
 
@@ -107,6 +108,7 @@ class OnionrCommunicatorDaemon:
         OnionrCommunicatorTimers(self, self.uploadBlock, 10, requiresPeer=True, maxThreads=1)
         OnionrCommunicatorTimers(self, self.daemonCommands, 6, maxThreads=1)
         OnionrCommunicatorTimers(self, self.detectAPICrash, 30, maxThreads=1)
+        OnionrCommunicatorTimers(self, servicecreator.service_creator, 5, maxThreads=10, myArgs=(self,))
         deniableBlockTimer = OnionrCommunicatorTimers(self, self.daemonTools.insertDeniableBlock, 180, requiresPeer=True, maxThreads=1)
 
         netCheckTimer = OnionrCommunicatorTimers(self, self.daemonTools.netCheck, 600)
