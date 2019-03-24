@@ -4,7 +4,7 @@
         "display_header" : false,
         "minimum_block_pow": 4,
         "minimum_send_pow": 4,
-        "socket_servers": false,
+        "socket_servers": true,
         "security_level": 0,
         "max_block_age": 2678400,
         "bypass_tor_check": false,

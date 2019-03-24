@@ -17,9 +17,8 @@ class OnionrServices:
         BOOTSTRAP_TRIES = 10
         TRY_WAIT = 3
         for x in range(BOOTSTRAP_TRIES):
-            if self._core._utils.doGetRequest('http://' + address + '/ping') == 'pong!':
+            if self._core._utils.doGetRequest('http://' + address + '/ping', port=self._core.config.get('tor.socksport')) == 'pong!':
                 connectionserver.ConnectionServer(peer, address, core_inst=self._core)
-                return True
             else:
                 time.sleep(TRY_WAIT)
         else:
