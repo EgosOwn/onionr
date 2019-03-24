@@ -108,7 +108,12 @@ class OnionrCommunicatorDaemon:
         OnionrCommunicatorTimers(self, self.uploadBlock, 10, requiresPeer=True, maxThreads=1)
         OnionrCommunicatorTimers(self, self.daemonCommands, 6, maxThreads=1)
         OnionrCommunicatorTimers(self, self.detectAPICrash, 30, maxThreads=1)
-        OnionrCommunicatorTimers(self, servicecreator.service_creator, 5, maxThreads=10, myArgs=(self,))
+        if config.get('general.socket_servers', False):
+            self.services = onionrservices.OnionrServices(self._core)
+            self.active_services = []
+            OnionrCommunicatorTimers(self, servicecreator.service_creator, 5, maxThreads=10, myArgs=(self,))
+        else:
+            self.services = None
         deniableBlockTimer = OnionrCommunicatorTimers(self, self.daemonTools.insertDeniableBlock, 180, requiresPeer=True, maxThreads=1)
 
         netCheckTimer = OnionrCommunicatorTimers(self, self.daemonTools.netCheck, 600)
@@ -126,11 +131,6 @@ class OnionrCommunicatorDaemon:
         deniableBlockTimer.count = (deniableBlockTimer.frequency - 175)
         blockCleanupTimer.count = (blockCleanupTimer.frequency - 5)
         #forwardSecrecyTimer.count = (forwardSecrecyTimer.frequency - 990)
-
-        if config.get('general.socket_servers'):
-            self.services = onionrservices.OnionrServices(self._core)
-        else:
-            self.services = None
 
         # Main daemon loop, mainly for calling timers, don't do any complex operations here to avoid locking
         try:

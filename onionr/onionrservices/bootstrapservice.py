@@ -55,8 +55,7 @@ def bootstrap_client_service(peer, core_inst=None, bootstrap_timeout=300):
         controller.authenticate(core_inst.config.get('tor.controlpassword'))
         # Create the v3 onion service
         #response = controller.create_ephemeral_hidden_service({80: bootstrap_port}, await_publication = True, key_content = 'ED25519-V3')
-        response = controller.create_ephemeral_hidden_service(80, key_type = 'NEW', await_publication = True)
-
+        response = controller.create_ephemeral_hidden_service({80: bootstrap_port}, key_type = 'NEW', await_publication = True)
         core_inst.insertBlock(response.service_id, header='con', sign=True, encryptType='asym', 
         asymPeer=peer, disableForward=True, expire=(core_inst._utils.getEpoch() + bootstrap_timeout))
         
