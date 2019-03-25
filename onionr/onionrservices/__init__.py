@@ -16,8 +16,10 @@ class OnionrServices:
         assert self._core._utils.validateID(address)
         BOOTSTRAP_TRIES = 10
         TRY_WAIT = 3
+        base_url = 'http://%s/' % (address,)
+        socks = self._core.config.get('tor.socksport')
         for x in range(BOOTSTRAP_TRIES):
-            if self._core._utils.doGetRequest('http://' + address + '/ping', port=self._core.config.get('tor.socksport')) == 'pong!':
+            if self._core._utils.doGetRequest(base_url + 'ping', port=socks, ignoreAPI=True) == 'pong!':
                 connectionserver.ConnectionServer(peer, address, core_inst=self._core)
             else:
                 time.sleep(TRY_WAIT)
