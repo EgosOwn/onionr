@@ -39,7 +39,7 @@ class FDSafeHandler(WSGIHandler):
        except Timeout as ex:
            raise
 
-def setBindIP(filePath, writeOut=True):
+def setBindIP(filePath=''):
     '''Set a random localhost IP to a specified file (intended for private or public API localhost IPs)'''
     if config.get('general.random_bind_ip', True):
         hostOctets = [str(127), str(random.randint(0x02, 0xFF)), str(random.randint(0x02, 0xFF)), str(random.randint(0x02, 0xFF))]
@@ -55,7 +55,7 @@ def setBindIP(filePath, writeOut=True):
         s.close()
     else:
         data = '127.0.0.1'
-    if writeOut:
+    if filePath != '':
         with open(filePath, 'w') as bindFile:
             bindFile.write(data)
     return data

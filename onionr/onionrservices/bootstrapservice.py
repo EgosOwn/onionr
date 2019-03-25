@@ -17,10 +17,10 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import time
+import time, threading, uuid
 from gevent.pywsgi import WSGIServer, WSGIHandler
 from stem.control import Controller
-from flask import Flask
+from flask import Flask, Response
 import core
 from netcontroller import getOpenPort
 
@@ -40,6 +40,7 @@ def bootstrap_client_service(peer, core_inst=None, bootstrap_timeout=300):
     
     bootstrap_address = ''
     shutdown = False
+    bs_id = str(uuid.uuid4())
 
     @bootstrap_app.route('/ping')
     def get_ping():
@@ -47,25 +48,28 @@ def bootstrap_client_service(peer, core_inst=None, bootstrap_timeout=300):
 
     @bootstrap_app.route('/bs/<address>', methods=['POST'])
     def get_bootstrap(address):
-        if core_inst._utils.validateID(address):
+        if core_inst._utils.validateID(address + '.onion'):
             # Set the bootstrap address then close the server
-            bootstrap_address = address
-            shutdown = True
-            return "success"
+            bootstrap_address = address + '.onion'
+            core_inst.keyStore.put(bs_id, bootstrap_address)
+            http_server.stop()
+            return Response("success")
+        else:
+            return Response("")
 
     with Controller.from_port(port=core_inst.config.get('tor.controlPort')) as controller:
         # Connect to the Tor process for Onionr
         controller.authenticate(core_inst.config.get('tor.controlpassword'))
         # Create the v3 onion service
-        response = controller.create_ephemeral_hidden_service({80: bootstrap_port}, key_type = 'NEW', await_publication = True)
+        response = controller.create_ephemeral_hidden_service({80: bootstrap_port}, key_type = 'NEW', key_content = 'ED25519-V3', await_publication = True)
         core_inst.insertBlock(response.service_id, header='con', sign=True, encryptType='asym', 
         asymPeer=peer, disableForward=True, expire=(core_inst._utils.getEpoch() + bootstrap_timeout))
-        
         # Run the bootstrap server
-        threading.Thread(target=http_server.serve_forever).start()
+        try:
+            http_server.serve_forever()
+        except TypeError:
+            pass
         # This line reached when server is shutdown by being bootstrapped
-        while not shutdown and not core_inst.killSockets:
-            time.sleep(1)
     
     # Now that the bootstrap server has received a server, return the address
-    return bootstrap_address
+    return core_inst.keyStore.get(bs_id)
