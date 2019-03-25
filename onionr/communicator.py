@@ -111,7 +111,7 @@ class OnionrCommunicatorDaemon:
         if config.get('general.socket_servers', False):
             self.services = onionrservices.OnionrServices(self._core)
             self.active_services = []
-            OnionrCommunicatorTimers(self, servicecreator.service_creator, 5, maxThreads=10, myArgs=(self,))
+            OnionrCommunicatorTimers(self, servicecreator.service_creator, 5, maxThreads=50, myArgs=(self,))
         else:
             self.services = None
         deniableBlockTimer = OnionrCommunicatorTimers(self, self.daemonTools.insertDeniableBlock, 180, requiresPeer=True, maxThreads=1)
