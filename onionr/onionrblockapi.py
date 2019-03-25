@@ -215,7 +215,10 @@ class Block:
         '''
 
         if self.exists():
-            os.remove(self.getBlockFile())
+            try:
+                os.remove(self.getBlockFile())
+            except TypeError:
+                pass
             self.getCore().removeBlock(self.getHash())
             return True
         return False

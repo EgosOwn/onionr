@@ -17,11 +17,12 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
+import time
 from gevent.pywsgi import WSGIServer, WSGIHandler
 from stem.control import Controller
 from flask import Flask
 import core
-from netcontroller import getOpenPort        
+from netcontroller import getOpenPort
 
 def bootstrap_client_service(peer, core_inst=None, bootstrap_timeout=300):
     '''
@@ -38,6 +39,7 @@ def bootstrap_client_service(peer, core_inst=None, bootstrap_timeout=300):
     http_server = WSGIServer(('127.0.0.1', bootstrap_port), bootstrap_app, log=None)
     
     bootstrap_address = ''
+    shutdown = False
 
     @bootstrap_app.route('/ping')
     def get_ping():
@@ -48,20 +50,22 @@ def bootstrap_client_service(peer, core_inst=None, bootstrap_timeout=300):
         if core_inst._utils.validateID(address):
             # Set the bootstrap address then close the server
             bootstrap_address = address
-            http_server.stop()
+            shutdown = True
+            return "success"
 
     with Controller.from_port(port=core_inst.config.get('tor.controlPort')) as controller:
         # Connect to the Tor process for Onionr
         controller.authenticate(core_inst.config.get('tor.controlpassword'))
         # Create the v3 onion service
-        #response = controller.create_ephemeral_hidden_service({80: bootstrap_port}, await_publication = True, key_content = 'ED25519-V3')
         response = controller.create_ephemeral_hidden_service({80: bootstrap_port}, key_type = 'NEW', await_publication = True)
         core_inst.insertBlock(response.service_id, header='con', sign=True, encryptType='asym', 
         asymPeer=peer, disableForward=True, expire=(core_inst._utils.getEpoch() + bootstrap_timeout))
         
         # Run the bootstrap server
-        http_server.serve_forever()
+        threading.Thread(target=http_server.serve_forever).start()
         # This line reached when server is shutdown by being bootstrapped
+        while not shutdown and not core_inst.killSockets:
+            time.sleep(1)
     
     # Now that the bootstrap server has received a server, return the address
     return bootstrap_address
