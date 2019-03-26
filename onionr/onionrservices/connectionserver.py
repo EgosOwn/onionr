@@ -40,6 +40,7 @@ class ConnectionServer:
         service_port = getOpenPort()
         service_ip = api.setBindIP()
         http_server = WSGIServer(('127.0.0.1', service_port), service_app, log=None)
+        core_inst.onionrInst.communicatorInst.service_greenlets.append(http_server)
 
         # TODO define basic endpoints useful for direct connections like stats
         # TODO load endpoints from plugins
@@ -53,6 +54,6 @@ class ConnectionServer:
             # Create the v3 onion service
             response = controller.create_ephemeral_hidden_service({80: service_port}, await_publication = True, key_type='NEW', key_content = 'ED25519-V3')
             self.core_inst._utils.doPostRequest('http://' + address + '/bs/' + response.service_id, port=socks)
-            logger.info('hosting on ' + response.service_id)
+            logger.info('hosting on %s with %s' % (response.service_id, peer))
             http_server.serve_forever()
             http_server.stop()
