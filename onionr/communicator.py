@@ -111,6 +111,7 @@ class OnionrCommunicatorDaemon:
         if config.get('general.socket_servers', False):
             self.services = onionrservices.OnionrServices(self._core)
             self.active_services = []
+            self.service_greenlets = []
             OnionrCommunicatorTimers(self, servicecreator.service_creator, 5, maxThreads=50, myArgs=(self,))
         else:
             self.services = None
@@ -148,7 +149,8 @@ class OnionrCommunicatorDaemon:
             pass
 
         logger.info('Goodbye.')
-        self._core.killSockets = True
+        for server in self.service_greenlets:
+            server.stop()
         self._core._utils.localCommand('shutdown') # shutdown the api
         time.sleep(0.5)
 

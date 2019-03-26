@@ -37,6 +37,12 @@ def bootstrap_client_service(peer, core_inst=None, bootstrap_timeout=300):
     bootstrap_port = getOpenPort()
     bootstrap_app = Flask(__name__)
     http_server = WSGIServer(('127.0.0.1', bootstrap_port), bootstrap_app, log=None)
+    try:
+        core_inst.onionrInst.communicatorInst
+    except AttributeError:
+        pass
+    else:
+        core_inst.onionrInst.communicatorInst.service_greenlets.append(http_server)
     
     bootstrap_address = ''
     shutdown = False

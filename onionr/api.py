@@ -27,6 +27,7 @@ from onionrblockapi import Block
 import onionrutils, onionrexceptions, onionrcrypto, blockimporter, onionrevents as events, logger, config
 import httpapi
 from httpapi import friendsapi, simplecache
+from onionrservices import httpheaders
 import onionr
 
 class FDSafeHandler(WSGIHandler):
@@ -92,17 +93,9 @@ class PublicAPI:
         @app.after_request
         def sendHeaders(resp):
             '''Send api, access control headers'''
-            resp.headers['Date'] = 'Thu, 1 Jan 1970 00:00:00 GMT' # Clock info is probably useful to attackers. Set to unix epoch, since we can't fully remove the header.
-            # CSP to prevent XSS. Mainly for client side attacks (if hostname protection could somehow be bypassed)
-            resp.headers["Content-Security-Policy"] =  "default-src 'none'; script-src 'none'; object-src 'none'; style-src data: 'unsafe-inline'; img-src data:; media-src 'none'; frame-src 'none'; font-src 'none'; connect-src 'none'"
-            # Prevent click jacking
-            resp.headers['X-Frame-Options'] = 'deny'
-            # No sniff is possibly not needed
-            resp.headers['X-Content-Type-Options'] = "nosniff"
+            resp = httpheaders.set_default_onionr_http_headers(resp)
             # Network API version
             resp.headers['X-API'] = onionr.API_VERSION
-            # Close connections to limit FD use
-            resp.headers['Connection'] = "close"
             self.lastRequest = clientAPI._core._utils.getRoundedEpoch(roundS=5)
             return resp
 
@@ -300,15 +293,11 @@ class API:
         @app.after_request
         def afterReq(resp):
             # Security headers
+            resp = httpheaders.set_default_onionr_http_headers(resp)
             if request.endpoint == 'site':
                 resp.headers['Content-Security-Policy'] = "default-src 'none'; style-src data: 'unsafe-inline'; img-src data:"
             else:
                 resp.headers['Content-Security-Policy'] = "default-src 'none'; script-src 'self'; object-src 'none'; style-src 'self'; img-src 'self'; media-src 'none'; frame-src 'none'; font-src 'none'; connect-src 'self'"
-            resp.headers['X-Frame-Options'] = 'deny'
-            resp.headers['X-Content-Type-Options'] = "nosniff"
-            resp.headers['Server'] = ''
-            resp.headers['Date'] = 'Thu, 1 Jan 1970 00:00:00 GMT' # Clock info is probably useful to attackers. Set to unix epoch.
-            resp.headers['Connection'] = "close"
             return resp
 
         @app.route('/board/', endpoint='board')
