@@ -19,7 +19,7 @@
 '''
 
 # Imports some useful libraries
-import locale
+import locale, sys, os
 
 locale.setlocale(locale.LC_ALL, '')
 
