@@ -149,8 +149,13 @@ class OnionrCommunicatorDaemon:
             pass
 
         logger.info('Goodbye.')
-        for server in self.service_greenlets:
-            server.stop()
+        try:
+            self.service_greenlets
+        except AttributeError:
+            pass
+        else:
+            for server in self.service_greenlets:
+                server.stop()
         self._core._utils.localCommand('shutdown') # shutdown the api
         time.sleep(0.5)
 

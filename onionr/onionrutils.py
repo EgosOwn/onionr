@@ -25,7 +25,7 @@ import onionrexceptions
 from onionr import API_VERSION
 import onionrevents
 import storagecounter
-from etc import pgpwords
+from etc import pgpwords, onionrvalues
 from onionrusers import onionrusers 
 if sys.version_info < (3, 6):
     try:
@@ -179,8 +179,8 @@ class OnionrUtils:
                 expireTime = myBlock.getHeader('expire')
                 assert len(str(int(expireTime))) < 20 # test that expire time is an integer of sane length (for epoch)
             except (AssertionError, ValueError, TypeError) as e:
-                pass
-            else:
+                expireTime = onionrvalues.OnionrValues().default_expire
+            finally:
                 self._core.updateBlockInfo(blockHash, 'expire', expireTime)
             if not blockType is None:
                 self._core.updateBlockInfo(blockHash, 'dataType', blockType)
@@ -253,7 +253,7 @@ class OnionrUtils:
                 pass
 
         # Validate metadata dict for invalid keys to sizes that are too large
-        maxAge = config.get("general.max_block_age", 2678400)
+        maxAge = config.get("general.max_block_age", onionrvalues.OnionrValues().default_expire)
         if type(metadata) is dict:
             for i in metadata:
                 try:
@@ -285,7 +285,7 @@ class OnionrUtils:
                     try:
                         assert int(metadata[i]) > self.getEpoch()
                     except AssertionError:
-                        logger.warn('Block is expired: %s greater than %s' % (metadata[i], self.getEpoch()))
+                        logger.warn('Block is expired: %s less than %s' % (metadata[i], self.getEpoch()))
                         break
                 elif i == 'encryptType':
                     try:
