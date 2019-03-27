@@ -6,7 +6,7 @@ PREFIX = /usr/local
 .DEFAULT_GOAL := setup
 
 setup:
-	sudo pip3 install -r requirements.txt
+	pip3 install -r requirements.txt --require-hashes --user
 	-@cd onionr/static-data/ui/; ./compile.py
 
 install:

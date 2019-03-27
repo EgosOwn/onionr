@@ -17,3 +17,8 @@ core
 .vscode/*
 venv/*
 onionr/fs*
+
+# package files
+onionr-*.pkg.tar.gz
+pkg/
+src/
