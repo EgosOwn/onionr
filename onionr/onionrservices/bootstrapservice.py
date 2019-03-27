@@ -23,6 +23,7 @@ from stem.control import Controller
 from flask import Flask, Response
 import core
 from netcontroller import getOpenPort
+from . import httpheaders
 
 def bootstrap_client_service(peer, core_inst=None, bootstrap_timeout=300):
     '''
@@ -51,6 +52,12 @@ def bootstrap_client_service(peer, core_inst=None, bootstrap_timeout=300):
     @bootstrap_app.route('/ping')
     def get_ping():
         return "pong!"
+
+    @bootstrap_app.after_request
+    def afterReq(resp):
+        # Security headers
+        resp = httpheaders.set_default_onionr_http_headers(resp)
+        return resp
 
     @bootstrap_app.route('/bs/<address>', methods=['POST'])
     def get_bootstrap(address):

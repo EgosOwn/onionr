@@ -24,6 +24,7 @@ from flask import Flask
 import core, logger
 from netcontroller import getOpenPort
 import api
+from . import httpheaders
 
 class ConnectionServer:
     def __init__(self, peer, address, core_inst=None):
@@ -47,6 +48,12 @@ class ConnectionServer:
         @service_app.route('/ping')
         def get_ping():
             return "pong!"
+
+        @service_app.after_request
+        def afterReq(resp):
+            # Security headers
+            resp = httpheaders.set_default_onionr_http_headers(resp)
+            return resp
 
         with Controller.from_port(port=core_inst.config.get('tor.controlPort')) as controller:
             # Connect to the Tor process for Onionr
