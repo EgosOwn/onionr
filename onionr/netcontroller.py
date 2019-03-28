@@ -46,12 +46,10 @@ class NetController:
     '''
 
     def __init__(self, hsPort, apiServerIP='127.0.0.1'):
-        try:
-            self.dataDir = os.environ['ONIONR_HOME']
-            if not self.dataDir.endswith('/'):
-                self.dataDir += '/'
-        except KeyError:
-            self.dataDir = 'data/'
+        # set data dir
+        self.dataDir = os.environ.get('ONIONR_HOME', os.environ.get('DATA_DIR', 'data/'))
+        if not self.dataDir.endswith('/'):
+            self.dataDir += '/'
 
         self.torConfigLocation = self.dataDir + 'torrc'
         self.readyState = False
@@ -165,7 +163,7 @@ HiddenServicePort 80 ''' + self.apiServerIP + ''':''' + str(self.hsPort)
         except KeyboardInterrupt:
             logger.fatal('Got keyboard interrupt.', timestamp = False, level = logger.LEVEL_IMPORTANT)
             return False
-        
+
         logger.debug('Finished starting Tor.', timestamp=True)
         self.readyState = True
 

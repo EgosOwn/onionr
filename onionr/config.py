@@ -20,13 +20,11 @@
 
 import os, json, logger
 
-try:
-    dataDir = os.environ['ONIONR_HOME']
-    if not dataDir.endswith('/'):
-        dataDir += '/'
-except KeyError:
-    dataDir = 'data/'
-    
+# set data dir
+dataDir = os.environ.get('ONIONR_HOME', os.environ.get('DATA_DIR', 'data/'))
+if not dataDir.endswith('/'):
+    dataDir += '/'
+
 _configfile = os.path.abspath(dataDir + 'config.json')
 _config = {}
 
