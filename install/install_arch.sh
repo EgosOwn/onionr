@@ -7,7 +7,11 @@ LOG_DIR='/var/log/onionr'
 
 BRANCH='master'
 
+# setup error handlers
+
 set -e
+
+trap "echo -e '\033[31mOnionr installation failed.\033[0m' >&2; exit 1337" ERR INT TERM
 
 # require root permissions
 
@@ -73,5 +77,7 @@ systemctl start onionr
 "$EXECUTABLE" --header 'Onionr successfully installed.'
 
 # and we're good!
+
+trap - ERR
 
 exit 0
