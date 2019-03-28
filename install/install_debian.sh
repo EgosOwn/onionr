@@ -22,7 +22,7 @@ fi
 
 # install basic dependencies
 
-apt install git curl python3.7 python3-pip python3-setuptools tor
+apt -y install git curl python3.7 python3-pip python3-setuptools tor
 
 # get the repository
 
