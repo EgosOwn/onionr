@@ -68,8 +68,8 @@ cp "$OUTPUT_DIR/install/onionr.service" "$SERVICE"
 chmod 644 "$SERVICE"
 chown root:root "$SERVICE"
 
-systemctl enable onionr
 systemctl daemon-reload
+systemctl enable onionr
 systemctl start onionr
 
 # pretty header thing
