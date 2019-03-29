@@ -5,8 +5,6 @@ version = ''
 with open('../onionr/onionr.py', 'r') as f:
     version = f.read().split("ONIONR_VERSION = '")[1].split("'")[0]
 
-version_tuple = tuple(ONIONR_VERSION.split('.'))
-
 print('Current Onionr release version is %s (MAJOR.MINOR.VERSION)\n' % version)
 
 new_version = input('Enter new version: ')
@@ -24,12 +22,12 @@ print('\n------\n')
 if confirm.lower().startswith('y'):
     print('- Updating version in onionr.py')
     
-    with open('../onionr/onionr.py', 'rw') as f:
+    with open('../onionr/onionr.py', 'w+') as f:
         f.write(f.read().replace("ONIONR_VERSION = '%s'" % version, "ONIONR_VERSION = '%s'" % new_version))
         
     print('- Updating version in PKGBUILD')
     
-    with open('../onionr/PKGBUILD', 'rw') as f:
+    with open('../onionr/PKGBUILD', 'w+') as f:
         f.write(f.read().replace("pkgver=%s" % version, "pkgver=%s" % new_version))
     
     print('- Committing changes')
