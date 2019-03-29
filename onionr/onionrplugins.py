@@ -155,6 +155,28 @@ def stop(name, onionr = None):
 
     return None
 
+# credit: https://stackoverflow.com/a/29589414
+def import_module_from_file(full_path_to_module):
+    """
+    Import a module given the full path/filename of the .py file
+
+    Python 3.4
+
+    """
+
+    module = None
+
+    # Get module name and path from full path
+    module_dir, module_file = os.path.split(full_path_to_module)
+    module_name, module_ext = os.path.splitext(module_file)
+
+    # Get module "spec" from filename
+    spec = importlib.util.spec_from_file_location(module_name,full_path_to_module)
+
+    module = spec.loader.load_module()
+
+    return module
+
 def get_plugin(name):
     '''
         Returns the instance of a module
@@ -165,7 +187,7 @@ def get_plugin(name):
     if str(name).lower() in _instances:
         return _instances[str(name).lower()]
     else:
-        _instances[str(name).lower()] = importlib.import_module(get_plugins_folder(name, False).replace('/', '.') + 'main')
+        _instances[str(name).lower()] = import_module_from_file(get_plugins_folder(name, False) + 'main.py')
         return get_plugin(name)
 
 def get_plugins():
