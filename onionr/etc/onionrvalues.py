@@ -22,4 +22,4 @@ class OnionrValues:
     def __init__(self):
         self.passwordLength = 20
         self.blockMetadataLengths = {'meta': 1000, 'sig': 200, 'signer': 200, 'time': 10, 'powRandomToken': 1000, 'encryptType': 4, 'expire': 14} #TODO properly refine values to minimum needed
-        self.default_expire = 2678400
+        self.default_expire = 2592000

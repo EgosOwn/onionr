@@ -23,14 +23,15 @@ import locale, sys, os
 
 locale.setlocale(locale.LC_ALL, '')
 
-plugin_name = 'clandenstine'
+plugin_name = 'clandestine'
 PLUGIN_VERSION = '0.0.0'
 
 sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
-from . import controlapi
+from . import controlapi, peerserver
 flask_blueprint = controlapi.flask_blueprint
+direct_blueprint = peerserver.direct_blueprint
 
-class Clandenstine:
+class Clandestine:
     def __init__(self, pluginapi):
         self.myCore = pluginapi.get_core()
 
@@ -42,5 +43,5 @@ def on_init(api, data = None):
     '''
 
     pluginapi = api
-    chat = Clandenstine(pluginapi)
+    chat = Clandestine(pluginapi)
     return

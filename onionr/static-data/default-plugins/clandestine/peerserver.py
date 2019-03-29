@@ -1,7 +1,7 @@
 '''
     Onionr - P2P Anonymous Storage Network
 
-    HTTP endpoints for controlling IMs
+    HTTP endpoints for communicating with peers
 '''
 '''
     This program is free software: you can redistribute it and/or modify
@@ -17,10 +17,26 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-from flask import Response, request, redirect, Blueprint, abort
+import core
+from flask import Response, request, redirect, Blueprint, abort, g
 
-flask_blueprint = Blueprint('clandenstine', __name__)
+direct_blueprint = Blueprint('clandestine', __name__)
+core_inst = core.Core()
 
-@flask_blueprint.route('/clandenstine/ping')
-def ping():
-    return 'pong!'
+storage_dir = core_inst.dataDir
+
+@direct_blueprint.before_request
+def request_setup():
+    core_inst.keyStore.refresh()
+    host = request.host
+    host = host.strip('.b32.i2p')
+    host = host.strip('.onion')
+    g.host = host
+    g.peer = core_inst.keyStore.get('dc-' + g.host)
+
+@direct_blueprint.route('/clandestine/ping')
+def pingdirect():
+    return 'pong!' + g.peer
+
+@direct_blueprint.route('/clandestine/send')
+def poll_chat
