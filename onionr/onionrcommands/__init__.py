@@ -53,6 +53,7 @@ def get_commands(onionr_inst):
     return {'': onionr_inst.showHelpSuggestion,
     'help': onionr_inst.showHelp,
     'version': onionr_inst.version,
+    'header': onionr_inst.cmdHeader,
     'config': onionr_inst.configure,
     'start': onionr_inst.start,
     'stop': onionr_inst.killDaemon,
