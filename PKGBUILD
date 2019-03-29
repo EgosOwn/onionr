@@ -1,6 +1,6 @@
 url="https://onionr.net/"
 pkgname="onionr"
-pkgver=0.0
+pkgver=0.0.0
 pkgrel=1
 pkgdesc="P2P anonymous storage network"
 arch=("x86_64")
