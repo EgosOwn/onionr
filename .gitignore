@@ -17,3 +17,16 @@ core
 .vscode/*
 venv/*
 onionr/fs*
+
+# log files
+output.log
+*.log
+onionr/output.log
+onionr/*.log
+onionr/data/output.log
+onionr/data/*.log
+
+# package files
+onionr-*.pkg.tar.gz
+pkg/
+src/

@@ -39,12 +39,10 @@ class Core:
             Initialize Core Onionr library
         '''
 
-        try:
-            self.dataDir = os.environ['ONIONR_HOME']
-            if not self.dataDir.endswith('/'):
-                self.dataDir += '/'
-        except KeyError:
-            self.dataDir = 'data/'
+        # set data dir
+        self.dataDir = os.environ.get('ONIONR_HOME', os.environ.get('DATA_DIR', 'data/'))
+        if not self.dataDir.endswith('/'):
+            self.dataDir += '/'
 
         try:
             self.onionrInst = None
