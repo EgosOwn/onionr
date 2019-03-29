@@ -7,11 +7,13 @@ arch=("x86_64")
 license=('GPL')
 source=("onionr-${pkgver}::git+https://gitlab.com/beardog/onionr.git#branch=master")
 md5sums=('SKIP')
-makedepends=('git', 'python3-pip')
+makedepends=('git' 'python' 'python-pip')
+depends=('tor' 'python' 'python-pip')
 
 build() {
         cd "$pkgname-${pkgver}"
-        make
+        cd install
+        ./install_arch.sh
 }
 
 package() {
