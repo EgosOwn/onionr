@@ -22,20 +22,26 @@ fi
 
 # install basic dependencies
 
-apt install -y git curl python3.7 python3-pip python3-setuptools tor
+echo -e "\033[0;32mInstalling apt dependencies...\033[0m"
+
+apt install -y git curl python3.7 python3-pip python3-setuptools tor > /dev/null
 
 # get the repository
 
+echo -e "\033[0;32mCloning Onionr repository...\033[0m"
+
 rm -rf "$OUTPUT_DIR" "$DATA_DIR" "$LOG_DIR"
 
-git clone https://gitlab.com/beardog/onionr "$OUTPUT_DIR"
+git clone --quiet https://gitlab.com/beardog/onionr "$OUTPUT_DIR" > /dev/null
 
 cd "$OUTPUT_DIR"
-git checkout "$BRANCH"
+git checkout -q "$BRANCH" > /dev/null
 
 # install python dependencies
 
-python3.7 -m pip install --no-input -r "$OUTPUT_DIR/requirements.txt" --require-hashes
+echo -e "\033[0;32mInstalling pip dependencies...\033[0m"
+
+python3.7 -m pip install --no-input -r "$OUTPUT_DIR/requirements.txt" --require-hashes > /dev/null
 
 # create nologin onionr user if not exists
 
