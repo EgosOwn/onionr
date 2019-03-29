@@ -1,9 +1,11 @@
 import os
 
 version = ''
+contents = ''
 
 with open('../onionr/onionr.py', 'r') as f:
-    version = f.read().split("ONIONR_VERSION = '")[1].split("'")[0]
+    contents = f.read()
+    version = contents.split("ONIONR_VERSION = '")[1].split("'")[0]
 
 print('Current Onionr release version is %s (MAJOR.MINOR.VERSION)\n' % version)
 
@@ -23,7 +25,7 @@ if confirm.lower().startswith('y'):
     print('- Updating version in onionr.py')
     
     with open('../onionr/onionr.py', 'w+') as f:
-        f.write(f.read().replace("ONIONR_VERSION = '%s'" % version, "ONIONR_VERSION = '%s'" % new_version))
+        f.write(contents.replace("ONIONR_VERSION = '%s'" % version, "ONIONR_VERSION = '%s'" % new_version))
         
     print('- Updating version in PKGBUILD')
     
@@ -40,7 +42,7 @@ if confirm.lower().startswith('y'):
     
     print('- Pushing changes')
     
-    os.system('cd ..; git push origin --tags')
+    # os.system('cd ..; git push origin --tags')
     
     print('\n------\n\nAll done. Create a merge request into master at this link:\n\nhttps://gitlab.com/beardog/Onionr/merge_requests/new?merge_request%5Bsource_project_id%5D=5020889&merge_request%5Btarget_branch%5D=master&merge_request%5Btarget_project_id%5D=5020889')
 else:
