@@ -22,9 +22,9 @@ fi
 
 # install basic dependencies
 
-echo -e "\033[0;32mInstalling apt dependencies...\033[0m"
+echo -e "\033[0;32mInstalling pacman dependencies...\033[0m"
 
-pacman --needed --noconfirm -S git curl python python-pip tor > /dev/null
+! ((pacman --needed --noconfirm -S git curl python python-pip tor > /dev/null) 2>&1 | grep -v warning 1>&2) | grep .
 
 # get the repository
 

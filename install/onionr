@@ -8,5 +8,5 @@ export OUTPUT_DIR=${OUTPUT_DIR:=/usr/share/onionr}
 export ONIONR_HOME=${ONIONR_HOME:=/etc/onionr}
 export LOG_DIR=${LOG_DIR:=/var/log/onionr}
 
-cd "$OUTPUT_DIR"
-exec su onionr -s /bin/sh -c "./onionr.sh ""$@"""
+cd "$OUTPUT_DIR/onionr"
+exec su onionr -s /bin/sh -c "python3.7 onionr.py ""$@"""

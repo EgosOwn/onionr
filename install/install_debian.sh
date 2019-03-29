@@ -24,7 +24,7 @@ fi
 
 echo -e "\033[0;32mInstalling apt dependencies...\033[0m"
 
-apt install -y git curl python3.7 python3-pip python3-setuptools tor > /dev/null
+apt-get install -y git curl python3.7 python3-pip python3-setuptools tor > /dev/null
 
 # get the repository
 
@@ -45,7 +45,7 @@ python3.7 -m pip install --no-input -r "$OUTPUT_DIR/requirements.txt" --require-
 
 # create nologin onionr user if not exists
 
-id -u onionr &>/dev/null || useradd -r -s /sbin/nologin onionr
+id -u onionr &>/dev/null || useradd -r -s /bin/false onionr
 
 chmod 755 "$OUTPUT_DIR"
 chown -R onionr:onionr "$OUTPUT_DIR"
