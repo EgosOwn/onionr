@@ -45,6 +45,8 @@ if confirm.lower().startswith('y'):
     # os.system('cd ..; git push origin --tags')
     
     print('\n------\n\nAll done. Create a merge request into master at this link:\n\nhttps://gitlab.com/beardog/Onionr/merge_requests/new?merge_request%5Bsource_project_id%5D=5020889&merge_request%5Btarget_branch%5D=master&merge_request%5Btarget_project_id%5D=5020889')
+    
+    print('\nNOTE: The default configuration file was not changed. Please make sure it is not in dev mode, and that log.verbosity is "error".')
 else:
     print('Change cancelled. No action has been taken.')
 
