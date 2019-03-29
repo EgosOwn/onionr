@@ -19,7 +19,7 @@
 '''
 
 import sys, getpass
-import logger
+import logger, onionrexceptions
 from onionrusers import onionrusers
 def add_ID(o_inst):
     try:
@@ -38,7 +38,7 @@ def add_ID(o_inst):
                 logger.info('Generating deterministic key. This can take a while.')
                 newID, privKey = o_inst.onionrCore._crypto.generateDeterministic(pass1)
             except onionrexceptions.PasswordStrengthError:
-                logger.error('Must use at least 25 characters.')
+                logger.error('Passphrase must use at least %s characters.' % (o_inst.onionrCore._crypto.deterministicRequirement,))
                 sys.exit(1)
         else:
             logger.error('Passwords do not match.')

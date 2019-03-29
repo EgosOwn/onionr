@@ -796,11 +796,11 @@ class Core:
                 retData = False
             else:
                 # Tell the api server through localCommand to wait for the daemon to upload this block to make stastical analysis more difficult
-                self._utils.localCommand('/waitforshare/' + retData, post=True)
+                if self._utils.localCommand('/ping', maxWait=10) == 'pong!':
+                    self._utils.localCommand('/waitforshare/' + retData, post=True, maxWait=5)
+                    self.daemonQueueAdd('uploadBlock', retData)
                 self.addToBlockDB(retData, selfInsert=True, dataSaved=True)
-                #self.setBlockType(retData, meta['type'])
                 self._utils.processBlockMetadata(retData)
-                self.daemonQueueAdd('uploadBlock', retData)
 
         if retData != False:
             if plaintextPeer == 'OVPCZLOXD6DC5JHX4EQ3PSOGAZ3T24F75HQLIUZSDSMYPEOXCPFA====':

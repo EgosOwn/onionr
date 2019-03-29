@@ -12,6 +12,7 @@ def service_creator(daemon):
             bs = utils.bytesToStr(bl.bcontent) + '.onion'
             if utils.validatePubKey(bl.signer) and utils.validateID(bs):
                 daemon.active_services.append(b)
+                daemon.active_services.append(bl.signer)
                 daemon.services.create_server(bl.signer, bs)
     
     daemon.decrementThreadCount('service_creator')

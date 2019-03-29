@@ -19,11 +19,11 @@
 '''
 import onionrplugins
 
-def load_plugin_blueprints(flaskapp):
+def load_plugin_blueprints(flaskapp, blueprint='flask_blueprint'):
     '''Iterate enabled plugins and load any http endpoints they have'''
     for plugin in onionrplugins.get_enabled_plugins():
         plugin = onionrplugins.get_plugin(plugin)
         try:
-            flaskapp.register_blueprint(getattr(plugin, 'flask_blueprint'))
+            flaskapp.register_blueprint(getattr(plugin, blueprint))
         except AttributeError:
             pass
