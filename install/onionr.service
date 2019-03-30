@@ -4,11 +4,11 @@ Requires=network.target tor.service
 After=network.target tor.service
 
 [Service]
+Type=simple
 Environment="DATA_DIR=/usr/share/onionr"
 Environment="LOG_DIR=/var/log/onionr/"
 ExecStart=/usr/bin/onionr --start
 ExecStop=/usr/bin/onionr --stop
-Type=simple
 Restart=always
 
 [Install]

@@ -2,8 +2,6 @@
 
 set -e
 
-[ "root" != "$USER" ] && exec sudo $0 "$@"
-
 export OUTPUT_DIR=${OUTPUT_DIR:=/usr/share/onionr}
 
 if [ -n "$HOME" ]; then
@@ -17,6 +15,8 @@ else
 fi
 
 mkdir -p "$ONIONR_HOME" "$LOG_DIR"
+
+chmod -R 700 "$ONIONR_HOME" "$LOG_DIR"
 
 cd "$OUTPUT_DIR/onionr"
 exec python3.7 onionr.py "$@"
