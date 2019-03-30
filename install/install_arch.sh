@@ -5,7 +5,7 @@ OUTPUT_DIR='/usr/share/onionr'
 DATA_DIR='/etc/onionr'
 LOG_DIR='/var/log/onionr'
 
-BRANCH='master'
+BRANCH='easy-releases'
 
 # setup error handlers
 
@@ -43,12 +43,10 @@ echo -e "\033[0;32mInstalling pip dependencies...\033[0m"
 
 pip3 install --no-input -r "$OUTPUT_DIR/requirements.txt" --require-hashes > /dev/null
 
-# create nologin onionr user if not exists
-
-id -u onionr &>/dev/null || useradd -r -s /sbin/nologin onionr
+# set permissions on Onionr directory
 
 chmod 755 "$OUTPUT_DIR"
-chown -R onionr:onionr "$OUTPUT_DIR"
+chown -R root:root "$OUTPUT_DIR"
 
 # create directories
 
@@ -56,7 +54,7 @@ mkdir -p "$OUTPUT_DIR/onionr/data" "$LOG_DIR"
 mv "$OUTPUT_DIR/onionr/data" "$DATA_DIR"
 
 chmod -R 750 "$DATA_DIR" "$LOG_DIR"
-chown -R onionr:onionr "$DATA_DIR" "$LOG_DIR"
+chown -R root:root "$DATA_DIR" "$LOG_DIR"
 
 # create executable
 
@@ -66,6 +64,8 @@ chmod 755 "$EXECUTABLE"
 chown root:root "$EXECUTABLE"
 
 # create systemd service
+
+echo -e "\033[0;32mCreating systemd unit...\033[0m"
 
 SERVICE='/etc/systemd/system/onionr.service'
 
