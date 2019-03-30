@@ -17,6 +17,7 @@ fi
 mkdir -p "$ONIONR_HOME" "$LOG_DIR"
 
 chmod -R 700 "$ONIONR_HOME" "$LOG_DIR"
+chown -R $USER:$USER "$ONIONR_HOME" "$LOG_DIR"
 
 cd "$OUTPUT_DIR/onionr"
 exec python3.7 onionr.py "$@"
