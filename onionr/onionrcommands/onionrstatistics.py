@@ -104,7 +104,7 @@ def show_peers(o_inst):
         if not type(peers) is None:
             if peers not in ('', 'failure', None):
                 if peers != False:
-                    print(peers)
+                    logger.info('Peers: %s' % peers)
                 else:
-                    print('Daemon probably not running. Unable to list connected peers.')
+                    logger.warn('Daemon probably not running. Unable to list connected peers.')
                 break

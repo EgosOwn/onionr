@@ -123,7 +123,7 @@ class Onionr:
             config.set('client.client.port', randomPort, savefile=True)
         if type(config.get('client.public.port')) is type(None):
             randomPort = netcontroller.getOpenPort()
-            print(randomPort)
+            logger.debug('Random port chosen: %s' % randomPort)
             config.set('client.public.port', randomPort, savefile=True)
         if type(config.get('client.participate')) is type(None):
             config.set('client.participate', True, savefile=True)
