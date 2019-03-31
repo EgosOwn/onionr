@@ -50,6 +50,12 @@ class ConnectionServer:
         @service_app.route('/ping')
         def get_ping():
             return "pong!"
+        
+        @service_app.route('/shutdown')
+        def shutdown_server():
+            core_inst.onionrInst.communicatorInst.service_greenlets.remove(http_server)
+            http_server.stop()
+            return Response('goodbye')
 
         @service_app.after_request
         def afterReq(resp):
