@@ -39,8 +39,8 @@ def bootstrap_client_service(peer, core_inst=None, bootstrap_timeout=300):
     bootstrap_app = Flask(__name__)
     http_server = WSGIServer(('127.0.0.1', bootstrap_port), bootstrap_app, log=None)
     try:
-        core_inst.onionrInst.communicatorInst
-    except AttributeError:
+        assert core_inst.onionrInst.communicatorInst is not None
+    except (AttributeError, AssertionError) as e:
         pass
     else:
         core_inst.onionrInst.communicatorInst.service_greenlets.append(http_server)

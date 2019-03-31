@@ -20,8 +20,9 @@
 
 # Imports some useful libraries
 import locale, sys, os
-
 locale.setlocale(locale.LC_ALL, '')
+import onionrservices, logger
+from onionrservices import bootstrapservice
 
 plugin_name = 'clandestine'
 PLUGIN_VERSION = '0.0.0'
@@ -31,9 +32,29 @@ from . import controlapi, peerserver
 flask_blueprint = controlapi.flask_blueprint
 direct_blueprint = peerserver.direct_blueprint
 
+def exit_with_error(text=''):
+    if text != '':
+        logger.error(text)
+    sys.exit(1)
+
 class Clandestine:
     def __init__(self, pluginapi):
         self.myCore = pluginapi.get_core()
+    
+    def create(self):
+        try:
+            peer = sys.argv[2]
+            if not self.myCore._utils.validatePubKey(peer):
+                exit_with_error('Invalid public key specified')
+        except IndexError:
+            exit_with_error('You must specify a peer public key')
+        
+        # Ask peer for transport address by creating block for them
+        peer_transport_address = bootstrapservice.bootstrap_client_service(peer, self.myCore)
+
+        print(peer_transport_address)
+        if self.myCore._utils.doGetRequest('http://%s/ping' % (peer_transport_address,), ignoreAPI=True, port=self.myCore.config.get('tor.socksport')) == 'pong!':
+            print('connected', peer_transport_address)
 
 def on_init(api, data = None):
     '''
@@ -44,4 +65,5 @@ def on_init(api, data = None):
 
     pluginapi = api
     chat = Clandestine(pluginapi)
+    api.commands.register(['clandestine'], chat.create)
     return
