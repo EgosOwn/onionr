@@ -69,9 +69,10 @@ def enable(name, onionr = None, start_event = True):
         if not name in enabled_plugins:
             try:
                 events.call(get_plugin(name), 'enable', onionr)
-            except ImportError: # Was getting import error on Gitlab CI test "data"
+            except ImportError as e: # Was getting import error on Gitlab CI test "data"
                 # NOTE: If you are experiencing issues with plugins not being enabled, it might be this resulting from an error in the module
                 # can happen inconsistenly (especially between versions)
+                logger.debug('Failed to enable module; Import error: %s' % e)
                 return False
             else:
                 enabled_plugins.append(name)
@@ -83,7 +84,8 @@ def enable(name, onionr = None, start_event = True):
         else:
             return False
     else:
-        logger.error('Failed to enable plugin \"%s\", disabling plugin.' % name)
+        logger.error('Failed to enable plugin \"%s\" (disabling plugin).' % name)
+        logger.debug('Plugins folder not found: %s' % get_plugins_folder(str(name).lower()))
         disable(name)
 
         return False
