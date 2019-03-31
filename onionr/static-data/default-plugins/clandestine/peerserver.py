@@ -17,9 +17,10 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
+import sys, os, json
 import core
 from flask import Response, request, redirect, Blueprint, abort, g
-
+sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
 direct_blueprint = Blueprint('clandestine', __name__)
 core_inst = core.Core()
 
@@ -36,7 +37,19 @@ def request_setup():
 
 @direct_blueprint.route('/clandestine/ping')
 def pingdirect():
-    return 'pong!' + g.peer
+    return 'pong!'
 
-@direct_blueprint.route('/clandestine/send')
-def poll_chat
+@direct_blueprint.route('/clandestine/sendto', methods=['POST', 'GET'])
+def sendto():
+    try:
+        msg = request.get_json(force=True)
+    except:
+        msg = ''
+    if msg == None or msg == '':
+        msg = json.dumps({'m': 'hello world', 't': core_inst._utils.getEpoch()})
+    core_inst._utils.localCommand('/clandestine/addrec/%s' % (g.peer,), post=True, postData=msg)
+    return Response('success')
+
+@direct_blueprint.route('/clandestine/poll')
+def poll_chat():
+    return Response(core_inst._utils.localCommand('/clandestine/gets/%s' % (g.peer,)))
