@@ -17,10 +17,55 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-from flask import Response, request, redirect, Blueprint, abort
+import json
+from flask import Response, request, redirect, Blueprint, g
+import core
 
-flask_blueprint = Blueprint('clandenstine', __name__)
+core_inst = core.Core()
+flask_blueprint = Blueprint('clandestine_control', __name__)
 
-@flask_blueprint.route('/clandenstine/ping')
+@flask_blueprint.route('/clandestine/ping')
 def ping():
     return 'pong!'
+
+@flask_blueprint.route('/clandestine/send/<peer>', methods=['POST'])
+def send_message(peer):
+    data = request.get_json(force=True)
+    core_inst.keyStore.refresh()
+    existing = core_inst.keyStore.get('s' + peer)
+    if existing is None:
+        existing = []
+    existing.append(data)
+    core_inst.keyStore.put('s' + peer, existing)
+    core_inst.keyStore.flush()
+    return Response('success')
+
+@flask_blueprint.route('/clandestine/gets/<peer>')
+def get_sent(peer):
+    sent = core_inst.keyStore.get('s' + peer)
+    if sent is None:
+        sent = []
+    return Response(json.dumps(sent))
+
+@flask_blueprint.route('/clandestine/addrec/<peer>', methods=['POST'])
+def add_rec(peer):
+    data = request.get_json(force=True)
+    core_inst.keyStore.refresh()
+    existing = core_inst.keyStore.get('r' + peer)
+    if existing is None:
+        existing = []
+    existing.append(data)
+    core_inst.keyStore.put('r' + peer, existing)
+    core_inst.keyStore.flush()
+    return Response('success')
+
+@flask_blueprint.route('/clandestine/getrec/<peer>')
+def get_messages(peer):
+    core_inst.keyStore.refresh()
+    existing = core_inst.keyStore.get('r' + peer)
+    if existing is None:
+        existing = []
+    else:
+        existing = list(existing)
+        core_inst.keyStore.delete('r' + peer)
+    return Response(json.dumps(existing))
