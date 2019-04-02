@@ -318,6 +318,16 @@ class API:
         @app.route('/friends/', endpoint='friendsindex')
         def loadContacts():
             return send_from_directory('static-data/www/friends/', 'index.html')
+        
+        @app.route('/serviceactive/<pubkey>')
+        def serviceActive(pubkey):
+            try:
+                if pubkey in self._core.onionrInst.communicatorInst.active_services:
+                    return Response('true')
+            except AttributeError as e:
+                print('attribute error', str(e))
+                pass
+            return Response('false')
 
         @app.route('/board/<path:path>', endpoint='boardContent')
         def boardContent(path):

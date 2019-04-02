@@ -70,7 +70,7 @@ class ConnectionServer:
             response = controller.create_ephemeral_hidden_service({80: service_port}, await_publication = True, key_type='NEW', key_content = 'ED25519-V3')
             self.core_inst.keyStore.put('dc-' + response.service_id, self.core_inst._utils.bytesToStr(peer))
             self.core_inst._utils.doPostRequest('http://' + address + '/bs/' + response.service_id, port=socks)
-            logger.info('hosting on %s with %s' % (response.service_id, peer))
+            logger.info('hosting on %s with %s' % (response.service_id,  peer))
             http_server.serve_forever()
             self.core_inst.keyStore.delete('dc-' + response.service_id)
             http_server.stop()

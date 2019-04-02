@@ -47,6 +47,8 @@ def sendto():
         msg = ''
     if msg == None or msg == '':
         msg = json.dumps({'m': 'hello world', 't': core_inst._utils.getEpoch()})
+    else:
+        msg = json.dumps(msg)
     core_inst._utils.localCommand('/clandestine/addrec/%s' % (g.peer,), post=True, postData=msg)
     return Response('success')
 
