@@ -19,7 +19,7 @@
 '''
 
 # Imports some useful libraries
-import locale, sys, os
+import locale, sys, os, threading, json
 locale.setlocale(locale.LC_ALL, '')
 import onionrservices, logger
 from onionrservices import bootstrapservice
@@ -40,7 +40,30 @@ def exit_with_error(text=''):
 class Clandestine:
     def __init__(self, pluginapi):
         self.myCore = pluginapi.get_core()
+        self.peer = None
+        self.transport = None
+        self.shutdown = False
     
+    def _sender_loop(self):
+        print('Enter a message to send, with ctrl-d or -s on a new line.')
+        print('-c on a new line or ctrl-c stops')
+        message = ''
+        while not self.shutdown:
+            try:
+                message += input()
+                if message == '-s':
+                    raise EOFError
+                elif message == '-c':
+                    raise KeyboardInterrupt
+                else:
+                    message += '\n'
+            except EOFError:
+                message = json.dumps({'m': message, 't': self.myCore._utils.getEpoch()})
+                print(self.myCore._utils.doPostRequest('http://%s/clandestine/sendto' % (self.transport,), port=self.socks, data=message))
+                message = ''
+            except KeyboardInterrupt:
+                self.shutdown = True
+
     def create(self):
         try:
             peer = sys.argv[2]
@@ -48,13 +71,16 @@ class Clandestine:
                 exit_with_error('Invalid public key specified')
         except IndexError:
             exit_with_error('You must specify a peer public key')
-        
+        self.peer = peer
         # Ask peer for transport address by creating block for them
         peer_transport_address = bootstrapservice.bootstrap_client_service(peer, self.myCore)
+        self.transport = peer_transport_address
+        self.socks = self.myCore.config.get('tor.socksport')
 
-        print(peer_transport_address)
-        if self.myCore._utils.doGetRequest('http://%s/ping' % (peer_transport_address,), ignoreAPI=True, port=self.myCore.config.get('tor.socksport')) == 'pong!':
+        print('connected with', peer, 'on', peer_transport_address)
+        if self.myCore._utils.doGetRequest('http://%s/ping' % (peer_transport_address,), ignoreAPI=True, port=self.socks) == 'pong!':
             print('connected', peer_transport_address)
+            threading.Thread(target=self._sender_loop).start()
 
 def on_init(api, data = None):
     '''
