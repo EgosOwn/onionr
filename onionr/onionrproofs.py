@@ -247,7 +247,7 @@ class POW:
         startNonce = nonce
         while self.hashing:
             #token = nacl.hash.blake2b(rand + self.data).decode()
-            self.metadata['powRandomToken'] = nonce
+            self.metadata['pow'] = nonce
             payload = json.dumps(self.metadata).encode() + b'\n' + self.data
             token = myCore._crypto.sha3Hash(payload)
             try:

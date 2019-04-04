@@ -75,7 +75,7 @@ class SubprocessPOW:
         difficulty = self.difficulty
         mcore = core.Core()
         while True:
-            metadata['powRandomToken'] = nonce
+            metadata['pow'] = nonce
             payload = json.dumps(metadata).encode() + b'\n' + data
             token = mcore._crypto.sha3Hash(payload)
             try:
