@@ -325,7 +325,6 @@ class API:
                 if pubkey in self._core.onionrInst.communicatorInst.active_services:
                     return Response('true')
             except AttributeError as e:
-                print('attribute error', str(e))
                 pass
             return Response('false')
 
