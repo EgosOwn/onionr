@@ -264,7 +264,7 @@ function getSentbox(){
                     e.target.parentNode.parentNode.removeChild(e.target.parentNode)
                     return
                 }
-                showSentboxWindow()
+                showSentboxWindow(resp[i]['peer'], message)
             }
         })(i, resp)
         threadPart.appendChild(entry)
