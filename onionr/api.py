@@ -26,7 +26,7 @@ import core
 from onionrblockapi import Block
 import onionrutils, onionrexceptions, onionrcrypto, blockimporter, onionrevents as events, logger, config
 import httpapi
-from httpapi import friendsapi, simplecache
+from httpapi import friendsapi, simplecache, profilesapi
 from onionrservices import httpheaders
 import onionr
 
@@ -256,7 +256,8 @@ class API:
         self.bindPort = bindPort
 
         # Be extremely mindful of this. These are endpoints available without a password
-        self.whitelistEndpoints = ('site', 'www', 'onionrhome', 'board', 'boardContent', 'sharedContent', 'mail', 'mailindex', 'friends', 'friendsindex')
+        self.whitelistEndpoints = ('site', 'www', 'onionrhome', 'board', 'profiles', 'profilesindex', 
+        'boardContent', 'sharedContent', 'mail', 'mailindex', 'friends', 'friendsindex')
 
         self.clientToken = config.get('client.webpassword')
         self.timeBypassToken = base64.b16encode(os.urandom(32)).decode()
@@ -272,6 +273,7 @@ class API:
         onionrInst.setClientAPIInst(self)
         app.register_blueprint(friendsapi.friends)
         app.register_blueprint(simplecache.simplecache)
+        app.register_blueprint(profilesapi.profile_BP)
         httpapi.load_plugin_blueprints(app)
 
         @app.before_request
@@ -318,6 +320,14 @@ class API:
         @app.route('/friends/', endpoint='friendsindex')
         def loadContacts():
             return send_from_directory('static-data/www/friends/', 'index.html')
+
+        @app.route('/profiles/<path:path>', endpoint='profiles')
+        def loadContacts(path):
+            return send_from_directory('static-data/www/profiles/', path)
+
+        @app.route('/profiles/', endpoint='profilesindex')
+        def loadContacts():
+            return send_from_directory('static-data/www/profiles/', 'index.html')
         
         @app.route('/serviceactive/<pubkey>')
         def serviceActive(pubkey):

@@ -42,6 +42,7 @@ def mail_delete(block):
     if block not in existing:
         existing.append(block)
     kv.put('deleted_mail', existing)
+    kv.flush()
     return 'success'
 
 @flask_blueprint.route('/mail/getinbox')
@@ -50,16 +51,30 @@ def list_inbox():
 
 @flask_blueprint.route('/mail/getsentbox')
 def list_sentbox():
+    kv.refresh()
     sentbox_list = sentboxdb.SentBox(c).listSent()
-    sentbox_list_copy = list(sentbox_list)
+    list_copy = list(sentbox_list)
     deleted = kv.get('deleted_mail')
     if deleted is None:
         deleted = []
-    for x in range(len(sentbox_list_copy) - 1):
+    for x in list_copy:
+        if x['hash'] in deleted:
+            sentbox_list.remove(x)
+    return json.dumps(sentbox_list)
+'''
+@flask_blueprint.route('/mail/getsentbox')
+def list_sentbox():
+    sentbox_list = sentboxdb.SentBox(c).listSent()
+    sentbox_list_copy = list(sentbox_list)
+    kv.refresh()
+    deleted = kv.get('deleted_mail')
+    if deleted is None:
+        deleted = []
+    for x in range(len(sentbox_list_copy)):
         if sentbox_list_copy[x]['hash'] in deleted:
-            x -= 1
-            sentbox_list.pop(x)
+            sentbox_list.remove(sentbox_list_copy[x]['hash'])
         else:
             sentbox_list[x]['name'] = contactmanager.ContactManager(c, sentbox_list_copy[x]['peer'], saveUser=False).get_info('name')
 
     return json.dumps(sentbox_list)
+'''
