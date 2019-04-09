@@ -27,6 +27,8 @@ Users are identified by ed25519 public keys, which can be used to sign blocks or
 
 Onionr can be used for mail, as a social network, instant messenger, file sharing software, or for encrypted group discussion.
 
+The whitepaper (subject to change prior to first alpha release) is available [here](docs/whitepaper.md).
+
 ![Tor stinks slide image](docs/tor-stinks-02.png)
 
 ## Main Features

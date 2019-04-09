@@ -6,8 +6,7 @@ Onionr 'Blocks' are the primary means of sharing information in Onionr. Blocks a
 
 They contain a JSON metadata section followed by a line break, with the main data following.
 
-In the future, the spec will be updated to use flags and MessagePack instead of JSON with english keys.
-
+In the future, the specification will likely be updated to use flags and MessagePack instead of JSON with english keys.
 
 # Encryption and Signatures
 

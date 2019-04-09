@@ -26,7 +26,7 @@ threadContent = {}
 myPub = httpGet('/getActivePubkey')
 replyBtn = document.getElementById('replyBtn')
 
-function openReply(bHash){
+function openReply(bHash, quote, subject){
     var inbox = document.getElementsByClassName('threadEntry')
     var entry = ''
     var friendName = ''
@@ -41,13 +41,23 @@ function openReply(bHash){
     }
     key = entry.getAttribute('data-pubkey')
     document.getElementById('draftID').value = key
+    document.getElementById('draftSubject').value = 'RE: ' + subject
+
+    // Add quoted reply
+    var splitQuotes = quote.split('\n')
+    for (var x = 0; x < splitQuotes.length; x++){
+        splitQuotes[x] = '>' + splitQuotes[x]
+    }
+    quote = splitQuotes.join('\n')
+    document.getElementById('draftText').value = quote
     setActiveTab('send message')
 }
 
-function openThread(bHash, sender, date, sigBool, pubkey){
+function openThread(bHash, sender, date, sigBool, pubkey, subjectLine){
     var messageDisplay = document.getElementById('threadDisplay')
     var blockContent = httpGet('/getblockbody/' + bHash)
     document.getElementById('fromUser').value = sender
+    document.getElementById('subjectView').innerText = subjectLine
     messageDisplay.innerText = blockContent
     var sigEl = document.getElementById('sigValid')
     var sigMsg = 'signature'
@@ -64,7 +74,7 @@ function openThread(bHash, sender, date, sigBool, pubkey){
     sigEl.innerText = sigMsg
     overlay('messageDisplay')
     replyBtn.onclick = function(){
-        openReply(bHash)
+        openReply(bHash, messageDisplay.innerText, subjectLine)
     }
 }
 
@@ -174,7 +184,7 @@ function loadInboxEntries(bHash){
             if (event.target.classList.contains('deleteBtn')){
                 return
             }
-            openThread(entry.getAttribute('data-hash'), senderInput.value, dateStr.innerText, resp['meta']['validSig'], entry.getAttribute('data-pubkey'))
+            openThread(entry.getAttribute('data-hash'), senderInput.value, dateStr.innerText, resp['meta']['validSig'], entry.getAttribute('data-pubkey'), subjectLine.innerText)
         }
 
         deleteBtn.onclick = function(){
@@ -216,7 +226,7 @@ function getSentbox(){
         if (keys.length == 0){
             threadPart.innerHTML = "nothing to show here yet."
         }
-        for (var i = 0; i < keys.length; i++){
+        for (var i = 0; i < keys.length; i++) (function(i, resp){
             var entry = document.createElement('div')
             var obj = resp[i]
             var toLabel = document.createElement('span')
@@ -245,19 +255,18 @@ function getSentbox(){
             entry.appendChild(toEl)
             entry.appendChild(preview)
             entry.appendChild(sentDate)
-            entry.onclick = (function(tree, el, msg) {return function() {
-                console.log(resp)
-                if (! entry.classList.contains('deleteBtn')){
-                    showSentboxWindow(el.value, msg)
-                }
-            };})(entry, toEl, message);
-            
-            deleteBtn.onclick = function(){
-                entry.parentNode.removeChild(entry);
-                deleteMessage(entry.getAttribute('data-hash'))
-            }
+
             threadPart.appendChild(entry)
-        } 
+
+            entry.onclick = function(e){
+                if (e.target.classList.contains('deleteBtn')){
+                    deleteMessage(e.target.parentNode.getAttribute('data-hash'))
+                    e.target.parentNode.parentNode.removeChild(e.target.parentNode)
+                    return
+                }
+                showSentboxWindow()
+            }
+        })(i, resp)
         threadPart.appendChild(entry)
       }.bind(threadPart))
 }
@@ -303,7 +312,6 @@ for (var i = 0; i < idStrings.length; i++){
 for (var i = 0; i < document.getElementsByClassName('refresh').length; i++){
     document.getElementsByClassName('refresh')[i].style.float = 'right'
 }
-
 
 fetch('/friends/list', {
     headers: {
