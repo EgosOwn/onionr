@@ -17,11 +17,11 @@
 
 **The main repository for this software is at https://gitlab.com/beardog/Onionr/**
 
-# Summary
+# About
 
 Onionr is a decentralized, peer-to-peer data storage network, designed to be anonymous and resistant to (meta)data analysis and spam/disruption.
 
-Onionr stores data in independent packages referred to as 'blocks'. The blocks are synced to all other nodes in the network. Blocks and user IDs cannot be easily proven to have been created by particular nodes (only inferred). Even if there is enough evidence to believe a particular node created a block, nodes still operate behind Tor or I2P and as such are not trivially known to be at a particular IP address.
+Onionr stores data in independent packages referred to as 'blocks'. The blocks are synced to all other nodes in the network. Blocks and user IDs cannot be easily proven to have been created by a particular user. Even if there is enough evidence to believe that a specific user created a block, nodes still operate behind Tor or I2P and as such cannot be trivially unmasked.
 
 Users are identified by ed25519 public keys, which can be used to sign blocks or send encrypted data.
 
@@ -36,7 +36,7 @@ The whitepaper (subject to change prior to first alpha release) is available [he
 * [X] 🌐 Fully p2p/decentralized, no trackers or other single points of failure
 * [X] 🔒 End to end encryption of user data
 * [X] 📢 Optional non-encrypted blocks, useful for blog posts or public file sharing
-* [X] 💻 Easy API system for integration to websites
+* [X] 💻 Easy API for integration to websites
 * [X] 🕵️ Metadata analysis resistance and anonymity
 * [X] 📡 Transport agnosticism (no internet required)
 
@@ -54,7 +54,7 @@ Friend/contact manager
 
 <img alt='Encrypted, metadata-masking mail application screenshot' src='docs/onionr-3.png' width=600>
 
-Encrypted, metadata-masking mail application.
+Encrypted, metadata-masking mail application. Perhaps the first distributed mail system to have basic forward secrecy.
 
 # Install and Run on Linux
 

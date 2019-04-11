@@ -186,7 +186,7 @@ class PublicAPI:
                         powHash = powHash.decode()
                     except AttributeError:
                         pass
-                    if powHash.startswith('0000'):
+                    if powHash.startswith('00000'):
                         newNode = clientAPI._core._utils.bytesToStr(newNode)
                         if clientAPI._core._utils.validateID(newNode) and not newNode in clientAPI._core.onionrInst.communicatorInst.newPeers:
                             clientAPI._core.onionrInst.communicatorInst.newPeers.append(newNode)
@@ -194,6 +194,8 @@ class PublicAPI:
                     else:
                         logger.warn(newNode.decode() + ' failed to meet POW: ' + powHash)
             resp = Response(resp)
+            if resp == 'failure':
+                return resp, 406
             return resp
 
         @app.route('/upload', methods=['post'])

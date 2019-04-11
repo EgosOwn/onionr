@@ -2,9 +2,9 @@
 
 # Block Description
 
-Onionr 'Blocks' are the primary means of sharing information in Onionr. Blocks are identified by a single hash value of their entire contents.
+Onionr Blocks are the primary means of sharing information in Onionr. Blocks are identified by a single hash value of their entire contents, using SHA3_256.
 
-They contain a JSON metadata section followed by a line break, with the main data following.
+Blocks contain a JSON metadata section followed by a line break, with the main data section comprising the rest.
 
 In the future, the specification will likely be updated to use flags and MessagePack instead of JSON with english keys.
 
