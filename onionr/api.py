@@ -270,7 +270,6 @@ class API:
         logger.info('Running api on %s:%s' % (self.host, self.bindPort))
         self.httpServer = ''
 
-        self.pluginResponses = {} # Responses for plugin endpoints
         self.queueResponse = {}
         onionrInst.setClientAPIInst(self)
         app.register_blueprint(friendsapi.friends)
@@ -369,7 +368,10 @@ class API:
                 pass
             else:
                 del self.queueResponse[name]
-            return Response(resp)
+            if resp == 'failure':
+                return resp, 404
+            else:
+                return resp
             
         @app.route('/ping')
         def ping():
@@ -522,36 +524,6 @@ class API:
                 pass
             threading.Thread(target=self._core.insertBlock, args=(message,), kwargs={'header': bType, 'encryptType': encryptType, 'sign':sign, 'asymPeer': to, 'meta': meta}).start()
             return Response('success')
-        
-        @app.route('/apipoints/<path:subpath>', methods=['POST', 'GET'])
-        def pluginEndpoints(subpath=''):
-            '''Send data to plugins'''
-            # TODO have a variable for the plugin to set data to that we can use for the response
-            pluginResponseCode = str(uuid.uuid4())
-            resp = 'success'
-            responseTimeout = 20
-            startTime = self._core._utils.getEpoch()
-            postData = {}
-            if request.method == 'POST':
-                postData = request.form['postData']
-            if len(subpath) > 1:
-                data = subpath.split('/')
-                if len(data) > 1:
-                    plName = data[0]
-                    events.event('pluginRequest', {'name': plName, 'path': subpath, 'pluginResponse': pluginResponseCode, 'postData': postData}, onionr=onionrInst)
-                    while True:
-                        try:
-                            resp = self.pluginResponses[pluginResponseCode]
-                        except KeyError:
-                            time.sleep(0.2)
-                            if self._core._utils.getEpoch() - startTime > responseTimeout:
-                                abort(504)
-                                break
-                        else:
-                            break
-            else:
-                abort(404)
-            return Response(resp)
 
         self.httpServer = WSGIServer((self.host, bindPort), app, log=None, handler_class=FDSafeHandler)
         self.httpServer.serve_forever()
@@ -578,8 +550,8 @@ class API:
     def getUptime(self):
         while True:
             try:
-                return self._utils.getEpoch - startTime
-            except AttributeError:
+                return self._utils.getEpoch() - self.startTime
+            except (AttributeError, NameError):
                 # Don't error on race condition with startup
                 pass
     
