@@ -45,9 +45,6 @@ def on_processblocks(api, data=None):
     # Generally fired by utils.
     myBlock = api.data['block']
     blockType = api.data['type']
-    logger.info('blockType is ' + blockType)
-    utils = api.get_utils()
-    core = api.get_core()
 
     # Process specific block types
 

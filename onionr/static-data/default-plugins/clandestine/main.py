@@ -26,9 +26,8 @@ from onionrservices import bootstrapservice
 
 plugin_name = 'clandestine'
 PLUGIN_VERSION = '0.0.0'
-
 sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
-from . import controlapi, peerserver
+import controlapi, peerserver
 flask_blueprint = controlapi.flask_blueprint
 direct_blueprint = peerserver.direct_blueprint
 

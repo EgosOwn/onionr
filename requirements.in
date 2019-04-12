@@ -7,3 +7,4 @@ Flask==1.0.2
 PySocks==1.6.8
 stem==1.7.1
 deadsimplekv==0.0.1
+jinja2==2.10.1
