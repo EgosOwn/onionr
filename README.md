@@ -56,6 +56,13 @@ Friend/contact manager
 
 Encrypted, metadata-masking mail application. Perhaps the first distributed mail system to have basic forward secrecy.
 
+# Documentation
+
+More docs coming soon.
+
+* [Block specification](docs/specs/block-spec.md)
+* [HTTP API](docs/http-api.md)
+
 # Install and Run on Linux
 
 The following applies to Ubuntu Bionic. Other distros may have different package or command names.

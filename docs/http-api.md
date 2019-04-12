@@ -1,7 +1,5 @@
 # Onionr HTTP API
 
-# About HTTP API
-
 All HTTP interfaces in the Onionr reference client use the [Flask](http://flask.pocoo.org/) web framework with the [gevent](http://www.gevent.org/) WSGI server.
 
 ## Client & Public difference
@@ -14,9 +12,65 @@ The public API server is available only remotely from Tor & I2P. It is the inter
 
 Please note: endpoints that simply provide static web app files are not documented here.
 
-(Client API docs coming soon)
+* /serviceactive/pubkey
+    - Methods: GET
+    - Returns true or false based on if a given public key has an active direct connection service.
+* /queueResponseAdd/key (DEPRECATED)
+    - Methods: POST
+    - Accepts form key 'data' to set queue response information from a plugin
+    - Returns success if no error occurs
+* /queueResponse/key (DEPRECATED)
+    - Methods: GET
+    - Returns the queue response for a key. Returns failure with a 404 code if a code is not set.
+* /ping
+    - Methods: GET
+    - Returns "pong!"
+* /getblocksbytype/type
+    - Methods: GET
+    - Returns a list of stored blocks by a given type
+* /getblockbody/hash
+    - Methods: GET
+    - Returns the main data section of a block
+* /getblockdata/hash
+    - Methods: GET
+    - Returns the entire data contents of a block, including metadata.
+* /getblockheader/hash
+    - Methods: GET
+    - Returns the header (metadata section) of a block.
+* /lastconnect
+    - Methods: GET
+    - Returns the epoch timestamp of when the last incoming connection to the public API server was logged
+* /site/hash
+    - Methods: GET
+    - Returns HTML content out of a block
+* /waitforshare/hash
+    - Methods: POST
+    - Prevents the public API server from listing or sharing a block until it has been uploaded to at least 1 peer.
+* /shutdown
+    - Methods: GET
+    - Shutdown Onionr. You should probably use /shutdownclean instead.
+* /shutdownclean
+    - Methods: GET
+    - Tells the communicator daemon to shutdown Onionr. Slower but cleaner.
+* /getstats
+    - Methods: GET
+    - Returns some JSON serialized statistics
+* /getuptime
+    - Methods: GET
+    - Returns uptime in seconds
+* /getActivePubkey
+    - Methods: GET
+    - Returns the current active public key in base32 format
+* /getHumanReadable/pubkey
+    - Methods: GET
+    - Echos the specified public key in mnemonic format
+* /insertblock
+    - Methods: POST
+    - Accepts JSON data for creating a new block. 'message' contains the block data, 'to' specifies the peer's public key to encrypt the data to, 'sign' is a boolean for signing the message.
 
 # Public API
+
+v0
 
 * /
     - Methods: GET
