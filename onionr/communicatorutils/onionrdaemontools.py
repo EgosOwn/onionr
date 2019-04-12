@@ -73,7 +73,7 @@ class DaemonTools:
                     data['random'] = existingRand
                 else:
                     self.announceProgress[peer] = True
-                    proof = onionrproofs.DataPOW(combinedNodes, forceDifficulty=4)
+                    proof = onionrproofs.DataPOW(combinedNodes, forceDifficulty=5)
                     del self.announceProgress[peer]
                     try:
                         data['random'] = base64.b64encode(proof.waitForResult()[1])
