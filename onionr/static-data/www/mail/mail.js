@@ -89,6 +89,7 @@ function setActiveTab(tabName){
             break
         case 'send message':
             overlay('sendMessage')
+            setActiveTab('inbox')
             break
     }
 }

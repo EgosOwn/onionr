@@ -157,6 +157,7 @@ class OnionrUtils:
         '''
             Read metadata from a block and cache it to the block database
         '''
+        curTime = self.getRoundedEpoch(roundS=60)
         myBlock = Block(blockHash, self._core)
         if myBlock.isEncrypted:
             myBlock.decrypt()
@@ -179,7 +180,7 @@ class OnionrUtils:
                 expireTime = myBlock.getHeader('expire')
                 assert len(str(int(expireTime))) < 20 # test that expire time is an integer of sane length (for epoch)
             except (AssertionError, ValueError, TypeError) as e:
-                expireTime = onionrvalues.OnionrValues().default_expire
+                expireTime = onionrvalues.OnionrValues().default_expire + curTime
             finally:
                 self._core.updateBlockInfo(blockHash, 'expire', expireTime)
             if not blockType is None:
