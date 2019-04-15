@@ -19,17 +19,21 @@
             <img class='logo' src='/shared/onionr-icon.png' alt='onionr logo'>
             <span class='logoText'>Onionr Web Control Panel</span>
             <br><br>
-            <button id='shutdownNode'>Shutdown Node</button> <button id='refreshStats'>Refresh Stats</button>
+            <div>🕵️‍♂️ Current Used Identity: <input class='myPub' type='text' readonly></div>
+            <br>
+            <button id='shutdownNode' class='warnBtn'>Shutdown Node</button> <button id='refreshStats' class='primaryBtn'>Refresh Stats</button>
             <br><br>
-            <label>Site Hash: <input type='text' id='siteViewer'> <button id='openSite' class='primaryBtn openSiteBtn'>Open Onionr Site</button></label>
+            <h2>Onionr Services</h2>
+            <label>Open Site: <input type='text' id='siteViewer' placeholder='Site Hash'> <button id='openSite' class='primaryBtn openSiteBtn'>Open Onionr Site</button></label>
             <br>
             <br><br><a class='idLink' href='/mail/'>Mail</a> - <a class='idLink' href='/friends/'>Friend Manager</a>
+            <br><br><hr>
             <h2>Stats</h2>
-            <p>Uptime: <span id='uptime'></span></p>
-            <p>Last Received Connection: <span id='lastIncoming'>Unknown</span></p>
-            <p>Stored Blocks: <span id='storedBlocks'></span></p>
-            <p>Blocks in queue: <span id='blockQueue'></span></p>
-            <p>Connected nodes:</p>
+            <p>🕰️ Uptime: <span id='uptime'></span></p>
+            <p>🖇️ Last Received Connection: <span id='lastIncoming'>Unknown</span></p>
+            <p>💾 Stored Blocks: <span id='storedBlocks'></span></p>
+            <p>📨 Blocks in queue: <span id='blockQueue'></span></p>
+            <p>🔗 Outgoing Connections:</p>
             <pre id='connectedNodes'></pre>
         </div>
         <script src='/shared/misc.js'></script>

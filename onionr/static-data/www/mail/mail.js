@@ -23,7 +23,6 @@ threadPart = document.getElementById('threads')
 threadPlaceholder = document.getElementById('threadPlaceholder')
 tabBtns = document.getElementById('tabBtns')
 threadContent = {}
-myPub = httpGet('/getActivePubkey')
 replyBtn = document.getElementById('replyBtn')
 
 function openReply(bHash, quote, subject){
@@ -298,16 +297,6 @@ tabBtns.onclick = function(event){
     }
     event.target.classList.add('activeTab')
     setActiveTab(event.target.innerText.toLowerCase())
-}
-
-var idStrings = document.getElementsByClassName('myPub')
-for (var i = 0; i < idStrings.length; i++){
-    if (idStrings[i].tagName.toLowerCase() == 'input'){
-        idStrings[i].value = myPub
-    }
-    else{
-        idStrings[i].innerText = myPub
-    }
 }
 
 for (var i = 0; i < document.getElementsByClassName('refresh').length; i++){

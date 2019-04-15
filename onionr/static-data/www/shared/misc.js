@@ -20,6 +20,8 @@
 webpass = document.location.hash.replace('#', '')
 nowebpass = false
 
+myPub = httpGet('/getActivePubkey')
+
 function post_to_url(path, params) {
 
     var form = document.createElement("form")
@@ -90,5 +92,15 @@ for(var i = 0; i < refreshLinks.length; i++) {
 for (var i = 0; i < document.getElementsByClassName('closeOverlay').length; i++){
     document.getElementsByClassName('closeOverlay')[i].onclick = function(e){
         document.getElementById(e.target.getAttribute('overlay')).style.visibility = 'hidden'
+    }
+}
+
+var idStrings = document.getElementsByClassName('myPub')
+for (var i = 0; i < idStrings.length; i++){
+    if (idStrings[i].tagName.toLowerCase() == 'input'){
+        idStrings[i].value = myPub
+    }
+    else{
+        idStrings[i].innerText = myPub
     }
 }

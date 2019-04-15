@@ -152,7 +152,7 @@ body{
      padding: 5px;
  }
 
- .btn, .warnBtn, .dangerBtn, .successBtn{
+ .btn, .warnBtn, .dangerBtn, .successBtn, .primaryBtn{
      padding: 5px;
      border-radius: 5px;
      border: 2px solid black;

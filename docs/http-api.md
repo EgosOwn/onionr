@@ -102,3 +102,6 @@ v0
     - Returns 200 with 'success' if no error occurs. If the block cannot be accepted, 'failure' with 400 is returned.
 
 # Direct Connection API
+
+These are constant endpoints available on direct connection servers. Plugin endpoints for direct connections are not documented here.
+
