@@ -4,14 +4,27 @@
         <meta charset='utf-8'>
         <meta name='viewport' content='width=device-width, initial-scale=1.0'>
         <title>
-            OnionrBoard
+            Circle
         </title>
+        <link rel='stylesheet' href='/shared/style/modal.css'>
+        <link rel='stylesheet' href='/shared/main/style.css'>
         <link rel='stylesheet' href='theme.css'>
     </head>
-    <body>    
-
-        <input type='button' id='refreshFeed' value='Refresh Feed'>
-        <div id='feed'><span id='none'>None Yet :)</span></div>
+    <body>
+        <h1>Circle</h1>
+        <p>
+            Anonymous message board
+        </p>
+        <form method='POST' action='/' id='addMsg'>
+            <textarea name='newMsgText' rows=10 cols=50 required minlength="2"></textarea>
+            <br><br>
+            <input class='btn successBtn' value='Post' type='submit'>
+        </form>
+        <br><br>
+        <div id='feed'>
+            <input class='primaryBtn' type='button' id='refreshFeed' value='Refresh Feed'>
+            <br><br>
+            <span id='none'>None Yet :)</span></div>
         <script src='/shared/misc.js'></script>
         <script src='board.js'></script>
     </body>

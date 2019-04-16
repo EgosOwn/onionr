@@ -1,6 +1,8 @@
-h1, h2, h3{
-    font-family: sans-serif;
+body{
+    background-color: white;
+    color: black;
 }
+
 .hidden{
     display: none;
 }
@@ -18,7 +20,7 @@ p{
 }
 
 .entry{
-    color: red;
+    color: green;
 }
 
 #feed{
@@ -28,4 +30,8 @@ p{
     border: 2px solid black;
     padding: 5px;
     min-height: 50px;
+}
+
+.successBtn{
+    min-width: 100px;
 }

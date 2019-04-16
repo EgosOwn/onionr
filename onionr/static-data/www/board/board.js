@@ -2,22 +2,25 @@ requested = []
 
 var windowHeight = window.innerHeight;
 webpassword = webpass
-function httpGet(theUrl) {
-    var xmlHttp = new XMLHttpRequest()
-    xmlHttp.open( "GET", theUrl, false ) // false for synchronous request
-    xmlHttp.setRequestHeader('token', webpassword)
-    xmlHttp.send( null )
-    if (xmlHttp.status == 200){
-        return xmlHttp.responseText
+newPostForm = document.getElementById('addMsg')
+
+function appendMessages(msg){
+    var humanDate = new Date(0)
+    var msg = JSON.parse(msg)
+    var dateEl = document.createElement('span')
+    var el = document.createElement('div')
+    var msgDate = msg['meta']['time']
+    if (msgDate === undefined){
+        msgDate = 'unknown'
     }
     else{
-        return "";
+        humanDate.setUTCSeconds(msgDate)
+        msgDate = humanDate.toDateString() + ' ' + humanDate.toTimeString()
     }
-}
-function appendMessages(msg){
-    el = document.createElement('div')
+    dateEl.textContent = msgDate
     el.className = 'entry'
-    el.innerText = msg
+    el.innerText = msg['content']
+    document.getElementById('feed').appendChild(dateEl)
     document.getElementById('feed').appendChild(el)
     document.getElementById('feed').appendChild(document.createElement('br'))
 }
@@ -38,7 +41,10 @@ function getBlocks(){
         }
 }
 
-
 document.getElementById('refreshFeed').onclick = function(){
     getBlocks()
+}
+
+newPostForm.onsubmit = function(){
+    return false
 }
