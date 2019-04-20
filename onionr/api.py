@@ -497,6 +497,11 @@ class API:
             encrypt = False
             bData = request.get_json(force=True)
             message = bData['message']
+
+            # Detect if message (block body) is not specified
+            if type(message) is None:
+                return 'failure', 406
+
             subject = 'temp'
             encryptType = ''
             sign = True

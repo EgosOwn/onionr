@@ -686,9 +686,13 @@ class Core:
             return False
         retData = False
 
+        if type(data) is None:
+            raise ValueError('Data cannot be none')
+
         createTime = self._utils.getRoundedEpoch()
 
         # check nonce
+        print(data)
         dataNonce = self._utils.bytesToStr(self._crypto.sha3Hash(data))
         try:
             with open(self.dataNonceFile, 'r') as nonces:

@@ -18,7 +18,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 
-import os, time, sys, platform, sqlite3
+import os, time, sys, platform, sqlite3, signal
 from threading import Thread
 import onionr, api, logger, communicator
 import onionrevents as events
@@ -84,9 +84,12 @@ def daemon(o_inst):
     logger.debug('Started communicator.')
 
     events.event('daemon_start', onionr = o_inst)
-    try:
-        while True:
+    while True:
+        try:
             time.sleep(3)
+        except KeyboardInterrupt:
+            o_inst.communicatorInst.shutdown = True
+        finally:
             # Debug to print out used FDs (regular and net)
             #proc = psutil.Process()
             #print('api-files:',proc.open_files(), len(psutil.net_connections()))
@@ -95,14 +98,17 @@ def daemon(o_inst):
                 break
             if o_inst.killed:
                 break # Break out if sigterm for clean exit
-    except KeyboardInterrupt:
-        pass
-    finally:
-        o_inst.onionrCore.daemonQueueAdd('shutdown')
-        o_inst.onionrUtils.localCommand('shutdown')
+
+    signal.signal(signal.SIGINT, _ignore_sigint)
+    o_inst.onionrCore.daemonQueueAdd('shutdown')
+    o_inst.onionrUtils.localCommand('shutdown')
+
     net.killTor()
     time.sleep(3)
     o_inst.deleteRunFiles()
+    return
+
+def _ignore_sigint(sig, frame):
     return
 
 def kill_daemon(o_inst):

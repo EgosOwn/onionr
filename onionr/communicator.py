@@ -148,7 +148,7 @@ class OnionrCommunicatorDaemon:
             self.shutdown = True
             pass
 
-        logger.info('Goodbye.')
+        logger.info('Goodbye. (Onionr is cleaning up, and will exit)')
         try:
             self.service_greenlets
         except AttributeError:
