@@ -579,7 +579,6 @@ class API:
             else:
                 validSig = False
                 signer = self._core._utils.bytesToStr(bl.signer)
-                #print(signer, bl.isSigned(), self._core._utils.validatePubKey(signer), bl.isSigner(signer))
                 if bl.isSigned() and self._core._utils.validatePubKey(signer) and bl.isSigner(signer):
                     validSig = True                    
                 bl.bheader['validSig'] = validSig

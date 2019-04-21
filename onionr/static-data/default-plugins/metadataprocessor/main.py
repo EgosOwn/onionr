@@ -39,13 +39,12 @@ def _processForwardKey(api, myBlock):
     if api.get_utils().validatePubKey(key):
         peer.addForwardKey(key)
     else:
-        raise onionrexceptions.InvalidPubkey("%s is nota valid pubkey key" % (key,))
+        raise onionrexceptions.InvalidPubkey("%s is not a valid pubkey key" % (key,))
 
 def on_processblocks(api, data=None):
     # Generally fired by utils.
     myBlock = api.data['block']
     blockType = api.data['type']
-
     # Process specific block types
 
     # forwardKey blocks, add a new forward secrecy key for a peer
