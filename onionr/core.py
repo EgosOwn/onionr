@@ -692,7 +692,7 @@ class Core:
         createTime = self._utils.getRoundedEpoch()
 
         # check nonce
-        print(data)
+        #print(data)
         dataNonce = self._utils.bytesToStr(self._crypto.sha3Hash(data))
         try:
             with open(self.dataNonceFile, 'r') as nonces:

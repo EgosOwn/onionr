@@ -114,10 +114,11 @@ class PublicAPI:
             # Provide a list of our blocks, with a date offset
             dateAdjust = request.args.get('date')
             bList = clientAPI._core.getBlockList(dateRec=dateAdjust)
-            for b in self.hideBlocks:
-                if b in bList:
-                    # Don't share blocks we created if they haven't been *uploaded* yet, makes it harder to find who created a block
-                    bList.remove(b)
+            if config.get('general.hide_created_blocks', True):
+                for b in self.hideBlocks:
+                    if b in bList:
+                        # Don't share blocks we created if they haven't been *uploaded* yet, makes it harder to find who created a block
+                        bList.remove(b)
             return Response('\n'.join(bList))
 
         @app.route('/getdata/<name>')
@@ -126,7 +127,7 @@ class PublicAPI:
             resp = ''
             data = name
             if clientAPI._utils.validateHash(data):
-                if data not in self.hideBlocks:
+                if not config.get('general.hide_created_blocks', True) or data not in self.hideBlocks:
                     if data in clientAPI._core.getBlockList():
                         block = clientAPI.getBlockData(data, raw=True)
                         try:
@@ -244,7 +245,7 @@ class API:
         '''
             Initialize the api server, preping variables for later use
 
-            This initilization defines all of the API entry points and handlers for the endpoints and errors
+            This initialization defines all of the API entry points and handlers for the endpoints and errors
             This also saves the used host (random localhost IP address) to the data folder in host.txt
         '''
 

@@ -621,7 +621,7 @@ class OnionrCommunicatorDaemon:
     def detectAPICrash(self):
         '''exit if the api server crashes/stops'''
         if self._core._utils.localCommand('ping', silent=False) not in ('pong', 'pong!'):
-            for i in range(12):
+            for i in range(20):
                 if self._core._utils.localCommand('ping') in ('pong', 'pong!') or self.shutdown:
                     break # break for loop
                 time.sleep(1)

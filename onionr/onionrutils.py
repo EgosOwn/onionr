@@ -157,7 +157,6 @@ class OnionrUtils:
         '''
             Read metadata from a block and cache it to the block database
         '''
-        onionrevents.event('processblocks', data = {'block': myBlock, 'type': blockType, 'signer': signer, 'validSig': valid}, onionr = None)
         curTime = self.getRoundedEpoch(roundS=60)
         myBlock = Block(blockHash, self._core)
         if myBlock.isEncrypted:
@@ -185,6 +184,7 @@ class OnionrUtils:
                 self._core.updateBlockInfo(blockHash, 'expire', expireTime)
             if not blockType is None:
                 self._core.updateBlockInfo(blockHash, 'dataType', blockType)
+            onionrevents.event('processblocks', data = {'block': myBlock, 'type': blockType, 'signer': signer, 'validSig': valid}, onionr = None)
         else:
             pass
             #logger.debug('Not processing metadata on encrypted block we cannot decrypt.')

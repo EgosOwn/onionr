@@ -260,6 +260,8 @@ def check():
 
     if not os.path.exists(os.path.dirname(get_plugins_folder())):
         logger.debug('Generating plugin data folder...')
-        os.makedirs(os.path.dirname(get_plugins_folder()))
-
+        try:
+            os.makedirs(os.path.dirname(get_plugins_folder()))
+        except FileExistsError:
+            pass
     return

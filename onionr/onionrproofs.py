@@ -259,7 +259,6 @@ class POW:
                 self.hashing = False
                 iFound = True
                 self.result = payload
-                print('count', nonce - startNonce)
                 break
             nonce += 1
                 
