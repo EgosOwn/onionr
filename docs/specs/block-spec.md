@@ -1,4 +1,4 @@
-# Onionr Block Spec v1.0.0
+# Onionr Block Spec v1.1.0
 
 # Block Description
 

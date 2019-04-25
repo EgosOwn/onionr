@@ -51,7 +51,7 @@ class ConnectionServer:
         def get_ping():
             return "pong!"
         
-        @service_app.route('/shutdown')
+        @service_app.route('/close')
         def shutdown_server():
             core_inst.onionrInst.communicatorInst.service_greenlets.remove(http_server)
             http_server.stop()

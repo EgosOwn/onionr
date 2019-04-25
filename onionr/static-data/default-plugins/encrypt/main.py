@@ -24,6 +24,7 @@ from onionrblockapi import Block
 import onionrexceptions, onionrusers
 import locale
 locale.setlocale(locale.LC_ALL, '')
+plugin_name = 'encrypt'
 
 class PlainEncryption:
     def __init__(self, api):

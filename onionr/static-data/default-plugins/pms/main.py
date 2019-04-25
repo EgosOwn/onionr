@@ -307,7 +307,6 @@ def on_insertblock(api, data={}):
     meta = json.loads(data['meta'])
     sentboxTools.addToSent(data['hash'], data['peer'], data['content'], meta['subject'])
 
-
 def on_init(api, data = None):
     '''
         This event is called after Onionr is initialized, but before the command

@@ -17,9 +17,8 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-
-import os, re, importlib, config, logger
-import onionrevents as events
+import os, re, importlib
+import onionrevents as events, config, logger
 
 # set data dir
 dataDir = os.environ.get('ONIONR_HOME', os.environ.get('DATA_DIR', 'data/'))
@@ -71,7 +70,7 @@ def enable(name, onionr = None, start_event = True):
                 events.call(get_plugin(name), 'enable', onionr)
             except ImportError: # Was getting import error on Gitlab CI test "data"
                 # NOTE: If you are experiencing issues with plugins not being enabled, it might be this resulting from an error in the module
-                # can happen inconsistenly (especially between versions)
+                # can happen inconsistently (especially between versions)
                 return False
             else:
                 enabled_plugins.append(name)
@@ -170,6 +169,7 @@ def import_module_from_file(full_path_to_module):
     module_dir, module_file = os.path.split(full_path_to_module)
     module_name, module_ext = os.path.splitext(module_file)
 
+    module_name = module_dir # Module name must be unique otherwise it will get written in other imports
     # Get module "spec" from filename
     spec = importlib.util.spec_from_file_location(module_name,full_path_to_module)
 
@@ -187,7 +187,7 @@ def get_plugin(name):
     if str(name).lower() in _instances:
         return _instances[str(name).lower()]
     else:
-        _instances[str(name).lower()] = import_module_from_file(get_plugins_folder(name, False) + 'main.py')
+        _instances[str(name).lower()] = import_module_from_file(get_plugins_folder(str(name).lower(), False) + 'main.py')
         return get_plugin(name)
 
 def get_plugins():
@@ -233,6 +233,7 @@ def get_plugins_folder(name = None, absolute = True):
         path = _pluginsfolder
     else:
         # only allow alphanumeric characters
+        #path = _pluginsfolder + str(name.lower())
         path = _pluginsfolder + re.sub('[^0-9a-zA-Z_]+', '', str(name).lower())
 
     if absolute is True:

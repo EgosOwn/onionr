@@ -105,3 +105,11 @@ v0
 
 These are constant endpoints available on direct connection servers. Plugin endpoints for direct connections are not documented here.
 
+* /ping
+    - Methods: GET
+    - Returns 200 with 'pong!'
+
+* /close
+    - Methods: GET
+    - Kills the direct connection server, destroying the onion address.
+    - Returns 200 with 'goodbye'

@@ -67,6 +67,7 @@ def call(plugin, event_name, data = None, pluginapi = None):
 
             return True
         except Exception as e:
+            logger.error(str(e))
             return False
     else:
         return True
