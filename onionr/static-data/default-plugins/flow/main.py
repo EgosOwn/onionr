@@ -19,10 +19,17 @@
 '''
 
 # Imports some useful libraries
-import logger, config, threading, time
+import threading, time, locale, sys, os
 from onionrblockapi import Block
+import logger, config
+locale.setlocale(locale.LC_ALL, '')
+
+sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
+import flowapi # import after path insert
+flask_blueprint = flowapi.flask_blueprint
 
 plugin_name = 'flow'
+PLUGIN_VERSION = '0.0.1'
 
 class OnionrFlow:
     def __init__(self):
@@ -64,23 +71,23 @@ class OnionrFlow:
             time.sleep(1)
         try:
             while self.flowRunning:
-                    for block in self.myCore.getBlocksByType('txt'):
-                        block = Block(block)
-                        if block.getMetadata('ch') != self.channel:
-                            #print('not chan', block.getMetadata('ch'))
-                            continue
-                        if block.getHash() in self.alreadyOutputed:
-                            #print('already')
-                            continue
-                        if not self.flowRunning:
-                            break
-                        logger.info('\n------------------------', prompt = False)
-                        content = block.getContent()
-                        # Escape new lines, remove trailing whitespace, and escape ansi sequences
-                        content = self.myCore._utils.escapeAnsi(content.replace('\n', '\\n').replace('\r', '\\r').strip())
-                        logger.info(block.getDate().strftime("%m/%d %H:%M") + ' - ' + logger.colors.reset + content, prompt = False)
-                        self.alreadyOutputed.append(block.getHash())
-                    time.sleep(5)
+                for block in self.myCore.getBlocksByType('txt'):
+                    block = Block(block)
+                    if block.getMetadata('ch') != self.channel:
+                        #print('not chan', block.getMetadata('ch'))
+                        continue
+                    if block.getHash() in self.alreadyOutputed:
+                        #print('already')
+                        continue
+                    if not self.flowRunning:
+                        break
+                    logger.info('\n------------------------', prompt = False)
+                    content = block.getContent()
+                    # Escape new lines, remove trailing whitespace, and escape ansi sequences
+                    content = self.myCore._utils.escapeAnsi(content.replace('\n', '\\n').replace('\r', '\\r').strip())
+                    logger.info(block.getDate().strftime("%m/%d %H:%M") + ' - ' + logger.colors.reset + content, prompt = False)
+                    self.alreadyOutputed.append(block.getHash())
+                time.sleep(5)
         except KeyboardInterrupt:
             self.flowRunning = False
 

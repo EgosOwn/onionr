@@ -26,7 +26,7 @@ import core
 from onionrblockapi import Block
 import onionrutils, onionrexceptions, onionrcrypto, blockimporter, onionrevents as events, logger, config
 import httpapi
-from httpapi import friendsapi, simplecache, profilesapi
+from httpapi import friendsapi, simplecache, profilesapi, configapi
 from onionrservices import httpheaders
 import onionr
 
@@ -259,7 +259,7 @@ class API:
         self.bindPort = bindPort
 
         # Be extremely mindful of this. These are endpoints available without a password
-        self.whitelistEndpoints = ('site', 'www', 'onionrhome', 'board', 'profiles', 'profilesindex', 
+        self.whitelistEndpoints = ('site', 'www', 'onionrhome', 'homedata', 'board', 'profiles', 'profilesindex', 
         'boardContent', 'sharedContent', 'mail', 'mailindex', 'friends', 'friendsindex')
 
         self.clientToken = config.get('client.webpassword')
@@ -276,6 +276,7 @@ class API:
         app.register_blueprint(friendsapi.friends)
         app.register_blueprint(simplecache.simplecache)
         app.register_blueprint(profilesapi.profile_BP)
+        app.register_blueprint(configapi.config_BP)
         httpapi.load_plugin_blueprints(app)
 
         @app.before_request
@@ -347,6 +348,15 @@ class API:
         def sharedContent(path):
             return send_from_directory('static-data/www/shared/', path)
 
+        @app.route('/', endpoint='onionrhome')
+        def hello():
+            # ui home
+            return send_from_directory('static-data/www/private/', 'index.html')
+        
+        @app.route('/private/<path:path>', endpoint='homedata')
+        def homedata(path):
+            return send_from_directory('static-data/www/private/', path)
+
         @app.route('/www/<path:path>', endpoint='www')
         def wwwPublic(path):
             if not config.get("www.private.run", True):
@@ -378,11 +388,6 @@ class API:
         def ping():
             # Used to check if client api is working
             return Response("pong!")
-
-        @app.route('/', endpoint='onionrhome')
-        def hello():
-            # ui home
-            return send_from_directory('static-data/www/private/', 'index.html')
         
         @app.route('/getblocksbytype/<name>')
         def getBlocksByType(name):

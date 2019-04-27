@@ -530,13 +530,15 @@ class OnionrUtils:
         else:
             return retData
 
-    def strToBytes(self, data):
+    @staticmethod
+    def strToBytes(data):
         try:
             data = data.encode()
         except AttributeError:
             pass
         return data
-    def bytesToStr(self, data):
+    @staticmethod
+    def bytesToStr(data):
         try:
             data = data.decode()
         except AttributeError:

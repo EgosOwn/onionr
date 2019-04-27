@@ -327,12 +327,6 @@ fetch('/friends/list', {
         }
         friendSelectParent.appendChild(option)
     }
-
-    for (var i = 0; i < keys.length; i++){
-        
-        //friendSelectParent
-        //alert(resp[keys[i]]['name'])
-    }
 })
 setActiveTab('inbox')
 

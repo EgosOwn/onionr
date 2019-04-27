@@ -61,20 +61,3 @@ def list_sentbox():
         if x['hash'] in deleted:
             sentbox_list.remove(x)
     return json.dumps(sentbox_list)
-'''
-@flask_blueprint.route('/mail/getsentbox')
-def list_sentbox():
-    sentbox_list = sentboxdb.SentBox(c).listSent()
-    sentbox_list_copy = list(sentbox_list)
-    kv.refresh()
-    deleted = kv.get('deleted_mail')
-    if deleted is None:
-        deleted = []
-    for x in range(len(sentbox_list_copy)):
-        if sentbox_list_copy[x]['hash'] in deleted:
-            sentbox_list.remove(sentbox_list_copy[x]['hash'])
-        else:
-            sentbox_list[x]['name'] = contactmanager.ContactManager(c, sentbox_list_copy[x]['peer'], saveUser=False).get_info('name')
-
-    return json.dumps(sentbox_list)
-'''

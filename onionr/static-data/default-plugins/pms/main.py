@@ -35,7 +35,7 @@ import sentboxdb, mailapi, loadinbox # import after path insert
 flask_blueprint = mailapi.flask_blueprint
 
 def draw_border(text):
-    #https://stackoverflow.com/a/20757491
+    # This function taken from https://stackoverflow.com/a/20757491 by https://stackoverflow.com/users/816449/bunyk, under https://creativecommons.org/licenses/by-sa/3.0/
     lines = text.splitlines()
     width = max(len(s) for s in lines)
     res = ['┌' + '─' * width + '┐']
