@@ -27,7 +27,7 @@ config_BP = Blueprint('config_BP', __name__)
 @config_BP.route('/config/get')
 def get_all_config():
     '''Simply return all configuration as JSON string'''
-    return Response(json.dumps(config.get_config()))
+    return Response(json.dumps(config.get_config(), indent=4, sort_keys=True))
 
 @config_BP.route('/config/get/<key>')
 def get_by_key(key):
@@ -37,13 +37,13 @@ def get_by_key(key):
 @config_BP.route('/config/setall', methods=['POST'])
 def set_all_config():
     '''Overwrite existing JSON config with new JSON string'''
-    new_config = request.get_json(force=True)
     try:
-        new_config = json.loads(new_config)
+        new_config = request.get_json(force=True)
     except json.JSONDecodeError:
         abort(400)
     else:
         config.set_config(new_config)
+        config.save()
         return Response('success')
 
 @config_BP.route('/config/set/<key>', methods=['POST'])
