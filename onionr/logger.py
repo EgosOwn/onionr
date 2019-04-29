@@ -64,10 +64,9 @@ class colors:
 '''
     Use the bitwise operators to merge these settings
 '''
+USE_ANSI = 0b100
 if os.name == 'nt':
     USE_ANSI = 0b000
-else:
-    USE_ANSI = 0b100
 OUTPUT_TO_CONSOLE = 0b010
 OUTPUT_TO_FILE = 0b001
 
@@ -80,7 +79,7 @@ LEVEL_IMPORTANT = 6
 
 _type = OUTPUT_TO_CONSOLE | USE_ANSI # the default settings for logging
 _level = LEVEL_DEBUG # the lowest level to log
-_outputfile = './output.log' # the file to log to
+_outputfile = 'data/onionr.log' # the file to log to
 
 def set_settings(type):
     '''

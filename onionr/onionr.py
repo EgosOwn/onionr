@@ -62,12 +62,13 @@ class Onionr:
             except FileNotFoundError:
                 pass
 
-        try:
-            self.dataDir = os.environ['ONIONR_HOME']
-            if not self.dataDir.endswith('/'):
-                self.dataDir += '/'
-        except KeyError:
-            self.dataDir = 'data/'
+        # set data dir
+        self.dataDir = os.environ.get('ONIONR_HOME', os.environ.get('DATA_DIR', 'data/'))
+        if not self.dataDir.endswith('/'):
+            self.dataDir += '/'
+
+        # set log file
+        logger.set_file(os.environ.get('LOG_DIR', 'data') + '/onionr.log')
 
         # Load global configuration data
         data_exists = Onionr.setupConfig(self.dataDir, self = self)
@@ -144,19 +145,27 @@ class Onionr:
             self.execute(command)
 
         return
-    
+
     def exitSigterm(self, signum, frame):
         self.killed = True
 
     def setupConfig(dataDir, self = None):
         setupconfig.setup_config(dataDir, self)
 
+    def cmdHeader(self):
+        if len(sys.argv) >= 3:
+            self.header(logger.colors.fg.pink + sys.argv[2].replace('Onionr', logger.colors.bold + 'Onionr' + logger.colors.reset + logger.colors.fg.pink))
+        else:
+            self.header(None)
+
     def header(self, message = logger.colors.fg.pink + logger.colors.bold + 'Onionr' + logger.colors.reset + logger.colors.fg.pink + ' has started.'):
         if os.path.exists('static-data/header.txt') and logger.get_level() <= logger.LEVEL_INFO:
             with open('static-data/header.txt', 'rb') as file:
                 # only to stdout, not file or log or anything
                 sys.stderr.write(file.read().decode().replace('P', logger.colors.fg.pink).replace('W', logger.colors.reset + logger.colors.bold).replace('G', logger.colors.fg.green).replace('\n', logger.colors.reset + '\n').replace('B', logger.colors.bold).replace('A', '%s' % API_VERSION).replace('V', ONIONR_VERSION))
-                logger.info(logger.colors.fg.lightgreen + '-> ' + str(message) + logger.colors.reset + logger.colors.fg.lightgreen + ' <-\n', sensitive=True)
+
+                if not message is None:
+                    logger.info(logger.colors.fg.lightgreen + '-> ' + str(message) + logger.colors.reset + logger.colors.fg.lightgreen + ' <-\n', sensitive=True)
 
     def doExport(self, bHash):
         exportDir = self.dataDir + 'block-export/'
@@ -220,13 +229,13 @@ class Onionr:
 
     def showDetails(self):
         commands.onionrstatistics.show_details(self)
-    
+
     def openHome(self):
         commands.open_home(self)
 
     def addID(self):
         commands.pubkeymanager.add_ID(self)
-    
+
     def changeID(self):
         commands.pubkeymanager.change_ID(self)
 
@@ -385,7 +394,7 @@ class Onionr:
         '''
             Displays a message suggesting help
         '''
-        if __name__ == '__main__':            
+        if __name__ == '__main__':
             logger.info('Do ' + logger.colors.bold + sys.argv[0] + ' --help' + logger.colors.reset + logger.colors.fg.green + ' for Onionr help.')
 
     def start(self, input = False, override = False):
