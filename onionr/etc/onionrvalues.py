@@ -23,3 +23,4 @@ class OnionrValues:
         self.passwordLength = 20
         self.blockMetadataLengths = {'meta': 1000, 'sig': 200, 'signer': 200, 'time': 10, 'pow': 1000, 'encryptType': 4, 'expire': 14} #TODO properly refine values to minimum needed
         self.default_expire = 2592000
+        self.announce_pow = 5

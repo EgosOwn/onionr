@@ -401,6 +401,8 @@ class Onionr:
         '''
             Starts the Onionr daemon
         '''
+        if config.get('general.dev_mode', False):
+            override = True
         commands.daemonlaunch.start(self, input, override)
 
     def setClientAPIInst(self, inst):

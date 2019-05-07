@@ -23,6 +23,8 @@ import base64, sqlite3, os
 from dependencies import secrets
 from utils import netutils
 from onionrusers import onionrusers
+from etc import onionrvalues
+ov = onionrvalues.OnionrValues()
 
 class DaemonTools:
     '''
@@ -64,7 +66,8 @@ class DaemonTools:
                 if ourID != 1:
                     #TODO: Extend existingRand for i2p
                     existingRand = self.daemon._core.getAddressInfo(peer, 'powValue')
-                    if type(existingRand) is type(None):
+                    # Reset existingRand if it no longer meets the minimum POW
+                    if type(existingRand) is type(None) or not existingRand.endswith(b'0' * ov.announce_pow):
                         existingRand = ''
 
                 if peer in self.announceCache:
@@ -73,7 +76,7 @@ class DaemonTools:
                     data['random'] = existingRand
                 else:
                     self.announceProgress[peer] = True
-                    proof = onionrproofs.DataPOW(combinedNodes, forceDifficulty=5)
+                    proof = onionrproofs.DataPOW(combinedNodes, forceDifficulty=ov.announce_pow)
                     del self.announceProgress[peer]
                     try:
                         data['random'] = base64.b64encode(proof.waitForResult()[1])

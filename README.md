@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-    Anonymous P2P storage network 🕵️
+    Anonymous P2P communication network 🕵️
 </p>
 
 (***pre-alpha & experimental, not well tested or easy to use yet***)
@@ -19,7 +19,7 @@
 
 # About
 
-Onionr is a decentralized, peer-to-peer data storage network, designed to be anonymous and resistant to (meta)data analysis and spam/disruption.
+Onionr is a decentralized, peer-to-peer communication and storage network, designed to be anonymous and resistant to (meta)data analysis and spam/disruption.
 
 Onionr stores data in independent packages referred to as 'blocks'. The blocks are synced to all other nodes in the network. Blocks and user IDs cannot be easily proven to have been created by a particular user. Even if there is enough evidence to believe that a specific user created a block, nodes still operate behind Tor or I2P and as such cannot be trivially unmasked.
 
@@ -29,7 +29,7 @@ Onionr can be used for mail, as a social network, instant messenger, file sharin
 
 The whitepaper (subject to change prior to first alpha release) is available [here](docs/whitepaper.md).
 
-![Tor stinks slide image](docs/tor-stinks-02.png)
+![node web illustration](docs/onionr-web.png)
 
 ## Main Features
 
@@ -54,7 +54,7 @@ Friend/contact manager
 
 <img alt='Encrypted, metadata-masking mail application screenshot' src='docs/onionr-3.png' width=600>
 
-Encrypted, metadata-masking mail application. Perhaps the first distributed mail system to have basic forward secrecy.
+Encrypted, metadata-masking mail application. One of the first distributed mail systems to have basic forward secrecy.
 
 # Documentation
 
@@ -116,3 +116,5 @@ The 'open source badge' is by Maik Ellerbrock and is licensed under a Creative C
 The Onionr logo was created by [Anhar Ismail](https://github.com/anharismail) under the [Creative Commons Attribution 4.0 International License](https://creativecommons.org/licenses/by/4.0/). 
 
 If you modify and redistribute our code ("forking"), please use a different logo and project name to avoid confusion. Please do not use our logo in a way that makes it seem like we endorse you without permission.
+
+![Tor stinks slide image](docs/tor-stinks-02.png)

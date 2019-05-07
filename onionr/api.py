@@ -26,7 +26,7 @@ import core
 from onionrblockapi import Block
 import onionrutils, onionrexceptions, onionrcrypto, blockimporter, onionrevents as events, logger, config
 import httpapi
-from httpapi import friendsapi, simplecache, profilesapi, configapi
+from httpapi import friendsapi, simplecache, profilesapi, configapi, miscpublicapi
 from onionrservices import httpheaders
 import onionr
 
@@ -111,36 +111,12 @@ class PublicAPI:
 
         @app.route('/getblocklist')
         def getBlockList():
-            # Provide a list of our blocks, with a date offset
-            dateAdjust = request.args.get('date')
-            bList = clientAPI._core.getBlockList(dateRec=dateAdjust)
-            if config.get('general.hide_created_blocks', True):
-                for b in self.hideBlocks:
-                    if b in bList:
-                        # Don't share blocks we created if they haven't been *uploaded* yet, makes it harder to find who created a block
-                        bList.remove(b)
-            return Response('\n'.join(bList))
+            return httpapi.miscpublicapi.public_block_list(clientAPI, self, request)
 
         @app.route('/getdata/<name>')
         def getBlockData(name):
             # Share data for a block if we have it
-            resp = ''
-            data = name
-            if clientAPI._utils.validateHash(data):
-                if not config.get('general.hide_created_blocks', True) or data not in self.hideBlocks:
-                    if data in clientAPI._core.getBlockList():
-                        block = clientAPI.getBlockData(data, raw=True)
-                        try:
-                            block = block.encode()
-                        except AttributeError:
-                            abort(404)
-                        block = clientAPI._core._utils.strToBytes(block)
-                        resp = block
-                        #resp = base64.b64encode(block).decode()
-            if len(resp) == 0:
-                abort(404)
-                resp = ""
-            return Response(resp, mimetype='application/octet-stream')
+            return httpapi.miscpublicapi.public_get_block_data(clientAPI, self, name)
 
         @app.route('/www/<path:path>')
         def wwwPublic(path):
@@ -163,40 +139,7 @@ class PublicAPI:
         
         @app.route('/announce', methods=['post'])
         def acceptAnnounce():
-            resp = 'failure'
-            powHash = ''
-            randomData = ''
-            newNode = ''
-            ourAdder = clientAPI._core.hsAddress.encode()
-            try:
-                newNode = request.form['node'].encode()
-            except KeyError:
-                logger.warn('No node specified for upload')
-                pass
-            else:
-                try:
-                    randomData = request.form['random']
-                    randomData = base64.b64decode(randomData)
-                except KeyError:
-                    logger.warn('No random data specified for upload')
-                else:
-                    nodes = newNode + clientAPI._core.hsAddress.encode()
-                    nodes = clientAPI._core._crypto.blake2bHash(nodes)
-                    powHash = clientAPI._core._crypto.blake2bHash(randomData + nodes)
-                    try:
-                        powHash = powHash.decode()
-                    except AttributeError:
-                        pass
-                    if powHash.startswith('00000'):
-                        newNode = clientAPI._core._utils.bytesToStr(newNode)
-                        if clientAPI._core._utils.validateID(newNode) and not newNode in clientAPI._core.onionrInst.communicatorInst.newPeers:
-                            clientAPI._core.onionrInst.communicatorInst.newPeers.append(newNode)
-                            resp = 'Success'
-                    else:
-                        logger.warn(newNode.decode() + ' failed to meet POW: ' + powHash)
-            resp = Response(resp)
-            if resp == 'failure':
-                return resp, 406
+            resp = httpapi.miscpublicapi.announce(clientAPI, request)
             return resp
 
         @app.route('/upload', methods=['post'])
@@ -204,26 +147,7 @@ class PublicAPI:
             '''Accept file uploads. In the future this will be done more often than on creation 
             to speed up block sync
             '''
-            resp = 'failure'
-            try:
-                data = request.form['block']
-            except KeyError:
-                logger.warn('No block specified for upload')
-                pass
-            else:
-                if sys.getsizeof(data) < 100000000:
-                    try:
-                        if blockimporter.importBlockFromData(data, clientAPI._core):
-                            resp = 'success'
-                        else:
-                            logger.warn('Error encountered importing uploaded block')
-                    except onionrexceptions.BlacklistedBlock:
-                        logger.debug('uploaded block is blacklisted')
-                        pass
-            if resp == 'failure':
-                abort(400)
-            resp = Response(resp)
-            return resp
+            return httpapi.miscpublicapi.upload(clientAPI, request)
 
         # Set instances, then startup our public api server
         clientAPI.setPublicAPIInstance(self)
