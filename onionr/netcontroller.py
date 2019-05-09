@@ -96,7 +96,7 @@ class NetController:
             if 'warn' not in password:
                 break
 
-        torrcData = '''SocksPort ''' + str(self.socksPort) + '''
+        torrcData = '''SocksPort ''' + str(self.socksPort) + ''' OnionTrafficOnly
 DataDirectory ''' + self.dataDir + '''tordata/
 CookieAuthentication 1
 ControlPort ''' + str(controlPort) + '''
@@ -110,7 +110,6 @@ HiddenServicePort 80 ''' + self.apiServerIP + ''':''' + str(self.hsPort)
         torrc = open(self.torConfigLocation, 'w')
         torrc.write(torrcData)
         torrc.close()
-
         return
 
     def startTor(self):

@@ -21,12 +21,11 @@
 '''
 import sys, os, core, config, json, requests, time, logger, threading, base64, onionr, uuid, binascii
 from dependencies import secrets
-from utils import networkmerger
 import onionrexceptions, onionrpeers, onionrevents as events, onionrplugins as plugins, onionrblockapi as block
-from communicatorutils import onionrdaemontools
-from communicatorutils import servicecreator
+from communicatorutils import onionrdaemontools, servicecreator, onionrcommunicatortimers
+from communicatorutils import proxypicker, downloadblocks, lookupblocks
+from communicatorutils import servicecreator, connectnewpeers, uploadblocks
 import onionrservices, onionr, onionrproofs
-from communicatorutils import onionrcommunicatortimers, proxypicker
 
 OnionrCommunicatorTimers = onionrcommunicatortimers.OnionrCommunicatorTimers
 
@@ -181,6 +180,7 @@ class OnionrCommunicatorDaemon:
             for x in newPeers:
                 x = x.strip()
                 if not self._core._utils.validateID(x) or x in self.newPeers or x == self._core.hsAddress:
+                    # avoid adding if its our address
                     invalid.append(x)
             for x in invalid:
                 newPeers.remove(x)
@@ -189,158 +189,19 @@ class OnionrCommunicatorDaemon:
 
     def lookupBlocks(self):
         '''Lookup new blocks & add them to download queue'''
-        logger.info('Looking up new blocks...')
-        tryAmount = 2
-        newBlocks = ''
-        existingBlocks = self._core.getBlockList()
-        triedPeers = [] # list of peers we've tried this time around
-        maxBacklog = 1560 # Max amount of *new* block hashes to have already in queue, to avoid memory exhaustion
-        lastLookupTime = 0 # Last time we looked up a particular peer's list
-        for i in range(tryAmount):
-            listLookupCommand = 'getblocklist' # This is defined here to reset it each time
-            if len(self.blockQueue) >= maxBacklog:
-                break
-            if not self.isOnline:
-                break
-            # check if disk allocation is used
-            if self._core._utils.storageCounter.isFull():
-                logger.debug('Not looking up new blocks due to maximum amount of allowed disk space used')
-                break
-            peer = self.pickOnlinePeer() # select random online peer
-            # if we've already tried all the online peers this time around, stop
-            if peer in triedPeers:
-                if len(self.onlinePeers) == len(triedPeers):
-                    break
-                else:
-                    continue
-            triedPeers.append(peer)
-
-            # Get the last time we looked up a peer's stamp to only fetch blocks since then.
-            # Saved in memory only for privacy reasons
-            try:
-                lastLookupTime = self.dbTimestamps[peer]
-            except KeyError:
-                lastLookupTime = 0
-            else:
-                listLookupCommand += '?date=%s' % (lastLookupTime,)
-            try:
-                newBlocks = self.peerAction(peer, listLookupCommand) # get list of new block hashes
-            except Exception as error:
-                logger.warn('Could not get new blocks from %s.' % peer, error = error)
-                newBlocks = False
-            else:
-                self.dbTimestamps[peer] = self._core._utils.getRoundedEpoch(roundS=60)
-            if newBlocks != False:
-                # if request was a success
-                for i in newBlocks.split('\n'):
-                    if self._core._utils.validateHash(i):
-                        # if newline seperated string is valid hash
-                        if not i in existingBlocks:
-                            # if block does not exist on disk and is not already in block queue
-                            if i not in self.blockQueue:
-                                if onionrproofs.hashMeetsDifficulty(i) and not self._core._blacklist.inBlacklist(i):
-                                    if len(self.blockQueue) <= 1000000:
-                                        self.blockQueue[i] = [peer] # add blocks to download queue
-                            else:
-                                if peer not in self.blockQueue[i]:
-                                    if len(self.blockQueue[i]) < 10:
-                                        self.blockQueue[i].append(peer)
-        self.decrementThreadCount('lookupBlocks')
-        return
+        lookupblocks.lookup_blocks_from_communicator(self)
 
     def getBlocks(self):
         '''download new blocks in queue'''
-        for blockHash in list(self.blockQueue):
-            triedQueuePeers = [] # List of peers we've tried for a block
-            try:
-                blockPeers = list(self.blockQueue[blockHash])
-            except KeyError:
-                blockPeers = []
-            removeFromQueue = True
-            if self.shutdown or not self.isOnline:
-                # Exit loop if shutting down or offline
-                break
-            # Do not download blocks being downloaded or that are already saved (edge cases)
-            if blockHash in self.currentDownloading:
-                #logger.debug('Already downloading block %s...' % blockHash)
-                continue
-            if blockHash in self._core.getBlockList():
-                #logger.debug('Block %s is already saved.' % (blockHash,))
-                try:
-                    del self.blockQueue[blockHash]
-                except KeyError:
-                    pass
-                continue
-            if self._core._blacklist.inBlacklist(blockHash):
-                continue
-            if self._core._utils.storageCounter.isFull():
-                break
-            self.currentDownloading.append(blockHash) # So we can avoid concurrent downloading in other threads of same block
-            if len(blockPeers) == 0:
-                peerUsed = self.pickOnlinePeer()
-            else:
-                blockPeers = self._core._crypto.randomShuffle(blockPeers)
-                peerUsed = blockPeers.pop(0)
+        downloadblocks.download_blocks_from_communicator(self)
 
-            if not self.shutdown and peerUsed.strip() != '':
-                logger.info("Attempting to download %s from %s..." % (blockHash[:12], peerUsed))
-            content = self.peerAction(peerUsed, 'getdata/' + blockHash) # block content from random peer (includes metadata)
-            if content != False and len(content) > 0:
-                try:
-                    content = content.encode()
-                except AttributeError:
-                    pass
-
-                realHash = self._core._crypto.sha3Hash(content)
-                try:
-                    realHash = realHash.decode() # bytes on some versions for some reason
-                except AttributeError:
-                    pass
-                if realHash == blockHash:
-                    content = content.decode() # decode here because sha3Hash needs bytes above
-                    metas = self._core._utils.getBlockMetadataFromData(content) # returns tuple(metadata, meta), meta is also in metadata
-                    metadata = metas[0]
-                    if self._core._utils.validateMetadata(metadata, metas[2]): # check if metadata is valid, and verify nonce
-                        if self._core._crypto.verifyPow(content): # check if POW is enough/correct
-                            logger.info('Attempting to save block %s...' % blockHash[:12])
-                            try:
-                                self._core.setData(content)
-                            except onionrexceptions.DiskAllocationReached:
-                                logger.error('Reached disk allocation allowance, cannot save block %s.' % blockHash)
-                                removeFromQueue = False
-                            else:
-                                self._core.addToBlockDB(blockHash, dataSaved=True)
-                                self._core._utils.processBlockMetadata(blockHash) # caches block metadata values to block database
-                        else:
-                            logger.warn('POW failed for block %s.' % blockHash)
-                    else:
-                        if self._core._blacklist.inBlacklist(realHash):
-                            logger.warn('Block %s is blacklisted.' % (realHash,))
-                        else:
-                            logger.warn('Metadata for block %s is invalid.' % blockHash)
-                            self._core._blacklist.addToDB(blockHash)
-                else:
-                    # if block didn't meet expected hash
-                    tempHash = self._core._crypto.sha3Hash(content) # lazy hack, TODO use var
-                    try:
-                        tempHash = tempHash.decode()
-                    except AttributeError:
-                        pass
-                    # Punish peer for sharing invalid block (not always malicious, but is bad regardless)
-                    onionrpeers.PeerProfiles(peerUsed, self._core).addScore(-50)
-                    if tempHash != 'ed55e34cb828232d6c14da0479709bfa10a0923dca2b380496e6b2ed4f7a0253':
-                        # Dumb hack for 404 response from peer. Don't log it if 404 since its likely not malicious or a critical error.
-                        logger.warn('Block hash validation failed for ' + blockHash + ' got ' + tempHash)
-                    else:
-                        removeFromQueue = False # Don't remove from queue if 404
-                if removeFromQueue:
-                    try:
-                        del self.blockQueue[blockHash] # remove from block queue both if success or false
-                    except KeyError:
-                        pass
-            self.currentDownloading.remove(blockHash)
-        self.decrementThreadCount('getBlocks')
-        return
+    def decrementThreadCount(self, threadName):
+        '''Decrement amount of a thread name if more than zero, called when a function meant to be run in a thread ends'''
+        try:
+            if self.threadCounts[threadName] > 0:
+                self.threadCounts[threadName] -= 1
+        except KeyError:
+            pass
 
     def pickOnlinePeer(self):
         '''randomly picks peer from pool without bias (using secrets module)'''
@@ -357,14 +218,6 @@ class OnionrCommunicatorDaemon:
             else:
                 break
         return retData
-
-    def decrementThreadCount(self, threadName):
-        '''Decrement amount of a thread name if more than zero, called when a function meant to be run in a thread ends'''
-        try:
-            if self.threadCounts[threadName] > 0:
-                self.threadCounts[threadName] -= 1
-        except KeyError:
-            pass
 
     def clearOfflinePeer(self):
         '''Removes the longest offline peer to retry later'''
@@ -411,62 +264,7 @@ class OnionrCommunicatorDaemon:
 
     def connectNewPeer(self, peer='', useBootstrap=False):
         '''Adds a new random online peer to self.onlinePeers'''
-        retData = False
-        tried = self.offlinePeers
-        if peer != '':
-            if self._core._utils.validateID(peer):
-                peerList = [peer]
-            else:
-                raise onionrexceptions.InvalidAddress('Will not attempt connection test to invalid address')
-        else:
-            peerList = self._core.listAdders()
-
-        mainPeerList = self._core.listAdders()
-        peerList = onionrpeers.getScoreSortedPeerList(self._core)
-
-        if len(peerList) < 8 or secrets.randbelow(4) == 3:
-            tryingNew = []
-            for x in self.newPeers:
-                if x not in peerList:
-                    peerList.append(x)
-                    tryingNew.append(x)
-            for i in tryingNew:
-                self.newPeers.remove(i)
-        
-        if len(peerList) == 0 or useBootstrap:
-            # Avoid duplicating bootstrap addresses in peerList
-            self.addBootstrapListToPeerList(peerList)
-
-        for address in peerList:
-            if not config.get('tor.v3onions') and len(address) == 62:
-                continue
-            if address == self._core.hsAddress:
-                continue
-            if len(address) == 0 or address in tried or address in self.onlinePeers or address in self.cooldownPeer:
-                continue
-            if self.shutdown:
-                return
-            if self.peerAction(address, 'ping') == 'pong!':
-                time.sleep(0.1)
-                if address not in mainPeerList:
-                    networkmerger.mergeAdders(address, self._core)
-                if address not in self.onlinePeers:
-                    logger.info('Connected to ' + address)
-                    self.onlinePeers.append(address)
-                    self.connectTimes[address] = self._core._utils.getEpoch()
-                retData = address
-
-                # add peer to profile list if they're not in it
-                for profile in self.peerProfiles:
-                    if profile.address == address:
-                        break
-                else:
-                    self.peerProfiles.append(onionrpeers.PeerProfiles(address, self._core))
-                break
-            else:
-                tried.append(address)
-                logger.debug('Failed to connect to ' + address)
-        return retData
+        connectnewpeers.connect_new_peer_to_communicator(self, peer, useBootstrap)
 
     def removeOnlinePeer(self, peer):
         '''Remove an online peer'''
@@ -584,34 +382,7 @@ class OnionrCommunicatorDaemon:
 
     def uploadBlock(self):
         '''Upload our block to a few peers'''
-        # when inserting a block, we try to upload it to a few peers to add some deniability
-        triedPeers = []
-        finishedUploads = []
-        self.blocksToUpload = self._core._crypto.randomShuffle(self.blocksToUpload)
-        if len(self.blocksToUpload) != 0:
-            for bl in self.blocksToUpload:
-                if not self._core._utils.validateHash(bl):
-                    logger.warn('Requested to upload invalid block')
-                    self.decrementThreadCount('uploadBlock')
-                    return
-                for i in range(min(len(self.onlinePeers), 6)):
-                    peer = self.pickOnlinePeer()
-                    if peer in triedPeers:
-                        continue
-                    triedPeers.append(peer)
-                    url = 'http://' + peer + '/upload'
-                    data = {'block': block.Block(bl).getRaw()}
-                    proxyType = proxypicker.pick_proxy(peer)
-                    logger.info("Uploading block to " + peer)
-                    if not self._core._utils.doPostRequest(url, data=data, proxyType=proxyType) == False:
-                        self._core._utils.localCommand('waitforshare/' + bl, post=True)
-                        finishedUploads.append(bl)
-        for x in finishedUploads:
-            try:
-                self.blocksToUpload.remove(x)
-            except ValueError:
-                pass
-        self.decrementThreadCount('uploadBlock')
+        uploadblocks.upload_blocks_from_communicator(self)
 
     def announce(self, peer):
         '''Announce to peers our address'''
