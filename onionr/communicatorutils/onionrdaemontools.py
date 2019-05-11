@@ -210,8 +210,9 @@ class DaemonTools:
         fakePeer = ''
         chance = 10
         if secrets.randbelow(chance) == (chance - 1):
+            # This assumes on the libsodium primitives to have key-privacy
             fakePeer = 'OVPCZLOXD6DC5JHX4EQ3PSOGAZ3T24F75HQLIUZSDSMYPEOXCPFA===='
-            data = secrets.token_hex(secrets.randbelow(500) + 1)
+            data = secrets.token_hex(secrets.randbelow(1024) + 1)
             self.daemon._core.insertBlock(data, header='pm', encryptType='asym', asymPeer=fakePeer, meta={'subject': 'foo'})
         self.daemon.decrementThreadCount('insertDeniableBlock')
         return

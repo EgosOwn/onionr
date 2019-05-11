@@ -23,7 +23,7 @@ Onionr is a decentralized, peer-to-peer communication and storage network, desig
 
 Onionr stores data in independent packages referred to as 'blocks'. The blocks are synced to all other nodes in the network. Blocks and user IDs cannot be easily proven to have been created by a particular user. Even if there is enough evidence to believe that a specific user created a block, nodes still operate behind Tor or I2P and as such cannot be trivially unmasked.
 
-Users are identified by ed25519 public keys, which can be used to sign blocks or send encrypted data.
+Users are identified by ed25519/curve25519 public keys, which can be used to sign blocks or send encrypted data.
 
 Onionr can be used for mail, as a social network, instant messenger, file sharing software, or for encrypted group discussion.
 
