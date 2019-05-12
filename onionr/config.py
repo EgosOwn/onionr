@@ -97,7 +97,7 @@ def check():
     '''
 
     if not os.path.exists(os.path.dirname(get_config_file())):
-        os.path.makedirs(os.path.dirname(get_config_file()))
+        os.makedirs(os.path.dirname(get_config_file()))
     if not os.path.isfile(get_config_file()):
         open(get_config_file(), 'a', encoding="utf8").close()
         save()
