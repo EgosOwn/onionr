@@ -150,7 +150,7 @@ class Onionr:
         self.killed = True
 
     def setupConfig(dataDir, self = None):
-        setupconfig.setup_config(dataDir, self)
+        return setupconfig.setup_config(dataDir, self)
 
     def cmdHeader(self):
         if len(sys.argv) >= 3:
