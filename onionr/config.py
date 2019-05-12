@@ -96,15 +96,11 @@ def check():
         Checks if the configuration file exists, creates it if not
     '''
 
-    try:
-        if not os.path.exists(os.path.dirname(get_config_file())):
-            os.path.mkdirs(os.path.dirname(get_config_file()))
-        if not os.path.isfile(get_config_file()):
-            open(get_config_file(), 'a', encoding="utf8").close()
-            save()
-    except:
-        pass
-        #logger.debug('Failed to check configuration file.')
+    if not os.path.exists(os.path.dirname(get_config_file())):
+        os.path.makedirs(os.path.dirname(get_config_file()))
+    if not os.path.isfile(get_config_file()):
+        open(get_config_file(), 'a', encoding="utf8").close()
+        save()
 
 def save():
     '''

@@ -77,10 +77,9 @@ class Onionr:
             logger.error('Tor is not installed')
             sys.exit(1)
 
-        # If data folder does not exist
-        if not data_exists:
-            if not os.path.exists(self.dataDir + 'blocks/'):
-                os.mkdir(self.dataDir + 'blocks/')
+        # If block data folder does not exist
+        if not os.path.exists(self.dataDir + 'blocks/'):
+            os.mkdir(self.dataDir + 'blocks/')
 
         # Copy default plugins into plugins folder
         if not os.path.exists(plugins.get_plugins_folder()):
