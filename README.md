@@ -103,7 +103,9 @@ Note: probably not tax deductible
 
 beardog [ at ] mailbox.org
 
-## Disclaimer
+## Disclaimers and legal
+
+Onionr is published under the GNU GPL v3 license.
 
 The Tor Project and I2P developers do not own, create, or endorse this project, and are not otherwise involved.
 
@@ -115,6 +117,6 @@ The 'open source badge' is by Maik Ellerbrock and is licensed under a Creative C
 
 The Onionr logo was created by [Anhar Ismail](https://github.com/anharismail) under the [Creative Commons Attribution 4.0 International License](https://creativecommons.org/licenses/by/4.0/). 
 
-If you modify and redistribute our code ("forking"), please use a different logo and project name to avoid confusion. Please do not use our logo in a way that makes it seem like we endorse you without permission.
+If you modify and redistribute our code ("forking"), please use a different logo and project name to avoid confusion. Please do not use our logo in a way that makes it seem like we endorse you without our permission.
 
 ![Tor stinks slide image](docs/tor-stinks-02.png)

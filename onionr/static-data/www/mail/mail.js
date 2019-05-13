@@ -47,7 +47,7 @@ function openReply(bHash, quote, subject){
     for (var x = 0; x < splitQuotes.length; x++){
         splitQuotes[x] = '>' + splitQuotes[x]
     }
-    quote = splitQuotes.join('\n')
+    quote = '\n' + splitQuotes.join('\n')
     document.getElementById('draftText').value = quote
     setActiveTab('send message')
 }
