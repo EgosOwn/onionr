@@ -3,21 +3,22 @@ import config, logger
 
 def setup_config(dataDir, o_inst = None):
     data_exists = os.path.exists(dataDir)
-
     if not data_exists:
         os.mkdir(dataDir)
+    config.reload()
 
-    if os.path.exists('static-data/default_config.json'):
-        # this is the default config, it will be overwritten if a config file already exists. Else, it saves it
-        with open('static-data/default_config.json', 'r') as configReadIn:
-            config.set_config(json.loads(configReadIn.read())) 
-    else:
-        # the default config file doesn't exist, try hardcoded config
-        logger.warn('Default configuration file does not exist, switching to hardcoded fallback configuration!')
-        config.set_config({'dev_mode': True, 'log': {'file': {'output': True, 'path': dataDir + 'output.log'}, 'console': {'output': True, 'color': True}}})
-    if not data_exists:
+    
+    if not os.path.exists(config._configfile):
+        if os.path.exists('static-data/default_config.json'):
+            # this is the default config, it will be overwritten if a config file already exists. Else, it saves it
+            with open('static-data/default_config.json', 'r') as configReadIn:
+                config.set_config(json.loads(configReadIn.read()))
+        else:
+            # the default config file doesn't exist, try hardcoded config
+            logger.warn('Default configuration file does not exist, switching to hardcoded fallback configuration!')
+            config.set_config({'dev_mode': True, 'log': {'file': {'output': True, 'path': dataDir + 'output.log'}, 'console': {'output': True, 'color': True}}})
+
         config.save()
-    config.reload() # this will read the configuration file into memory
 
     settings = 0b000
     if config.get('log.console.color', True):

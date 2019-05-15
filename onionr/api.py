@@ -81,7 +81,7 @@ class PublicAPI:
         def validateRequest():
             '''Validate request has the correct hostname'''
             # If high security level, deny requests to public (HS should be disabled anyway for Tor, but might not be for I2P)
-            if config.get('general.security_level', default=0) > 0:
+            if config.get('general.security_level', default=1) > 0:
                 abort(403)
             if type(self.torAdder) is None and type(self.i2pAdder) is None:
                 # abort if our hs addresses are not known

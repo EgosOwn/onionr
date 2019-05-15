@@ -50,7 +50,7 @@ def daemon(o_inst):
         except FileNotFoundError:
             pass
         time.sleep(0.5)
-    onionr.Onionr.setupConfig('data/', self = o_inst)
+    #onionr.Onionr.setupConfig('data/', self = o_inst)
 
     if o_inst._developmentMode:
         logger.warn('DEVELOPMENT MODE ENABLED (NOT RECOMMENDED)', timestamp = False)
@@ -59,7 +59,7 @@ def daemon(o_inst):
     if not net.startTor():
         o_inst.onionrUtils.localCommand('shutdown')
         sys.exit(1)
-    if len(net.myID) > 0 and o_inst.onionrCore.config.get('general.security_level') == 0:
+    if len(net.myID) > 0 and o_inst.onionrCore.config.get('general.security_level', 1) == 0:
         logger.debug('Started .onion service: %s' % (logger.colors.underline + net.myID))
     else:
         logger.debug('.onion service disabled')

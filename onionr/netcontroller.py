@@ -103,7 +103,7 @@ CookieAuthentication 1
 ControlPort ''' + str(controlPort) + '''
 HashedControlPassword ''' + str(password) + '''
         '''
-        if config.get('general.security_level') == 0:
+        if config.get('general.security_level', 1) == 0:
             torrcData += '''\nHiddenServiceDir ''' + self.dataDir + '''hs/
 \n''' + hsVer + '''\n
 HiddenServicePort 80 ''' + self.apiServerIP + ''':''' + str(self.hsPort)

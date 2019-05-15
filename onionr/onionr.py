@@ -71,7 +71,7 @@ class Onionr:
         logger.set_file(os.environ.get('LOG_DIR', 'data') + '/onionr.log')
 
         # Load global configuration data
-        data_exists = Onionr.setupConfig(self.dataDir, self = self)
+        data_exists = Onionr.setupConfig(self.dataDir, self)
 
         if netcontroller.torBinary() is None:
             logger.error('Tor is not installed')
@@ -122,7 +122,6 @@ class Onionr:
             config.set('client.client.port', randomPort, savefile=True)
         if type(config.get('client.public.port')) is type(None):
             randomPort = netcontroller.getOpenPort()
-            print(randomPort)
             config.set('client.public.port', randomPort, savefile=True)
         if type(config.get('client.participate')) is type(None):
             config.set('client.participate', True, savefile=True)

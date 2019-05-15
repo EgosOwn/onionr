@@ -22,6 +22,7 @@ from gevent.pywsgi import WSGIServer, WSGIHandler
 from stem.control import Controller
 from flask import Flask
 import core, logger, httpapi
+import onionrexceptions
 from netcontroller import getOpenPort
 import api
 from . import httpheaders
@@ -66,11 +67,23 @@ class ConnectionServer:
         with Controller.from_port(port=core_inst.config.get('tor.controlPort')) as controller:
             # Connect to the Tor process for Onionr
             controller.authenticate(core_inst.config.get('tor.controlpassword'))
-            # Create the v3 onion service
+            # Create the v3 onion service for the peer to connect to
             response = controller.create_ephemeral_hidden_service({80: service_port}, await_publication = True, key_type='NEW', key_content = 'ED25519-V3')
-            self.core_inst.keyStore.put('dc-' + response.service_id, self.core_inst._utils.bytesToStr(peer))
-            self.core_inst._utils.doPostRequest('http://' + address + '/bs/' + response.service_id, port=socks)
-            logger.info('hosting on %s with %s' % (response.service_id,  peer))
-            http_server.serve_forever()
-            self.core_inst.keyStore.delete('dc-' + response.service_id)
-            http_server.stop()
+
+            try:
+                for x in range(3):
+                    attempt = self.core_inst._utils.doPostRequest('http://' + address + '/bs/' + response.service_id, port=socks)
+                    if attempt == 'success':
+                        break
+                else:
+                    raise ConnectionError
+            except ConnectionError:
+                # Re-raise
+                raise ConnectionError('Could not reach %s bootstrap address %s' % (peer, address))
+            else:
+                # If no connection error, create the service and save it to local global key store
+                self.core_inst.keyStore.put('dc-' + response.service_id, self.core_inst._utils.bytesToStr(peer))
+                logger.info('hosting on %s with %s' % (response.service_id,  peer))
+                http_server.serve_forever()
+                http_server.stop()
+                self.core_inst.keyStore.delete('dc-' + response.service_id)

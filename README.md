@@ -27,9 +27,11 @@ Users are identified by ed25519/curve25519 public keys, which can be used to sig
 
 Onionr can be used for mail, as a social network, instant messenger, file sharing software, or for encrypted group discussion.
 
-The whitepaper (subject to change prior to first alpha release) is available [here](docs/whitepaper.md).
+The whitepaper (subject to change prior to alpha release) is available [here](docs/whitepaper.md).
 
 ![node web illustration](docs/onionr-web.png)
+
+![Tor stinks slide image](docs/tor-stinks-02.png)
 
 ## Main Features
 
@@ -118,5 +120,3 @@ The 'open source badge' is by Maik Ellerbrock and is licensed under a Creative C
 The Onionr logo was created by [Anhar Ismail](https://github.com/anharismail) under the [Creative Commons Attribution 4.0 International License](https://creativecommons.org/licenses/by/4.0/). 
 
 If you modify and redistribute our code ("forking"), please use a different logo and project name to avoid confusion. Please do not use our logo in a way that makes it seem like we endorse you without our permission.
-
-![Tor stinks slide image](docs/tor-stinks-02.png)

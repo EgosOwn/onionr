@@ -18,11 +18,13 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 import communicator, onionrexceptions
-import logger
+import logger, onionrpeers
 
 def download_blocks_from_communicator(comm_inst):
     assert isinstance(comm_inst, communicator.OnionrCommunicatorDaemon)
     for blockHash in list(comm_inst.blockQueue):
+        if len(comm_inst.onlinePeers) == 0:
+            break
         triedQueuePeers = [] # List of peers we've tried for a block
         try:
             blockPeers = list(comm_inst.blockQueue[blockHash])

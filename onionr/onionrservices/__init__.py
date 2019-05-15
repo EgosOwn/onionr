@@ -23,6 +23,9 @@ import core
 from . import connectionserver, bootstrapservice
 
 class OnionrServices:
+    '''
+        Create a client or server for connecting to peer interfaces
+    '''
     def __init__(self, onionr_core):
         assert isinstance(onionr_core, core.Core)
         self._core = onionr_core
@@ -32,13 +35,19 @@ class OnionrServices:
         return
     
     def create_server(self, peer, address):
+        '''
+            When a client wants to connect, contact their bootstrap address and tell them our
+            ephemeral address for our service by creating a new ConnectionServer instance
+        '''
         assert self._core._utils.validateID(address)
-        BOOTSTRAP_TRIES = 10
-        TRY_WAIT = 3
+        BOOTSTRAP_TRIES = 10 # How many times to attempt contacting the bootstrap server
+        TRY_WAIT = 3 # Seconds to wait before trying bootstrap again
+        # HTTP is fine because .onion/i2p is encrypted/authenticated
         base_url = 'http://%s/' % (address,)
         socks = self._core.config.get('tor.socksport')
         for x in range(BOOTSTRAP_TRIES):
             if self._core._utils.doGetRequest(base_url + 'ping', port=socks, ignoreAPI=True) == 'pong!':
+                # if bootstrap sever is online, tell them our service address
                 connectionserver.ConnectionServer(peer, address, core_inst=self._core)
             else:
                 time.sleep(TRY_WAIT)
