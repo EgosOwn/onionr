@@ -3,6 +3,14 @@
 
 '''This file is adapted from https://github.com/thblt/pgp-words by github user 'thblt' ('Thibault Polge), GPL v3 license'''
 
+'''
+Changes made for Onionr:
+Minor changes such as slight word adjustment, line breaks
+
+CLI commands/usage function removed
+hexify function added
+'''
+
 import os, re, sys, binascii
 
 _words = [

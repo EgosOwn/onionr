@@ -18,7 +18,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 import json
-from flask import Response, request, redirect, Blueprint, g
+from flask import Response, request, redirect, Blueprint, send_from_directory
 import core
 
 core_inst = core.Core()

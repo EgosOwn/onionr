@@ -184,7 +184,8 @@ class API:
 
         # Be extremely mindful of this. These are endpoints available without a password
         self.whitelistEndpoints = ('site', 'www', 'onionrhome', 'homedata', 'board', 'profiles', 'profilesindex', 
-        'boardContent', 'sharedContent', 'mail', 'mailindex', 'friends', 'friendsindex')
+        'boardContent', 'sharedContent', 'mail', 'mailindex', 'friends', 'friendsindex',
+        'clandestine', 'clandestineIndex')
 
         self.clientToken = config.get('client.webpassword')
         self.timeBypassToken = base64.b16encode(os.urandom(32)).decode()
@@ -239,6 +240,13 @@ class API:
         @app.route('/mail/', endpoint='mailindex')
         def loadMailIndex():
             return send_from_directory('static-data/www/mail/', 'index.html')
+
+        @app.route('/clandestine/<path:path>', endpoint='clandestine')
+        def loadClandestine(path):
+            return send_from_directory('static-data/www/clandestine/', path)
+        @app.route('/clandestine/', endpoint='clandestineIndex')
+        def loadClandestineIndex():
+            return send_from_directory('static-data/www/clandestine/', 'index.html')
         
         @app.route('/friends/<path:path>', endpoint='friends')
         def loadContacts(path):
