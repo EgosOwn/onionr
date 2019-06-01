@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 '''
-    Onionr - P2P Anonymous Storage Network
+    Onionr - Private P2P Communication
 
-    Onionr is the name for both the protocol and the original/reference software.
+    This file initializes Onionr when ran to be a daemon or with commands
 
     Run with 'help' for usage.
 '''
@@ -23,14 +23,14 @@
 import sys
 MIN_PY_VERSION = 6
 if sys.version_info[0] == 2 or sys.version_info[1] < MIN_PY_VERSION:
-    print('Error, Onionr requires Python 3.%s+' % (MIN_PY_VERSION,))
+    sys.stderr.write('Error, Onionr requires Python 3.%s+' % (MIN_PY_VERSION,))
     sys.exit(1)
 import os, base64, random, getpass, shutil, time, platform, datetime, re, json, getpass, sqlite3
 import webbrowser, uuid, signal
 from threading import Thread
 import api, core, config, logger, onionrplugins as plugins, onionrevents as events
 import onionrutils
-import netcontroller, onionrstorage
+import netcontroller
 from netcontroller import NetController
 from onionrblockapi import Block
 import onionrproofs, onionrexceptions, communicator, setupconfig
@@ -42,7 +42,7 @@ try:
 except ImportError:
     raise Exception("You need the PySocks module (for use with socks5 proxy to use Tor)")
 
-ONIONR_TAGLINE = 'Anonymous P2P Platform - GPLv3 - https://Onionr.net'
+ONIONR_TAGLINE = 'Private P2P Communication - GPLv3 - https://Onionr.net'
 ONIONR_VERSION = '0.0.0' # for debugging and stuff
 ONIONR_VERSION_TUPLE = tuple(ONIONR_VERSION.split('.')) # (MAJOR, MINOR, VERSION)
 API_VERSION = '0' # increments of 1; only change when something fundamental about how the API works changes. This way other nodes know how to communicate without learning too much information about you.
@@ -165,17 +165,6 @@ class Onionr:
                 if not message is None:
                     logger.info(logger.colors.fg.lightgreen + '-> ' + str(message) + logger.colors.reset + logger.colors.fg.lightgreen + ' <-\n', sensitive=True)
 
-    def doExport(self, bHash):
-        exportDir = self.dataDir + 'block-export/'
-        if not os.path.exists(exportDir):
-            if os.path.exists(self.dataDir):
-                os.mkdir(exportDir)
-            else:
-                logger.error('Onionr Not initialized')
-        data = onionrstorage.getData(self.onionrCore, bHash)
-        with open('%s/%s.dat' % (exportDir, bHash), 'wb') as exportFile:
-            exportFile.write(data)
-
     def deleteRunFiles(self):
         try:
             os.remove(self.onionrCore.publicApiHostFile)
@@ -211,19 +200,11 @@ class Onionr:
         return columns
 
     '''
-        THIS SECTION HANDLES THE COMMANDS
+        Handle command line commands
     '''
 
     def exportBlock(self):
-        exportDir = self.dataDir + 'block-export/'
-        try:
-            assert self.onionrUtils.validateHash(sys.argv[2])
-        except (IndexError, AssertionError):
-            logger.error('No valid block hash specified.')
-            sys.exit(1)
-        else:
-            bHash = sys.argv[2]
-            self.doExport(bHash)
+        commands.exportblocks(self)
 
     def showDetails(self):
         commands.onionrstatistics.show_details(self)
@@ -247,23 +228,7 @@ class Onionr:
         commands.pubkeymanager.friend_command(self)
 
     def banBlock(self):
-        try:
-            ban = sys.argv[2]
-        except IndexError:
-            ban = logger.readline('Enter a block hash:')
-        if self.onionrUtils.validateHash(ban):
-            if not self.onionrCore._blacklist.inBlacklist(ban):
-                try:
-                    self.onionrCore._blacklist.addToDB(ban)
-                    self.onionrCore.removeBlock(ban)
-                except Exception as error:
-                    logger.error('Could not blacklist block', error=error)
-                else:
-                    logger.info('Block blacklisted')
-            else:
-                logger.warn('That block is already blacklisted')
-        else:
-            logger.error('Invalid block hash')
+        commands.banblocks.ban_block(self)
 
     def listConn(self):
         commands.onionrstatistics.show_peers(self)

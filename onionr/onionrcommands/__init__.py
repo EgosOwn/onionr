@@ -1,5 +1,5 @@
 '''
-    Onionr - P2P Anonymous Storage Network
+    Onionr - Private P2P Communication
 
     This module defines commands for CLI usage
 '''
@@ -20,7 +20,7 @@
 
 import webbrowser, sys
 import logger
-from . import pubkeymanager, onionrstatistics, daemonlaunch, filecommands, plugincommands, keyadders
+from . import pubkeymanager, onionrstatistics, daemonlaunch, filecommands, plugincommands, keyadders, banblocks, exportblocks
 
 def show_help(o_inst, command):
 
