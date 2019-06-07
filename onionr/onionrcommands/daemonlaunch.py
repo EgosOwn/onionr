@@ -29,9 +29,9 @@ def daemon(o_inst):
     '''
 
     # remove runcheck if it exists
-    if os.path.isfile('data/.runcheck'):
+    if os.path.isfile('%s/.runcheck' % (o_inst.onionrCore.dataDir,)):
         logger.debug('Runcheck file found on daemon start, deleting in advance.')
-        os.remove('data/.runcheck')
+        os.remove('%s/.runcheck' % (o_inst.onionrCore.dataDir,))
 
     Thread(target=api.API, args=(o_inst, o_inst.debug, onionr.API_VERSION)).start()
     Thread(target=api.PublicAPI, args=[o_inst.getClientApi()]).start()

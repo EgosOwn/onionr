@@ -53,14 +53,9 @@ def getDifficultyForNewBlock(data, ourBlock=True):
     dataSize = 0
     if isinstance(data, onionrblockapi.Block):
         dataSize = len(data.getRaw().encode('utf-8'))
-    elif isinstance(data, str):
-        dataSize = len(data.encode('utf-8'))
-    elif isinstance(data, bytes):
-        dataSize = len(data)
-    elif isinstance(data, int):
-        dataSize = data
     else:
-        raise ValueError('not Block, str, or int')
+        dataSize = len(onionrutils.OnionrUtils.strToBytes(data))
+
     if ourBlock:
         minDifficulty = config.get('general.minimum_send_pow', 4)
     else:
@@ -131,8 +126,6 @@ class DataPOW:
         for i in range(max(1, threadCount)):
             t = threading.Thread(name = 'thread%s' % i, target = self.pow, args = (True,myCore))
             t.start()
-        
-        return
 
     def pow(self, reporting = False, myCore = None):
         startTime = math.floor(time.time())
