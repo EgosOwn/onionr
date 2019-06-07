@@ -334,6 +334,7 @@ class Onionr:
             function(ONIONR_TAGLINE)
         if verbosity >= 2:
             function('Running on %s %s' % (platform.platform(), platform.release()))
+            function('Onionr data dir: %s' % self.dataDir)
 
     def doPEX(self):
         '''make communicator do pex'''
