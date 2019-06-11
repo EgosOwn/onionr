@@ -55,7 +55,8 @@ function openReply(bHash, quote, subject){
 function openThread(bHash, sender, date, sigBool, pubkey, subjectLine){
     var messageDisplay = document.getElementById('threadDisplay')
     var blockContent = httpGet('/getblockbody/' + bHash)
-    document.getElementById('fromUser').value = sender
+
+    document.getElementById('fromUser').value = sender || 'Anonymous'
     document.getElementById('subjectView').innerText = subjectLine
     messageDisplay.innerText = blockContent
     var sigEl = document.getElementById('sigValid')

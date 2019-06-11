@@ -29,8 +29,6 @@ Onionr can be used for mail, as a social network, instant messenger, file sharin
 
 The whitepaper (subject to change prior to alpha release) is available [here](docs/whitepaper.md).
 
-![node web illustration](docs/onionr-web.png)
-
 ![Tor stinks slide image](docs/tor-stinks-02.png)
 
 ## Main Features
@@ -78,9 +76,9 @@ The following applies to Ubuntu Bionic. Other distros may have different package
 
 (--require-hashes is intended to prevent exploitation via compromise of PyPi/CA certificates)
 
-## Help out
+# Help out
 
-Everyone is welcome to help out. Help is wanted for the following:
+Everyone is welcome to contribute. Help is wanted for the following:
 
 * Development (Get in touch first)
     * Creation of a shared lib for use from other languages and faster proof-of-work
@@ -107,7 +105,7 @@ Note: probably not tax deductible
 
 ## Contact
 
-beardog [ at ] mailbox.org
+Email: beardog [ at ] mailbox.org
 
 ## Disclaimers and legal
 
@@ -123,4 +121,6 @@ The 'open source badge' is by Maik Ellerbrock and is licensed under a Creative C
 
 The Onionr logo was created by [Anhar Ismail](https://github.com/anharismail) under the [Creative Commons Attribution 4.0 International License](https://creativecommons.org/licenses/by/4.0/). 
 
-If you modify and redistribute our code ("forking"), please use a different logo and project name to avoid confusion. Please do not use our logo in a way that makes it seem like we endorse you without our permission.
+If you modify and redistribute our code ("forking"), please use a different logo and project name to avoid confusion. Please do not use the project name or logo in a way that makes it seem like we endorse you without our permission.
+
+![node web illustration](docs/onionr-web.png)

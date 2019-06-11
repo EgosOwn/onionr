@@ -27,6 +27,10 @@ function removeFriend(pubkey){
 addForm.onsubmit = function(){
     var friend = document.getElementsByName('addKey')[0]
     var alias = document.getElementsByName('data')[0]
+    if (alias.value.toLowerCase() == 'anonymous'){
+        alert('Anonymous is a reserved name')
+        return false
+    }
 
     fetch('/friends/add/' + friend.value, {
         method: 'POST',
