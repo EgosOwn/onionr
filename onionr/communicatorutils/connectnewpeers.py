@@ -20,6 +20,11 @@
 import time
 import onionrexceptions, logger, onionrpeers
 from utils import networkmerger
+# secrets module was added into standard lib in 3.6+
+if sys.version_info[0] == 3 and sys.version_info[1] < 6:
+    from dependencies import secrets
+elif sys.version_info[0] == 3 and sys.version_info[1] >= 6:
+    import secrets
 def connect_new_peer_to_communicator(comm_inst, peer='', useBootstrap=False):
     config = comm_inst._core.config
     retData = False
