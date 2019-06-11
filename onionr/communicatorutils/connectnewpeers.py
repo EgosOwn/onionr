@@ -17,7 +17,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import time
+import time, sys
 import onionrexceptions, logger, onionrpeers
 from utils import networkmerger
 # secrets module was added into standard lib in 3.6+
