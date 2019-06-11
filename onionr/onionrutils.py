@@ -18,10 +18,11 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 # Misc functions that do not fit in the main api, but are useful
-import getpass, sys, requests, os, socket, hashlib, logger, sqlite3, config, binascii, time, base64, json, glob, shutil, math, json, re, urllib.parse, string
+import sys, os, sqlite3, binascii, time, base64, json, glob, shutil, math, re, urllib.parse, string
+import requests
 import nacl.signing, nacl.encoding
 from onionrblockapi import Block
-import onionrexceptions
+import onionrexceptions, config, logger
 from onionr import API_VERSION
 import onionrevents
 import storagecounter

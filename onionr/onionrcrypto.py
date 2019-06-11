@@ -17,7 +17,9 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import nacl.signing, nacl.encoding, nacl.public, nacl.hash, nacl.pwhash, nacl.utils, nacl.secret, os, binascii, base64, hashlib, logger, onionrproofs, time, math, sys, hmac
+import os, binascii, base64, hashlib, time, sys, hmac
+import nacl.signing, nacl.encoding, nacl.public, nacl.hash, nacl.pwhash, nacl.utils, nacl.secret
+import logger, onionrproofs
 import onionrexceptions, keymanager, core
 # secrets module was added into standard lib in 3.6+
 if sys.version_info[0] == 3 and sys.version_info[1] < 6:

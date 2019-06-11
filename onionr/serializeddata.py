@@ -18,7 +18,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 
-import core, api, uuid, json
+import core, json
 
 class SerializedData:
     def __init__(self, coreInst):

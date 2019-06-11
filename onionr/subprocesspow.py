@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import subprocess, os
-import multiprocessing, threading, time, json, math
+import multiprocessing, threading, time, json
 from multiprocessing import Pipe, Process
 import core, onionrblockapi, config, onionrutils, logger, onionrproofs
 

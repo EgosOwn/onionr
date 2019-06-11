@@ -19,11 +19,11 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import sys, os, core, config, json, requests, time, logger, threading, base64, onionr, uuid, binascii
-from dependencies import secrets
+import sys, os, time
+import core, config, logger, onionr
 import onionrexceptions, onionrpeers, onionrevents as events, onionrplugins as plugins, onionrblockapi as block
 from communicatorutils import onionrdaemontools, servicecreator, onionrcommunicatortimers
-from communicatorutils import proxypicker, downloadblocks, lookupblocks, lookupadders
+from communicatorutils import downloadblocks, lookupblocks, lookupadders
 from communicatorutils import servicecreator, connectnewpeers, uploadblocks
 from communicatorutils import daemonqueuehandler
 import onionrservices, onionr, onionrproofs

@@ -17,7 +17,8 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import sqlite3, os, sys, time, math, base64, tarfile, nacl, logger, json, netcontroller, math, config, uuid
+import sqlite3, os, sys, time, json, uuid
+import logger, netcontroller, config
 from onionrblockapi import Block
 import deadsimplekv as simplekv
 import onionrutils, onionrcrypto, onionrproofs, onionrevents as events, onionrexceptions
@@ -160,11 +161,11 @@ class Core:
             Add an address to the address database (only tor currently)
         '''
 
-        if address == config.get('i2p.ownAddr', None) or address == self.hsAddress:
-            return False
         if type(address) is None or len(address) == 0:
             return False
         if self._utils.validateID(address):
+            if address == config.get('i2p.ownAddr', None) or address == self.hsAddress:
+                return False
             conn = sqlite3.connect(self.addressDB, timeout=30)
             c = conn.cursor()
             # check if address is in database
@@ -226,6 +227,8 @@ class Core:
             conn.close()
             dataSize = sys.getsizeof(onionrstorage.getData(self, block))
             self._utils.storageCounter.removeBytes(dataSize)
+        else:
+            raise onionrexceptions.InvalidHexHash
 
     def createAddressDB(self):
         '''
@@ -797,7 +800,7 @@ class Core:
                 logger.error(allocationReachedMessage)
                 retData = False
             else:
-                # Tell the api server through localCommand to wait for the daemon to upload this block to make stastical analysis more difficult
+                # Tell the api server through localCommand to wait for the daemon to upload this block to make statistical analysis more difficult
                 if self._utils.localCommand('/ping', maxWait=10) == 'pong!':
                     self._utils.localCommand('/waitforshare/' + retData, post=True, maxWait=5)
                     self.daemonQueueAdd('uploadBlock', retData)
@@ -815,27 +818,8 @@ class Core:
         '''
             Introduces our node into the network by telling X many nodes our HS address
         '''
-
-        if(self._utils.isCommunicatorRunning(timeout=30)):
-            announceAmount = 2
-            nodeList = self.listAdders()
-
-            if len(nodeList) == 0:
-                for i in self.bootstrapList:
-                    if self._utils.validateID(i):
-                        self.addAddress(i)
-                        nodeList.append(i)
-
-            if announceAmount > len(nodeList):
-                announceAmount = len(nodeList)
-
-            for i in range(announceAmount):
-                self.daemonQueueAdd('announceNode', nodeList[i])
-
-            events.event('introduction', onionr = None)
-
-            return True
+        if self._utils.localCommand('/ping', maxWait=10) == 'pong!':
+            self.daemonQueueAdd('announceNode')
+            logger.info('Introduction command will be processed.')
         else:
-            logger.error('Onionr daemon is not running.')
-            return False
-        return
+            logger.warn('No running node detected. Cannot introduce.')

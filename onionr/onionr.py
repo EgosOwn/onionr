@@ -25,8 +25,7 @@ MIN_PY_VERSION = 6
 if sys.version_info[0] == 2 or sys.version_info[1] < MIN_PY_VERSION:
     sys.stderr.write('Error, Onionr requires Python 3.%s+' % (MIN_PY_VERSION,))
     sys.exit(1)
-import os, base64, random, getpass, shutil, time, platform, datetime, re, json, getpass, sqlite3
-import webbrowser, uuid, signal
+import os, base64, random, shutil, time, platform, signal
 from threading import Thread
 import api, core, config, logger, onionrplugins as plugins, onionrevents as events
 import onionrutils
@@ -34,7 +33,6 @@ import netcontroller
 from netcontroller import NetController
 from onionrblockapi import Block
 import onionrproofs, onionrexceptions, communicator, setupconfig
-from onionrusers import onionrusers
 import onionrcommands as commands # Many command definitions are here
 
 try:
