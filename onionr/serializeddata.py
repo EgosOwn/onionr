@@ -1,5 +1,5 @@
 '''
-    Onionr - P2P Anonymous Storage Network
+    Onionr - Private P2P Communication
 
     This module serializes various data pieces for use in other modules, in particular the web api
 '''

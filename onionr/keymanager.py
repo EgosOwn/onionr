@@ -1,5 +1,5 @@
 '''
-    Onionr - P2P Anonymous Storage Network
+    Onionr - Private P2P Communication
 
     Load, save, and delete the user's public key pairs (does not handle peer keys)
 '''

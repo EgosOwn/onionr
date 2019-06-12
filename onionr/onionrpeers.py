@@ -17,7 +17,8 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import core, config, logger, sqlite3
+import sqlite3
+import core, config, logger
 class PeerProfiles:
     '''
         PeerProfiles

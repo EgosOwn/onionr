@@ -1,5 +1,5 @@
 '''
-    Onionr - P2P Anonymous Storage Network
+    Onionr - Private P2P Communication
 
     Core Onionr library, useful for external programs. Handles peer & data processing
 '''

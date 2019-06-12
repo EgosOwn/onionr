@@ -1,5 +1,5 @@
 /*
-    Onionr - P2P Anonymous Storage Network
+    Onionr - Private P2P Communication
 
     This file is for configuration editing in the web interface
 

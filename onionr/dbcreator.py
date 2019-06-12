@@ -1,5 +1,5 @@
 '''
-    Onionr - P2P Anonymous Data Storage & Sharing
+    Onionr - Private P2P Communication
 
     DBCreator, creates sqlite3 databases used by Onionr
 '''

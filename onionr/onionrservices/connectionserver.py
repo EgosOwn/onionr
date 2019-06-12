@@ -1,5 +1,5 @@
 '''
-    Onionr - P2P Anonymous Storage Network
+    Onionr - Private P2P Communication
 
     This module does the second part of the bootstrap block handshake and creates the API server
 '''
@@ -17,8 +17,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import threading, time
-from gevent.pywsgi import WSGIServer, WSGIHandler
+from gevent.pywsgi import WSGIServer
 from stem.control import Controller
 from flask import Flask
 import core, logger, httpapi

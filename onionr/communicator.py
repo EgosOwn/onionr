@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 '''
-    Onionr - P2P Anonymous Storage Network
+    Onionr - Private P2P Communication
 
     This file contains both the OnionrCommunicate class for communcating with peers
     and code to operate as a daemon, getting commands from the command queue database (see core.Core.daemonQueue)

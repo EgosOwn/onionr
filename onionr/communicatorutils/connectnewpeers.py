@@ -1,5 +1,5 @@
 '''
-    Onionr - P2P Microblogging Platform & Social network
+    Onionr - Private P2P Communication
 
     Connect a new peer to our communicator instance. Does so randomly if no peer is specified
 '''

@@ -1,6 +1,6 @@
 # Contributing to Onionr
 
-One of the great things about open source projects is that they allow for many people to contribute to the project.
+One of the great things about open source projects is that they allow for anyone to contribute to the project.
 
 This file serves to provide guidelines on how to successfully contribute to Onionr.
 

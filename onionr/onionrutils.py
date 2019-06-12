@@ -1,5 +1,5 @@
 '''
-    Onionr - P2P Microblogging Platform & Social network
+    Onionr - Private P2P Communication
 
     OnionrUtils offers various useful functions to Onionr. Relatively misc.
 '''
