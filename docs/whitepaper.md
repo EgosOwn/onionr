@@ -135,12 +135,6 @@ We assume that Tor onion services (v3) and I2P services cannot be trivially dean
 
 Once quantum safe algorithms are more mature and have decent high level libraries, they will be deployed.
 
-# P2P Software Comparison
-
-Since Onionr is far from the first to implement many of these ideas (on their own), this section compares Onionr to other networks, using points we consider to be the most important.
-
-![network comparison image](network-comparison.png)
-
 # Conclusion
 
 If successful, Onionr will be a complete decentralized platform for anonymous computing, complete with limited metadata exposure, both node and user anonymity, and spam prevention
