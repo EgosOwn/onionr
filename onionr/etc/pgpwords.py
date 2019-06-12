@@ -4,7 +4,7 @@
 '''This file is adapted from https://github.com/thblt/pgp-words by github user 'thblt' ('Thibault Polge), GPL v3 license'''
 
 '''
-Changes made for Onionr:
+Changes made for Onionr by Kevin Froman in 2018-2019:
 Minor changes such as slight word adjustment, line breaks
 
 CLI commands/usage function removed

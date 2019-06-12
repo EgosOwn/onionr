@@ -1,7 +1,7 @@
 '''
-    Onionr - P2P Anonymous Storage Network
+    Onionr - Private P2P Communication
 
-    This file creates http endpoints for friend management
+    Open the web interface properly into a web browser
 '''
 '''
     This program is free software: you can redistribute it and/or modify
@@ -17,15 +17,14 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import core
-from flask import Blueprint, Response, request, abort
-
-simplecache = Blueprint('simplecache', __name__)
-
-@simplecache.route('/get/<key>')
-def get_key(key):
-    return
-
-@simplecache.route('/set/<key>', methods=['POST'])
-def set_key(key):
-    return
+import webbrowser
+import logger
+def open_home(o_inst):
+    try:
+        url = o_inst.onionrUtils.getClientAPIServer()
+    except FileNotFoundError:
+        logger.error('Onionr seems to not be running (could not get api host)')
+    else:
+        url = 'http://%s/#%s' % (url, o_inst.onionrCore.config.get('client.webpassword'))
+        print('If Onionr does not open automatically, use this URL:', url)
+        webbrowser.open_new_tab(url)

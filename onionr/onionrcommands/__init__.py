@@ -20,7 +20,8 @@
 
 import webbrowser, sys
 import logger
-from . import pubkeymanager, onionrstatistics, daemonlaunch, filecommands, plugincommands, keyadders, banblocks, exportblocks
+from . import pubkeymanager, onionrstatistics, daemonlaunch, filecommands, plugincommands, keyadders
+from . import banblocks, exportblocks, openwebinterface
 
 def show_help(o_inst, command):
 
@@ -38,16 +39,6 @@ def show_help(o_inst, command):
         o_inst.version(0)
         for command, helpmessage in helpmenu.items():
             o_inst.showHelp(command)
-
-def open_home(o_inst):
-    try:
-        url = o_inst.onionrUtils.getClientAPIServer()
-    except FileNotFoundError:
-        logger.error('Onionr seems to not be running (could not get api host)')
-    else:
-        url = 'http://%s/#%s' % (url, o_inst.onionrCore.config.get('client.webpassword'))
-        print('If Onionr does not open automatically, use this URL:', url)
-        webbrowser.open_new_tab(url)
 
 def get_commands(onionr_inst):
     return {'': onionr_inst.showHelpSuggestion,

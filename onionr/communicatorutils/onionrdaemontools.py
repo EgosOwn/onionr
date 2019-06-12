@@ -67,9 +67,9 @@ class DaemonTools:
                 combinedNodes = ourID + peer
                 if ourID != 1:
                     #TODO: Extend existingRand for i2p
-                    existingRand = self.daemon._core.getAddressInfo(peer, 'powValue')
+                    existingRand = self.daemon._core._utils.bytesToStr(self.daemon._core.getAddressInfo(peer, 'powValue'))
                     # Reset existingRand if it no longer meets the minimum POW
-                    if type(existingRand) is type(None) or not existingRand.endswith(b'0' * ov.announce_pow):
+                    if type(existingRand) is type(None) or not existingRand.endswith('0' * ov.announce_pow):
                         existingRand = ''
 
                 if peer in self.announceCache:
@@ -217,4 +217,3 @@ class DaemonTools:
             data = secrets.token_hex(secrets.randbelow(1024) + 1)
             self.daemon._core.insertBlock(data, header='pm', encryptType='asym', asymPeer=fakePeer, meta={'subject': 'foo'})
         self.daemon.decrementThreadCount('insertDeniableBlock')
-        return

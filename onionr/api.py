@@ -26,7 +26,7 @@ import core
 from onionrblockapi import Block
 import onionrutils, onionrexceptions, onionrcrypto, blockimporter, onionrevents as events, logger, config
 import httpapi
-from httpapi import friendsapi, simplecache, profilesapi, configapi, miscpublicapi
+from httpapi import friendsapi, profilesapi, configapi, miscpublicapi
 from onionrservices import httpheaders
 import onionr
 
@@ -199,7 +199,6 @@ class API:
         self.queueResponse = {}
         onionrInst.setClientAPIInst(self)
         app.register_blueprint(friendsapi.friends)
-        app.register_blueprint(simplecache.simplecache)
         app.register_blueprint(profilesapi.profile_BP)
         app.register_blueprint(configapi.config_BP)
         httpapi.load_plugin_blueprints(app)

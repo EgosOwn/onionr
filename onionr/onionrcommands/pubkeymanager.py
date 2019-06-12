@@ -1,7 +1,7 @@
 '''
-    Onionr - P2P Anonymous Storage Network
+    Onionr - Private P2P Communication
 
-    This module defines ID-related CLI commands
+    This module defines user ID-related CLI commands
 '''
 '''
     This program is free software: you can redistribute it and/or modify
@@ -51,7 +51,7 @@ def change_ID(o_inst):
     try:
         key = sys.argv[2]
     except IndexError:
-        logger.error('Specify pubkey to use')
+        logger.warn('Specify pubkey to use')
     else:
         if o_inst.onionrUtils.validatePubKey(key):
             if key in o_inst.onionrCore._crypto.keyManager.getPubkeyList():
@@ -60,9 +60,9 @@ def change_ID(o_inst):
                 logger.info('Set active key to: %s' % (key,))
                 logger.info('Restart Onionr if it is running.')
             else:
-                logger.error('That key does not exist')
+                logger.warn('That key does not exist')
         else:
-            logger.error('Invalid key %s' % (key,))
+            logger.warn('Invalid key %s' % (key,))
 
 def friend_command(o_inst):
     friend = ''
@@ -86,7 +86,8 @@ def friend_command(o_inst):
                     raise onionrexceptions.KeyNotKnown
                 friend = onionrusers.OnionrUser(o_inst.onionrCore, friend)
             except IndexError:
-                logger.error('Friend ID is required.')
+                logger.warn('Friend ID is required.')
+                action = 'error' # set to 'error' so that the finally block does not process anything
             except onionrexceptions.KeyNotKnown:
                 o_inst.onionrCore.addPeer(friend)
                 friend = onionrusers.OnionrUser(o_inst.onionrCore, friend)
@@ -94,7 +95,7 @@ def friend_command(o_inst):
                 if action == 'add':
                     friend.setTrust(1)
                     logger.info('Added %s as friend.' % (friend.publicKey,))
-                else:
+                elif action == 'remove':
                     friend.setTrust(0)
                     logger.info('Removed %s as friend.' % (friend.publicKey,))
         else:

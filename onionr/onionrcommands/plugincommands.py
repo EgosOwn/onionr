@@ -1,5 +1,5 @@
 '''
-    Onionr - P2P Anonymous Storage Network
+    Onionr - Private P2P Communication
 
     plugin CLI commands
 '''
@@ -30,7 +30,6 @@ def enable_plugin(o_inst):
         logger.info('%s %s <plugin>' % (sys.argv[0], sys.argv[1]))
 
 def disable_plugin(o_inst):
-
     if len(sys.argv) >= 3:
         plugin_name = sys.argv[2]
         logger.info('Disabling plugin "%s"...' % plugin_name)

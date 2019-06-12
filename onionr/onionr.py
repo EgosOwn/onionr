@@ -208,7 +208,7 @@ class Onionr:
         commands.onionrstatistics.show_details(self)
 
     def openHome(self):
-        commands.open_home(self)
+        commands.openwebinterface.open_home(self)
 
     def addID(self):
         commands.pubkeymanager.add_ID(self)
