@@ -1,5 +1,5 @@
 '''
-    Onionr - P2P Anonymous Storage Network
+    Onionr - Private P2P Communication
 
     Contains the CommunicatorUtils class which contains useful functions for the communicator daemon
 '''
@@ -17,6 +17,8 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
+
+# MODULE DEPRECATED
 
 import onionrexceptions, onionrpeers, onionrproofs, logger
 import base64, sqlite3, os

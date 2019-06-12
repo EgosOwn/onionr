@@ -1,5 +1,5 @@
 '''
-    Onionr - P2P Microblogging Platform & Social network
+    Onionr - Private P2P Communication
 
     Lookup new blocks with the communicator using a random connected peer
 '''

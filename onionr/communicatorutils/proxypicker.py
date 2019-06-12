@@ -1,7 +1,7 @@
 '''
-    Onionr - P2P Anonymous Storage Network
+    Onionr - Private P2P Communication
 
-    Just picks a proxy
+    Just picks a proxy to use based on a peer's address
 '''
 '''
     This program is free software: you can redistribute it and/or modify
@@ -23,3 +23,4 @@ def pick_proxy(peer_address):
         return 'tor'
     elif peer_address.endswith('.i2p'):
         return 'i2p'
+    raise ValueError("Peer address was not string ending with acceptable value")

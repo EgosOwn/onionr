@@ -36,9 +36,25 @@ The whitepaper (subject to change prior to alpha release) is available [here](do
 * [X] 🌐 Fully p2p/decentralized, no trackers or other single points of failure
 * [X] 🔒 End to end encryption of user data
 * [X] 📢 Optional non-encrypted blocks, useful for blog posts or public file sharing
-* [X] 💻 Easy API for integration to websites
+* [X] 💻 Easy HTTP API for integration to websites
 * [X] 🕵️ Metadata analysis resistance and anonymity
 * [X] 📡 Transport agnosticism (no internet required)
+
+## Software Suite
+
+Onionr ships with various application plugins ready for use out of the box:
+
+Currently usable:
+
+* Mail
+* Public anonymous chat
+* Simple webpage hosting (Will be greatly extended)
+* File sharing (Work in progress)
+
+Not yet usable:
+
+* Instant messaging
+* Forum/BBS
 
 **Onionr API and functionality is subject to non-backwards compatible change during pre-alpha development**
 

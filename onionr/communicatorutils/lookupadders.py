@@ -1,5 +1,5 @@
 '''
-    Onionr - P2P Anonymous Storage Network
+    Onionr - Private P2P Communication
 
     Lookup new peer transport addresses using the communicator
 '''
@@ -26,7 +26,7 @@ def lookup_new_peer_transports_with_communicator(comm_inst):
     for i in range(tryAmount):
         # Download new peer address list from random online peers
         if len(newPeers) > 10000:
-            # Dont get new peers if we have too many queued up
+            # Don't get new peers if we have too many queued up
             break
         peer = comm_inst.pickOnlinePeer()
         newAdders = comm_inst.peerAction(peer, action='pex')

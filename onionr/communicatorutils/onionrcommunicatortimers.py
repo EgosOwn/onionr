@@ -1,6 +1,5 @@
-#!/usr/bin/env python3
 '''
-    Onionr - P2P Anonymous Storage Network
+    Onionr - Private P2P Communication
 
     This file contains timer control for the communicator
 '''

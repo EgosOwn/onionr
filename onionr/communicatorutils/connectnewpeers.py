@@ -40,6 +40,7 @@ def connect_new_peer_to_communicator(comm_inst, peer='', useBootstrap=False):
     mainPeerList = comm_inst._core.listAdders()
     peerList = onionrpeers.getScoreSortedPeerList(comm_inst._core)
 
+    # If we don't have enough peers connected or random chance, select new peers to try
     if len(peerList) < 8 or secrets.randbelow(4) == 3:
         tryingNew = []
         for x in comm_inst.newPeers:
@@ -56,15 +57,19 @@ def connect_new_peer_to_communicator(comm_inst, peer='', useBootstrap=False):
     for address in peerList:
         if not config.get('tor.v3onions') and len(address) == 62:
             continue
+        # Don't connect to our own address
         if address == comm_inst._core.hsAddress:
             continue
+        # Don't connect to invalid address or if its already been tried/connected, or if its cooled down
         if len(address) == 0 or address in tried or address in comm_inst.onlinePeers or address in comm_inst.cooldownPeer:
             continue
         if comm_inst.shutdown:
             return
+        # Ping a peer,
         if comm_inst.peerAction(address, 'ping') == 'pong!':
             time.sleep(0.1)
             if address not in mainPeerList:
+                # Add a peer to our list if it isn't already since it successfully connected
                 networkmerger.mergeAdders(address, comm_inst._core)
             if address not in comm_inst.onlinePeers:
                 logger.info('Connected to ' + address)
@@ -80,6 +85,7 @@ def connect_new_peer_to_communicator(comm_inst, peer='', useBootstrap=False):
                 comm_inst.peerProfiles.append(onionrpeers.PeerProfiles(address, comm_inst._core))
             break
         else:
+            # Mark a peer as tried if they failed to respond to ping
             tried.append(address)
             logger.debug('Failed to connect to ' + address)
     return retData

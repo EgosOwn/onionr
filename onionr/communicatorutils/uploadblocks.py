@@ -1,5 +1,5 @@
 '''
-    Onionr - P2P Microblogging Platform & Social network
+    Onionr - Private P2P Communication
 
     Upload blocks in the upload queue to peers from the communicator
 '''
