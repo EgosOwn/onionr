@@ -1,5 +1,5 @@
 '''
-    Onionr - P2P Anonymous Storage Network
+    Onionr - Private P2P Communication
 
     Sets more abstract information related to a peer. Can be thought of as traditional 'contact' system
 '''

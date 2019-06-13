@@ -1,6 +1,6 @@
 # httpapi
 
-The httpapi contains collections of endpoints for the client API server.
+The httpapi contains collections of endpoints for the client and public API servers.
 
 ## Files:
 
