@@ -25,7 +25,7 @@ import onionrexceptions, onionrpeers, onionrevents as events, onionrplugins as p
 from communicatorutils import onionrdaemontools, servicecreator, onionrcommunicatortimers
 from communicatorutils import downloadblocks, lookupblocks, lookupadders
 from communicatorutils import servicecreator, connectnewpeers, uploadblocks
-from communicatorutils import daemonqueuehandler
+from communicatorutils import daemonqueuehandler, announcenode
 import onionrservices, onionr, onionrproofs
 
 OnionrCommunicatorTimers = onionrcommunicatortimers.OnionrCommunicatorTimers
@@ -60,6 +60,8 @@ class OnionrCommunicatorDaemon:
         self.connectTimes = {}
         self.peerProfiles = [] # list of peer's profiles (onionrpeers.PeerProfile instances)
         self.newPeers = [] # Peers merged to us. Don't add to db until we know they're reachable
+        self.announceProgress = {}
+        self.announceCache = {}
 
         # amount of threads running by name, used to prevent too many
         self.threadCounts = {}
@@ -121,7 +123,7 @@ class OnionrCommunicatorDaemon:
         OnionrCommunicatorTimers(self, self.uploadBlock, 10, requiresPeer=True, maxThreads=1)
 
         # Timer to process the daemon command queue
-        OnionrCommunicatorTimers(self, self.daemonCommands, 6, maxThreads=1)
+        OnionrCommunicatorTimers(self, self.daemonCommands, 6, maxThreads=3)
 
         # Timer that kills Onionr if the API server crashes
         OnionrCommunicatorTimers(self, self.detectAPICrash, 30, maxThreads=1)
@@ -136,7 +138,9 @@ class OnionrCommunicatorDaemon:
             self.services = None
         
         # This timer creates deniable blocks, in an attempt to further obfuscate block insertion metadata
-        deniableBlockTimer = OnionrCommunicatorTimers(self, self.daemonTools.insertDeniableBlock, 180, requiresPeer=True, maxThreads=1)
+        if config.get('general.insert_deniable_blocks', True):
+            deniableBlockTimer = OnionrCommunicatorTimers(self, self.daemonTools.insertDeniableBlock, 180, requiresPeer=True, maxThreads=1)
+            deniableBlockTimer.count = (deniableBlockTimer.frequency - 175)
 
         # Timer to check for connectivity, through Tor to various high-profile onion services
         netCheckTimer = OnionrCommunicatorTimers(self, self.daemonTools.netCheck, 600)
@@ -144,7 +148,7 @@ class OnionrCommunicatorDaemon:
         # Announce the public API server transport address to other nodes if security level allows
         if config.get('general.security_level', 1) == 0:
             # Default to high security level incase config breaks
-            announceTimer = OnionrCommunicatorTimers(self, self.daemonTools.announceNode, 3600, requiresPeer=True, maxThreads=1)
+            announceTimer = OnionrCommunicatorTimers(self, announcenode.announce_node, 3600, myArgs=[self], requiresPeer=True, maxThreads=1)
             announceTimer.count = (announceTimer.frequency - 120)
         else:
             logger.debug('Will not announce node.')
@@ -158,7 +162,6 @@ class OnionrCommunicatorDaemon:
         # Adjust initial timer triggers
         peerPoolTimer.count = (peerPoolTimer.frequency - 1)
         cleanupTimer.count = (cleanupTimer.frequency - 60)
-        deniableBlockTimer.count = (deniableBlockTimer.frequency - 175)
         blockCleanupTimer.count = (blockCleanupTimer.frequency - 5)
 
         # Main daemon loop, mainly for calling timers, don't do any complex operations here to avoid locking
@@ -358,7 +361,7 @@ class OnionrCommunicatorDaemon:
 
     def announce(self, peer):
         '''Announce to peers our address'''
-        if self.daemonTools.announceNode() == False:
+        if announcenode.announce_node(self) == False:
             logger.warn('Could not introduce node.')
 
     def detectAPICrash(self):

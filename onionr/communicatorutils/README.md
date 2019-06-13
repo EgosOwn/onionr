@@ -4,6 +4,8 @@ The files in this submodule handle various subtasks and utilities for the onionr
 
 ## Files:
 
+announcenode.py: Uses a communicator instance to announce our transport address to connected nodes
+
 connectnewpeers.py: takes a communicator instance and has it connect to as many peers as needed, and/or to a new specified peer.
 
 daemonqueuehandler.py: checks for new commands in the daemon queue and processes them accordingly.

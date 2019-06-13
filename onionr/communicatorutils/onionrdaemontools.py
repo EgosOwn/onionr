@@ -1,7 +1,7 @@
 '''
     Onionr - Private P2P Communication
 
-    Contains the CommunicatorUtils class which contains useful functions for the communicator daemon
+    Contains the DaemonTools class
 '''
 '''
     This program is free software: you can redistribute it and/or modify
@@ -36,67 +36,6 @@ class DaemonTools:
             self.daemon = daemon
             self.announceProgress = {}
             self.announceCache = {}
-
-    def announceNode(self):
-        '''Announce our node to our peers'''
-        retData = False
-        announceFail = False
-        
-        # Do not let announceCache get too large
-        if len(self.announceCache) >= 10000:
-            self.announceCache.popitem()
-
-        if self.daemon._core.config.get('general.security_level', 0) == 0:
-            # Announce to random online peers
-            for i in self.daemon.onlinePeers:
-                if not i in self.announceCache and not i in self.announceProgress:
-                    peer = i
-                    break
-            else:
-                peer = self.daemon.pickOnlinePeer()
-
-            for x in range(1):
-                if x == 1 and self.daemon._core.config.get('i2p.host'):
-                    ourID = self.daemon._core.config.get('i2p.own_addr').strip()
-                else:
-                    ourID = self.daemon._core.hsAddress.strip()
-
-                url = 'http://' + peer + '/announce'
-                data = {'node': ourID}
-
-                combinedNodes = ourID + peer
-                if ourID != 1:
-                    #TODO: Extend existingRand for i2p
-                    existingRand = self.daemon._core._utils.bytesToStr(self.daemon._core.getAddressInfo(peer, 'powValue'))
-                    # Reset existingRand if it no longer meets the minimum POW
-                    if type(existingRand) is type(None) or not existingRand.endswith('0' * ov.announce_pow):
-                        existingRand = ''
-
-                if peer in self.announceCache:
-                    data['random'] = self.announceCache[peer]
-                elif len(existingRand) > 0:
-                    data['random'] = existingRand
-                else:
-                    self.announceProgress[peer] = True
-                    proof = onionrproofs.DataPOW(combinedNodes, forceDifficulty=ov.announce_pow)
-                    del self.announceProgress[peer]
-                    try:
-                        data['random'] = base64.b64encode(proof.waitForResult()[1])
-                    except TypeError:
-                        # Happens when we failed to produce a proof
-                        logger.error("Failed to produce a pow for announcing to " + peer)
-                        announceFail = True
-                    else:
-                        self.announceCache[peer] = data['random']
-                if not announceFail:
-                    logger.info('Announcing node to ' + url)
-                    if self.daemon._core._utils.doPostRequest(url, data) == 'Success':
-                        logger.info('Successfully introduced node to ' + peer)
-                        retData = True
-                        self.daemon._core.setAddressInfo(peer, 'introduced', 1)
-                        self.daemon._core.setAddressInfo(peer, 'powValue', data['random'])
-        self.daemon.decrementThreadCount('announceNode')
-        return retData
 
     def netCheck(self):
         '''Check if we are connected to the internet or not when we can't connect to any peers'''
