@@ -17,15 +17,10 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import os, binascii, base64, hashlib, time, sys, hmac
+import os, binascii, base64, hashlib, time, sys, hmac, secrets
 import nacl.signing, nacl.encoding, nacl.public, nacl.hash, nacl.pwhash, nacl.utils, nacl.secret
 import logger, onionrproofs
 import onionrexceptions, keymanager, core
-# secrets module was added into standard lib in 3.6+
-if sys.version_info[0] == 3 and sys.version_info[1] < 6:
-    from dependencies import secrets
-elif sys.version_info[0] == 3 and sys.version_info[1] >= 6:
-    import secrets
 import config
 
 class OnionrCrypto:

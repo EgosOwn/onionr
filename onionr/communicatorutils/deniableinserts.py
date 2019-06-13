@@ -1,7 +1,7 @@
 '''
     Onionr - Private P2P Communication
 
-    This file defines values and requirements used by Onionr
+    Use the communicator to insert fake mail messages
 '''
 '''
     This program is free software: you can redistribute it and/or modify
@@ -17,10 +17,15 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-DENIABLE_PEER_ADDRESS = "OVPCZLOXD6DC5JHX4EQ3PSOGAZ3T24F75HQLIUZSDSMYPEOXCPFA===="
-class OnionrValues:
-    def __init__(self):
-        self.passwordLength = 20
-        self.blockMetadataLengths = {'meta': 1000, 'sig': 200, 'signer': 200, 'time': 10, 'pow': 1000, 'encryptType': 4, 'expire': 14} #TODO properly refine values to minimum needed
-        self.default_expire = 2592000
-        self.announce_pow = 5
+import secrets
+from etc import onionrvalues
+def insert_deniable_block(comm_inst):
+    '''Insert a fake block in order to make it more difficult to track real blocks'''
+    fakePeer = ''
+    chance = 10
+    if secrets.randbelow(chance) == (chance - 1):
+        # This assumes on the libsodium primitives to have key-privacy
+        fakePeer = onionrvalues.DENIABLE_PEER_ADDRESS
+        data = secrets.token_hex(secrets.randbelow(1024) + 1)
+        comm_inst._core.insertBlock(data, header='pm', encryptType='asym', asymPeer=fakePeer, meta={'subject': 'foo'})
+    comm_inst.decrementThreadCount('insert_deniable_block')

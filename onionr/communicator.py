@@ -22,10 +22,12 @@
 import sys, os, time
 import core, config, logger, onionr
 import onionrexceptions, onionrpeers, onionrevents as events, onionrplugins as plugins, onionrblockapi as block
-from communicatorutils import onionrdaemontools, servicecreator, onionrcommunicatortimers
+from communicatorutils import servicecreator, onionrcommunicatortimers
 from communicatorutils import downloadblocks, lookupblocks, lookupadders
 from communicatorutils import servicecreator, connectnewpeers, uploadblocks
-from communicatorutils import daemonqueuehandler, announcenode
+from communicatorutils import daemonqueuehandler, announcenode, deniableinserts
+from communicatorutils import cooldownpeer, housekeeping, netcheck
+from etc import humanreadabletime
 import onionrservices, onionr, onionrproofs
 
 OnionrCommunicatorTimers = onionrcommunicatortimers.OnionrCommunicatorTimers
@@ -88,10 +90,6 @@ class OnionrCommunicatorDaemon:
         # Loads in and starts the enabled plugins
         plugins.reload()
 
-        # daemon tools are misc daemon functions, e.g. announce to online peers
-        # intended only for use by OnionrCommunicatorDaemon
-        self.daemonTools = onionrdaemontools.DaemonTools(self)
-
         # time app started running for info/statistics purposes
         self.startTime = self._core._utils.getEpoch()
 
@@ -111,13 +109,13 @@ class OnionrCommunicatorDaemon:
         OnionrCommunicatorTimers(self, self.clearOfflinePeer, 58)
 
         # Timer to cleanup old blocks
-        blockCleanupTimer = OnionrCommunicatorTimers(self, self.daemonTools.cleanOldBlocks, 65)
+        blockCleanupTimer = OnionrCommunicatorTimers(self, housekeeping.clean_old_blocks, 65, myArgs=[self])
 
         # Timer to discover new peers
         OnionrCommunicatorTimers(self, self.lookupAdders, 60, requiresPeer=True)
 
         # Timer for adjusting which peers we actively communicate to at any given time, to avoid over-using peers
-        OnionrCommunicatorTimers(self, self.daemonTools.cooldownPeer, 30, requiresPeer=True)
+        OnionrCommunicatorTimers(self, cooldownpeer.cooldown_peer, 30, myArgs=[self], requiresPeer=True)
 
         # Timer to read the upload queue and upload the entries to peers
         OnionrCommunicatorTimers(self, self.uploadBlock, 10, requiresPeer=True, maxThreads=1)
@@ -133,17 +131,17 @@ class OnionrCommunicatorDaemon:
             self.services = onionrservices.OnionrServices(self._core)
             self.active_services = []
             self.service_greenlets = []
-            OnionrCommunicatorTimers(self, servicecreator.service_creator, 5, maxThreads=50, myArgs=(self,))
+            OnionrCommunicatorTimers(self, servicecreator.service_creator, 5, maxThreads=50, myArgs=[self])
         else:
             self.services = None
         
         # This timer creates deniable blocks, in an attempt to further obfuscate block insertion metadata
         if config.get('general.insert_deniable_blocks', True):
-            deniableBlockTimer = OnionrCommunicatorTimers(self, self.daemonTools.insertDeniableBlock, 180, requiresPeer=True, maxThreads=1)
+            deniableBlockTimer = OnionrCommunicatorTimers(self, deniableinserts.insert_deniable_block, 180, myArgs=[self], requiresPeer=True, maxThreads=1)
             deniableBlockTimer.count = (deniableBlockTimer.frequency - 175)
 
         # Timer to check for connectivity, through Tor to various high-profile onion services
-        netCheckTimer = OnionrCommunicatorTimers(self, self.daemonTools.netCheck, 600)
+        netCheckTimer = OnionrCommunicatorTimers(self, netcheck.net_check, 600, myArgs=[self])
 
         # Announce the public API server transport address to other nodes if security level allows
         if config.get('general.security_level', 1) == 0:
@@ -157,7 +155,7 @@ class OnionrCommunicatorDaemon:
         cleanupTimer = OnionrCommunicatorTimers(self, self.peerCleanup, 300, requiresPeer=True)
 
         # Timer to cleanup dead ephemeral forward secrecy keys 
-        forwardSecrecyTimer = OnionrCommunicatorTimers(self, self.daemonTools.cleanKeys, 15, maxThreads=1)
+        forwardSecrecyTimer = OnionrCommunicatorTimers(self, housekeeping.clean_keys, 15, myArgs=[self], maxThreads=1)
 
         # Adjust initial timer triggers
         peerPoolTimer.count = (peerPoolTimer.frequency - 1)
@@ -255,7 +253,7 @@ class OnionrCommunicatorDaemon:
                 break
         else:
             if len(self.onlinePeers) == 0:
-                logger.debug('Couldn\'t connect to any peers.' + (' Last node seen %s ago.' % self.daemonTools.humanReadableTime(time.time() - self.lastNodeSeen) if not self.lastNodeSeen is None else ''))
+                logger.debug('Couldn\'t connect to any peers.' + (' Last node seen %s ago.' % humanreadabletime.human_readable_time(time.time() - self.lastNodeSeen) if not self.lastNodeSeen is None else ''))
             else:
                 self.lastNodeSeen = time.time()
         self.decrementThreadCount('getOnlinePeers')
@@ -346,7 +344,7 @@ class OnionrCommunicatorDaemon:
 
     def heartbeat(self):
         '''Show a heartbeat debug message'''
-        logger.debug('Heartbeat. Node running for %s.' % self.daemonTools.humanReadableTime(self.getUptime()))
+        logger.debug('Heartbeat. Node running for %s.' % humanreadabletime.human_readable_time(self.getUptime()))
         self.decrementThreadCount('heartbeat')
 
     def daemonCommands(self):
@@ -379,10 +377,17 @@ class OnionrCommunicatorDaemon:
         self.decrementThreadCount('detectAPICrash')
 
     def runCheck(self):
-        if self.daemonTools.runCheck():
+        if run_file_exists(self):
             logger.debug('Status check; looks good.')
 
         self.decrementThreadCount('runCheck')
 
 def startCommunicator(onionrInst, proxyPort):
     OnionrCommunicatorDaemon(onionrInst, proxyPort)
+
+def run_file_exists(daemon):
+    if os.path.isfile(daemon._core.dataDir + '.runcheck'):
+        os.remove(daemon._core.dataDir + '.runcheck')
+        return True
+
+    return False

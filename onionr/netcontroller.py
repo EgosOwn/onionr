@@ -17,11 +17,10 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import subprocess, os, random, sys, time, signal, base64, socket
+import subprocess, os, sys, time, signal, base64, socket
 from shutil import which
 import logger, config
 from onionrblockapi import Block
-from dependencies import secrets
 
 def getOpenPort():
     # taken from (but modified) https://stackoverflow.com/a/2838309 by https://stackoverflow.com/users/133374/albert ccy-by-sa-3 https://creativecommons.org/licenses/by-sa/3.0/

@@ -1,7 +1,7 @@
 '''
     Onionr - Private P2P Communication
 
-    This file defines values and requirements used by Onionr
+    human_readable_time takes integer seconds and returns a human readable string
 '''
 '''
     This program is free software: you can redistribute it and/or modify
@@ -17,10 +17,22 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-DENIABLE_PEER_ADDRESS = "OVPCZLOXD6DC5JHX4EQ3PSOGAZ3T24F75HQLIUZSDSMYPEOXCPFA===="
-class OnionrValues:
-    def __init__(self):
-        self.passwordLength = 20
-        self.blockMetadataLengths = {'meta': 1000, 'sig': 200, 'signer': 200, 'time': 10, 'pow': 1000, 'encryptType': 4, 'expire': 14} #TODO properly refine values to minimum needed
-        self.default_expire = 2592000
-        self.announce_pow = 5
+def human_readable_time(seconds):
+    build = ''
+
+    units = {
+        'year' : 31557600,
+        'month' : (31557600 / 12),
+        'day' : 86400,
+        'hour' : 3600,
+        'minute' : 60,
+        'second' : 1
+    }
+
+    for unit in units:
+        amnt_unit = int(seconds / units[unit])
+        if amnt_unit >= 1:
+            seconds -= amnt_unit * units[unit]
+            build += '%s %s' % (amnt_unit, unit) + ('s' if amnt_unit != 1 else '') + ' '
+
+    return build.strip()

@@ -808,7 +808,7 @@ class Core:
                 self._utils.processBlockMetadata(retData)
 
         if retData != False:
-            if plaintextPeer == 'OVPCZLOXD6DC5JHX4EQ3PSOGAZ3T24F75HQLIUZSDSMYPEOXCPFA====':
+            if plaintextPeer == onionrvalues.DENIABLE_PEER_ADDRESS:
                 events.event('insertdeniable', {'content': plaintext, 'meta': plaintextMeta, 'hash': retData, 'peer': self._utils.bytesToStr(asymPeer)}, onionr = self.onionrInst, threaded = True)
             else:
                 events.event('insertblock', {'content': plaintext, 'meta': plaintextMeta, 'hash': retData, 'peer': self._utils.bytesToStr(asymPeer)}, onionr = self.onionrInst, threaded = True)

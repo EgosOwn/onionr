@@ -80,5 +80,5 @@ def announce_node(daemon):
                     retData = True
                     daemon._core.setAddressInfo(peer, 'introduced', 1)
                     daemon._core.setAddressInfo(peer, 'powValue', data['random'])
-    daemon.decrementThreadCount('announceNode')
+    daemon.decrementThreadCount('announce_node')
     return retData
