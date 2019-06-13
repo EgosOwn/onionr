@@ -58,7 +58,7 @@ def announce_node(daemon):
                     existingRand = ''
 
             if peer in daemon.announceCache:
-                data['random'] = self.announceCache[peer]
+                data['random'] = daemon.announceCache[peer]
             elif len(existingRand) > 0:
                 data['random'] = existingRand
             else:

@@ -7,6 +7,7 @@
         "socket_servers": false,
         "security_level": 0,
         "hide_created_blocks": true,
+        "insert_deniable_blocks": true,
         "max_block_age": 2678400,
         "bypass_tor_check": false,
         "public_key": "",
