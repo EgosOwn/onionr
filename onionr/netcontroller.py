@@ -144,15 +144,15 @@ HiddenServicePort 80 ''' + self.apiServerIP + ''':''' + str(self.hsPort)
         # wait for tor to get to 100% bootstrap
         try:
             for line in iter(tor.stdout.readline, b''):
-                if 'Bootstrapped 100%: Done' in line.decode():
+                if 'bootstrapped 100' in line.decode().lower():
                     break
-                elif 'Opening Socks listener' in line.decode():
+                elif 'opening socks listener' in line.decode().lower():
                     logger.debug(line.decode().replace('\n', ''))
             else:
                 logger.fatal('Failed to start Tor. Maybe a stray instance of Tor used by Onionr is still running?')
                 return False
         except KeyboardInterrupt:
-            logger.fatal('Got keyboard interrupt.', timestamp = False, level = logger.LEVEL_IMPORTANT)
+            logger.fatal('Got keyboard interrupt. Onionr will exit soon.', timestamp = False, level = logger.LEVEL_IMPORTANT)
             return False
 
         logger.debug('Finished starting Tor.', timestamp=True)

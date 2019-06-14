@@ -21,7 +21,7 @@
 import webbrowser, sys
 import logger
 from . import pubkeymanager, onionrstatistics, daemonlaunch, filecommands, plugincommands, keyadders
-from . import banblocks, exportblocks, openwebinterface
+from . import banblocks, exportblocks, openwebinterface, resettor
 
 def show_help(o_inst, command):
 
@@ -128,7 +128,9 @@ def get_commands(onionr_inst):
     'friend': onionr_inst.friendCmd,
     'addid': onionr_inst.addID,
     'add-id': onionr_inst.addID,
-    'change-id': onionr_inst.changeID
+    'change-id': onionr_inst.changeID,
+
+    'reset-tor': resettor.reset_tor
     }
 
 cmd_help = {
@@ -159,5 +161,6 @@ cmd_help = {
     'friend': '[add|remove] [public key/id]',
     'add-id': 'Generate a new ID (key pair)',
     'change-id': 'Change active ID',
-    'open-home': 'Open your node\'s home/info screen'
+    'open-home': 'Open your node\'s home/info screen',
+    'reset-tor': 'Delete the Tor data directory. Only do this if Tor never starts.'
         }

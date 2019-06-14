@@ -23,3 +23,5 @@ openwebinterface.py: command to open the web interface (useful because it requir
 plugincommands.py: commands to enable/disable/reload plugins
 
 pubkeymanager.py: commands to generate a new onionr user id, change the active id, or add/remove/list friends
+
+resettor.py: command to delete the Tor data directory

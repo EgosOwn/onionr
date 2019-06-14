@@ -118,7 +118,7 @@ class OnionrCommunicatorDaemon:
         OnionrCommunicatorTimers(self, cooldownpeer.cooldown_peer, 30, myArgs=[self], requiresPeer=True)
 
         # Timer to read the upload queue and upload the entries to peers
-        OnionrCommunicatorTimers(self, self.uploadBlock, 10, requiresPeer=True, maxThreads=1)
+        OnionrCommunicatorTimers(self, self.uploadBlock, 5, requiresPeer=True, maxThreads=1)
 
         # Timer to process the daemon command queue
         OnionrCommunicatorTimers(self, self.daemonCommands, 6, maxThreads=3)

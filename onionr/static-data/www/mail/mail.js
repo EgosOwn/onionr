@@ -201,6 +201,7 @@ function getInbox(){
     var requested = ''
     for(var i = 0; i < pms.length; i++) {
         if (pms[i].trim().length == 0){
+            threadPart.innerText = 'No messages to show ¯\\_(ツ)_/¯'
             continue
         }
         else{
