@@ -246,7 +246,7 @@ class OnionrUtils:
         '''Validate metadata meets onionr spec (does not validate proof value computation), take in either dictionary or json string'''
         # TODO, make this check sane sizes
         retData = False
-        maxClockDifference = 60
+        maxClockDifference = 120
 
         # convert to dict if it is json string
         if type(metadata) is str:
