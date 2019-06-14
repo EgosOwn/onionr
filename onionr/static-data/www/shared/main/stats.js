@@ -1,6 +1,5 @@
 /*
-
-    Onionr - P2P Anonymous Storage Network
+    Onionr - Private P2P Communication
 
     This file loads stats to show on the main node web page
 
@@ -36,7 +35,7 @@ function getStats(){
         lastConnect = humanDate.toString()
     }
     else{
-        lastConnect = 'Unknown'
+        lastConnect = 'None since start'
     }
     lastIncoming.innerText = lastConnect
 }
