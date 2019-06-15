@@ -205,18 +205,19 @@ class POW:
         else:
             myCore = coreInst
 
-        dataLen = len(data) + len(json.dumps(metadata))
+        json_metadata = json.dumps(metadata).encode()
 
-        if forceDifficulty > 0:
-            self.difficulty = forceDifficulty
-        else:
-            # Calculate difficulty. Dumb for now, may use good algorithm in the future.
-            self.difficulty = getDifficultyForNewBlock(dataLen)
-            
         try:
             self.data = self.data.encode()
         except AttributeError:
             pass
+            
+        if forceDifficulty > 0:
+            self.difficulty = forceDifficulty
+        else:
+            # Calculate difficulty. Dumb for now, may use good algorithm in the future.
+            self.difficulty = getDifficultyForNewBlock(bytes(json_metadata + b'\n' + self.data))
+            
         
         logger.info('Computing POW (difficulty: %s)...' % self.difficulty)
 

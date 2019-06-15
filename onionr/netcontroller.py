@@ -189,7 +189,11 @@ HiddenServicePort 80 ''' + self.apiServerIP + ''':''' + str(self.hsPort)
             return
 
         try:
-            os.kill(int(pidN), signal.SIGTERM)
+            try:
+                os.kill(int(pidN), signal.SIGTERM)
+            except PermissionError:
+                # seems to happen on win 10
+                pass
             os.remove(self.dataDir + 'torPid.txt')
         except ProcessLookupError:
             pass

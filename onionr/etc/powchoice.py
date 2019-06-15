@@ -1,7 +1,7 @@
 '''
-    Onionr - P2P Anonymous Storage Network
+    Onionr - Private P2P Communication
 
-    This file handles proof of memory functionality
+    This file does determinations for what proof of work module should be used
 '''
 '''
     This program is free software: you can redistribute it and/or modify
@@ -17,13 +17,11 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-
-class ProofOfMemory:
-    def __init__(self, commInst):
-        self.communicator = commInst
-        return
-    
-    def checkRandomPeer(self):
-        return
-    def checkPeer(self, peer):
-        return
+import platform
+def use_subprocess(core_inst):
+    use = True
+    if not core_inst.config.get('general.use_subprocess_pow_if_possible', True):
+        use = False
+    if 'Windows' == platform.system():
+        use = False
+    return use

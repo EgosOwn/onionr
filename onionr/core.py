@@ -25,7 +25,7 @@ import onionrutils, onionrcrypto, onionrproofs, onionrevents as events, onionrex
 import onionrblacklist
 from onionrusers import onionrusers
 import dbcreator, onionrstorage, serializeddata, subprocesspow
-from etc import onionrvalues
+from etc import onionrvalues, powchoice
 
 if sys.version_info < (3, 6):
     try:
@@ -65,7 +65,7 @@ class Core:
             self.dbCreate = dbcreator.DBCreator(self)
             self.forwardKeysFile = self.dataDir + 'forward-keys.db'
             self.keyStore = simplekv.DeadSimpleKV(self.dataDir + 'cachedstorage.dat', refresh_seconds=5)
-
+            
             # Socket data, defined here because of multithreading constraints with gevent
             self.killSockets = False
             self.startSocket = {}
@@ -104,6 +104,7 @@ class Core:
             else:
                 logger.warn('Warning: address bootstrap file not found ' + self.bootstrapFileLocation)
 
+            self.use_subprocess = powchoice.use_subprocess(self)
             self._utils = onionrutils.OnionrUtils(self)
             # Initialize the crypto object
             self._crypto = onionrcrypto.OnionrCrypto(self)
@@ -792,7 +793,10 @@ class Core:
             metadata['expire'] = expire
 
         # send block data (and metadata) to POW module to get tokenized block data
-        payload = subprocesspow.SubprocessPOW(data, metadata, self).start()
+        if self.use_subprocess:
+            payload = subprocesspow.SubprocessPOW(data, metadata, self).start()
+        else:
+            payload = onionrproofs.POW(metadata, data).waitForResult()
         if payload != False:
             try:
                 retData = self.setData(payload)

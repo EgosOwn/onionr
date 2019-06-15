@@ -29,7 +29,7 @@ import httpapi
 from httpapi import friendsapi, profilesapi, configapi, miscpublicapi
 from onionrservices import httpheaders
 import onionr
-
+config.reload()
 class FDSafeHandler(WSGIHandler):
     '''Our WSGI handler. Doesn't do much non-default except timeouts'''
     def handle(self):
@@ -57,6 +57,7 @@ def setBindIP(filePath=''):
     else:
         data = '127.0.0.1'
     if filePath != '':
+        print(filePath)
         with open(filePath, 'w') as bindFile:
             bindFile.write(data)
     return data

@@ -23,6 +23,11 @@ from threading import Thread
 import onionr, api, logger, communicator
 import onionrevents as events
 from netcontroller import NetController
+
+def _proper_shutdown(o_inst):
+    o_inst.onionrUtils.localCommand('shutdown')
+    sys.exit(1)
+
 def daemon(o_inst):
     '''
         Starts the Onionr communication daemon
@@ -39,8 +44,7 @@ def daemon(o_inst):
         time.sleep(0)
     except KeyboardInterrupt:
         logger.debug('Got keyboard interrupt, shutting down...')
-        time.sleep(1)
-        o_inst.onionrUtils.localCommand('shutdown')
+        _proper_shutdown(o_inst)
 
     apiHost = ''
     while apiHost == '':
@@ -64,7 +68,11 @@ def daemon(o_inst):
     else:
         logger.debug('.onion service disabled')
     logger.debug('Using public key: %s' % (logger.colors.underline + o_inst.onionrCore._crypto.pubKey))
-    time.sleep(1)
+
+    try:
+        time.sleep(1)
+    except KeyboardInterrupt:
+        _proper_shutdown(o_inst)
 
     o_inst.onionrCore.torPort = net.socksPort
     communicatorThread = Thread(target=communicator.startCommunicator, args=(o_inst, str(net.socksPort)))
