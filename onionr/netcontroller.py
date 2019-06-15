@@ -1,5 +1,5 @@
 '''
-    Onionr - P2P Microblogging Platform & Social network
+    Onionr - Private P2P Communication
 
     Netcontroller library, used to control/work with Tor/I2P and send requests through them
 '''
