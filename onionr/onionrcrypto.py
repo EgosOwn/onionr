@@ -246,7 +246,7 @@ class OnionrCrypto:
         except AttributeError:
             pass
         
-        difficulty = onionrproofs.getDifficultyForNewBlock(blockContent, ourBlock=False)
+        difficulty = onionrproofs.getDifficultyForNewBlock(blockContent, ourBlock=False, coreInst=self._core)
         
         if difficulty < int(config.get('general.minimum_block_pow')):
             difficulty = int(config.get('general.minimum_block_pow'))

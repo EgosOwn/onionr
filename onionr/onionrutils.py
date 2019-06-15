@@ -185,7 +185,7 @@ class OnionrUtils:
                 self._core.updateBlockInfo(blockHash, 'expire', expireTime)
             if not blockType is None:
                 self._core.updateBlockInfo(blockHash, 'dataType', blockType)
-            onionrevents.event('processblocks', data = {'block': myBlock, 'type': blockType, 'signer': signer, 'validSig': valid}, onionr = None)
+            onionrevents.event('processblocks', data = {'block': myBlock, 'type': blockType, 'signer': signer, 'validSig': valid}, onionr = self._core.onionrInst)
         else:
             pass
             #logger.debug('Not processing metadata on encrypted block we cannot decrypt.')

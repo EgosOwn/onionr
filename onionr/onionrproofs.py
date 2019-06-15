@@ -45,7 +45,7 @@ def getDifficultyModifier(coreOrUtilsInst=None):
 
     return retData
 
-def getDifficultyForNewBlock(data, ourBlock=True):
+def getDifficultyForNewBlock(data, ourBlock=True, coreInst=None):
     '''
     Get difficulty for block. Accepts size in integer, Block instance, or str/bytes full block contents
     '''
@@ -61,7 +61,7 @@ def getDifficultyForNewBlock(data, ourBlock=True):
     else:
         minDifficulty = config.get('general.minimum_block_pow', 4)
 
-    retData = max(minDifficulty, math.floor(dataSize / 100000)) + getDifficultyModifier()
+    retData = max(minDifficulty, math.floor(dataSize / 100000)) + getDifficultyModifier(coreInst)
 
     return retData
 
@@ -216,7 +216,7 @@ class POW:
             self.difficulty = forceDifficulty
         else:
             # Calculate difficulty. Dumb for now, may use good algorithm in the future.
-            self.difficulty = getDifficultyForNewBlock(bytes(json_metadata + b'\n' + self.data))
+            self.difficulty = getDifficultyForNewBlock(bytes(json_metadata + b'\n' + self.data), coreInst=myCore)
             
         
         logger.info('Computing POW (difficulty: %s)...' % self.difficulty)

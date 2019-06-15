@@ -39,7 +39,6 @@ class Core:
         '''
             Initialize Core Onionr library
         '''
-
         # set data dir
         self.dataDir = os.environ.get('ONIONR_HOME', os.environ.get('DATA_DIR', 'data/'))
         if not self.dataDir.endswith('/'):
@@ -135,7 +134,7 @@ class Core:
         if not self._utils.validatePubKey(peerID):
             return False
 
-        events.event('pubkey_add', data = {'key': peerID}, onionr = None)
+        events.event('pubkey_add', data = {'key': peerID}, onionr = self.onionrInst)
 
         conn = sqlite3.connect(self.peerDB, timeout=30)
         hashID = self._crypto.pubKeyHashID(peerID)
@@ -187,7 +186,7 @@ class Core:
             conn.commit()
             conn.close()
 
-            events.event('address_add', data = {'address': address}, onionr = None)
+            events.event('address_add', data = {'address': address}, onionr = self.onionrInst)
 
             return True
         else:
@@ -207,7 +206,7 @@ class Core:
             conn.commit()
             conn.close()
 
-            events.event('address_remove', data = {'address': address}, onionr = None)
+            events.event('address_remove', data = {'address': address}, onionr = self.onionrInst)
             return True
         else:
             return False
@@ -342,7 +341,7 @@ class Core:
             conn.commit()
             conn.close()
 
-        events.event('queue_pop', data = {'data': retData}, onionr = None)
+        events.event('queue_pop', data = {'data': retData}, onionr = self.onionrInst)
 
         return retData
 
@@ -363,7 +362,7 @@ class Core:
         except sqlite3.OperationalError:
             retData = False
             self.daemonQueue()
-        events.event('queue_push', data = {'command': command, 'data': data}, onionr = None)
+        events.event('queue_push', data = {'command': command, 'data': data}, onionr = self.onionrInst)
         conn.close()
         return retData
 
@@ -406,7 +405,7 @@ class Core:
             pass
 
         conn.close()
-        events.event('queue_clear', onionr = None)
+        events.event('queue_clear', onionr = self.onionrInst)
 
         return
 

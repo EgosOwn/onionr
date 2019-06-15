@@ -17,11 +17,11 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
+import random, threading, hmac, base64, time, os, json, socket
 from gevent.pywsgi import WSGIServer, WSGIHandler
 from gevent import Timeout
-import flask, cgi, uuid
+import flask
 from flask import request, Response, abort, send_from_directory
-import sys, random, threading, hmac, base64, time, os, json, socket
 import core
 from onionrblockapi import Block
 import onionrutils, onionrexceptions, onionrcrypto, blockimporter, onionrevents as events, logger, config
@@ -29,6 +29,7 @@ import httpapi
 from httpapi import friendsapi, profilesapi, configapi, miscpublicapi
 from onionrservices import httpheaders
 import onionr
+
 config.reload()
 class FDSafeHandler(WSGIHandler):
     '''Our WSGI handler. Doesn't do much non-default except timeouts'''
@@ -57,7 +58,6 @@ def setBindIP(filePath=''):
     else:
         data = '127.0.0.1'
     if filePath != '':
-        print(filePath)
         with open(filePath, 'w') as bindFile:
             bindFile.write(data)
     return data
@@ -332,7 +332,6 @@ class API:
             if self._core._utils.validateHash(name):
                 try:
                     resp = Block(name, decrypt=True).bcontent
-                    #resp =  cgi.escape(Block(name, decrypt=True).bcontent, quote=True)
                 except TypeError:
                     pass
             else:

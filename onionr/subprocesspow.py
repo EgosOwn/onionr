@@ -53,7 +53,7 @@ class SubprocessPOW:
 
         self.data = onionrutils.OnionrUtils.strToBytes(data)
         # Calculate difficulty. Dumb for now, may use good algorithm in the future.
-        self.difficulty = onionrproofs.getDifficultyForNewBlock(bytes(json_metadata + b'\n' + self.data))
+        self.difficulty = onionrproofs.getDifficultyForNewBlock(bytes(json_metadata + b'\n' + self.data), coreInst=self.core_inst)
         
         logger.info('Computing POW (difficulty: %s)...' % self.difficulty)
 

@@ -34,7 +34,6 @@ class PeerProfiles:
         if not isinstance(coreInst, core.Core):
             raise TypeError("coreInst must be a type of core.Core")
         self.coreInst = coreInst
-        assert isinstance(self.coreInst, core.Core)
 
         self.loadScore()
         self.getConnectTime()

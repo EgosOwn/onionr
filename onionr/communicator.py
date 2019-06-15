@@ -371,7 +371,7 @@ class OnionrCommunicatorDaemon:
                 time.sleep(1)
             else:
                 # This executes if the api is NOT detected to be running
-                events.event('daemon_crash', onionr = None, data = {})
+                events.event('daemon_crash', onionr = self._core.onionrInst, data = {})
                 logger.error('Daemon detected API crash (or otherwise unable to reach API after long time), stopping...')
                 self.shutdown = True
         self.decrementThreadCount('detectAPICrash')
