@@ -389,8 +389,6 @@ def commandInstallPlugin():
                         pkobh = distributor
             except Exception as e:
                 logger.warn('Failed to lookup plugin in repositories.', timestamp = False)
-                logger.error('asdf', error = e, timestamp = False)
-
                 return True
 
         if pkobh is None:

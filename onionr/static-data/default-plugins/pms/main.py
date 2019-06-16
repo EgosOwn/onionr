@@ -303,9 +303,10 @@ def add_deleted(keyStore, bHash):
     keyStore.put('deleted_mail', existing.append(bHash))
 
 def on_insertblock(api, data={}):
-    sentboxTools = sentboxdb.SentBox(api.get_core())
     meta = json.loads(data['meta'])
-    sentboxTools.addToSent(data['hash'], data['peer'], data['content'], meta['subject'])
+    if meta['type'] == 'pm':
+        sentboxTools = sentboxdb.SentBox(api.get_core())
+        sentboxTools.addToSent(data['hash'], data['peer'], data['content'], meta['subject'])
 
 def on_init(api, data = None):
     '''

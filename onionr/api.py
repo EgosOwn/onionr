@@ -76,6 +76,7 @@ class PublicAPI:
         self.i2pAdder = clientAPI._core.i2pAddress
         self.bindPort = config.get('client.public.port')
         self.lastRequest = 0
+        self.hitCount = 0 # total rec requests to public api since server started
         logger.info('Running public api on %s:%s' % (self.host, self.bindPort))
 
         @app.before_request
@@ -90,6 +91,7 @@ class PublicAPI:
             if request.host not in (self.i2pAdder, self.torAdder):
                 # Disallow connection if wrong HTTP hostname, in order to prevent DNS rebinding attacks
                 abort(403)
+            self.hitCount += 1 # raise hit count for valid requests
 
         @app.after_request
         def sendHeaders(resp):
@@ -294,6 +296,10 @@ class API:
             if not config.get("www.private.run", True):
                 abort(403)
             return send_from_directory(config.get('www.private.path', 'static-data/www/private/'), path)
+
+        @app.route('/hitcount')
+        def get_hit_count():
+            return Response(str(self.publicAPI.hitCount))
 
         @app.route('/queueResponseAdd/<name>', methods=['post'])
         def queueResponseAdd(name):

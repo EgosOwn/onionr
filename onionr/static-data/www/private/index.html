@@ -23,7 +23,7 @@
             <br>
             <button id='shutdownNode' class='warnBtn'>Shutdown Node</button> <button id='refreshStats' class='primaryBtn'>Refresh Stats</button>
             <br><br>
-            <h2>Onionr Services</h2>
+            <h1>Onionr Services</h1>
             <label>Open Site: <input type='text' id='siteViewer' placeholder='Site Hash'> <button id='openSite' class='primaryBtn openSiteBtn'>Open Onionr Site</button></label>
             <br>
             <br><br><a class='idLink' href='/mail/'>Mail</a> - <a class='idLink' href='/friends/'>Friend Manager</a> - <a class='idLink' href='/board/'>Boards</a> - 
@@ -38,13 +38,16 @@
                 <button class='saveConfig successBtn'>Save Config</button>
             </details>
             <hr>
-            <h2>Stats</h2>
+            <h1>Statistics</h1>
             <p>🕰️ Uptime: <span id='uptime'></span></p>
-            <p>🖇️ Last Received Connection: <span id='lastIncoming'>None since start</span></p>
-            <p>💾 Stored Blocks: <span id='storedBlocks'></span></p>
-            <p>📨 Blocks in queue: <span id='blockQueue'></span></p>
+            <h2>Connections</h2>
+            <p>🖇️ Last Received Request: <span id='lastIncoming'>None since start</span></p>
+            <p>⬇️ Total Requests Received: <span id='totalRec'>None since start</span></p>
             <p>🔗 Outgoing Connections:</p>
             <pre id='connectedNodes'></pre>
+            <h2>Blocks</h2>
+            <p>💾 Stored Blocks: <span id='storedBlocks'></span></p>
+            <p>📨 Blocks in queue: <span id='blockQueue'></span></p>
         </div>
         <script src='/shared/misc.js'></script>
         <script src='/shared/main/stats.js'></script>
