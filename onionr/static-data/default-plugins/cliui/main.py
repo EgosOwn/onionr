@@ -39,8 +39,6 @@ class OnionrCLIUI:
 
     def subCommand(self, command, args=None):
             try:
-                #subprocess.run(["./onionr.py", command])
-                #subprocess.Popen(['./onionr.py', command], stdin=subprocess.STD, stdout=subprocess.STDOUT, stderr=subprocess.STDOUT)
                 if args != None:
                     subprocess.call(['./onionr.py', command, args])
                 else:
@@ -89,8 +87,13 @@ class OnionrCLIUI:
                 else:
                     print('Plugin not enabled')
             elif choice in ("3", "file sharing", "file"):
-                filename = input("Enter full path to file: ").strip()
-                self.subCommand("addfile", filename)
+                try:
+                    filename = input("Enter full path to file: ").strip()
+                except (EOFError, KeyboardInterrupt) as e:
+                    pass
+                else:
+                    if len(filename.strip()) > 0:
+                        self.subCommand("addfile", filename)
             elif choice in ("4", "quit"):
                 showMenu = False
                 self.shutdown = True
