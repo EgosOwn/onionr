@@ -54,7 +54,10 @@ fetch('/friends/list', {
     var keys = [];
     for(var k in resp) keys.push(k);
     console.log(keys)
-    friendListDisplay.innerHTML = 'Click name to view info<br><br>'
+
+    if (keys.length == 0){
+        friendListDisplay.innerText = "None yet :("
+    }
     for (var i = 0; i < keys.length; i++){
         var peer = keys[i]
         var name = resp[keys[i]]['name']

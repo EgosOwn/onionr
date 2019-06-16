@@ -121,8 +121,6 @@ class Onionr:
         if type(config.get('client.public.port')) is type(None):
             randomPort = netcontroller.getOpenPort()
             config.set('client.public.port', randomPort, savefile=True)
-        if type(config.get('client.participate')) is type(None):
-            config.set('client.participate', True, savefile=True)
         if type(config.get('client.api_version')) is type(None):
             config.set('client.api_version', API_VERSION, savefile=True)
 
