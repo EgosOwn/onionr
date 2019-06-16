@@ -1,5 +1,7 @@
 # Security Policy
 
+We welcome responsible and constructive security review.
+
 # Scope
 
 The Onionr software and any nodes you control are within scope.
@@ -14,7 +16,7 @@ The following exploits are of particular interest:
   * Easily associating public keys with server addresses
   * Discovering true server IPs when behind Tor/I2P (aside from Tor/i2p-level attacks)
   * Easily discovering which nodes are the block creator
-* XSS, CSRF, clickjacking
+* XSS, CSRF, clickjacking, DNS rebinding
 * Timing attacks against the local http server ([see blog post](https://www.chaoswebs.net/blog/timebleed-breaking-privacy-with-a-simple-timing-attack.html))
 * Discovering direct connection servers as a non participant.
 * Cryptography/protocol issues
@@ -26,7 +28,7 @@ We do not consider non-network based same-machine attacks to be very significant
 
 Onionr is a student-owned hobby project, resources are not available for large rewards.
 
-Stickers or other reasonable & negotiable rewards are available. We reserve the right to refuse rewards for any reason.
+Stickers or other small rewards are available. We reserve the right to refuse rewards for any reason.
 
 Public recognition can be given upon request.
 

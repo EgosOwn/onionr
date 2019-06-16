@@ -39,7 +39,7 @@ def show_stats(o_inst):
 
             # count stats
             'div2' : True,
-            'Known Peers' : str(len(o_inst.onionrCore.listPeers()) - 1),
+            'Known Peers' : str(len(o_inst.onionrCore.listPeers())),
             'Enabled Plugins' : str(len(o_inst.onionrCore.config.get('plugins.enabled', list()))) + ' / ' + str(len(os.listdir(o_inst.dataDir + 'plugins/'))),
             'Stored Blocks' : str(totalBlocks),
             'Percent Blocks Signed' : str(round(100 * signedBlocks / max(totalBlocks, 1), 2)) + '%'

@@ -438,7 +438,7 @@ class OnionrUtils:
                     else:
                         logger.warn('Failed to verify hash for %s' % block)
         if not exist:
-            print('No blocks found to import')
+            logger.info('No blocks found to import')
 
     def progressBar(self, value = 0, endvalue = 100, width = None):
         '''

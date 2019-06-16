@@ -132,7 +132,10 @@ def raw(data, fd = sys.stdout, sensitive = False):
     '''
 
     if get_settings() & OUTPUT_TO_CONSOLE:
-        ts = fd.write('%s\n' % data)
+        try:
+            ts = fd.write('%s\n' % data)
+        except OSError:
+            pass
     if get_settings() & OUTPUT_TO_FILE and not sensitive:
         try:
             with open(_outputfile, "a+") as f:
