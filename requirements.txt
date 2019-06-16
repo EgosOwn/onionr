@@ -48,9 +48,6 @@ click==7.0 \
     # via flask
 deadsimplekv==0.1.1 \
     --hash=sha256:4bf951e188c302006e37f95bde6117b1b938fb454153d583c6346090d9bead1a
-defusedxml==0.5.0 \
-    --hash=sha256:24d7f2f94f7f3cb6061acb215685e5125fbcdc40a857eff9de22518820b0a4f4 \
-    --hash=sha256:702a91ade2968a82beb0db1e0766a6a273f33d4616a6ce8cde475d8e09853b20
 flask==1.0.2 \
     --hash=sha256:2271c0070dbcb5275fad4a82e29f23ab92682dc45f9dfbc22c02ba9b9322ce48 \
     --hash=sha256:a080b744b7e345ccfcbc77954861cb05b3c63786e93f2b3875e0913d44b43f05
