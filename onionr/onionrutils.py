@@ -34,7 +34,7 @@ if sys.version_info < (3, 6):
     except ModuleNotFoundError:
         logger.fatal('On Python 3 versions prior to 3.6.x, you need the sha3 module')
         sys.exit(1)
-
+config.reload()
 class OnionrUtils:
     '''
         Various useful functions for validating things, etc functions, connectivity
@@ -47,7 +47,6 @@ class OnionrUtils:
         self.avoidDupe = [] # list used to prevent duplicate requests per peer for certain actions
         self.peerProcessing = {} # dict of current peer actions: peer, actionList
         self.storageCounter = storagecounter.StorageCounter(self._core) # used to keep track of how much data onionr is using on disk
-        config.reload() # onionr config
         return
 
     def getTimeBypassToken(self):
@@ -85,7 +84,6 @@ class OnionrUtils:
         '''
             Send a command to the local http API server, securely. Intended for local clients, DO NOT USE for remote peers.
         '''
-        config.reload()
         self.getTimeBypassToken()
         # TODO: URL encode parameters, just as an extra measure. May not be needed, but should be added regardless.
         hostname = ''

@@ -1,5 +1,5 @@
 '''
-    Onionr - P2P Anonymous Storage Network
+    Onionr - Private P2P Communication
 
     This file handles block storage, providing an abstraction for storing blocks between file system and database
 '''

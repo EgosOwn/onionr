@@ -1,5 +1,5 @@
 '''
-    Onionr - P2P Microblogging Platform & Social network
+    Onionr - Private P2P Communication
 
     This file deals with management of modules/plugins.
 '''
@@ -27,6 +27,7 @@ if not dataDir.endswith('/'):
 
 _pluginsfolder = dataDir + 'plugins/'
 _instances = dict()
+config.reload()
 
 def reload(onionr = None, stop_event = True):
     '''
@@ -211,8 +212,6 @@ def get_enabled_plugins():
 
     check()
 
-    config.reload()
-
     return list(config.get('plugins.enabled', list()))
 
 def is_enabled(name):
@@ -252,8 +251,6 @@ def check():
     '''
         Checks to make sure files exist
     '''
-
-    config.reload()
 
     if not config.is_set('plugins'):
         logger.debug('Generating plugin configuration data...')

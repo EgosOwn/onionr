@@ -22,10 +22,10 @@ import nacl.signing, nacl.encoding, nacl.public, nacl.hash, nacl.pwhash, nacl.ut
 import logger, onionrproofs
 import onionrexceptions, keymanager, core
 import config
+config.reload()
 
 class OnionrCrypto:
     def __init__(self, coreInstance):
-        config.reload()
         self._core = coreInstance
         self._keyFile = self._core.dataDir + 'keys.txt'
         self.pubKey = None

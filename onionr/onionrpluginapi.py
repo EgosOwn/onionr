@@ -1,5 +1,5 @@
 '''
-    Onionr - P2P Microblogging Platform & Social network
+    Onionr - Private P2P Communication
 
     This file deals with the object that is passed with each event
 '''

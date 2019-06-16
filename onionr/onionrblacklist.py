@@ -1,5 +1,5 @@
 '''
-    Onionr - P2P Anonymous Storage Network
+    Onionr - Private P2P Communication
 
     This file handles maintenence of a blacklist database, for blocks and peers
 '''

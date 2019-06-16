@@ -1,5 +1,5 @@
 '''
-    Onionr - P2P Anonymous Storage Network
+    Onionr - Private P2P Communication
 
     This file contains both the PeerProfiles class for network profiling of Onionr nodes
 '''
@@ -19,6 +19,7 @@
 '''
 import sqlite3
 import core, config, logger
+config.reload()
 class PeerProfiles:
     '''
         PeerProfiles
@@ -91,7 +92,6 @@ def peerCleanup(coreInst):
         raise TypeError('coreInst must be instance of core.Core')
 
     logger.info('Cleaning peers...')
-    config.reload()
 
     adders = getScoreSortedPeerList(coreInst)
     adders.reverse()

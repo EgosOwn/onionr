@@ -20,6 +20,8 @@
 import multiprocessing, nacl.encoding, nacl.hash, nacl.utils, time, math, threading, binascii, sys, json
 import core, onionrutils, config, logger, onionrblockapi
 
+config.reload()
+
 def getDifficultyModifier(coreOrUtilsInst=None):
     '''Accepts a core or utils instance returns 
     the difficulty modifier for block storage based 
@@ -82,7 +84,6 @@ def hashMeetsDifficulty(h):
     '''
         Return bool for a hash string to see if it meets pow difficulty defined in config
     '''
-    config.reload()
     hashDifficulty = getHashDifficulty(h)
     try:
         expected = int(config.get('general.minimum_block_pow'))
@@ -100,7 +101,6 @@ class DataPOW:
         self.data = data
         self.threadCount = threadCount
         self.rounds = 0
-        config.reload()
 
         if forceDifficulty == 0:
             dataLen = sys.getsizeof(data)

@@ -35,7 +35,6 @@ OnionrCommunicatorTimers = onionrcommunicatortimers.OnionrCommunicatorTimers
 config.reload()
 class OnionrCommunicatorDaemon:
     def __init__(self, onionrInst, proxyPort, developmentMode=config.get('general.dev_mode', False)):
-        config.reload()
         onionrInst.communicatorInst = self
         # configure logger and stuff
         onionr.Onionr.setupConfig('data/', self = self)

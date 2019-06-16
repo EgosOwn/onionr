@@ -115,7 +115,6 @@ def reload():
     '''
         Reloads the configuration data in memory from the file
     '''
-
     check()
     try:
         with open(get_config_file(), 'r', encoding="utf8") as configfile:

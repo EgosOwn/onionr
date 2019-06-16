@@ -21,7 +21,7 @@ import subprocess, os, sys, time, signal, base64, socket
 from shutil import which
 import logger, config
 from onionrblockapi import Block
-
+config.reload()
 def getOpenPort():
     # taken from (but modified) https://stackoverflow.com/a/2838309 by https://stackoverflow.com/users/133374/albert ccy-by-sa-3 https://creativecommons.org/licenses/by-sa/3.0/
     # changes from source: import moved to top of file, bind specifically to localhost
@@ -64,10 +64,6 @@ class NetController:
             self.torBinary = '/usr/bin/tor'
         else:
             self.torBinary = 'tor'
-
-        config.reload()
-
-        return
 
     def generateTorrc(self):
         '''
