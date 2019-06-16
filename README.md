@@ -125,7 +125,13 @@ Email: beardog [ at ] mailbox.org
 
 ## Disclaimers and legal
 
-Onionr is published under the GNU GPL v3 license.
+No matter how good Onionr and other software gets, there will always be ways for clever or well-funded adversaries to break your security. 
+
+*Do not rely on Onionr or any other software to hold up if your life or liberty are at stake.*
+
+### Licenses and Branding
+
+Onionr is published under the GNU GPL v3 license, except for the logo.
 
 The Tor Project and I2P developers do not own, create, or endorse this project, and are not otherwise involved.
 
