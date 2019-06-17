@@ -17,14 +17,12 @@
     "www" : {
         "public" : {
             "run" : true,
-            "path" : "static-data/www/public/",
-            "guess_mime" : true
+            "path" : "static-data/www/public/"
         },
 
         "private" : {
             "run" : true,
-            "path" : "static-data/www/private/",
-            "guess_mime" : true
+            "path" : "static-data/www/private/"
         },
 
         "ui" : {
