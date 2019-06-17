@@ -11,7 +11,7 @@
 (***pre-alpha & experimental, not well tested or easy to use yet***)
 
 [![Open Source Love](https://badges.frapsoft.com/os/v3/open-source.png?v=103)](https://github.com/ellerbrock/open-source-badges/)
-<img src='https://gitlab.com/beardog/Onionr/badges/master/build.svg'>
+<img src='https://gitlab.com/beardog/Onionr/badges/master/build.svg'> - [Onionr.net](https://onionr.net/)
 
 <hr>
 
@@ -48,7 +48,7 @@ Currently usable:
 
 * Mail
 * Public anonymous chat
-* Simple webpage hosting (Will be greatly extended)
+* Simple webpage hosting - Will be greatly extended
 * File sharing (Work in progress)
 
 Not yet usable:
@@ -107,7 +107,7 @@ Everyone is welcome to contribute. Help is wanted for the following:
 * Security review/audit
 * Automatic I2P setup
 
-Contribute money:
+## Contribute money:
 
 Donating at least $5 gets you cool Onionr stickers. Get in touch if you want them.
 
@@ -119,9 +119,11 @@ USD (Card/Paypal): [Ko-Fi](https://www.ko-fi.com/beardogkf)
 
 Note: probably not tax deductible
 
-## Contact
+# Contact
 
 Email: beardog [ at ] mailbox.org
+
+Onionr Mail: TRH763JURNY47QPBTTQ4LLPYCYQK6Q5YA33R6GANKZK5C5DKCIGQ====
 
 ## Disclaimers and legal
 
@@ -139,7 +141,7 @@ Tor is a trademark for the Tor Project. We do not own it.
 
 The 'open source badge' is by Maik Ellerbrock and is licensed under a Creative Commons Attribution 4.0 International License.
 
-## Logo
+## Onionr Logo
 
 The Onionr logo was created by [Anhar Ismail](https://github.com/anharismail) under the [Creative Commons Attribution 4.0 International License](https://creativecommons.org/licenses/by/4.0/). 
 
