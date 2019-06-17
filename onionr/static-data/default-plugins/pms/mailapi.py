@@ -60,4 +60,6 @@ def list_sentbox():
     for x in list_copy:
         if x['hash'] in deleted:
             sentbox_list.remove(x)
+            continue
+        x['name'] = contactmanager.ContactManager(c, x['peer'], saveUser=False).get_info('name')
     return json.dumps(sentbox_list)

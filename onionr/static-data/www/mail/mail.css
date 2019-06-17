@@ -54,8 +54,11 @@ input{
   }
 
   .mailPing{
-      display: none;
       color: orange;
+  }
+
+  #addUnknownContact, .mailPing{
+      display: none;
   }
 
 .danger{

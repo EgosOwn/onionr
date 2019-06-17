@@ -24,6 +24,19 @@ threadPlaceholder = document.getElementById('threadPlaceholder')
 tabBtns = document.getElementById('tabBtns')
 threadContent = {}
 replyBtn = document.getElementById('replyBtn')
+addUnknownContact = document.getElementById('addUnknownContact')
+
+function addContact(pubkey, friendName){
+    fetch('/friends/add/' + pubkey, {
+        method: 'POST',
+        headers: {
+          "token": webpass
+        }}).then(function(data) {
+            if (friendName.trim().length > 0){
+                post_to_url('/friends/setinfo/' + pubkey + '/name', {'data': friendName, 'token': webpass})
+            }
+        })
+}
 
 function openReply(bHash, quote, subject){
     var inbox = document.getElementsByClassName('threadEntry')
@@ -53,6 +66,7 @@ function openReply(bHash, quote, subject){
 }
 
 function openThread(bHash, sender, date, sigBool, pubkey, subjectLine){
+    addUnknownContact.style.display = 'none'
     var messageDisplay = document.getElementById('threadDisplay')
     var blockContent = httpGet('/getblockbody/' + bHash)
 
@@ -61,6 +75,11 @@ function openThread(bHash, sender, date, sigBool, pubkey, subjectLine){
     messageDisplay.innerText = blockContent
     var sigEl = document.getElementById('sigValid')
     var sigMsg = 'signature'
+
+    // show add unknown contact button if peer is unknown but still has pubkey
+    if (sender == pubkey){
+        addUnknownContact.style.display = 'inline'
+    }
 
     if (sigBool){
         sigMsg = 'Good ' + sigMsg
@@ -75,6 +94,13 @@ function openThread(bHash, sender, date, sigBool, pubkey, subjectLine){
     overlay('messageDisplay')
     replyBtn.onclick = function(){
         openReply(bHash, messageDisplay.innerText, subjectLine)
+    }
+    addUnknownContact.onclick = function(){
+        var friendName = prompt("Enter an alias for this contact:")
+        if (friendName === null || friendName.length == 0){
+            return
+        }
+        addContact(pubkey, friendName)
     }
 }
 
@@ -144,6 +170,7 @@ function loadInboxEntries(bHash){
         var humanDate = new Date(0)
         var metadata = resp['metadata']
         humanDate.setUTCSeconds(resp['meta']['time'])
+        humanDate = humanDate.toString()
         validSig.style.display = 'none'
         if (resp['meta']['signer'] != ''){
             senderInput.value = httpGet('/friends/getinfo/' + resp['meta']['signer'] + '/name')
@@ -162,7 +189,7 @@ function loadInboxEntries(bHash){
         entry.setAttribute('data-hash', bHash)
         entry.setAttribute('data-pubkey', resp['meta']['signer'])
         senderInput.readOnly = true
-        dateStr.innerText = humanDate.toString()
+        dateStr.innerText = humanDate.substring(0, humanDate.indexOf('('))
         deleteBtn.innerText = 'X'
         deleteBtn.classList.add('dangerBtn', 'deleteBtn')
         if (metadata['subject'] === undefined || metadata['subject'] === null) {
@@ -237,14 +264,15 @@ function getSentbox(){
             var sentDate = document.createElement('span')
             var humanDate = new Date(0)
             humanDate.setUTCSeconds(resp[i]['date'])
+            humanDate = humanDate.toString()
             var preview = document.createElement('span')
             var deleteBtn = document.createElement('button')
             var message = resp[i]['message']
             deleteBtn.classList.add('deleteBtn', 'dangerBtn')
             deleteBtn.innerText = 'X'
             toEl.readOnly = true
-            sentDate.innerText = humanDate
-            if (resp[i]['name'] == null){
+            sentDate.innerText = humanDate.substring(0, humanDate.indexOf('('))
+            if (resp[i]['name'] == null || resp[i]['name'].toLowerCase() == 'anonymous'){
                 toEl.value = resp[i]['peer']
             }
             else{
@@ -266,7 +294,7 @@ function getSentbox(){
                     e.target.parentNode.parentNode.removeChild(e.target.parentNode)
                     return
                 }
-                showSentboxWindow(resp[i]['peer'], message)
+                showSentboxWindow(toEl.value, message)
             }
         })(i, resp)
         threadPart.appendChild(entry)
@@ -319,7 +347,7 @@ fetch('/friends/list', {
     friendSelectParent.appendChild(document.createElement('option'))
     for (var i = 0; i < keys.length; i++) {
         var option = document.createElement("option")
-        var name = resp[keys[i]]['name']
+        var name = resp[keys[i]]['name'] || ""
         option.value = keys[i]
         if (name.length == 0){
             option.text = keys[i]
