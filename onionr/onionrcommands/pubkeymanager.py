@@ -20,7 +20,7 @@
 
 import sys, getpass
 import logger, onionrexceptions
-from onionrusers import onionrusers
+from onionrusers import onionrusers, contactmanager
 def add_ID(o_inst):
     try:
         sys.argv[2]
@@ -75,8 +75,8 @@ def friend_command(o_inst):
         action = action.lower()
         if action == 'list':
             # List out peers marked as our friend
-            for friend in onionrusers.OnionrUser.list_friends(o_inst.onionrCore):
-                logger.info(friend.publicKey + ' - ' + friend.getName())
+            for friend in contactmanager.ContactManager.list_friends(o_inst.onionrCore):
+                logger.info(friend.publicKey + ' - ' + friend.get_info('name'))
         elif action in ('add', 'remove'):
             try:
                 friend = sys.argv[3]
