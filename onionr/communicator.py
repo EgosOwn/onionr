@@ -123,7 +123,7 @@ class OnionrCommunicatorDaemon:
         OnionrCommunicatorTimers(self, self.daemonCommands, 6, maxThreads=3)
 
         # Timer that kills Onionr if the API server crashes
-        OnionrCommunicatorTimers(self, self.detectAPICrash, 30, maxThreads=1)
+        #OnionrCommunicatorTimers(self, self.detectAPICrash, 30, maxThreads=1)
 
         # Setup direct connections
         if config.get('general.socket_servers', False):
