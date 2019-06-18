@@ -143,7 +143,7 @@ class OnionrCommunicatorDaemon:
         netCheckTimer = OnionrCommunicatorTimers(self, netcheck.net_check, 600, myArgs=[self])
 
         # Announce the public API server transport address to other nodes if security level allows
-        if config.get('general.security_level', 1) == 0:
+        if config.get('general.security_level', 1) == 0 and config.get('general.announce_node', True):
             # Default to high security level incase config breaks
             announceTimer = OnionrCommunicatorTimers(self, announcenode.announce_node, 3600, myArgs=[self], requiresPeer=True, maxThreads=1)
             announceTimer.count = (announceTimer.frequency - 120)
