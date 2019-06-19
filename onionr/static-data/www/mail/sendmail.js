@@ -54,6 +54,11 @@ sendForm.onsubmit = function(){
             return false
         }
     }
-    sendMail(to.value, messageContent.value, subject.value)
+    if (to.value.length !== 56 && to.value.length !== 52){
+        alert('Public key is not valid')   
+    }
+    else{
+        sendMail(to.value, messageContent.value, subject.value)
+    }
     return false
 }

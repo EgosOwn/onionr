@@ -18,10 +18,12 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 import os, json, onionrexceptions
+import unpaddedbase32
 from onionrusers import onionrusers
 
 class ContactManager(onionrusers.OnionrUser):
     def __init__(self, coreInst, publicKey, saveUser=False, recordExpireSeconds=5):
+        publicKey = unpaddedbase32.repad(coreInst._utils.strToBytes(publicKey)).decode()
         super(ContactManager, self).__init__(coreInst, publicKey, saveUser=saveUser)
         self.dataDir = coreInst.dataDir + '/contacts/'
         self.dataFile = '%s/contacts/%s.json' % (coreInst.dataDir, publicKey)

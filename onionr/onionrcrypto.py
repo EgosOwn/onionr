@@ -19,6 +19,7 @@
 '''
 import os, binascii, base64, hashlib, time, sys, hmac, secrets
 import nacl.signing, nacl.encoding, nacl.public, nacl.hash, nacl.pwhash, nacl.utils, nacl.secret
+import unpaddedbase32
 import logger, onionrproofs
 import onionrexceptions, keymanager, core
 import config
@@ -93,6 +94,7 @@ class OnionrCrypto:
 
     def pubKeyEncrypt(self, data, pubkey, encodedData=False):
         '''Encrypt to a public key (Curve25519, taken from base32 Ed25519 pubkey)'''
+        pubkey = unpaddedbase32.repad(self._core._utils.strToBytes(pubkey))
         retVal = ''
         box = None
         data = self._core._utils.strToBytes(data)
@@ -129,7 +131,7 @@ class OnionrCrypto:
         return decrypted
 
     def symmetricEncrypt(self, data, key, encodedKey=False, returnEncoded=True):
-        '''Encrypt data to a 32-byte key (Salsa20-Poly1305 MAC)'''
+        '''Encrypt data with a 32-byte key (Salsa20-Poly1305 MAC)'''
         if encodedKey:
             encoding = nacl.encoding.Base64Encoder
         else:
@@ -199,7 +201,7 @@ class OnionrCrypto:
         if pubkey == '':
             pubkey = self.pubKey
         prev = ''
-        pubkey = pubkey.encode()
+        pubkey = self._core._utils.strToBytes(pubkey)
         for i in range(self.HASH_ID_ROUNDS):
             try:
                 prev = prev.encode()

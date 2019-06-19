@@ -18,6 +18,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 import onionrblockapi, logger, onionrexceptions, json, sqlite3, time
+import unpaddedbase32
 import nacl.exceptions
 
 def deleteExpiredKeys(coreInst):
@@ -55,8 +56,7 @@ class OnionrUser:
             Takes an instance of onionr core, a base32 encoded ed25519 public key, and a bool saveUser
             saveUser determines if we should add a user to our peer database or not.
         '''
-        if ' ' in coreInst._utils.bytesToStr(publicKey).strip():
-            publicKey = coreInst._utils.convertHumanReadableID(publicKey)
+        publicKey = unpaddedbase32.repad(coreInst._utils.strToBytes(publicKey)).decode()
 
         self.trust = 0
         self._core = coreInst
@@ -190,6 +190,7 @@ class OnionrUser:
         return list(keyList)
 
     def addForwardKey(self, newKey, expire=DEFAULT_KEY_EXPIRE):
+        newKey = self._core._utils.bytesToStr(unpaddedbase32.repad(self._core._utils.strToBytes(newKey)))
         if not self._core._utils.validatePubKey(newKey):
             # Do not add if something went wrong with the key
             raise onionrexceptions.InvalidPubkey(newKey)

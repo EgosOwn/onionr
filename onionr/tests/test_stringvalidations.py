@@ -29,11 +29,13 @@ class OnionrValidations(unittest.TestCase):
     
     def test_pubkey_validator(self):
         # Test ed25519 public key validity
-        valid = 'JZ5VE72GUS3C7BOHDRIYZX4B5U5EJMCMLKHLYCVBQQF3UKHYIRRQ===='
+        valids = ['JZ5VE72GUS3C7BOHDRIYZX4B5U5EJMCMLKHLYCVBQQF3UKHYIRRQ====', 'JZ5VE72GUS3C7BOHDRIYZX4B5U5EJMCMLKHLYCVBQQF3UKHYIRRQ']
         invalid = [None, '', '    ', 'dfsg', '\n', 'JZ5VE72GUS3C7BOHDRIYZX4B5U5EJMCMLKHLYCVBQQF3UKHYIR$Q====']
         c = core.Core()
-        print('testing', valid)
-        self.assertTrue(c._utils.validatePubKey(valid))
+
+        for valid in valids:
+            print('testing', valid)
+            self.assertTrue(c._utils.validatePubKey(valid))
 
         for x in invalid:
             #print('testing', x)

@@ -21,26 +21,26 @@
             <br><br>
             <div>🕵️‍♂️ Current Used Identity: <input class='myPub' type='text' readonly></div>
             <br>
-            <button id='shutdownNode' class='warnBtn'>Shutdown Node</button> <button id='refreshStats' class='primaryBtn'>Refresh Stats</button>
+            <button id='shutdownNode' class='btn warnBtn'>Shutdown Node</button> <button id='refreshStats' class='btn primaryBtn'>Refresh Stats</button>
             <br><br>
-            <h1>Onionr Services</h1>
             <label>Open Site: <input type='text' id='siteViewer' placeholder='Site Hash'> <button id='openSite' class='primaryBtn openSiteBtn'>Open Onionr Site</button></label>
             <br>
-            <br><br><a class='idLink' href='/mail/'>Mail</a> - <a class='idLink' href='/friends/'>Friend Manager</a> - <a class='idLink' href='/board/'>Boards</a> - 
+            <br><br><a class='idLink' href='/mail/'>Mail</a> - <a class='idLink' href='/friends/'>Friend Manager</a> - <a class='idLink' href='/board/'>Circle</a> - 
                     <a class='idLink' href='/clandestine/'>Clandestine</a>
             <br><br><hr>
             <details class='configArea'>
                 <summary><b>Edit Configuration</b></summary>
                 <br>
-                <p><em>Warning: </em><b>Some values can be dangerous to change. Use caution.</b></p>
+                <p><em>Warning: </em><b>Some values can be dangerous to change.<br><br>Configuration contains sensitive information.</b></p>
                 <br>
                 <textarea class='configEditor'></textarea>
                 <button class='saveConfig successBtn'>Save Config</button>
             </details>
             <hr>
-            <h1>Statistics</h1>
+            <p>🔒 Security Level: <span id='securityLevel'></span></p>
             <p>🕰️ Uptime: <span id='uptime'></span></p>
             <h2>Connections</h2>
+            <p class='secRequestNotice hidden'>Note: on high security levels, you should have <em>no</em> received requests.</p>
             <p>🖇️ Last Received Request: <span id='lastIncoming'>None since start</span></p>
             <p>⬇️ Total Requests Received: <span id='totalRec'>None since start</span></p>
             <p>🔗 Outgoing Connections:</p>

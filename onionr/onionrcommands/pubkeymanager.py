@@ -21,6 +21,7 @@
 import sys, getpass
 import logger, onionrexceptions
 from onionrusers import onionrusers, contactmanager
+import unpaddedbase32
 def add_ID(o_inst):
     try:
         sys.argv[2]
@@ -50,6 +51,7 @@ def add_ID(o_inst):
 def change_ID(o_inst):
     try:
         key = sys.argv[2]
+        key = unpaddedbase32.repad(key.encode()).decode()
     except IndexError:
         logger.warn('Specify pubkey to use')
     else:

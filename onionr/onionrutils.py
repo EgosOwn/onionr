@@ -21,6 +21,7 @@
 import sys, os, sqlite3, binascii, time, base64, json, glob, shutil, math, re, urllib.parse, string
 import requests
 import nacl.signing, nacl.encoding
+import unpaddedbase32
 from onionrblockapi import Block
 import onionrexceptions, config, logger
 from onionr import API_VERSION
@@ -319,9 +320,12 @@ class OnionrUtils:
         '''
             Validate if a string is a valid base32 encoded Ed25519 key
         '''
-        retVal = False
         if type(key) is type(None):
             return False
+        # Accept keys that have no = padding
+        key = unpaddedbase32.repad(self.strToBytes(key))
+
+        retVal = False
         try:
             nacl.signing.SigningKey(seed=key, encoder=nacl.encoding.Base32Encoder)
         except nacl.exceptions.ValueError:

@@ -128,7 +128,8 @@ class Core:
         '''
             Adds a public key to the key database (misleading function name)
         '''
-        assert peerID not in self.listPeers()
+        if peerID in self.listPeers() or peerID == self._crypto.pubKey:
+            raise ValueError("specified id is already known")
 
         # This function simply adds a peer to the DB
         if not self._utils.validatePubKey(peerID):
@@ -776,7 +777,11 @@ class Core:
                 data = self._crypto.pubKeyEncrypt(data, asymPeer, encodedData=True).decode()
                 signature = self._crypto.pubKeyEncrypt(signature, asymPeer, encodedData=True).decode()
                 signer = self._crypto.pubKeyEncrypt(signer, asymPeer, encodedData=True).decode()
-                onionrusers.OnionrUser(self, asymPeer, saveUser=True)
+                try:
+                    onionrusers.OnionrUser(self, asymPeer, saveUser=True)
+                except ValueError:
+                    # if peer is already known
+                    pass
             else:
                 raise onionrexceptions.InvalidPubkey(asymPeer + ' is not a valid base32 encoded ed25519 key')
 

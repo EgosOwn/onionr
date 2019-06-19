@@ -58,9 +58,9 @@ function openReply(bHash, quote, subject){
     // Add quoted reply
     var splitQuotes = quote.split('\n')
     for (var x = 0; x < splitQuotes.length; x++){
-        splitQuotes[x] = '>' + splitQuotes[x]
+        splitQuotes[x] = '> ' + splitQuotes[x]
     }
-    quote = '\n' + splitQuotes.join('\n')
+    quote = '\n' + key.substring(0, 12) + ' wrote:' + '\n' + splitQuotes.join('\n')
     document.getElementById('draftText').value = quote
     setActiveTab('send message')
 }
@@ -77,7 +77,7 @@ function openThread(bHash, sender, date, sigBool, pubkey, subjectLine){
     var sigMsg = 'signature'
 
     // show add unknown contact button if peer is unknown but still has pubkey
-    if (sender == pubkey){
+    if (sender === pubkey && sender !== myPub){
         addUnknownContact.style.display = 'inline'
     }
 
