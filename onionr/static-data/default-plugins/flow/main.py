@@ -40,7 +40,7 @@ class OnionrFlow:
         return
 
     def start(self):
-        logger.warn("Please note: everything said here is public, even if a random channel name is used.")
+        logger.warn("Please note: everything said here is public, even if a random channel name is used.", terminal=True)
         message = ""
         self.flowRunning = True
         newThread = threading.Thread(target=self.showOutput)
@@ -63,7 +63,7 @@ class OnionrFlow:
                 if len(message) > 0:
                     self.myCore.insertBlock(message, header='txt', expire=expireTime, meta={'ch': self.channel})
 
-        logger.info("Flow is exiting, goodbye")
+        logger.info("Flow is exiting, goodbye", terminal=True)
         return
 
     def showOutput(self):
@@ -81,11 +81,11 @@ class OnionrFlow:
                         continue
                     if not self.flowRunning:
                         break
-                    logger.info('\n------------------------', prompt = False)
+                    logger.info('\n------------------------', prompt = False, terminal=True)
                     content = block.getContent()
                     # Escape new lines, remove trailing whitespace, and escape ansi sequences
                     content = self.myCore._utils.escapeAnsi(content.replace('\n', '\\n').replace('\r', '\\r').strip())
-                    logger.info(block.getDate().strftime("%m/%d %H:%M") + ' - ' + logger.colors.reset + content, prompt = False)
+                    logger.info(block.getDate().strftime("%m/%d %H:%M") + ' - ' + logger.colors.reset + content, prompt = False, terminal=True)
                     self.alreadyOutputed.append(block.getHash())
                 time.sleep(5)
         except KeyboardInterrupt:

@@ -159,7 +159,7 @@ class Onionr:
                 sys.stderr.write(file.read().decode().replace('P', logger.colors.fg.pink).replace('W', logger.colors.reset + logger.colors.bold).replace('G', logger.colors.fg.green).replace('\n', logger.colors.reset + '\n').replace('B', logger.colors.bold).replace('A', '%s' % API_VERSION).replace('V', ONIONR_VERSION))
 
                 if not message is None:
-                    logger.info(logger.colors.fg.lightgreen + '-> ' + str(message) + logger.colors.reset + logger.colors.fg.lightgreen + ' <-\n', sensitive=True)
+                    logger.info(logger.colors.fg.lightgreen + '-> ' + str(message) + logger.colors.reset + logger.colors.fg.lightgreen + ' <-\n', terminal=True)
 
     def deleteRunFiles(self):
         try:
@@ -238,7 +238,7 @@ class Onionr:
         return config.get('client.webpassword')
 
     def printWebPassword(self):
-        logger.info(self.getWebPassword(), sensitive = True)
+        logger.info(self.getWebPassword(), term_only = True)
 
     def getHelp(self):
         return self.cmdhelp
@@ -289,11 +289,11 @@ class Onionr:
             Displays the Onionr version
         '''
 
-        function('Onionr v%s (%s) (API v%s)' % (ONIONR_VERSION, platform.machine(), API_VERSION))
+        function('Onionr v%s (%s) (API v%s)' % (ONIONR_VERSION, platform.machine(), API_VERSION), terminal=True)
         if verbosity >= 1:
-            function(ONIONR_TAGLINE)
+            function(ONIONR_TAGLINE, terminal=True)
         if verbosity >= 2:
-            function('Running on %s %s' % (platform.platform(), platform.release()))
+            function('Running on %s %s' % (platform.platform(), platform.release()), terminal=True)
 
     def doPEX(self):
         '''make communicator do pex'''

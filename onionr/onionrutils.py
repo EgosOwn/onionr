@@ -519,7 +519,7 @@ class OnionrUtils:
         except KeyboardInterrupt:
             raise KeyboardInterrupt
         except ValueError as e:
-            logger.debug('Failed to make GET request to %s' % url, error = e, sensitive = True)
+            pass
         except onionrexceptions.InvalidAPIVersion:
             if 'X-API' in response_headers:
                 logger.debug('Using API version %s. Cannot communicate with node\'s API version of %s.' % (API_VERSION, response_headers['X-API']))

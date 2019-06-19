@@ -72,7 +72,7 @@ def connect_new_peer_to_communicator(comm_inst, peer='', useBootstrap=False):
                 # Add a peer to our list if it isn't already since it successfully connected
                 networkmerger.mergeAdders(address, comm_inst._core)
             if address not in comm_inst.onlinePeers:
-                logger.info('Connected to ' + address)
+                logger.info('Connected to ' + address, terminal=True)
                 comm_inst.onlinePeers.append(address)
                 comm_inst.connectTimes[address] = comm_inst._core._utils.getEpoch()
             retData = address

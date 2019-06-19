@@ -26,5 +26,5 @@ def open_home(o_inst):
         logger.error('Onionr seems to not be running (could not get api host)')
     else:
         url = 'http://%s/#%s' % (url, o_inst.onionrCore.config.get('client.webpassword'))
-        logger.info('If Onionr does not open automatically, use this URL: ' + url)
+        logger.info('If Onionr does not open automatically, use this URL: ' + url, terminal=True)
         webbrowser.open_new_tab(url)

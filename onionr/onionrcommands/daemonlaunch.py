@@ -40,11 +40,6 @@ def daemon(o_inst):
 
     Thread(target=api.API, args=(o_inst, o_inst.debug, onionr.API_VERSION)).start()
     Thread(target=api.PublicAPI, args=[o_inst.getClientApi()]).start()
-    try:
-        time.sleep(0)
-    except KeyboardInterrupt:
-        logger.debug('Got keyboard interrupt, shutting down...')
-        _proper_shutdown(o_inst)
 
     apiHost = ''
     while apiHost == '':
@@ -56,10 +51,17 @@ def daemon(o_inst):
         time.sleep(0.5)
     #onionr.Onionr.setupConfig('data/', self = o_inst)
 
+    logger.raw('', terminal=True)
+    # print nice header thing :)
+    if o_inst.onionrCore.config.get('general.display_header', True):
+        o_inst.header()
+    o_inst.version(verbosity = 5, function = logger.info)
+    logger.debug('Python version %s' % platform.python_version())
+
     if o_inst._developmentMode:
-        logger.warn('DEVELOPMENT MODE ENABLED (NOT RECOMMENDED)', timestamp = False)
+        logger.warn('DEVELOPMENT MODE ENABLED', timestamp = False, terminal=True)
     net = NetController(o_inst.onionrCore.config.get('client.public.port', 59497), apiServerIP=apiHost)
-    logger.debug('Tor is starting...')
+    logger.info('Tor is starting...', terminal=True)
     if not net.startTor():
         o_inst.onionrUtils.localCommand('shutdown')
         sys.exit(1)
@@ -67,7 +69,7 @@ def daemon(o_inst):
         logger.debug('Started .onion service: %s' % (logger.colors.underline + net.myID))
     else:
         logger.debug('.onion service disabled')
-    logger.debug('Using public key: %s' % (logger.colors.underline + o_inst.onionrCore._crypto.pubKey))
+    logger.info('Using public key: %s' % (logger.colors.underline + o_inst.onionrCore._crypto.pubKey[:52]), terminal=True)
 
     try:
         time.sleep(1)
@@ -80,14 +82,6 @@ def daemon(o_inst):
     
     while o_inst.communicatorInst is None:
         time.sleep(0.1)
-
-    # print nice header thing :)
-    if o_inst.onionrCore.config.get('general.display_header', True):
-        o_inst.header()
-
-    # print out debug info
-    o_inst.version(verbosity = 5, function = logger.debug)
-    logger.debug('Python version %s' % platform.python_version())
 
     logger.debug('Started communicator.')
 
@@ -124,7 +118,7 @@ def kill_daemon(o_inst):
         Shutdown the Onionr daemon
     '''
 
-    logger.warn('Stopping the running daemon...', timestamp = False)
+    logger.warn('Stopping the running daemon...', timestamp = False, terminal=True)
     try:
         events.event('daemon_stop', onionr = o_inst)
         net = NetController(o_inst.onionrCore.config.get('client.port', 59496))
@@ -135,12 +129,12 @@ def kill_daemon(o_inst):
 
         net.killTor()
     except Exception as e:
-        logger.error('Failed to shutdown daemon.', error = e, timestamp = False)
+        logger.error('Failed to shutdown daemon.', error = e, timestamp = False, terminal=True)
     return
 
 def start(o_inst, input = False, override = False):
     if os.path.exists('.onionr-lock') and not override:
-        logger.fatal('Cannot start. Daemon is already running, or it did not exit cleanly.\n(if you are sure that there is not a daemon running, delete .onionr-lock & try again).')
+        logger.fatal('Cannot start. Daemon is already running, or it did not exit cleanly.\n(if you are sure that there is not a daemon running, delete .onionr-lock & try again).', terminal=True)
     else:
         if not o_inst.debug and not o_inst._developmentMode:
             lockFile = open('.onionr-lock', 'w')

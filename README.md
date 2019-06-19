@@ -85,7 +85,7 @@ The following applies to Ubuntu Bionic. Other distros may have different package
 
 `$ sudo apt install python3-pip python3-dev tor`
 
-* Have python3.6+, python3-pip, Tor (daemon, not browser) installed (python3-dev recommended)
+* Have python3.6+, python3-pip, Tor (daemon, not browser) installed. python3-dev is recommended.
 * Clone the git repo: `$ git clone https://gitlab.com/beardog/onionr`
 * cd into install direction: `$ cd onionr/`
 * Install the Python dependencies ([virtualenv strongly recommended](https://virtualenv.pypa.io/en/stable/userguide/)): `$ pip3 install --require-hashes -r requirements.txt`

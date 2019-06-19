@@ -65,21 +65,21 @@ def show_stats(o_inst):
         groupsize = width - prewidth - len('[+] ')
 
         # generate stats table
-        logger.info(colors['title'] + 'Onionr v%s Statistics' % onionr.ONIONR_VERSION + colors['reset'])
-        logger.info(colors['border'] + '-' * (maxlength + 1) + '+' + colors['reset'])
+        logger.info(colors['title'] + 'Onionr v%s Statistics' % onionr.ONIONR_VERSION + colors['reset'], terminal=True)
+        logger.info(colors['border'] + '-' * (maxlength + 1) + '+' + colors['reset'], terminal=True)
         for key, val in messages.items():
             if not (type(val) is bool and val is True):
                 val = [str(val)[i:i + groupsize] for i in range(0, len(str(val)), groupsize)]
 
-                logger.info(colors['key'] + str(key).rjust(maxlength) + colors['reset'] + colors['border'] + ' | ' + colors['reset'] + colors['val'] + str(val.pop(0)) + colors['reset'])
+                logger.info(colors['key'] + str(key).rjust(maxlength) + colors['reset'] + colors['border'] + ' | ' + colors['reset'] + colors['val'] + str(val.pop(0)) + colors['reset'], terminal=True)
 
                 for value in val:
-                    logger.info(' ' * maxlength + colors['border'] + ' | ' + colors['reset'] + colors['val'] + str(value) + colors['reset'])
+                    logger.info(' ' * maxlength + colors['border'] + ' | ' + colors['reset'] + colors['val'] + str(value) + colors['reset'], terminal=True)
             else:
-                logger.info(colors['border'] + '-' * (maxlength + 1) + '+' + colors['reset'])
-        logger.info(colors['border'] + '-' * (maxlength + 1) + '+' + colors['reset'])
+                logger.info(colors['border'] + '-' * (maxlength + 1) + '+' + colors['reset'], terminal=True)
+        logger.info(colors['border'] + '-' * (maxlength + 1) + '+' + colors['reset'], terminal=True)
     except Exception as e:
-        logger.error('Failed to generate statistics table.', error = e, timestamp = False)
+        logger.error('Failed to generate statistics table.', error = e, timestamp = False, terminal=True)
 
 def show_details(o_inst):
     details = {
@@ -90,7 +90,7 @@ def show_details(o_inst):
     }
 
     for detail in details:
-        logger.info('%s%s: \n%s%s\n' % (logger.colors.fg.lightgreen, detail, logger.colors.fg.green, details[detail]), sensitive = True)
+        logger.info('%s%s: \n%s%s\n' % (logger.colors.fg.lightgreen, detail, logger.colors.fg.green, details[detail]), terminal = True)
 
 def show_peers(o_inst):
     randID = str(uuid.uuid4())

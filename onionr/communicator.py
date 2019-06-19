@@ -176,7 +176,7 @@ class OnionrCommunicatorDaemon:
             self.shutdown = True
             pass
 
-        logger.info('Goodbye. (Onionr is cleaning up, and will exit)')
+        logger.info('Goodbye. (Onionr is cleaning up, and will exit)', terminal=True)
         try:
             self.service_greenlets
         except AttributeError:
@@ -252,7 +252,7 @@ class OnionrCommunicatorDaemon:
                 break
         else:
             if len(self.onlinePeers) == 0:
-                logger.debug('Couldn\'t connect to any peers.' + (' Last node seen %s ago.' % humanreadabletime.human_readable_time(time.time() - self.lastNodeSeen) if not self.lastNodeSeen is None else ''))
+                logger.debug('Couldn\'t connect to any peers.' + (' Last node seen %s ago.' % humanreadabletime.human_readable_time(time.time() - self.lastNodeSeen) if not self.lastNodeSeen is None else ''), terminal=True)
             else:
                 self.lastNodeSeen = time.time()
         self.decrementThreadCount('getOnlinePeers')
@@ -293,12 +293,12 @@ class OnionrCommunicatorDaemon:
     def printOnlinePeers(self):
         '''logs online peer list'''
         if len(self.onlinePeers) == 0:
-            logger.warn('No online peers')
+            logger.warn('No online peers', terminal=True)
         else:
-            logger.info('Online peers:')
+            logger.info('Online peers:', terminal=True)
             for i in self.onlinePeers:
                 score = str(self.getPeerProfileInstance(i).score)
-                logger.info(i + ', score: ' + score)
+                logger.info(i + ', score: ' + score, terminal=True)
 
     def peerAction(self, peer, action, data='', returnHeaders=False):
         '''Perform a get request to a peer'''
@@ -318,6 +318,7 @@ class OnionrCommunicatorDaemon:
                 self.getPeerProfileInstance(peer).addScore(-10)
                 self.removeOnlinePeer(peer)
                 if action != 'ping':
+                    logger.warn('Lost connection to ' + peer, terminal=True)
                     self.getOnlinePeers() # Will only add a new peer to pool if needed
             except ValueError:
                 pass
@@ -359,7 +360,7 @@ class OnionrCommunicatorDaemon:
     def announce(self, peer):
         '''Announce to peers our address'''
         if announcenode.announce_node(self) == False:
-            logger.warn('Could not introduce node.')
+            logger.warn('Could not introduce node.', terminal=True)
 
     def detectAPICrash(self):
         '''exit if the api server crashes/stops'''
@@ -371,7 +372,7 @@ class OnionrCommunicatorDaemon:
             else:
                 # This executes if the api is NOT detected to be running
                 events.event('daemon_crash', onionr = self._core.onionrInst, data = {})
-                logger.error('Daemon detected API crash (or otherwise unable to reach API after long time), stopping...')
+                logger.fatal('Daemon detected API crash (or otherwise unable to reach API after long time), stopping...', terminal=True)
                 self.shutdown = True
         self.decrementThreadCount('detectAPICrash')
 
@@ -388,5 +389,4 @@ def run_file_exists(daemon):
     if os.path.isfile(daemon._core.dataDir + '.runcheck'):
         os.remove(daemon._core.dataDir + '.runcheck')
         return True
-
     return False

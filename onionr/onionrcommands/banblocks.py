@@ -30,10 +30,10 @@ def ban_block(o_inst):
                 o_inst.onionrCore._blacklist.addToDB(ban)
                 o_inst.onionrCore.removeBlock(ban)
             except Exception as error:
-                logger.error('Could not blacklist block', error=error)
+                logger.error('Could not blacklist block', error=error, terminal=True)
             else:
-                logger.info('Block blacklisted')
+                logger.info('Block blacklisted', terminal=True)
         else:
-            logger.warn('That block is already blacklisted')
+            logger.warn('That block is already blacklisted', terminal=True)
     else:
-        logger.error('Invalid block hash')
+        logger.error('Invalid block hash', terminal=True)
