@@ -354,7 +354,7 @@ class Onionr:
             Displays a message suggesting help
         '''
         if __name__ == '__main__':
-            logger.info('Do ' + logger.colors.bold + sys.argv[0] + ' --help' + logger.colors.reset + logger.colors.fg.green + ' for Onionr help.')
+            logger.info('Do ' + logger.colors.bold + sys.argv[0] + ' --help' + logger.colors.reset + logger.colors.fg.green + ' for Onionr help.', terminal=True)
 
     def start(self, input = False, override = False):
         '''

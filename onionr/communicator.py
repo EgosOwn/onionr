@@ -317,7 +317,7 @@ class OnionrCommunicatorDaemon:
             try:
                 self.getPeerProfileInstance(peer).addScore(-10)
                 self.removeOnlinePeer(peer)
-                if action != 'ping':
+                if action != 'ping' and not self.shutdown:
                     logger.warn('Lost connection to ' + peer, terminal=True)
                     self.getOnlinePeers() # Will only add a new peer to pool if needed
             except ValueError:
