@@ -1,5 +1,5 @@
 '''
-    Onionr - P2P Microblogging Platform & Social network.
+    Onionr - Private P2P Communication
 
     This plugin acts as a plugin manager, and allows the user to install other plugins distributed over Onionr.
 '''
@@ -180,11 +180,11 @@ def blockToPlugin(block):
         shutil.unpack_archive(source, destination)
         pluginapi.plugins.enable(name)
 
-        logger.info('Installation of %s complete.' % name)
+        logger.info('Installation of %s complete.' % name, terminal=True)
 
         return True
     except Exception as e:
-        logger.error('Failed to install plugin.', error = e, timestamp = False)
+        logger.error('Failed to install plugin.', error = e, timestamp = False, terminal=True)
 
     return False
 
@@ -240,9 +240,9 @@ def pluginToBlock(plugin, import_block = True):
 
             return hash
         else:
-            logger.error('Plugin %s does not exist.' % plugin)
+            logger.error('Plugin %s does not exist.' % plugin, terminal=True)
     except Exception as e:
-        logger.error('Failed to convert plugin to block.', error = e, timestamp = False)
+        logger.error('Failed to convert plugin to block.', error = e, timestamp = False, terminal=True)
 
     return False
 
@@ -261,7 +261,7 @@ def installBlock(block):
 
         install = False
 
-        logger.info(('Will install %s' + (' v' + version if not version is None else '') + ' (%s), by %s') % (name, date, author))
+        logger.info(('Will install %s' + (' v' + version if not version is None else '') + ' (%s), by %s') % (name, date, author), terminal=True)
 
         # TODO: Convert to single line if statement
         if os.path.exists(pluginapi.plugins.get_folder(name)):
@@ -273,12 +273,12 @@ def installBlock(block):
             blockToPlugin(block.getHash())
             addPlugin(name)
         else:
-            logger.info('Installation cancelled.')
+            logger.info('Installation cancelled.', terminal=True)
             return False
 
         return True
     except Exception as e:
-        logger.error('Failed to install plugin.', error = e, timestamp = False)
+        logger.error('Failed to install plugin.', error = e, timestamp = False, terminal=True)
         return False
 
 def uninstallPlugin(plugin):
@@ -291,12 +291,12 @@ def uninstallPlugin(plugin):
         remove = False
 
         if not exists:
-            logger.warn('Plugin %s does not exist.' % plugin, timestamp = False)
+            logger.warn('Plugin %s does not exist.' % plugin, timestamp = False, terminal=True)
             return False
 
         default = 'y'
         if not installedByPluginManager:
-            logger.warn('The plugin %s was not installed by %s.' % (plugin, plugin_name), timestamp = False)
+            logger.warn('The plugin %s was not installed by %s.' % (plugin, plugin_name), timestamp = False, terminal=True)
             default = 'n'
         remove = logger.confirm(message = 'All plugin data will be lost. Are you sure you want to proceed %s?', default = default)
 
@@ -306,20 +306,20 @@ def uninstallPlugin(plugin):
             pluginapi.plugins.disable(plugin)
             shutil.rmtree(pluginFolder)
 
-            logger.info('Uninstallation of %s complete.' % plugin)
+            logger.info('Uninstallation of %s complete.' % plugin, terminal=True)
 
             return True
         else:
             logger.info('Uninstallation cancelled.')
     except Exception as e:
-        logger.error('Failed to uninstall plugin.', error = e)
+        logger.error('Failed to uninstall plugin.', error = e, terminal=True)
     return False
 
 # command handlers
 
 def help():
-    logger.info(sys.argv[0] + ' ' + sys.argv[1] + ' <plugin> [public key/block hash]')
-    logger.info(sys.argv[0] + ' ' + sys.argv[1] + ' <plugin> [public key/block hash]')
+    logger.info(sys.argv[0] + ' ' + sys.argv[1] + ' <plugin> [public key/block hash]', terminal=True)
+    logger.info(sys.argv[0] + ' ' + sys.argv[1] + ' <plugin> [public key/block hash]', terminal=True)
 
 def commandInstallPlugin():
     if len(sys.argv) >= 3:
@@ -345,20 +345,20 @@ def commandInstallPlugin():
 
         if pkobh is None:
             # still nothing found, try searching repositories
-            logger.info('Searching for public key in repositories...')
+            logger.info('Searching for public key in repositories...', terminal=True)
             try:
                 repos = getRepositories()
                 distributors = list()
                 for repo, records in repos.items():
                     if pluginname in records:
-                        logger.debug('Found %s in repository %s for plugin %s.' % (records[pluginname], repo, pluginname))
+                        logger.debug('Found %s in repository %s for plugin %s.' % (records[pluginname], repo, pluginname), terminal=True)
                         distributors.append(records[pluginname])
 
                 if len(distributors) != 0:
                     distributor = None
 
                     if len(distributors) == 1:
-                        logger.info('Found distributor: %s' % distributors[0])
+                        logger.info('Found distributor: %s' % distributors[0], terminal=True)
                         distributor = distributors[0]
                     else:
                         distributors_message = ''
@@ -368,11 +368,11 @@ def commandInstallPlugin():
                             distributors_message += '    ' + logger.colors.bold + str(index) + ') ' + logger.colors.reset + str(dist) + '\n'
                             index += 1
 
-                        logger.info((logger.colors.bold + 'Found distributors (%s):' + logger.colors.reset + '\n' + distributors_message) % len(distributors))
+                        logger.info((logger.colors.bold + 'Found distributors (%s):' + logger.colors.reset + '\n' + distributors_message) % len(distributors), terminal=True)
 
                         valid = False
                         while not valid:
-                            choice = logger.readline('Select the number of the key to use, from 1 to %s, or press Ctrl+C to cancel:' % (index - 1))
+                            choice = logger.readline('Select the number of the key to use, from 1 to %s, or press Ctrl+C to cancel:' % (index - 1), terminal=True)
 
                             try:
                                 choice = int(choice)
@@ -380,7 +380,7 @@ def commandInstallPlugin():
                                     distributor = distributors[int(choice)]
                                     valid = True
                             except KeyboardInterrupt:
-                                logger.info('Installation cancelled.')
+                                logger.info('Installation cancelled.', terminal=True)
                                 return True
                             except:
                                 pass
@@ -388,11 +388,11 @@ def commandInstallPlugin():
                     if not distributor is None:
                         pkobh = distributor
             except Exception as e:
-                logger.warn('Failed to lookup plugin in repositories.', timestamp = False)
+                logger.warn('Failed to lookup plugin in repositories.', timestamp = False, terminal=True)
                 return True
 
         if pkobh is None:
-            logger.error('No key for this plugin found in keystore or repositories, please specify.', timestamp = False)
+            logger.error('No key for this plugin found in keystore or repositories, please specify.', timestamp = False, terminal=True)
 
             return True
 
@@ -409,21 +409,21 @@ def commandInstallPlugin():
         blockhash = None
 
         if valid_hash and not real_block:
-            logger.error('Block hash not found. Perhaps it has not been synced yet?', timestamp = False)
-            logger.debug('Is valid hash, but does not belong to a known block.')
+            logger.error('Block hash not found. Perhaps it has not been synced yet?', timestamp = False, terminal=True)
+            logger.debug('Is valid hash, but does not belong to a known block.', terminal=True)
 
             return True
         elif valid_hash and real_block:
             blockhash = str(pkobh)
-            logger.debug('Using block %s...' % blockhash)
+            logger.debug('Using block %s...' % blockhash, terminal=True)
 
             installBlock(blockhash)
         elif valid_key and not real_key:
-            logger.error('Public key not found. Try adding the node by address manually, if possible.', timestamp = False)
-            logger.debug('Is valid key, but the key is not a known one.')
+            logger.error('Public key not found. Try adding the node by address manually, if possible.', timestamp = False, terminal=True)
+            logger.debug('Is valid key, but the key is not a known one.', terminal=True)
         elif valid_key and real_key:
             publickey = str(pkobh)
-            logger.debug('Using public key %s...' % publickey)
+            logger.debug('Using public key %s...' % publickey, terminal=True)
 
             saveKey(pluginname, pkobh)
 
@@ -455,14 +455,14 @@ def commandInstallPlugin():
                 except Exception as e:
                     pass
 
-            logger.warn('Only continue the installation if you are absolutely certain that you trust the plugin distributor. Public key of plugin distributor: %s' % publickey, timestamp = False)
-            logger.debug('Most recent block matching parameters is %s' % mostRecentVersionBlock)
+            logger.warn('Only continue the installation if you are absolutely certain that you trust the plugin distributor. Public key of plugin distributor: %s' % publickey, timestamp = False, terminal=True)
+            logger.debug('Most recent block matching parameters is %s' % mostRecentVersionBlock, terminal=True)
             installBlock(mostRecentVersionBlock)
         else:
-            logger.error('Unknown data "%s"; must be public key or block hash.' % str(pkobh), timestamp = False)
+            logger.error('Unknown data "%s"; must be public key or block hash.' % str(pkobh), timestamp = False, terminal=True)
             return
     else:
-        logger.info(sys.argv[0] + ' ' + sys.argv[1] + ' <plugin> [public key/block hash]')
+        logger.info(sys.argv[0] + ' ' + sys.argv[1] + ' <plugin> [public key/block hash]', terminal=True)
 
     return True
 
@@ -470,12 +470,12 @@ def commandUninstallPlugin():
     if len(sys.argv) >= 3:
         uninstallPlugin(sys.argv[2])
     else:
-        logger.info(sys.argv[0] + ' ' + sys.argv[1] + ' <plugin>')
+        logger.info(sys.argv[0] + ' ' + sys.argv[1] + ' <plugin>', terminal=True)
 
     return True
 
 def commandSearchPlugin():
-    logger.info('This feature has not been created yet. Please check back later.')
+    logger.info('This feature has not been created yet. Please check back later.', terminal=True)
     return True
 
 def commandAddRepository():
@@ -495,22 +495,22 @@ def commandAddRepository():
                         if pluginapi.get_utils().validatePubKey(distributor):
                             pluginslist[pluginname] = distributor
 
-                    logger.debug('Found %s records in repository.' % len(pluginslist))
+                    logger.debug('Found %s records in repository.' % len(pluginslist), terminal=True)
 
                     if len(pluginslist) != 0:
                         addRepository(blockhash, pluginslist)
-                        logger.info('Successfully added repository.')
+                        logger.info('Successfully added repository.', terminal=True)
                     else:
-                        logger.error('Repository contains no records, not importing.', timestamp = False)
+                        logger.error('Repository contains no records, not importing.', timestamp = False, terminal=True)
                 except Exception as e:
-                    logger.error('Failed to parse block.', error = e)
+                    logger.error('Failed to parse block.', error = e, terminal=True)
             else:
-                logger.error('Block hash not found. Perhaps it has not been synced yet?', timestamp = False)
+                logger.error('Block hash not found. Perhaps it has not been synced yet?', timestamp = False, terminal=True)
                 logger.debug('Is valid hash, but does not belong to a known block.')
         else:
-            logger.error('Unknown data "%s"; must be block hash.' % str(pkobh), timestamp = False)
+            logger.error('Unknown data "%s"; must be block hash.' % str(pkobh), timestamp = False, terminal=True)
     else:
-        logger.info(sys.argv[0] + ' ' + sys.argv[1] + ' [block hash]')
+        logger.info(sys.argv[0] + ' ' + sys.argv[1] + ' [block hash]', terminal=True)
 
     return True
 
@@ -524,15 +524,15 @@ def commandRemoveRepository():
             if blockhash in getRepositories():
                 try:
                     removeRepository(blockhash)
-                    logger.info('Successfully removed repository.')
+                    logger.info('Successfully removed repository.', terminal=True)
                 except Exception as e:
-                    logger.error('Failed to parse block.', error = e)
+                    logger.error('Failed to parse block.', error = e, terminal=True)
             else:
-                logger.error('Repository has not been imported, nothing to remove.', timestamp = False)
+                logger.error('Repository has not been imported, nothing to remove.', timestamp = False, terminal=True)
         else:
-            logger.error('Unknown data "%s"; must be block hash.' % str(pkobh))
+            logger.error('Unknown data "%s"; must be block hash.' % str(pkobh), terminal=True)
     else:
-        logger.info(sys.argv[0] + ' ' + sys.argv[1] + ' [block hash]')
+        logger.info(sys.argv[0] + ' ' + sys.argv[1] + ' [block hash]', terminal=True)
 
     return True
 
@@ -545,11 +545,11 @@ def commandPublishPlugin():
 
         if os.path.exists(pluginfolder) and not os.path.isfile(pluginfolder):
             block = pluginToBlock(pluginname)
-            logger.info('Plugin saved in block %s.' % block)
+            logger.info('Plugin saved in block %s.' % block, terminal=True)
         else:
-            logger.error('Plugin %s does not exist.' % pluginname, timestamp = False)
+            logger.error('Plugin %s does not exist.' % pluginname, timestamp = False, terminal=True)
     else:
-        logger.info(sys.argv[0] + ' ' + sys.argv[1] + ' <plugin>')
+        logger.info(sys.argv[0] + ' ' + sys.argv[1] + ' <plugin>', terminal=True)
 
 def commandCreateRepository():
     if len(sys.argv) >= 3:
@@ -573,22 +573,22 @@ def commandCreateRepository():
             if distributor is None:
                 distributor = getKey(pluginname)
             if distributor is None:
-                logger.error('No distributor key was found for the plugin %s.' % pluginname, timestamp = False)
+                logger.error('No distributor key was found for the plugin %s.' % pluginname, timestamp = False, terminal=True)
                 success = False
 
             plugins.append([pluginname, distributor])
 
         if not success:
-            logger.error('Please correct the above errors, then recreate the repository.')
+            logger.error('Please correct the above errors, then recreate the repository.', terminal=True)
             return True
 
         blockhash = createRepository(plugins)
         if not blockhash is None:
-            logger.info('Successfully created repository. Execute the following command to add the repository:\n    ' + logger.colors.underline + '%s --add-repository %s' % (script, blockhash))
+            logger.info('Successfully created repository. Execute the following command to add the repository:\n    ' + logger.colors.underline + '%s --add-repository %s' % (script, blockhash), terminal=True)
         else:
-            logger.error('Failed to create repository, an unknown error occurred.')
+            logger.error('Failed to create repository, an unknown error occurred.', terminal=True)
     else:
-        logger.info(sys.argv[0] + ' ' + sys.argv[1] + ' [plugins...]')
+        logger.info(sys.argv[0] + ' ' + sys.argv[1] + ' [plugins...]', terminal=True)
 
     return True
 

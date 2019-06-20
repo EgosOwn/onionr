@@ -24,18 +24,18 @@ import logger, onionrplugins as plugins
 def enable_plugin(o_inst):
     if len(sys.argv) >= 3:
         plugin_name = sys.argv[2]
-        logger.info('Enabling plugin "%s"...' % plugin_name)
+        logger.info('Enabling plugin "%s"...' % plugin_name, terminal=True)
         plugins.enable(plugin_name, o_inst)
     else:
-        logger.info('%s %s <plugin>' % (sys.argv[0], sys.argv[1]))
+        logger.info('%s %s <plugin>' % (sys.argv[0], sys.argv[1]), terminal=True)
 
 def disable_plugin(o_inst):
     if len(sys.argv) >= 3:
         plugin_name = sys.argv[2]
-        logger.info('Disabling plugin "%s"...' % plugin_name)
+        logger.info('Disabling plugin "%s"...' % plugin_name, terminal=True)
         plugins.disable(plugin_name, o_inst)
     else:
-        logger.info('%s %s <plugin>' % (sys.argv[0], sys.argv[1]))
+        logger.info('%s %s <plugin>' % (sys.argv[0], sys.argv[1]), terminal=True)
 
 def reload_plugin(o_inst):
     '''
@@ -44,11 +44,11 @@ def reload_plugin(o_inst):
 
     if len(sys.argv) >= 3:
         plugin_name = sys.argv[2]
-        logger.info('Reloading plugin "%s"...' % plugin_name)
+        logger.info('Reloading plugin "%s"...' % plugin_name, terminal=True)
         plugins.stop(plugin_name, o_inst)
         plugins.start(plugin_name, o_inst)
     else:
-        logger.info('Reloading all plugins...')
+        logger.info('Reloading all plugins...', terminal=True)
         plugins.reload(o_inst)
 
 
@@ -62,7 +62,7 @@ def create_plugin(o_inst):
             plugin_name = re.sub('[^0-9a-zA-Z_]+', '', str(sys.argv[2]).lower())
 
             if not plugins.exists(plugin_name):
-                logger.info('Creating plugin "%s"...' % plugin_name)
+                logger.info('Creating plugin "%s"...' % plugin_name, terminal=True)
 
                 os.makedirs(plugins.get_plugins_folder(plugin_name))
                 with open(plugins.get_plugins_folder(plugin_name) + '/main.py', 'a') as main:
@@ -76,12 +76,12 @@ def create_plugin(o_inst):
                 with open(plugins.get_plugins_folder(plugin_name) + '/info.json', 'a') as main:
                     main.write(json.dumps({'author' : 'anonymous', 'description' : 'the default description of the plugin', 'version' : '1.0'}))
 
-                logger.info('Enabling plugin "%s"...' % plugin_name)
+                logger.info('Enabling plugin "%s"...' % plugin_name, terminal=True)
                 plugins.enable(plugin_name, o_inst)
             else:
-                logger.warn('Cannot create plugin directory structure; plugin "%s" exists.' % plugin_name)
+                logger.warn('Cannot create plugin directory structure; plugin "%s" exists.' % plugin_name, terminal=True)
 
         except Exception as e:
-            logger.error('Failed to create plugin directory structure.', e)
+            logger.error('Failed to create plugin directory structure.', e, terminal=True)
     else:
-        logger.info('%s %s <plugin>' % (sys.argv[0], sys.argv[1]))
+        logger.info('%s %s <plugin>' % (sys.argv[0], sys.argv[1]), terminal=True)

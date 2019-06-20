@@ -31,18 +31,18 @@ def add_file(o_inst, singleBlock=False, blockType='bin'):
         contents = None
 
         if not os.path.exists(filename):
-            logger.error('That file does not exist. Improper path (specify full path)?')
+            logger.error('That file does not exist. Improper path (specify full path)?', terminal=True)
             return
-        logger.info('Adding file... this might take a long time.')
+        logger.info('Adding file... this might take a long time.', terminal=True)
         try:
             with open(filename, 'rb') as singleFile:
                 blockhash = o_inst.onionrCore.insertBlock(base64.b64encode(singleFile.read()), header=blockType)
             if len(blockhash) > 0:
-                logger.info('File %s saved in block %s' % (filename, blockhash))
+                logger.info('File %s saved in block %s' % (filename, blockhash), terminal=True)
         except:
-            logger.error('Failed to save file in block.', timestamp = False)
+            logger.error('Failed to save file in block.', timestamp = False, terminal=True)
     else:
-        logger.error('%s add-file <filename>' % sys.argv[0], timestamp = False)
+        logger.error('%s add-file <filename>' % sys.argv[0], timestamp = False, terminal=True)
 
 def getFile(o_inst):
     '''
@@ -52,16 +52,16 @@ def getFile(o_inst):
         fileName = sys.argv[2]
         bHash = sys.argv[3]
     except IndexError:
-        logger.error("Syntax %s %s" % (sys.argv[0], '/path/to/filename <blockhash>'))
+        logger.error("Syntax %s %s" % (sys.argv[0], '/path/to/filename <blockhash>'), terminal=True)
     else:
-        logger.info(fileName)
+        logger.info(fileName, terminal=True)
 
         contents = None
         if os.path.exists(fileName):
-            logger.error("File already exists")
+            logger.error("File already exists", terminal=True)
             return
         if not o_inst.onionrUtils.validateHash(bHash):
-            logger.error('Block hash is invalid')
+            logger.error('Block hash is invalid', terminal=True)
             return
 
         with open(fileName, 'wb') as myFile:

@@ -73,7 +73,7 @@ class OnionrMail:
         blockCount = 0
         pmBlockMap = {}
         pmBlocks = {}
-        logger.info('Decrypting messages...')
+        logger.info('Decrypting messages...', terminal=True)
         choice = ''
         displayList = []
         subject = ''
@@ -108,7 +108,7 @@ class OnionrMail:
             displayList.append('%s. %s - %s - <%s>: %s' % (blockCount, blockDate, senderDisplay[:12], subject[:10], blockHash))
         while choice not in ('-q', 'q', 'quit'):
             for i in displayList:
-                logger.info(i)
+                logger.info(i, terminal=True)
             try:
                 choice = logger.readline('Enter a block number, -r to refresh, or -q to stop: ').strip().lower()
             except (EOFError, KeyboardInterrupt):
@@ -138,18 +138,18 @@ class OnionrMail:
                     senderDisplay = self.myCore._utils.bytesToStr(readBlock.signer)
                     if len(senderDisplay.strip()) == 0:
                         senderDisplay = 'Anonymous'
-                    logger.info('Message received from %s' % (senderDisplay,))
-                    logger.info('Valid signature: %s' % readBlock.validSig)
+                    logger.info('Message received from %s' % (senderDisplay,), terminal=True)
+                    logger.info('Valid signature: %s' % readBlock.validSig, terminal=True)
 
                     if not readBlock.validSig:
-                        logger.warn('This message has an INVALID/NO signature. ANYONE could have sent this message.')
+                        logger.warn('This message has an INVALID/NO signature. ANYONE could have sent this message.', terminal=True)
                         cancel = logger.readline('Press enter to continue to message, or -q to not open the message (recommended).')
                         print('')
                     if cancel != '-q':
                         try:
                             print(draw_border(self.myCore._utils.escapeAnsi(readBlock.bcontent.decode().strip())))
                         except ValueError:
-                            logger.warn('Error presenting message. This is usually due to a malformed or blank message.')
+                            logger.warn('Error presenting message. This is usually due to a malformed or blank message.', terminal=True)
                             pass
                         if readBlock.validSig:
                             reply = logger.readline("Press enter to continue, or enter %s to reply" % ("-r",))
@@ -168,7 +168,7 @@ class OnionrMail:
         entering = True
         while entering:
             self.get_sent_list()
-            logger.info('Enter a block number or -q to return')
+            logger.info('Enter a block number or -q to return', terminal=True)
             try:
                 choice = input('>')
             except (EOFError, KeyboardInterrupt) as e:
@@ -182,11 +182,11 @@ class OnionrMail:
                     try:
                         self.sentboxList[int(choice)]
                     except (IndexError, ValueError) as e:
-                        logger.warn('Invalid block.')
+                        logger.warn('Invalid block.', terminal=True)
                     else:
-                        logger.info('Sent to: ' + self.sentMessages[self.sentboxList[int(choice)]][1])
+                        logger.info('Sent to: ' + self.sentMessages[self.sentboxList[int(choice)]][1], terminal=True)
                         # Print ansi escaped sent message
-                        logger.info(self.myCore._utils.escapeAnsi(self.sentMessages[self.sentboxList[int(choice)]][0]))
+                        logger.info(self.myCore._utils.escapeAnsi(self.sentMessages[self.sentboxList[int(choice)]][0]), terminal=True)
                         input('Press enter to continue...')
                 finally:
                     if choice == '-q':
@@ -201,7 +201,7 @@ class OnionrMail:
             self.sentboxList.append(i['hash'])
             self.sentMessages[i['hash']] = (self.myCore._utils.bytesToStr(i['message']), i['peer'], i['subject'])
             if display:
-                logger.info('%s. %s - %s - (%s) - %s' % (count, i['hash'], i['peer'][:12], i['subject'], i['date']))
+                logger.info('%s. %s - %s - (%s) - %s' % (count, i['hash'], i['peer'][:12], i['subject'], i['date']), terminal=True)
             count += 1
         return json.dumps(self.sentMessages)
 
@@ -220,7 +220,7 @@ class OnionrMail:
                     if not self.myCore._utils.validatePubKey(recip):
                         raise onionrexceptions.InvalidPubkey('Must be a valid ed25519 base32 encoded public key')
                 except onionrexceptions.InvalidPubkey:
-                    logger.warn('Invalid public key')
+                    logger.warn('Invalid public key', terminal=True)
                 except (KeyboardInterrupt, EOFError):
                     entering = False
                 else:
@@ -234,7 +234,7 @@ class OnionrMail:
             pass
         
         cancelEnter = False
-        logger.info('Enter your message, stop by entering -q on a new line. -c to cancel')
+        logger.info('Enter your message, stop by entering -q on a new line. -c to cancel', terminal=True)
         while newLine != '-q':
             try:
                 newLine = input()
@@ -249,7 +249,7 @@ class OnionrMail:
             message += newLine
 
         if not cancelEnter:
-            logger.info('Inserting encrypted message as Onionr block....')
+            logger.info('Inserting encrypted message as Onionr block....', terminal=True)
 
             blockID = self.myCore.insertBlock(message, header='pm', encryptType='asym', asymPeer=recip, sign=self.doSigs, meta={'subject': subject})
     
@@ -261,16 +261,16 @@ class OnionrMail:
         while True:
             sigMsg = 'Message Signing: %s'
 
-            logger.info(self.strings.programTag + '\n\nUser ID: ' + self.myCore._crypto.pubKey)
+            logger.info(self.strings.programTag + '\n\nUser ID: ' + self.myCore._crypto.pubKey, terminal=True)
             if self.doSigs:
                 sigMsg = sigMsg % ('enabled',)
             else:
                 sigMsg = sigMsg % ('disabled (Your messages cannot be trusted)',)
             if self.doSigs:
-                logger.info(sigMsg)
+                logger.info(sigMsg, terminal=True)
             else:
-                logger.warn(sigMsg)
-            logger.info(self.strings.mainMenu.title()) # print out main menu
+                logger.warn(sigMsg, terminal=True)
+            logger.info(self.strings.mainMenu.title(), terminal=True) # print out main menu
             try:
                 choice = logger.readline('Enter 1-%s:\n' % (len(self.strings.mainMenuChoices))).lower().strip()
             except (KeyboardInterrupt, EOFError):
@@ -285,12 +285,12 @@ class OnionrMail:
             elif choice in (self.strings.mainMenuChoices[3], '4'):
                 self.toggle_signing()
             elif choice in (self.strings.mainMenuChoices[4], '5'):
-                logger.info('Goodbye.')
+                logger.info('Goodbye.', terminal=True)
                 break
             elif choice == '':
                 pass
             else:
-                logger.warn('Invalid choice.')
+                logger.warn('Invalid choice.', terminal=True)
         return
 
 def add_deleted(keyStore, bHash):

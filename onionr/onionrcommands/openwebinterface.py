@@ -23,7 +23,7 @@ def open_home(o_inst):
     try:
         url = o_inst.onionrUtils.getClientAPIServer()
     except FileNotFoundError:
-        logger.error('Onionr seems to not be running (could not get api host)')
+        logger.error('Onionr seems to not be running (could not get api host)', terminal=True)
     else:
         url = 'http://%s/#%s' % (url, o_inst.onionrCore.config.get('client.webpassword'))
         logger.info('If Onionr does not open automatically, use this URL: ' + url, terminal=True)

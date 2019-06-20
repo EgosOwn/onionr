@@ -200,7 +200,7 @@ class Onionr:
     '''
 
     def exportBlock(self):
-        commands.exportblocks(self)
+        commands.exportblocks.export_block(self)
 
     def showDetails(self):
         commands.onionrstatistics.show_details(self)
@@ -347,7 +347,7 @@ class Onionr:
             Displays a "command not found" message
         '''
 
-        logger.error('Command not found.', timestamp = False)
+        logger.error('Command not found.', timestamp = False, terminal=True)
 
     def showHelpSuggestion(self):
         '''

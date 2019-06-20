@@ -78,6 +78,9 @@ def lookup_blocks_from_communicator(comm_inst):
                                 if len(comm_inst.blockQueue[i]) < 10:
                                     comm_inst.blockQueue[i].append(peer)
     if new_block_count > 0:
-        logger.info('Discovered %s new blocks' % (new_block_count,), terminal=True)
+        block_string = ""
+        if new_block_count > 1:
+            block_string = "s"
+        logger.info('Discovered %s new block%s' % (new_block_count, block_string), terminal=True)
     comm_inst.decrementThreadCount('lookupBlocks')
     return

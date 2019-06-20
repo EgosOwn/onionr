@@ -29,42 +29,42 @@ def add_ID(o_inst):
     except (IndexError, AssertionError) as e:
         newID = o_inst.onionrCore._crypto.keyManager.addKey()[0]
     else:
-        logger.warn('Deterministic keys require random and long passphrases.')
-        logger.warn('If a good passphrase is not used, your key can be easily stolen.')
-        logger.warn('You should use a series of hard to guess words, see this for reference: https://www.xkcd.com/936/')
+        logger.warn('Deterministic keys require random and long passphrases.', terminal=True)
+        logger.warn('If a good passphrase is not used, your key can be easily stolen.', terminal=True)
+        logger.warn('You should use a series of hard to guess words, see this for reference: https://www.xkcd.com/936/', terminal=True)
         pass1 = getpass.getpass(prompt='Enter at least %s characters: ' % (o_inst.onionrCore._crypto.deterministicRequirement,))
         pass2 = getpass.getpass(prompt='Confirm entry: ')
         if o_inst.onionrCore._crypto.safeCompare(pass1, pass2):
             try:
-                logger.info('Generating deterministic key. This can take a while.')
+                logger.info('Generating deterministic key. This can take a while.', terminal=True)
                 newID, privKey = o_inst.onionrCore._crypto.generateDeterministic(pass1)
             except onionrexceptions.PasswordStrengthError:
-                logger.error('Passphrase must use at least %s characters.' % (o_inst.onionrCore._crypto.deterministicRequirement,))
+                logger.error('Passphrase must use at least %s characters.' % (o_inst.onionrCore._crypto.deterministicRequirement,), terminal=True)
                 sys.exit(1)
         else:
-            logger.error('Passwords do not match.')
+            logger.error('Passwords do not match.', terminal=True)
             sys.exit(1)
         o_inst.onionrCore._crypto.keyManager.addKey(pubKey=newID, 
         privKey=privKey)
-    logger.info('Added ID: %s' % (o_inst.onionrUtils.bytesToStr(newID),))
+    logger.info('Added ID: %s' % (o_inst.onionrUtils.bytesToStr(newID),), terminal=True)
 
 def change_ID(o_inst):
     try:
         key = sys.argv[2]
         key = unpaddedbase32.repad(key.encode()).decode()
     except IndexError:
-        logger.warn('Specify pubkey to use')
+        logger.warn('Specify pubkey to use', terminal=True)
     else:
         if o_inst.onionrUtils.validatePubKey(key):
             if key in o_inst.onionrCore._crypto.keyManager.getPubkeyList():
                 o_inst.onionrCore.config.set('general.public_key', key)
                 o_inst.onionrCore.config.save()
-                logger.info('Set active key to: %s' % (key,))
-                logger.info('Restart Onionr if it is running.')
+                logger.info('Set active key to: %s' % (key,), terminal=True)
+                logger.info('Restart Onionr if it is running.', terminal=True)
             else:
-                logger.warn('That key does not exist')
+                logger.warn('That key does not exist', terminal=True)
         else:
-            logger.warn('Invalid key %s' % (key,))
+            logger.warn('Invalid key %s' % (key,), terminal=True)
 
 def friend_command(o_inst):
     friend = ''
@@ -72,13 +72,13 @@ def friend_command(o_inst):
         # Get the friend command
         action = sys.argv[2]
     except IndexError:
-        logger.info('Syntax: friend add/remove/list [address]')
+        logger.info('Syntax: friend add/remove/list [address]', terminal=True)
     else:
         action = action.lower()
         if action == 'list':
             # List out peers marked as our friend
             for friend in contactmanager.ContactManager.list_friends(o_inst.onionrCore):
-                logger.info(friend.publicKey + ' - ' + friend.get_info('name'))
+                logger.info(friend.publicKey + ' - ' + friend.get_info('name'), terminal=True)
         elif action in ('add', 'remove'):
             try:
                 friend = sys.argv[3]
@@ -88,7 +88,7 @@ def friend_command(o_inst):
                     raise onionrexceptions.KeyNotKnown
                 friend = onionrusers.OnionrUser(o_inst.onionrCore, friend)
             except IndexError:
-                logger.warn('Friend ID is required.')
+                logger.warn('Friend ID is required.', terminal=True)
                 action = 'error' # set to 'error' so that the finally block does not process anything
             except onionrexceptions.KeyNotKnown:
                 o_inst.onionrCore.addPeer(friend)
@@ -96,9 +96,9 @@ def friend_command(o_inst):
             finally:
                 if action == 'add':
                     friend.setTrust(1)
-                    logger.info('Added %s as friend.' % (friend.publicKey,))
+                    logger.info('Added %s as friend.' % (friend.publicKey,), terminal=True)
                 elif action == 'remove':
                     friend.setTrust(0)
-                    logger.info('Removed %s as friend.' % (friend.publicKey,))
+                    logger.info('Removed %s as friend.' % (friend.publicKey,), terminal=True)
         else:
-            logger.info('Syntax: friend add/remove/list [address]')
+            logger.info('Syntax: friend add/remove/list [address]', terminal=True)

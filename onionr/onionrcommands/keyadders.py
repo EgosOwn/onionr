@@ -26,14 +26,14 @@ def add_peer(o_inst):
         pass
     else:
         if o_inst.onionrUtils.hasKey(newPeer):
-            logger.info('We already have that key')
+            logger.info('We already have that key', terminal=True)
             return
-        logger.info("Adding peer: " + logger.colors.underline + newPeer)
+        logger.info("Adding peer: " + logger.colors.underline + newPeer, terminal=True)
         try:
             if o_inst.onionrCore.addPeer(newPeer):
-                logger.info('Successfully added key')
+                logger.info('Successfully added key', terminal=True)
         except AssertionError:
-            logger.error('Failed to add key')
+            logger.error('Failed to add key', terminal=True)
 
 def add_address(o_inst):
     try:
@@ -42,8 +42,8 @@ def add_address(o_inst):
     except IndexError:
         pass
     else:
-        logger.info("Adding address: " + logger.colors.underline + newAddress)
+        logger.info("Adding address: " + logger.colors.underline + newAddress, terminal=True)
         if o_inst.onionrCore.addAddress(newAddress):
-            logger.info("Successfully added address.")
+            logger.info("Successfully added address.", terminal=True)
         else:
-            logger.warn("Unable to add address.")
+            logger.warn("Unable to add address.", terminal=True)

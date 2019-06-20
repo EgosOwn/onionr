@@ -100,7 +100,7 @@ class OnionrCLIUI:
             elif choice == "":
                 pass
             else:
-                logger.error("Invalid choice")
+                logger.error("Invalid choice", terminal=True)
         return
 
 def on_init(api, data = None):

@@ -1,5 +1,5 @@
 '''
-    Onionr - P2P Microblogging Platform & Social network
+    Onionr - Private P2P Communication
 
     This default plugin allows users to encrypt/decrypt messages without using blocks
 '''
@@ -46,13 +46,13 @@ class PlainEncryption:
             if not self.api.get_core()._utils.validatePubKey(sys.argv[2]):
                 raise onionrexceptions.InvalidPubkey
         except (ValueError, IndexError) as e:
-            logger.error("Peer public key not specified")
+            logger.error("Peer public key not specified", terminal=True)
         except onionrexceptions.InvalidPubkey:
-            logger.error("Invalid public key")
+            logger.error("Invalid public key", terminal=True)
         else:
             pubkey = sys.argv[2]
             # Encrypt if public key is valid
-            logger.info("Please enter your message (ctrl-d or -q to stop):")
+            logger.info("Please enter your message (ctrl-d or -q to stop):", terminal=True)
             try:
                 for line in sys.stdin:
                     if line == '-q\n':
@@ -72,12 +72,12 @@ class PlainEncryption:
             plaintext = data
             encrypted = self.api.get_core()._crypto.pubKeyEncrypt(plaintext, pubkey, encodedData=True)
             encrypted = self.api.get_core()._utils.bytesToStr(encrypted)
-            logger.info('Encrypted Message: \n\nONIONR ENCRYPTED DATA %s END ENCRYPTED DATA' % (encrypted,))
+            logger.info('Encrypted Message: \n\nONIONR ENCRYPTED DATA %s END ENCRYPTED DATA' % (encrypted,), terminal=True)
 
     def decrypt(self):
         plaintext = ""
         data = ""
-        logger.info("Please enter your message (ctrl-d or -q to stop):")
+        logger.info("Please enter your message (ctrl-d or -q to stop):", terminal=True)
         try:
             for line in sys.stdin:
                 if line == '-q\n':
@@ -91,17 +91,17 @@ class PlainEncryption:
         myPub = self.api.get_core()._crypto.pubKey
         decrypted = self.api.get_core()._crypto.pubKeyDecrypt(encrypted, privkey=self.api.get_core()._crypto.privKey, encodedData=True)
         if decrypted == False:
-            logger.error("Decryption failed")
+            logger.error("Decryption failed", terminal=True)
         else:
             data = json.loads(decrypted)
-            logger.info('Decrypted Message: \n\n%s' % data['data'])
+            logger.info('Decrypted Message: \n\n%s' % data['data'], terminal=True)
             try:
-                logger.info("Signing public key: %s" % (data['signer'],))
+                logger.info("Signing public key: %s" % (data['signer'],), terminal=True)
                 assert self.api.get_core()._crypto.edVerify(data['data'], data['signer'], data['sig']) != False
             except (AssertionError, KeyError) as e:
-                logger.warn("WARNING: THIS MESSAGE HAS A MISSING OR INVALID SIGNATURE")
+                logger.warn("WARNING: THIS MESSAGE HAS A MISSING OR INVALID SIGNATURE", terminal=True)
             else:
-                logger.info("Message has good signature.")
+                logger.info("Message has good signature.", terminal=True)
         return
 
 def on_init(api, data = None):

@@ -24,6 +24,6 @@ def reset_tor():
     tor_dir = c.dataDir + 'tordata'
     if os.path.exists(tor_dir):
         if c._utils.localCommand('/ping') == 'pong!':
-            logger.warn('Cannot delete Tor data while Onionr is running')
+            logger.warn('Cannot delete Tor data while Onionr is running', terminal=True)
         else:
             shutil.rmtree(tor_dir)
