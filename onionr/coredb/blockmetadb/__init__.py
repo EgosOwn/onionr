@@ -1,5 +1,5 @@
 import sqlite3
-from . import expiredblocks, updateblockinfo
+from . import expiredblocks, updateblockinfo, add
 def get_block_list(core_inst, dateRec = None, unsaved = False):
     '''
         Get list of our blocks

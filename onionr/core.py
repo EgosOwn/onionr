@@ -17,7 +17,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import sqlite3, os, sys, time, json, uuid
+import os, sys, time, json, uuid
 import logger, netcontroller, config
 from onionrblockapi import Block
 import coredb
