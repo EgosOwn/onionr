@@ -169,7 +169,7 @@ class Core:
 
             Should be in hex format!
         '''
-        coredb.blockmetadb.add(self, newHash, selfInsert, dataSaved)
+        coredb.blockmetadb.add.add_to_block_DB(self, newHash, selfInsert, dataSaved)
 
     def setData(self, data):
         '''
