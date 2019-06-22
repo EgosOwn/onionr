@@ -110,7 +110,7 @@ def download_blocks_from_communicator(comm_inst):
             if removeFromQueue:
                 try:
                     del comm_inst.blockQueue[blockHash] # remove from block queue both if success or false
-                    logger.info('%s blocks remaining in queue' % [len(comm_inst.blockQueue)])
+                    logger.info('%s blocks remaining in queue' % [len(comm_inst.blockQueue)], terminal=True)
                 except KeyError:
                     pass
         comm_inst.currentDownloading.remove(blockHash)

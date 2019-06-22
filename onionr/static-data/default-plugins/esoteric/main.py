@@ -24,7 +24,7 @@ locale.setlocale(locale.LC_ALL, '')
 import onionrservices, logger
 from onionrservices import bootstrapservice
 
-plugin_name = 'clandestine'
+plugin_name = 'esoteric'
 PLUGIN_VERSION = '0.0.0'
 sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
 import controlapi, peerserver
@@ -36,7 +36,7 @@ def exit_with_error(text=''):
         logger.error(text)
     sys.exit(1)
 
-class Clandestine:
+class Esoteric:
     def __init__(self, pluginapi):
         self.myCore = pluginapi.get_core()
         self.peer = None
@@ -58,7 +58,7 @@ class Clandestine:
                     message += '\n'
             except EOFError:
                 message = json.dumps({'m': message, 't': self.myCore._utils.getEpoch()})
-                print(self.myCore._utils.doPostRequest('http://%s/clandestine/sendto' % (self.transport,), port=self.socks, data=message))
+                print(self.myCore._utils.doPostRequest('http://%s/esoteric/sendto' % (self.transport,), port=self.socks, data=message))
                 message = ''
             except KeyboardInterrupt:
                 self.shutdown = True
@@ -89,6 +89,6 @@ def on_init(api, data = None):
     '''
 
     pluginapi = api
-    chat = Clandestine(pluginapi)
-    api.commands.register(['clandestine'], chat.create)
+    chat = Esoteric(pluginapi)
+    api.commands.register(['esoteric'], chat.create)
     return

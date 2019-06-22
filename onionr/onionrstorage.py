@@ -17,7 +17,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import core, sys, sqlite3, os, dbcreator
+import core, sys, sqlite3, os, dbcreator, onionrexceptions
 
 DB_ENTRY_SIZE_LIMIT = 10000 # Will be a config option
 
@@ -94,4 +94,6 @@ def getData(coreInst, bHash):
             retData = block.read()
     else:
         retData = _dbFetch(coreInst, bHash)
+        if retData is None:
+            raise onionrexceptions.NoDataAvailable("Block data for %s is not available" % [bHash])
     return retData

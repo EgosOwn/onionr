@@ -22,13 +22,13 @@ from flask import Response, request, redirect, Blueprint, send_from_directory
 import core
 
 core_inst = core.Core()
-flask_blueprint = Blueprint('clandestine_control', __name__)
+flask_blueprint = Blueprint('esoteric_control', __name__)
 
-@flask_blueprint.route('/clandestine/ping')
+@flask_blueprint.route('/esoteric/ping')
 def ping():
     return 'pong!'
 
-@flask_blueprint.route('/clandestine/send/<peer>', methods=['POST'])
+@flask_blueprint.route('/esoteric/send/<peer>', methods=['POST'])
 def send_message(peer):
     data = request.get_json(force=True)
     core_inst.keyStore.refresh()
@@ -40,14 +40,14 @@ def send_message(peer):
     core_inst.keyStore.flush()
     return Response('success')
 
-@flask_blueprint.route('/clandestine/gets/<peer>')
+@flask_blueprint.route('/esoteric/gets/<peer>')
 def get_sent(peer):
     sent = core_inst.keyStore.get('s' + peer)
     if sent is None:
         sent = []
     return Response(json.dumps(sent))
 
-@flask_blueprint.route('/clandestine/addrec/<peer>', methods=['POST'])
+@flask_blueprint.route('/esoteric/addrec/<peer>', methods=['POST'])
 def add_rec(peer):
     data = request.get_json(force=True)
     core_inst.keyStore.refresh()
@@ -59,7 +59,7 @@ def add_rec(peer):
     core_inst.keyStore.flush()
     return Response('success')
 
-@flask_blueprint.route('/clandestine/getrec/<peer>')
+@flask_blueprint.route('/esoteric/getrec/<peer>')
 def get_messages(peer):
     core_inst.keyStore.refresh()
     existing = core_inst.keyStore.get('r' + peer)
