@@ -25,15 +25,9 @@ import deadsimplekv as simplekv
 import onionrutils, onionrcrypto, onionrproofs, onionrevents as events, onionrexceptions
 import onionrblacklist
 from onionrusers import onionrusers
+from onionrstorage import removeblock, setdata
 import dbcreator, onionrstorage, serializeddata, subprocesspow
 from etc import onionrvalues, powchoice
-
-if sys.version_info < (3, 6):
-    try:
-        import sha3
-    except ModuleNotFoundError:
-        logger.fatal('On Python 3 versions prior to 3.6.x, you need the sha3 module')
-        sys.exit(1)
 
 class Core:
     def __init__(self, torPort=0):
@@ -149,18 +143,7 @@ class Core:
 
             **You may want blacklist.addToDB(blockHash)
         '''
-
-        if self._utils.validateHash(block):
-            conn = sqlite3.connect(self.blockDB, timeout=30)
-            c = conn.cursor()
-            t = (block,)
-            c.execute('Delete from hashes where hash=?;', t)
-            conn.commit()
-            conn.close()
-            dataSize = sys.getsizeof(onionrstorage.getData(self, block))
-            self._utils.storageCounter.removeBytes(dataSize)
-        else:
-            raise onionrexceptions.InvalidHexHash
+        removeblock.remove_block(self, block)
 
     def createAddressDB(self):
         '''
@@ -186,57 +169,13 @@ class Core:
 
             Should be in hex format!
         '''
-
-        if not os.path.exists(self.blockDB):
-            raise Exception('Block db does not exist')
-        if self._utils.hasBlock(newHash):
-            return
-        conn = sqlite3.connect(self.blockDB, timeout=30)
-        c = conn.cursor()
-        currentTime = self._utils.getEpoch() + self._crypto.secrets.randbelow(301)
-        if selfInsert or dataSaved:
-            selfInsert = 1
-        else:
-            selfInsert = 0
-        data = (newHash, currentTime, '', selfInsert)
-        c.execute('INSERT INTO hashes (hash, dateReceived, dataType, dataSaved) VALUES(?, ?, ?, ?);', data)
-        conn.commit()
-        conn.close()
+        coredb.blockmetadb.add(self, newHash, selfInsert, dataSaved)
 
     def setData(self, data):
         '''
             Set the data assciated with a hash
         '''
-
-        data = data
-        dataSize = sys.getsizeof(data)
-
-        if not type(data) is bytes:
-            data = data.encode()
-
-        dataHash = self._crypto.sha3Hash(data)
-
-        if type(dataHash) is bytes:
-            dataHash = dataHash.decode()
-        blockFileName = self.blockDataLocation + dataHash + '.dat'
-        try:
-            onionrstorage.getData(self, dataHash)
-        except onionrexceptions.NoDataAvailable:
-            if self._utils.storageCounter.addBytes(dataSize) != False:
-                onionrstorage.store(self, data, blockHash=dataHash)
-                conn = sqlite3.connect(self.blockDB, timeout=30)
-                c = conn.cursor()
-                c.execute("UPDATE hashes SET dataSaved=1 WHERE hash = ?;", (dataHash,))
-                conn.commit()
-                conn.close()
-                with open(self.dataNonceFile, 'a') as nonceFile:
-                    nonceFile.write(dataHash + '\n')
-            else:
-                raise onionrexceptions.DiskAllocationReached
-        else:
-            raise Exception("Data is already set for " + dataHash)
-
-        return dataHash
+        return onionrstorage.setdata.set_data(self, data)
 
     def getData(self, hash):
         '''
@@ -513,6 +452,6 @@ class Core:
         '''
         if self._utils.localCommand('/ping', maxWait=10) == 'pong!':
             self.daemonQueueAdd('announceNode')
-            logger.info('Introduction command will be processed.')
+            logger.info('Introduction command will be processed.', terminal=True)
         else:
-            logger.warn('No running node detected. Cannot introduce.')
+            logger.warn('No running node detected. Cannot introduce.', terminal=True)
