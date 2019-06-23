@@ -201,7 +201,7 @@ class Core:
         '''
             Get a response sent by communicator to the API, by requesting to the API
         '''
-        return coredb.daemonqueue.daemon_queue_get_response(responseID)
+        return coredb.daemonqueue.daemon_queue_get_response(self, responseID)
 
     def clearDaemonQueue(self):
         '''

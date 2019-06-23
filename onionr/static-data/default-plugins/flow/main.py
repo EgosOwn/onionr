@@ -75,10 +75,8 @@ class OnionrFlow:
                 for block in self.myCore.getBlocksByType('txt'):
                     block = Block(block)
                     if block.getMetadata('ch') != self.channel:
-                        #print('not chan', block.getMetadata('ch'))
                         continue
                     if block.getHash() in self.alreadyOutputed:
-                        #print('already')
                         continue
                     if not self.flowRunning:
                         break

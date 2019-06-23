@@ -29,12 +29,8 @@ import onionrevents
 import storagecounter
 from etc import pgpwords, onionrvalues
 from onionrusers import onionrusers 
-if sys.version_info < (3, 6):
-    try:
-        import sha3
-    except ModuleNotFoundError:
-        logger.fatal('On Python 3 versions prior to 3.6.x, you need the sha3 module')
-        sys.exit(1)
+from . import localcommand, blockmetadata, validatemetadata
+
 config.reload()
 class OnionrUtils:
     '''
@@ -44,24 +40,10 @@ class OnionrUtils:
         #self.fingerprintFile = 'data/own-fingerprint.txt' #TODO Remove since probably not needed
         self._core = coreInstance # onionr core instance
 
-        self.timingToken = '' # for when we make local connections to our http api, to bypass timing attack defense mechanism
         self.avoidDupe = [] # list used to prevent duplicate requests per peer for certain actions
         self.peerProcessing = {} # dict of current peer actions: peer, actionList
         self.storageCounter = storagecounter.StorageCounter(self._core) # used to keep track of how much data onionr is using on disk
         return
-
-    def getTimeBypassToken(self):
-        '''
-            Load our timingToken from disk for faster local HTTP API
-        '''
-        try:
-            if os.path.exists(self._core.dataDir + 'time-bypass.txt'):
-                with open(self._core.dataDir + 'time-bypass.txt', 'r') as bypass:
-                    self.timingToken = bypass.read()
-        except Exception as error:
-            logger.error('Failed to fetch time bypass token.', error = error)
-
-        return self.timingToken
 
     def getRoundedEpoch(self, roundS=60):
         '''
@@ -85,32 +67,7 @@ class OnionrUtils:
         '''
             Send a command to the local http API server, securely. Intended for local clients, DO NOT USE for remote peers.
         '''
-        self.getTimeBypassToken()
-        # TODO: URL encode parameters, just as an extra measure. May not be needed, but should be added regardless.
-        hostname = ''
-        waited = 0
-        while hostname == '':
-            try:
-                hostname = self.getClientAPIServer()
-            except FileNotFoundError:
-                time.sleep(1)
-                waited += 1
-                if waited == maxWait:
-                    return False
-        if data != '':
-            data = '&data=' + urllib.parse.quote_plus(data)
-        payload = 'http://%s/%s%s' % (hostname, command, data)
-        try:
-            if post:
-                retData = requests.post(payload, data=postData, headers={'token': config.get('client.webpassword'), 'Connection':'close'}, timeout=(maxWait, maxWait)).text
-            else:
-                retData = requests.get(payload, headers={'token': config.get('client.webpassword'), 'Connection':'close'}, timeout=(maxWait, maxWait)).text
-        except Exception as error:
-            if not silent:
-                logger.error('Failed to make local request (command: %s):%s' % (command, error))
-            retData = False
-
-        return retData
+        return localcommand.local_command(self, command, data, silent, post, postData, maxWait)
 
     def getHumanReadableID(self, pub=''):
         '''gets a human readable ID from a public key'''
@@ -130,64 +87,13 @@ class OnionrUtils:
             metadata, meta (meta being internal metadata, which will be 
             returned as an encrypted base64 string if it is encrypted, dict if not).
         '''
-        meta = {}
-        metadata = {}
-        data = blockData
-        try:
-            blockData = blockData.encode()
-        except AttributeError:
-            pass
-
-        try:
-            metadata = json.loads(blockData[:blockData.find(b'\n')].decode())
-        except json.decoder.JSONDecodeError:
-            pass
-        else:
-            data = blockData[blockData.find(b'\n'):].decode()
-
-            if not metadata['encryptType'] in ('asym', 'sym'):
-                try:
-                    meta = json.loads(metadata['meta'])
-                except KeyError:
-                    pass
-            meta = metadata['meta']
-        return (metadata, meta, data)
+        return blockmetadata.get_block_metadata_from_data(self, blockData)
 
     def processBlockMetadata(self, blockHash):
         '''
             Read metadata from a block and cache it to the block database
         '''
-        curTime = self.getRoundedEpoch(roundS=60)
-        myBlock = Block(blockHash, self._core)
-        if myBlock.isEncrypted:
-            myBlock.decrypt()
-        if (myBlock.isEncrypted and myBlock.decrypted) or (not myBlock.isEncrypted):
-            blockType = myBlock.getMetadata('type') # we would use myBlock.getType() here, but it is bugged with encrypted blocks
-            signer = self.bytesToStr(myBlock.signer)
-            valid = myBlock.verifySig()
-            if myBlock.getMetadata('newFSKey') is not None:
-                onionrusers.OnionrUser(self._core, signer).addForwardKey(myBlock.getMetadata('newFSKey'))
-                
-            try:
-                if len(blockType) <= 10:
-                    self._core.updateBlockInfo(blockHash, 'dataType', blockType)
-            except TypeError:
-                logger.warn("Missing block information")
-                pass
-            # Set block expire time if specified
-            try:
-                expireTime = myBlock.getHeader('expire')
-                assert len(str(int(expireTime))) < 20 # test that expire time is an integer of sane length (for epoch)
-            except (AssertionError, ValueError, TypeError) as e:
-                expireTime = onionrvalues.OnionrValues().default_expire + curTime
-            finally:
-                self._core.updateBlockInfo(blockHash, 'expire', expireTime)
-            if not blockType is None:
-                self._core.updateBlockInfo(blockHash, 'dataType', blockType)
-            onionrevents.event('processblocks', data = {'block': myBlock, 'type': blockType, 'signer': signer, 'validSig': valid}, onionr = self._core.onionrInst)
-        else:
-            pass
-            #logger.debug('Not processing metadata on encrypted block we cannot decrypt.')
+        return blockmetadata.process_block_metadata(self, blockHash)
 
     def escapeAnsi(self, line):
         '''
@@ -243,78 +149,7 @@ class OnionrUtils:
 
     def validateMetadata(self, metadata, blockData):
         '''Validate metadata meets onionr spec (does not validate proof value computation), take in either dictionary or json string'''
-        # TODO, make this check sane sizes
-        retData = False
-        maxClockDifference = 120
-
-        # convert to dict if it is json string
-        if type(metadata) is str:
-            try:
-                metadata = json.loads(metadata)
-            except json.JSONDecodeError:
-                pass
-
-        # Validate metadata dict for invalid keys to sizes that are too large
-        maxAge = config.get("general.max_block_age", onionrvalues.OnionrValues().default_expire)
-        if type(metadata) is dict:
-            for i in metadata:
-                try:
-                    self._core.requirements.blockMetadataLengths[i]
-                except KeyError:
-                    logger.warn('Block has invalid metadata key ' + i)
-                    break
-                else:
-                    testData = metadata[i]
-                    try:
-                        testData = len(testData)
-                    except (TypeError, AttributeError) as e:
-                        testData = len(str(testData))
-                    if self._core.requirements.blockMetadataLengths[i] < testData:
-                        logger.warn('Block metadata key ' + i + ' exceeded maximum size')
-                        break
-                if i == 'time':
-                    if not self.isIntegerString(metadata[i]):
-                        logger.warn('Block metadata time stamp is not integer string or int')
-                        break
-                    isFuture = (metadata[i] - self.getEpoch())
-                    if isFuture > maxClockDifference:
-                        logger.warn('Block timestamp is skewed to the future over the max %s: %s' (maxClockDifference, isFuture))
-                        break
-                    if (self.getEpoch() - metadata[i]) > maxAge:
-                        logger.warn('Block is outdated: %s' % (metadata[i],))
-                        break
-                elif i == 'expire':
-                    try:
-                        assert int(metadata[i]) > self.getEpoch()
-                    except AssertionError:
-                        logger.warn('Block is expired: %s less than %s' % (metadata[i], self.getEpoch()))
-                        break
-                elif i == 'encryptType':
-                    try:
-                        assert metadata[i] in ('asym', 'sym', '')
-                    except AssertionError:
-                        logger.warn('Invalid encryption mode')
-                        break
-            else:
-                # if metadata loop gets no errors, it does not break, therefore metadata is valid
-                # make sure we do not have another block with the same data content (prevent data duplication and replay attacks)
-                nonce = self._core._utils.bytesToStr(self._core._crypto.sha3Hash(blockData))
-                try:
-                    with open(self._core.dataNonceFile, 'r') as nonceFile:
-                        if nonce in nonceFile.read():
-                            retData = False # we've seen that nonce before, so we can't pass metadata
-                            raise onionrexceptions.DataExists
-                except FileNotFoundError:
-                    retData = True
-                except onionrexceptions.DataExists:
-                    # do not set retData to True, because nonce has been seen before
-                    pass
-                else:
-                    retData = True
-        else:
-            logger.warn('In call to utils.validateMetadata, metadata must be JSON string or a dictionary object')
-
-        return retData
+        return validatemetadata.validate_metadata(self, metadata, blockData)
 
     def validatePubKey(self, key):
         '''

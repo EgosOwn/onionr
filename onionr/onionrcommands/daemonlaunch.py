@@ -38,8 +38,8 @@ def daemon(o_inst):
         logger.debug('Runcheck file found on daemon start, deleting in advance.')
         os.remove('%s/.runcheck' % (o_inst.onionrCore.dataDir,))
 
-    Thread(target=api.API, args=(o_inst, o_inst.debug, onionr.API_VERSION)).start()
-    Thread(target=api.PublicAPI, args=[o_inst.getClientApi()]).start()
+    Thread(target=api.API, args=(o_inst, o_inst.debug, onionr.API_VERSION), daemon=True).start()
+    Thread(target=api.PublicAPI, args=[o_inst.getClientApi()], daemon=True).start()
 
     apiHost = ''
     while apiHost == '':
@@ -77,7 +77,7 @@ def daemon(o_inst):
         _proper_shutdown(o_inst)
 
     o_inst.onionrCore.torPort = net.socksPort
-    communicatorThread = Thread(target=communicator.startCommunicator, args=(o_inst, str(net.socksPort)))
+    communicatorThread = Thread(target=communicator.startCommunicator, args=(o_inst, str(net.socksPort)), daemon=True)
     communicatorThread.start()
     
     while o_inst.communicatorInst is None:
@@ -106,7 +106,7 @@ def daemon(o_inst):
     o_inst.onionrUtils.localCommand('shutdown')
 
     net.killTor()
-    time.sleep(3)
+    time.sleep(8) # Time to allow threads to finish, if not any "daemon" threads will be slaughtered http://docs.python.org/library/threading.html#threading.Thread.daemon
     o_inst.deleteRunFiles()
     return
 
