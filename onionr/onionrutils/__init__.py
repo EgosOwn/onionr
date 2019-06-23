@@ -24,12 +24,11 @@ import nacl.signing, nacl.encoding
 import unpaddedbase32
 from onionrblockapi import Block
 import onionrexceptions, config, logger
-from onionr import API_VERSION
 import onionrevents
 import storagecounter
 from etc import pgpwords, onionrvalues
 from onionrusers import onionrusers 
-from . import localcommand, blockmetadata, validatemetadata
+from . import localcommand, blockmetadata, validatemetadata, basicrequests
 
 config.reload()
 class OnionrUtils:
@@ -279,23 +278,6 @@ class OnionrUtils:
         if not exist:
             logger.info('No blocks found to import')
 
-    def progressBar(self, value = 0, endvalue = 100, width = None):
-        '''
-            Outputs a progress bar with a percentage. Write \n after use.
-        '''
-
-        if width is None or height is None:
-            width, height = shutil.get_terminal_size((80, 24))
-
-        bar_length = width - 6
-
-        percent = float(value) / endvalue
-        arrow = '─' * int(round(percent * bar_length)-1) + '>'
-        spaces = ' ' * (bar_length - len(arrow))
-
-        sys.stdout.write("\r┣{0}┫ {1}%".format(arrow + spaces, int(round(percent * 100))))
-        sys.stdout.flush()
-
     def getEpoch(self):
         '''returns epoch'''
         return math.floor(time.time())
@@ -304,70 +286,13 @@ class OnionrUtils:
         '''
         Do a POST request through a local tor or i2p instance
         '''
-        if proxyType == 'tor':
-            if port == 0:
-                port = self._core.torPort
-            proxies = {'http': 'socks4a://127.0.0.1:' + str(port), 'https': 'socks4a://127.0.0.1:' + str(port)}
-        elif proxyType == 'i2p':
-            proxies = {'http': 'http://127.0.0.1:4444'}
-        else:
-            return
-        headers = {'user-agent': 'PyOnionr', 'Connection':'close'}
-        try:
-            proxies = {'http': 'socks4a://127.0.0.1:' + str(port), 'https': 'socks4a://127.0.0.1:' + str(port)}
-            r = requests.post(url, data=data, headers=headers, proxies=proxies, allow_redirects=False, timeout=(15, 30))
-            retData = r.text
-        except KeyboardInterrupt:
-            raise KeyboardInterrupt
-        except requests.exceptions.RequestException as e:
-            logger.debug('Error: %s' % str(e))
-            retData = False
-        return retData
+        return basicrequests.do_post_request(self, url, data, port, proxyType)
 
     def doGetRequest(self, url, port=0, proxyType='tor', ignoreAPI=False, returnHeaders=False):
         '''
         Do a get request through a local tor or i2p instance
         '''
-        retData = False
-        if proxyType == 'tor':
-            if port == 0:
-                raise onionrexceptions.MissingPort('Socks port required for Tor HTTP get request')
-            proxies = {'http': 'socks4a://127.0.0.1:' + str(port), 'https': 'socks4a://127.0.0.1:' + str(port)}
-        elif proxyType == 'i2p':
-            proxies = {'http': 'http://127.0.0.1:4444'}
-        else:
-            return
-        headers = {'user-agent': 'PyOnionr', 'Connection':'close'}
-        response_headers = dict()
-        try:
-            proxies = {'http': 'socks4a://127.0.0.1:' + str(port), 'https': 'socks4a://127.0.0.1:' + str(port)}
-            r = requests.get(url, headers=headers, proxies=proxies, allow_redirects=False, timeout=(15, 30), )
-            # Check server is using same API version as us
-            if not ignoreAPI:
-                try:
-                    response_headers = r.headers
-                    if r.headers['X-API'] != str(API_VERSION):
-                        raise onionrexceptions.InvalidAPIVersion
-                except KeyError:
-                    raise onionrexceptions.InvalidAPIVersion
-            retData = r.text
-        except KeyboardInterrupt:
-            raise KeyboardInterrupt
-        except ValueError as e:
-            pass
-        except onionrexceptions.InvalidAPIVersion:
-            if 'X-API' in response_headers:
-                logger.debug('Using API version %s. Cannot communicate with node\'s API version of %s.' % (API_VERSION, response_headers['X-API']))
-            else:
-                logger.debug('Using API version %s. API version was not sent with the request.' % API_VERSION)
-        except requests.exceptions.RequestException as e:
-            if not 'ConnectTimeoutError' in str(e) and not 'Request rejected or failed' in str(e):
-                logger.debug('Error: %s' % str(e))
-            retData = False
-        if returnHeaders:
-            return (retData, response_headers)
-        else:
-            return retData
+        return basicrequests.do_get_request(self, url, port, proxyType, ignoreAPI, returnHeaders)
 
     @staticmethod
     def strToBytes(data):
