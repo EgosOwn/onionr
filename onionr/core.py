@@ -28,6 +28,7 @@ from onionrusers import onionrusers
 from onionrstorage import removeblock, setdata
 import dbcreator, onionrstorage, serializeddata, subprocesspow
 from etc import onionrvalues, powchoice
+from onionrutils import localcommand
 
 class Core:
     def __init__(self, torPort=0):
@@ -433,8 +434,8 @@ class Core:
                 retData = False
             else:
                 # Tell the api server through localCommand to wait for the daemon to upload this block to make statistical analysis more difficult
-                if self._utils.localCommand('/ping', maxWait=10) == 'pong!':
-                    self._utils.localCommand('/waitforshare/' + retData, post=True, maxWait=5)
+                if localcommand.local_command(self, '/ping', maxWait=10) == 'pong!':
+                    localcommand.local_command(self, '/waitforshare/' + retData, post=True, maxWait=5)
                     self.daemonQueueAdd('uploadBlock', retData)
                 self.addToBlockDB(retData, selfInsert=True, dataSaved=True)
                 self._utils.processBlockMetadata(retData)
@@ -450,7 +451,7 @@ class Core:
         '''
             Introduces our node into the network by telling X many nodes our HS address
         '''
-        if self._utils.localCommand('/ping', maxWait=10) == 'pong!':
+        if localcommand.local_command(self, '/ping', maxWait=10) == 'pong!':
             self.daemonQueueAdd('announceNode')
             logger.info('Introduction command will be processed.', terminal=True)
         else:

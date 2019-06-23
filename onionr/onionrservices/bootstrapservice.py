@@ -24,6 +24,7 @@ from flask import Flask, Response
 import core
 from netcontroller import getOpenPort
 from . import httpheaders
+from onionrutils import stringvalidators
 
 def bootstrap_client_service(peer, core_inst=None, bootstrap_timeout=300):
     '''
@@ -61,7 +62,7 @@ def bootstrap_client_service(peer, core_inst=None, bootstrap_timeout=300):
 
     @bootstrap_app.route('/bs/<address>', methods=['POST'])
     def get_bootstrap(address):
-        if core_inst._utils.validateID(address + '.onion'):
+        if stringvalidators.validate_transport(address + '.onion'):
             # Set the bootstrap address then close the server
             bootstrap_address = address + '.onion'
             core_inst.keyStore.put(bs_id, bootstrap_address)

@@ -23,9 +23,10 @@ from threading import Thread
 import onionr, api, logger, communicator
 import onionrevents as events
 from netcontroller import NetController
+from onionrutils import localcommand
 
 def _proper_shutdown(o_inst):
-    o_inst.onionrUtils.localCommand('shutdown')
+    localcommand.local_command(o_inst.onionrCore, 'shutdown')
     sys.exit(1)
 
 def daemon(o_inst):
@@ -63,7 +64,7 @@ def daemon(o_inst):
     net = NetController(o_inst.onionrCore.config.get('client.public.port', 59497), apiServerIP=apiHost)
     logger.info('Tor is starting...', terminal=True)
     if not net.startTor():
-        o_inst.onionrUtils.localCommand('shutdown')
+        localcommand.local_command(o_inst.onionrCore, 'shutdown')
         sys.exit(1)
     if len(net.myID) > 0 and o_inst.onionrCore.config.get('general.security_level', 1) == 0:
         logger.debug('Started .onion service: %s' % (logger.colors.underline + net.myID))
@@ -103,10 +104,10 @@ def daemon(o_inst):
 
     signal.signal(signal.SIGINT, _ignore_sigint)
     o_inst.onionrCore.daemonQueueAdd('shutdown')
-    o_inst.onionrUtils.localCommand('shutdown')
+    localcommand.local_command(o_inst.onionrCore, 'shutdown')
 
     net.killTor()
-    time.sleep(8) # Time to allow threads to finish, if not any "daemon" threads will be slaughtered http://docs.python.org/library/threading.html#threading.Thread.daemon
+    time.sleep(5) # Time to allow threads to finish, if not any "daemon" threads will be slaughtered http://docs.python.org/library/threading.html#threading.Thread.daemon
     o_inst.deleteRunFiles()
     return
 

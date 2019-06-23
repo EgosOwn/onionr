@@ -1,5 +1,7 @@
 import sqlite3, os
 import onionrevents as events
+from onionrutils import localcommand
+
 def daemon_queue(core_inst):
     '''
         Gives commands to the communication proccess/daemon by reading an sqlite3 database
@@ -55,7 +57,7 @@ def daemon_queue_get_response(core_inst, responseID=''):
         Get a response sent by communicator to the API, by requesting to the API
     '''
     assert len(responseID) > 0
-    resp = core_inst._utils.localCommand('queueResponse/' + responseID)
+    resp = localcommand.local_command(core_inst, 'queueResponse/' + responseID)
     return resp
 
 def clear_daemon_queue(core_inst):

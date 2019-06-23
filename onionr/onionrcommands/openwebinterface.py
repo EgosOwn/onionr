@@ -19,9 +19,10 @@
 '''
 import webbrowser
 import logger
+from onionrutils import getclientapiserver
 def open_home(o_inst):
     try:
-        url = o_inst.onionrUtils.getClientAPIServer()
+        url = getclientapiserver.get_client_API_server(o_inst.onionrCore)
     except FileNotFoundError:
         logger.error('Onionr seems to not be running (could not get api host)', terminal=True)
     else:

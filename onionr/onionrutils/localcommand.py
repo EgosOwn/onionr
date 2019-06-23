@@ -1,6 +1,7 @@
 import urllib, requests, time
 import logger
-def local_command(utils_inst, command, data='', silent = True, post=False, postData = {}, maxWait=20):
+from onionrutils import getclientapiserver
+def local_command(core_inst, command, data='', silent = True, post=False, postData = {}, maxWait=20):
     '''
         Send a command to the local http API server, securely. Intended for local clients, DO NOT USE for remote peers.
     '''
@@ -9,7 +10,7 @@ def local_command(utils_inst, command, data='', silent = True, post=False, postD
     waited = 0
     while hostname == '':
         try:
-            hostname = utils_inst.getClientAPIServer()
+            hostname = getclientapiserver.get_client_API_server(core_inst)
         except FileNotFoundError:
             time.sleep(1)
             waited += 1

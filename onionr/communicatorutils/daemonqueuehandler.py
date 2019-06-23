@@ -19,6 +19,7 @@
 '''
 import logger
 import onionrevents as events
+from onionrutils import localcommand
 def handle_daemon_commands(comm_inst):
     cmd = comm_inst._core.daemonQueue()
     response = ''
@@ -39,7 +40,7 @@ def handle_daemon_commands(comm_inst):
             if response == '':
                 response = 'none'
         elif cmd[0] == 'localCommand':
-            response = comm_inst._core._utils.localCommand(cmd[1])
+            response = localcommand.local_command(comm_inst._core, cmd[1])
         elif cmd[0] == 'pex':
             for i in comm_inst.timers:
                 if i.timerFunction.__name__ == 'lookupAdders':
@@ -49,7 +50,7 @@ def handle_daemon_commands(comm_inst):
 
         if cmd[0] not in ('', None):
             if response != '':
-                comm_inst._core._utils.localCommand('queueResponseAdd/' + cmd[4], post=True, postData={'data': response})
+                localcommand.local_command(comm_inst._core, 'queueResponseAdd/' + cmd[4], post=True, postData={'data': response})
         response = ''
 
     comm_inst.decrementThreadCount('daemonCommands')

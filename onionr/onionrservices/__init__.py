@@ -21,6 +21,7 @@ import time
 import stem
 import core
 from . import connectionserver, bootstrapservice
+from onionrutils import stringvalidators
 
 class OnionrServices:
     '''
@@ -39,7 +40,7 @@ class OnionrServices:
             When a client wants to connect, contact their bootstrap address and tell them our
             ephemeral address for our service by creating a new ConnectionServer instance
         '''
-        assert self._core._utils.validateID(address)
+        assert stringvalidators.validate_transport(address)
         BOOTSTRAP_TRIES = 10 # How many times to attempt contacting the bootstrap server
         TRY_WAIT = 3 # Seconds to wait before trying bootstrap again
         # HTTP is fine because .onion/i2p is encrypted/authenticated

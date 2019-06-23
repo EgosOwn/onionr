@@ -1,6 +1,7 @@
 import json
 import logger, onionrexceptions
 from etc import onionrvalues
+from onionrutils import stringvalidators
 def validate_metadata(utils_inst, metadata, blockData):
     '''Validate metadata meets onionr spec (does not validate proof value computation), take in either dictionary or json string'''
     # TODO, make this check sane sizes
@@ -15,7 +16,7 @@ def validate_metadata(utils_inst, metadata, blockData):
             pass
 
     # Validate metadata dict for invalid keys to sizes that are too large
-    maxAge = utils_inst._coreconfig.get("general.max_block_age", onionrvalues.OnionrValues().default_expire)
+    maxAge = utils_inst._core.config.get("general.max_block_age", onionrvalues.OnionrValues().default_expire)
     if type(metadata) is dict:
         for i in metadata:
             try:
@@ -33,7 +34,7 @@ def validate_metadata(utils_inst, metadata, blockData):
                     logger.warn('Block metadata key ' + i + ' exceeded maximum size')
                     break
             if i == 'time':
-                if not utils_inst.isIntegerString(metadata[i]):
+                if not stringvalidators.is_integer_string(metadata[i]):
                     logger.warn('Block metadata time stamp is not integer string or int')
                     break
                 isFuture = (metadata[i] - utils_inst.getEpoch())

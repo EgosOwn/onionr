@@ -1,5 +1,7 @@
 import sqlite3
-import onionrevents as events, config
+import onionrevents as events
+from onionrutils import stringvalidators
+
 def add_peer(core_inst, peerID, name=''):
     '''
         Adds a public key to the key database (misleading function name)
@@ -40,8 +42,8 @@ def add_address(core_inst, address):
 
     if type(address) is None or len(address) == 0:
         return False
-    if core_inst._utils.validateID(address):
-        if address == config.get('i2p.ownAddr', None) or address == core_inst.hsAddress:
+    if stringvalidators.validate_transport(address):
+        if address == core_inst.config.get('i2p.ownAddr', None) or address == core_inst.hsAddress:
             return False
         conn = sqlite3.connect(core_inst.addressDB, timeout=30)
         c = conn.cursor()

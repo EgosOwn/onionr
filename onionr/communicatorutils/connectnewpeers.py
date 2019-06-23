@@ -20,6 +20,7 @@
 import time, sys
 import onionrexceptions, logger, onionrpeers
 from utils import networkmerger
+from onionrutils import stringvalidators
 # secrets module was added into standard lib in 3.6+
 if sys.version_info[0] == 3 and sys.version_info[1] < 6:
     from dependencies import secrets
@@ -30,7 +31,7 @@ def connect_new_peer_to_communicator(comm_inst, peer='', useBootstrap=False):
     retData = False
     tried = comm_inst.offlinePeers
     if peer != '':
-        if comm_inst._core._utils.validateID(peer):
+        if stringvalidators.validate_transport(peer):
             peerList = [peer]
         else:
             raise onionrexceptions.InvalidAddress('Will not attempt connection test to invalid address')

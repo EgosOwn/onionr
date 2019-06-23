@@ -20,6 +20,7 @@
 import logger
 from communicatorutils import proxypicker
 import onionrblockapi as block
+from onionrutils import localcommand
 
 def upload_blocks_from_communicator(comm_inst):
     # when inserting a block, we try to upload it to a few peers to add some deniability
@@ -42,7 +43,7 @@ def upload_blocks_from_communicator(comm_inst):
                 proxyType = proxypicker.pick_proxy(peer)
                 logger.info("Uploading block to " + peer)
                 if not comm_inst._core._utils.doPostRequest(url, data=data, proxyType=proxyType) == False:
-                    comm_inst._core._utils.localCommand('waitforshare/' + bl, post=True)
+                    localcommand.local_command(comm_inst._core, 'waitforshare/' + bl, post=True)
                     finishedUploads.append(bl)
     for x in finishedUploads:
         try:

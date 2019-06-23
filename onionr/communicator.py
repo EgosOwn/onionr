@@ -27,6 +27,7 @@ from communicatorutils import downloadblocks, lookupblocks, lookupadders
 from communicatorutils import servicecreator, connectnewpeers, uploadblocks
 from communicatorutils import daemonqueuehandler, announcenode, deniableinserts
 from communicatorutils import cooldownpeer, housekeeping, netcheck
+from onionrutils import localcommand
 from etc import humanreadabletime
 import onionrservices, onionr, onionrproofs
 
@@ -184,7 +185,7 @@ class OnionrCommunicatorDaemon:
         else:
             for server in self.service_greenlets:
                 server.stop()
-        self._core._utils.localCommand('shutdown') # shutdown the api
+        localcommand.local_command(self._core, 'shutdown') # shutdown the api
         time.sleep(0.5)
 
     def lookupAdders(self):
@@ -364,9 +365,9 @@ class OnionrCommunicatorDaemon:
 
     def detectAPICrash(self):
         '''exit if the api server crashes/stops'''
-        if self._core._utils.localCommand('ping', silent=False) not in ('pong', 'pong!'):
+        if localcommand.local_command(self._core, 'ping', silent=False) not in ('pong', 'pong!'):
             for i in range(300):
-                if self._core._utils.localCommand('ping') in ('pong', 'pong!') or self.shutdown:
+                if localcommand.local_command(self._core, 'ping') in ('pong', 'pong!') or self.shutdown:
                     break # break for loop
                 time.sleep(1)
             else:

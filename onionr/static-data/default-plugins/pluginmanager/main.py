@@ -22,6 +22,7 @@
 import logger, config
 import os, sys, json, time, random, shutil, base64, getpass, datetime, re
 from onionrblockapi import Block
+from onionrutils import importnewblocks
 
 plugin_name = 'pluginmanager'
 
@@ -236,7 +237,7 @@ def pluginToBlock(plugin, import_block = True):
             # hash = pluginapi.get_core().insertBlock(, header = 'plugin', sign = True)
 
             if import_block:
-                pluginapi.get_utils().importNewBlocks()
+                importnewblocks.import_new_blocks(pluginapi.get_core())
 
             return hash
         else:

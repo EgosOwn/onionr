@@ -21,6 +21,7 @@ import os, uuid, time
 import logger, onionrutils
 from onionrblockapi import Block
 import onionr
+from onionrutils import checkcommunicator
 
 def show_stats(o_inst):
     try:
@@ -29,7 +30,7 @@ def show_stats(o_inst):
         signedBlocks = len(Block.getBlocks(signed = True))
         messages = {
             # info about local client
-            'Onionr Daemon Status' : ((logger.colors.fg.green + 'Online') if o_inst.onionrUtils.isCommunicatorRunning(timeout = 9) else logger.colors.fg.red + 'Offline'),
+            'Onionr Daemon Status' : ((logger.colors.fg.green + 'Online') if checkcommunicator.is_communicator_running(o_inst.onionrCore, timeout = 9) else logger.colors.fg.red + 'Offline'),
 
             # file and folder size stats
             'div1' : True, # this creates a solid line across the screen, a div

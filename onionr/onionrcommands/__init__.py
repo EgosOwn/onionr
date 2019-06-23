@@ -22,6 +22,7 @@ import webbrowser, sys
 import logger
 from . import pubkeymanager, onionrstatistics, daemonlaunch, filecommands, plugincommands, keyadders
 from . import banblocks, exportblocks, openwebinterface, resettor
+from onionrutils import importnewblocks
 
 def show_help(o_inst, command):
 
@@ -110,8 +111,8 @@ def get_commands(onionr_inst):
     'listconn': onionr_inst.listConn,
     'list-conn': onionr_inst.listConn,
 
-    'import-blocks': onionr_inst.onionrUtils.importNewBlocks,
-    'importblocks': onionr_inst.onionrUtils.importNewBlocks,
+    'import-blocks': importnewblocks.import_new_blocks,
+    'importblocks': importnewblocks.import_new_blocks,
 
     'introduce': onionr_inst.onionrCore.introduceNode,
     'pex': onionr_inst.doPEX,

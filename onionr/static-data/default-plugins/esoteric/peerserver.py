@@ -19,6 +19,7 @@
 '''
 import sys, os, json
 import core
+from onionrutils import localcommand
 from flask import Response, request, redirect, Blueprint, abort, g
 sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
 direct_blueprint = Blueprint('esoteric', __name__)
@@ -47,9 +48,9 @@ def sendto():
         msg = ''
     else:
         msg = json.dumps(msg)
-        core_inst._utils.localCommand('/esoteric/addrec/%s' % (g.peer,), post=True, postData=msg)
+        localcommand.local_command(core_inst, '/esoteric/addrec/%s' % (g.peer,), post=True, postData=msg)
     return Response('success')
 
 @direct_blueprint.route('/esoteric/poll')
 def poll_chat():
-    return Response(core_inst._utils.localCommand('/esoteric/gets/%s' % (g.peer,)))
+    return Response(localcommand.local_command(core_inst, '/esoteric/gets/%s' % (g.peer,)))
