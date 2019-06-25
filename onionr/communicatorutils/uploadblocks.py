@@ -20,16 +20,17 @@
 import logger
 from communicatorutils import proxypicker
 import onionrblockapi as block
-from onionrutils import localcommand
+from onionrutils import localcommand, stringvalidators, basicrequests
 
 def upload_blocks_from_communicator(comm_inst):
     # when inserting a block, we try to upload it to a few peers to add some deniability
     triedPeers = []
     finishedUploads = []
-    comm_inst.blocksToUpload = comm_inst._core._crypto.randomShuffle(comm_inst.blocksToUpload)
+    core = comm_inst._core
+    comm_inst.blocksToUpload = core._crypto.randomShuffle(comm_inst.blocksToUpload)
     if len(comm_inst.blocksToUpload) != 0:
         for bl in comm_inst.blocksToUpload:
-            if not comm_inst._core._utils.validateHash(bl):
+            if not stringvalidators.validate_hash(bl):
                 logger.warn('Requested to upload invalid block')
                 comm_inst.decrementThreadCount('uploadBlock')
                 return
@@ -42,8 +43,8 @@ def upload_blocks_from_communicator(comm_inst):
                 data = {'block': block.Block(bl).getRaw()}
                 proxyType = proxypicker.pick_proxy(peer)
                 logger.info("Uploading block to " + peer)
-                if not comm_inst._core._utils.doPostRequest(url, data=data, proxyType=proxyType) == False:
-                    localcommand.local_command(comm_inst._core, 'waitforshare/' + bl, post=True)
+                if not basicrequests.do_post_request(core, url, data=data, proxyType=proxyType) == False:
+                    localcommand.local_command(core, 'waitforshare/' + bl, post=True)
                     finishedUploads.append(bl)
     for x in finishedUploads:
         try:

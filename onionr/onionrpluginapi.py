@@ -170,9 +170,6 @@ class pluginapi:
     def get_core(self):
         return self.core
 
-    def get_utils(self):
-        return self.get_core()._utils
-
     def get_crypto(self):
         return self.get_core()._crypto
 

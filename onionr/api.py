@@ -23,11 +23,12 @@ from gevent import Timeout
 import flask
 from flask import request, Response, abort, send_from_directory
 import core
-import onionrutils, onionrexceptions, onionrcrypto, blockimporter, onionrevents as events, logger, config, onionrblockapi
+import onionrexceptions, onionrcrypto, blockimporter, onionrevents as events, logger, config, onionrblockapi
 import httpapi
 from httpapi import friendsapi, profilesapi, configapi, miscpublicapi
 from onionrservices import httpheaders
 import onionr
+from onionrutils import bytesconverter, stringvalidators, epoch, mnemonickeys
 
 config.reload()
 class FDSafeHandler(WSGIHandler):
@@ -98,7 +99,7 @@ class PublicAPI:
             resp = httpheaders.set_default_onionr_http_headers(resp)
             # Network API version
             resp.headers['X-API'] = onionr.API_VERSION
-            self.lastRequest = clientAPI._core._utils.getRoundedEpoch(roundS=5)
+            self.lastRequest = epoch.get_rounded_epoch(roundS=5)
             return resp
 
         @app.route('/')
@@ -177,9 +178,8 @@ class API:
 
         self.debug = debug
         self._core = onionrInst.onionrCore
-        self.startTime = self._core._utils.getEpoch()
+        self.startTime = epoch.get_epoch()
         self._crypto = onionrcrypto.OnionrCrypto(self._core)
-        self._utils = onionrutils.OnionrUtils(self._core)
         app = flask.Flask(__name__)
         bindPort = int(config.get('client.client.port', 59496))
         self.bindPort = bindPort
@@ -334,7 +334,7 @@ class API:
         @app.route('/getblockbody/<name>')
         def getBlockBodyData(name):
             resp = ''
-            if self._core._utils.validateHash(name):
+            if stringvalidators.validate_hash(name):
                 try:
                     resp = onionrblockapi.Block(name, decrypt=True).bcontent
                 except TypeError:
@@ -346,7 +346,7 @@ class API:
         @app.route('/getblockdata/<name>')
         def getData(name):
             resp = ""
-            if self._core._utils.validateHash(name):
+            if stringvalidators.validate_hash(name):
                 if name in self._core.getBlockList():
                     try:
                         resp = self.getBlockData(name, decrypt=True)
@@ -371,7 +371,7 @@ class API:
         def site(name):
             bHash = name
             resp = 'Not Found'
-            if self._core._utils.validateHash(bHash):
+            if stringvalidators.validate_hash(bHash):
                 try:
                     resp = onionrblockapi.Block(bHash).bcontent
                 except onionrexceptions.NoDataAvailable:
@@ -432,7 +432,7 @@ class API:
 
         @app.route('/getHumanReadable/<name>')
         def getHumanReadable(name):
-            return Response(self._core._utils.getHumanReadableID(name))
+            return Response(mnemonickeys.get_human_readable_ID(name))
 
         @app.route('/insertblock', methods=['POST'])
         def insertBlock():
@@ -497,13 +497,13 @@ class API:
     def getUptime(self):
         while True:
             try:
-                return self._utils.getEpoch() - self.startTime
+                return epoch.get_epoch() - self.startTime
             except (AttributeError, NameError):
                 # Don't error on race condition with startup
                 pass
     
     def getBlockData(self, bHash, decrypt=False, raw=False, headerOnly=False):
-        assert self._core._utils.validateHash(bHash)
+        assert stringvalidators.validate_hash(bHash)
         bl = onionrblockapi.Block(bHash, core=self._core)
         if decrypt:
             bl.decrypt()
@@ -520,8 +520,8 @@ class API:
                         pass
             else:
                 validSig = False
-                signer = onionrutils.bytes_to_str(bl.signer)
-                if bl.isSigned() and onionrutils.stringvalidators.validate_pub_key(signer) and bl.isSigner(signer):
+                signer = bytesconverter.bytes_to_str(bl.signer)
+                if bl.isSigned() and stringvalidators.validate_pub_key(signer) and bl.isSigner(signer):
                     validSig = True                    
                 bl.bheader['validSig'] = validSig
                 bl.bheader['meta'] = ''

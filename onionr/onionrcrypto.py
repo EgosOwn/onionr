@@ -21,7 +21,7 @@ import os, binascii, base64, hashlib, time, sys, hmac, secrets
 import nacl.signing, nacl.encoding, nacl.public, nacl.hash, nacl.pwhash, nacl.utils, nacl.secret
 import unpaddedbase32
 import logger, onionrproofs
-from onionrutils import stringvalidators
+from onionrutils import stringvalidators, epoch, bytesconverter
 import onionrexceptions, keymanager, core, onionrutils
 import config
 config.reload()
@@ -95,10 +95,10 @@ class OnionrCrypto:
 
     def pubKeyEncrypt(self, data, pubkey, encodedData=False):
         '''Encrypt to a public key (Curve25519, taken from base32 Ed25519 pubkey)'''
-        pubkey = unpaddedbase32.repad(onionrutils.str_to_bytes(pubkey))
+        pubkey = unpaddedbase32.repad(bytesconverter.str_to_bytes(pubkey))
         retVal = ''
         box = None
-        data = onionrutils.str_to_bytes(data)
+        data = bytesconverter.str_to_bytes(data)
         
         pubkey = nacl.signing.VerifyKey(pubkey, encoder=nacl.encoding.Base32Encoder()).to_curve25519_public_key()
 
@@ -182,7 +182,7 @@ class OnionrCrypto:
     def generateDeterministic(self, passphrase, bypassCheck=False):
         '''Generate a Ed25519 public key pair from a password'''
         passStrength = self.deterministicRequirement
-        passphrase = onionrutils.str_to_bytes(passphrase) # Convert to bytes if not already
+        passphrase = bytesconverter.str_to_bytes(passphrase) # Convert to bytes if not already
         # Validate passphrase length
         if not bypassCheck:
             if len(passphrase) < passStrength:
@@ -202,7 +202,7 @@ class OnionrCrypto:
         if pubkey == '':
             pubkey = self.pubKey
         prev = ''
-        pubkey = onionrutils.str_to_bytes(pubkey)
+        pubkey = bytesconverter.str_to_bytes(pubkey)
         for i in range(self.HASH_ID_ROUNDS):
             try:
                 prev = prev.encode()
@@ -266,7 +266,7 @@ class OnionrCrypto:
 
     @staticmethod
     def replayTimestampValidation(timestamp):
-        if core.Core()._utils.getEpoch() - int(timestamp) > 2419200:
+        if epoch.get_epoch() - int(timestamp) > 2419200:
             return False
         else:
             return True

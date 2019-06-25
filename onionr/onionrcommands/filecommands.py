@@ -21,6 +21,7 @@
 import base64, sys, os
 import logger
 from onionrblockapi import Block
+from onionrutils import stringvalidators
 def add_file(o_inst, singleBlock=False, blockType='bin'):
     '''
         Adds a file to the onionr network
@@ -60,7 +61,7 @@ def getFile(o_inst):
         if os.path.exists(fileName):
             logger.error("File already exists", terminal=True)
             return
-        if not o_inst.onionrUtils.validateHash(bHash):
+        if not stringvalidators.validate_hash(bHash):
             logger.error('Block hash is invalid', terminal=True)
             return
 

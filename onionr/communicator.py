@@ -27,7 +27,7 @@ from communicatorutils import downloadblocks, lookupblocks, lookupadders
 from communicatorutils import servicecreator, connectnewpeers, uploadblocks
 from communicatorutils import daemonqueuehandler, announcenode, deniableinserts
 from communicatorutils import cooldownpeer, housekeeping, netcheck
-from onionrutils import localcommand
+from onionrutils import localcommand, epoch, basicrequests
 from etc import humanreadabletime
 import onionrservices, onionr, onionrproofs
 
@@ -91,7 +91,7 @@ class OnionrCommunicatorDaemon:
         plugins.reload()
 
         # time app started running for info/statistics purposes
-        self.startTime = self._core._utils.getEpoch()
+        self.startTime = epoch.get_epoch()
 
         if developmentMode:
             OnionrCommunicatorTimers(self, self.heartbeat, 30)
@@ -310,9 +310,9 @@ class OnionrCommunicatorDaemon:
         if len(data) > 0:
             url += '&data=' + data
 
-        self._core.setAddressInfo(peer, 'lastConnectAttempt', self._core._utils.getEpoch()) # mark the time we're trying to request this peer
+        self._core.setAddressInfo(peer, 'lastConnectAttempt', epoch.get_epoch()) # mark the time we're trying to request this peer
 
-        retData = self._core._utils.doGetRequest(url, port=self.proxyPort)
+        retData = basicrequests.do_get_request(self._core, url, port=self.proxyPort)
         # if request failed, (error), mark peer offline
         if retData == False:
             try:
@@ -324,7 +324,7 @@ class OnionrCommunicatorDaemon:
             except ValueError:
                 pass
         else:
-            self._core.setAddressInfo(peer, 'lastConnect', self._core._utils.getEpoch())
+            self._core.setAddressInfo(peer, 'lastConnect', epoch.get_epoch())
             self.getPeerProfileInstance(peer).addScore(1)
         return retData # If returnHeaders, returns tuple of data, headers. if not, just data string
 
@@ -341,7 +341,7 @@ class OnionrCommunicatorDaemon:
         return retData
 
     def getUptime(self):
-        return self._core._utils.getEpoch() - self.startTime
+        return epoch.get_epoch() - self.startTime
 
     def heartbeat(self):
         '''Show a heartbeat debug message'''

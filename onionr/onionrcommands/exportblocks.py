@@ -19,6 +19,7 @@
 '''
 import sys, os
 import logger, onionrstorage
+from onionrutils import stringvalidators
 def doExport(o_inst, bHash):
     exportDir = o_inst.dataDir + 'block-export/'
     if not os.path.exists(exportDir):
@@ -34,7 +35,7 @@ def doExport(o_inst, bHash):
 def export_block(o_inst):
     exportDir = o_inst.dataDir + 'block-export/'
     try:
-        assert o_inst.onionrUtils.validateHash(sys.argv[2])
+        assert stringvalidators.validate_hash(sys.argv[2])
     except (IndexError, AssertionError):
         logger.error('No valid block hash specified.', terminal=True)
         sys.exit(1)

@@ -18,7 +18,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 import core, sys, sqlite3, os, dbcreator, onionrexceptions
-from onionrutils import bytesconverter
+from onionrutils import bytesconverter, stringvalidators
 
 DB_ENTRY_SIZE_LIMIT = 10000 # Will be a config option
 
@@ -66,7 +66,7 @@ def deleteBlock(coreInst, blockHash):
 
 def store(coreInst, data, blockHash=''):
     assert isinstance(coreInst, core.Core)
-    assert coreInst._utils.validateHash(blockHash)
+    assert stringvalidators.validate_hash(blockHash)
     ourHash = coreInst._crypto.sha3Hash(data)
     if blockHash != '':
         assert ourHash == blockHash
@@ -81,7 +81,7 @@ def store(coreInst, data, blockHash=''):
 
 def getData(coreInst, bHash):
     assert isinstance(coreInst, core.Core)
-    assert coreInst._utils.validateHash(bHash)
+    assert stringvalidators.validate_hash(bHash)
 
     bHash = bytesconverter.bytes_to_str(bHash)
 

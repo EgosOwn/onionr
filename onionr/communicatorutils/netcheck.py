@@ -20,14 +20,14 @@
 '''
 import logger
 from utils import netutils
-from onionrutils import localcommand
+from onionrutils import localcommand, epoch
 def net_check(comm_inst):
     '''Check if we are connected to the internet or not when we can't connect to any peers'''
     rec = False # for detecting if we have received incoming connections recently
     c = comm_inst._core
     if len(comm_inst.onlinePeers) == 0:
         try:
-            if (c._utils.getEpoch() - int(localcommand.local_command(c, '/lastconnect'))) <= 60:
+            if (epoch.get_epoch() - int(localcommand.local_command(c, '/lastconnect'))) <= 60:
                 comm_inst.isOnline = True
                 rec = True
         except ValueError:

@@ -1,6 +1,6 @@
 import sqlite3, os
 import onionrevents as events
-from onionrutils import localcommand
+from onionrutils import localcommand, epoch
 
 def daemon_queue(core_inst):
     '''
@@ -38,7 +38,7 @@ def daemon_queue_add(core_inst, command, data='', responseID=''):
 
     retData = True
 
-    date = core_inst._utils.getEpoch()
+    date = epoch.get_epoch()
     conn = sqlite3.connect(core_inst.queueDB, timeout=30)
     c = conn.cursor()
     t = (command, data, date, responseID)

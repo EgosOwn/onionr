@@ -18,6 +18,8 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 import logger, onionrproofs
+from onionrutils import stringvalidators, epoch
+
 def lookup_blocks_from_communicator(comm_inst):
     logger.info('Looking up new blocks...')
     tryAmount = 2
@@ -34,7 +36,7 @@ def lookup_blocks_from_communicator(comm_inst):
         if not comm_inst.isOnline:
             break
         # check if disk allocation is used
-        if comm_inst._core._utils.storageCounter.isFull():
+        if comm_inst._core.storage_counter.isFull():
             logger.debug('Not looking up new blocks due to maximum amount of allowed disk space used')
             break
         peer = comm_inst.pickOnlinePeer() # select random online peer
@@ -60,11 +62,11 @@ def lookup_blocks_from_communicator(comm_inst):
             logger.warn('Could not get new blocks from %s.' % peer, error = error)
             newBlocks = False
         else:
-            comm_inst.dbTimestamps[peer] = comm_inst._core._utils.getRoundedEpoch(roundS=60)
+            comm_inst.dbTimestamps[peer] = epoch.get_rounded_epoch(roundS=60)
         if newBlocks != False:
             # if request was a success
             for i in newBlocks.split('\n'):
-                if comm_inst._core._utils.validateHash(i):
+                if stringvalidators.validate_hash(i):
                     # if newline seperated string is valid hash
                     if not i in existingBlocks:
                         # if block does not exist on disk and is not already in block queue

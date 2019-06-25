@@ -23,7 +23,7 @@ import locale, sys, os, threading, json
 locale.setlocale(locale.LC_ALL, '')
 import onionrservices, logger
 from onionrservices import bootstrapservice
-from onionrutils import stringvalidators
+from onionrutils import stringvalidators, epoch, basicrequests
 
 plugin_name = 'esoteric'
 PLUGIN_VERSION = '0.0.0'
@@ -58,8 +58,8 @@ class Esoteric:
                 else:
                     message += '\n'
             except EOFError:
-                message = json.dumps({'m': message, 't': self.myCore._utils.getEpoch()})
-                print(self.myCore._utils.doPostRequest('http://%s/esoteric/sendto' % (self.transport,), port=self.socks, data=message))
+                message = json.dumps({'m': message, 't': epoch.get_epoch()})
+                print(basicrequests.do_post_request(self.myCore, 'http://%s/esoteric/sendto' % (self.transport,), port=self.socks, data=message))
                 message = ''
             except KeyboardInterrupt:
                 self.shutdown = True
@@ -78,7 +78,7 @@ class Esoteric:
         self.socks = self.myCore.config.get('tor.socksport')
 
         print('connected with', peer, 'on', peer_transport_address)
-        if self.myCore._utils.doGetRequest('http://%s/ping' % (peer_transport_address,), ignoreAPI=True, port=self.socks) == 'pong!':
+        if basicrequests.do_get_request(self.myCore, 'http://%s/ping' % (peer_transport_address,), ignoreAPI=True, port=self.socks) == 'pong!':
             print('connected', peer_transport_address)
             threading.Thread(target=self._sender_loop).start()
 

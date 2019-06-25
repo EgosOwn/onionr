@@ -17,6 +17,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
+from onionrutils import epoch
 def cooldown_peer(comm_inst):
     '''Randomly add an online peer to cooldown, so we can connect a new one'''
     onlinePeerAmount = len(comm_inst.onlinePeers)
@@ -28,7 +29,7 @@ def cooldown_peer(comm_inst):
     # Remove peers from cooldown that have been there long enough
     tempCooldown = dict(comm_inst.cooldownPeer)
     for peer in tempCooldown:
-        if (comm_inst._core._utils.getEpoch() - tempCooldown[peer]) >= cooldownTime:
+        if (epoch.get_epoch() - tempCooldown[peer]) >= cooldownTime:
             del comm_inst.cooldownPeer[peer]
 
     # Cool down a peer, if we have max connections alive for long enough
@@ -38,7 +39,7 @@ def cooldown_peer(comm_inst):
         while finding:
             try:
                 toCool = min(tempConnectTimes, key=tempConnectTimes.get)
-                if (comm_inst._core._utils.getEpoch() - tempConnectTimes[toCool]) < minTime:
+                if (epoch.get_epoch() - tempConnectTimes[toCool]) < minTime:
                     del tempConnectTimes[toCool]
                 else:
                     finding = False
@@ -46,6 +47,6 @@ def cooldown_peer(comm_inst):
                 break
         else:
             comm_inst.removeOnlinePeer(toCool)
-            comm_inst.cooldownPeer[toCool] = comm_inst._core._utils.getEpoch()
+            comm_inst.cooldownPeer[toCool] = epoch.get_epoch()
 
     comm_inst.decrementThreadCount('cooldown_peer')

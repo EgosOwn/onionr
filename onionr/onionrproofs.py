@@ -30,10 +30,7 @@ def getDifficultyModifier(coreOrUtilsInst=None):
     '''
     classInst = coreOrUtilsInst
     retData = 0
-    if isinstance(classInst, core.Core):
-        useFunc = classInst._utils.storageCounter.getPercent
-    else:
-        useFunc = core.Core()._utils.storageCounter.getPercent
+    useFunc = classInst.storage_counter.getPercent
 
     percentUse = useFunc()
 

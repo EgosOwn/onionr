@@ -19,7 +19,7 @@ def set_data(core_inst, data):
     try:
         onionrstorage.getData(core_inst, dataHash)
     except onionrexceptions.NoDataAvailable:
-        if core_inst._utils.storageCounter.addBytes(dataSize) != False:
+        if core_inst.storage_counter.addBytes(dataSize) != False:
             onionrstorage.store(core_inst, data, blockHash=dataHash)
             conn = sqlite3.connect(core_inst.blockDB, timeout=30)
             c = conn.cursor()

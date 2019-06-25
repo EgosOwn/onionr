@@ -6,6 +6,6 @@ def get_rounded_epoch(roundS=60):
     epoch = get_epoch()
     return epoch - (epoch % roundS)
 
-def get_epoch(self):
+def get_epoch():
     '''returns epoch'''
     return math.floor(time.time())

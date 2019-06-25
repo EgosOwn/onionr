@@ -20,6 +20,7 @@
 import base64
 import onionrproofs, logger
 from etc import onionrvalues
+from onionrutils import basicrequests
 
 def announce_node(daemon):
     '''Announce our node to our peers'''
@@ -75,8 +76,8 @@ def announce_node(daemon):
                     daemon.announceCache[peer] = data['random']
             if not announceFail:
                 logger.info('Announcing node to ' + url)
-                if daemon._core._utils.doPostRequest(url, data) == 'Success':
-                    logger.info('Successfully introduced node to ' + peer)
+                if basicrequests.do_post_request(daemon._core, url, data) == 'Success':
+                    logger.info('Successfully introduced node to ' + peer, terminal=True)
                     retData = True
                     daemon._core.setAddressInfo(peer, 'introduced', 1)
                     daemon._core.setAddressInfo(peer, 'powValue', data['random'])

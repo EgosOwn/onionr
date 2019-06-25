@@ -24,7 +24,7 @@ from flask import Flask, Response
 import core
 from netcontroller import getOpenPort
 from . import httpheaders
-from onionrutils import stringvalidators
+from onionrutils import stringvalidators, epoch
 
 def bootstrap_client_service(peer, core_inst=None, bootstrap_timeout=300):
     '''
@@ -77,7 +77,7 @@ def bootstrap_client_service(peer, core_inst=None, bootstrap_timeout=300):
         # Create the v3 onion service
         response = controller.create_ephemeral_hidden_service({80: bootstrap_port}, key_type = 'NEW', key_content = 'ED25519-V3', await_publication = True)
         core_inst.insertBlock(response.service_id, header='con', sign=True, encryptType='asym', 
-        asymPeer=peer, disableForward=True, expire=(core_inst._utils.getEpoch() + bootstrap_timeout))
+        asymPeer=peer, disableForward=True, expire=(epoch.get_epoch() + bootstrap_timeout))
         # Run the bootstrap server
         try:
             http_server.serve_forever()

@@ -1,5 +1,6 @@
 import sqlite3
 import logger
+from onionrutils import epoch
 def list_peers(core_inst, randomOrder=True, getPow=False, trust=0):
     '''
         Return a list of public keys (misleading function name)
@@ -56,7 +57,7 @@ def list_adders(core_inst, randomOrder=True, i2p=True, recent=0):
     testList = list(addressList) # create new list to iterate
     for address in testList:
         try:
-            if recent > 0 and (core_inst._utils.getEpoch() - core_inst.getAddressInfo(address, 'lastConnect')) > recent:
+            if recent > 0 and (epoch.get_epoch() - core_inst.getAddressInfo(address, 'lastConnect')) > recent:
                 raise TypeError # If there is no last-connected date or it was too long ago, don't add peer to list if recent is not 0
         except TypeError:
             addressList.remove(address)

@@ -21,7 +21,7 @@ import time
 import stem
 import core
 from . import connectionserver, bootstrapservice
-from onionrutils import stringvalidators
+from onionrutils import stringvalidators, basicrequests
 
 class OnionrServices:
     '''
@@ -47,7 +47,7 @@ class OnionrServices:
         base_url = 'http://%s/' % (address,)
         socks = self._core.config.get('tor.socksport')
         for x in range(BOOTSTRAP_TRIES):
-            if self._core._utils.doGetRequest(base_url + 'ping', port=socks, ignoreAPI=True) == 'pong!':
+            if basicrequests.do_get_request(self._core, base_url + 'ping', port=socks, ignoreAPI=True) == 'pong!':
                 # if bootstrap sever is online, tell them our service address
                 connectionserver.ConnectionServer(peer, address, core_inst=self._core)
             else:

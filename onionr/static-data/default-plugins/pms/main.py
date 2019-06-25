@@ -23,7 +23,7 @@ import logger, config, threading, time, datetime
 from onionrblockapi import Block
 import onionrexceptions
 from onionrusers import onionrusers
-from onionrutils import stringvalidators
+from onionrutils import stringvalidators, escapeansi
 import locale, sys, os, json
 
 locale.setlocale(locale.LC_ALL, '')
@@ -148,7 +148,7 @@ class OnionrMail:
                         print('')
                     if cancel != '-q':
                         try:
-                            print(draw_border(self.myCore._utils.escapeAnsi(readBlock.bcontent.decode().strip())))
+                            print(draw_border(escapeansi.escape_ANSI(readBlock.bcontent.decode().strip())))
                         except ValueError:
                             logger.warn('Error presenting message. This is usually due to a malformed or blank message.', terminal=True)
                             pass
@@ -187,7 +187,7 @@ class OnionrMail:
                     else:
                         logger.info('Sent to: ' + self.sentMessages[self.sentboxList[int(choice)]][1], terminal=True)
                         # Print ansi escaped sent message
-                        logger.info(self.myCore._utils.escapeAnsi(self.sentMessages[self.sentboxList[int(choice)]][0]), terminal=True)
+                        logger.info(escapeansi.escape_ANSI(self.sentMessages[self.sentboxList[int(choice)]][0]), terminal=True)
                         input('Press enter to continue...')
                 finally:
                     if choice == '-q':

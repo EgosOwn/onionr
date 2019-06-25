@@ -19,7 +19,7 @@
 '''
 import communicator, onionrexceptions
 import logger, onionrpeers
-from onionrutils import blockmetadata
+from onionrutils import blockmetadata, stringvalidators, validatemetadata
 
 def download_blocks_from_communicator(comm_inst):
     assert isinstance(comm_inst, communicator.OnionrCommunicatorDaemon)
@@ -48,7 +48,7 @@ def download_blocks_from_communicator(comm_inst):
             continue
         if comm_inst._core._blacklist.inBlacklist(blockHash):
             continue
-        if comm_inst._core._utils.storageCounter.isFull():
+        if comm_inst._core.storage_counter.isFull():
             break
         comm_inst.currentDownloading.append(blockHash) # So we can avoid concurrent downloading in other threads of same block
         if len(blockPeers) == 0:
@@ -75,7 +75,7 @@ def download_blocks_from_communicator(comm_inst):
                 content = content.decode() # decode here because sha3Hash needs bytes above
                 metas = blockmetadata.get_block_metadata_from_data(content) # returns tuple(metadata, meta), meta is also in metadata
                 metadata = metas[0]
-                if comm_inst._core._utils.validateMetadata(metadata, metas[2]): # check if metadata is valid, and verify nonce
+                if validatemetadata.validate_metadata(comm_inist._core, metadata, metas[2]): # check if metadata is valid, and verify nonce
                     if comm_inst._core._crypto.verifyPow(content): # check if POW is enough/correct
                         logger.info('Attempting to save block %s...' % blockHash[:12])
                         try:

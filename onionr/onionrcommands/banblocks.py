@@ -19,12 +19,13 @@
 '''
 import sys
 import logger
+from onionrutils import stringvalidators
 def ban_block(o_inst):
     try:
         ban = sys.argv[2]
     except IndexError:
         ban = logger.readline('Enter a block hash:')
-    if o_inst.onionrUtils.validateHash(ban):
+    if stringvalidators.validate_hash(ban):
         if not o_inst.onionrCore._blacklist.inBlacklist(ban):
             try:
                 o_inst.onionrCore._blacklist.addToDB(ban)

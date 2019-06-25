@@ -1,7 +1,7 @@
 import json
 import logger, onionrexceptions
 from etc import onionrvalues
-from onionrutils import stringvalidators
+from onionrutils import stringvalidators, epoch
 def validate_metadata(core_inst, metadata, blockData):
     '''Validate metadata meets onionr spec (does not validate proof value computation), take in either dictionary or json string'''
     # TODO, make this check sane sizes
@@ -37,18 +37,18 @@ def validate_metadata(core_inst, metadata, blockData):
                 if not stringvalidators.is_integer_string(metadata[i]):
                     logger.warn('Block metadata time stamp is not integer string or int')
                     break
-                isFuture = (metadata[i] - core_inst.getEpoch())
+                isFuture = (metadata[i] - epoch.get_epoch())
                 if isFuture > maxClockDifference:
                     logger.warn('Block timestamp is skewed to the future over the max %s: %s' (maxClockDifference, isFuture))
                     break
-                if (core_inst.getEpoch() - metadata[i]) > maxAge:
+                if (epoch.get_epoch() - metadata[i]) > maxAge:
                     logger.warn('Block is outdated: %s' % (metadata[i],))
                     break
             elif i == 'expire':
                 try:
-                    assert int(metadata[i]) > core_inst.getEpoch()
+                    assert int(metadata[i]) > epoch.get_epoch()
                 except AssertionError:
-                    logger.warn('Block is expired: %s less than %s' % (metadata[i], core_inst.getEpoch()))
+                    logger.warn('Block is expired: %s less than %s' % (metadata[i], epoch.get_epoch()))
                     break
             elif i == 'encryptType':
                 try:

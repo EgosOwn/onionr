@@ -22,6 +22,7 @@
 import threading, time, locale, sys, os
 from onionrblockapi import Block
 import logger, config
+from onionrutils import escapeansi, epoch
 locale.setlocale(locale.LC_ALL, '')
 
 sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
@@ -43,7 +44,7 @@ class OnionrFlow:
         logger.warn("Please note: everything said here is public, even if a random channel name is used.", terminal=True)
         message = ""
         self.flowRunning = True
-        newThread = threading.Thread(target=self.showOutput)
+        newThread = threading.Thread(target=self.showOutput, daemon=True)
         newThread.start()
         try:
             self.channel = logger.readline("Enter a channel name or none for default:")
@@ -59,7 +60,7 @@ class OnionrFlow:
             else:
                 if message == "q":
                     self.flowRunning = False
-                expireTime = self.myCore._utils.getEpoch() + 43200
+                expireTime = epoch.get_epoch() + 43200
                 if len(message) > 0:
                     logger.info('Inserting message as block...', terminal=True)
                     self.myCore.insertBlock(message, header='txt', expire=expireTime, meta={'ch': self.channel})
@@ -83,7 +84,7 @@ class OnionrFlow:
                     logger.info('\n------------------------', prompt = False, terminal=True)
                     content = block.getContent()
                     # Escape new lines, remove trailing whitespace, and escape ansi sequences
-                    content = self.myCore._utils.escapeAnsi(content.replace('\n', '\\n').replace('\r', '\\r').strip())
+                    content = escapeansi.escape_ANSI(content.replace('\n', '\\n').replace('\r', '\\r').strip())
                     logger.info(block.getDate().strftime("%m/%d %H:%M") + ' - ' + logger.colors.reset + content, prompt = False, terminal=True)
                     self.alreadyOutputed.append(block.getHash())
                 time.sleep(5)

@@ -18,8 +18,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 import logger, onionrexceptions, json, sqlite3, time
-from onionrutils import stringvalidators, bytesconverter
-
+from onionrutils import stringvalidators, bytesconverter, epoch
 import unpaddedbase32
 import nacl.exceptions
 
@@ -28,7 +27,7 @@ def deleteExpiredKeys(coreInst):
     conn = sqlite3.connect(coreInst.forwardKeysFile, timeout=10)
     c = conn.cursor()
 
-    curTime = coreInst._utils.getEpoch()
+    curTime = epoch.get_epoch()
     c.execute("DELETE from myForwardKeys where expire <= ?", (curTime,))
     conn.commit()
     conn.execute("VACUUM")
@@ -40,7 +39,7 @@ def deleteTheirExpiredKeys(coreInst, pubkey):
     c = conn.cursor()
 
     # Prepare the insert
-    command = (pubkey, coreInst._utils.getEpoch())
+    command = (pubkey, epoch.get_epoch())
 
     c.execute("DELETE from forwardKeys where peerKey = ? and expire <= ?", command)
 
@@ -160,10 +159,10 @@ class OnionrUser:
         conn = sqlite3.connect(self._core.forwardKeysFile, timeout=10)
         c = conn.cursor()
         # Prepare the insert
-        time = self._core._utils.getEpoch()
+        time = epoch.get_epoch()
         newKeys = self._core._crypto.generatePubKey()
-        newPub = self._core._utils.bytesToStr(newKeys[0])
-        newPriv = self._core._utils.bytesToStr(newKeys[1])
+        newPub = bytesconverter.bytes_to_str(newKeys[0])
+        newPriv = bytesconverter.bytes_to_str(newKeys[1])
 
         command = (self.publicKey, newPub, newPriv, time, expire + time)
 
@@ -178,7 +177,7 @@ class OnionrUser:
         conn = sqlite3.connect(self._core.forwardKeysFile, timeout=10)
         c = conn.cursor()
         pubkey = self.publicKey
-        pubkey = self._core._utils.bytesToStr(pubkey)
+        pubkey = bytesconverter.bytes_to_str(pubkey)
         command = (pubkey,)
         keyList = [] # list of tuples containing pub, private for peer
 
@@ -192,7 +191,7 @@ class OnionrUser:
         return list(keyList)
 
     def addForwardKey(self, newKey, expire=DEFAULT_KEY_EXPIRE):
-        newKey = self._core._utils.bytesToStr(unpaddedbase32.repad(bytesconverter.str_to_bytes(newKey)))
+        newKey = bytesconverter.bytes_to_str(unpaddedbase32.repad(bytesconverter.str_to_bytes(newKey)))
         if not stringvalidators.validate_pub_key(newKey):
             # Do not add if something went wrong with the key
             raise onionrexceptions.InvalidPubkey(newKey)
@@ -201,7 +200,7 @@ class OnionrUser:
         c = conn.cursor()
 
         # Get the time we're inserting the key at
-        timeInsert = self._core._utils.getEpoch()
+        timeInsert = epoch.get_epoch()
 
         # Look at our current keys for duplicate key data or time
         for entry in self._getForwardKeys():

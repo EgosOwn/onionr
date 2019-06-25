@@ -19,6 +19,7 @@
 '''
 import sqlite3, os
 import core
+from onionrutils import epoch
 class SentBox:
     def __init__(self, mycore):
         assert isinstance(mycore, core.Core)
@@ -60,7 +61,7 @@ class SentBox:
 
     def addToSent(self, blockID, peer, message, subject=''):
         self.connect()
-        args = (blockID, peer, message, subject, self.core._utils.getEpoch())
+        args = (blockID, peer, message, subject, epoch.get_epoch())
         self.cursor.execute('INSERT INTO sent VALUES(?, ?, ?, ?, ?)', args)
         self.conn.commit()
         self.close()

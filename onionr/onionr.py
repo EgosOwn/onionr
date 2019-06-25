@@ -32,7 +32,6 @@ if sys.version_info[0] == 2 or sys.version_info[1] < MIN_PY_VERSION:
 import os, base64, random, shutil, time, platform, signal
 from threading import Thread
 import api, core, config, logger, onionrplugins as plugins, onionrevents as events
-import onionrutils
 import netcontroller
 from netcontroller import NetController
 from onionrblockapi import Block
@@ -51,6 +50,7 @@ class Onionr:
             Main Onionr class. This is for the CLI program, and does not handle much of the logic.
             In general, external programs and plugins should not use this class.
         '''
+        self.API_VERSION = API_VERSION
         self.userRunDir = os.getcwd() # Directory user runs the program from
         self.killed = False
 

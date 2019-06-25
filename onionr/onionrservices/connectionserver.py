@@ -24,7 +24,7 @@ import core, logger, httpapi
 import onionrexceptions
 from netcontroller import getOpenPort
 import api
-from onionrutils import stringvalidators
+from onionrutils import stringvalidators, basicrequests
 from . import httpheaders
 
 class ConnectionServer:
@@ -72,7 +72,7 @@ class ConnectionServer:
 
             try:
                 for x in range(3):
-                    attempt = self.core_inst._utils.doPostRequest('http://' + address + '/bs/' + response.service_id, port=socks)
+                    attempt = basicrequests.do_post_request(self.core_inst, 'http://' + address + '/bs/' + response.service_id, port=socks)
                     if attempt == 'success':
                         break
                 else:

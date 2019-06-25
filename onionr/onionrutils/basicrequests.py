@@ -1,12 +1,12 @@
 import requests
 import logger, onionrexceptions
-def do_post_request(utils_inst, url, data={}, port=0, proxyType='tor'):
+def do_post_request(core_inst, url, data={}, port=0, proxyType='tor'):
     '''
     Do a POST request through a local tor or i2p instance
     '''
     if proxyType == 'tor':
         if port == 0:
-            port = utils_inst._core.torPort
+            port = core_inst.torPort
         proxies = {'http': 'socks4a://127.0.0.1:' + str(port), 'https': 'socks4a://127.0.0.1:' + str(port)}
     elif proxyType == 'i2p':
         proxies = {'http': 'http://127.0.0.1:4444'}
@@ -24,11 +24,11 @@ def do_post_request(utils_inst, url, data={}, port=0, proxyType='tor'):
         retData = False
     return retData
 
-def do_get_request(utils_inst, url, port=0, proxyType='tor', ignoreAPI=False, returnHeaders=False):
+def do_get_request(core_inst, url, port=0, proxyType='tor', ignoreAPI=False, returnHeaders=False):
     '''
     Do a get request through a local tor or i2p instance
     '''
-    API_VERSION = utils_inst._core.onionrInst.API_VERSION
+    API_VERSION = core_inst.onionrInst.API_VERSION
     retData = False
     if proxyType == 'tor':
         if port == 0:
