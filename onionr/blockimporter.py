@@ -18,6 +18,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 import core, onionrexceptions, logger
+from onionrutils import validatemetadata, blockmetadata
 def importBlockFromData(content, coreInst):
     retData = False
 
@@ -34,17 +35,17 @@ def importBlockFromData(content, coreInst):
     except AttributeError:
         pass
 
-    metas = coreInst._utils.getBlockMetadataFromData(content) # returns tuple(metadata, meta), meta is also in metadata
+    metas = blockmetadata.get_block_metadata_from_data(content) # returns tuple(metadata, meta), meta is also in metadata
     metadata = metas[0]
-    if coreInst._utils.validateMetadata(metadata, metas[2]): # check if metadata is valid
+    if validatemetadata(metadata, metas[2]): # check if metadata is valid
         if coreInst._crypto.verifyPow(content): # check if POW is enough/correct
-            logger.info('Block passed proof, saving.')
+            logger.info('Block passed proof, saving.', terminal=True)
             try:
                 blockHash = coreInst.setData(content)
             except onionrexceptions.DiskAllocationReached:
                 pass
             else:
                 coreInst.addToBlockDB(blockHash, dataSaved=True)
-                coreInst._utils.processBlockMetadata(blockHash) # caches block metadata values to block database
+                blockmetadata.process_block_metadata(blockHash) # caches block metadata values to block database
                 retData = True
     return retData

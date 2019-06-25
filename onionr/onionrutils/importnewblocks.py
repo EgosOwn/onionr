@@ -1,5 +1,6 @@
 import glob
 import logger, core
+from onionrutils import blockmetadata
 def import_new_blocks(core_inst=None, scanDir=''):
     '''
         This function is intended to scan for new blocks ON THE DISK and import them
@@ -21,7 +22,7 @@ def import_new_blocks(core_inst=None, scanDir=''):
                 if core_inst._crypto.sha3Hash(newBlock.read()) == block.replace('.dat', ''):
                     core_inst.addToBlockDB(block.replace('.dat', ''), dataSaved=True)
                     logger.info('Imported block %s.' % block)
-                    core_inst._utils.processBlockMetadata(block)
+                    blockmetadata.process_block_metadata(block)
                 else:
                     logger.warn('Failed to verify hash for %s' % block)
     if not exist:

@@ -22,13 +22,11 @@ import sys, os, sqlite3, binascii, time, base64, json, glob, shutil, math, re, u
 import requests
 import nacl.signing, nacl.encoding
 import unpaddedbase32
-from onionrblockapi import Block
 import onionrexceptions, config, logger
 import onionrevents
 import storagecounter
 from etc import pgpwords, onionrvalues
-from onionrusers import onionrusers 
-from . import localcommand, blockmetadata, validatemetadata, basicrequests
+from . import localcommand, blockmetadata, basicrequests, validatemetadata
 from . import stringvalidators
 
 config.reload()
@@ -45,39 +43,6 @@ class OnionrUtils:
         self.storageCounter = storagecounter.StorageCounter(self._core) # used to keep track of how much data onionr is using on disk
         return
 
-    def getRoundedEpoch(self, roundS=60):
-        '''
-            Returns the epoch, rounded down to given seconds (Default 60)
-        '''
-        epoch = self.getEpoch()
-        return epoch - (epoch % roundS)
-
-    def getHumanReadableID(self, pub=''):
-        '''gets a human readable ID from a public key'''
-        if pub == '':
-            pub = self._core._crypto.pubKey
-        pub = base64.b16encode(base64.b32decode(pub)).decode()
-        return ' '.join(pgpwords.wordify(pub))
-    
-    def convertHumanReadableID(self, pub):
-        '''Convert a human readable pubkey id to base32'''
-        pub = pub.lower()
-        return self.bytesToStr(base64.b32encode(binascii.unhexlify(pgpwords.hexify(pub.strip()))))
-
-    def getBlockMetadataFromData(self, blockData):
-        '''
-            accepts block contents as string, returns a tuple of 
-            metadata, meta (meta being internal metadata, which will be 
-            returned as an encrypted base64 string if it is encrypted, dict if not).
-        '''
-        return blockmetadata.get_block_metadata_from_data(self, blockData)
-
-    def processBlockMetadata(self, blockHash):
-        '''
-            Read metadata from a block and cache it to the block database
-        '''
-        return blockmetadata.process_block_metadata(self, blockHash)
-
     def escapeAnsi(self, line):
         '''
             Remove ANSI escape codes from a string with regex
@@ -88,45 +53,11 @@ class OnionrUtils:
         ansi_escape = re.compile(r'(\x9B|\x1B\[)[0-?]*[ -/]*[@-~]')
         return ansi_escape.sub('', line)
 
-    def hasBlock(self, hash):
-        '''
-            Check for new block in the list
-        '''
-        conn = sqlite3.connect(self._core.blockDB)
-        c = conn.cursor()
-        if not self.validateHash(hash):
-            raise Exception("Invalid hash")
-        for result in c.execute("SELECT COUNT() FROM hashes WHERE hash = ?", (hash,)):
-            if result[0] >= 1:
-                conn.commit()
-                conn.close()
-                return True
-            else:
-                conn.commit()
-                conn.close()
-                return False
-
-    def hasKey(self, key):
-        '''
-            Check for key in list of public keys
-        '''
-        return key in self._core.listPeers()
-
     def validateHash(self, data, length=64):
         '''
             Validate if a string is a valid hash hex digest (does not compare, just checks length and charset)
         '''
         return stringvalidators.validate_hash(self, data, length)
-
-    def validateMetadata(self, metadata, blockData):
-        '''Validate metadata meets onionr spec (does not validate proof value computation), take in either dictionary or json string'''
-        return validatemetadata.validate_metadata(self, metadata, blockData)
-
-    def validatePubKey(self, key):
-        '''
-            Validate if a string is a valid base32 encoded Ed25519 key
-        '''
-        return stringvalidators.validate_pub_key(self, key)
 
     def getEpoch(self):
         '''returns epoch'''
@@ -143,21 +74,6 @@ class OnionrUtils:
         Do a get request through a local tor or i2p instance
         '''
         return basicrequests.do_get_request(self, url, port, proxyType, ignoreAPI, returnHeaders)
-
-    @staticmethod
-    def strToBytes(data):
-        try:
-            data = data.encode()
-        except AttributeError:
-            pass
-        return data
-    @staticmethod
-    def bytesToStr(data):
-        try:
-            data = data.decode()
-        except AttributeError:
-            pass
-        return data
 
 def size(path='.'):
     '''
@@ -184,3 +100,21 @@ def humanSize(num, suffix='B'):
             return "%.1f %s%s" % (num, unit, suffix)
         num /= 1024.0
     return "%.1f %s%s" % (num, 'Yi', suffix)
+
+def has_block(core_inst, hash):
+    '''
+        Check for new block in the list
+    '''
+    conn = sqlite3.connect(core_inst.blockDB)
+    c = conn.cursor()
+    if not stringvalidators.validate_hash(hash):
+        raise Exception("Invalid hash")
+    for result in c.execute("SELECT COUNT() FROM hashes WHERE hash = ?", (hash,)):
+        if result[0] >= 1:
+            conn.commit()
+            conn.close()
+            return True
+        else:
+            conn.commit()
+            conn.close()
+            return False

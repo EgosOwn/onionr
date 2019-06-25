@@ -23,8 +23,7 @@ from gevent import Timeout
 import flask
 from flask import request, Response, abort, send_from_directory
 import core
-from onionrblockapi import Block
-import onionrutils, onionrexceptions, onionrcrypto, blockimporter, onionrevents as events, logger, config
+import onionrutils, onionrexceptions, onionrcrypto, blockimporter, onionrevents as events, logger, config, onionrblockapi
 import httpapi
 from httpapi import friendsapi, profilesapi, configapi, miscpublicapi
 from onionrservices import httpheaders
@@ -337,7 +336,7 @@ class API:
             resp = ''
             if self._core._utils.validateHash(name):
                 try:
-                    resp = Block(name, decrypt=True).bcontent
+                    resp = onionrblockapi.Block(name, decrypt=True).bcontent
                 except TypeError:
                     pass
             else:
@@ -374,7 +373,7 @@ class API:
             resp = 'Not Found'
             if self._core._utils.validateHash(bHash):
                 try:
-                    resp = Block(bHash).bcontent
+                    resp = onionrblockapi.Block(bHash).bcontent
                 except onionrexceptions.NoDataAvailable:
                     abort(404)
                 except TypeError:
@@ -505,7 +504,7 @@ class API:
     
     def getBlockData(self, bHash, decrypt=False, raw=False, headerOnly=False):
         assert self._core._utils.validateHash(bHash)
-        bl = Block(bHash, core=self._core)
+        bl = onionrblockapi.Block(bHash, core=self._core)
         if decrypt:
             bl.decrypt()
             if bl.isEncrypted and not bl.decrypted:
@@ -521,8 +520,8 @@ class API:
                         pass
             else:
                 validSig = False
-                signer = self._core._utils.bytesToStr(bl.signer)
-                if bl.isSigned() and self._core._utils.validatePubKey(signer) and bl.isSigner(signer):
+                signer = onionrutils.bytes_to_str(bl.signer)
+                if bl.isSigned() and onionrutils.stringvalidators.validate_pub_key(signer) and bl.isSigner(signer):
                     validSig = True                    
                 bl.bheader['validSig'] = validSig
                 bl.bheader['meta'] = ''

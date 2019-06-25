@@ -1,6 +1,5 @@
 import requests
 import logger, onionrexceptions
-from onionr import API_VERSION
 def do_post_request(utils_inst, url, data={}, port=0, proxyType='tor'):
     '''
     Do a POST request through a local tor or i2p instance
@@ -29,6 +28,7 @@ def do_get_request(utils_inst, url, port=0, proxyType='tor', ignoreAPI=False, re
     '''
     Do a get request through a local tor or i2p instance
     '''
+    API_VERSION = utils_inst._core.onionrInst.API_VERSION
     retData = False
     if proxyType == 'tor':
         if port == 0:

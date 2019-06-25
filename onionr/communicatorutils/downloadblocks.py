@@ -19,6 +19,7 @@
 '''
 import communicator, onionrexceptions
 import logger, onionrpeers
+from onionrutils import blockmetadata
 
 def download_blocks_from_communicator(comm_inst):
     assert isinstance(comm_inst, communicator.OnionrCommunicatorDaemon)
@@ -72,7 +73,7 @@ def download_blocks_from_communicator(comm_inst):
                 pass
             if realHash == blockHash:
                 content = content.decode() # decode here because sha3Hash needs bytes above
-                metas = comm_inst._core._utils.getBlockMetadataFromData(content) # returns tuple(metadata, meta), meta is also in metadata
+                metas = blockmetadata.get_block_metadata_from_data(content) # returns tuple(metadata, meta), meta is also in metadata
                 metadata = metas[0]
                 if comm_inst._core._utils.validateMetadata(metadata, metas[2]): # check if metadata is valid, and verify nonce
                     if comm_inst._core._crypto.verifyPow(content): # check if POW is enough/correct
@@ -84,7 +85,7 @@ def download_blocks_from_communicator(comm_inst):
                             removeFromQueue = False
                         else:
                             comm_inst._core.addToBlockDB(blockHash, dataSaved=True)
-                            comm_inst._core._utils.processBlockMetadata(blockHash) # caches block metadata values to block database
+                            blockmetadata.process_block_metadata(blockHash) # caches block metadata values to block database
                     else:
                         logger.warn('POW failed for block %s.' % blockHash)
                 else:

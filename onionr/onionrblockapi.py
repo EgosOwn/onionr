@@ -21,6 +21,7 @@
 import core as onionrcore, logger, config, onionrexceptions, nacl.exceptions
 import json, os, sys, datetime, base64, onionrstorage
 from onionrusers import onionrusers
+from onionrutils import stringvalidators
 
 class Block:
     blockCacheOrder = list() # NEVER write your own code that writes to this!
@@ -441,7 +442,7 @@ class Block:
         '''
 
         try:
-            if (not self.isSigned()) or (not self.getCore()._utils.validatePubKey(signer)):
+            if (not self.isSigned()) or (not stringvalidators.validate_pub_key(signer)):
                 return False
 
             return bool(self.getCore()._crypto.edVerify(self.getSignedData(), signer, self.getSignature(), encodedData = encodedData))

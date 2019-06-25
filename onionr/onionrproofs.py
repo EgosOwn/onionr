@@ -18,7 +18,8 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 import multiprocessing, nacl.encoding, nacl.hash, nacl.utils, time, math, threading, binascii, sys, json
-import core, onionrutils, config, logger, onionrblockapi
+import core, config, logger, onionrblockapi
+from onionrutils import bytesconverter
 
 config.reload()
 
@@ -31,8 +32,6 @@ def getDifficultyModifier(coreOrUtilsInst=None):
     retData = 0
     if isinstance(classInst, core.Core):
         useFunc = classInst._utils.storageCounter.getPercent
-    elif isinstance(classInst, onionrutils.OnionrUtils):
-        useFunc = classInst.storageCounter.getPercent
     else:
         useFunc = core.Core()._utils.storageCounter.getPercent
 
@@ -56,7 +55,7 @@ def getDifficultyForNewBlock(data, ourBlock=True, coreInst=None):
     if isinstance(data, onionrblockapi.Block):
         dataSize = len(data.getRaw().encode('utf-8'))
     else:
-        dataSize = len(onionrutils.OnionrUtils.strToBytes(data))
+        dataSize = len(bytesconverter.str_to_bytes(data))
 
     if ourBlock:
         minDifficulty = config.get('general.minimum_send_pow', 4)

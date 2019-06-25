@@ -25,7 +25,7 @@ def add_peer(o_inst):
     except IndexError:
         pass
     else:
-        if o_inst.onionrUtils.hasKey(newPeer):
+        if newPeer in o_inst.onionrCore.listPeers():
             logger.info('We already have that key', terminal=True)
             return
         logger.info("Adding peer: " + logger.colors.underline + newPeer, terminal=True)

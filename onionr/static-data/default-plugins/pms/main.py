@@ -23,6 +23,7 @@ import logger, config, threading, time, datetime
 from onionrblockapi import Block
 import onionrexceptions
 from onionrusers import onionrusers
+from onionrutils import stringvalidators
 import locale, sys, os, json
 
 locale.setlocale(locale.LC_ALL, '')
@@ -217,7 +218,7 @@ class OnionrMail:
                     recip = logger.readline('Enter peer address, or -q to stop:').strip()
                     if recip in ('-q', 'q'):
                         raise EOFError
-                    if not self.myCore._utils.validatePubKey(recip):
+                    if not stringvalidators.validate_pub_key(recip):
                         raise onionrexceptions.InvalidPubkey('Must be a valid ed25519 base32 encoded public key')
                 except onionrexceptions.InvalidPubkey:
                     logger.warn('Invalid public key', terminal=True)

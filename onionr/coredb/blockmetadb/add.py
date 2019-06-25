@@ -1,4 +1,5 @@
 import os, sqlite3
+import onionrutils
 def add_to_block_DB(core_inst, newHash, selfInsert=False, dataSaved=False):
     '''
         Add a hash value to the block db
@@ -8,7 +9,7 @@ def add_to_block_DB(core_inst, newHash, selfInsert=False, dataSaved=False):
 
     if not os.path.exists(core_inst.blockDB):
         raise Exception('Block db does not exist')
-    if core_inst._utils.hasBlock(newHash):
+    if onionrutils.has_block(core_inst, newHash):
         return
     conn = sqlite3.connect(core_inst.blockDB, timeout=30)
     c = conn.cursor()

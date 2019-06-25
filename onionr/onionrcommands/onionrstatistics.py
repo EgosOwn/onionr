@@ -21,7 +21,7 @@ import os, uuid, time
 import logger, onionrutils
 from onionrblockapi import Block
 import onionr
-from onionrutils import checkcommunicator
+from onionrutils import checkcommunicator, mnemonickeys
 
 def show_stats(o_inst):
     try:
@@ -87,7 +87,7 @@ def show_details(o_inst):
         'Node Address' : o_inst.get_hostname(),
         'Web Password' : o_inst.getWebPassword(),
         'Public Key' : o_inst.onionrCore._crypto.pubKey,
-        'Human-readable Public Key' : o_inst.onionrCore._utils.getHumanReadableID()
+        'Human-readable Public Key' : mnemonickeys.get_human_readable_ID(o_inst.onionrCore)
     }
 
     for detail in details:

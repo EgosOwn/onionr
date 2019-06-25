@@ -22,7 +22,7 @@
 import logger, config
 import os, sys, json, time, random, shutil, base64, getpass, datetime, re
 from onionrblockapi import Block
-from onionrutils import importnewblocks
+from onionrutils import importnewblocks, stringvalidators, 
 
 plugin_name = 'pluginmanager'
 
@@ -399,13 +399,13 @@ def commandInstallPlugin():
 
         valid_hash = pluginapi.get_utils().validateHash(pkobh)
         real_block = False
-        valid_key = pluginapi.get_utils().validatePubKey(pkobh)
+        valid_key = stringvalidators.validate_pub_key(pkobh)
         real_key = False
 
         if valid_hash:
             real_block = Block.exists(pkobh)
         elif valid_key:
-            real_key = pluginapi.get_utils().hasKey(pkobh)
+            real_key = pkobh in pluginapi.get_core().listPeers()
 
         blockhash = None
 
@@ -493,7 +493,7 @@ def commandAddRepository():
                     pluginslist = dict()
 
                     for pluginname, distributor in blockContent['plugins']:
-                        if pluginapi.get_utils().validatePubKey(distributor):
+                        if stringvalidators.validate_pub_key(distributor):
                             pluginslist[pluginname] = distributor
 
                     logger.debug('Found %s records in repository.' % len(pluginslist), terminal=True)

@@ -33,7 +33,7 @@ def bootstrap_client_service(peer, core_inst=None, bootstrap_timeout=300):
     if core_inst is None:
         core_inst = core.Core()
     
-    if not core_inst._utils.validatePubKey(peer):
+    if not stringvalidators.validate_pub_key(peer):
         raise ValueError('Peer must be valid base32 ed25519 public key')
 
     bootstrap_port = getOpenPort()

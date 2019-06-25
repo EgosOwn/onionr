@@ -17,7 +17,9 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import onionrblockapi, logger, onionrexceptions, json, sqlite3, time
+import logger, onionrexceptions, json, sqlite3, time
+from onionrutils import stringvalidators, bytesconverter
+
 import unpaddedbase32
 import nacl.exceptions
 
@@ -56,7 +58,7 @@ class OnionrUser:
             Takes an instance of onionr core, a base32 encoded ed25519 public key, and a bool saveUser
             saveUser determines if we should add a user to our peer database or not.
         '''
-        publicKey = unpaddedbase32.repad(coreInst._utils.strToBytes(publicKey)).decode()
+        publicKey = unpaddedbase32.repad(bytesconverter.str_to_bytes(publicKey)).decode()
 
         self.trust = 0
         self._core = coreInst
@@ -103,7 +105,7 @@ class OnionrUser:
         deleteExpiredKeys(self._core)
         retData = ''
         forwardKey = self._getLatestForwardKey()
-        if self._core._utils.validatePubKey(forwardKey[0]):
+        if stringvalidators.validate_pub_key(forwardKey[0]):
             retData = self._core._crypto.pubKeyEncrypt(data, forwardKey[0], encodedData=True)
         else:
             raise onionrexceptions.InvalidPubkey("No valid forward secrecy key available for this user")
@@ -190,8 +192,8 @@ class OnionrUser:
         return list(keyList)
 
     def addForwardKey(self, newKey, expire=DEFAULT_KEY_EXPIRE):
-        newKey = self._core._utils.bytesToStr(unpaddedbase32.repad(self._core._utils.strToBytes(newKey)))
-        if not self._core._utils.validatePubKey(newKey):
+        newKey = self._core._utils.bytesToStr(unpaddedbase32.repad(bytesconverter.str_to_bytes(newKey)))
+        if not stringvalidators.validate_pub_key(newKey):
             # Do not add if something went wrong with the key
             raise onionrexceptions.InvalidPubkey(newKey)
 

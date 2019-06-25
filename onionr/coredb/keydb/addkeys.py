@@ -10,7 +10,7 @@ def add_peer(core_inst, peerID, name=''):
         raise ValueError("specified id is already known")
 
     # This function simply adds a peer to the DB
-    if not core_inst._utils.validatePubKey(peerID):
+    if not stringvalidators.validate_pub_key(peerID):
         return False
 
     events.event('pubkey_add', data = {'key': peerID}, onionr = core_inst.onionrInst)

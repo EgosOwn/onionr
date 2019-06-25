@@ -23,6 +23,7 @@ import subprocess, os
 import multiprocessing, threading, time, json
 from multiprocessing import Pipe, Process
 import core, onionrblockapi, config, onionrutils, logger, onionrproofs
+from onionrutils import bytesconverter
 
 class SubprocessPOW:
     def __init__(self, data, metadata, core_inst=None, subproc_count=None):
@@ -51,7 +52,7 @@ class SubprocessPOW:
         # dump dict to measure bytes of json metadata. Cannot reuse later because the pow token must be added
         json_metadata = json.dumps(metadata).encode()
 
-        self.data = onionrutils.OnionrUtils.strToBytes(data)
+        self.data = bytesconverter.str_to_bytes(data)
         # Calculate difficulty. Dumb for now, may use good algorithm in the future.
         self.difficulty = onionrproofs.getDifficultyForNewBlock(bytes(json_metadata + b'\n' + self.data), coreInst=self.core_inst)
         
@@ -111,7 +112,7 @@ class SubprocessPOW:
             payload = json.dumps(metadata).encode() + b'\n' + data
             # Check sha3_256 hash of block, compare to puzzle. Send payload if puzzle finished
             token = mcore._crypto.sha3Hash(payload)
-            token = onionrutils.OnionrUtils.bytesToStr(token) # ensure token is string
+            token = bytesconverter.bytes_to_str(token) # ensure token is string
             if puzzle == token[0:difficulty]:
                 pipe.send(payload)
                 break

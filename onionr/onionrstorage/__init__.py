@@ -18,6 +18,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 import core, sys, sqlite3, os, dbcreator, onionrexceptions
+from onionrutils import bytesconverter
 
 DB_ENTRY_SIZE_LIMIT = 10000 # Will be a config option
 
@@ -82,7 +83,7 @@ def getData(coreInst, bHash):
     assert isinstance(coreInst, core.Core)
     assert coreInst._utils.validateHash(bHash)
 
-    bHash = coreInst._utils.bytesToStr(bHash)
+    bHash = bytesconverter.bytes_to_str(bHash)
 
     # First check DB for data entry by hash
     # if no entry, check disk

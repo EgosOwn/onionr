@@ -24,6 +24,7 @@ import core, logger, httpapi
 import onionrexceptions
 from netcontroller import getOpenPort
 import api
+from onionrutils import stringvalidators
 from . import httpheaders
 
 class ConnectionServer:
@@ -33,7 +34,7 @@ class ConnectionServer:
         else:
             self.core_inst = core_inst
 
-        if not core_inst._utils.validatePubKey(peer):
+        if not stringvalidators.validate_pub_key(peer):
             raise ValueError('Peer must be valid base32 ed25519 public key')
         
         socks = core_inst.config.get('tor.socksport') # Load config for Tor socks port for proxy

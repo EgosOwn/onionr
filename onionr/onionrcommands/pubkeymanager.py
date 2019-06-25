@@ -20,6 +20,7 @@
 
 import sys, getpass
 import logger, onionrexceptions
+from onionrutils import stringvalidators
 from onionrusers import onionrusers, contactmanager
 import unpaddedbase32
 def add_ID(o_inst):
@@ -55,7 +56,7 @@ def change_ID(o_inst):
     except IndexError:
         logger.warn('Specify pubkey to use', terminal=True)
     else:
-        if o_inst.onionrUtils.validatePubKey(key):
+        if stringvalidators.validate_pub_key(key):
             if key in o_inst.onionrCore._crypto.keyManager.getPubkeyList():
                 o_inst.onionrCore.config.set('general.public_key', key)
                 o_inst.onionrCore.config.save()
@@ -82,7 +83,7 @@ def friend_command(o_inst):
         elif action in ('add', 'remove'):
             try:
                 friend = sys.argv[3]
-                if not o_inst.onionrUtils.validatePubKey(friend):
+                if not stringvalidators.validate_pub_key(friend):
                     raise onionrexceptions.InvalidPubkey('Public key is invalid')
                 if friend not in o_inst.onionrCore.listPeers():
                     raise onionrexceptions.KeyNotKnown

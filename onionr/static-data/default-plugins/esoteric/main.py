@@ -23,6 +23,7 @@ import locale, sys, os, threading, json
 locale.setlocale(locale.LC_ALL, '')
 import onionrservices, logger
 from onionrservices import bootstrapservice
+from onionrutils import stringvalidators
 
 plugin_name = 'esoteric'
 PLUGIN_VERSION = '0.0.0'
@@ -66,7 +67,7 @@ class Esoteric:
     def create(self):
         try:
             peer = sys.argv[2]
-            if not self.myCore._utils.validatePubKey(peer):
+            if not stringvalidators.validate_pub_key(peer):
                 exit_with_error('Invalid public key specified')
         except IndexError:
             exit_with_error('You must specify a peer public key')

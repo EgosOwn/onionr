@@ -2,8 +2,9 @@ import json
 import logger, onionrevents
 from onionrusers import onionrusers
 from etc import onionrvalues
-from onionrblockapi import Block
-def get_block_metadata_from_data(utils_inst, blockData):
+import onionrblockapi
+from . import epoch
+def get_block_metadata_from_data(blockData):
     '''
         accepts block contents as string, returns a tuple of 
         metadata, meta (meta being internal metadata, which will be 
@@ -36,8 +37,8 @@ def process_block_metadata(utils_inst, blockHash):
     '''
         Read metadata from a block and cache it to the block database
     '''
-    curTime = utils_inst.getRoundedEpoch(roundS=60)
-    myBlock = Block(blockHash, utils_inst._core)
+    curTime = epoch.get_rounded_epoch(roundS=60)
+    myBlock = onionrblockapi.Block(blockHash, utils_inst._core)
     if myBlock.isEncrypted:
         myBlock.decrypt()
     if (myBlock.isEncrypted and myBlock.decrypted) or (not myBlock.isEncrypted):

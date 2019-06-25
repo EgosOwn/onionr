@@ -28,7 +28,8 @@ from onionrusers import onionrusers
 from onionrstorage import removeblock, setdata
 import dbcreator, onionrstorage, serializeddata, subprocesspow
 from etc import onionrvalues, powchoice
-from onionrutils import localcommand
+from onionrutils import localcommand, stringvalidators, bytesconverter, epoch
+from onionrutils import blockmetadata
 
 class Core:
     def __init__(self, torPort=0):
@@ -320,9 +321,9 @@ class Core:
         if type(data) is None:
             raise ValueError('Data cannot be none')
 
-        createTime = self._utils.getRoundedEpoch()
+        createTime = epoch.get_epoch()
 
-        dataNonce = self._utils.bytesToStr(self._crypto.sha3Hash(data))
+        dataNonce = bytesconverter.bytes_to_str(self._crypto.sha3Hash(data))
         try:
             with open(self.dataNonceFile, 'r') as nonces:
                 if dataNonce in nonces:
@@ -395,7 +396,7 @@ class Core:
             signature = self._crypto.symmetricEncrypt(signature, key=symKey, returnEncoded=True).decode()
             signer = self._crypto.symmetricEncrypt(signer, key=symKey, returnEncoded=True).decode()
         elif encryptType == 'asym':
-            if self._utils.validatePubKey(asymPeer):
+            if stringvalidators.validate_pub_key(asymPeer):
                 # Encrypt block data with forward secrecy key first, but not meta
                 jsonMeta = json.dumps(meta)
                 jsonMeta = self._crypto.pubKeyEncrypt(jsonMeta, asymPeer, encodedData=True).decode()
@@ -438,13 +439,13 @@ class Core:
                     localcommand.local_command(self, '/waitforshare/' + retData, post=True, maxWait=5)
                     self.daemonQueueAdd('uploadBlock', retData)
                 self.addToBlockDB(retData, selfInsert=True, dataSaved=True)
-                self._utils.processBlockMetadata(retData)
+                blockmetadata.process_block_metadata(retData)
 
         if retData != False:
             if plaintextPeer == onionrvalues.DENIABLE_PEER_ADDRESS:
-                events.event('insertdeniable', {'content': plaintext, 'meta': plaintextMeta, 'hash': retData, 'peer': self._utils.bytesToStr(asymPeer)}, onionr = self.onionrInst, threaded = True)
+                events.event('insertdeniable', {'content': plaintext, 'meta': plaintextMeta, 'hash': retData, 'peer': bytesconverter.bytes_to_str(asymPeer)}, onionr = self.onionrInst, threaded = True)
             else:
-                events.event('insertblock', {'content': plaintext, 'meta': plaintextMeta, 'hash': retData, 'peer': self._utils.bytesToStr(asymPeer)}, onionr = self.onionrInst, threaded = True)
+                events.event('insertblock', {'content': plaintext, 'meta': plaintextMeta, 'hash': retData, 'peer': bytesconverter.bytes_to_str(asymPeer)}, onionr = self.onionrInst, threaded = True)
         return retData
 
     def introduceNode(self):

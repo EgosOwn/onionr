@@ -21,6 +21,7 @@
 # Imports some useful libraries
 import logger, config, threading, time, datetime, sys, json
 from onionrblockapi import Block
+from onionrutils import stringvalidators
 import onionrexceptions, onionrusers
 import locale
 locale.setlocale(locale.LC_ALL, '')
@@ -43,7 +44,7 @@ class PlainEncryption:
             pass
 
         try:
-            if not self.api.get_core()._utils.validatePubKey(sys.argv[2]):
+            if not stringvalidators.validate_pub_key(sys.argv[2]):
                 raise onionrexceptions.InvalidPubkey
         except (ValueError, IndexError) as e:
             logger.error("Peer public key not specified", terminal=True)

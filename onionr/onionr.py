@@ -21,6 +21,10 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 import sys
+ONIONR_TAGLINE = 'Private P2P Communication - GPLv3 - https://Onionr.net'
+ONIONR_VERSION = '0.0.0' # for debugging and stuff
+ONIONR_VERSION_TUPLE = tuple(ONIONR_VERSION.split('.')) # (MAJOR, MINOR, VERSION)
+API_VERSION = '0' # increments of 1; only change when something fundamental about how the API works changes. This way other nodes know how to communicate without learning too much information about you.
 MIN_PY_VERSION = 6
 if sys.version_info[0] == 2 or sys.version_info[1] < MIN_PY_VERSION:
     sys.stderr.write('Error, Onionr requires Python 3.%s+' % (MIN_PY_VERSION,))
@@ -40,10 +44,6 @@ try:
 except ImportError:
     raise Exception("You need the PySocks module (for use with socks5 proxy to use Tor)")
 
-ONIONR_TAGLINE = 'Private P2P Communication - GPLv3 - https://Onionr.net'
-ONIONR_VERSION = '0.0.0' # for debugging and stuff
-ONIONR_VERSION_TUPLE = tuple(ONIONR_VERSION.split('.')) # (MAJOR, MINOR, VERSION)
-API_VERSION = '0' # increments of 1; only change when something fundamental about how the API works changes. This way other nodes know how to communicate without learning too much information about you.
 
 class Onionr:
     def __init__(self):
@@ -72,7 +72,7 @@ class Onionr:
         data_exists = Onionr.setupConfig(self.dataDir, self)
 
         if netcontroller.torBinary() is None:
-            logger.error('Tor is not installed')
+            logger.error('Tor is not installed', terminal=True)
             sys.exit(1)
 
         # If block data folder does not exist
@@ -101,7 +101,6 @@ class Onionr:
         self.onionrCore = core.Core()
         self.onionrCore.onionrInst = self
         #self.deleteRunFiles()
-        self.onionrUtils = onionrutils.OnionrUtils(self.onionrCore)
 
         self.clientAPIInst = '' # Client http api instance
         self.publicAPIInst = '' # Public http api instance

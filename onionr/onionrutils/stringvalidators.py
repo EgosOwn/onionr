@@ -1,4 +1,4 @@
-import base64, string
+import base64, string, onionrutils
 import unpaddedbase32, nacl.signing, nacl.encoding
 def validate_hash(utils_inst, data, length=64):
     '''
@@ -18,14 +18,14 @@ def validate_hash(utils_inst, data, length=64):
 
     return retVal
 
-def validate_pub_key(utils_inst, key):
+def validate_pub_key(key):
     '''
         Validate if a string is a valid base32 encoded Ed25519 key
     '''
     if type(key) is type(None):
         return False
     # Accept keys that have no = padding
-    key = unpaddedbase32.repad(utils_inst.strToBytes(key))
+    key = unpaddedbase32.repad(onionrutils.str_to_bytes(key))
 
     retVal = False
     try:
