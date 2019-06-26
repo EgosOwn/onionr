@@ -20,7 +20,7 @@
 
 import sys, getpass
 import logger, onionrexceptions
-from onionrutils import stringvalidators
+from onionrutils import stringvalidators, bytesconverter
 from onionrusers import onionrusers, contactmanager
 import unpaddedbase32
 def add_ID(o_inst):
@@ -45,9 +45,13 @@ def add_ID(o_inst):
         else:
             logger.error('Passwords do not match.', terminal=True)
             sys.exit(1)
-        o_inst.onionrCore._crypto.keyManager.addKey(pubKey=newID, 
-        privKey=privKey)
-    logger.info('Added ID: %s' % (o_inst.onionrUtils.bytesToStr(newID),), terminal=True)
+        try:
+            o_inst.onionrCore._crypto.keyManager.addKey(pubKey=newID, 
+            privKey=privKey)
+        except ValueError:
+            logger.error('That ID is already available, you can change to it with the change-id command.', terminal=True)
+            return
+    logger.info('Added ID: %s' % (bytesconverter.bytes_to_str(newID),), terminal=True)
 
 def change_ID(o_inst):
     try:
