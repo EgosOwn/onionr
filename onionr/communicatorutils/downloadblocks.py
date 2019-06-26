@@ -75,7 +75,7 @@ def download_blocks_from_communicator(comm_inst):
                 content = content.decode() # decode here because sha3Hash needs bytes above
                 metas = blockmetadata.get_block_metadata_from_data(content) # returns tuple(metadata, meta), meta is also in metadata
                 metadata = metas[0]
-                if validatemetadata.validate_metadata(comm_inist._core, metadata, metas[2]): # check if metadata is valid, and verify nonce
+                if validatemetadata.validate_metadata(comm_inst._core, metadata, metas[2]): # check if metadata is valid, and verify nonce
                     if comm_inst._core._crypto.verifyPow(content): # check if POW is enough/correct
                         logger.info('Attempting to save block %s...' % blockHash[:12])
                         try:
@@ -85,7 +85,7 @@ def download_blocks_from_communicator(comm_inst):
                             removeFromQueue = False
                         else:
                             comm_inst._core.addToBlockDB(blockHash, dataSaved=True)
-                            blockmetadata.process_block_metadata(blockHash) # caches block metadata values to block database
+                            blockmetadata.process_block_metadata(comm_inst._core, blockHash) # caches block metadata values to block database
                     else:
                         logger.warn('POW failed for block %s.' % blockHash)
                 else:

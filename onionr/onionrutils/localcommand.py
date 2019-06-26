@@ -19,11 +19,12 @@ def local_command(core_inst, command, data='', silent = True, post=False, postDa
     if data != '':
         data = '&data=' + urllib.parse.quote_plus(data)
     payload = 'http://%s/%s%s' % (hostname, command, data)
+    print(payload)
     try:
         if post:
-            retData = requests.post(payload, data=postData, headers={'token': config.get('client.webpassword'), 'Connection':'close'}, timeout=(maxWait, maxWait)).text
+            retData = requests.post(payload, data=postData, headers={'token': core_inst.config.get('client.webpassword'), 'Connection':'close'}, timeout=(maxWait, maxWait)).text
         else:
-            retData = requests.get(payload, headers={'token': config.get('client.webpassword'), 'Connection':'close'}, timeout=(maxWait, maxWait)).text
+            retData = requests.get(payload, headers={'token': core_inst.config.get('client.webpassword'), 'Connection':'close'}, timeout=(maxWait, maxWait)).text
     except Exception as error:
         if not silent:
             logger.error('Failed to make local request (command: %s):%s' % (command, error), terminal=True)

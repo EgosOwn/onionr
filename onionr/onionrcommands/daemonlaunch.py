@@ -60,7 +60,7 @@ def daemon(o_inst):
     logger.debug('Python version %s' % platform.python_version())
 
     if o_inst._developmentMode:
-        logger.warn('DEVELOPMENT MODE ENABLED', timestamp = False, terminal=True)
+        logger.warn('Development mode enabled', timestamp = False, terminal=True)
     net = NetController(o_inst.onionrCore.config.get('client.public.port', 59497), apiServerIP=apiHost)
     logger.info('Tor is starting...', terminal=True)
     if not net.startTor():

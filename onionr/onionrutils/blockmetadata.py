@@ -43,6 +43,7 @@ def process_block_metadata(core_inst, blockHash):
         myBlock.decrypt()
     if (myBlock.isEncrypted and myBlock.decrypted) or (not myBlock.isEncrypted):
         blockType = myBlock.getMetadata('type') # we would use myBlock.getType() here, but it is bugged with encrypted blocks
+        print('blockType', blockType)
         signer = bytesconverter.bytes_to_str(myBlock.signer)
         valid = myBlock.verifySig()
         if myBlock.getMetadata('newFSKey') is not None:

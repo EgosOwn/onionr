@@ -23,7 +23,7 @@ import logger, config, threading, time, datetime
 from onionrblockapi import Block
 import onionrexceptions
 from onionrusers import onionrusers
-from onionrutils import stringvalidators, escapeansi
+from onionrutils import stringvalidators, escapeansi, bytesconverter
 import locale, sys, os, json
 
 locale.setlocale(locale.LC_ALL, '')
@@ -136,7 +136,7 @@ class OnionrMail:
                 else:
                     cancel = ''
                     readBlock.verifySig()
-                    senderDisplay = self.myCore._utils.bytesToStr(readBlock.signer)
+                    senderDisplay = bytesconverter.bytes_to_str(readBlock.signer)
                     if len(senderDisplay.strip()) == 0:
                         senderDisplay = 'Anonymous'
                     logger.info('Message received from %s' % (senderDisplay,), terminal=True)
@@ -156,7 +156,7 @@ class OnionrMail:
                             reply = logger.readline("Press enter to continue, or enter %s to reply" % ("-r",))
                             print('')
                             if reply == "-r":
-                                self.draft_message(self.myCore._utils.bytesToStr(readBlock.signer,))
+                                self.draft_message(bytesconverter.bytes_to_str(readBlock.signer,))
                         else:
                             logger.readline("Press enter to continue")
                             print('')
@@ -200,7 +200,7 @@ class OnionrMail:
         self.sentMessages = {}
         for i in self.sentboxTools.listSent():
             self.sentboxList.append(i['hash'])
-            self.sentMessages[i['hash']] = (self.myCore._utils.bytesToStr(i['message']), i['peer'], i['subject'])
+            self.sentMessages[i['hash']] = (bytesconverter.bytes_to_str(i['message']), i['peer'], i['subject'])
             if display:
                 logger.info('%s. %s - %s - (%s) - %s' % (count, i['hash'], i['peer'][:12], i['subject'], i['date']), terminal=True)
             count += 1

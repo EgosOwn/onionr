@@ -306,7 +306,7 @@ class Core:
             dateClaimed  - timestamp claimed inside the block, only as trustworthy as the block author is
             expire       - expire date for a block
         '''
-        return coredb.blockmetadb.updateblockinfo
+        return coredb.blockmetadb.updateblockinfo.update_block_info(self, hash, key, data)
 
     def insertBlock(self, data, header='txt', sign=False, encryptType='', symKey='', asymPeer='', meta = {}, expire=None, disableForward=False):
         '''
@@ -437,8 +437,11 @@ class Core:
             else:
                 # Tell the api server through localCommand to wait for the daemon to upload this block to make statistical analysis more difficult
                 if localcommand.local_command(self, '/ping', maxWait=10) == 'pong!':
-                    localcommand.local_command(self, '/waitforshare/' + retData, post=True, maxWait=5)
+                    if self.config.get('general.security_level', 1) > 0:
+                        localcommand.local_command(self, '/waitforshare/' + retData, post=True, maxWait=5)
                     self.daemonQueueAdd('uploadBlock', retData)
+                else:
+                    print('shite', localcommand.local_command(self, '/ping', maxWait=10))
                 self.addToBlockDB(retData, selfInsert=True, dataSaved=True)
                 blockmetadata.process_block_metadata(self, retData)
 

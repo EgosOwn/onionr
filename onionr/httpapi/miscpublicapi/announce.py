@@ -21,7 +21,7 @@ import base64
 from flask import Response
 import logger
 from etc import onionrvalues
-from onionrutils import stringvalidators
+from onionrutils import stringvalidators, bytesconverter
 
 def handle_announce(clientAPI, request):
     '''
@@ -53,7 +53,7 @@ def handle_announce(clientAPI, request):
             except AttributeError:
                 pass
             if powHash.startswith('0' * onionrvalues.OnionrValues().announce_pow):
-                newNode = clientAPI._core._utils.bytesToStr(newNode)
+                newNode = bytesconverter.bytes_to_str(newNode)
                 if stringvalidators.validate_transport(newNode) and not newNode in clientAPI._core.onionrInst.communicatorInst.newPeers:
                     clientAPI._core.onionrInst.communicatorInst.newPeers.append(newNode)
                     resp = 'Success'

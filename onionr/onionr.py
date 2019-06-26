@@ -43,7 +43,6 @@ try:
 except ImportError:
     raise Exception("You need the PySocks module (for use with socks5 proxy to use Tor)")
 
-
 class Onionr:
     def __init__(self):
         '''
