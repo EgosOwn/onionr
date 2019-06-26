@@ -32,7 +32,7 @@ def net_check(comm_inst):
                 rec = True
         except ValueError:
             pass
-        if not rec and not netutils.checkNetwork(c._utils, torPort=comm_inst.proxyPort):
+        if not rec and not netutils.checkNetwork(c, torPort=comm_inst.proxyPort):
             if not comm_inst.shutdown:
                 logger.warn('Network check failed, are you connected to the Internet, and is Tor working?')
             comm_inst.isOnline = False
