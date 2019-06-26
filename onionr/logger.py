@@ -131,7 +131,7 @@ def raw(data, fd = sys.stdout, terminal = False):
         Outputs raw data to console without formatting
     '''
 
-    if (get_settings() & OUTPUT_TO_CONSOLE):
+    if terminal and (get_settings() & OUTPUT_TO_CONSOLE):
         try:
             ts = fd.write('%s\n' % data)
         except OSError:

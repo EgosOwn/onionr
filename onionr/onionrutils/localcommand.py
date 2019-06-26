@@ -19,7 +19,6 @@ def local_command(core_inst, command, data='', silent = True, post=False, postDa
     if data != '':
         data = '&data=' + urllib.parse.quote_plus(data)
     payload = 'http://%s/%s%s' % (hostname, command, data)
-    print(payload)
     try:
         if post:
             retData = requests.post(payload, data=postData, headers={'token': core_inst.config.get('client.webpassword'), 'Connection':'close'}, timeout=(maxWait, maxWait)).text
