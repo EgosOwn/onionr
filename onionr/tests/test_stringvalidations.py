@@ -35,11 +35,11 @@ class OnionrValidations(unittest.TestCase):
 
         for valid in valids:
             print('testing', valid)
-            self.assertTrue(c._utils.validatePubKey(valid))
+            self.assertTrue(stringvalidators.validate_pub_key(valid))
 
         for x in invalid:
             #print('testing', x)
-            self.assertFalse(c._utils.validatePubKey(x))
+            self.assertFalse(stringvalidators.validate_pub_key(x))
     
     def test_integer_string(self):
         valid = ["1", "100", 100, "-5", -5]
