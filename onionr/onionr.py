@@ -261,13 +261,13 @@ class Onionr:
         if len(sys.argv) >= 4:
             config.reload()
             config.set(sys.argv[2], sys.argv[3], True)
-            logger.debug('Configuration file updated.')
+            logger.info('Configuration file updated.', terminal=True)
         elif len(sys.argv) >= 3:
             config.reload()
-            logger.info(logger.colors.bold + sys.argv[2] + ': ' + logger.colors.reset + str(config.get(sys.argv[2], logger.colors.fg.red + 'Not set.')))
+            logger.info(logger.colors.bold + sys.argv[2] + ': ' + logger.colors.reset + str(config.get(sys.argv[2], logger.colors.fg.red + 'Not set.')), terminal=True)
         else:
-            logger.info(logger.colors.bold + 'Get a value: ' + logger.colors.reset + sys.argv[0] + ' ' + sys.argv[1] + ' <key>')
-            logger.info(logger.colors.bold + 'Set a value: ' + logger.colors.reset + sys.argv[0] + ' ' + sys.argv[1] + ' <key> <value>')
+            logger.info(logger.colors.bold + 'Get a value: ' + logger.colors.reset + sys.argv[0] + ' ' + sys.argv[1] + ' <key>', terminal=True)
+            logger.info(logger.colors.bold + 'Set a value: ' + logger.colors.reset + sys.argv[0] + ' ' + sys.argv[1] + ' <key> <value>', terminal=True)
 
     def execute(self, argument):
         '''
@@ -302,7 +302,7 @@ class Onionr:
         '''
             Displays a list of keys (used to be called peers) (?)
         '''
-        logger.info('%sPublic keys in database: \n%s%s' % (logger.colors.fg.lightgreen, logger.colors.fg.green, '\n'.join(self.onionrCore.listPeers())))
+        logger.info('%sPublic keys in database: \n%s%s' % (logger.colors.fg.lightgreen, logger.colors.fg.green, '\n'.join(self.onionrCore.listPeers())), terminal=True)
 
     def addPeer(self):
         '''
