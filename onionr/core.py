@@ -17,12 +17,12 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import os, sys, time, json, uuid
+import os, sys, json
 import logger, netcontroller, config
 from onionrblockapi import Block
 import coredb
 import deadsimplekv as simplekv
-import onionrutils, onionrcrypto, onionrproofs, onionrevents as events, onionrexceptions
+import onionrcrypto, onionrproofs, onionrevents as events, onionrexceptions
 import onionrblacklist
 from onionrusers import onionrusers
 from onionrstorage import removeblock, setdata
@@ -436,7 +436,7 @@ class Core:
             else:
                 # Tell the api server through localCommand to wait for the daemon to upload this block to make statistical analysis more difficult
                 if localcommand.local_command(self, '/ping', maxWait=10) == 'pong!':
-                    if self.config.get('general.security_level', 1) > 0:
+                    if self.config.get('general.security_level', 1) == 0:
                         localcommand.local_command(self, '/waitforshare/' + retData, post=True, maxWait=5)
                     self.daemonQueueAdd('uploadBlock', retData)
                 else:
