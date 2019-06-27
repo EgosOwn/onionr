@@ -236,13 +236,13 @@ class Onionr:
     def listPeers(self):
         logger.info('Peer transport address list:')
         for i in self.onionrCore.listAdders():
-            logger.info(i)
+            logger.info(i, terminal=True)
 
     def getWebPassword(self):
         return config.get('client.webpassword')
 
     def printWebPassword(self):
-        logger.info(self.getWebPassword(), term_only = True)
+        logger.info(self.getWebPassword(), terminal=True)
 
     def getHelp(self):
         return self.cmdhelp
