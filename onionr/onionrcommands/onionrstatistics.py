@@ -18,10 +18,11 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 import os, uuid, time
-import logger, onionrutils
+import logger
 from onionrblockapi import Block
 import onionr
 from onionrutils import checkcommunicator, mnemonickeys
+from utils import sizeutils
 
 def show_stats(o_inst):
     try:
@@ -34,9 +35,9 @@ def show_stats(o_inst):
 
             # file and folder size stats
             'div1' : True, # this creates a solid line across the screen, a div
-            'Total Block Size' : onionrutils.humanSize(onionrutils.size(o_inst.dataDir + 'blocks/')),
-            'Total Plugin Size' : onionrutils.humanSize(onionrutils.size(o_inst.dataDir + 'plugins/')),
-            'Log File Size' : onionrutils.humanSize(onionrutils.size(o_inst.dataDir + 'output.log')),
+            'Total Block Size' : sizeutils.human_size(sizeutils.size(o_inst.dataDir + 'blocks/')),
+            'Total Plugin Size' : sizeutils.human_size(sizeutils.size(o_inst.dataDir + 'plugins/')),
+            'Log File Size' : sizeutils.human_size(sizeutils.size(o_inst.dataDir + 'output.log')),
 
             # count stats
             'div2' : True,
@@ -80,7 +81,7 @@ def show_stats(o_inst):
                 logger.info(colors['border'] + '-' * (maxlength + 1) + '+' + colors['reset'], terminal=True)
         logger.info(colors['border'] + '-' * (maxlength + 1) + '+' + colors['reset'], terminal=True)
     except Exception as e:
-        logger.error('Failed to generate statistics table.', error = e, timestamp = False, terminal=True)
+        logger.error('Failed to generate statistics table. ' + str(e), error = e, timestamp = False, terminal=True)
 
 def show_details(o_inst):
     details = {
