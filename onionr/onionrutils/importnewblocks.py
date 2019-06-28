@@ -35,14 +35,14 @@ def import_new_blocks(core_inst=None, scanDir=''):
     for block in glob.glob(scanDir + "*.dat"):
         if block.replace(scanDir, '').replace('.dat', '') not in blockList:
             exist = True
-            logger.info('Found new block on dist %s' % block)
+            logger.info('Found new block on dist %s' % block, terminal=True)
             with open(block, 'rb') as newBlock:
                 block = block.replace(scanDir, '').replace('.dat', '')
                 if core_inst._crypto.sha3Hash(newBlock.read()) == block.replace('.dat', ''):
                     core_inst.addToBlockDB(block.replace('.dat', ''), dataSaved=True)
-                    logger.info('Imported block %s.' % block)
-                    blockmetadata.process_block_metadata(block)
+                    logger.info('Imported block %s.' % block, terminal=True)
+                    blockmetadata.process_block_metadata(core_inst, block)
                 else:
-                    logger.warn('Failed to verify hash for %s' % block)
+                    logger.warn('Failed to verify hash for %s' % block, terminal=True)
     if not exist:
-        logger.info('No blocks found to import')
+        logger.info('No blocks found to import', terminal=True)
