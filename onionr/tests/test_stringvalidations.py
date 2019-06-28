@@ -27,6 +27,25 @@ class OnionrValidations(unittest.TestCase):
             print('testing', x)
             self.assertFalse(stringvalidators.validate_transport(x))
     
+    def test_hash_validator(self):
+        valid = ['00003b3813a166e706e490238e9515633cc3d083efe982a67753d50d87a00c96\n', '00003b3813a166e706e490238e9515633cc3d083efe982a67753d50d87a00c96', b'00003b3813a166e706e490238e9515633cc3d083efe982a67753d50d87a00c96',
+        '00003b3813a166e706e490238e9515633cc36', b'00003b3813a166e706e490238e9515633cc3d083']
+        invalid = [None, 0, 1, True, False, '%#W483242#', '00003b3813a166e706e490238e9515633cc3d083efe982a67753d50d87a00c9666', '', b'', 
+        b'00003b3813a166e706e490238e9515633cc3d083efe982a67753d50d87a00c9666666', b'    ', '\n', '00003b3813a166e706e490238e9515633cc3d083efe982a67753d50d87a00ccccc\n']
+        
+        for x in valid:
+            self.assertTrue(stringvalidators.validate_hash(x))
+        for x in invalid:
+            try:
+                result = stringvalidators.validate_hash(x)
+                print('testing', x, result)
+            except AttributeError:
+                result = False
+            try:
+                self.assertFalse(result)
+            except AssertionError:
+                raise AssertionError("%s returned true" % (x,))
+    
     def test_pubkey_validator(self):
         # Test ed25519 public key validity
         valids = ['JZ5VE72GUS3C7BOHDRIYZX4B5U5EJMCMLKHLYCVBQQF3UKHYIRRQ====', 'JZ5VE72GUS3C7BOHDRIYZX4B5U5EJMCMLKHLYCVBQQF3UKHYIRRQ']

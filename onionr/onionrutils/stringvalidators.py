@@ -23,12 +23,14 @@ from onionrutils import bytesconverter
 def validate_hash(data, length=64):
     '''
         Validate if a string is a valid hash hex digest (does not compare, just checks length and charset)
+
+        Length is only invalid if its *more* than the specified
     '''
     retVal = True
     if data == False or data == True:
         return False
     data = data.strip()
-    if len(data) != length:
+    if len(data) > length:
         retVal = False
     else:
         try:
