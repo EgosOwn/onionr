@@ -1,41 +1,168 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <meta charset='utf-8'>
-        <title>
-            Onionr
-        </title>
-        <link rel='shortcut icon' type='image/ico' href='/shared/images/favicon.ico'>
-        <link rel='stylesheet' href='/shared/style/modal.css'>
-        <link rel='stylesheet' href='/shared/main/style.css'>
-        <link rel='stylesheet' href='/friends/style.css'>
-    </head>
-    <body>
-        <div id="friendInfo" class='overlay'>
-            <div class='overlayContent'>
-                <span class='closeOverlay' overlay='friendInfo'></span>
-                <div>Name: <span id='friendName'></span></div>
-                <label>Public Key: <input id='friendPubkey' type='text' readonly></label>
-                <button id='defriend' class='warnBtn'>Unfriend</button>
+
+<head>
+    <meta charset='utf-8'>
+    <!--Mobile responsive-->
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>
+        Friends
+    </title>
+    <link rel='shortcut icon' type='image/ico' href='/shared/images/favicon.ico'>
+    <link rel='stylesheet' href='/shared/main/bulma.min.css'>
+    <link rel='stylesheet' href='/shared/main/styles-new.css'>
+    <link rel='stylesheet' href='/friends/style.css'>
+</head>
+
+<body>
+
+    <nav class="navbar is-dark" role="navigation" aria-label="main navigation">
+        <div class="navbar-brand">
+            <a class="navbar-item idLink" href="/">
+                <img src="/shared/images/favicon.ico"> Onionr
+            </a>
+
+            <a role="button" class="navbar-burger burger" aria-label="menu" aria-expanded="false"
+                data-target="navbarBasicExample">
+                <span aria-hidden="true"></span>
+                <span aria-hidden="true"></span>
+                <span aria-hidden="true"></span>
+            </a>
+        </div>
+
+        <div id="navbarBasicExample" class="navbar-menu">
+            <div class="navbar-start">
+                <a class="navbar-item idLink" href="/">Home</a>
+                <a class="navbar-item idLink" href="/mail/">Mail</a>
+                <a class="navbar-item idLink" href="/friends/">Friends</a>
+                <a class="navbar-item idLink" href="/board/">Circles</a>
+                <a class="navbar-item idLink" href="/clandestine/">Clandestine</a>
             </div>
         </div>
-        <div class='content'>
-            <img class='logo' src='/shared/images/onionr-icon.png' alt='onionr logo'>
-            <span class='logoText'>Onionr Friends</span>
-            <br><br>
-            <a href='/' class='idLink'>Home</a>
-            <h2>Friend Manager</h2>
-            <form id='addFriend' action='/' method='POST'>
-                <label>Friend ID: <input type='text' name='addKey' placeholder='public key/ID' minlength="56" maxlength="56" required></label>
-                <label>Set Alias: <input type='text' name='data' placeholder='what to call them'></label>
-                <input type='submit' value='Add Friend' class='successBtn'>
-            </form>
-            <h2>Friend List:</h2>
-            Click name to view info<br><br>
-            <div id='friendList'>
+    </nav>
+
+    <!--Hero (Dark Section)-->
+    <section class="hero is-small is-dark">
+        <div class="hero-body">
+            <div class="container">
+                <div class="columns">
+                    <div class="column">
+                        <h1 class="title">
+                            Friends
+                        </h1>
+                        <h2 class="subtitle">
+                            Manage your friend list
+                        </h2>
+                    </div>
+                    <div class="column is-7">
+                        <div class="field">
+                            <label class="label">Open Site</label>
+                            <div class="field has-addons">
+                                <p class="control">
+                                    <a class="button is-static">Identity</a>
+                                </p>
+                                <p class="control is-expanded">
+                                    <input id="myPub" class="input myPub" type="text" readonly>
+                                </p>
+                                <p class="control">
+                                    <a id="myPubCopy" class="button is-primary">Copy</a>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
-        <script src='/shared/misc.js'></script>
-        <script src='/friends/friends.js'></script>
-    </body>
+        </div>
+    </section>
+
+    <br>
+
+    <!--Start Content-->
+    <div class="container">
+        <div class="columns">
+            <!--Add Friend-->
+            <div class="column is-one-third">
+                <div class="card">
+                    <header class="card-header">
+                        <p class="card-header-title">
+                            Add Friend
+                        </p>
+                    </header>
+                    <div class="card-content">
+                        <div class="content">
+                            <form id='addFriend' action='/' method='POST'>
+                                <div class="field">
+                                    <label class="label">Friend ID</label>
+                                    <p class="control is-expanded">
+                                        <input id="" class="input" type="text" name='addKey' placeholder='Public Key/ID'
+                                            minlength="56" maxlength="56" required>
+                                    </p>
+                                </div>
+                                <div class="field">
+                                    <label class="label">Alias</label>
+                                    <p class="control is-expanded">
+                                        <input id="" class="input" type="text" name='data' placeholder='Name'>
+                                    </p>
+                                </div>
+                                <form>
+                        </div>
+                    </div>
+                    <footer class="card-footer">
+                        <a class="card-footer-item">
+                            <button class="button" type='submit'>Add to list</button>
+                        </a>
+                    </footer>
+                </div>
+            </div>
+            <!--Friend List-->
+            <div class="column">
+                <div class="card">
+                    <header class="card-header">
+                        <p class="card-header-title">
+                            Friend List
+                        </p>
+                    </header>
+                    <div class="card-content">
+                        <div class="content">
+                            <div id='friendList'>
+                                <!--Friend list is appended here-->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="friendInfo" class='overlay'>
+        <div class='overlayContent'>
+            <span class='closeOverlay' overlay='friendInfo'></span>
+            <div>Name: <span id='friendName'></span></div>
+            <label>Public Key: <input id='friendPubkey' type='text' readonly></label>
+            <button id='defriend' class='warnBtn'>Unfriend</button>
+        </div>
+    </div>
+
+    <!--Template markup for friend list-->
+    <template id="friendTemplate">
+        <div class="box">
+            <div class="columns">
+                <div class="column is-narrow" id='friendName'>
+                    Name
+                </div>
+                <div class="column" id='friendPubkey'>
+                    Public Key
+                </div>
+                <div class="column is-narrow friendRemove" id='defriend'>
+                    <a class="">Delete</a>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <script src='/shared/misc.js'></script>
+    <script src='/friends/friends.js'></script>
+</body>
+
 </html>

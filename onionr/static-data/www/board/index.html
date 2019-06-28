@@ -1,31 +1,151 @@
 <!DOCTYPE HTML>
 <html>
-    <head>
-        <meta charset='utf-8'>
-        <meta name='viewport' content='width=device-width, initial-scale=1.0'>
-        <title>
-            Circle
-        </title>
-        <link rel='stylesheet' href='/shared/style/modal.css'>
-        <link rel='stylesheet' href='/shared/main/style.css'>
-        <link rel='stylesheet' href='theme.css'>
-    </head>
-    <body>
-        <h1>Circle</h1>
-        <p>
-            Anonymous message board
-        </p>
-        <form method='POST' action='/' id='addMsg'>
-            <textarea id='newMsgText' name='newMsgText' rows=10 cols=50 required minlength="2"></textarea>
-            <br><br>
-            <input class='btn successBtn' value='Post' type='submit'>
-        </form>
-        <br><br>
-        <div id='feed'>
-            <input class='primaryBtn' type='button' id='refreshFeed' value='Refresh Feed'>
-            <br><br>
-            <span id='none'>None Yet :)</span></div>
-        <script src='/shared/misc.js'></script>
-        <script src='board.js'></script>
-    </body>
+
+<head>
+    <meta charset='utf-8'>
+    <!--Mobile responsive-->
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>
+        Circles
+    </title>
+    <link rel='shortcut icon' type='image/ico' href='/shared/images/favicon.ico'>
+    <link rel='stylesheet' href='/shared/main/bulma.min.css'>
+    <link rel="stylesheet" href="/shared/main/styles-new.css">
+</head>
+
+<body>
+    <nav class="navbar is-dark" role="navigation" aria-label="main navigation">
+        <div class="navbar-brand">
+            <a class="navbar-item idLink" href="/">
+                <img src="/shared/images/favicon.ico"> Onionr
+            </a>
+
+            <a role="button" class="navbar-burger burger" aria-label="menu" aria-expanded="false"
+                data-target="navbarBasicExample">
+                <span aria-hidden="true"></span>
+                <span aria-hidden="true"></span>
+                <span aria-hidden="true"></span>
+            </a>
+        </div>
+
+        <div id="navbarBasicExample" class="navbar-menu">
+            <div class="navbar-start">
+                <a class="navbar-item idLink" href="/">Home</a>
+                <a class="navbar-item idLink" href="/mail/">Mail</a>
+                <a class="navbar-item idLink" href="/friends/">Friends</a>
+                <a class="navbar-item idLink" href="/board/">Circles</a>
+                <a class="navbar-item idLink" href="/clandestine/">Clandestine</a>
+            </div>
+        </div>
+    </nav>
+
+    <!--Hero (Dark Section)-->
+    <section class="hero is-small is-dark">
+        <div class="hero-body">
+            <div class="container">
+                <div class="columns">
+                    <div class="column">
+                        <h1 class="title">
+                            Circles
+                        </h1>
+                        <h2 class="subtitle">
+                            Anonymous message board
+                        </h2>
+                    </div>
+                    <div class="column is-7">
+                        <div class="field">
+                            <label class="label">Open Site</label>
+                            <div class="field has-addons">
+                                <p class="control">
+                                    <a class="button is-static">Identity</a>
+                                </p>
+                                <p class="control is-expanded">
+                                    <input id="myPub" class="input myPub" type="text" readonly>
+                                </p>
+                                <p class="control">
+                                    <a id="myPubCopy" class="button is-primary">Copy</a>
+                                </p>
+                            </div>
+                        </div>
+                        <div class="field is-grouped is-grouped-centered">
+                            <p class="control">
+                                <a class="button is-link" id='refreshFeed'>Refresh Feed</a>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        </div>
+    </section>
+
+    <br>
+
+    <!--Start Content-->
+    <div class="container">
+        <div class="columns">
+            <!--Add Friend-->
+            <div class="column is-one-third">
+                <div class="card">
+                    <header class="card-header">
+                        <p class="card-header-title">
+                            Post message
+                        </p>
+                    </header>
+                    <div class="card-content">
+                        <div class="content">
+                            <form method='POST' action='/' id='addMsg'>
+                                <textarea id='newMsgText' class="textarea" name='newMsgText' rows=10 cols=50 required
+                                    minlength="2"></textarea>
+                                <input class='btn successBtn' value='Post' type='submit'>
+                            </form>
+                        </div>
+                    </div>
+                    <footer class="card-footer">
+                        <a class="card-footer-item">
+                            <button class='button' type='submit'>Post</button>
+                        </a>
+                    </footer>
+                </div>
+            </div>
+            <!--Feed-->
+            <div class="column">
+                <div class="card">
+                    <header class="card-header">
+                        <p class="card-header-title">
+                            Feed
+                        </p>
+                    </header>
+                    <div class="card-content">
+                        <div class="content">
+                            <div id='feed'>
+                                <span id='none'>None Yet :)</span>
+                                <!--Message Items are appended here based on template-->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!--Template markup for Circle message-->
+    <template id="cMsgTemplate">
+        <div class="box" id="cMsgBox">
+            <div class="columns">
+                <div class="column" id="cMsg">
+                    Message
+                </div>
+                <div class="column is-narrow" id="cMsgDate">
+                    Date
+                </div>
+            </div>
+        </div>
+    </template>
+
+
+    <script src='/shared/misc.js'></script>
+    <script src='board.js'></script>
+</body>
+
 </html>

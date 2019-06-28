@@ -10,7 +10,7 @@ function appendMessages(msg){
         return
     }
     var msg = JSON.parse(msg)
-    var dateEl = document.createElement('span')
+    var dateEl = document.createElement('div')
     var el = document.createElement('div')
     var msgDate = msg['meta']['time']
     if (msgDate === undefined){
@@ -23,9 +23,29 @@ function appendMessages(msg){
     dateEl.textContent = msgDate
     el.className = 'entry'
     el.innerText = msg['content']
-    document.getElementById('feed').appendChild(dateEl)
-    document.getElementById('feed').appendChild(el)
-    document.getElementById('feed').appendChild(document.createElement('br'))
+
+    /* Template Test */
+    // Test to see if the browser supports the HTML template element by checking
+    // for the presence of the template element's content attribute.
+    if ('content' in document.createElement('template')) {
+
+        // Instantiate the table with the existing HTML tbody
+        // and the row with the template
+        var template = document.getElementById('cMsgTemplate');
+
+        // Clone the new row and insert it into the table
+        var feed = document.getElementById("feed");
+        var clone = document.importNode(template.content, true);
+        var div = clone.querySelectorAll("div");
+        div[2].textContent = msg['content'];
+        div[3].textContent = msgDate;
+
+        feed.appendChild(clone);
+
+    } else {
+    // Find another way to add the rows to the table because 
+    // the HTML template element is not supported.
+    }
 }
 
 function getBlocks(){
@@ -46,6 +66,10 @@ function getBlocks(){
 
 document.getElementById('refreshFeed').onclick = function(){
     getBlocks()
+}
+
+window.onload = function() {
+    getBlocks();
 }
 
 newPostForm.onsubmit = function(){

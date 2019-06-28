@@ -1,75 +1,167 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <meta charset='utf-8'>
-        <title>
-            Onionr Mail
-        </title>
-        <link rel='shortcut icon' type='image/ico' href='/shared/images/favicon.ico'>
-        <link rel='stylesheet' href='/shared/style/modal.css'>
-        <link rel='stylesheet' href='/shared/main/style.css'>
-        <link rel='stylesheet' href='/mail/mail.css'>
-    </head>
-    <body>    
-        <div id="infoOverlay" class='overlay'>
+
+<head>
+    <meta charset='utf-8'>
+    <!--Mobile responsive-->
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>
+        Onionr Mail
+    </title>
+    <link rel='shortcut icon' type='image/ico' href='/shared/images/favicon.ico'>
+    <link rel='stylesheet' href='/shared/main/bulma.min.css'>
+    <link rel="stylesheet" href="/shared/main/styles-new.css">
+</head>
+
+<body>
+
+    <nav class="navbar is-dark" role="navigation" aria-label="main navigation">
+        <div class="navbar-brand">
+            <a class="navbar-item idLink" href="/">
+                <img src="/shared/images/favicon.ico"> Onionr
+            </a>
+
+            <a role="button" class="navbar-burger burger" aria-label="menu" aria-expanded="false"
+                data-target="navbarBasicExample">
+                <span aria-hidden="true"></span>
+                <span aria-hidden="true"></span>
+                <span aria-hidden="true"></span>
+            </a>
         </div>
-        <div class='content'>
-            <img class='logo' src='/shared/images/onionr-icon.png' alt='onionr logo'>
-            <span class='logoText'>Onionr Mail ✉️</span>
-            <br><br>
-            <div><a href='/' class='idLink'>Home</a> <button class='refresh'>Refresh Page</button></div>
-            <div class='mailPing'>
-                API server either shutdown, has disabled mail, or has experienced a bug.
-            </div>
-            <br>
-            <div>🕵️‍♂️ Current Used Identity: <input class='myPub' type='text' readonly></div>
-            <br><br>
-            <div class="btn-group" id='tabBtns'>
-                <button class='activeTab'>Inbox</button><button>Sentbox</button><button>Send Message</button>
-            </div>
-            <div id='threads' class='threads'>
-                <div id='threadPlaceholder'>Nothing here yet 😞</div>
-            </div>
-            <div id='messageDisplay' class='overlay'>
-                <div class='overlayContent'>
-                    <span class='closeOverlay' overlay='messageDisplay'></span>
-                    <div>
-                        From: <input type='text' id='fromUser' readonly> Signature: <span id='sigValid'></span> <span id='addUnknownContact'><button>Add to Contacts</button></span>
-                    </div>
-                    <div class='break-up'>
-                        Subject: <span id='subjectView'></span>
-                    </div>
-                    <div>
-                        <button id='replyBtn' class='primaryBtn break-up'>Reply</button>
-                    </div>
-                    <div id='signatureValidity'></div>
-                    <div id='threadDisplay' class='pre messageContent'>
-                    </div>
-                </div>
-            </div>
-            <div id='sentboxDisplay' class='overlay'>
-                <div class='overlayContent'>
-                    <span class='closeOverlay' overlay='sentboxDisplay'></span>
-                    To: <input id='toID' readonly type='text'>
-                    <div id='sentboxDisplayText' class='pre messageContent'>
-                    </div>
-                </div>
-            </div>
-            <div id='sendMessage' class='overlay'>
-                <div class='overlayContent'>
-                    <label>Select friend: <select id='friendSelect'></select></label>
-                    <form method='post' action='' id='sendForm' enctype="application/x-www-form-urlencoded">
-                        <span class='closeOverlay' overlay='sendMessage'></span>
-                        To: <input id='draftID' type='text' name='to' placeholder='pubkey' required>
-                        Subject: <input name='subject' id='draftSubject' maxlength=25 type='text' placeholder='message subject'>
-                        <textarea name='message' placeholder='type your message...' id='draftText' required></textarea>
-                        <input type='submit' value='Send' class='successBtn'>
-                    </form>
-                </div>
+
+        <div id="navbarBasicExample" class="navbar-menu">
+            <div class="navbar-start">
+                <a class="navbar-item idLink" href="/">Home</a>
+                <a class="navbar-item idLink" href="/mail/">Mail</a>
+                <a class="navbar-item idLink" href="/friends/">Friends</a>
+                <a class="navbar-item idLink" href="/board/">Circles</a>
+                <a class="navbar-item idLink" href="/clandestine/">Clandestine</a>
             </div>
         </div>
-        <script src='/shared/misc.js'></script>
-        <script src='/mail/mail.js'></script>
-        <script src='/mail/sendmail.js'></script>
-    </body>
+    </nav>
+
+    <!--Hero (Dark Section)-->
+    <section class="hero is-small is-dark">
+        <div class="hero-body">
+            <div class="container">
+                <div class="columns">
+                    <div class="column">
+                        <h1 class="title">
+                            Mail
+                        </h1>
+                        <h2 class="subtitle">
+                            Send email style messages to persons
+                        </h2>
+                    </div>
+                    <div class="column is-7">
+                        <div class="field">
+                            <label class="label">Open Site</label>
+                            <div class="field has-addons">
+                                <p class="control">
+                                    <a class="button is-static">Identity</a>
+                                </p>
+                                <p class="control is-expanded">
+                                    <input id="myPub" class="input myPub" type="text" readonly>
+                                </p>
+                                <p class="control">
+                                    <a id="myPubCopy" class="button is-primary">Copy</a>
+                                </p>
+                            </div>
+                        </div>
+                        <div class="field is-grouped is-grouped-centered">
+                            <p class="control">
+                                <a class="button is-link refresh">Refresh Page</a>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        </div>
+    </section>
+
+    <br>
+
+    <!--Start of content-->
+    <div class="container">
+        <div class="tabs">
+            <ul>
+                <li class="is-active">
+                    <a>
+                        <span>Inbox</span>
+                    </a>
+                </li>
+                <li>
+                    <a>
+                        <span>Sent</span>
+                    </a>
+                </li>
+                <li>
+                    <a>
+                        <span>Compose</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+
+    <div id="infoOverlay" class='overlay'>
+    </div>
+    <div class='content'>
+        <div class='mailPing'>
+            API server either shutdown, has disabled mail, or has experienced a bug.
+        </div>
+        <div class="btn-group" id='tabBtns'>
+            <button class='activeTab'>Inbox</button><button>Sentbox</button><button>Send Message</button>
+        </div>
+        <div id='threads' class='threads'>
+            <div id='threadPlaceholder'>Nothing here yet 😞</div>
+        </div>
+        <div id='messageDisplay' class='overlay'>
+            <div class='overlayContent'>
+                <span class='closeOverlay' overlay='messageDisplay'></span>
+                <div>
+                    From: <input type='text' id='fromUser' readonly> Signature: <span id='sigValid'></span> <span
+                        id='addUnknownContact'><button>Add to Contacts</button></span>
+                </div>
+                <div class='break-up'>
+                    Subject: <span id='subjectView'></span>
+                </div>
+                <div>
+                    <button id='replyBtn' class='primaryBtn break-up'>Reply</button>
+                </div>
+                <div id='signatureValidity'></div>
+                <div id='threadDisplay' class='pre messageContent'>
+                </div>
+            </div>
+        </div>
+        <div id='sentboxDisplay' class='overlay'>
+            <div class='overlayContent'>
+                <span class='closeOverlay' overlay='sentboxDisplay'></span>
+                To: <input id='toID' readonly type='text'>
+                <div id='sentboxDisplayText' class='pre messageContent'>
+                </div>
+            </div>
+        </div>
+        <div id='sendMessage' class='overlay'>
+            <div class='overlayContent'>
+                <label>Select friend: <select id='friendSelect'></select></label>
+                <form method='post' action='' id='sendForm' enctype="application/x-www-form-urlencoded">
+                    <span class='closeOverlay' overlay='sendMessage'></span>
+                    To: <input id='draftID' type='text' name='to' placeholder='pubkey' required>
+                    Subject: <input name='subject' id='draftSubject' maxlength=25 type='text'
+                        placeholder='message subject'>
+                    <textarea name='message' placeholder='type your message...' id='draftText' required></textarea>
+                    <input type='submit' value='Send' class='successBtn'>
+                </form>
+            </div>
+        </div>
+    </div>
+    <script src='/shared/misc.js'></script>
+    <script src='/shared/tabs.js'></script>
+    <script src='/mail/mail.js'></script>
+    <script src='/mail/sendmail.js'></script>
+</body>
+
 </html>

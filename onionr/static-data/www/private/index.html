@@ -1,58 +1,192 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <meta charset='utf-8'>
-        <title>
-            Onionr
-        </title>
-        <link rel='shortcut icon' type='image/ico' href='/shared/images/favicon.ico'>
-        <link rel='stylesheet' href='/shared/main/style.css'>
-        <link rel='stylesheet' href='/private/main.css'>
-    </head>
-    <body>
-        <div id="shutdownNotice" class='overlay'>
-            <div>
-                <p>Your node will shutdown. Thank you for using Onionr.</p>
+
+<head>
+    <meta charset='utf-8'>
+    <!--Mobile responsive-->
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>
+        Onionr
+    </title>
+    <link rel='shortcut icon' type='image/ico' href='/shared/images/favicon.ico'>
+    <link rel='stylesheet' href='/shared/main/bulma.min.css'>
+    <link rel="stylesheet" href="/shared/main/styles-new.css">
+</head>
+
+<body>
+    <div id="shutdownNotice" class='overlay'>
+        <div>
+            <p>Your node will shutdown. Thank you for using Onionr.</p>
+        </div>
+    </div>
+
+    <nav class="navbar is-dark" role="navigation" aria-label="main navigation">
+        <div class="navbar-brand">
+            <a class="navbar-item idLink" href="/">
+                <img src="/shared/images/favicon.ico"> Onionr
+            </a>
+
+            <a role="button" class="navbar-burger burger" aria-label="menu" aria-expanded="false"
+                data-target="navbarBasicExample">
+                <span aria-hidden="true"></span>
+                <span aria-hidden="true"></span>
+                <span aria-hidden="true"></span>
+            </a>
+        </div>
+
+        <div id="navbarBasicExample" class="navbar-menu">
+            <div class="navbar-start">
+                <a class="navbar-item idLink" href="/">Home</a>
+                <a class="navbar-item idLink" href="/mail/">Mail</a>
+                <a class="navbar-item idLink" href="/friends/">Friends</a>
+                <a class="navbar-item idLink" href="/board/">Circles</a>
+                <a class="navbar-item idLink" href="/clandestine/">Clandestine</a>
             </div>
         </div>
-        <div class='content'>
-            <img class='logo' src='/shared/images/onionr-icon.png' alt='onionr logo'>
-            <span class='logoText'>Onionr</span>
-            <br><br>
-            <div>🕵️‍♂️ Current Used Identity: <input class='myPub' type='text' readonly></div>
-            <br>
-            <button id='shutdownNode' class='warnBtn'>Shutdown Node</button> <button id='refreshStats' class='primaryBtn'>Refresh Stats</button>
-            <br><br>
-            <h1>Onionr Services</h1>
-            <label>Open Site: <input type='text' id='siteViewer' placeholder='Site Hash'> <button id='openSite' class='primaryBtn openSiteBtn'>Open Onionr Site</button></label>
-            <br>
-            <br><br><a class='idLink' href='/mail/'>Mail</a> - <a class='idLink' href='/friends/'>Friend Manager</a> - <a class='idLink' href='/board/'>Boards</a> - 
-                    <a class='idLink' href='/clandestine/'>Clandestine</a>
-            <br><br><hr>
-            <details class='configArea'>
-                <summary><b>Edit Configuration</b></summary>
-                <br>
-                <p><em>Warning: </em><b>Some values can be dangerous to change. Use caution.</b></p>
-                <br>
-                <textarea class='configEditor'></textarea>
-                <button class='saveConfig successBtn'>Save Config</button>
-            </details>
-            <hr>
-            <h1>Statistics</h1>
-            <p>🕰️ Uptime: <span id='uptime'></span></p>
-            <h2>Connections</h2>
-            <p>🖇️ Last Received Request: <span id='lastIncoming'>None since start</span></p>
-            <p>⬇️ Total Requests Received: <span id='totalRec'>None since start</span></p>
-            <p>🔗 Outgoing Connections:</p>
-            <pre id='connectedNodes'></pre>
-            <h2>Blocks</h2>
-            <p>💾 Stored Blocks: <span id='storedBlocks'></span></p>
-            <p>📨 Blocks in queue: <span id='blockQueue'></span></p>
+    </nav>
+
+    <!--Hero (Dark Bar)-->
+    <section class="hero is-small is-dark">
+        <div class="hero-body">
+            <div class="container">
+                <div class="columns">
+                    <div class="column">
+                        <h1 class="title">
+                            Onionr
+                        </h1>
+                        <h2 class="subtitle">
+                            Private Decentralized Communication
+                        </h2>
+                    </div>
+                    <div class="column is-7">
+                        <div class="field">
+                            <label class="label">Open Site</label>
+                            <div class="field has-addons">
+                                <p class="control">
+                                    <a class="button is-static">Identity</a>
+                                </p>
+                                <p class="control is-expanded">
+                                    <input id="myPub" class="input myPub" type="text" readonly>
+                                </p>
+                                <p class="control">
+                                    <a id="myPubCopy" class="button is-primary">Copy</a>
+                                </p>
+                            </div>
+                        </div>
+                        <div class="field is-grouped is-grouped-centered">
+                            <p class="control">
+                                <a class="button is-danger is-outlined" id='shutdownNode'>Shutdown Node</a>
+                            </p>
+                            <p class="control">
+                                <a class="button is-link" id='refreshStats'>Refresh Stats</a>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-        <script src='/shared/misc.js'></script>
-        <script src='/shared/main/stats.js'></script>
-        <script src='/shared/panel.js'></script>
-        <script src='/shared/configeditor.js'></script>
-        <script src='/shared/sites.js'></script>
-    </body>
+        </div>
+    </section>
+
+    <br>
+
+    <!--Start of content-->
+    <div class="container">
+        <div class="columns">
+            <div class="column">
+                <!--Onionr Card-->
+                <div class="card">
+                    <header class="card-header">
+                        <p class="card-header-title">
+                            Onionr
+                        </p>
+                    </header>
+                    <div class="card-content">
+                        <div class="content">
+                            <div class="field">
+                                <label class="label">Open Site</label>
+                                <div class="field has-addons">
+                                    <p class="control is-expanded">
+                                        <input class="input" type="text" id='siteViewer' placeholder="Site Hash">
+                                    </p>
+                                    <p class="control">
+                                        <a id='openSite' class="button is-info">Open Onionr Site</a>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="column">
+                <!--Statistics Card-->
+                <div class="card">
+                    <header class="card-header">
+                        <p class="card-header-title">
+                            Statistics
+                        </p>
+                    </header>
+                    <div class="card-content">
+                        <div class="content">
+                            <div class="columns">
+                                <div class="column">
+                                    Security level here
+                                </div>
+                                <div class="column">
+                                    🕰️ Uptime: <span id='uptime'></span>
+                                </div>
+                            </div>
+                            <h6>Connections</h6>
+                            <div class="columns">
+                                <div class="column">
+                                    ️ Last Received: <span id='lastIncoming'>None since start</span>
+                                </div>
+                                <div class="column">
+                                    ⬇️ Total Requests: <span id='totalRec'>None since start</span>
+                                </div>
+                            </div>
+                            🔗 Outgoing Connections:
+                            <div class="control">
+                                <pre id='connectedNodes' class="textarea" rows="5" readonly>Unable to get nodes</pre>
+                            </div>
+                            <br>
+                            <h6>Blocks</h6>
+                            <div class="columns">
+                                <div class="column">
+                                    💾 Stored Blocks: <span id='storedBlocks'></span>
+                                </div>
+                                <div class="column">
+                                    📨 Blocks in queue: <span id='blockQueue'></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!--Configuration Card-->
+        <div class="card">
+            <header class="card-header" id="configToggle">
+                <p class="card-header-title">
+                    <a class="button is-white is-fullwidth">Edit Configuration</a>
+                </p>
+            </header>
+            <div class="card-content" id="configContent">
+                <div class="content">
+                    <p><em>Warning: </em><b>Some values can be dangerous to change. Use caution.</b></p>
+                    <textarea class='textarea configEditor' rows="20"></textarea>
+                    <a class="button is-primary saveConfig">Save Config</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <br>
+    <script src='/shared/misc.js'></script>
+    <script src='/shared/main/stats.js'></script>
+    <script src='/shared/panel.js'></script>
+    <script src='/shared/configeditor.js'></script>
+    <script src='/shared/sites.js'></script>
+</body>
+
 </html>
