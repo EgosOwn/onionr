@@ -21,6 +21,7 @@ import time
 import stem
 import core
 from . import connectionserver, bootstrapservice
+from onionrutils import stringvalidators, basicrequests
 
 class OnionrServices:
     '''
@@ -39,14 +40,14 @@ class OnionrServices:
             When a client wants to connect, contact their bootstrap address and tell them our
             ephemeral address for our service by creating a new ConnectionServer instance
         '''
-        assert self._core._utils.validateID(address)
+        assert stringvalidators.validate_transport(address)
         BOOTSTRAP_TRIES = 10 # How many times to attempt contacting the bootstrap server
         TRY_WAIT = 3 # Seconds to wait before trying bootstrap again
         # HTTP is fine because .onion/i2p is encrypted/authenticated
         base_url = 'http://%s/' % (address,)
         socks = self._core.config.get('tor.socksport')
         for x in range(BOOTSTRAP_TRIES):
-            if self._core._utils.doGetRequest(base_url + 'ping', port=socks, ignoreAPI=True) == 'pong!':
+            if basicrequests.do_get_request(self._core, base_url + 'ping', port=socks, ignoreAPI=True) == 'pong!':
                 # if bootstrap sever is online, tell them our service address
                 connectionserver.ConnectionServer(peer, address, core_inst=self._core)
             else:

@@ -18,6 +18,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 import logger
+from onionrutils import stringvalidators
 
 def lookup_new_peer_transports_with_communicator(comm_inst):
     logger.info('Looking up new addresses...')
@@ -39,7 +40,7 @@ def lookup_new_peer_transports_with_communicator(comm_inst):
         invalid = []
         for x in newPeers:
             x = x.strip()
-            if not comm_inst._core._utils.validateID(x) or x in comm_inst.newPeers or x == comm_inst._core.hsAddress:
+            if not stringvalidators.validate_transport(x) or x in comm_inst.newPeers or x == comm_inst._core.hsAddress:
                 # avoid adding if its our address
                 invalid.append(x)
         for x in invalid:

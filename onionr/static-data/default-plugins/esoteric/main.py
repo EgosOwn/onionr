@@ -1,5 +1,5 @@
 '''
-    Onionr - P2P Anonymous Storage Network
+    Onionr - Private P2P Communication
 
     Instant message conversations with Onionr peers
 '''
@@ -23,8 +23,9 @@ import locale, sys, os, threading, json
 locale.setlocale(locale.LC_ALL, '')
 import onionrservices, logger
 from onionrservices import bootstrapservice
+from onionrutils import stringvalidators, epoch, basicrequests
 
-plugin_name = 'clandestine'
+plugin_name = 'esoteric'
 PLUGIN_VERSION = '0.0.0'
 sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
 import controlapi, peerserver
@@ -36,7 +37,7 @@ def exit_with_error(text=''):
         logger.error(text)
     sys.exit(1)
 
-class Clandestine:
+class Esoteric:
     def __init__(self, pluginapi):
         self.myCore = pluginapi.get_core()
         self.peer = None
@@ -57,8 +58,8 @@ class Clandestine:
                 else:
                     message += '\n'
             except EOFError:
-                message = json.dumps({'m': message, 't': self.myCore._utils.getEpoch()})
-                print(self.myCore._utils.doPostRequest('http://%s/clandestine/sendto' % (self.transport,), port=self.socks, data=message))
+                message = json.dumps({'m': message, 't': epoch.get_epoch()})
+                print(basicrequests.do_post_request(self.myCore, 'http://%s/esoteric/sendto' % (self.transport,), port=self.socks, data=message))
                 message = ''
             except KeyboardInterrupt:
                 self.shutdown = True
@@ -66,7 +67,7 @@ class Clandestine:
     def create(self):
         try:
             peer = sys.argv[2]
-            if not self.myCore._utils.validatePubKey(peer):
+            if not stringvalidators.validate_pub_key(peer):
                 exit_with_error('Invalid public key specified')
         except IndexError:
             exit_with_error('You must specify a peer public key')
@@ -77,7 +78,7 @@ class Clandestine:
         self.socks = self.myCore.config.get('tor.socksport')
 
         print('connected with', peer, 'on', peer_transport_address)
-        if self.myCore._utils.doGetRequest('http://%s/ping' % (peer_transport_address,), ignoreAPI=True, port=self.socks) == 'pong!':
+        if basicrequests.do_get_request(self.myCore, 'http://%s/ping' % (peer_transport_address,), ignoreAPI=True, port=self.socks) == 'pong!':
             print('connected', peer_transport_address)
             threading.Thread(target=self._sender_loop).start()
 
@@ -89,6 +90,6 @@ def on_init(api, data = None):
     '''
 
     pluginapi = api
-    chat = Clandestine(pluginapi)
-    api.commands.register(['clandestine'], chat.create)
+    chat = Esoteric(pluginapi)
+    api.commands.register(['esoteric'], chat.create)
     return

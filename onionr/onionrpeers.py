@@ -19,6 +19,7 @@
 '''
 import sqlite3
 import core, config, logger
+from onionrutils import epoch
 config.reload()
 class PeerProfiles:
     '''
@@ -106,7 +107,7 @@ def peerCleanup(coreInst):
             if PeerProfiles(address, coreInst).score < minScore:
                 coreInst.removeAddress(address)
                 try:
-                    if (int(coreInst._utils.getEpoch()) - int(coreInst.getPeerInfo(address, 'dateSeen'))) >= 600:
+                    if (int(epoch.get_epoch()) - int(coreInst.getPeerInfo(address, 'dateSeen'))) >= 600:
                         expireTime = 600
                     else:
                         expireTime = 86400

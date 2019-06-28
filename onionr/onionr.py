@@ -21,14 +21,23 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 import sys
+ONIONR_TAGLINE = 'Private P2P Communication - GPLv3 - https://Onionr.net'
+ONIONR_VERSION = '0.0.0' # for debugging and stuff
+ONIONR_VERSION_TUPLE = tuple(ONIONR_VERSION.split('.')) # (MAJOR, MINOR, VERSION)
+API_VERSION = '0' # increments of 1; only change when something fundamental about how the API works changes. This way other nodes know how to communicate without learning too much information about you.
 MIN_PY_VERSION = 6
 if sys.version_info[0] == 2 or sys.version_info[1] < MIN_PY_VERSION:
-    sys.stderr.write('Error, Onionr requires Python 3.%s+' % (MIN_PY_VERSION,))
+    sys.stderr.write('Error, Onionr requires Python 3.%s+\n' % (MIN_PY_VERSION,))
     sys.exit(1)
+
+from utils import detectoptimization
+if detectoptimization.detect_optimization():
+    sys.stderr.write('Error, Onionr cannot be run in optimized mode\n')
+    sys.exit(1)
+
 import os, base64, random, shutil, time, platform, signal
 from threading import Thread
 import api, core, config, logger, onionrplugins as plugins, onionrevents as events
-import onionrutils
 import netcontroller
 from netcontroller import NetController
 from onionrblockapi import Block
@@ -40,17 +49,13 @@ try:
 except ImportError:
     raise Exception("You need the PySocks module (for use with socks5 proxy to use Tor)")
 
-ONIONR_TAGLINE = 'Private P2P Communication - GPLv3 - https://Onionr.net'
-ONIONR_VERSION = '0.0.0' # for debugging and stuff
-ONIONR_VERSION_TUPLE = tuple(ONIONR_VERSION.split('.')) # (MAJOR, MINOR, VERSION)
-API_VERSION = '0' # increments of 1; only change when something fundamental about how the API works changes. This way other nodes know how to communicate without learning too much information about you.
-
 class Onionr:
     def __init__(self):
         '''
             Main Onionr class. This is for the CLI program, and does not handle much of the logic.
             In general, external programs and plugins should not use this class.
         '''
+        self.API_VERSION = API_VERSION
         self.userRunDir = os.getcwd() # Directory user runs the program from
         self.killed = False
 
@@ -72,7 +77,7 @@ class Onionr:
         data_exists = Onionr.setupConfig(self.dataDir, self)
 
         if netcontroller.torBinary() is None:
-            logger.error('Tor is not installed')
+            logger.error('Tor is not installed', terminal=True)
             sys.exit(1)
 
         # If block data folder does not exist
@@ -101,7 +106,6 @@ class Onionr:
         self.onionrCore = core.Core()
         self.onionrCore.onionrInst = self
         #self.deleteRunFiles()
-        self.onionrUtils = onionrutils.OnionrUtils(self.onionrCore)
 
         self.clientAPIInst = '' # Client http api instance
         self.publicAPIInst = '' # Public http api instance
@@ -159,7 +163,7 @@ class Onionr:
                 sys.stderr.write(file.read().decode().replace('P', logger.colors.fg.pink).replace('W', logger.colors.reset + logger.colors.bold).replace('G', logger.colors.fg.green).replace('\n', logger.colors.reset + '\n').replace('B', logger.colors.bold).replace('A', '%s' % API_VERSION).replace('V', ONIONR_VERSION))
 
                 if not message is None:
-                    logger.info(logger.colors.fg.lightgreen + '-> ' + str(message) + logger.colors.reset + logger.colors.fg.lightgreen + ' <-\n', sensitive=True)
+                    logger.info(logger.colors.fg.lightgreen + '-> ' + str(message) + logger.colors.reset + logger.colors.fg.lightgreen + ' <-\n', terminal=True)
 
     def deleteRunFiles(self):
         try:
@@ -200,7 +204,7 @@ class Onionr:
     '''
 
     def exportBlock(self):
-        commands.exportblocks(self)
+        commands.exportblocks.export_block(self)
 
     def showDetails(self):
         commands.onionrstatistics.show_details(self)
@@ -232,13 +236,13 @@ class Onionr:
     def listPeers(self):
         logger.info('Peer transport address list:')
         for i in self.onionrCore.listAdders():
-            logger.info(i)
+            logger.info(i, terminal=True)
 
     def getWebPassword(self):
         return config.get('client.webpassword')
 
     def printWebPassword(self):
-        logger.info(self.getWebPassword(), sensitive = True)
+        logger.info(self.getWebPassword(), terminal=True)
 
     def getHelp(self):
         return self.cmdhelp
@@ -263,13 +267,13 @@ class Onionr:
         if len(sys.argv) >= 4:
             config.reload()
             config.set(sys.argv[2], sys.argv[3], True)
-            logger.debug('Configuration file updated.')
+            logger.info('Configuration file updated.', terminal=True)
         elif len(sys.argv) >= 3:
             config.reload()
-            logger.info(logger.colors.bold + sys.argv[2] + ': ' + logger.colors.reset + str(config.get(sys.argv[2], logger.colors.fg.red + 'Not set.')))
+            logger.info(logger.colors.bold + sys.argv[2] + ': ' + logger.colors.reset + str(config.get(sys.argv[2], logger.colors.fg.red + 'Not set.')), terminal=True)
         else:
-            logger.info(logger.colors.bold + 'Get a value: ' + logger.colors.reset + sys.argv[0] + ' ' + sys.argv[1] + ' <key>')
-            logger.info(logger.colors.bold + 'Set a value: ' + logger.colors.reset + sys.argv[0] + ' ' + sys.argv[1] + ' <key> <value>')
+            logger.info(logger.colors.bold + 'Get a value: ' + logger.colors.reset + sys.argv[0] + ' ' + sys.argv[1] + ' <key>', terminal=True)
+            logger.info(logger.colors.bold + 'Set a value: ' + logger.colors.reset + sys.argv[0] + ' ' + sys.argv[1] + ' <key> <value>', terminal=True)
 
     def execute(self, argument):
         '''
@@ -289,11 +293,11 @@ class Onionr:
             Displays the Onionr version
         '''
 
-        function('Onionr v%s (%s) (API v%s)' % (ONIONR_VERSION, platform.machine(), API_VERSION))
+        function('Onionr v%s (%s) (API v%s)' % (ONIONR_VERSION, platform.machine(), API_VERSION), terminal=True)
         if verbosity >= 1:
-            function(ONIONR_TAGLINE)
+            function(ONIONR_TAGLINE, terminal=True)
         if verbosity >= 2:
-            function('Running on %s %s' % (platform.platform(), platform.release()))
+            function('Running on %s %s' % (platform.platform(), platform.release()), terminal=True)
 
     def doPEX(self):
         '''make communicator do pex'''
@@ -304,7 +308,7 @@ class Onionr:
         '''
             Displays a list of keys (used to be called peers) (?)
         '''
-        logger.info('%sPublic keys in database: \n%s%s' % (logger.colors.fg.lightgreen, logger.colors.fg.green, '\n'.join(self.onionrCore.listPeers())))
+        logger.info('%sPublic keys in database: \n%s%s' % (logger.colors.fg.lightgreen, logger.colors.fg.green, '\n'.join(self.onionrCore.listPeers())), terminal=True)
 
     def addPeer(self):
         '''
@@ -347,14 +351,14 @@ class Onionr:
             Displays a "command not found" message
         '''
 
-        logger.error('Command not found.', timestamp = False)
+        logger.error('Command not found.', timestamp = False, terminal=True)
 
     def showHelpSuggestion(self):
         '''
             Displays a message suggesting help
         '''
         if __name__ == '__main__':
-            logger.info('Do ' + logger.colors.bold + sys.argv[0] + ' --help' + logger.colors.reset + logger.colors.fg.green + ' for Onionr help.')
+            logger.info('Do ' + logger.colors.bold + sys.argv[0] + ' --help' + logger.colors.reset + logger.colors.fg.green + ' for Onionr help.', terminal=True)
 
     def start(self, input = False, override = False):
         '''

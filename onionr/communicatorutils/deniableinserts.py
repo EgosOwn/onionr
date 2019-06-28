@@ -27,5 +27,5 @@ def insert_deniable_block(comm_inst):
         # This assumes on the libsodium primitives to have key-privacy
         fakePeer = onionrvalues.DENIABLE_PEER_ADDRESS
         data = secrets.token_hex(secrets.randbelow(1024) + 1)
-        comm_inst._core.insertBlock(data, header='pm', encryptType='asym', asymPeer=fakePeer, meta={'subject': 'foo'})
+        comm_inst._core.insertBlock(data, header='pm', encryptType='asym', asymPeer=fakePeer, disableForward=True, meta={'subject': 'foo'})
     comm_inst.decrementThreadCount('insert_deniable_block')

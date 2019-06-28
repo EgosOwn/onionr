@@ -18,6 +18,8 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 import communicator, onionrblockapi
+from onionrutils import stringvalidators
+
 def service_creator(daemon):
     assert isinstance(daemon, communicator.OnionrCommunicatorDaemon)
     core = daemon._core
@@ -30,7 +32,7 @@ def service_creator(daemon):
         if not b in daemon.active_services:
             bl = onionrblockapi.Block(b, core=core, decrypt=True)
             bs = utils.bytesToStr(bl.bcontent) + '.onion'
-            if utils.validatePubKey(bl.signer) and utils.validateID(bs):
+            if stringvalidators.validate_pub_key(bl.signer) and stringvalidators.validate_transport(bs):
                 signer = utils.bytesToStr(bl.signer)
                 daemon.active_services.append(b)
                 daemon.active_services.append(signer)

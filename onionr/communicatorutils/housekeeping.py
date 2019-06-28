@@ -20,6 +20,7 @@
 import sqlite3
 import logger
 from onionrusers import onionrusers
+from onionrutils import epoch
 def clean_old_blocks(comm_inst):
     '''Delete old blocks if our disk allocation is full/near full, and also expired blocks'''
 
@@ -29,7 +30,7 @@ def clean_old_blocks(comm_inst):
         comm_inst._core.removeBlock(bHash)
         logger.info('Deleted block: %s' % (bHash,))
 
-    while comm_inst._core._utils.storageCounter.isFull():
+    while comm_inst._core.storage_counter.isFull():
         oldest = comm_inst._core.getBlockList()[0]
         comm_inst._core._blacklist.addToDB(oldest)
         comm_inst._core.removeBlock(oldest)
@@ -41,7 +42,7 @@ def clean_keys(comm_inst):
     '''Delete expired forward secrecy keys'''
     conn = sqlite3.connect(comm_inst._core.peerDB, timeout=10)
     c = conn.cursor()
-    time = comm_inst._core._utils.getEpoch()
+    time = epoch.get_epoch()
     deleteKeys = []
 
     for entry in c.execute("SELECT * FROM forwardKeys WHERE expire <= ?", (time,)):

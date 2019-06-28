@@ -19,8 +19,10 @@
 '''
 import os, binascii, base64, hashlib, time, sys, hmac, secrets
 import nacl.signing, nacl.encoding, nacl.public, nacl.hash, nacl.pwhash, nacl.utils, nacl.secret
+import unpaddedbase32
 import logger, onionrproofs
-import onionrexceptions, keymanager, core
+from onionrutils import stringvalidators, epoch, bytesconverter
+import onionrexceptions, keymanager, core, onionrutils
 import config
 config.reload()
 
@@ -37,8 +39,8 @@ class OnionrCrypto:
 
         # Load our own pub/priv Ed25519 keys, gen & save them if they don't exist
         if os.path.exists(self._keyFile):
-            if len(config.get('general.public_key', '')) > 0:
-                self.pubKey = config.get('general.public_key')
+            if len(self._core.config.get('general.public_key', '')) > 0:
+                self.pubKey = self._core.config.get('general.public_key')
             else:
                 self.pubKey = self.keyManager.getPubkeyList()[0]
             self.privKey = self.keyManager.getPrivkey(self.pubKey)
@@ -93,9 +95,10 @@ class OnionrCrypto:
 
     def pubKeyEncrypt(self, data, pubkey, encodedData=False):
         '''Encrypt to a public key (Curve25519, taken from base32 Ed25519 pubkey)'''
+        pubkey = unpaddedbase32.repad(bytesconverter.str_to_bytes(pubkey))
         retVal = ''
         box = None
-        data = self._core._utils.strToBytes(data)
+        data = bytesconverter.str_to_bytes(data)
         
         pubkey = nacl.signing.VerifyKey(pubkey, encoder=nacl.encoding.Base32Encoder()).to_curve25519_public_key()
 
@@ -120,7 +123,7 @@ class OnionrCrypto:
             privkey = self.privKey
         ownKey = nacl.signing.SigningKey(seed=privkey, encoder=nacl.encoding.Base32Encoder()).to_curve25519_private_key()
 
-        if self._core._utils.validatePubKey(privkey):
+        if stringvalidators.validate_pub_key(privkey):
             privkey = nacl.signing.SigningKey(seed=privkey, encoder=nacl.encoding.Base32Encoder()).to_curve25519_private_key()
             anonBox = nacl.public.SealedBox(privkey)
         else:
@@ -129,7 +132,7 @@ class OnionrCrypto:
         return decrypted
 
     def symmetricEncrypt(self, data, key, encodedKey=False, returnEncoded=True):
-        '''Encrypt data to a 32-byte key (Salsa20-Poly1305 MAC)'''
+        '''Encrypt data with a 32-byte key (Salsa20-Poly1305 MAC)'''
         if encodedKey:
             encoding = nacl.encoding.Base64Encoder
         else:
@@ -179,7 +182,7 @@ class OnionrCrypto:
     def generateDeterministic(self, passphrase, bypassCheck=False):
         '''Generate a Ed25519 public key pair from a password'''
         passStrength = self.deterministicRequirement
-        passphrase = self._core._utils.strToBytes(passphrase) # Convert to bytes if not already
+        passphrase = bytesconverter.str_to_bytes(passphrase) # Convert to bytes if not already
         # Validate passphrase length
         if not bypassCheck:
             if len(passphrase) < passStrength:
@@ -199,7 +202,7 @@ class OnionrCrypto:
         if pubkey == '':
             pubkey = self.pubKey
         prev = ''
-        pubkey = pubkey.encode()
+        pubkey = bytesconverter.str_to_bytes(pubkey)
         for i in range(self.HASH_ID_ROUNDS):
             try:
                 prev = prev.encode()
@@ -248,8 +251,8 @@ class OnionrCrypto:
         
         difficulty = onionrproofs.getDifficultyForNewBlock(blockContent, ourBlock=False, coreInst=self._core)
         
-        if difficulty < int(config.get('general.minimum_block_pow')):
-            difficulty = int(config.get('general.minimum_block_pow'))
+        if difficulty < int(self._core.config.get('general.minimum_block_pow')):
+            difficulty = int(self._core.config.get('general.minimum_block_pow'))
         mainHash = '0000000000000000000000000000000000000000000000000000000000000000'#nacl.hash.blake2b(nacl.utils.random()).decode()
         puzzle = mainHash[:difficulty]
 
@@ -263,7 +266,7 @@ class OnionrCrypto:
 
     @staticmethod
     def replayTimestampValidation(timestamp):
-        if core.Core()._utils.getEpoch() - int(timestamp) > 2419200:
+        if epoch.get_epoch() - int(timestamp) > 2419200:
             return False
         else:
             return True

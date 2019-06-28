@@ -1,5 +1,5 @@
 '''
-    Onionr - P2P Anonymous Storage Network
+    Onionr - Private P2P Communication
 
     HTTP endpoints for mail plugin.
 '''
@@ -21,6 +21,7 @@ import sys, os, json
 from flask import Response, request, redirect, Blueprint, abort
 import core
 from onionrusers import contactmanager
+from onionrutils import stringvalidators
 sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
 import loadinbox, sentboxdb
 
@@ -34,7 +35,7 @@ def mail_ping():
 
 @flask_blueprint.route('/mail/deletemsg/<block>', methods=['POST'])
 def mail_delete(block):
-    if not c._utils.validateHash(block):
+    if not stringvalidators.validate_hash(block):
         abort(504)
     existing = kv.get('deleted_mail')
     if existing is None:

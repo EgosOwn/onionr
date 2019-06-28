@@ -178,8 +178,16 @@ body{
     background-color:#396BAC;    
 }
 
+.btn:hover{
+    opacity: 0.6;
+}
+
 .openSiteBtn{
     padding: 5px;
     border: 1px solid black;
     border-radius: 5px;
+}
+
+.hidden{
+    display: none;
 }

@@ -18,10 +18,34 @@
 */
 uptimeDisplay = document.getElementById('uptime')
 connectedDisplay = document.getElementById('connectedNodes')
+connectedDisplay.style.maxHeight = '300px'
+connectedDisplay.style.overflowY = 'scroll'
 storedBlockDisplay = document.getElementById('storedBlocks')
 queuedBlockDisplay = document.getElementById('blockQueue')
 lastIncoming = document.getElementById('lastIncoming')
 totalRec = document.getElementById('totalRec')
+securityLevel = document.getElementById('securityLevel')
+sec_description_str = 'unknown'
+
+function showSecStatNotice(){
+    var secWarnEls = document.getElementsByClassName('secRequestNotice')
+    for (el = 0; el < secWarnEls.length; el++){
+        secWarnEls[el].style.display = 'block'
+    }
+}
+
+switch (httpGet('/config/get/general.security_level')){
+    case "0":
+        sec_description_str = 'normal'
+        break;
+    case "1":
+        sec_description_str = 'high'
+        break;
+}
+
+if (sec_description_str !== 'normal'){
+    showSecStatNotice()
+}
 
 function getStats(){
     stats = JSON.parse(httpGet('getstats', webpass))
@@ -29,6 +53,7 @@ function getStats(){
     connectedDisplay.innerText = stats['connectedNodes']
     storedBlockDisplay.innerText = stats['blockCount']
     queuedBlockDisplay.innerText = stats['blockQueueCount']
+    securityLevel.innerText = sec_description_str
     totalRec.innerText = httpGet('/hitcount')
     var lastConnect = httpGet('/lastconnect')
     if (lastConnect > 0){

@@ -11,7 +11,7 @@
 (***pre-alpha & experimental, not well tested or easy to use yet***)
 
 [![Open Source Love](https://badges.frapsoft.com/os/v3/open-source.png?v=103)](https://github.com/ellerbrock/open-source-badges/)
-<img src='https://gitlab.com/beardog/Onionr/badges/master/build.svg'> - [Onionr.net](https://onionr.net/)
+<img src='https://gitlab.com/beardog/Onionr/badges/master/build.svg'> - [Onionr.net](https://onionr.net/) - [.onion](http://onionr.onionkvc5ibm37bmxwr56bdxcdnb6w3wm4bdghh5qo6f6za7gn7styid.onion/)
 
 <hr>
 
@@ -19,7 +19,7 @@
 
 # About
 
-Onionr is a decentralized, peer-to-peer communication and storage network, designed to be anonymous and resistant to (meta)data analysis, spam, and corruption.
+Onionr is a decentralized, peer-to-peer communication network, designed to be anonymous and resistant to (meta)data analysis, spam, and corruption.
 
 Onionr stores data in independent packages referred to as 'blocks'. The blocks are synced to all other nodes in the network. Blocks and user IDs cannot be easily proven to have been created by a particular user. Even if there is enough evidence to believe that a specific user created a block, nodes still operate behind Tor or I2P and as such cannot be trivially unmasked.
 
@@ -85,7 +85,7 @@ The following applies to Ubuntu Bionic. Other distros may have different package
 
 `$ sudo apt install python3-pip python3-dev tor`
 
-* Have python3.6+, python3-pip, Tor (daemon, not browser) installed (python3-dev recommended)
+* Have python3.6+, python3-pip, Tor (daemon, not browser) installed. python3-dev is recommended.
 * Clone the git repo: `$ git clone https://gitlab.com/beardog/onionr`
 * cd into install direction: `$ cd onionr/`
 * Install the Python dependencies ([virtualenv strongly recommended](https://virtualenv.pypa.io/en/stable/userguide/)): `$ pip3 install --require-hashes -r requirements.txt`
@@ -123,7 +123,7 @@ Note: probably not tax deductible
 
 Email: beardog [ at ] mailbox.org
 
-Onionr Mail: TRH763JURNY47QPBTTQ4LLPYCYQK6Q5YA33R6GANKZK5C5DKCIGQ====
+Onionr Mail: TRH763JURNY47QPBTTQ4LLPYCYQK6Q5YA33R6GANKZK5C5DKCIGQ
 
 ## Disclaimers and legal
 

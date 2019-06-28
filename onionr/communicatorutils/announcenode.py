@@ -20,6 +20,7 @@
 import base64
 import onionrproofs, logger
 from etc import onionrvalues
+from onionrutils import basicrequests, bytesconverter
 
 def announce_node(daemon):
     '''Announce our node to our peers'''
@@ -52,7 +53,7 @@ def announce_node(daemon):
             combinedNodes = ourID + peer
             if ourID != 1:
                 #TODO: Extend existingRand for i2p
-                existingRand = daemon._core._utils.bytesToStr(daemon._core.getAddressInfo(peer, 'powValue'))
+                existingRand = bytesconverter.bytes_to_str(daemon._core.getAddressInfo(peer, 'powValue'))
                 # Reset existingRand if it no longer meets the minimum POW
                 if type(existingRand) is type(None) or not existingRand.endswith('0' * ov.announce_pow):
                     existingRand = ''
@@ -75,8 +76,8 @@ def announce_node(daemon):
                     daemon.announceCache[peer] = data['random']
             if not announceFail:
                 logger.info('Announcing node to ' + url)
-                if daemon._core._utils.doPostRequest(url, data) == 'Success':
-                    logger.info('Successfully introduced node to ' + peer)
+                if basicrequests.do_post_request(daemon._core, url, data) == 'Success':
+                    logger.info('Successfully introduced node to ' + peer, terminal=True)
                     retData = True
                     daemon._core.setAddressInfo(peer, 'introduced', 1)
                     daemon._core.setAddressInfo(peer, 'powValue', data['random'])

@@ -19,6 +19,7 @@
 '''
 
 import onionrplugins, core as onionrcore, logger
+from onionrutils import localcommand
 
 class DaemonAPI:
     def __init__(self, pluginapi):
@@ -40,7 +41,7 @@ class DaemonAPI:
         return
 
     def local_command(self, command):
-        return self.pluginapi.get_utils().localCommand(self, command)
+        return localcommand.local_command(self.pluginapi.get_core(), command)
 
     def queue_pop(self):
         return self.get_core().daemonQueue()
@@ -168,9 +169,6 @@ class pluginapi:
 
     def get_core(self):
         return self.core
-
-    def get_utils(self):
-        return self.get_core()._utils
 
     def get_crypto(self):
         return self.get_core()._crypto

@@ -1,12 +1,14 @@
-friendList = []
+friendList = {}
 convoListElement = document.getElementsByClassName('conversationList')[0]
 
 function createConvoList(){
-    for (var x = 0; x < friendList.length; x++){
+    console.log(friendList)
+
+    for (friend in friendList){
         var convoEntry = document.createElement('div')
         convoEntry.classList.add('convoEntry')
-        convoEntry.setAttribute('data-pubkey', friendList[x])
-        convoEntry.innerText = friendList[x]
+        convoEntry.setAttribute('data-pubkey', friend)
+        convoEntry.innerText = friendList[friend]
         convoListElement.append(convoEntry)
     }
 }
@@ -20,7 +22,7 @@ fetch('/friends/list', {
     var keys = []
     for(var k in resp) keys.push(k)
     for (var i = 0; i < keys.length; i++){
-        friendList.push(keys[i])
+        friendList[keys[i]] = resp[keys[i]]['name']
     }
     createConvoList()
 })

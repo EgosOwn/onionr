@@ -114,3 +114,7 @@ input{
     font-size: 1.5em;
     width: 10%;
 }
+
+.content{
+    min-height: 1000px;
+}

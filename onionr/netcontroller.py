@@ -20,7 +20,6 @@
 import subprocess, os, sys, time, signal, base64, socket
 from shutil import which
 import logger, config
-from onionrblockapi import Block
 config.reload()
 def getOpenPort():
     # taken from (but modified) https://stackoverflow.com/a/2838309 by https://stackoverflow.com/users/133374/albert ccy-by-sa-3 https://creativecommons.org/licenses/by-sa/3.0/
@@ -124,14 +123,14 @@ HiddenServicePort 80 ''' + self.apiServerIP + ''':''' + str(self.hsPort)
         try:
             tor = subprocess.Popen([self.torBinary, '-f', self.torConfigLocation], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         except FileNotFoundError:
-            logger.fatal("Tor was not found in your path or the Onionr directory. Please install Tor and try again.")
+            logger.fatal("Tor was not found in your path or the Onionr directory. Please install Tor and try again.", terminal=True)
             sys.exit(1)
         else:
             # Test Tor Version
             torVersion = subprocess.Popen([self.torBinary, '--version'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             for line in iter(torVersion.stdout.readline, b''):
                 if 'Tor 0.2.' in line.decode():
-                    logger.error('Tor 0.3+ required')
+                    logger.fatal('Tor 0.3+ required', terminal=True)
                     sys.exit(1)
                     break
             torVersion.kill()
@@ -140,17 +139,18 @@ HiddenServicePort 80 ''' + self.apiServerIP + ''':''' + str(self.hsPort)
         try:
             for line in iter(tor.stdout.readline, b''):
                 if 'bootstrapped 100' in line.decode().lower():
+                    logger.info(line.decode())
                     break
                 elif 'opening socks listener' in line.decode().lower():
                     logger.debug(line.decode().replace('\n', ''))
             else:
-                logger.fatal('Failed to start Tor. Maybe a stray instance of Tor used by Onionr is still running? This can also be a result of file permissions being too open')
+                logger.fatal('Failed to start Tor. Maybe a stray instance of Tor used by Onionr is still running? This can also be a result of file permissions being too open', terminal=True)
                 return False
         except KeyboardInterrupt:
-            logger.fatal('Got keyboard interrupt. Onionr will exit soon.', timestamp = False, level = logger.LEVEL_IMPORTANT)
+            logger.fatal('Got keyboard interrupt. Onionr will exit soon.', timestamp = False, level = logger.LEVEL_IMPORTANT, terminal=True)
             return False
 
-        logger.debug('Finished starting Tor.', timestamp=True)
+        logger.info('Finished starting Tor.', terminal=True)
         self.readyState = True
 
         try:

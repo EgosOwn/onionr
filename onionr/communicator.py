@@ -27,6 +27,7 @@ from communicatorutils import downloadblocks, lookupblocks, lookupadders
 from communicatorutils import servicecreator, connectnewpeers, uploadblocks
 from communicatorutils import daemonqueuehandler, announcenode, deniableinserts
 from communicatorutils import cooldownpeer, housekeeping, netcheck
+from onionrutils import localcommand, epoch, basicrequests
 from etc import humanreadabletime
 import onionrservices, onionr, onionrproofs
 
@@ -90,7 +91,7 @@ class OnionrCommunicatorDaemon:
         plugins.reload()
 
         # time app started running for info/statistics purposes
-        self.startTime = self._core._utils.getEpoch()
+        self.startTime = epoch.get_epoch()
 
         if developmentMode:
             OnionrCommunicatorTimers(self, self.heartbeat, 30)
@@ -176,7 +177,7 @@ class OnionrCommunicatorDaemon:
             self.shutdown = True
             pass
 
-        logger.info('Goodbye. (Onionr is cleaning up, and will exit)')
+        logger.info('Goodbye. (Onionr is cleaning up, and will exit)', terminal=True)
         try:
             self.service_greenlets
         except AttributeError:
@@ -184,7 +185,7 @@ class OnionrCommunicatorDaemon:
         else:
             for server in self.service_greenlets:
                 server.stop()
-        self._core._utils.localCommand('shutdown') # shutdown the api
+        localcommand.local_command(self._core, 'shutdown') # shutdown the api
         time.sleep(0.5)
 
     def lookupAdders(self):
@@ -252,7 +253,7 @@ class OnionrCommunicatorDaemon:
                 break
         else:
             if len(self.onlinePeers) == 0:
-                logger.debug('Couldn\'t connect to any peers.' + (' Last node seen %s ago.' % humanreadabletime.human_readable_time(time.time() - self.lastNodeSeen) if not self.lastNodeSeen is None else ''))
+                logger.debug('Couldn\'t connect to any peers.' + (' Last node seen %s ago.' % humanreadabletime.human_readable_time(time.time() - self.lastNodeSeen) if not self.lastNodeSeen is None else ''), terminal=True)
             else:
                 self.lastNodeSeen = time.time()
         self.decrementThreadCount('getOnlinePeers')
@@ -293,12 +294,12 @@ class OnionrCommunicatorDaemon:
     def printOnlinePeers(self):
         '''logs online peer list'''
         if len(self.onlinePeers) == 0:
-            logger.warn('No online peers')
+            logger.warn('No online peers', terminal=True)
         else:
-            logger.info('Online peers:')
+            logger.info('Online peers:', terminal=True)
             for i in self.onlinePeers:
                 score = str(self.getPeerProfileInstance(i).score)
-                logger.info(i + ', score: ' + score)
+                logger.info(i + ', score: ' + score, terminal=True)
 
     def peerAction(self, peer, action, data='', returnHeaders=False):
         '''Perform a get request to a peer'''
@@ -309,20 +310,21 @@ class OnionrCommunicatorDaemon:
         if len(data) > 0:
             url += '&data=' + data
 
-        self._core.setAddressInfo(peer, 'lastConnectAttempt', self._core._utils.getEpoch()) # mark the time we're trying to request this peer
+        self._core.setAddressInfo(peer, 'lastConnectAttempt', epoch.get_epoch()) # mark the time we're trying to request this peer
 
-        retData = self._core._utils.doGetRequest(url, port=self.proxyPort)
+        retData = basicrequests.do_get_request(self._core, url, port=self.proxyPort)
         # if request failed, (error), mark peer offline
         if retData == False:
             try:
                 self.getPeerProfileInstance(peer).addScore(-10)
                 self.removeOnlinePeer(peer)
-                if action != 'ping':
+                if action != 'ping' and not self.shutdown:
+                    logger.warn('Lost connection to ' + peer, terminal=True)
                     self.getOnlinePeers() # Will only add a new peer to pool if needed
             except ValueError:
                 pass
         else:
-            self._core.setAddressInfo(peer, 'lastConnect', self._core._utils.getEpoch())
+            self._core.setAddressInfo(peer, 'lastConnect', epoch.get_epoch())
             self.getPeerProfileInstance(peer).addScore(1)
         return retData # If returnHeaders, returns tuple of data, headers. if not, just data string
 
@@ -339,7 +341,7 @@ class OnionrCommunicatorDaemon:
         return retData
 
     def getUptime(self):
-        return self._core._utils.getEpoch() - self.startTime
+        return epoch.get_epoch() - self.startTime
 
     def heartbeat(self):
         '''Show a heartbeat debug message'''
@@ -359,19 +361,19 @@ class OnionrCommunicatorDaemon:
     def announce(self, peer):
         '''Announce to peers our address'''
         if announcenode.announce_node(self) == False:
-            logger.warn('Could not introduce node.')
+            logger.warn('Could not introduce node.', terminal=True)
 
     def detectAPICrash(self):
         '''exit if the api server crashes/stops'''
-        if self._core._utils.localCommand('ping', silent=False) not in ('pong', 'pong!'):
+        if localcommand.local_command(self._core, 'ping', silent=False) not in ('pong', 'pong!'):
             for i in range(300):
-                if self._core._utils.localCommand('ping') in ('pong', 'pong!') or self.shutdown:
+                if localcommand.local_command(self._core, 'ping') in ('pong', 'pong!') or self.shutdown:
                     break # break for loop
                 time.sleep(1)
             else:
                 # This executes if the api is NOT detected to be running
                 events.event('daemon_crash', onionr = self._core.onionrInst, data = {})
-                logger.error('Daemon detected API crash (or otherwise unable to reach API after long time), stopping...')
+                logger.fatal('Daemon detected API crash (or otherwise unable to reach API after long time), stopping...', terminal=True)
                 self.shutdown = True
         self.decrementThreadCount('detectAPICrash')
 
@@ -388,5 +390,4 @@ def run_file_exists(daemon):
     if os.path.isfile(daemon._core.dataDir + '.runcheck'):
         os.remove(daemon._core.dataDir + '.runcheck')
         return True
-
     return False

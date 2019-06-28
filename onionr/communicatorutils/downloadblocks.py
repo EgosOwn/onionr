@@ -19,6 +19,7 @@
 '''
 import communicator, onionrexceptions
 import logger, onionrpeers
+from onionrutils import blockmetadata, stringvalidators, validatemetadata
 
 def download_blocks_from_communicator(comm_inst):
     assert isinstance(comm_inst, communicator.OnionrCommunicatorDaemon)
@@ -47,7 +48,7 @@ def download_blocks_from_communicator(comm_inst):
             continue
         if comm_inst._core._blacklist.inBlacklist(blockHash):
             continue
-        if comm_inst._core._utils.storageCounter.isFull():
+        if comm_inst._core.storage_counter.isFull():
             break
         comm_inst.currentDownloading.append(blockHash) # So we can avoid concurrent downloading in other threads of same block
         if len(blockPeers) == 0:
@@ -72,9 +73,9 @@ def download_blocks_from_communicator(comm_inst):
                 pass
             if realHash == blockHash:
                 content = content.decode() # decode here because sha3Hash needs bytes above
-                metas = comm_inst._core._utils.getBlockMetadataFromData(content) # returns tuple(metadata, meta), meta is also in metadata
+                metas = blockmetadata.get_block_metadata_from_data(content) # returns tuple(metadata, meta), meta is also in metadata
                 metadata = metas[0]
-                if comm_inst._core._utils.validateMetadata(metadata, metas[2]): # check if metadata is valid, and verify nonce
+                if validatemetadata.validate_metadata(comm_inst._core, metadata, metas[2]): # check if metadata is valid, and verify nonce
                     if comm_inst._core._crypto.verifyPow(content): # check if POW is enough/correct
                         logger.info('Attempting to save block %s...' % blockHash[:12])
                         try:
@@ -84,7 +85,7 @@ def download_blocks_from_communicator(comm_inst):
                             removeFromQueue = False
                         else:
                             comm_inst._core.addToBlockDB(blockHash, dataSaved=True)
-                            comm_inst._core._utils.processBlockMetadata(blockHash) # caches block metadata values to block database
+                            blockmetadata.process_block_metadata(comm_inst._core, blockHash) # caches block metadata values to block database
                     else:
                         logger.warn('POW failed for block %s.' % blockHash)
                 else:
@@ -110,6 +111,7 @@ def download_blocks_from_communicator(comm_inst):
             if removeFromQueue:
                 try:
                     del comm_inst.blockQueue[blockHash] # remove from block queue both if success or false
+                    logger.info('%s blocks remaining in queue' % [len(comm_inst.blockQueue)], terminal=True)
                 except KeyError:
                     pass
         comm_inst.currentDownloading.remove(blockHash)

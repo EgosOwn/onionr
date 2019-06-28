@@ -17,26 +17,28 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import sys
+import sys, os
 import logger, onionrstorage
+from onionrutils import stringvalidators
 def doExport(o_inst, bHash):
     exportDir = o_inst.dataDir + 'block-export/'
     if not os.path.exists(exportDir):
         if os.path.exists(o_inst.dataDir):
             os.mkdir(exportDir)
         else:
-            logger.error('Onionr Not initialized')
+            logger.error('Onionr Not initialized', terminal=True)
     data = onionrstorage.getData(o_inst.onionrCore, bHash)
     with open('%s/%s.dat' % (exportDir, bHash), 'wb') as exportFile:
         exportFile.write(data)
+        logger.info('Block exported as file', terminal=True)
 
 def export_block(o_inst):
     exportDir = o_inst.dataDir + 'block-export/'
     try:
-        assert o_inst.onionrUtils.validateHash(sys.argv[2])
+        assert stringvalidators.validate_hash(sys.argv[2])
     except (IndexError, AssertionError):
-        logger.error('No valid block hash specified.')
+        logger.error('No valid block hash specified.', terminal=True)
         sys.exit(1)
     else:
         bHash = sys.argv[2]
-        o_inst.doExport(bHash)
+        doExport(o_inst, bHash)

@@ -1,5 +1,5 @@
 '''
-    Onionr - P2P Anonymous Storage Network
+    Onionr - Private P2P Communication
 
     HTTP endpoints for communicating with peers
 '''
@@ -19,9 +19,10 @@
 '''
 import sys, os, json
 import core
+from onionrutils import localcommand
 from flask import Response, request, redirect, Blueprint, abort, g
 sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
-direct_blueprint = Blueprint('clandestine', __name__)
+direct_blueprint = Blueprint('esoteric', __name__)
 core_inst = core.Core()
 
 storage_dir = core_inst.dataDir
@@ -35,11 +36,11 @@ def request_setup():
     g.host = host
     g.peer = core_inst.keyStore.get('dc-' + g.host)
 
-@direct_blueprint.route('/clandestine/ping')
+@direct_blueprint.route('/esoteric/ping')
 def pingdirect():
     return 'pong!'
 
-@direct_blueprint.route('/clandestine/sendto', methods=['POST', 'GET'])
+@direct_blueprint.route('/esoteric/sendto', methods=['POST', 'GET'])
 def sendto():
     try:
         msg = request.get_json(force=True)
@@ -47,9 +48,9 @@ def sendto():
         msg = ''
     else:
         msg = json.dumps(msg)
-        core_inst._utils.localCommand('/clandestine/addrec/%s' % (g.peer,), post=True, postData=msg)
+        localcommand.local_command(core_inst, '/esoteric/addrec/%s' % (g.peer,), post=True, postData=msg)
     return Response('success')
 
-@direct_blueprint.route('/clandestine/poll')
+@direct_blueprint.route('/esoteric/poll')
 def poll_chat():
-    return Response(core_inst._utils.localCommand('/clandestine/gets/%s' % (g.peer,)))
+    return Response(localcommand.local_command(core_inst, '/esoteric/gets/%s' % (g.peer,)))

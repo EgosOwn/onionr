@@ -1,5 +1,5 @@
 '''
-    Onionr - P2P Anonymous Storage Network
+    Onionr - Private P2P Communication
 
     This is an interactive menu-driven CLI interface for Onionr
 '''
@@ -23,6 +23,7 @@ import threading, time, uuid, subprocess, sys
 import config, logger
 from onionrblockapi import Block
 import onionrplugins
+from onionrutils import localcommand
 
 plugin_name = 'cliui'
 PLUGIN_VERSION = '0.0.1'
@@ -48,7 +49,7 @@ class OnionrCLIUI:
     
     def isRunning(self):
         while not self.shutdown:
-            if self.myCore._utils.localCommand('ping', maxWait=5) == 'pong!':
+            if localcommand.local_command(self.myCore, 'ping', maxWait=5) == 'pong!':
                 self.running = 'Yes'
             else:
                 self.running = 'No'
@@ -100,7 +101,7 @@ class OnionrCLIUI:
             elif choice == "":
                 pass
             else:
-                logger.error("Invalid choice")
+                logger.error("Invalid choice", terminal=True)
         return
 
 def on_init(api, data = None):

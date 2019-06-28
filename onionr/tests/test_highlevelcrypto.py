@@ -4,6 +4,7 @@ sys.path.append(".")
 import unittest, uuid, hashlib, base64
 import nacl.exceptions
 import nacl.signing, nacl.hash, nacl.encoding
+from onionrutils import stringvalidators, mnemonickeys
 TEST_DIR = 'testdata/%s-%s' % (uuid.uuid4(), os.path.basename(__file__)) + '/'
 print("Test directory:", TEST_DIR)
 os.environ["ONIONR_HOME"] = TEST_DIR
@@ -45,18 +46,11 @@ class OnionrCryptoTests(unittest.TestCase):
         self.assertEqual(crypto.sha3Hash(b'test'), normal)
         
     def valid_default_id(self):
-        self.assertTrue(c._utils.validatePubKey(crypto.pubKey))
+        self.assertTrue(stringvalidators.validate_pub_key(crypto.pubKey))
     
     def test_human_readable_length(self):
-        human = c._utils.getHumanReadableID()
+        human = mnemonickeys.get_human_readable_ID(c)
         self.assertTrue(len(human.split(' ')) == 32)
-    
-    def test_human_readable_rebuild(self):
-        return # Broken right now
-        # Test if we can get the human readable id, and convert it back to valid base32 key
-        human = c._utils.getHumanReadableID()
-        unHuman = c._utils.convertHumanReadableID(human)
-        nacl.signing.VerifyKey(c._utils.convertHumanReadableID(human), encoder=nacl.encoding.Base32Encoder)
     
     def test_safe_compare(self):
         self.assertTrue(crypto.safeCompare('test', 'test'))
@@ -130,7 +124,7 @@ class OnionrCryptoTests(unittest.TestCase):
     def test_deterministic(self):
         password = os.urandom(32)
         gen = crypto.generateDeterministic(password)
-        self.assertTrue(c._utils.validatePubKey(gen[0]))
+        self.assertTrue(stringvalidators.validate_pub_key(gen[0]))
         try:
             crypto.generateDeterministic('weakpassword')
         except onionrexceptions.PasswordStrengthError:
@@ -151,6 +145,6 @@ class OnionrCryptoTests(unittest.TestCase):
         gen2 = crypto.generateDeterministic(password)
         self.assertFalse(gen == gen1)
         self.assertTrue(gen1 == gen2)
-        self.assertTrue(c._utils.validatePubKey(gen1[0]))
+        self.assertTrue(stringvalidators.validate_pub_key(gen1[0]))
 
 unittest.main()

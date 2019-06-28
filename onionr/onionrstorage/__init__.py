@@ -17,7 +17,8 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import core, sys, sqlite3, os, dbcreator
+import core, sys, sqlite3, os, dbcreator, onionrexceptions
+from onionrutils import bytesconverter, stringvalidators
 
 DB_ENTRY_SIZE_LIMIT = 10000 # Will be a config option
 
@@ -65,7 +66,7 @@ def deleteBlock(coreInst, blockHash):
 
 def store(coreInst, data, blockHash=''):
     assert isinstance(coreInst, core.Core)
-    assert coreInst._utils.validateHash(blockHash)
+    assert stringvalidators.validate_hash(blockHash)
     ourHash = coreInst._crypto.sha3Hash(data)
     if blockHash != '':
         assert ourHash == blockHash
@@ -80,9 +81,9 @@ def store(coreInst, data, blockHash=''):
 
 def getData(coreInst, bHash):
     assert isinstance(coreInst, core.Core)
-    assert coreInst._utils.validateHash(bHash)
+    assert stringvalidators.validate_hash(bHash)
 
-    bHash = coreInst._utils.bytesToStr(bHash)
+    bHash = bytesconverter.bytes_to_str(bHash)
 
     # First check DB for data entry by hash
     # if no entry, check disk
@@ -94,4 +95,6 @@ def getData(coreInst, bHash):
             retData = block.read()
     else:
         retData = _dbFetch(coreInst, bHash)
+        if retData is None:
+            raise onionrexceptions.NoDataAvailable("Block data for %s is not available" % [bHash])
     return retData

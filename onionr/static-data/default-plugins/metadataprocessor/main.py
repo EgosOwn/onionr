@@ -1,5 +1,5 @@
 '''
-    Onionr - P2P Anonymous Storage Network
+    Onionr - Private P2P Communication
 
     This processes metadata for Onionr blocks
 '''
@@ -23,6 +23,7 @@ import logger, config
 import os, sys, json, time, random, shutil, base64, getpass, datetime, re
 from onionrblockapi import Block
 import onionrusers, onionrexceptions
+from onionrutils import stringvalidators
 
 plugin_name = 'metadataprocessor'
 
@@ -36,7 +37,7 @@ def _processForwardKey(api, myBlock):
     key = myBlock.getMetadata('newFSKey')
 
     # We don't need to validate here probably, but it helps
-    if api.get_utils().validatePubKey(key):
+    if stringvalidators.validate_pub_key(key):
         peer.addForwardKey(key)
     else:
         raise onionrexceptions.InvalidPubkey("%s is not a valid pubkey key" % (key,))

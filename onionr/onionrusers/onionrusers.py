@@ -17,7 +17,9 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import onionrblockapi, logger, onionrexceptions, json, sqlite3, time
+import logger, onionrexceptions, json, sqlite3, time
+from onionrutils import stringvalidators, bytesconverter, epoch
+import unpaddedbase32
 import nacl.exceptions
 
 def deleteExpiredKeys(coreInst):
@@ -25,7 +27,7 @@ def deleteExpiredKeys(coreInst):
     conn = sqlite3.connect(coreInst.forwardKeysFile, timeout=10)
     c = conn.cursor()
 
-    curTime = coreInst._utils.getEpoch()
+    curTime = epoch.get_epoch()
     c.execute("DELETE from myForwardKeys where expire <= ?", (curTime,))
     conn.commit()
     conn.execute("VACUUM")
@@ -37,7 +39,7 @@ def deleteTheirExpiredKeys(coreInst, pubkey):
     c = conn.cursor()
 
     # Prepare the insert
-    command = (pubkey, coreInst._utils.getEpoch())
+    command = (pubkey, epoch.get_epoch())
 
     c.execute("DELETE from forwardKeys where peerKey = ? and expire <= ?", command)
 
@@ -55,8 +57,7 @@ class OnionrUser:
             Takes an instance of onionr core, a base32 encoded ed25519 public key, and a bool saveUser
             saveUser determines if we should add a user to our peer database or not.
         '''
-        if ' ' in coreInst._utils.bytesToStr(publicKey).strip():
-            publicKey = coreInst._utils.convertHumanReadableID(publicKey)
+        publicKey = unpaddedbase32.repad(bytesconverter.str_to_bytes(publicKey)).decode()
 
         self.trust = 0
         self._core = coreInst
@@ -103,7 +104,7 @@ class OnionrUser:
         deleteExpiredKeys(self._core)
         retData = ''
         forwardKey = self._getLatestForwardKey()
-        if self._core._utils.validatePubKey(forwardKey[0]):
+        if stringvalidators.validate_pub_key(forwardKey[0]):
             retData = self._core._crypto.pubKeyEncrypt(data, forwardKey[0], encodedData=True)
         else:
             raise onionrexceptions.InvalidPubkey("No valid forward secrecy key available for this user")
@@ -158,10 +159,10 @@ class OnionrUser:
         conn = sqlite3.connect(self._core.forwardKeysFile, timeout=10)
         c = conn.cursor()
         # Prepare the insert
-        time = self._core._utils.getEpoch()
+        time = epoch.get_epoch()
         newKeys = self._core._crypto.generatePubKey()
-        newPub = self._core._utils.bytesToStr(newKeys[0])
-        newPriv = self._core._utils.bytesToStr(newKeys[1])
+        newPub = bytesconverter.bytes_to_str(newKeys[0])
+        newPriv = bytesconverter.bytes_to_str(newKeys[1])
 
         command = (self.publicKey, newPub, newPriv, time, expire + time)
 
@@ -176,7 +177,7 @@ class OnionrUser:
         conn = sqlite3.connect(self._core.forwardKeysFile, timeout=10)
         c = conn.cursor()
         pubkey = self.publicKey
-        pubkey = self._core._utils.bytesToStr(pubkey)
+        pubkey = bytesconverter.bytes_to_str(pubkey)
         command = (pubkey,)
         keyList = [] # list of tuples containing pub, private for peer
 
@@ -190,7 +191,8 @@ class OnionrUser:
         return list(keyList)
 
     def addForwardKey(self, newKey, expire=DEFAULT_KEY_EXPIRE):
-        if not self._core._utils.validatePubKey(newKey):
+        newKey = bytesconverter.bytes_to_str(unpaddedbase32.repad(bytesconverter.str_to_bytes(newKey)))
+        if not stringvalidators.validate_pub_key(newKey):
             # Do not add if something went wrong with the key
             raise onionrexceptions.InvalidPubkey(newKey)
 
@@ -198,7 +200,7 @@ class OnionrUser:
         c = conn.cursor()
 
         # Get the time we're inserting the key at
-        timeInsert = self._core._utils.getEpoch()
+        timeInsert = epoch.get_epoch()
 
         # Look at our current keys for duplicate key data or time
         for entry in self._getForwardKeys():
