@@ -25,7 +25,7 @@ from flask import request, Response, abort, send_from_directory
 import core
 import onionrexceptions, onionrcrypto, blockimporter, onionrevents as events, logger, config, onionrblockapi
 import httpapi
-from httpapi import friendsapi, profilesapi, configapi, miscpublicapi
+from httpapi import friendsapi, profilesapi, configapi, miscpublicapi, insertblock
 from onionrservices import httpheaders
 import onionr
 from onionrutils import bytesconverter, stringvalidators, epoch, mnemonickeys
@@ -33,19 +33,23 @@ from onionrutils import bytesconverter, stringvalidators, epoch, mnemonickeys
 config.reload()
 class FDSafeHandler(WSGIHandler):
     '''Our WSGI handler. Doesn't do much non-default except timeouts'''
-    def __init__(self, sock, address, server, rfile=None):
-        self.socket =  sock
-        self.address = address
-        self.server = server
-        self.rfile = rfile
     def handle(self):
-        while True:
-            timeout = Timeout(120, exception=Exception)
-            try:
-                FDSafeHandler.handle(self)
-                timeout.start()
-            except Timeout as ex:
-                raise
+        self.timeout = Timeout(120, Exception)
+        self.timeout.start()
+        try:
+            WSGIHandler.handle(self)
+        except Exception:
+            self.handle_error()
+        finally:
+            self.timeout.close()
+
+    def handle_error(self):
+        if v is self.timeout:
+            self.result = [b"Timeout"]
+            self.start_response("200 OK", [])
+            self.process_result()
+        else:
+            WSGIHandler.handle_error(self) 
 
 def setBindIP(filePath=''):
     '''Set a random localhost IP to a specified file (intended for private or public API localhost IPs)'''
@@ -209,6 +213,7 @@ class API:
         app.register_blueprint(friendsapi.friends)
         app.register_blueprint(profilesapi.profile_BP)
         app.register_blueprint(configapi.config_BP)
+        app.register_blueprint(insertblock.ib)
         httpapi.load_plugin_blueprints(app)
 
         @app.before_request
@@ -439,44 +444,6 @@ class API:
         @app.route('/getHumanReadable/<name>')
         def getHumanReadable(name):
             return Response(mnemonickeys.get_human_readable_ID(name))
-
-        @app.route('/insertblock', methods=['POST'])
-        def insertBlock():
-            encrypt = False
-            bData = request.get_json(force=True)
-            message = bData['message']
-
-            # Detect if message (block body) is not specified
-            if type(message) is None:
-                return 'failure', 406
-
-            subject = 'temp'
-            encryptType = ''
-            sign = True
-            meta = {}
-            to = ''
-            try:
-                if bData['encrypt']:
-                    to = bData['to']
-                    encrypt = True
-                    encryptType = 'asym'
-            except KeyError:
-                pass
-            try:
-                if not bData['sign']:
-                    sign = False
-            except KeyError:
-                pass
-            try:
-                bType = bData['type']
-            except KeyError:
-                bType = 'bin'
-            try:
-                meta = json.loads(bData['meta'])
-            except KeyError:
-                pass
-            threading.Thread(target=self._core.insertBlock, args=(message,), kwargs={'header': bType, 'encryptType': encryptType, 'sign':sign, 'asymPeer': to, 'meta': meta}).start()
-            return Response('success')
 
         self.httpServer = WSGIServer((self.host, bindPort), app, log=None, handler_class=FDSafeHandler)
         self.httpServer.serve_forever()
