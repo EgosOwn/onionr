@@ -80,19 +80,21 @@ def download_blocks_from_communicator(comm_inst):
                         logger.info('Attempting to save block %s...' % blockHash[:12])
                         try:
                             comm_inst._core.setData(content)
+                        except onionrexceptions.DataExists:
+                            logger.warn('Data is already set for %s ' % (blockHash,))
                         except onionrexceptions.DiskAllocationReached:
-                            logger.error('Reached disk allocation allowance, cannot save block %s.' % blockHash)
+                            logger.error('Reached disk allocation allowance, cannot save block %s.' % (blockHash,))
                             removeFromQueue = False
                         else:
                             comm_inst._core.addToBlockDB(blockHash, dataSaved=True)
                             blockmetadata.process_block_metadata(comm_inst._core, blockHash) # caches block metadata values to block database
                     else:
-                        logger.warn('POW failed for block %s.' % blockHash)
+                        logger.warn('POW failed for block %s.' % (blockHash,))
                 else:
                     if comm_inst._core._blacklist.inBlacklist(realHash):
                         logger.warn('Block %s is blacklisted.' % (realHash,))
                     else:
-                        logger.warn('Metadata for block %s is invalid.' % blockHash)
+                        logger.warn('Metadata for block %s is invalid.' % (blockHash,))
                         comm_inst._core._blacklist.addToDB(blockHash)
             else:
                 # if block didn't meet expected hash

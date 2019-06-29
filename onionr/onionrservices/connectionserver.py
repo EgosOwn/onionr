@@ -24,7 +24,7 @@ import core, logger, httpapi
 import onionrexceptions
 from netcontroller import getOpenPort
 import api
-from onionrutils import stringvalidators, basicrequests
+from onionrutils import stringvalidators, basicrequests, bytesconverter
 from . import httpheaders
 
 class ConnectionServer:
@@ -82,7 +82,7 @@ class ConnectionServer:
                 raise ConnectionError('Could not reach %s bootstrap address %s' % (peer, address))
             else:
                 # If no connection error, create the service and save it to local global key store
-                self.core_inst.keyStore.put('dc-' + response.service_id, self.core_inst._utils.bytesToStr(peer))
+                self.core_inst.keyStore.put('dc-' + response.service_id, bytesconverter.bytes_to_str(peer))
                 logger.info('hosting on %s with %s' % (response.service_id,  peer))
                 http_server.serve_forever()
                 http_server.stop()

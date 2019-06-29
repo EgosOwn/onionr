@@ -21,7 +21,7 @@ import logger
 from onionrutils import stringvalidators
 
 def lookup_new_peer_transports_with_communicator(comm_inst):
-    logger.info('Looking up new addresses...')
+    logger.info('Looking up new addresses...', terminal=True)
     tryAmount = 1
     newPeers = []
     for i in range(tryAmount):

@@ -31,6 +31,6 @@ def set_data(core_inst, data):
         else:
             raise onionrexceptions.DiskAllocationReached
     else:
-        raise Exception("Data is already set for " + dataHash)
+        raise onionrexceptions.DataExists("Data is already set for " + dataHash)
 
     return dataHash

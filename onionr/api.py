@@ -33,13 +33,19 @@ from onionrutils import bytesconverter, stringvalidators, epoch, mnemonickeys
 config.reload()
 class FDSafeHandler(WSGIHandler):
     '''Our WSGI handler. Doesn't do much non-default except timeouts'''
+    def __init__(self, sock, address, server, rfile=None):
+        self.socket =  sock
+        self.address = address
+        self.server = server
+        self.rfile = rfile
     def handle(self):
-       timeout = Timeout(60, exception=Exception)
-       timeout.start()
-       try:
-           WSGIHandler.handle(self)
-       except Timeout as ex:
-           raise
+        while True:
+            timeout = Timeout(120, exception=Exception)
+            try:
+                FDSafeHandler.handle(self)
+                timeout.start()
+            except Timeout as ex:
+                raise
 
 def setBindIP(filePath=''):
     '''Set a random localhost IP to a specified file (intended for private or public API localhost IPs)'''

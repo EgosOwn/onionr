@@ -18,12 +18,11 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 import communicator, onionrblockapi
-from onionrutils import stringvalidators
+from onionrutils import stringvalidators, bytesconverter
 
 def service_creator(daemon):
     assert isinstance(daemon, communicator.OnionrCommunicatorDaemon)
     core = daemon._core
-    utils = core._utils
     
     # Find socket connection blocks
     # TODO cache blocks and only look at recently received ones
@@ -31,9 +30,9 @@ def service_creator(daemon):
     for b in con_blocks:
         if not b in daemon.active_services:
             bl = onionrblockapi.Block(b, core=core, decrypt=True)
-            bs = utils.bytesToStr(bl.bcontent) + '.onion'
+            bs = bytesconverter.bytes_to_str(bl.bcontent) + '.onion'
             if stringvalidators.validate_pub_key(bl.signer) and stringvalidators.validate_transport(bs):
-                signer = utils.bytesToStr(bl.signer)
+                signer = bytesconverter.bytes_to_str(bl.signer)
                 daemon.active_services.append(b)
                 daemon.active_services.append(signer)
                 daemon.services.create_server(signer, bs)
