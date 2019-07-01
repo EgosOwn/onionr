@@ -20,6 +20,7 @@
 from flask import Response, abort
 import config
 from onionrutils import bytesconverter, stringvalidators
+
 def get_public_block_list(clientAPI, publicAPI, request):
     # Provide a list of our blocks, with a date offset
     dateAdjust = request.args.get('date')

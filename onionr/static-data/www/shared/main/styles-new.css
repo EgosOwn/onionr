@@ -11,8 +11,6 @@ html {
     display:block; /* P.S: Use `!important` if missing `#content` (selector specificity). */
   }
 
-
-
 .hiddenOverlay {
     visibility: hidden;
     position: absolute;
@@ -51,3 +49,8 @@ html {
      content: '❌';
      padding: 5px;
  }
+
+ .navbarLogo{
+    margin-right: 5px;
+    color: red;
+}

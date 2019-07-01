@@ -25,10 +25,11 @@ from flask import request, Response, abort, send_from_directory
 import core
 import onionrexceptions, onionrcrypto, blockimporter, onionrevents as events, logger, config, onionrblockapi
 import httpapi
-from httpapi import friendsapi, profilesapi, configapi, miscpublicapi, insertblock
+from httpapi import friendsapi, profilesapi, configapi, miscpublicapi, miscclientapi, insertblock, onionrsitesapi
 from onionrservices import httpheaders
 import onionr
 from onionrutils import bytesconverter, stringvalidators, epoch, mnemonickeys
+from httpapi import apiutils
 
 config.reload()
 class FDSafeHandler(WSGIHandler):
@@ -194,11 +195,6 @@ class API:
         bindPort = int(config.get('client.client.port', 59496))
         self.bindPort = bindPort
 
-        # Be extremely mindful of this. These are endpoints available without a password
-        self.whitelistEndpoints = ('site', 'www', 'onionrhome', 'homedata', 'board', 'profiles', 'profilesindex', 
-        'boardContent', 'sharedContent', 'mail', 'mailindex', 'friends', 'friendsindex',
-        'clandestine', 'clandestineIndex')
-
         self.clientToken = config.get('client.webpassword')
         self.timeBypassToken = base64.b16encode(os.urandom(32)).decode()
 
@@ -214,67 +210,12 @@ class API:
         app.register_blueprint(profilesapi.profile_BP)
         app.register_blueprint(configapi.config_BP)
         app.register_blueprint(insertblock.ib)
+        app.register_blueprint(miscclientapi.getblocks.client_get_blocks)
+        app.register_blueprint(miscclientapi.staticfiles.static_files_bp)
+        app.register_blueprint(onionrsitesapi.site_api)
+        app.register_blueprint(apiutils.shutdown.shutdown_bp)
         httpapi.load_plugin_blueprints(app)
-
-        @app.before_request
-        def validateRequest():
-            '''Validate request has set password and is the correct hostname'''
-            # For the purpose of preventing DNS rebinding attacks
-            if request.host != '%s:%s' % (self.host, self.bindPort):
-                abort(403)
-            if request.endpoint in self.whitelistEndpoints:
-                return
-            try:
-                if not hmac.compare_digest(request.headers['token'], self.clientToken):
-                    if not hmac.compare_digest(request.form['token'], self.clientToken):
-                        abort(403)
-            except KeyError:
-                if not hmac.compare_digest(request.form['token'], self.clientToken):
-                    abort(403)
-
-        @app.after_request
-        def afterReq(resp):
-            # Security headers
-            resp = httpheaders.set_default_onionr_http_headers(resp)
-            if request.endpoint == 'site':
-                resp.headers['Content-Security-Policy'] = "default-src 'none'; style-src data: 'unsafe-inline'; img-src data:"
-            else:
-                resp.headers['Content-Security-Policy'] = "default-src 'none'; script-src 'self'; object-src 'none'; style-src 'self'; img-src 'self'; media-src 'none'; frame-src 'none'; font-src 'none'; connect-src 'self'"
-            return resp
-
-        @app.route('/board/', endpoint='board')
-        def loadBoard():
-            return send_from_directory('static-data/www/board/', "index.html")
-
-        @app.route('/mail/<path:path>', endpoint='mail')
-        def loadMail(path):
-            return send_from_directory('static-data/www/mail/', path)
-        @app.route('/mail/', endpoint='mailindex')
-        def loadMailIndex():
-            return send_from_directory('static-data/www/mail/', 'index.html')
-
-        @app.route('/clandestine/<path:path>', endpoint='clandestine')
-        def loadClandestine(path):
-            return send_from_directory('static-data/www/clandestine/', path)
-        @app.route('/clandestine/', endpoint='clandestineIndex')
-        def loadClandestineIndex():
-            return send_from_directory('static-data/www/clandestine/', 'index.html')
-        
-        @app.route('/friends/<path:path>', endpoint='friends')
-        def loadContacts(path):
-            return send_from_directory('static-data/www/friends/', path)
-
-        @app.route('/friends/', endpoint='friendsindex')
-        def loadContacts():
-            return send_from_directory('static-data/www/friends/', 'index.html')
-
-        @app.route('/profiles/<path:path>', endpoint='profiles')
-        def loadContacts(path):
-            return send_from_directory('static-data/www/profiles/', path)
-
-        @app.route('/profiles/', endpoint='profilesindex')
-        def loadContacts():
-            return send_from_directory('static-data/www/profiles/', 'index.html')
+        self.get_block_data = apiutils.GetBlockData(self)
         
         @app.route('/serviceactive/<pubkey>')
         def serviceActive(pubkey):
@@ -284,22 +225,6 @@ class API:
             except AttributeError as e:
                 pass
             return Response('false')
-
-        @app.route('/board/<path:path>', endpoint='boardContent')
-        def boardContent(path):
-            return send_from_directory('static-data/www/board/', path)
-        @app.route('/shared/<path:path>', endpoint='sharedContent')
-        def sharedContent(path):
-            return send_from_directory('static-data/www/shared/', path)
-
-        @app.route('/', endpoint='onionrhome')
-        def hello():
-            # ui home
-            return send_from_directory('static-data/www/private/', 'index.html')
-        
-        @app.route('/private/<path:path>', endpoint='homedata')
-        def homedata(path):
-            return send_from_directory('static-data/www/private/', path)
 
         @app.route('/www/<path:path>', endpoint='www')
         def wwwPublic(path):
@@ -336,66 +261,10 @@ class API:
         def ping():
             # Used to check if client api is working
             return Response("pong!")
-        
-        @app.route('/getblocksbytype/<name>')
-        def getBlocksByType(name):
-            blocks = self._core.getBlocksByType(name)
-            return Response(','.join(blocks))
-        
-        @app.route('/getblockbody/<name>')
-        def getBlockBodyData(name):
-            resp = ''
-            if stringvalidators.validate_hash(name):
-                try:
-                    resp = onionrblockapi.Block(name, decrypt=True).bcontent
-                except TypeError:
-                    pass
-            else:
-                abort(404)
-            return Response(resp)
-        
-        @app.route('/getblockdata/<name>')
-        def getData(name):
-            resp = ""
-            if stringvalidators.validate_hash(name):
-                if name in self._core.getBlockList():
-                    try:
-                        resp = self.getBlockData(name, decrypt=True)
-                    except ValueError:
-                        pass
-                else:
-                    abort(404)
-            else:
-                abort(404)
-            return Response(resp)
-
-        @app.route('/getblockheader/<name>')
-        def getBlockHeader(name):
-            resp = self.getBlockData(name, decrypt=True, headerOnly=True)
-            return Response(resp)
 
         @app.route('/lastconnect')
         def lastConnect():
             return Response(str(self.publicAPI.lastRequest))
-
-        @app.route('/site/<name>', endpoint='site')
-        def site(name):
-            bHash = name
-            resp = 'Not Found'
-            if stringvalidators.validate_hash(bHash):
-                try:
-                    resp = onionrblockapi.Block(bHash).bcontent
-                except onionrexceptions.NoDataAvailable:
-                    abort(404)
-                except TypeError:
-                    pass
-                try:
-                    resp = base64.b64decode(resp)
-                except:
-                    pass
-            if resp == 'Not Found' or not resp:
-                abort(404)
-            return Response(resp)
 
         @app.route('/waitforshare/<name>', methods=['post'])
         def waitforshare(name):
@@ -410,18 +279,7 @@ class API:
 
         @app.route('/shutdown')
         def shutdown():
-            try:
-                self.publicAPI.httpServer.stop()
-                self.httpServer.stop()
-            except AttributeError:
-                pass
-            return Response("bye")
-
-        @app.route('/shutdownclean')
-        def shutdownClean():
-            # good for calling from other clients
-            self._core.daemonQueueAdd('shutdown')
-            return Response("bye")
+            return apiutils.shutdown.shutdown(self)
         
         @app.route('/getstats')
         def getStats():
@@ -474,31 +332,6 @@ class API:
             except (AttributeError, NameError):
                 # Don't error on race condition with startup
                 pass
-    
-    def getBlockData(self, bHash, decrypt=False, raw=False, headerOnly=False):
-        assert stringvalidators.validate_hash(bHash)
-        bl = onionrblockapi.Block(bHash, core=self._core)
-        if decrypt:
-            bl.decrypt()
-            if bl.isEncrypted and not bl.decrypted:
-                raise ValueError
 
-        if not raw:
-            if not headerOnly:
-                retData = {'meta':bl.bheader, 'metadata': bl.bmetadata, 'content': bl.bcontent}
-                for x in list(retData.keys()):
-                    try:
-                        retData[x] = retData[x].decode()
-                    except AttributeError:
-                        pass
-            else:
-                validSig = False
-                signer = bytesconverter.bytes_to_str(bl.signer)
-                if bl.isSigned() and stringvalidators.validate_pub_key(signer) and bl.isSigner(signer):
-                    validSig = True                    
-                bl.bheader['validSig'] = validSig
-                bl.bheader['meta'] = ''
-                retData = {'meta': bl.bheader, 'metadata': bl.bmetadata}
-            return json.dumps(retData)
-        else:
-            return bl.raw
+    def getBlockData(self, bHash, decrypt=False, raw=False, headerOnly=False):
+        return self.get_block_data.get_block_data(self, bHash, decrypt, raw, headerOnly)
