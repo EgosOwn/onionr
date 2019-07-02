@@ -23,7 +23,7 @@ from flask import Flask
 import core, logger, httpapi
 import onionrexceptions
 from netcontroller import getOpenPort
-import api
+from httpapi import apiutils
 from onionrutils import stringvalidators, basicrequests, bytesconverter
 from . import httpheaders
 
@@ -40,7 +40,7 @@ class ConnectionServer:
         socks = core_inst.config.get('tor.socksport') # Load config for Tor socks port for proxy
         service_app = Flask(__name__) # Setup Flask app for server.
         service_port = getOpenPort()
-        service_ip = api.setBindIP()
+        service_ip = apiutils.setbindip.set_bind_IP(core_inst=self.core_inst)
         http_server = WSGIServer(('127.0.0.1', service_port), service_app, log=None)
         core_inst.onionrInst.communicatorInst.service_greenlets.append(http_server)
 
