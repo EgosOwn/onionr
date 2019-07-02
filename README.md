@@ -102,6 +102,7 @@ Everyone is welcome to contribute. Help is wanted for the following:
     * Windows and Mac support (already partially supported, testers needed)
     * General bug fixes and development of new features
 * Testing
+* Translations/localizations
 * UI/UX design
 * Running stable nodes
 * Security review/audit
