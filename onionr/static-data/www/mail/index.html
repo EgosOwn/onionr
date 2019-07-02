@@ -18,7 +18,7 @@
     <nav class="navbar is-dark" role="navigation" aria-label="main navigation">
         <div class="navbar-brand">
             <a class="navbar-item idLink" href="/">
-                <img src="/shared/images/favicon.ico" class="navabarLogo"> Onionr
+                <img src="/shared/images/favicon.ico" class="navbarLogo"> Onionr
             </a>
 
             <a role="button" class="navbar-burger burger" aria-label="menu" aria-expanded="false"
@@ -84,7 +84,7 @@
 
     <!--Start of content-->
     <div class="container">
-        <div class="tabs">
+        <div class="tabs" id="tabBtns">
             <ul>
                 <li class="is-active">
                     <a>
@@ -111,9 +111,6 @@
     <div class='content'>
         <div class='mailPing'>
             API server either shutdown, has disabled mail, or has experienced a bug.
-        </div>
-        <div class="btn-group" id='tabBtns'>
-            <button class='activeTab'>Inbox</button><button>Sentbox</button><button>Send Message</button>
         </div>
         <div id='threads' class='threads'>
             <div id='threadPlaceholder'>Nothing here yet 😞</div>
@@ -159,7 +156,6 @@
         </div>
     </div>
     <script src='/shared/misc.js'></script>
-    <script src='/shared/tabs.js'></script>
     <script src='/mail/mail.js'></script>
     <script src='/mail/sendmail.js'></script>
 </body>

@@ -105,96 +105,11 @@ class API:
         app.register_blueprint(insertblock.ib)
         app.register_blueprint(miscclientapi.getblocks.client_get_blocks)
         app.register_blueprint(miscclientapi.staticfiles.static_files_bp)
+        app.register_blueprint(miscclientapi.endpoints.PrivateEndpoints(self).private_endpoints_bp)
         app.register_blueprint(onionrsitesapi.site_api)
         app.register_blueprint(apiutils.shutdown.shutdown_bp)
         httpapi.load_plugin_blueprints(app)
         self.get_block_data = apiutils.GetBlockData(self)
-        
-        @app.route('/serviceactive/<pubkey>')
-        def serviceActive(pubkey):
-            try:
-                if pubkey in self._core.onionrInst.communicatorInst.active_services:
-                    return Response('true')
-            except AttributeError as e:
-                pass
-            return Response('false')
-
-        @app.route('/www/<path:path>', endpoint='www')
-        def wwwPublic(path):
-            if not config.get("www.private.run", True):
-                abort(403)
-            return send_from_directory(config.get('www.private.path', 'static-data/www/private/'), path)
-
-        @app.route('/hitcount')
-        def get_hit_count():
-            return Response(str(self.publicAPI.hitCount))
-
-        @app.route('/queueResponseAdd/<name>', methods=['post'])
-        def queueResponseAdd(name):
-            # Responses from the daemon. TODO: change to direct var access instead of http endpoint
-            self.queueResponse[name] = request.form['data']
-            return Response('success')
-        
-        @app.route('/queueResponse/<name>')
-        def queueResponse(name):
-            # Fetch a daemon queue response
-            resp = 'failure'
-            try:
-                resp = self.queueResponse[name]
-            except KeyError:
-                pass
-            else:
-                del self.queueResponse[name]
-            if resp == 'failure':
-                return resp, 404
-            else:
-                return resp
-            
-        @app.route('/ping')
-        def ping():
-            # Used to check if client api is working
-            return Response("pong!")
-
-        @app.route('/lastconnect')
-        def lastConnect():
-            return Response(str(self.publicAPI.lastRequest))
-
-        @app.route('/waitforshare/<name>', methods=['post'])
-        def waitforshare(name):
-            '''Used to prevent the **public** api from sharing blocks we just created'''
-            assert name.isalnum()
-            if name in self.publicAPI.hideBlocks:
-                self.publicAPI.hideBlocks.remove(name)
-                return Response("removed")
-            else:
-                self.publicAPI.hideBlocks.append(name)
-                return Response("added")
-
-        @app.route('/shutdown')
-        def shutdown():
-            return apiutils.shutdown.shutdown(self)
-        
-        @app.route('/getstats')
-        def getStats():
-            # returns node stats
-            #return Response("disabled")
-            while True:
-                try:    
-                    return Response(self._core.serializer.getStats())
-                except AttributeError:
-                    pass
-        
-        @app.route('/getuptime')
-        def showUptime():
-            return Response(str(self.getUptime()))
-        
-        @app.route('/getActivePubkey')
-        def getActivePubkey():
-            return Response(self._core._crypto.pubKey)
-
-        @app.route('/getHumanReadable/<name>')
-        def getHumanReadable(name):
-            return Response(mnemonickeys.get_human_readable_ID(name))
 
         self.httpServer = WSGIServer((self.host, bindPort), app, log=None, handler_class=fdsafehandler.FDSafeHandler)
         self.httpServer.serve_forever()
@@ -227,4 +142,4 @@ class API:
                 pass
 
     def getBlockData(self, bHash, decrypt=False, raw=False, headerOnly=False):
-        return self.get_block_data.get_block_data(self, bHash, decrypt, raw, headerOnly)
+        return self.get_block_data.get_block_data(bHash, decrypt=decrypt, raw=raw, headerOnly=headerOnly)
