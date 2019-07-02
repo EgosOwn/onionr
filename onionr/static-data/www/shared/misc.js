@@ -109,13 +109,15 @@ for (var i = 0; i < idStrings.length; i++){
 myPubCopy.onclick = function() {
     var copyText = document.getElementById("myPub");
     copyText.select();
-    document.execCommand("copy");
+    document.execCommand("copy")
 } 
 
 /* For Config toggle on homepage */
 var toggle  = document.getElementById("configToggle");
 var content = document.getElementById("configContent");
 
-toggle.addEventListener("click", function() {
-  content.classList.toggle("show");
-});
+if(typeof toggle !== 'undefined' && toggle !== null) {
+    toggle.addEventListener("click", function() {
+    content.classList.toggle("show");
+    })
+}

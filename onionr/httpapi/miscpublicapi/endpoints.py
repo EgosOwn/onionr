@@ -38,12 +38,12 @@ class PublicEndpoints:
 
         @public_endpoints_bp.route('/getblocklist')
         def get_block_list():
-            return getblocks.public_block_list(client_API, public_api, request)
+            return getblocks.get_public_block_list(client_API, public_api, request)
 
         @public_endpoints_bp.route('/getdata/<name>')
         def get_block_data(name):
             # Share data for a block if we have it
-            return getblocks.public_get_block_data(client_API, public_api, name)
+            return getblocks.get_block_data(client_API, public_api, name)
 
         @public_endpoints_bp.route('/www/<path:path>')
         def www_public(path):
@@ -66,7 +66,7 @@ class PublicEndpoints:
 
         @public_endpoints_bp.route('/announce', methods=['post'])
         def accept_announce():
-            resp = httpapi.miscpublicapi.announce(client_API, request)
+            resp = announce.handle_announce(client_API, request)
             return resp
 
         @public_endpoints_bp.route('/upload', methods=['post'])

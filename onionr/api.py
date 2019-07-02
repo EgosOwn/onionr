@@ -227,4 +227,4 @@ class API:
                 pass
 
     def getBlockData(self, bHash, decrypt=False, raw=False, headerOnly=False):
-        return self.get_block_data.get_block_data(self, bHash, decrypt, raw, headerOnly)
+        return self.get_block_data.get_block_data(bHash, decrypt=decrypt, raw=raw, headerOnly=headerOnly)

@@ -110,10 +110,10 @@ function setActiveTab(tabName){
         case 'inbox':
             refreshPms()
             break
-        case 'sentbox':
+        case 'sent':
             getSentbox()
             break
-        case 'send message':
+        case 'compose':
             overlay('sendMessage')
             setActiveTab('inbox')
             break
@@ -320,12 +320,12 @@ fetch('/mail/getinbox', {
 }
 
 tabBtns.onclick = function(event){
-    var children = tabBtns.children
+    var children = tabBtns.children[0].children
     for (var i = 0; i < children.length; i++) {
         var btn = children[i]
-        btn.classList.remove('activeTab')
+        btn.classList.remove('is-active')
     }
-    event.target.classList.add('activeTab')
+    event.target.parentElement.parentElement.classList.add('is-active')
     setActiveTab(event.target.innerText.toLowerCase())
 }
 

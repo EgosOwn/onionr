@@ -18,6 +18,9 @@ core
 venv/*
 onionr/fs*
 
+*.dll
+*.exe
+
 # log files
 output.log
 *.log
