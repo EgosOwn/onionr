@@ -70,7 +70,7 @@ class PublicEndpoints:
             return resp
 
         @public_endpoints_bp.route('/upload', methods=['post'])
-        def upload():
+        def upload_endpoint():
             '''Accept file uploads. In the future this will be done more often than on creation 
             to speed up block sync
             '''
