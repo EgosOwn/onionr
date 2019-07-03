@@ -82,7 +82,7 @@ class PrivateEndpoints:
                 client_api.publicAPI.hideBlocks.remove(name)
                 return Response("removed")
             else:
-                client_api.publicAPI.hideBlocks.private_endpoints_bpend(name)
+                client_api.publicAPI.hideBlocks.append(name)
                 return Response("added")
 
         @private_endpoints_bp.route('/shutdown')
