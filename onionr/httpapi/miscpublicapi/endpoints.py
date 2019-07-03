@@ -26,6 +26,7 @@ class PublicEndpoints:
 
         public_endpoints_bp = Blueprint('publicendpoints', __name__)
         self.public_endpoints_bp = public_endpoints_bp
+
         @public_endpoints_bp.route('/')
         def banner():
             # Display a bit of information to people who visit a node address in their browser
@@ -38,11 +39,12 @@ class PublicEndpoints:
 
         @public_endpoints_bp.route('/getblocklist')
         def get_block_list():
+            '''Get a list of blocks, optionally filtered by epoch time stamp, excluding those hidden'''
             return getblocks.get_public_block_list(client_API, public_api, request)
 
         @public_endpoints_bp.route('/getdata/<name>')
         def get_block_data(name):
-            # Share data for a block if we have it
+            # Share data for a block if we have it and it isn't hidden
             return getblocks.get_block_data(client_API, public_api, name)
 
         @public_endpoints_bp.route('/www/<path:path>')

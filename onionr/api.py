@@ -39,6 +39,7 @@ class PublicAPI:
     def __init__(self, clientAPI):
         assert isinstance(clientAPI, API)
         app = flask.Flask('PublicAPI')
+        app.config['MAX_CONTENT_LENGTH'] = 5 * 1024 * 1024
         self.i2pEnabled = config.get('i2p.host', False)
         self.hideBlocks = [] # Blocks to be denied sharing
         self.host = apiutils.setbindip.set_bind_IP(clientAPI._core.publicApiHostFile, clientAPI._core)
