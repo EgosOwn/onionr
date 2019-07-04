@@ -68,6 +68,7 @@ class PublicEndpoints:
 
         @public_endpoints_bp.route('/announce', methods=['post'])
         def accept_announce():
+            '''Accept announcements with pow token to prevent spam'''
             resp = announce.handle_announce(client_API, request)
             return resp
 

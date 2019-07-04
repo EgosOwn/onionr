@@ -21,6 +21,21 @@ import communicator, onionrexceptions
 import logger, onionrpeers
 from onionrutils import blockmetadata, stringvalidators, validatemetadata
 
+def _should_download(comm_inst, block_hash):
+    ret_data = True
+    if block_hash in comm_inst._core.getBlockList():
+        #logger.debug('Block %s is already saved.' % (blockHash,))
+        ret_data = False
+    else:
+        if comm_inst._core._blacklist.inBlacklist(blockHash):
+            ret_data = False
+    if ret_data is False:
+        try:
+            del comm_inst.blockQueue[blockHash]
+        except KeyError:
+            pass
+    return ret_data
+
 def download_blocks_from_communicator(comm_inst):
     assert isinstance(comm_inst, communicator.OnionrCommunicatorDaemon)
     for blockHash in list(comm_inst.blockQueue):
@@ -32,24 +47,18 @@ def download_blocks_from_communicator(comm_inst):
         except KeyError:
             blockPeers = []
         removeFromQueue = True
-        if comm_inst.shutdown or not comm_inst.isOnline:
-            # Exit loop if shutting down or offline
+
+        if _should_download(comm_inst, blockHash):
+            continue
+
+        if comm_inst.shutdown or not comm_inst.isOnline or comm_inst._core.storage_counter.isFull():
+            # Exit loop if shutting down or offline, or disk allocation reached
             break
         # Do not download blocks being downloaded or that are already saved (edge cases)
         if blockHash in comm_inst.currentDownloading:
             #logger.debug('Already downloading block %s...' % blockHash)
             continue
-        if blockHash in comm_inst._core.getBlockList():
-            #logger.debug('Block %s is already saved.' % (blockHash,))
-            try:
-                del comm_inst.blockQueue[blockHash]
-            except KeyError:
-                pass
-            continue
-        if comm_inst._core._blacklist.inBlacklist(blockHash):
-            continue
-        if comm_inst._core.storage_counter.isFull():
-            break
+
         comm_inst.currentDownloading.append(blockHash) # So we can avoid concurrent downloading in other threads of same block
         if len(blockPeers) == 0:
             peerUsed = comm_inst.pickOnlinePeer()

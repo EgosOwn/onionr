@@ -89,7 +89,7 @@ class Block:
 
                 # Check for replay attacks
                 try:
-                    if epoch.get_epoch() - self.core.getBlockDate(self.hash) < 60:
+                    if epoch.get_epoch() - self.core.getBlockDate(self.hash) > 60:
                         assert self.core._crypto.replayTimestampValidation(self.bmetadata['rply'])
                 except (AssertionError, KeyError, TypeError) as e:
                     if not self.bypassReplayCheck:
