@@ -24,14 +24,13 @@ from onionrutils import blockmetadata, stringvalidators, validatemetadata
 def _should_download(comm_inst, block_hash):
     ret_data = True
     if block_hash in comm_inst._core.getBlockList():
-        #logger.debug('Block %s is already saved.' % (blockHash,))
         ret_data = False
     else:
-        if comm_inst._core._blacklist.inBlacklist(blockHash):
+        if comm_inst._core._blacklist.inBlacklist(block_hash):
             ret_data = False
     if ret_data is False:
         try:
-            del comm_inst.blockQueue[blockHash]
+            del comm_inst.blockQueue[block_hash]
         except KeyError:
             pass
     return ret_data
