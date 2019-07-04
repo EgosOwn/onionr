@@ -26,7 +26,7 @@ def _should_download(comm_inst, block_hash):
     if block_hash in comm_inst._core.getBlockList():
         ret_data = False
     else:
-        if comm_inst._core._blacklist.inBlacklist(blocka_hash):
+        if comm_inst._core._blacklist.inBlacklist(block_hash):
             ret_data = False
     if ret_data is False:
         try:
