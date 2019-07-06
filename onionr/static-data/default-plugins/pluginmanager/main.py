@@ -226,7 +226,15 @@ def pluginToBlock(plugin, import_block = True):
             except:
                 pass
 
-            metadata = {'author' : author, 'date' : str(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')), 'name' : plugin, 'info' : info, 'compiled-by' : plugin_name, 'content' : data.decode('utf-8'), 'description' : description}
+            metadata = {
+                'author' : author,
+                'date' : str(datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')),
+                'name' : plugin,
+                'info' : info,
+                'compiled-by' : plugin_name,
+                'content' : data.decode('utf-8'),
+                'description' : description
+            }
 
             block = Block(core = pluginapi.get_core())
 
@@ -250,6 +258,7 @@ def pluginToBlock(plugin, import_block = True):
 def installBlock(block):
     try:
         block = Block(block, core = pluginapi.get_core())
+        print(block.getContent())
         blockContent = json.loads(block.getContent())
 
         name = sanitize(blockContent['name'])

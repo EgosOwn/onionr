@@ -24,8 +24,8 @@ from onionrutils import bytesconverter
 config.reload()
 
 def getDifficultyModifier(coreOrUtilsInst=None):
-    '''Accepts a core or utils instance returns 
-    the difficulty modifier for block storage based 
+    '''Accepts a core or utils instance returns
+    the difficulty modifier for block storage based
     on a variety of factors, currently only disk use.
     '''
     classInst = coreOrUtilsInst
@@ -110,14 +110,14 @@ class DataPOW:
             self.data = self.data.encode()
         except AttributeError:
             pass
-        
+
         self.data = nacl.hash.blake2b(self.data)
 
-        logger.info('Computing POW (difficulty: %s)...' % self.difficulty)
+        logger.debug('Computing POW (difficulty: %s)...' % self.difficulty)
 
         self.mainHash = '0' * 70
         self.puzzle = self.mainHash[0:min(self.difficulty, len(self.mainHash))]
-        
+
         myCore = core.Core()
         for i in range(max(1, threadCount)):
             t = threading.Thread(name = 'thread%s' % i, target = self.pow, args = (True,myCore))
@@ -131,7 +131,7 @@ class DataPOW:
         answer = ''
         heartbeat = 200000
         hbCount = 0
-        
+
         while self.hashing:
             rand = nacl.utils.random()
             token = nacl.hash.blake2b(rand + self.data).decode()
@@ -141,7 +141,7 @@ class DataPOW:
                 self.hashing = False
                 iFound = True
                 break
-                
+
         if iFound:
             endTime = math.floor(time.time())
             if self.reporting:
@@ -160,12 +160,12 @@ class DataPOW:
         '''
             Returns the result then sets to false, useful to automatically clear the result
         '''
-        
+
         try:
             retVal = self.result
         except AttributeError:
             retVal = False
-            
+
         self.result = False
         return retVal
 
@@ -207,15 +207,15 @@ class POW:
             self.data = self.data.encode()
         except AttributeError:
             pass
-            
+
         if forceDifficulty > 0:
             self.difficulty = forceDifficulty
         else:
             # Calculate difficulty. Dumb for now, may use good algorithm in the future.
             self.difficulty = getDifficultyForNewBlock(bytes(json_metadata + b'\n' + self.data), coreInst=myCore)
-            
-        
-        logger.info('Computing POW (difficulty: %s)...' % self.difficulty)
+
+
+        logger.debug('Computing POW (difficulty: %s)...' % self.difficulty)
 
         self.mainHash = '0' * 64
         self.puzzle = self.mainHash[0:min(self.difficulty, len(self.mainHash))]
@@ -251,7 +251,7 @@ class POW:
                 self.result = payload
                 break
             nonce += 1
-                
+
         if iFound:
             endTime = math.floor(time.time())
             if self.reporting:
@@ -268,12 +268,12 @@ class POW:
         '''
             Returns the result then sets to false, useful to automatically clear the result
         '''
-        
+
         try:
             retVal = self.result
         except AttributeError:
             retVal = False
-            
+
         self.result = False
         return retVal
 

@@ -32,6 +32,7 @@ class colors:
     strikethrough='\033[09m'
     invisible='\033[08m'
     italics='\033[3m'
+
     class fg:
         black='\033[30m'
         red='\033[31m'
@@ -64,9 +65,7 @@ class colors:
 '''
     Use the bitwise operators to merge these settings
 '''
-USE_ANSI = 0b100
-if os.name == 'nt':
-    USE_ANSI = 0b000
+USE_ANSI = 0b000 if os.name == 'nt' else 0b100
 OUTPUT_TO_CONSOLE = 0b010
 OUTPUT_TO_FILE = 0b001
 
@@ -150,6 +149,7 @@ def log(prefix, data, color = '', timestamp=True, fd = sys.stdout, prompt = True
         data   : The actual data to output
         color  : The color to output before the data
     '''
+
     curTime = ''
     if timestamp:
         curTime = time.strftime("%m-%d %H:%M:%S") + ' '
@@ -210,33 +210,33 @@ def confirm(default = 'y', message = 'Are you sure %s? '):
         return default == 'y'
 
 # debug: when there is info that could be useful for debugging purposes only
-def debug(data, error = None, timestamp = True, prompt = True, terminal = False, level = LEVEL_DEBUG):
+def debug(data, error = None, timestamp = True, prompt = True, terminal = True, level = LEVEL_DEBUG):
     if get_level() <= level:
         log('/', data, timestamp = timestamp, prompt = prompt, terminal = terminal)
     if not error is None:
         debug('Error: ' + str(error) + parse_error())
 
 # info: when there is something to notify the user of, such as the success of a process
-def info(data, timestamp = False, prompt = True, terminal = False, level = LEVEL_INFO):
+def info(data, timestamp = False, prompt = True, terminal = True, level = LEVEL_INFO):
     if get_level() <= level:
         log('+', data, colors.fg.green, timestamp = timestamp, prompt = prompt, terminal = terminal)
 
 # warn: when there is a potential for something bad to happen
-def warn(data, error = None, timestamp = True, prompt = True, terminal = False, level = LEVEL_WARN):
+def warn(data, error = None, timestamp = True, prompt = True, terminal = True, level = LEVEL_WARN):
     if not error is None:
         debug('Error: ' + str(error) + parse_error())
     if get_level() <= level:
         log('!', data, colors.fg.orange, timestamp = timestamp, prompt = prompt, terminal = terminal)
 
 # error: when only one function, module, or process of the program encountered a problem and must stop
-def error(data, error = None, timestamp = True, prompt = True, terminal = False, level = LEVEL_ERROR):
+def error(data, error = None, timestamp = True, prompt = True, terminal = True, level = LEVEL_ERROR):
     if get_level() <= level:
         log('-', data, colors.fg.red, timestamp = timestamp, fd = sys.stderr, prompt = prompt, terminal = terminal)
     if not error is None:
         debug('Error: ' + str(error) + parse_error())
 
 # fatal: when the something so bad has happened that the program must stop
-def fatal(data, error = None, timestamp=True, prompt = True, terminal = False, level = LEVEL_FATAL):
+def fatal(data, error = None, timestamp = True, prompt = True, terminal = True, level = LEVEL_FATAL):
     if not error is None:
         debug('Error: ' + str(error) + parse_error(), terminal = terminal)
     if get_level() <= level:
@@ -248,6 +248,9 @@ def parse_error():
     output = ''
 
     for line in details:
-        output += '\n    ... module %s in  %s:%i' % (line[2], line[0], line[1])
+        output += ('\n    ... ' + colors.bold + '%s' + colors.reset + ' in %s:' + colors.bold + '%i' + colors.reset) % (line[2], line[0], line[1])
+
+    if not (get_settings() & USE_ANSI):
+        output = colors.filter(output)
 
     return output

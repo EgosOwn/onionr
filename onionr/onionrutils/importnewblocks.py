@@ -45,4 +45,4 @@ def import_new_blocks(core_inst=None, scanDir=''):
                 else:
                     logger.warn('Failed to verify hash for %s' % block, terminal=True)
     if not exist:
-        logger.info('No blocks found to import', terminal=True)
+        logger.debug('No blocks found to import', terminal=True)

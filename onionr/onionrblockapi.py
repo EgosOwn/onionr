@@ -151,12 +151,16 @@ class Block:
             Outputs:
             - (bool): indicates whether or not the operation was successful
         '''
+
         try:
             # import from string
             blockdata = data
 
             # import from file
             if blockdata is None:
+                if self.getHash() is None:
+                    return None
+
                 try:
                     blockdata = onionrstorage.getData(self.core, self.getHash()).decode()
                 except AttributeError:
@@ -190,7 +194,7 @@ class Block:
 
             if len(self.getRaw()) <= config.get('allocations.blockCache', 500000):
                 self.cache()
-            
+
             if self.autoDecrypt:
                 self.decrypt()
 
@@ -677,7 +681,7 @@ class Block:
         '''
         if isinstance(bHash, Block):
             bHash = bHash.getHash()
-        
+
         ret = isinstance(onionrstorage.getData(onionrcore.Core(), bHash), type(None))
 
         return not ret

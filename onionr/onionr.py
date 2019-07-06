@@ -134,13 +134,8 @@ class Onionr:
         # initialize plugins
         events.event('init', onionr = self, threaded = False)
 
-        command = ''
-        try:
-            command = sys.argv[1].lower()
-        except IndexError:
-            command = ''
-        finally:
-            self.execute(command)
+        command = sys.argv[1].lower() if len(sys.argv) >= 2 else ''
+        self.execute(command)
 
         return
 
@@ -285,8 +280,7 @@ class Onionr:
         # define commands
         commands = self.getCommands()
 
-        command = commands.get(argument, self.notFound)
-        command()
+        return commands.get(argument, self.notFound)()
 
     def version(self, verbosity = 5, function = logger.info):
         '''

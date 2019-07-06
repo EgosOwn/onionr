@@ -29,7 +29,7 @@ class SubprocessPOW:
     def __init__(self, data, metadata, core_inst=None, subproc_count=None):
         '''
             Onionr proof of work using multiple processes
-            Accepts block data, block metadata 
+            Accepts block data, block metadata
             and optionally an onionr core library instance.
             if subproc_count is not set, os.cpu_count() is used to determine the number of processes
 
@@ -55,8 +55,8 @@ class SubprocessPOW:
         self.data = bytesconverter.str_to_bytes(data)
         # Calculate difficulty. Dumb for now, may use good algorithm in the future.
         self.difficulty = onionrproofs.getDifficultyForNewBlock(bytes(json_metadata + b'\n' + self.data), coreInst=self.core_inst)
-        
-        logger.info('Computing POW (difficulty: %s)...' % self.difficulty)
+
+        logger.debug('Computing POW (difficulty: %s)...' % self.difficulty)
 
         self.mainHash = '0' * 64
         self.puzzle = self.mainHash[0:min(self.difficulty, len(self.mainHash))]
@@ -74,7 +74,7 @@ class SubprocessPOW:
             else:
                 self.shutdown = True
                 return self.payload
-    
+
     def _spawn_proc(self):
         # Create a child proof of work process, wait for data and send shutdown signal when its found
         parent_conn, child_conn = Pipe()
@@ -117,4 +117,3 @@ class SubprocessPOW:
                 pipe.send(payload)
                 break
             nonce += 1
-        
