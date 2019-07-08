@@ -7,4 +7,5 @@ PySocks==1.6.8
 stem==1.7.1
 deadsimplekv==0.1.1
 unpaddedbase32==0.1.0
+streamedrequests==0.0.0
 jinja2==2.10.1
