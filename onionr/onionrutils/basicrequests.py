@@ -17,7 +17,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import requests
+import requests, streamedrequests
 import logger, onionrexceptions
 def do_post_request(core_inst, url, data={}, port=0, proxyType='tor'):
     '''
@@ -43,7 +43,7 @@ def do_post_request(core_inst, url, data={}, port=0, proxyType='tor'):
         retData = False
     return retData
 
-def do_get_request(core_inst, url, port=0, proxyType='tor', ignoreAPI=False, returnHeaders=False):
+def do_get_request(core_inst, url, port=0, proxyType='tor', ignoreAPI=False, returnHeaders=False, max_size=5242880):
     '''
     Do a get request through a local tor or i2p instance
     '''
@@ -61,16 +61,16 @@ def do_get_request(core_inst, url, port=0, proxyType='tor', ignoreAPI=False, ret
     response_headers = dict()
     try:
         proxies = {'http': 'socks4a://127.0.0.1:' + str(port), 'https': 'socks4a://127.0.0.1:' + str(port)}
-        r = requests.get(url, headers=headers, proxies=proxies, allow_redirects=False, timeout=(15, 30), )
+        r = streamedrequests.get(url, request_headers=headers, allow_redirects=False, proxy=proxies, connect_timeout=15, max_size=max_size)
         # Check server is using same API version as us
         if not ignoreAPI:
             try:
-                response_headers = r.headers
-                if r.headers['X-API'] != str(API_VERSION):
+                response_headers = r[0].headers
+                if r[0].headers['X-API'] != str(API_VERSION):
                     raise onionrexceptions.InvalidAPIVersion
             except KeyError:
                 raise onionrexceptions.InvalidAPIVersion
-        retData = r.text
+        retData = r[1]
     except KeyboardInterrupt:
         raise KeyboardInterrupt
     except ValueError as e:

@@ -20,20 +20,7 @@
 import communicator, onionrexceptions
 import logger, onionrpeers
 from onionrutils import blockmetadata, stringvalidators, validatemetadata
-
-def _should_download(comm_inst, block_hash):
-    ret_data = True
-    if block_hash in comm_inst._core.getBlockList():
-        ret_data = False
-    else:
-        if comm_inst._core._blacklist.inBlacklist(block_hash):
-            ret_data = False
-    if ret_data is False:
-        try:
-            del comm_inst.blockQueue[block_hash]
-        except KeyError:
-            pass
-    return ret_data
+from . import shoulddownload
 
 def download_blocks_from_communicator(comm_inst):
     assert isinstance(comm_inst, communicator.OnionrCommunicatorDaemon)
@@ -47,13 +34,13 @@ def download_blocks_from_communicator(comm_inst):
             blockPeers = []
         removeFromQueue = True
 
-        if _should_download(comm_inst, blockHash):
+        if shoulddownload.should_download(comm_inst, blockHash):
             continue
 
         if comm_inst.shutdown or not comm_inst.isOnline or comm_inst._core.storage_counter.isFull():
             # Exit loop if shutting down or offline, or disk allocation reached
             break
-        # Do not download blocks being downloaded or that are already saved (edge cases)
+        # Do not download blocks being downloaded
         if blockHash in comm_inst.currentDownloading:
             #logger.debug('Already downloading block %s...' % blockHash)
             continue
@@ -67,7 +54,7 @@ def download_blocks_from_communicator(comm_inst):
 
         if not comm_inst.shutdown and peerUsed.strip() != '':
             logger.info("Attempting to download %s from %s..." % (blockHash[:12], peerUsed))
-        content = comm_inst.peerAction(peerUsed, 'getdata/' + blockHash) # block content from random peer (includes metadata)
+        content = comm_inst.peerAction(peerUsed, 'getdata/' + blockHash, max_resp_size=3000000) # block content from random peer (includes metadata)
         if content != False and len(content) > 0:
             try:
                 content = content.encode()

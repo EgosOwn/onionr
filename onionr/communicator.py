@@ -301,7 +301,7 @@ class OnionrCommunicatorDaemon:
                 score = str(self.getPeerProfileInstance(i).score)
                 logger.info(i + ', score: ' + score, terminal=True)
 
-    def peerAction(self, peer, action, data='', returnHeaders=False):
+    def peerAction(self, peer, action, data='', returnHeaders=False, max_resp_size=5242880):
         '''Perform a get request to a peer'''
         if len(peer) == 0:
             return False
