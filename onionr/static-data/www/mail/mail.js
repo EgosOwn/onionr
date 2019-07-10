@@ -182,7 +182,7 @@ function loadInboxEntries(bHash){
         }
         entry.setAttribute('data-nameSet', true)
         if (senderInput.value == ''){
-            senderInput.value = resp['meta']['signer']
+            senderInput.value = resp['meta']['signer'] || 'Anonymous'
             entry.setAttribute('data-nameSet', false)
         }
         bHashDisplay.innerText = bHash.substring(0, 10)
@@ -190,8 +190,7 @@ function loadInboxEntries(bHash){
         entry.setAttribute('data-pubkey', resp['meta']['signer'])
         senderInput.readOnly = true
         dateStr.innerText = humanDate.substring(0, humanDate.indexOf('('))
-        deleteBtn.innerText = 'X'
-        deleteBtn.classList.add('dangerBtn', 'deleteBtn')
+        deleteBtn.classList.add('delete', 'deleteBtn')
         if (metadata['subject'] === undefined || metadata['subject'] === null) {
             subjectLine.innerText = '()'
         }
@@ -268,8 +267,7 @@ function getSentbox(){
             var preview = document.createElement('span')
             var deleteBtn = document.createElement('button')
             var message = resp[i]['message']
-            deleteBtn.classList.add('deleteBtn', 'dangerBtn')
-            deleteBtn.innerText = 'X'
+            deleteBtn.classList.add('deleteBtn', 'delete')
             toEl.readOnly = true
             sentDate.innerText = humanDate.substring(0, humanDate.indexOf('('))
             if (resp[i]['name'] == null || resp[i]['name'].toLowerCase() == 'anonymous'){
@@ -279,6 +277,7 @@ function getSentbox(){
                 toEl.value = resp[i]['name']
             }
             preview.innerText = '(' + resp[i]['subject'] + ')'
+            entry.classList.add('sentboxList')
             entry.setAttribute('data-hash', resp[i]['hash'])
             entry.appendChild(deleteBtn)
             entry.appendChild(toLabel)
