@@ -20,6 +20,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 import sys, os, time
+import streamedrequests
 import core, config, logger, onionr
 import onionrexceptions, onionrpeers, onionrevents as events, onionrplugins as plugins, onionrblockapi as block
 from communicatorutils import servicecreator, onionrcommunicatortimers
@@ -303,6 +304,7 @@ class OnionrCommunicatorDaemon:
 
     def peerAction(self, peer, action, data='', returnHeaders=False, max_resp_size=5242880):
         '''Perform a get request to a peer'''
+        penalty_score = -10
         if len(peer) == 0:
             return False
         #logger.debug('Performing ' + action + ' with ' + peer + ' on port ' + str(self.proxyPort))
@@ -311,12 +313,15 @@ class OnionrCommunicatorDaemon:
             url += '&data=' + data
 
         self._core.setAddressInfo(peer, 'lastConnectAttempt', epoch.get_epoch()) # mark the time we're trying to request this peer
-
-        retData = basicrequests.do_get_request(self._core, url, port=self.proxyPort)
+        try:
+            retData = basicrequests.do_get_request(self._core, url, port=self.proxyPort, max_size=max_resp_size)
+        except streamedrequests.exceptions.ResponseLimitReached:
+            retData = False
+            penalty_score = -100
         # if request failed, (error), mark peer offline
         if retData == False:
             try:
-                self.getPeerProfileInstance(peer).addScore(-10)
+                self.getPeerProfileInstance(peer).addScore(penalty_score)
                 self.removeOnlinePeer(peer)
                 if action != 'ping' and not self.shutdown:
                     logger.warn('Lost connection to ' + peer, terminal=True)

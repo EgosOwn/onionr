@@ -48,7 +48,7 @@ function openReply(bHash, quote, subject){
             entry = inbox[i]
         }
     }
-    if (entry.getAttribute('data-nameSet') == 'true'){
+    if (entry.getAttribute('data-nameset') == 'true'){
         document.getElementById('friendSelect').value = entry.getElementsByTagName('input')[0].value
     }
     key = entry.getAttribute('data-pubkey')
@@ -62,7 +62,7 @@ function openReply(bHash, quote, subject){
     }
     quote = '\n' + key.substring(0, 12) + ' wrote:' + '\n' + splitQuotes.join('\n')
     document.getElementById('draftText').value = quote
-    setActiveTab('send message')
+    setActiveTab('compose')
 }
 
 function openThread(bHash, sender, date, sigBool, pubkey, subjectLine){
@@ -185,7 +185,7 @@ function loadInboxEntries(bHash){
             senderInput.value = resp['meta']['signer'] || 'Anonymous'
             entry.setAttribute('data-nameSet', false)
         }
-        bHashDisplay.innerText = bHash.substring(0, 10)
+        //bHashDisplay.innerText = bHash.substring(0, 10)
         entry.setAttribute('data-hash', bHash)
         entry.setAttribute('data-pubkey', resp['meta']['signer'])
         senderInput.readOnly = true

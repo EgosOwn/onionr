@@ -19,7 +19,7 @@
 '''
 import requests, streamedrequests
 import logger, onionrexceptions
-def do_post_request(core_inst, url, data={}, port=0, proxyType='tor'):
+def do_post_request(core_inst, url, data={}, port=0, proxyType='tor', max_size=10000):
     '''
     Do a POST request through a local tor or i2p instance
     '''
@@ -34,8 +34,9 @@ def do_post_request(core_inst, url, data={}, port=0, proxyType='tor'):
     headers = {'user-agent': 'PyOnionr', 'Connection':'close'}
     try:
         proxies = {'http': 'socks4a://127.0.0.1:' + str(port), 'https': 'socks4a://127.0.0.1:' + str(port)}
-        r = requests.post(url, data=data, headers=headers, proxies=proxies, allow_redirects=False, timeout=(15, 30))
-        retData = r.text
+        #r = requests.post(url, data=data, headers=headers, proxies=proxies, allow_redirects=False, timeout=(15, 30))
+        r = streamedrequests.post(url, post_data=data, request_headers=headers, proxy=proxies, connect_timeout=15, stream_timeout=30, max_size=max_size, allow_redirects=False)
+        retData = r[1]
     except KeyboardInterrupt:
         raise KeyboardInterrupt
     except requests.exceptions.RequestException as e:
@@ -61,7 +62,7 @@ def do_get_request(core_inst, url, port=0, proxyType='tor', ignoreAPI=False, ret
     response_headers = dict()
     try:
         proxies = {'http': 'socks4a://127.0.0.1:' + str(port), 'https': 'socks4a://127.0.0.1:' + str(port)}
-        r = streamedrequests.get(url, request_headers=headers, allow_redirects=False, proxy=proxies, connect_timeout=15, max_size=max_size)
+        r = streamedrequests.get(url, request_headers=headers, allow_redirects=False, proxy=proxies, connect_timeout=15, stream_timeout=120, max_size=max_size)
         # Check server is using same API version as us
         if not ignoreAPI:
             try:
