@@ -19,6 +19,7 @@
 '''
 import logger, onionrproofs
 from onionrutils import stringvalidators, epoch
+from communicator import peeraction, onlinepeers
 
 def lookup_blocks_from_communicator(comm_inst):
     logger.info('Looking up new blocks...')
@@ -39,7 +40,7 @@ def lookup_blocks_from_communicator(comm_inst):
         if comm_inst._core.storage_counter.isFull():
             logger.debug('Not looking up new blocks due to maximum amount of allowed disk space used')
             break
-        peer = comm_inst.pickOnlinePeer() # select random online peer
+        peer = onlinepeers.pick_online_peer(comm_inst) # select random online peer
         # if we've already tried all the online peers this time around, stop
         if peer in triedPeers:
             if len(comm_inst.onlinePeers) == len(triedPeers):
@@ -57,7 +58,7 @@ def lookup_blocks_from_communicator(comm_inst):
         else:
             listLookupCommand += '?date=%s' % (lastLookupTime,)
         try:
-            newBlocks = comm_inst.peerAction(peer, listLookupCommand) # get list of new block hashes
+            newBlocks = peeraction.peer_action(comm_inst, peer, listLookupCommand) # get list of new block hashes
         except Exception as error:
             logger.warn('Could not get new blocks from %s.' % peer, error = error)
             newBlocks = False

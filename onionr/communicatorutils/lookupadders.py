@@ -19,7 +19,7 @@
 '''
 import logger
 from onionrutils import stringvalidators
-
+from communicator import peeraction, onlinepeers
 def lookup_new_peer_transports_with_communicator(comm_inst):
     logger.info('Looking up new addresses...')
     tryAmount = 1
@@ -29,8 +29,8 @@ def lookup_new_peer_transports_with_communicator(comm_inst):
         if len(newPeers) > 10000:
             # Don't get new peers if we have too many queued up
             break
-        peer = comm_inst.pickOnlinePeer()
-        newAdders = comm_inst.peerAction(peer, action='pex')
+        peer = onlinepeers.pick_online_peer(comm_inst)
+        newAdders = peeraction.peer_action(comm_inst, peer, action='pex')
         try:
             newPeers = newAdders.split(',')
         except AttributeError:

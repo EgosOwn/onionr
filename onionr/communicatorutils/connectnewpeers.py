@@ -17,15 +17,12 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import time, sys
+import time, sys, secrets
 import onionrexceptions, logger, onionrpeers
 from utils import networkmerger
 from onionrutils import stringvalidators, epoch
-# secrets module was added into standard lib in 3.6+
-if sys.version_info[0] == 3 and sys.version_info[1] < 6:
-    from dependencies import secrets
-elif sys.version_info[0] == 3 and sys.version_info[1] >= 6:
-    import secrets
+from communicator import peeraction
+
 def connect_new_peer_to_communicator(comm_inst, peer='', useBootstrap=False):
     config = comm_inst._core.config
     retData = False
@@ -67,7 +64,7 @@ def connect_new_peer_to_communicator(comm_inst, peer='', useBootstrap=False):
         if comm_inst.shutdown:
             return
         # Ping a peer,
-        if comm_inst.peerAction(address, 'ping') == 'pong!':
+        if peeraction.peer_action(comm_inst, address, 'ping') == 'pong!':
             time.sleep(0.1)
             if address not in mainPeerList:
                 # Add a peer to our list if it isn't already since it successfully connected

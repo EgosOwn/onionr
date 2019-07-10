@@ -21,6 +21,7 @@ import logger
 from communicatorutils import proxypicker
 import onionrblockapi as block
 from onionrutils import localcommand, stringvalidators, basicrequests
+from communicator import onlinepeers
 
 def upload_blocks_from_communicator(comm_inst):
     # when inserting a block, we try to upload it to a few peers to add some deniability
@@ -35,7 +36,7 @@ def upload_blocks_from_communicator(comm_inst):
                 comm_inst.decrementThreadCount('uploadBlock')
                 return
             for i in range(min(len(comm_inst.onlinePeers), 6)):
-                peer = comm_inst.pickOnlinePeer()
+                peer = onlinepeers.pick_online_peer(comm_inst)
                 if peer in triedPeers:
                     continue
                 triedPeers.append(peer)

@@ -21,6 +21,7 @@ import communicator, onionrexceptions
 import logger, onionrpeers
 from onionrutils import blockmetadata, stringvalidators, validatemetadata
 from . import shoulddownload
+from communicator import peeraction, onlinepeers
 
 def download_blocks_from_communicator(comm_inst):
     assert isinstance(comm_inst, communicator.OnionrCommunicatorDaemon)
@@ -47,14 +48,14 @@ def download_blocks_from_communicator(comm_inst):
 
         comm_inst.currentDownloading.append(blockHash) # So we can avoid concurrent downloading in other threads of same block
         if len(blockPeers) == 0:
-            peerUsed = comm_inst.pickOnlinePeer()
+            peerUsed = onlinepeers.pick_online_peer(comm_inst)
         else:
             blockPeers = comm_inst._core._crypto.randomShuffle(blockPeers)
             peerUsed = blockPeers.pop(0)
 
         if not comm_inst.shutdown and peerUsed.strip() != '':
             logger.info("Attempting to download %s from %s..." % (blockHash[:12], peerUsed))
-        content = comm_inst.peerAction(peerUsed, 'getdata/' + blockHash, max_resp_size=3000000) # block content from random peer (includes metadata)
+        content = peeraction.peer_action(comm_inst, peerUsed, 'getdata/' + blockHash, max_resp_size=3000000) # block content from random peer (includes metadata)
         if content != False and len(content) > 0:
             try:
                 content = content.encode()

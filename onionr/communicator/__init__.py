@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 '''
     Onionr - Private P2P Communication
 
@@ -20,9 +19,9 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 import sys, os, time
-import streamedrequests
 import core, config, logger, onionr
 import onionrexceptions, onionrpeers, onionrevents as events, onionrplugins as plugins, onionrblockapi as block
+from . import onlinepeers
 from communicatorutils import servicecreator, onionrcommunicatortimers
 from communicatorutils import downloadblocks, lookupblocks, lookupadders
 from communicatorutils import servicecreator, connectnewpeers, uploadblocks
@@ -31,7 +30,6 @@ from communicatorutils import cooldownpeer, housekeeping, netcheck
 from onionrutils import localcommand, epoch, basicrequests
 from etc import humanreadabletime
 import onionrservices, onionr, onionrproofs
-
 OnionrCommunicatorTimers = onionrcommunicatortimers.OnionrCommunicatorTimers
 
 config.reload()
@@ -99,7 +97,7 @@ class OnionrCommunicatorDaemon:
 
         # Set timers, function reference, seconds
         # requiresPeer True means the timer function won't fire if we have no connected peers
-        peerPoolTimer = OnionrCommunicatorTimers(self, self.getOnlinePeers, 60, maxThreads=1)
+        peerPoolTimer = OnionrCommunicatorTimers(self, onlinepeers.get_online_peers, 60, maxThreads=1, myArgs=[self])
         OnionrCommunicatorTimers(self, self.runCheck, 2, maxThreads=1)
 
         # Timers to periodically lookup new blocks and download them
@@ -107,7 +105,7 @@ class OnionrCommunicatorDaemon:
         OnionrCommunicatorTimers(self, self.getBlocks, self._core.config.get('timers.getBlocks', 30), requiresPeer=True, maxThreads=2)
 
         # Timer to reset the longest offline peer so contact can be attempted again
-        OnionrCommunicatorTimers(self, self.clearOfflinePeer, 58)
+        OnionrCommunicatorTimers(self, onlinepeers.clear_offline_peer, 58, myArgs=[self])
 
         # Timer to cleanup old blocks
         blockCleanupTimer = OnionrCommunicatorTimers(self, housekeeping.clean_old_blocks, 65, myArgs=[self])
@@ -209,56 +207,6 @@ class OnionrCommunicatorDaemon:
         except KeyError:
             pass
 
-    def pickOnlinePeer(self):
-        '''randomly picks peer from pool without bias (using secrets module)'''
-        retData = ''
-        while True:
-            peerLength = len(self.onlinePeers)
-            if peerLength <= 0:
-                break
-            try:
-                # get a random online peer, securely. May get stuck in loop if network is lost or if all peers in pool magically disconnect at once
-                retData = self.onlinePeers[self._core._crypto.secrets.randbelow(peerLength)]
-            except IndexError:
-                pass
-            else:
-                break
-        return retData
-
-    def clearOfflinePeer(self):
-        '''Removes the longest offline peer to retry later'''
-        try:
-            removed = self.offlinePeers.pop(0)
-        except IndexError:
-            pass
-        else:
-            logger.debug('Removed ' + removed + ' from offline list, will try them again.')
-        self.decrementThreadCount('clearOfflinePeer')
-
-    def getOnlinePeers(self):
-        '''
-            Manages the self.onlinePeers attribute list, connects to more peers if we have none connected
-        '''
-
-        logger.debug('Refreshing peer pool...')
-        maxPeers = int(config.get('peers.max_connect', 10))
-        needed = maxPeers - len(self.onlinePeers)
-
-        for i in range(needed):
-            if len(self.onlinePeers) == 0:
-                self.connectNewPeer(useBootstrap=True)
-            else:
-                self.connectNewPeer()
-
-            if self.shutdown:
-                break
-        else:
-            if len(self.onlinePeers) == 0:
-                logger.debug('Couldn\'t connect to any peers.' + (' Last node seen %s ago.' % humanreadabletime.human_readable_time(time.time() - self.lastNodeSeen) if not self.lastNodeSeen is None else ''), terminal=True)
-            else:
-                self.lastNodeSeen = time.time()
-        self.decrementThreadCount('getOnlinePeers')
-
     def addBootstrapListToPeerList(self, peerList):
         '''
             Add the bootstrap list to the peer list (no duplicates)
@@ -301,37 +249,6 @@ class OnionrCommunicatorDaemon:
             for i in self.onlinePeers:
                 score = str(self.getPeerProfileInstance(i).score)
                 logger.info(i + ', score: ' + score, terminal=True)
-
-    def peerAction(self, peer, action, data='', returnHeaders=False, max_resp_size=5242880):
-        '''Perform a get request to a peer'''
-        penalty_score = -10
-        if len(peer) == 0:
-            return False
-        #logger.debug('Performing ' + action + ' with ' + peer + ' on port ' + str(self.proxyPort))
-        url = 'http://%s/%s' % (peer, action)
-        if len(data) > 0:
-            url += '&data=' + data
-
-        self._core.setAddressInfo(peer, 'lastConnectAttempt', epoch.get_epoch()) # mark the time we're trying to request this peer
-        try:
-            retData = basicrequests.do_get_request(self._core, url, port=self.proxyPort, max_size=max_resp_size)
-        except streamedrequests.exceptions.ResponseLimitReached:
-            retData = False
-            penalty_score = -100
-        # if request failed, (error), mark peer offline
-        if retData == False:
-            try:
-                self.getPeerProfileInstance(peer).addScore(penalty_score)
-                self.removeOnlinePeer(peer)
-                if action != 'ping' and not self.shutdown:
-                    logger.warn('Lost connection to ' + peer, terminal=True)
-                    self.getOnlinePeers() # Will only add a new peer to pool if needed
-            except ValueError:
-                pass
-        else:
-            self._core.setAddressInfo(peer, 'lastConnect', epoch.get_epoch())
-            self.getPeerProfileInstance(peer).addScore(1)
-        return retData # If returnHeaders, returns tuple of data, headers. if not, just data string
 
     def getPeerProfileInstance(self, peer):
         '''Gets a peer profile instance from the list of profiles, by address name'''

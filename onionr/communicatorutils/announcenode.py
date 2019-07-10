@@ -21,6 +21,7 @@ import base64
 import onionrproofs, logger
 from etc import onionrvalues
 from onionrutils import basicrequests, bytesconverter
+from communicator import onlinepeers
 
 def announce_node(daemon):
     '''Announce our node to our peers'''
@@ -39,7 +40,7 @@ def announce_node(daemon):
                 peer = i
                 break
         else:
-            peer = daemon.pickOnlinePeer()
+            peer = onlinepeers.pick_online_peer(daemon)
 
         for x in range(1):
             if x == 1 and daemon._core.config.get('i2p.host'):
