@@ -18,6 +18,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 from onionrutils import epoch
+from communicator import onlinepeers
 def cooldown_peer(comm_inst):
     '''Randomly add an online peer to cooldown, so we can connect a new one'''
     onlinePeerAmount = len(comm_inst.onlinePeers)
@@ -46,7 +47,7 @@ def cooldown_peer(comm_inst):
             except ValueError:
                 break
         else:
-            comm_inst.removeOnlinePeer(toCool)
+            onlinepeers.remove_online_peer(comm_inst, toCool)
             comm_inst.cooldownPeer[toCool] = epoch.get_epoch()
 
     comm_inst.decrementThreadCount('cooldown_peer')

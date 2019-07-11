@@ -21,7 +21,7 @@ import time, sys, secrets
 import onionrexceptions, logger, onionrpeers
 from utils import networkmerger
 from onionrutils import stringvalidators, epoch
-from communicator import peeraction
+from communicator import peeraction, bootstrappeers
 
 def connect_new_peer_to_communicator(comm_inst, peer='', useBootstrap=False):
     config = comm_inst._core.config
@@ -50,7 +50,7 @@ def connect_new_peer_to_communicator(comm_inst, peer='', useBootstrap=False):
     
     if len(peerList) == 0 or useBootstrap:
         # Avoid duplicating bootstrap addresses in peerList
-        comm_inst.addBootstrapListToPeerList(peerList)
+        bootstrappeers.add_bootstrap_list_to_peer_list(comm_inst, peerList)
 
     for address in peerList:
         if not config.get('tor.v3onions') and len(address) == 62:

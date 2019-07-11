@@ -27,7 +27,7 @@ from communicatorutils import downloadblocks, lookupblocks, lookupadders
 from communicatorutils import servicecreator, connectnewpeers, uploadblocks
 from communicatorutils import daemonqueuehandler, announcenode, deniableinserts
 from communicatorutils import cooldownpeer, housekeeping, netcheck
-from onionrutils import localcommand, epoch, basicrequests
+from onionrutils import localcommand, epoch
 from etc import humanreadabletime
 import onionrservices, onionr, onionrproofs
 OnionrCommunicatorTimers = onionrcommunicatortimers.OnionrCommunicatorTimers
@@ -117,13 +117,10 @@ class OnionrCommunicatorDaemon:
         OnionrCommunicatorTimers(self, cooldownpeer.cooldown_peer, 30, myArgs=[self], requiresPeer=True)
 
         # Timer to read the upload queue and upload the entries to peers
-        OnionrCommunicatorTimers(self, self.uploadBlock, 5, requiresPeer=True, maxThreads=1)
+        OnionrCommunicatorTimers(self, uploadblocks.upload_blocks_from_communicator, 5, myArgs=[self], requiresPeer=True, maxThreads=1)
 
         # Timer to process the daemon command queue
-        OnionrCommunicatorTimers(self, self.daemonCommands, 6, maxThreads=3)
-
-        # Timer that kills Onionr if the API server crashes
-        #OnionrCommunicatorTimers(self, self.detectAPICrash, 30, maxThreads=1)
+        OnionrCommunicatorTimers(self, daemonqueuehandler.handle_daemon_commands, 6, myArgs=[self], maxThreads=3)
 
         # Setup direct connections
         if config.get('general.socket_servers', False):
@@ -207,48 +204,14 @@ class OnionrCommunicatorDaemon:
         except KeyError:
             pass
 
-    def addBootstrapListToPeerList(self, peerList):
-        '''
-            Add the bootstrap list to the peer list (no duplicates)
-        '''
-        for i in self._core.bootstrapList:
-            if i not in peerList and i not in self.offlinePeers and i != self._core.hsAddress and len(str(i).strip()) > 0:
-                peerList.append(i)
-                self._core.addAddress(i)
-
     def connectNewPeer(self, peer='', useBootstrap=False):
         '''Adds a new random online peer to self.onlinePeers'''
         connectnewpeers.connect_new_peer_to_communicator(self, peer, useBootstrap)
-
-    def removeOnlinePeer(self, peer):
-        '''Remove an online peer'''
-        try:
-            del self.connectTimes[peer]
-        except KeyError:
-            pass
-        try:
-            del self.dbTimestamps[peer]
-        except KeyError:
-            pass
-        try:
-            self.onlinePeers.remove(peer)
-        except ValueError:
-            pass
 
     def peerCleanup(self):
         '''This just calls onionrpeers.cleanupPeers, which removes dead or bad peers (offline too long, too slow)'''
         onionrpeers.peerCleanup(self._core)
         self.decrementThreadCount('peerCleanup')
-
-    def printOnlinePeers(self):
-        '''logs online peer list'''
-        if len(self.onlinePeers) == 0:
-            logger.warn('No online peers', terminal=True)
-        else:
-            logger.info('Online peers:', terminal=True)
-            for i in self.onlinePeers:
-                score = str(self.getPeerProfileInstance(i).score)
-                logger.info(i + ', score: ' + score, terminal=True)
 
     def getPeerProfileInstance(self, peer):
         '''Gets a peer profile instance from the list of profiles, by address name'''
@@ -270,34 +233,10 @@ class OnionrCommunicatorDaemon:
         logger.debug('Heartbeat. Node running for %s.' % humanreadabletime.human_readable_time(self.getUptime()))
         self.decrementThreadCount('heartbeat')
 
-    def daemonCommands(self):
-        '''
-            Process daemon commands from daemonQueue
-        '''
-        daemonqueuehandler.handle_daemon_commands(self)
-
-    def uploadBlock(self):
-        '''Upload our block to a few peers'''
-        uploadblocks.upload_blocks_from_communicator(self)
-
     def announce(self, peer):
         '''Announce to peers our address'''
         if announcenode.announce_node(self) == False:
             logger.warn('Could not introduce node.', terminal=True)
-
-    def detectAPICrash(self):
-        '''exit if the api server crashes/stops'''
-        if localcommand.local_command(self._core, 'ping', silent=False) not in ('pong', 'pong!'):
-            for i in range(300):
-                if localcommand.local_command(self._core, 'ping') in ('pong', 'pong!') or self.shutdown:
-                    break # break for loop
-                time.sleep(1)
-            else:
-                # This executes if the api is NOT detected to be running
-                events.event('daemon_crash', onionr = self._core.onionrInst, data = {})
-                logger.fatal('Daemon detected API crash (or otherwise unable to reach API after long time), stopping...', terminal=True)
-                self.shutdown = True
-        self.decrementThreadCount('detectAPICrash')
 
     def runCheck(self):
         if run_file_exists(self):

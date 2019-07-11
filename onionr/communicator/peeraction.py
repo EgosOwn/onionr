@@ -34,13 +34,14 @@ def peer_action(comm_inst, peer, action, data='', returnHeaders=False, max_resp_
     try:
         retData = basicrequests.do_get_request(comm_inst._core, url, port=comm_inst.proxyPort, max_size=max_resp_size)
     except streamedrequests.exceptions.ResponseLimitReached:
+        logger.warn('Request failed due to max response size being overflowed', terminal=True)
         retData = False
         penalty_score = -100
     # if request failed, (error), mark peer offline
     if retData == False:
         try:
             comm_inst.getPeerProfileInstance(peer).addScore(penalty_score)
-            comm_inst.removeOnlinePeer(peer)
+            onlinepeers.remove_online_peer(comm_inst, peer)
             if action != 'ping' and not comm_inst.shutdown:
                 logger.warn('Lost connection to ' + peer, terminal=True)
                 onlinepeers.get_online_peers(comm_inst) # Will only add a new peer to pool if needed

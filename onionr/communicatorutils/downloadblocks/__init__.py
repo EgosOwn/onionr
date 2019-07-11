@@ -35,7 +35,7 @@ def download_blocks_from_communicator(comm_inst):
             blockPeers = []
         removeFromQueue = True
 
-        if shoulddownload.should_download(comm_inst, blockHash):
+        if not shoulddownload.should_download(comm_inst, blockHash):
             continue
 
         if comm_inst.shutdown or not comm_inst.isOnline or comm_inst._core.storage_counter.isFull():
