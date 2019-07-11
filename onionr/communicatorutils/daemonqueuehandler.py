@@ -53,4 +53,4 @@ def handle_daemon_commands(comm_inst):
                 localcommand.local_command(comm_inst._core, 'queueResponseAdd/' + cmd[4], post=True, postData={'data': response})
         response = ''
 
-    comm_inst.decrementThreadCount('daemonCommands')
+    comm_inst.decrementThreadCount('handle_daemon_commands')

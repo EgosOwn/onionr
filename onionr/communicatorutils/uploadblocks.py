@@ -25,6 +25,8 @@ from communicator import onlinepeers
 
 def upload_blocks_from_communicator(comm_inst):
     # when inserting a block, we try to upload it to a few peers to add some deniability
+    TIMER_NAME = "upload_blocks_from_communicator"
+
     triedPeers = []
     finishedUploads = []
     core = comm_inst._core
@@ -32,8 +34,8 @@ def upload_blocks_from_communicator(comm_inst):
     if len(comm_inst.blocksToUpload) != 0:
         for bl in comm_inst.blocksToUpload:
             if not stringvalidators.validate_hash(bl):
-                logger.warn('Requested to upload invalid block')
-                comm_inst.decrementThreadCount('uploadBlock')
+                logger.warn('Requested to upload invalid block', terminal=True)
+                comm_inst.decrementThreadCount(TIMER_NAME)
                 return
             for i in range(min(len(comm_inst.onlinePeers), 6)):
                 peer = onlinepeers.pick_online_peer(comm_inst)
@@ -52,4 +54,4 @@ def upload_blocks_from_communicator(comm_inst):
             comm_inst.blocksToUpload.remove(x)
         except ValueError:
             pass
-    comm_inst.decrementThreadCount('uploadBlock')
+    comm_inst.decrementThreadCount(TIMER_NAME)
