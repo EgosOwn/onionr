@@ -19,12 +19,13 @@
 '''
 import sqlite3
 import logger
+from . import scoresortedpeerlist, peerprofiles
 def peer_cleanup(core_inst):
     '''Removes peers who have been offline too long or score too low'''
     config = core_inst.config
     logger.info('Cleaning peers...')
 
-    adders = get_score_sorted_peer_list(core_inst)
+    adders = scoresortedpeerlist.get_score_sorted_peer_list(core_inst)
     adders.reverse()
     
     if len(adders) > 1:
@@ -34,7 +35,7 @@ def peer_cleanup(core_inst):
 
         for address in adders:
             # Remove peers that go below the negative score
-            if PeerProfiles(address, core_inst).score < min_score:
+            if peerprofiles.PeerProfiles(address, core_inst).score < min_score:
                 core_inst.removeAddress(address)
                 try:
                     if (int(epoch.get_epoch()) - int(core_inst.getPeerInfo(address, 'dateSeen'))) >= 600:

@@ -59,7 +59,7 @@ class PrivateAPI:
 
         self.queueResponse = {}
         onionrInst.setClientAPIInst(self)
-
+        register_private_blueprints.register_private_blueprints(self, app)
         httpapi.load_plugin_blueprints(self, app)
         self.get_block_data = httpapi.apiutils.GetBlockData(self)
 
