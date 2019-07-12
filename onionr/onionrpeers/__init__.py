@@ -17,13 +17,9 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import sqlite3
-import core, config, logger
-from onionrutils import epoch
 from . import scoresortedpeerlist, peercleanup
 get_score_sorted_peer_list = scoresortedpeerlist.get_score_sorted_peer_list
 peer_cleanup = peercleanup.peer_cleanup
-config.reload()
 
 class PeerProfiles:
     '''
@@ -37,8 +33,6 @@ class PeerProfiles:
         self.failure = 0
         self.connectTime = None
 
-        if not isinstance(coreInst, core.Core):
-            raise TypeError("coreInst must be a type of core.Core")
         self.coreInst = coreInst
 
         self.loadScore()
