@@ -17,6 +17,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
+from . import peerprofiles
 def get_score_sorted_peer_list(coreInst):
     peer_list = coreInst.listAdders()
     peer_scores = {}
@@ -24,7 +25,7 @@ def get_score_sorted_peer_list(coreInst):
 
     for address in peer_list:
         # Load peer's profiles into a list
-        profile = PeerProfiles(address, coreInst)
+        profile = peerprofiles.PeerProfiles(address, coreInst)
         peer_scores[address] = profile.score
         if not isinstance(profile.connectTime, type(None)):
             peer_times[address] = profile.connectTime
