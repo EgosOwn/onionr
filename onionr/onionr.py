@@ -37,7 +37,7 @@ if detectoptimization.detect_optimization():
 
 import os, base64, random, shutil, time, platform, signal
 from threading import Thread
-import api, core, config, logger, onionrplugins as plugins, onionrevents as events
+import core, config, logger, onionrplugins as plugins, onionrevents as events
 import netcontroller
 from netcontroller import NetController
 from onionrblockapi import Block
@@ -58,6 +58,7 @@ class Onionr:
         self.API_VERSION = API_VERSION
         self.userRunDir = os.getcwd() # Directory user runs the program from
         self.killed = False
+        self.config = config
 
         if sys.argv[0] == os.path.basename(__file__):
             try:
