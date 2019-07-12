@@ -20,7 +20,11 @@
 import sqlite3
 import core, config, logger
 from onionrutils import epoch
+from . import scoresortedpeerlist, peercleanup
+get_score_sorted_peer_list = scoresortedpeerlist.get_score_sorted_peer_list
+peer_cleanup = peercleanup.peer_cleanup
 config.reload()
+
 class PeerProfiles:
     '''
         PeerProfiles
@@ -64,59 +68,3 @@ class PeerProfiles:
         '''Add to the peer's score (can add negative)'''
         self.score += toAdd
         self.saveScore()
-
-def getScoreSortedPeerList(coreInst):
-    if not type(coreInst is core.Core):
-        raise TypeError('coreInst must be instance of core.Core')
-
-    peerList = coreInst.listAdders()
-    peerScores = {}
-    peerTimes = {}
-
-    for address in peerList:
-        # Load peer's profiles into a list
-        profile = PeerProfiles(address, coreInst)
-        peerScores[address] = profile.score
-        if not isinstance(profile.connectTime, type(None)):
-            peerTimes[address] = profile.connectTime
-        else:
-            peerTimes[address] = 9000
-
-    # Sort peers by their score, greatest to least, and then last connected time
-    peerList = sorted(peerScores, key=peerScores.get, reverse=True)
-    peerList = sorted(peerTimes, key=peerTimes.get, reverse=True)
-    return peerList
-
-def peerCleanup(coreInst):
-    '''Removes peers who have been offline too long or score too low'''
-    if not type(coreInst is core.Core):
-        raise TypeError('coreInst must be instance of core.Core')
-
-    logger.info('Cleaning peers...')
-
-    adders = getScoreSortedPeerList(coreInst)
-    adders.reverse()
-    
-    if len(adders) > 1:
-
-        minScore = int(config.get('peers.minimum_score', -100))
-        maxPeers = int(config.get('peers.max_stored', 5000))
-
-        for address in adders:
-            # Remove peers that go below the negative score
-            if PeerProfiles(address, coreInst).score < minScore:
-                coreInst.removeAddress(address)
-                try:
-                    if (int(epoch.get_epoch()) - int(coreInst.getPeerInfo(address, 'dateSeen'))) >= 600:
-                        expireTime = 600
-                    else:
-                        expireTime = 86400
-                    coreInst._blacklist.addToDB(address, dataType=1, expire=expireTime)
-                except sqlite3.IntegrityError: #TODO just make sure its not a unique constraint issue
-                    pass
-                except ValueError:
-                    pass
-                logger.warn('Removed address ' + address + '.')
-
-    # Unban probably not malicious peers TODO improve
-    coreInst._blacklist.deleteExpired(dataType=1)

@@ -36,7 +36,7 @@ def connect_new_peer_to_communicator(comm_inst, peer='', useBootstrap=False):
         peerList = comm_inst._core.listAdders()
 
     mainPeerList = comm_inst._core.listAdders()
-    peerList = onionrpeers.getScoreSortedPeerList(comm_inst._core)
+    peerList = onionrpeers.get_score_sorted_peer_list(comm_inst._core)
 
     # If we don't have enough peers connected or random chance, select new peers to try
     if len(peerList) < 8 or secrets.randbelow(4) == 3:
