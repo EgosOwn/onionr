@@ -99,31 +99,5 @@ fetch('/friends/list', {
         }
     }
 
-    /* Template to add Friends to page */
-    // Test to see if the browser supports the HTML template element by checking
-    // for the presence of the template element's content attribute.
-    if ('content' in document.createElement('template')) {
 
-        // Instantiate the table with the existing HTML tbody
-        // and the row with the template
-        var template = document.getElementById('friendTemplate');
-
-        // Clone the new row and insert it into the table
-        var list = document.getElementById("friendList");
-        var clone = document.importNode(template.content, true);
-        var div = clone.querySelectorAll("div");
-        div[2].textContent = nameText.value;
-        div[3].textContent = peer;
-        div[3].setAttribute('data-pubkey', peer)
-
-        list.appendChild(clone);
-
-    } else {
-    // Find another way to add the rows to the table because 
-    // the HTML template element is not supported.
-    }
   })
-
-  document.getElementById('defriend').onclick = function(){
-      removeFriend(document.getElementById('friendPubkey').value)
-  }

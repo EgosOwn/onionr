@@ -19,6 +19,7 @@
 '''
 import sqlite3
 import logger
+from onionrutils import epoch
 from . import scoresortedpeerlist, peerprofiles
 def peer_cleanup(core_inst):
     '''Removes peers who have been offline too long or score too low'''
