@@ -78,15 +78,6 @@ fetch('/friends/list', {
         entry.appendChild(removeButton)
         entry.appendChild(nameText)
         friendListDisplay.appendChild(entry)
-        //I put the  Template code here but it made things slightly worse
-        entry.onclick = (function(entry, nameText, peer) {return function() {
-            if (nameText.length == 0){
-                nameText = 'Anonymous'
-            }
-            document.getElementById('friendPubkey').value = peer
-            document.getElementById('friendName').innerText = nameText
-            overlay('friendInfo')
-        };})(entry, nameText.value, peer);
     }
     // If friend delete buttons are pressed
 

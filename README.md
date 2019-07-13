@@ -62,7 +62,7 @@ Not yet usable:
 
 <img alt='Node statistics page screenshot' src='docs/onionr-1.png' width=600>
 
-Node statistics
+Home screen
 
 <img alt='Friend/contact manager screenshot' src='docs/onionr-2.png' width=600>
 
