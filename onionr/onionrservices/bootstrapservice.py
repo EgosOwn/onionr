@@ -22,7 +22,7 @@ from gevent.pywsgi import WSGIServer, WSGIHandler
 from stem.control import Controller
 from flask import Flask, Response
 import core
-from netcontroller import getOpenPort
+from netcontroller import get_open_port
 from . import httpheaders
 from onionrutils import stringvalidators, epoch
 
@@ -36,7 +36,7 @@ def bootstrap_client_service(peer, core_inst=None, bootstrap_timeout=300):
     if not stringvalidators.validate_pub_key(peer):
         raise ValueError('Peer must be valid base32 ed25519 public key')
 
-    bootstrap_port = getOpenPort()
+    bootstrap_port = get_open_port()
     bootstrap_app = Flask(__name__)
     http_server = WSGIServer(('127.0.0.1', bootstrap_port), bootstrap_app, log=None)
     try:

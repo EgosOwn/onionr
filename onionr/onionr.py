@@ -74,7 +74,7 @@ class Onionr:
         # Load global configuration data
         data_exists = Onionr.setupConfig(self.dataDir, self)
 
-        if netcontroller.torBinary() is None:
+        if netcontroller.tor_binary() is None:
             logger.error('Tor is not installed', terminal=True)
             sys.exit(1)
 

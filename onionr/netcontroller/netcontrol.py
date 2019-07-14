@@ -17,27 +17,10 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import subprocess, os, sys, time, signal, base64, socket
-from shutil import which
-import logger, config
+import os, sys, base64, subprocess, signal
+import config, logger
+from . import getopenport
 config.reload()
-def getOpenPort():
-    # taken from (but modified) https://stackoverflow.com/a/2838309 by https://stackoverflow.com/users/133374/albert ccy-by-sa-3 https://creativecommons.org/licenses/by-sa/3.0/
-    # changes from source: import moved to top of file, bind specifically to localhost
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    s.bind(("127.0.0.1",0))
-    s.listen(1)
-    port = s.getsockname()[1]
-    s.close()
-    return port
-
-def torBinary():
-    '''Return tor binary path or none if not exists'''
-    torPath = './tor'
-    if not os.path.exists(torPath):
-        torPath = which('tor')
-    return torPath
-
 class NetController:
     '''
         This class handles hidden service setup on Tor and I2P
@@ -51,7 +34,7 @@ class NetController:
 
         self.torConfigLocation = self.dataDir + 'torrc'
         self.readyState = False
-        self.socksPort = getOpenPort()
+        self.socksPort = getopenport.get_open_port()
         self.hsPort = hsPort
         self._torInstnace = ''
         self.myID = ''
@@ -80,7 +63,7 @@ class NetController:
         config.set('tor.controlpassword', plaintext, savefile=True)
         config.set('tor.socksport', self.socksPort, savefile=True)
 
-        controlPort = getOpenPort()
+        controlPort = getopenport.get_open_port()
 
         config.set('tor.controlPort', controlPort, savefile=True)
 
