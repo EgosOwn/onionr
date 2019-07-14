@@ -17,7 +17,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import os, sys, base64, subprocess
+import os, sys, base64, subprocess, signal
 import config, logger
 from . import getopenport
 config.reload()
