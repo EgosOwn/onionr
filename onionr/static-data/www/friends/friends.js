@@ -68,7 +68,7 @@ fetch('/friends/list', {
         var nameText = document.createElement('input')
         removeButton = document.createElement('button')
         removeButton.classList.add('friendRemove')
-        removeButton.classList.add('dangerBtn')
+        removeButton.classList.add('button', 'is-danger')
         entry.setAttribute('data-pubkey', peer)
         removeButton.innerText = 'X'
         nameText.value = name

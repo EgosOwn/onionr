@@ -71,9 +71,6 @@ class Onionr:
         if not self.dataDir.endswith('/'):
             self.dataDir += '/'
 
-        # set log file
-        logger.set_file(os.environ.get('LOG_DIR', 'data') + '/onionr.log')
-
         # Load global configuration data
         data_exists = Onionr.setupConfig(self.dataDir, self)
 
