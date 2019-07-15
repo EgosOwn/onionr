@@ -19,11 +19,9 @@
 '''
 import os, re, importlib
 import onionrevents as events, config, logger
-
+from utils import identifyhome
 # set data dir
-dataDir = os.environ.get('ONIONR_HOME', os.environ.get('DATA_DIR', 'data/'))
-if not dataDir.endswith('/'):
-    dataDir += '/'
+dataDir = identifyhome.identify_home()
 
 _pluginsfolder = dataDir + 'plugins/'
 _instances = dict()
@@ -75,15 +73,15 @@ def enable(name, onionr = None, start_event = True):
                 return False
             else:
                 enabled_plugins.append(name)
-                config.set('plugins.enabled', enabled_plugins, True)
-
+                config.set('plugins.enabled', enabled_plugins, savefile=True)
+                
                 if start_event is True:
                     start(name)
                 return True
         else:
             return False
     else:
-        logger.error('Failed to enable plugin \"%s\", disabling plugin.' % name)
+        logger.error('Failed to enable plugin \"%s\", disabling plugin.' % name, terminal=True)
         disable(name)
 
         return False
@@ -245,7 +243,7 @@ def get_plugin_data_folder(name, absolute = True):
         Returns the location of a plugin's data folder
     '''
 
-    return get_plugins_folder(name, absolute) + dataDir
+    return get_plugins_folder(name, absolute)
 
 def check():
     '''

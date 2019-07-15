@@ -30,6 +30,7 @@ import dbcreator, onionrstorage, serializeddata, subprocesspow
 from etc import onionrvalues, powchoice
 from onionrutils import localcommand, stringvalidators, bytesconverter, epoch
 from onionrutils import blockmetadata
+from utils import identifyhome
 import storagecounter
 
 class Core:
@@ -38,9 +39,7 @@ class Core:
             Initialize Core Onionr library
         '''
         # set data dir
-        self.dataDir = os.environ.get('ONIONR_HOME', os.environ.get('DATA_DIR', 'data/'))
-        if not self.dataDir.endswith('/'):
-            self.dataDir += '/'
+        self.dataDir = identifyhome.identify_home()
 
         try:
             self.usageFile = self.dataDir + 'disk-usage.txt'

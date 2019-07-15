@@ -1,7 +1,7 @@
 '''
     Onionr - Private P2P Communication
 
-    get a line of input from stdin
+    Identify a data directory for Onionr
 '''
 '''
     This program is free software: you can redistribute it and/or modify
@@ -17,21 +17,23 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import sys
-from . import colors, settings
-colors = colors.Colors
-def readline(message = ''):
-    '''
-        Takes in input from the console, not stored in logs
-        message: The message to display before taking input
-    '''
+import os, platform
 
-    color = colors.fg.green + colors.bold
-    output = colors.reset + str(color) + '... ' + colors.reset + str(message) + colors.reset
+def identify_home():
 
-    if not settings.get_settings() & settings.USE_ANSI:
-        output = colors.filter(output)
-
-    sys.stdout.write(output)
-
-    return input()
+    path = os.environ.get('ONIONR_HOME', None)
+    if path is None:
+        system = platform.system()
+        if system == 'Linux':
+            path = os.path.expanduser('~') + '/.local/share/onionr/'
+        elif system == 'Windows':
+            path = os.path.expanduser('~') + '\\AppData\\Local\\onionr\\'
+        elif system == 'Darwin':
+            path = os.path.expanduser('~' + '/Library/Application Support/onionr/')
+        else:
+            path = 'data/'
+    else:
+        path = os.path.abspath(path)
+    if not path.endswith('/'):
+        path += '/'
+    return path

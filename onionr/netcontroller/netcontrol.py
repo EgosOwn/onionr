@@ -20,6 +20,7 @@
 import os, sys, base64, subprocess, signal
 import config, logger
 from . import getopenport
+from utils import identifyhome
 config.reload()
 class NetController:
     '''
@@ -28,9 +29,7 @@ class NetController:
 
     def __init__(self, hsPort, apiServerIP='127.0.0.1'):
         # set data dir
-        self.dataDir = os.environ.get('ONIONR_HOME', os.environ.get('DATA_DIR', 'data/'))
-        if not self.dataDir.endswith('/'):
-            self.dataDir += '/'
+        self.dataDir = identifyhome.identify_home()
 
         self.torConfigLocation = self.dataDir + 'torrc'
         self.readyState = False

@@ -43,11 +43,12 @@ from netcontroller import NetController
 from onionrblockapi import Block
 import onionrproofs, onionrexceptions, communicator, setupconfig
 import onionrcommands as commands # Many command definitions are here
+from utils import identifyhome
 
 try:
     from urllib3.contrib.socks import SOCKSProxyManager
 except ImportError:
-    raise Exception("You need the PySocks module (for use with socks5 proxy to use Tor)")
+    raise ImportError("You need the PySocks module (for use with socks5 proxy to use Tor)")
 
 class Onionr:
     def __init__(self):
@@ -67,7 +68,7 @@ class Onionr:
                 pass
 
         # set data dir
-        self.dataDir = os.environ.get('ONIONR_HOME', os.environ.get('DATA_DIR', 'data/'))
+        self.dataDir = identifyhome.identify_home()
         if not self.dataDir.endswith('/'):
             self.dataDir += '/'
 
@@ -97,7 +98,8 @@ class Onionr:
             if not os.path.exists(plugins.get_plugin_data_folder(name)):
                 try:
                     os.mkdir(plugins.get_plugin_data_folder(name))
-                except:
+                except Exception as e:
+                    logger.warn('Error enabling plugin: ' + str(e))
                     plugins.disable(name, onionr = self, stop_event = False)
 
         self.communicatorInst = None
@@ -139,7 +141,8 @@ class Onionr:
             command = ''
         finally:
             self.execute(command)
-
+        
+        os.chdir(self.userRunDir)
         return
 
     def exitSigterm(self, signum, frame):
@@ -175,7 +178,7 @@ class Onionr:
 
     def get_hostname(self):
         try:
-            with open('./' + self.dataDir + 'hs/hostname', 'r') as hostname:
+            with open(self.dataDir + 'hs/hostname', 'r') as hostname:
                 return hostname.read().strip()
         except FileNotFoundError:
             return "Not Generated"

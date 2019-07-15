@@ -18,7 +18,9 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 import os
-data_home = os.environ.get('DATA_DIR', os.environ.get('DATA_DIR', 'data'))
+from utils import identifyhome
+
+data_home = os.environ.get('ONIONR_LOG_DIR', identifyhome.identify_home())
 # Use the bitwise operators to merge these settings
 USE_ANSI = 0b100
 if os.name == 'nt':

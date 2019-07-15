@@ -19,11 +19,9 @@
 '''
 
 import os, json, logger
-
+from utils import identifyhome
 # set data dir
-dataDir = os.environ.get('ONIONR_HOME', os.environ.get('DATA_DIR', 'data/'))
-if not dataDir.endswith('/'):
-    dataDir += '/'
+dataDir = identifyhome.identify_home()
 
 _configfile = os.path.abspath(dataDir + 'config.json')
 _config = {}
