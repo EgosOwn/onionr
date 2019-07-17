@@ -1,37 +1,5 @@
-body{
-    background-color: white;
-    color: black;
-}
 
-.hidden{
-    display: none;
-}
-p{
-    font-family: sans-serif;
-}
-#webpassWindow{
-    background-color: black;
-    border: 1px solid black;
-    border-radius: 5px;
-    width: 100%;
-    z-index: 2;
-    color: white;
-    text-align: center;
-}
-
-.entry{
-    color: green;
-}
-
-#feed{
-    margin-left: 2%;
-    margin-right: 25%;
-    margin-top: 1em;
-    border: 2px solid black;
-    padding: 5px;
-    min-height: 50px;
-}
-
-.successBtn{
-    min-width: 100px;
+.cMsg{
+    word-wrap:break-word;
+    word-break:break-word;
 }

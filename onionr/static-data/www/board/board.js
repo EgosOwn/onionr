@@ -3,7 +3,7 @@ requested = []
 var windowHeight = window.innerHeight;
 webpassword = webpass
 newPostForm = document.getElementById('addMsg')
-
+firstLoad = true
 function appendMessages(msg){
     var humanDate = new Date(0)
     if (msg.length == 0){
@@ -18,9 +18,8 @@ function appendMessages(msg){
     }
     else{
         humanDate.setUTCSeconds(msgDate)
-        msgDate = humanDate.toDateString() + ' ' + humanDate.toTimeString()
+        msgDate = humanDate.toDateString()
     }
-    dateEl.textContent = msgDate
     el.className = 'entry'
     el.innerText = msg['content']
 
@@ -31,16 +30,21 @@ function appendMessages(msg){
 
         // Instantiate the table with the existing HTML tbody
         // and the row with the template
-        var template = document.getElementById('cMsgTemplate');
+        var template = document.getElementById('cMsgTemplate')
 
         // Clone the new row and insert it into the table
-        var feed = document.getElementById("feed");
+        var feed = document.getElementById("feed")
         var clone = document.importNode(template.content, true);
-        var div = clone.querySelectorAll("div");
-        div[2].textContent = msg['content'];
-        div[3].textContent = msgDate;
+        var div = clone.querySelectorAll("div")
+        div[2].textContent = msg['content']
+        div[3].textContent = msgDate
 
-        feed.appendChild(clone);
+        if (firstLoad){
+            feed.appendChild(clone)
+        }
+        else{
+            feed.prepend(clone)
+        }
 
     } else {
     // Find another way to add the rows to the table because 
@@ -54,7 +58,7 @@ function getBlocks(){
 
     }
     var feedText =  httpGet('/getblocksbytype/txt')
-    var blockList = feedText.split(',')
+    var blockList = feedText.split(',').reverse()
     for (i = 0; i < blockList.length; i++){
         if (! requested.includes(blockList[i])){
             bl = httpGet('/getblockdata/' + blockList[i])
@@ -62,14 +66,11 @@ function getBlocks(){
             requested.push(blockList[i])
             }
         }
+    firstLoad = false
 }
 
 document.getElementById('refreshFeed').onclick = function(){
     getBlocks()
-}
-
-window.onload = function() {
-    getBlocks();
 }
 
 newPostForm.onsubmit = function(){
