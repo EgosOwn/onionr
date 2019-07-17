@@ -17,9 +17,10 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
+from coredb import blockmetadb
 def should_download(comm_inst, block_hash):
     ret_data = True
-    if block_hash in comm_inst._core.getBlockList(): # Dont download block we have
+    if block_hash in blockmetadb.get_block_list(): # Dont download block we have
         ret_data = False
     else:
         if comm_inst._core._blacklist.inBlacklist(block_hash): # Dont download blacklisted block

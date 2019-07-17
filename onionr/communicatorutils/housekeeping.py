@@ -21,6 +21,7 @@ import sqlite3
 import logger
 from onionrusers import onionrusers
 from onionrutils import epoch
+from coredb import blockmetadb
 def clean_old_blocks(comm_inst):
     '''Delete old blocks if our disk allocation is full/near full, and also expired blocks'''
 
@@ -31,7 +32,7 @@ def clean_old_blocks(comm_inst):
         logger.info('Deleted block: %s' % (bHash,))
 
     while comm_inst._core.storage_counter.isFull():
-        oldest = comm_inst._core.getBlockList()[0]
+        oldest = blockmetadb.get_block_list()[0]
         comm_inst._core._blacklist.addToDB(oldest)
         comm_inst._core.removeBlock(oldest)
         logger.info('Deleted block: %s' % (oldest,))

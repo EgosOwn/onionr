@@ -24,7 +24,7 @@ from onionrblockapi import Block
 import logger, config
 from onionrutils import escapeansi, epoch
 locale.setlocale(locale.LC_ALL, '')
-
+from coredb import blockmetadb
 sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
 import flowapi # import after path insert
 flask_blueprint = flowapi.flask_blueprint
@@ -73,7 +73,7 @@ class OnionrFlow:
             time.sleep(1)
         try:
             while self.flowRunning:
-                for block in self.myCore.getBlocksByType('txt'):
+                for block in blockmetadb.get_blocks_by_type('txt'):
                     block = Block(block)
                     if block.getMetadata('ch') != self.channel:
                         continue

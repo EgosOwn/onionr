@@ -18,13 +18,14 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 import onionrblockapi
+from coredb import blockmetadb
 def load_inbox(myCore):
     inbox_list = []
     deleted = myCore.keyStore.get('deleted_mail')
     if deleted is None:
         deleted = []
 
-    for blockHash in myCore.getBlocksByType('pm'):
+    for blockHash in blockmetadb.get_blocks_by_type('pm'):
         block = onionrblockapi.Block(blockHash, core=myCore)
         block.decrypt()
         if block.decrypted and blockHash not in deleted:

@@ -21,6 +21,7 @@ from flask import Blueprint, Response, abort
 import core, onionrblockapi
 from httpapi import apiutils
 from onionrutils import stringvalidators
+from coredb import blockmetadb
 
 c = core.Core()
 
@@ -29,8 +30,8 @@ client_get_block = apiutils.GetBlockData(c)
 client_get_blocks = Blueprint('miscclient', __name__)
 
 @client_get_blocks.route('/getblocksbytype/<name>')
-def getBlocksByType(name):
-    blocks = c.getBlocksByType(name)
+def get_blocks_by_type_endpoint(name):
+    blocks = blockmetadb.get_blocks_by_type(name)
     return Response(','.join(blocks))
 
 @client_get_blocks.route('/getblockbody/<name>')
@@ -49,7 +50,7 @@ def getBlockBodyData(name):
 def getData(name):
     resp = ""
     if stringvalidators.validate_hash(name):
-        if name in c.getBlockList():
+        if name in blockmetadb.get_block_list():
             try:
                 resp = client_get_block.get_block_data(name, decrypt=True)
             except ValueError:

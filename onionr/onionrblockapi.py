@@ -22,7 +22,7 @@ import core as onionrcore, logger, config, onionrexceptions, nacl.exceptions
 import json, os, sys, datetime, base64, onionrstorage
 from onionrusers import onionrusers
 from onionrutils import stringvalidators, epoch
-
+from coredb import blockmetadb
 class Block:
     blockCacheOrder = list() # NEVER write your own code that writes to this!
     blockCache = dict() # should never be accessed directly, look at Block.getCache()
@@ -89,7 +89,7 @@ class Block:
 
                 # Check for replay attacks
                 try:
-                    if epoch.get_epoch() - self.core.getBlockDate(self.hash) > 60:
+                    if epoch.get_epoch() - blockmetadb.get_block_date(self.hash) > 60:
                         assert self.core._crypto.replayTimestampValidation(self.bmetadata['rply'])
                 except (AssertionError, KeyError, TypeError) as e:
                     if not self.bypassReplayCheck:
@@ -180,7 +180,7 @@ class Block:
             self.signature = self.getHeader('sig', None)
             # signed data is jsonMeta + block content (no linebreak)
             self.signedData = (None if not self.isSigned() else self.getHeader('meta') + self.getContent())
-            self.date = self.getCore().getBlockDate(self.getHash())
+            self.date = blockmetadb.get_block_date(self.getHash())
             self.claimedTime = self.getHeader('time', None)
 
             if not self.getDate() is None:
@@ -541,7 +541,7 @@ class Block:
                 parent = Block(hash = parent, core = core)
 
             relevant_blocks = list()
-            blocks = (core.getBlockList() if type is None else core.getBlocksByType(type))
+            blocks = (blockmetadb.get_block_list() if type is None else blockmetadb.get_blocks_by_type(type))
 
             for block in blocks:
                 if Block.exists(block):

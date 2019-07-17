@@ -20,12 +20,12 @@
 import logger, onionrproofs
 from onionrutils import stringvalidators, epoch
 from communicator import peeraction, onlinepeers
-
+from coredb import blockmetadb
 def lookup_blocks_from_communicator(comm_inst):
     logger.info('Looking up new blocks...')
     tryAmount = 2
     newBlocks = ''
-    existingBlocks = comm_inst._core.getBlockList()
+    existingBlocks = blockmetadb.get_block_list()
     triedPeers = [] # list of peers we've tried this time around
     maxBacklog = 1560 # Max amount of *new* block hashes to have already in queue, to avoid memory exhaustion
     lastLookupTime = 0 # Last time we looked up a particular peer's list

@@ -20,13 +20,14 @@
 import glob
 import logger, core
 from onionrutils import blockmetadata
+from coredb import blockmetadb
 def import_new_blocks(core_inst=None, scanDir=''):
     '''
         This function is intended to scan for new blocks ON THE DISK and import them
     '''
     if core_inst is None:
         core_inst = core.Core()
-    blockList = core_inst.getBlockList()
+    blockList = blockmetadb.get_block_list()
     exist = False
     if scanDir == '':
         scanDir = core_inst.blockDataLocation

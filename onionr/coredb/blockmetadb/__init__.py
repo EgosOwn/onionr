@@ -19,14 +19,15 @@
 '''
 import sqlite3
 from . import expiredblocks, updateblockinfo, add
-def get_block_list(core_inst, dateRec = None, unsaved = False):
+from .. import dbfiles
+def get_block_list(dateRec = None, unsaved = False):
     '''
         Get list of our blocks
     '''
     if dateRec == None:
         dateRec = 0
 
-    conn = sqlite3.connect(core_inst.blockDB, timeout=30)
+    conn = sqlite3.connect(dbfiles.block_meta_db, timeout=30)
     c = conn.cursor()
 
     execute = 'SELECT hash FROM hashes WHERE dateReceived >= ? ORDER BY dateReceived ASC;'
@@ -38,12 +39,12 @@ def get_block_list(core_inst, dateRec = None, unsaved = False):
     conn.close()
     return rows
 
-def get_block_date(core_inst, blockHash):
+def get_block_date(blockHash):
     '''
         Returns the date a block was received
     '''
 
-    conn = sqlite3.connect(core_inst.blockDB, timeout=30)
+    conn = sqlite3.connect(dbfiles.block_meta_db, timeout=30)
     c = conn.cursor()
 
     execute = 'SELECT dateReceived FROM hashes WHERE hash=?;'
@@ -54,12 +55,12 @@ def get_block_date(core_inst, blockHash):
     conn.close()
     return None
 
-def get_blocks_by_type(core_inst, blockType, orderDate=True):
+def get_blocks_by_type(blockType, orderDate=True):
     '''
         Returns a list of blocks by the type
     '''
 
-    conn = sqlite3.connect(core_inst.blockDB, timeout=30)
+    conn = sqlite3.connect(dbfiles.block_meta_db, timeout=30)
     c = conn.cursor()
 
     if orderDate:

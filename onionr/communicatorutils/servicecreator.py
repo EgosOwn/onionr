@@ -19,14 +19,14 @@
 '''
 import communicator, onionrblockapi
 from onionrutils import stringvalidators, bytesconverter
-
+from coredb import blockmetadb
 def service_creator(daemon):
     assert isinstance(daemon, communicator.OnionrCommunicatorDaemon)
     core = daemon._core
     
     # Find socket connection blocks
     # TODO cache blocks and only look at recently received ones
-    con_blocks = core.getBlocksByType('con')
+    con_blocks = blockmetadb.get_blocks_by_type('con')
     for b in con_blocks:
         if not b in daemon.active_services:
             bl = onionrblockapi.Block(b, core=core, decrypt=True)

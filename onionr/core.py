@@ -267,24 +267,6 @@ class Core:
         '''
         return coredb.keydb.transportinfo.set_address_info(self, address, key, data)
 
-    def getBlockList(self, dateRec = None, unsaved = False):
-        '''
-            Get list of our blocks
-        '''
-        return coredb.blockmetadb.get_block_list(self, dateRec, unsaved)
-
-    def getBlockDate(self, blockHash):
-        '''
-            Returns the date a block was received
-        '''
-        return coredb.blockmetadb.get_block_date(self, blockHash)
-
-    def getBlocksByType(self, blockType, orderDate=True):
-        '''
-            Returns a list of blocks by the type
-        '''
-        return coredb.blockmetadb.get_blocks_by_type(self, blockType, orderDate)
-
     def getExpiredBlocks(self):
         '''Returns a list of expired blocks'''
         return coredb.blockmetadb.expiredblocks.get_expired_blocks(self)

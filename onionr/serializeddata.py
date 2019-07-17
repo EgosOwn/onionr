@@ -19,7 +19,7 @@
 '''
 
 import core, json
-
+from coredb import blockmetadb
 class SerializedData:
     def __init__(self, coreInst):
         '''
@@ -38,6 +38,6 @@ class SerializedData:
         stats = {}
         stats['uptime'] = self._core.onionrInst.communicatorInst.getUptime()
         stats['connectedNodes'] = '\n'.join(self._core.onionrInst.communicatorInst.onlinePeers)
-        stats['blockCount'] = len(self._core.getBlockList())
+        stats['blockCount'] = len(blockmetadb.get_block_list())
         stats['blockQueueCount'] = len(self._core.onionrInst.communicatorInst.blockQueue)
         return json.dumps(stats)

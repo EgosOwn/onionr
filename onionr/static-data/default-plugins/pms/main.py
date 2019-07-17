@@ -25,6 +25,7 @@ import onionrexceptions
 from onionrusers import onionrusers
 from onionrutils import stringvalidators, escapeansi, bytesconverter
 import locale, sys, os, json
+from coredb import blockmetadb
 
 locale.setlocale(locale.LC_ALL, '')
 
@@ -80,7 +81,7 @@ class OnionrMail:
         subject = ''
 
         # this could use a lot of memory if someone has received a lot of messages
-        for blockHash in self.myCore.getBlocksByType('pm'):
+        for blockHash in blockmetadb.get_blocks_by_type('pm'):
             pmBlocks[blockHash] = Block(blockHash, core=self.myCore)
             pmBlocks[blockHash].decrypt()
             blockCount = 0

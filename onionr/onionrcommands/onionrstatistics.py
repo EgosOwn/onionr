@@ -23,11 +23,11 @@ from onionrblockapi import Block
 import onionr
 from onionrutils import checkcommunicator, mnemonickeys
 from utils import sizeutils
-
+from coredb import blockmetadb
 def show_stats(o_inst):
     try:
         # define stats messages here
-        totalBlocks = len(o_inst.onionrCore.getBlockList())
+        totalBlocks = len(blockmetadb.get_block_list())
         signedBlocks = len(Block.getBlocks(signed = True))
         messages = {
             # info about local client
