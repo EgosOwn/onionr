@@ -30,6 +30,7 @@ from communicatorutils import cooldownpeer, housekeeping, netcheck
 from onionrutils import localcommand, epoch
 from etc import humanreadabletime
 import onionrservices, onionr, onionrproofs
+from coredb import daemonqueue
 OnionrCommunicatorTimers = onionrcommunicatortimers.OnionrCommunicatorTimers
 
 config.reload()
@@ -84,7 +85,7 @@ class OnionrCommunicatorDaemon:
 
         # Clear the daemon queue for any dead messages
         if os.path.exists(self._core.queueDB):
-            self._core.clearDaemonQueue()
+            daemonqueue.clear_daemon_queue()
 
         # Loads in and starts the enabled plugins
         plugins.reload()

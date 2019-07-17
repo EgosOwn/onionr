@@ -62,7 +62,6 @@ class Core:
             self.requirements = onionrvalues.OnionrValues()
             self.torPort = torPort
             self.dataNonceFile = self.dataDir + 'block-nonces.dat'
-            self.dbCreate = dbcreator.DBCreator(self)
             self.forwardKeysFile = self.dataDir + 'forward-keys.db'
             self.keyStore = simplekv.DeadSimpleKV(self.dataDir + 'cachedstorage.dat', refresh_seconds=5)
             self.storage_counter = storagecounter.StorageCounter(self)
@@ -81,7 +80,7 @@ class Core:
             if not os.path.exists(self.blockDB):
                 self.createBlockDB()
             if not os.path.exists(self.forwardKeysFile):
-                self.dbCreate.createForwardKeyDB()
+                dbcreator.createForwardKeyDB()
             if not os.path.exists(self.peerDB):
                 self.createPeerDB()
             if not os.path.exists(self.addressDB):
@@ -175,32 +174,6 @@ class Core:
             Simply return the data associated to a hash
         '''
         return onionrstorage.getData(self, hash)
-
-    def daemonQueue(self):
-        '''
-            Gives commands to the communication proccess/daemon by reading an sqlite3 database
-
-            This function intended to be used by the client. Queue to exchange data between "client" and server.
-        '''
-        return coredb.daemonqueue.daemon_queue(self)
-
-    def daemonQueueAdd(self, command, data='', responseID=''):
-        '''
-            Add a command to the daemon queue, used by the communication daemon (communicator.py)
-        '''
-        return coredb.daemonqueue.daemon_queue_add(self, command, data, responseID)
-
-    def daemonQueueGetResponse(self, responseID=''):
-        '''
-            Get a response sent by communicator to the API, by requesting to the API
-        '''
-        return coredb.daemonqueue.daemon_queue_get_response(self, responseID)
-
-    def clearDaemonQueue(self):
-        '''
-            Clear the daemon queue (somewhat dangerous)
-        '''
-        return coredb.daemonqueue.clear_daemon_queue(self)
 
     def listAdders(self, randomOrder=True, i2p=True, recent=0):
         '''
@@ -390,7 +363,7 @@ class Core:
                 if localcommand.local_command(self, '/ping', maxWait=10) == 'pong!':
                     if self.config.get('general.security_level', 1) == 0:
                         localcommand.local_command(self, '/waitforshare/' + retData, post=True, maxWait=5)
-                    self.daemonQueueAdd('uploadBlock', retData)
+                    coredb.daemonqueue.daemon_queue_add('uploadBlock', retData)
                 else:
                     pass
                 coredb.blockmetadb.add_to_block_DB(retData, selfInsert=True, dataSaved=True)
@@ -408,7 +381,7 @@ class Core:
             Introduces our node into the network by telling X many nodes our HS address
         '''
         if localcommand.local_command(self, '/ping', maxWait=10) == 'pong!':
-            self.daemonQueueAdd('announceNode')
+            coredb.daemonqueue.daemon_queue_add('announceNode')
             logger.info('Introduction command will be processed.', terminal=True)
         else:
             logger.warn('No running node detected. Cannot introduce.', terminal=True)

@@ -17,140 +17,138 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
+from coredb import dbfiles
 import sqlite3, os
-class DBCreator:
-    def __init__(self, coreInst):
-        self.core = coreInst
 
-    def createAddressDB(self):
-        '''
-            Generate the address database
+def createAddressDB():
+    '''
+        Generate the address database
 
-            types:
-                1: I2P b32 address
-                2: Tor v2 (like facebookcorewwwi.onion)
-                3: Tor v3
-        '''
-        conn = sqlite3.connect(self.core.addressDB)
-        c = conn.cursor()
-        c.execute('''CREATE TABLE adders(
-            address text,
-            type int,
-            knownPeer text,
-            speed int,
-            success int,
-            powValue text,
-            failure int,
-            lastConnect int,
-            lastConnectAttempt int,
-            trust int,
-            introduced int
-            );
-        ''')
-        conn.commit()
-        conn.close()
+        types:
+            1: I2P b32 address
+            2: Tor v2 (like facebookcorewwwi.onion)
+            3: Tor v3
+    '''
+    conn = sqlite3.connect(dbfiles.address_info_db)
+    c = conn.cursor()
+    c.execute('''CREATE TABLE adders(
+        address text,
+        type int,
+        knownPeer text,
+        speed int,
+        success int,
+        powValue text,
+        failure int,
+        lastConnect int,
+        lastConnectAttempt int,
+        trust int,
+        introduced int
+        );
+    ''')
+    conn.commit()
+    conn.close()
 
-    def createPeerDB(self):
-        '''
-            Generate the peer sqlite3 database and populate it with the peers table.
-        '''
-        # generate the peer database
-        conn = sqlite3.connect(self.core.peerDB)
-        c = conn.cursor()
-        c.execute('''CREATE TABLE peers(
-            ID text not null,
-            name text,
-            adders text,
-            dateSeen not null,
-            trust int,
-            hashID text);
-        ''')
-        c.execute('''CREATE TABLE forwardKeys(
-        peerKey text not null,
-        forwardKey text not null,
+def createPeerDB():
+    '''
+        Generate the peer sqlite3 database and populate it with the peers table.
+    '''
+    # generate the peer database
+    conn = sqlite3.connect(dbfiles.user_id_info_db)
+    c = conn.cursor()
+    c.execute('''CREATE TABLE peers(
+        ID text not null,
+        name text,
+        adders text,
+        dateSeen not null,
+        trust int,
+        hashID text);
+    ''')
+    c.execute('''CREATE TABLE forwardKeys(
+    peerKey text not null,
+    forwardKey text not null,
+    date int not null,
+    expire int not null
+    );''')
+    conn.commit()
+    conn.close()
+    return
+
+def createBlockDB():
+    '''
+        Create a database for blocks
+
+        hash         - the hash of a block
+        dateReceived - the date the block was recieved, not necessarily when it was created
+        decrypted    - if we can successfully decrypt the block (does not describe its current state)
+        dataType     - data type of the block
+        dataFound    - if the data has been found for the block
+        dataSaved    - if the data has been saved for the block
+        sig    - optional signature by the author (not optional if author is specified)
+        author       - multi-round partial sha3-256 hash of authors public key
+        dateClaimed  - timestamp claimed inside the block, only as trustworthy as the block author is
+        expire int   - block expire date in epoch
+    '''
+    if os.path.exists(dbfiles.block_meta_db):
+        raise FileExistsError("Block database already exists")
+    conn = sqlite3.connect(dbfiles.block_meta_db)
+    c = conn.cursor()
+    c.execute('''CREATE TABLE hashes(
+        hash text not null,
+        dateReceived int,
+        decrypted int,
+        dataType text,
+        dataFound int,
+        dataSaved int,
+        sig text,
+        author text,
+        dateClaimed int,
+        expire int
+        );
+    ''')
+    conn.commit()
+    conn.close()
+    return
+
+def createBlockDataDB():
+    if os.path.exists(dbfiles.block_data_db):
+        raise FileExistsError("Block data database already exists")
+    conn = sqlite3.connect(dbfiles.block_data_db)
+    c = conn.cursor()
+    c.execute('''CREATE TABLE blockData(
+        hash text not null,
+        data blob not null
+        );
+    ''')
+    conn.commit()
+    conn.close()
+
+def createForwardKeyDB():
+    '''
+        Create the forward secrecy key db (*for *OUR* keys*)
+    '''
+    if os.path.exists(dbfiles.forward_keys_db):
+        raise FileExistsError("Block database already exists")
+    conn = sqlite3.connect(dbfiles.forward_keys_db)
+    c = conn.cursor()
+    c.execute('''CREATE TABLE myForwardKeys(
+        peer text not null,
+        publickey text not null,
+        privatekey text not null,
         date int not null,
         expire int not null
-        );''')
-        conn.commit()
-        conn.close()
-        return
+        );
+    ''')
+    conn.commit()
+    conn.close()
+    return
 
-    def createBlockDB(self):
-        '''
-            Create a database for blocks
-
-            hash         - the hash of a block
-            dateReceived - the date the block was recieved, not necessarily when it was created
-            decrypted    - if we can successfully decrypt the block (does not describe its current state)
-            dataType     - data type of the block
-            dataFound    - if the data has been found for the block
-            dataSaved    - if the data has been saved for the block
-            sig    - optional signature by the author (not optional if author is specified)
-            author       - multi-round partial sha3-256 hash of authors public key
-            dateClaimed  - timestamp claimed inside the block, only as trustworthy as the block author is
-            expire int   - block expire date in epoch
-        '''
-        if os.path.exists(self.core.blockDB):
-            raise FileExistsError("Block database already exists")
-        conn = sqlite3.connect(self.core.blockDB)
-        c = conn.cursor()
-        c.execute('''CREATE TABLE hashes(
-            hash text not null,
-            dateReceived int,
-            decrypted int,
-            dataType text,
-            dataFound int,
-            dataSaved int,
-            sig text,
-            author text,
-            dateClaimed int,
-            expire int
-            );
-        ''')
-        conn.commit()
-        conn.close()
-        return
-    
-    def createBlockDataDB(self):
-        if os.path.exists(self.core.blockDataDB):
-            raise FileExistsError("Block data database already exists")
-        conn = sqlite3.connect(self.core.blockDataDB)
-        c = conn.cursor()
-        c.execute('''CREATE TABLE blockData(
-            hash text not null,
-            data blob not null
-            );
-        ''')
-        conn.commit()
-        conn.close()
-
-    def createForwardKeyDB(self):
-        '''
-            Create the forward secrecy key db (*for *OUR* keys*)
-        '''
-        if os.path.exists(self.core.forwardKeysFile):
-            raise FileExistsError("Block database already exists")
-        conn = sqlite3.connect(self.core.forwardKeysFile)
-        c = conn.cursor()
-        c.execute('''CREATE TABLE myForwardKeys(
-            peer text not null,
-            publickey text not null,
-            privatekey text not null,
-            date int not null,
-            expire int not null
-            );
-        ''')
-        conn.commit()
-        conn.close()
-        return
-    
-    def createDaemonDB(self):
-        '''
-            Create the daemon queue database
-        '''
-        conn = sqlite3.connect(self.core.queueDB, timeout=10)
-        c = conn.cursor()
-        # Create table
-        c.execute('''CREATE TABLE commands (id integer primary key autoincrement, command text, data text, date text, responseID text)''')
-        conn.commit()
-        conn.close()
+def createDaemonDB():
+    '''
+        Create the daemon queue database
+    '''
+    conn = sqlite3.connect(dbfiles.daemon_queue_db, timeout=10)
+    c = conn.cursor()
+    # Create table
+    c.execute('''CREATE TABLE commands (id integer primary key autoincrement, command text, data text, date text, responseID text)''')
+    conn.commit()
+    conn.close()

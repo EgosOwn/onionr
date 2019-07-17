@@ -20,7 +20,7 @@
 import sqlite3
 import onionrevents as events
 from onionrutils import stringvalidators
-
+from . import listkeys
 def add_peer(core_inst, peerID, name=''):
     '''
         Adds a public key to the key database (misleading function name)

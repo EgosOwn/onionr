@@ -24,6 +24,7 @@ import onionr, apiservers, logger, communicator
 import onionrevents as events
 from netcontroller import NetController
 from onionrutils import localcommand
+from coredb import daemonqueue
 
 def _proper_shutdown(o_inst):
     localcommand.local_command(o_inst.onionrCore, 'shutdown')
@@ -103,7 +104,7 @@ def daemon(o_inst):
                 break # Break out if sigterm for clean exit
 
     signal.signal(signal.SIGINT, _ignore_sigint)
-    o_inst.onionrCore.daemonQueueAdd('shutdown')
+    daemonqueue.daemon_queue_add('shutdown')
     localcommand.local_command(o_inst.onionrCore, 'shutdown')
 
     net.killTor()
@@ -124,7 +125,7 @@ def kill_daemon(o_inst):
         events.event('daemon_stop', onionr = o_inst)
         net = NetController(o_inst.onionrCore.config.get('client.port', 59496))
         try:
-            o_inst.onionrCore.daemonQueueAdd('shutdown')
+            daemonqueue.daemon_queue_qdd('shutdown')
         except sqlite3.OperationalError:
             pass
 

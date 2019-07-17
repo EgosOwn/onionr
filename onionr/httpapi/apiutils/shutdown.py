@@ -20,7 +20,7 @@
 from flask import Blueprint, Response
 import core, onionrblockapi, onionrexceptions
 from onionrutils import stringvalidators
-
+from coredb import daemonqueue
 shutdown_bp = Blueprint('shutdown', __name__)
 
 def shutdown(client_api_inst):
@@ -34,5 +34,5 @@ def shutdown(client_api_inst):
 @shutdown_bp.route('/shutdownclean')
 def shutdown_clean():
     # good for calling from other clients
-    core.Core().daemonQueueAdd('shutdown')
+    daemonqueue.daemon_queue_add('shutdown')
     return Response("bye")

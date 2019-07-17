@@ -20,7 +20,7 @@
 
 import onionrplugins, core as onionrcore, logger
 from onionrutils import localcommand
-
+from coredb import daemonqueue
 class DaemonAPI:
     def __init__(self, pluginapi):
         self.pluginapi = pluginapi
@@ -36,15 +36,13 @@ class DaemonAPI:
         return
 
     def queue(self, command, data = ''):
-        self.pluginapi.get_core().daemonQueueAdd(command, data)
-
-        return
+        return daemonqueue.daemon_queue_add(command, data)
 
     def local_command(self, command):
         return localcommand.local_command(self.pluginapi.get_core(), command)
 
     def queue_pop(self):
-        return self.get_core().daemonQueue()
+        return daemonqueue.daemon_queue()
 
 class PluginAPI:
     def __init__(self, pluginapi):

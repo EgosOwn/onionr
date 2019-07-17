@@ -23,7 +23,7 @@ from onionrblockapi import Block
 import onionr
 from onionrutils import checkcommunicator, mnemonickeys
 from utils import sizeutils
-from coredb import blockmetadb
+from coredb import blockmetadb, daemonqueue
 def show_stats(o_inst):
     try:
         # define stats messages here
@@ -96,11 +96,11 @@ def show_details(o_inst):
 
 def show_peers(o_inst):
     randID = str(uuid.uuid4())
-    o_inst.onionrCore.daemonQueueAdd('connectedPeers', responseID=randID)
+    daemonqueue.daemon_queue_add('connectedPeers', responseID=randID)
     while True:
         try:
             time.sleep(3)
-            peers = o_inst.onionrCore.daemonQueueGetResponse(randID)
+            peers = daemonqueue.daemon_queue_get_response(randID)
         except KeyboardInterrupt:
             break
         if not type(peers) is None:

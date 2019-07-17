@@ -20,14 +20,15 @@
 import sqlite3
 import logger
 from onionrutils import epoch
-def list_peers(core_inst, randomOrder=True, getPow=False, trust=0):
+from .. import dbfiles
+def list_peers(randomOrder=True, getPow=False, trust=0):
     '''
         Return a list of public keys (misleading function name)
 
         randomOrder determines if the list should be in a random order
         trust sets the minimum trust to list
     '''
-    conn = sqlite3.connect(core_inst.peerDB, timeout=30)
+    conn = sqlite3.connect(dbfiles.user_id_info_db, timeout=30)
     c = conn.cursor()
 
     payload = ''

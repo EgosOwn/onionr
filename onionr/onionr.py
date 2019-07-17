@@ -300,11 +300,6 @@ class Onionr:
         if verbosity >= 2:
             function('Running on %s %s' % (platform.platform(), platform.release()), terminal=True)
 
-    def doPEX(self):
-        '''make communicator do pex'''
-        logger.info('Sending pex to command queue...')
-        self.onionrCore.daemonQueueAdd('pex')
-
     def listKeys(self):
         '''
             Displays a list of keys (used to be called peers) (?)

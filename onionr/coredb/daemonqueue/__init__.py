@@ -21,8 +21,10 @@
 import sqlite3, os
 import onionrevents as events
 from onionrutils import localcommand, epoch
+from .. import dbfiles
+import dbcreator
 
-def daemon_queue(core_inst):
+def daemon_queue():
     '''
         Gives commands to the communication proccess/daemon by reading an sqlite3 database
 
@@ -30,28 +32,26 @@ def daemon_queue(core_inst):
     '''
 
     retData = False
-    if not os.path.exists(core_inst.queueDB):
-        core_inst.dbCreate.createDaemonDB()
+    if not os.path.exists(dbfiles.daemon_queue_db):
+        dbcreator.createDaemonDB()
     else:
-        conn = sqlite3.connect(core_inst.queueDB, timeout=30)
+        conn = sqlite3.connect(dbfiles.daemon_queue_db, timeout=30)
         c = conn.cursor()
         try:
             for row in c.execute('SELECT command, data, date, min(ID), responseID FROM commands group by id'):
                 retData = row
                 break
         except sqlite3.OperationalError:
-            core_inst.dbCreate.createDaemonDB()
+            dbcreator.createDaemonDB()
         else:
             if retData != False:
                 c.execute('DELETE FROM commands WHERE id=?;', (retData[3],))
         conn.commit()
         conn.close()
 
-    events.event('queue_pop', data = {'data': retData}, onionr = core_inst.onionrInst)
-
     return retData
 
-def daemon_queue_add(core_inst, command, data='', responseID=''):
+def daemon_queue_add(command, data='', responseID=''):
     '''
         Add a command to the daemon queue, used by the communication daemon (communicator.py)
     '''
@@ -59,7 +59,7 @@ def daemon_queue_add(core_inst, command, data='', responseID=''):
     retData = True
 
     date = epoch.get_epoch()
-    conn = sqlite3.connect(core_inst.queueDB, timeout=30)
+    conn = sqlite3.connect(dbfiles.daemon_queue_db, timeout=30)
     c = conn.cursor()
     t = (command, data, date, responseID)
     try:
@@ -67,24 +67,23 @@ def daemon_queue_add(core_inst, command, data='', responseID=''):
         conn.commit()
     except sqlite3.OperationalError:
         retData = False
-        core_inst.daemonQueue()
-    events.event('queue_push', data = {'command': command, 'data': data}, onionr = core_inst.onionrInst)
+        daemon_queue()
     conn.close()
     return retData
 
-def daemon_queue_get_response(core_inst, responseID=''):
+def daemon_queue_get_response(responseID=''):
     '''
         Get a response sent by communicator to the API, by requesting to the API
     '''
-    assert len(responseID) > 0
-    resp = localcommand.local_command(core_inst, 'queueResponse/' + responseID)
+    if len(responseID) > 0: raise ValueError('ResponseID should not be empty')
+    resp = localcommand.local_command(dbfiles.daemon_queue_db, 'queueResponse/' + responseID)
     return resp
 
-def clear_daemon_queue(core_inst):
+def clear_daemon_queue():
     '''
         Clear the daemon queue (somewhat dangerous)
     '''
-    conn = sqlite3.connect(core_inst.queueDB, timeout=30)
+    conn = sqlite3.connect(dbfiles.daemon_queue_db, timeout=30)
     c = conn.cursor()
 
     try:
@@ -94,4 +93,3 @@ def clear_daemon_queue(core_inst):
         pass
 
     conn.close()
-    events.event('queue_clear', onionr = core_inst.onionrInst)

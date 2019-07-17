@@ -21,6 +21,7 @@ import logger, onionrexceptions, json, sqlite3, time
 from onionrutils import stringvalidators, bytesconverter, epoch
 import unpaddedbase32
 import nacl.exceptions
+from coredb import keydb
 
 def deleteExpiredKeys(coreInst):
     # Fetch the keys we generated for the peer, that are still around

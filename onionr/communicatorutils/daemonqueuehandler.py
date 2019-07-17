@@ -20,8 +20,9 @@
 import logger
 import onionrevents as events
 from onionrutils import localcommand
+from coredb import daemonqueue
 def handle_daemon_commands(comm_inst):
-    cmd = comm_inst._core.daemonQueue()
+    cmd = daemonqueue.daemon_queue()
     response = ''
     if cmd is not False:
         events.event('daemon_command', onionr = comm_inst._core.onionrInst, data = {'cmd' : cmd})
