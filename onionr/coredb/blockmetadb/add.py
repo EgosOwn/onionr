@@ -17,22 +17,21 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import os, sqlite3
+import os, sqlite3, secrets
 from onionrutils import epoch, blockmetadata
-def add_to_block_DB(core_inst, newHash, selfInsert=False, dataSaved=False):
+from .. import dbfiles
+def add_to_block_DB(newHash, selfInsert=False, dataSaved=False):
     '''
         Add a hash value to the block db
 
         Should be in hex format!
     '''
 
-    if not os.path.exists(core_inst.blockDB):
-        raise Exception('Block db does not exist')
-    if blockmetadata.has_block(core_inst, newHash):
+    if blockmetadata.has_block(newHash):
         return
-    conn = sqlite3.connect(core_inst.blockDB, timeout=30)
+    conn = sqlite3.connect(dbfiles.block_meta_db, timeout=30)
     c = conn.cursor()
-    currentTime = epoch.get_epoch() + core_inst._crypto.secrets.randbelow(301)
+    currentTime = epoch.get_epoch() + secrets.randbelow(301)
     if selfInsert or dataSaved:
         selfInsert = 1
     else:

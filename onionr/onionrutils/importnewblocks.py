@@ -40,7 +40,7 @@ def import_new_blocks(core_inst=None, scanDir=''):
             with open(block, 'rb') as newBlock:
                 block = block.replace(scanDir, '').replace('.dat', '')
                 if core_inst._crypto.sha3Hash(newBlock.read()) == block.replace('.dat', ''):
-                    core_inst.addToBlockDB(block.replace('.dat', ''), dataSaved=True)
+                    blockmetadb.add_to_block_DB(block.replace('.dat', ''), dataSaved=True)
                     logger.info('Imported block %s.' % block, terminal=True)
                     blockmetadata.process_block_metadata(core_inst, block)
                 else:

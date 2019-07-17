@@ -82,7 +82,7 @@ def download_blocks_from_communicator(comm_inst):
                             logger.error('Reached disk allocation allowance, cannot save block %s.' % (blockHash,))
                             removeFromQueue = False
                         else:
-                            comm_inst._core.addToBlockDB(blockHash, dataSaved=True)
+                            blockmetadb.add_to_block_DB(blockHash, dataSaved=True) # add block to meta db
                             blockmetadata.process_block_metadata(comm_inst._core, blockHash) # caches block metadata values to block database
                     else:
                         logger.warn('POW failed for block %s.' % (blockHash,))

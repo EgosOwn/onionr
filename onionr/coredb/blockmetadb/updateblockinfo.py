@@ -17,13 +17,27 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-
 import sqlite3
-def update_block_info(core_inst, hash, key, data):
+from .. import dbfiles
+def update_block_info(hash, key, data):
+    '''
+        sets info associated with a block
+
+        hash         - the hash of a block
+        dateReceived - the date the block was recieved, not necessarily when it was created
+        decrypted    - if we can successfully decrypt the block (does not describe its current state)
+        dataType     - data type of the block
+        dataFound    - if the data has been found for the block
+        dataSaved    - if the data has been saved for the block
+        sig    - optional signature by the author (not optional if author is specified)
+        author       - multi-round partial sha3-256 hash of authors public key
+        dateClaimed  - timestamp claimed inside the block, only as trustworthy as the block author is
+        expire       - expire date for a block
+    '''
     if key not in ('dateReceived', 'decrypted', 'dataType', 'dataFound', 'dataSaved', 'sig', 'author', 'dateClaimed', 'expire'):
         return False
 
-    conn = sqlite3.connect(core_inst.blockDB, timeout=30)
+    conn = sqlite3.connect(dbfiles.block_meta_db, timeout=30)
     c = conn.cursor()
     args = (data, hash)
     c.execute("UPDATE hashes SET " + key + " = ? where hash = ?;", args)

@@ -23,6 +23,7 @@ from onionrusers import onionrusers
 from etc import onionrvalues
 import onionrblockapi
 from . import epoch, stringvalidators, bytesconverter
+from coredb import dbfiles, blockmetadb
 def get_block_metadata_from_data(blockData):
     '''
         accepts block contents as string, returns a tuple of 
@@ -70,7 +71,7 @@ def process_block_metadata(core_inst, blockHash):
             
         try:
             if len(blockType) <= 10:
-                core_inst.updateBlockInfo(blockHash, 'dataType', blockType)
+                blockmetadb.update_block_info(blockHash, 'dataType', blockType)
         except TypeError:
             logger.warn("Missing block information")
             pass
@@ -81,18 +82,18 @@ def process_block_metadata(core_inst, blockHash):
         except (AssertionError, ValueError, TypeError) as e:
             expireTime = onionrvalues.OnionrValues().default_expire + curTime
         finally:
-            core_inst.updateBlockInfo(blockHash, 'expire', expireTime)
+            blockmetadb.update_block_info(blockHash, 'expire', expireTime)
         if not blockType is None:
-            core_inst.updateBlockInfo(blockHash, 'dataType', blockType)
+            blockmetadb.update_block_info(blockHash, 'dataType', blockType)
         onionrevents.event('processblocks', data = {'block': myBlock, 'type': blockType, 'signer': signer, 'validSig': valid}, onionr = core_inst.onionrInst)
     else:
         pass
 
-def has_block(core_inst, hash):
+def has_block(hash):
     '''
         Check for new block in the list
     '''
-    conn = sqlite3.connect(core_inst.blockDB)
+    conn = sqlite3.connect(dbfiles.block_meta_db)
     c = conn.cursor()
     if not stringvalidators.validate_hash(hash):
         raise Exception("Invalid hash")

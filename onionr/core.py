@@ -164,14 +164,6 @@ class Core:
         '''
         self.dbCreate.createBlockDB()
 
-    def addToBlockDB(self, newHash, selfInsert=False, dataSaved=False):
-        '''
-            Add a hash value to the block db
-
-            Should be in hex format!
-        '''
-        coredb.blockmetadb.add.add_to_block_DB(self, newHash, selfInsert, dataSaved)
-
     def setData(self, data):
         '''
             Set the data assciated with a hash
@@ -266,27 +258,6 @@ class Core:
             Update an address for a key
         '''
         return coredb.keydb.transportinfo.set_address_info(self, address, key, data)
-
-    def getExpiredBlocks(self):
-        '''Returns a list of expired blocks'''
-        return coredb.blockmetadb.expiredblocks.get_expired_blocks(self)
-
-    def updateBlockInfo(self, hash, key, data):
-        '''
-            sets info associated with a block
-
-            hash         - the hash of a block
-            dateReceived - the date the block was recieved, not necessarily when it was created
-            decrypted    - if we can successfully decrypt the block (does not describe its current state)
-            dataType     - data type of the block
-            dataFound    - if the data has been found for the block
-            dataSaved    - if the data has been saved for the block
-            sig    - optional signature by the author (not optional if author is specified)
-            author       - multi-round partial sha3-256 hash of authors public key
-            dateClaimed  - timestamp claimed inside the block, only as trustworthy as the block author is
-            expire       - expire date for a block
-        '''
-        return coredb.blockmetadb.updateblockinfo.update_block_info(self, hash, key, data)
 
     def insertBlock(self, data, header='txt', sign=False, encryptType='', symKey='', asymPeer='', meta = {}, expire=None, disableForward=False):
         '''
@@ -422,8 +393,8 @@ class Core:
                     self.daemonQueueAdd('uploadBlock', retData)
                 else:
                     pass
-                self.addToBlockDB(retData, selfInsert=True, dataSaved=True)
-                blockmetadata.process_block_metadata(self, retData)
+                coredb.blockmetadb.add_to_block_DB(retData, selfInsert=True, dataSaved=True)
+                coredb.blockmetadata.process_block_metadata(self, retData)
 
         if retData != False:
             if plaintextPeer == onionrvalues.DENIABLE_PEER_ADDRESS:

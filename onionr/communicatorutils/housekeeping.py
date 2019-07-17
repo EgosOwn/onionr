@@ -26,7 +26,7 @@ def clean_old_blocks(comm_inst):
     '''Delete old blocks if our disk allocation is full/near full, and also expired blocks'''
 
     # Delete expired blocks
-    for bHash in comm_inst._core.getExpiredBlocks():
+    for bHash in blockmetadb.get_expired_blocks():
         comm_inst._core._blacklist.addToDB(bHash)
         comm_inst._core.removeBlock(bHash)
         logger.info('Deleted block: %s' % (bHash,))

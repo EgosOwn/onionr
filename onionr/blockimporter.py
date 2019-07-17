@@ -19,6 +19,7 @@
 '''
 import core, onionrexceptions, logger
 from onionrutils import validatemetadata, blockmetadata
+from coredb import blockmetadb
 def importBlockFromData(content, coreInst):
     retData = False
 
@@ -45,7 +46,7 @@ def importBlockFromData(content, coreInst):
             except onionrexceptions.DiskAllocationReached:
                 pass
             else:
-                coreInst.addToBlockDB(blockHash, dataSaved=True)
+                blockmetadb.add_to_block_DB(blockHash, dataSaved=True)
                 blockmetadata.process_block_metadata(coreInst, blockHash) # caches block metadata values to block database
                 retData = True
     return retData
