@@ -22,9 +22,13 @@ import logger, onionrpeers
 from onionrutils import blockmetadata, stringvalidators, validatemetadata
 from . import shoulddownload
 from communicator import peeraction, onlinepeers
+import onionrcrypto, onionrstorage, onionrblacklist, storagecounter
 
 def download_blocks_from_communicator(comm_inst):
     assert isinstance(comm_inst, communicator.OnionrCommunicatorDaemon)
+    crypto = onionrcrypto.OnionrCrypto()
+    blacklist = onionrblacklist.OnionrBlackList()
+    storage_counter = storagecounter.StorageCounter()
     for blockHash in list(comm_inst.blockQueue):
         if len(comm_inst.onlinePeers) == 0:
             break
@@ -38,7 +42,7 @@ def download_blocks_from_communicator(comm_inst):
         if not shoulddownload.should_download(comm_inst, blockHash):
             continue
 
-        if comm_inst.shutdown or not comm_inst.isOnline or comm_inst._core.storage_counter.isFull():
+        if comm_inst.shutdown or not comm_inst.isOnline or storage_counter.isFull():
             # Exit loop if shutting down or offline, or disk allocation reached
             break
         # Do not download blocks being downloaded
@@ -50,7 +54,7 @@ def download_blocks_from_communicator(comm_inst):
         if len(blockPeers) == 0:
             peerUsed = onlinepeers.pick_online_peer(comm_inst)
         else:
-            blockPeers = comm_inst._core._crypto.randomShuffle(blockPeers)
+            blockPeers = crypto.randomShuffle(blockPeers)
             peerUsed = blockPeers.pop(0)
 
         if not comm_inst.shutdown and peerUsed.strip() != '':
@@ -62,7 +66,7 @@ def download_blocks_from_communicator(comm_inst):
             except AttributeError:
                 pass
 
-            realHash = comm_inst._core._crypto.sha3Hash(content)
+            realHash = ccrypto.sha3Hash(content)
             try:
                 realHash = realHash.decode() # bytes on some versions for some reason
             except AttributeError:
@@ -71,11 +75,11 @@ def download_blocks_from_communicator(comm_inst):
                 content = content.decode() # decode here because sha3Hash needs bytes above
                 metas = blockmetadata.get_block_metadata_from_data(content) # returns tuple(metadata, meta), meta is also in metadata
                 metadata = metas[0]
-                if validatemetadata.validate_metadata(comm_inst._core, metadata, metas[2]): # check if metadata is valid, and verify nonce
-                    if comm_inst._core._crypto.verifyPow(content): # check if POW is enough/correct
+                if validatemetadata.validate_metadata(metadata, metas[2]): # check if metadata is valid, and verify nonce
+                    if crypto.verifyPow(content): # check if POW is enough/correct
                         logger.info('Attempting to save block %s...' % blockHash[:12])
                         try:
-                            comm_inst._core.setData(content)
+                            onionrstorage.setdata.set_data(content)
                         except onionrexceptions.DataExists:
                             logger.warn('Data is already set for %s ' % (blockHash,))
                         except onionrexceptions.DiskAllocationReached:
@@ -83,24 +87,24 @@ def download_blocks_from_communicator(comm_inst):
                             removeFromQueue = False
                         else:
                             blockmetadb.add_to_block_DB(blockHash, dataSaved=True) # add block to meta db
-                            blockmetadata.process_block_metadata(comm_inst._core, blockHash) # caches block metadata values to block database
+                            blockmetadata.process_block_metadata(blockHash) # caches block metadata values to block database
                     else:
                         logger.warn('POW failed for block %s.' % (blockHash,))
                 else:
-                    if comm_inst._core._blacklist.inBlacklist(realHash):
+                    if blacklist.inBlacklist(realHash):
                         logger.warn('Block %s is blacklisted.' % (realHash,))
                     else:
                         logger.warn('Metadata for block %s is invalid.' % (blockHash,))
-                        comm_inst._core._blacklist.addToDB(blockHash)
+                        blacklist.addToDB(blockHash)
             else:
                 # if block didn't meet expected hash
-                tempHash = comm_inst._core._crypto.sha3Hash(content) # lazy hack, TODO use var
+                tempHash = crypto.sha3Hash(content) # lazy hack, TODO use var
                 try:
                     tempHash = tempHash.decode()
                 except AttributeError:
                     pass
                 # Punish peer for sharing invalid block (not always malicious, but is bad regardless)
-                onionrpeers.PeerProfiles(peerUsed, comm_inst._core).addScore(-50)
+                onionrpeers.PeerProfiles(peerUsed).addScore(-50)
                 if tempHash != 'ed55e34cb828232d6c14da0479709bfa10a0923dca2b380496e6b2ed4f7a0253':
                     # Dumb hack for 404 response from peer. Don't log it if 404 since its likely not malicious or a critical error.
                     logger.warn('Block hash validation failed for ' + blockHash + ' got ' + tempHash)

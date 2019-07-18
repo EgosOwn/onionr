@@ -41,80 +41,47 @@ class Core:
         # set data dir
         self.dataDir = identifyhome.identify_home()
 
-        try:
-            self.usageFile = self.dataDir + 'disk-usage.txt'
-            self.config = config
-            self.maxBlockSize = 10000000 # max block size in bytes
+        self.usageFile = self.dataDir + 'disk-usage.txt'
+        self.config = config
+        self.maxBlockSize = 10000000 # max block size in bytes
 
-            self.onionrInst = None
-            self.blockDataLocation = self.dataDir + 'blocks/'
-            self.blockDataDB = self.blockDataLocation + 'block-data.db'
-            self.publicApiHostFile = self.dataDir + 'public-host.txt'
-            self.privateApiHostFile = self.dataDir + 'private-host.txt'
-            self.addressDB = self.dataDir + 'address.db'
-            self.hsAddress = ''
-            self.i2pAddress = config.get('i2p.own_addr', None)
-            self.bootstrapFileLocation = 'static-data/bootstrap-nodes.txt'
-            self.bootstrapList = []
-            self.requirements = onionrvalues.OnionrValues()
-            self.torPort = torPort
-            self.dataNonceFile = self.dataDir + 'block-nonces.dat'
-            self.forwardKeysFile = self.dataDir + 'forward-keys.db'
-            self.keyStore = simplekv.DeadSimpleKV(self.dataDir + 'cachedstorage.dat', refresh_seconds=5)
-            self.storage_counter = storagecounter.StorageCounter(self)
-            
-            # Socket data, defined here because of multithreading constraints with gevent
-            self.killSockets = False
-            self.startSocket = {}
-            self.socketServerConnData = {}
-            self.socketReasons = {}
-            self.socketServerResponseData = {}
+        self.onionrInst = None
+        self.hsAddress = ''
+        self.i2pAddress = config.get('i2p.own_addr', None)
+        self.bootstrapFileLocation = 'static-data/bootstrap-nodes.txt'
+        self.bootstrapList = []
+        self.requirements = onionrvalues.OnionrValues()
+        self.torPort = torPort
+        self.dataNonceFile = self.dataDir + 'block-nonces.dat'
+        self.forwardKeysFile = self.dataDir + 'forward-keys.db'
+        self.keyStore = simplekv.DeadSimpleKV(self.dataDir + 'cachedstorage.dat', refresh_seconds=5)
+        self.storage_counter = storagecounter.StorageCounter(self)
+        
+        # Socket data, defined here because of multithreading constraints with gevent
+        self.killSockets = False
+        self.startSocket = {}
+        self.socketServerConnData = {}
+        self.socketReasons = {}
+        self.socketServerResponseData = {}
 
-            if not os.path.exists(self.dataDir):
-                os.mkdir(self.dataDir)
-            if not os.path.exists(self.dataDir + 'blocks/'):
-                os.mkdir(self.dataDir + 'blocks/')
-            if not os.path.exists(self.blockDB):
-                self.createBlockDB()
-            if not os.path.exists(self.forwardKeysFile):
-                dbcreator.createForwardKeyDB()
-            if not os.path.exists(self.peerDB):
-                self.createPeerDB()
-            if not os.path.exists(self.addressDB):
-                self.createAddressDB()
-
-            if os.path.exists(self.dataDir + '/hs/hostname'):
-                with open(self.dataDir + '/hs/hostname', 'r') as hs:
-                    self.hsAddress = hs.read().strip()
-
-            # Load bootstrap address list
-            if os.path.exists(self.bootstrapFileLocation):
-                with open(self.bootstrapFileLocation, 'r') as bootstrap:
-                    bootstrap = bootstrap.read()
-                for i in bootstrap.split('\n'):
-                    self.bootstrapList.append(i)
-            else:
-                logger.warn('Warning: address bootstrap file not found ' + self.bootstrapFileLocation)
-
-            self.use_subprocess = powchoice.use_subprocess(self)
-            # Initialize the crypto object
-            self._crypto = onionrcrypto.OnionrCrypto(self)
-            self._blacklist = onionrblacklist.OnionrBlackList(self)
-            self.serializer = serializeddata.SerializedData(self)
-
-        except Exception as error:
-            logger.error('Failed to initialize core Onionr library.', error=error, terminal=True)
-            logger.fatal('Cannot recover from error.', terminal=True)
-            sys.exit(1)
-        return
-
-    def refreshFirstStartVars(self):
-        '''
-            Hack to refresh some vars which may not be set on first start
-        '''
         if os.path.exists(self.dataDir + '/hs/hostname'):
             with open(self.dataDir + '/hs/hostname', 'r') as hs:
                 self.hsAddress = hs.read().strip()
+
+        # Load bootstrap address list
+        if os.path.exists(self.bootstrapFileLocation):
+            with open(self.bootstrapFileLocation, 'r') as bootstrap:
+                bootstrap = bootstrap.read()
+            for i in bootstrap.split('\n'):
+                self.bootstrapList.append(i)
+        else:
+            logger.warn('Warning: address bootstrap file not found ' + self.bootstrapFileLocation)
+
+        self.use_subprocess = powchoice.use_subprocess(self)
+        # Initialize the crypto object
+        self._crypto = onionrcrypto.OnionrCrypto(self)
+        self._blacklist = onionrblacklist.OnionrBlackList(self)
+        self.serializer = serializeddata.SerializedData(self)
 
     def addPeer(self, peerID, name=''):
         '''

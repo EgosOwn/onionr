@@ -21,6 +21,7 @@ import streamedrequests
 import logger
 from onionrutils import epoch, basicrequests
 from . import onlinepeers
+from coredb import keydb
 def peer_action(comm_inst, peer, action, data='', returnHeaders=False, max_resp_size=5242880):
     '''Perform a get request to a peer'''
     penalty_score = -10
@@ -30,9 +31,9 @@ def peer_action(comm_inst, peer, action, data='', returnHeaders=False, max_resp_
     if len(data) > 0:
         url += '&data=' + data
 
-    comm_inst._core.setAddressInfo(peer, 'lastConnectAttempt', epoch.get_epoch()) # mark the time we're trying to request this peer
+    keydb.transportinfo.set_address_info(peer, 'lastConnectAttempt', epoch.get_epoch()) # mark the time we're trying to request this peer
     try:
-        retData = basicrequests.do_get_request(comm_inst._core, url, port=comm_inst.proxyPort, max_size=max_resp_size)
+        retData = basicrequests.do_get_request(url, port=comm_inst.proxyPort, max_size=max_resp_size)
     except streamedrequests.exceptions.ResponseLimitReached:
         logger.warn('Request failed due to max response size being overflowed', terminal=True)
         retData = False
@@ -48,6 +49,6 @@ def peer_action(comm_inst, peer, action, data='', returnHeaders=False, max_resp_
         except ValueError:
             pass
     else:
-        comm_inst._core.setAddressInfo(peer, 'lastConnect', epoch.get_epoch())
+        keydb.transportinfo.set_address_info(peer, 'lastConnect', epoch.get_epoch())
         comm_inst.getPeerProfileInstance(peer).addScore(1)
     return retData # If returnHeaders, returns tuple of data, headers. if not, just data string

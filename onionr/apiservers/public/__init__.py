@@ -21,7 +21,8 @@ import time
 import flask
 from gevent.pywsgi import WSGIServer
 from httpapi import apiutils, security, fdsafehandler, miscpublicapi
-import logger, onionr
+import logger, onionr, filepaths
+from utils import gettransports
 class PublicAPI:
     '''
         The new client api server, isolated from the public api
@@ -32,9 +33,8 @@ class PublicAPI:
         app.config['MAX_CONTENT_LENGTH'] = 5 * 1024 * 1024
         self.i2pEnabled = config.get('i2p.host', False)
         self.hideBlocks = [] # Blocks to be denied sharing
-        self.host = apiutils.setbindip.set_bind_IP(clientAPI._core.publicApiHostFile, clientAPI._core)
-        self.torAdder = clientAPI._core.hsAddress
-        self.i2pAdder = clientAPI._core.i2pAddress
+        self.host = apiutils.setbindip.set_bind_IP(filepaths.public_API_host_file)
+        self.torAdder = gettransports.get_transports[0]
         self.bindPort = config.get('client.public.port')
         self.lastRequest = 0
         self.hitCount = 0 # total rec requests to public api since server started
@@ -45,10 +45,6 @@ class PublicAPI:
 
         # Set instances, then startup our public api server
         clientAPI.setPublicAPIInstance(self)
-        while self.torAdder == '':
-            clientAPI._core.refreshFirstStartVars()
-            self.torAdder = clientAPI._core.hsAddress
-            time.sleep(0.1)
         
         app.register_blueprint(security.public.PublicAPISecurity(self).public_api_security_bp)
         app.register_blueprint(miscpublicapi.endpoints.PublicEndpoints(self).public_endpoints_bp)

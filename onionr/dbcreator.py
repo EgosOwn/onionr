@@ -29,6 +29,8 @@ def createAddressDB():
             2: Tor v2 (like facebookcorewwwi.onion)
             3: Tor v3
     '''
+    if os.path.exists(dbfiles.address_info_db):
+        raise FileExistsError("Address database already exists")
     conn = sqlite3.connect(dbfiles.address_info_db)
     c = conn.cursor()
     c.execute('''CREATE TABLE adders(
@@ -52,6 +54,8 @@ def createPeerDB():
     '''
         Generate the peer sqlite3 database and populate it with the peers table.
     '''
+    if os.path.exists(dbfiles.user_id_info_db):
+        raise FileExistsError("User database already exists")
     # generate the peer database
     conn = sqlite3.connect(dbfiles.user_id_info_db)
     c = conn.cursor()
@@ -146,9 +150,14 @@ def createDaemonDB():
     '''
         Create the daemon queue database
     '''
+    if os.path.exists(dbfiles.daemon_queue_db):
+        raise FileExistsError("Daemon queue db already exists")
     conn = sqlite3.connect(dbfiles.daemon_queue_db, timeout=10)
     c = conn.cursor()
     # Create table
     c.execute('''CREATE TABLE commands (id integer primary key autoincrement, command text, data text, date text, responseID text)''')
     conn.commit()
     conn.close()
+
+
+create_funcs = [createAddressDB, createPeerDB, createBlockDB, createBlockDataDB, createForwardKeyDB, createDaemonDB]

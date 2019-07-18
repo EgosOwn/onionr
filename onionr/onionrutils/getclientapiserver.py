@@ -18,13 +18,20 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 import filepaths
+import config
 def get_client_API_server():
+    config.reload()
     retData = ''
+    getconf = lambda: config.get('client.client.port')
+    port = getconf()
+    if port is None:
+        config.reload()
+        port = getconf()
     try:
         with open(filepaths.private_API_host_file, 'r') as host:
             hostname = host.read()
     except FileNotFoundError:
         raise FileNotFoundError
     else:
-        retData += '%s:%s' % (hostname, core_inst.config.get('client.client.port'))
+        retData += '%s:%s' % (hostname, port)
     return retData

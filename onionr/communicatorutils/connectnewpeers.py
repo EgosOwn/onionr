@@ -22,9 +22,9 @@ import onionrexceptions, logger, onionrpeers
 from utils import networkmerger
 from onionrutils import stringvalidators, epoch
 from communicator import peeraction, bootstrappeers
-
+from coredb import keydb
 def connect_new_peer_to_communicator(comm_inst, peer='', useBootstrap=False):
-    config = comm_inst._core.config
+    config = comm_inst.config
     retData = False
     tried = comm_inst.offlinePeers
     if peer != '':
@@ -33,10 +33,10 @@ def connect_new_peer_to_communicator(comm_inst, peer='', useBootstrap=False):
         else:
             raise onionrexceptions.InvalidAddress('Will not attempt connection test to invalid address')
     else:
-        peerList = comm_inst._core.listAdders()
+        peerList = keydb.listkeys.list_adders()
 
-    mainPeerList = comm_inst._core.listAdders()
-    peerList = onionrpeers.get_score_sorted_peer_list(comm_inst._core)
+    mainPeerList = keydb.listkeys.list_adders()
+    peerList = onionrpeers.get_score_sorted_peer_list()
 
     # If we don't have enough peers connected or random chance, select new peers to try
     if len(peerList) < 8 or secrets.randbelow(4) == 3:
@@ -56,7 +56,7 @@ def connect_new_peer_to_communicator(comm_inst, peer='', useBootstrap=False):
         if not config.get('tor.v3onions') and len(address) == 62:
             continue
         # Don't connect to our own address
-        if address == comm_inst._core.hsAddress:
+        if address == comm_inst.hsAddress:
             continue
         # Don't connect to invalid address or if its already been tried/connected, or if its cooled down
         if len(address) == 0 or address in tried or address in comm_inst.onlinePeers or address in comm_inst.cooldownPeer:
@@ -68,7 +68,7 @@ def connect_new_peer_to_communicator(comm_inst, peer='', useBootstrap=False):
             time.sleep(0.1)
             if address not in mainPeerList:
                 # Add a peer to our list if it isn't already since it successfully connected
-                networkmerger.mergeAdders(address, comm_inst._core)
+                networkmerger.mergeAdders(address)
             if address not in comm_inst.onlinePeers:
                 logger.info('Connected to ' + address, terminal=True)
                 comm_inst.onlinePeers.append(address)
@@ -80,7 +80,7 @@ def connect_new_peer_to_communicator(comm_inst, peer='', useBootstrap=False):
                 if profile.address == address:
                     break
             else:
-                comm_inst.peerProfiles.append(onionrpeers.PeerProfiles(address, comm_inst._core))
+                comm_inst.peerProfiles.append(onionrpeers.PeerProfiles(address))
             break
         else:
             # Mark a peer as tried if they failed to respond to ping

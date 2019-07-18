@@ -1,9 +1,7 @@
 import random, socket
 import config, logger
-def set_bind_IP(filePath='', core_inst=None):
+def set_bind_IP(filePath=''):
     '''Set a random localhost IP to a specified file (intended for private or public API localhost IPs)'''
-    if not core_inst is None:
-        config = core_inst.config
 
     if config.get('general.random_bind_ip', True):
         hostOctets = [str(127), str(random.randint(0x02, 0xFF)), str(random.randint(0x02, 0xFF)), str(random.randint(0x02, 0xFF))]

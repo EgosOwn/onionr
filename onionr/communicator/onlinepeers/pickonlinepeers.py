@@ -17,6 +17,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
+import secrets
 def pick_online_peer(comm_inst):
     '''randomly picks peer from pool without bias (using secrets module)'''
     retData = ''
@@ -26,7 +27,7 @@ def pick_online_peer(comm_inst):
             break
         try:
             # get a random online peer, securely. May get stuck in loop if network is lost or if all peers in pool magically disconnect at once
-            retData = comm_inst.onlinePeers[comm_inst._core._crypto.secrets.randbelow(peerLength)]
+            retData = comm_inst.onlinePeers[secrets.randbelow(peerLength)]
         except IndexError:
             pass
         else:

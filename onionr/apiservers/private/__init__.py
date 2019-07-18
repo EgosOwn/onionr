@@ -20,9 +20,8 @@
 import base64, os
 import flask
 from gevent.pywsgi import WSGIServer
-import logger
 from onionrutils import epoch
-import httpapi
+import httpapi, filepaths, logger
 from . import register_private_blueprints
 class PrivateAPI:
     '''
@@ -41,9 +40,8 @@ class PrivateAPI:
         config = onionrInst.config
         self.config = config
         self.debug = debug
-        self._core = onionrInst.onionrCore
         self.startTime = epoch.get_epoch()
-        self._crypto = self._core._crypto
+        self._crypto = onionrInst.onionrCrypto
         app = flask.Flask(__name__)
         bindPort = int(config.get('client.client.port', 59496))
         self.bindPort = bindPort
@@ -53,7 +51,7 @@ class PrivateAPI:
 
         self.publicAPI = None # gets set when the thread calls our setter... bad hack but kinda necessary with flask
         #threading.Thread(target=PublicAPI, args=(self,)).start()
-        self.host = httpapi.apiutils.setbindip.set_bind_IP(self._core.privateApiHostFile, self._core)
+        self.host = httpapi.apiutils.setbindip.set_bind_IP(filepaths.private_API_host_file)
         logger.info('Running api on %s:%s' % (self.host, self.bindPort))
         self.httpServer = ''
 

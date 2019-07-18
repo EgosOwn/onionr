@@ -22,7 +22,7 @@ import onionrproofs, logger
 from etc import onionrvalues
 from onionrutils import basicrequests, bytesconverter
 from communicator import onlinepeers
-
+from coredb import keydb
 def announce_node(daemon):
     '''Announce our node to our peers'''
     ov = onionrvalues.OnionrValues()
@@ -33,7 +33,7 @@ def announce_node(daemon):
     if len(daemon.announceCache) >= 10000:
         daemon.announceCache.popitem()
 
-    if daemon._core.config.get('general.security_level', 0) == 0:
+    if daemon.config.get('general.security_level', 0) == 0:
         # Announce to random online peers
         for i in daemon.onlinePeers:
             if not i in daemon.announceCache and not i in daemon.announceProgress:
@@ -43,18 +43,14 @@ def announce_node(daemon):
             peer = onlinepeers.pick_online_peer(daemon)
 
         for x in range(1):
-            if x == 1 and daemon._core.config.get('i2p.host'):
-                ourID = daemon._core.config.get('i2p.own_addr').strip()
-            else:
-                ourID = daemon._core.hsAddress.strip()
+            ourID = daemon.hsAddress
 
             url = 'http://' + peer + '/announce'
             data = {'node': ourID}
 
             combinedNodes = ourID + peer
             if ourID != 1:
-                #TODO: Extend existingRand for i2p
-                existingRand = bytesconverter.bytes_to_str(daemon._core.getAddressInfo(peer, 'powValue'))
+                existingRand = bytesconverter.bytes_to_str(keydb.addressinfo.get_address_info(peer, 'powValue'))
                 # Reset existingRand if it no longer meets the minimum POW
                 if type(existingRand) is type(None) or not existingRand.endswith('0' * ov.announce_pow):
                     existingRand = ''
@@ -77,10 +73,10 @@ def announce_node(daemon):
                     daemon.announceCache[peer] = data['random']
             if not announceFail:
                 logger.info('Announcing node to ' + url)
-                if basicrequests.do_post_request(daemon._core, url, data) == 'Success':
+                if basicrequests.do_post_request(url, data) == 'Success':
                     logger.info('Successfully introduced node to ' + peer, terminal=True)
                     retData = True
-                    daemon._core.setAddressInfo(peer, 'introduced', 1)
-                    daemon._core.setAddressInfo(peer, 'powValue', data['random'])
+                    keydb.addressinfo.set_address_info(peer, 'introduced', 1)
+                    keydb.addressinfo.set_address_info(peer, 'powValue', data['random'])
     daemon.decrementThreadCount('announce_node')
     return retData

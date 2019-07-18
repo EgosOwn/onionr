@@ -17,11 +17,14 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
+from utils import readstatic, gettransports
+from coredb import keydb
+bootstrap_peers = readstatic.read_static('bootstrap-nodes.txt').split(',')
 def add_bootstrap_list_to_peer_list(comm_inst, peerList):
     '''
         Add the bootstrap list to the peer list (no duplicates)
     '''
-    for i in comm_inst._core.bootstrapList:
-        if i not in peerList and i not in comm_inst.offlinePeers and i != comm_inst._core.hsAddress and len(str(i).strip()) > 0:
+    for i in bootstrap_peers:
+        if i not in peerList and i not in comm_inst.offlinePeers and i != gettransports.get_transports()[0] and len(str(i).strip()) > 0:
             peerList.append(i)
-            comm_inst._core.addAddress(i)
+            keydb.addkeys.add_address(i)

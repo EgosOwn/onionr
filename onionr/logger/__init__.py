@@ -57,7 +57,7 @@ def error(data, error = None, timestamp = True, prompt = True, terminal = False,
 def fatal(data, error = None, timestamp=True, prompt = True, terminal = False, level = settings.LEVEL_FATAL):
     if not error is None:
         debug('Error: ' + str(error) + parse_error(), terminal = terminal)
-    if get_level() <= level:
+    if settings.get_level() <= level:
         log('#', data, colors.bg.red + colors.fg.green + colors.bold, timestamp = timestamp, fd = sys.stderr, prompt = prompt, terminal = terminal)
 
 # returns a formatted error message

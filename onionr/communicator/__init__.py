@@ -19,7 +19,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 import sys, os, time
-import core, config, logger, onionr
+import config, logger, onionr
 import onionrexceptions, onionrpeers, onionrevents as events, onionrplugins as plugins, onionrblockapi as block
 from . import onlinepeers
 from communicatorutils import servicecreator, onionrcommunicatortimers
@@ -29,8 +29,8 @@ from communicatorutils import daemonqueuehandler, announcenode, deniableinserts
 from communicatorutils import cooldownpeer, housekeeping, netcheck
 from onionrutils import localcommand, epoch
 from etc import humanreadabletime
-import onionrservices, onionr, onionrproofs
-from coredb import daemonqueue
+import onionrservices, onionr, filepaths
+from coredb import daemonqueue, dbfiles
 OnionrCommunicatorTimers = onionrcommunicatortimers.OnionrCommunicatorTimers
 
 config.reload()
@@ -48,7 +48,6 @@ class OnionrCommunicatorDaemon:
 
         # initialize core with Tor socks port being 3rd argument
         self.proxyPort = proxyPort
-        self._core = onionrInst.onionrCore
 
         self.blocksToUpload = []
 
@@ -84,7 +83,7 @@ class OnionrCommunicatorDaemon:
         self.dbTimestamps = {}
 
         # Clear the daemon queue for any dead messages
-        if os.path.exists(self._core.queueDB):
+        if os.path.exists(dbfiles.daemon_queue_db):
             daemonqueue.clear_daemon_queue()
 
         # Loads in and starts the enabled plugins
@@ -102,8 +101,8 @@ class OnionrCommunicatorDaemon:
         OnionrCommunicatorTimers(self, self.runCheck, 2, maxThreads=1)
 
         # Timers to periodically lookup new blocks and download them
-        OnionrCommunicatorTimers(self, self.lookupBlocks, self._core.config.get('timers.lookupBlocks', 25), requiresPeer=True, maxThreads=1)
-        OnionrCommunicatorTimers(self, self.getBlocks, self._core.config.get('timers.getBlocks', 30), requiresPeer=True, maxThreads=2)
+        OnionrCommunicatorTimers(self, self.lookupBlocks, config.get('timers.lookupBlocks', 25), requiresPeer=True, maxThreads=1)
+        OnionrCommunicatorTimers(self, self.getBlocks, config.get('timers.getBlocks', 30), requiresPeer=True, maxThreads=2)
 
         # Timer to reset the longest offline peer so contact can be attempted again
         OnionrCommunicatorTimers(self, onlinepeers.clear_offline_peer, 58, myArgs=[self])
@@ -125,7 +124,7 @@ class OnionrCommunicatorDaemon:
 
         # Setup direct connections
         if config.get('general.socket_servers', False):
-            self.services = onionrservices.OnionrServices(self._core)
+            self.services = onionrservices.OnionrServices()
             self.active_services = []
             self.service_greenlets = []
             OnionrCommunicatorTimers(self, servicecreator.service_creator, 5, maxThreads=50, myArgs=[self])
@@ -182,7 +181,7 @@ class OnionrCommunicatorDaemon:
         else:
             for server in self.service_greenlets:
                 server.stop()
-        localcommand.local_command(self._core, 'shutdown') # shutdown the api
+        localcommand.local_command('shutdown') # shutdown the api
         time.sleep(0.5)
 
     def lookupAdders(self):
@@ -211,7 +210,7 @@ class OnionrCommunicatorDaemon:
 
     def peerCleanup(self):
         '''This just calls onionrpeers.cleanupPeers, which removes dead or bad peers (offline too long, too slow)'''
-        onionrpeers.peer_cleanup(self._core)
+        onionrpeers.peer_cleanup()
         self.decrementThreadCount('peerCleanup')
 
     def getPeerProfileInstance(self, peer):
@@ -223,7 +222,7 @@ class OnionrCommunicatorDaemon:
                 break
         else:
             # if the peer's profile is not loaded, return a new one. connectNewPeer adds it the list on connect
-            retData = onionrpeers.PeerProfiles(peer, self._core)
+            retData = onionrpeers.PeerProfiles(peer)
         return retData
 
     def getUptime(self):
@@ -249,7 +248,7 @@ def startCommunicator(onionrInst, proxyPort):
     OnionrCommunicatorDaemon(onionrInst, proxyPort)
 
 def run_file_exists(daemon):
-    if os.path.isfile(daemon._core.dataDir + '.runcheck'):
-        os.remove(daemon._core.dataDir + '.runcheck')
+    if os.path.isfile(filepaths.run_check_file):
+        os.remove(filepaths.run_check_file)
         return True
     return False

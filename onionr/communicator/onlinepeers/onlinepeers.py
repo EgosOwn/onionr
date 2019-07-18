@@ -24,7 +24,7 @@ def get_online_peers(comm_inst):
     '''
         Manages the comm_inst.onlinePeers attribute list, connects to more peers if we have none connected
     '''
-    config = comm_inst._core.config
+    config = comm_inst.config
     logger.debug('Refreshing peer pool...')
     maxPeers = int(config.get('peers.max_connect', 10))
     needed = maxPeers - len(comm_inst.onlinePeers)

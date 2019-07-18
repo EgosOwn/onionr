@@ -23,7 +23,7 @@ def should_download(comm_inst, block_hash):
     if block_hash in blockmetadb.get_block_list(): # Dont download block we have
         ret_data = False
     else:
-        if comm_inst._core._blacklist.inBlacklist(block_hash): # Dont download blacklisted block
+        if comm_inst.blacklist.inBlacklist(block_hash): # Dont download blacklisted block
             ret_data = False
     if ret_data is False:
         # Remove block from communicator queue if it shouldnt be downloaded

@@ -21,6 +21,7 @@ from onionrutils import epoch
 from communicator import onlinepeers
 def cooldown_peer(comm_inst):
     '''Randomly add an online peer to cooldown, so we can connect a new one'''
+    config = comm_inst.config
     onlinePeerAmount = len(comm_inst.onlinePeers)
     minTime = 300
     cooldownTime = 600
@@ -34,7 +35,7 @@ def cooldown_peer(comm_inst):
             del comm_inst.cooldownPeer[peer]
 
     # Cool down a peer, if we have max connections alive for long enough
-    if onlinePeerAmount >= comm_inst._core.config.get('peers.max_connect', 10, save = True):
+    if onlinePeerAmount >= config.get('peers.max_connect', 10, save = True):
         finding = True
 
         while finding:

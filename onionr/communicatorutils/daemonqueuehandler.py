@@ -21,11 +21,12 @@ import logger
 import onionrevents as events
 from onionrutils import localcommand
 from coredb import daemonqueue
+import filepaths
 def handle_daemon_commands(comm_inst):
     cmd = daemonqueue.daemon_queue()
     response = ''
     if cmd is not False:
-        events.event('daemon_command', onionr = comm_inst._core.onionrInst, data = {'cmd' : cmd})
+        events.event('daemon_command', onionr = comm_inst.onionrInst, data = {'cmd' : cmd})
         if cmd[0] == 'shutdown':
             comm_inst.shutdown = True
         elif cmd[0] == 'announceNode':
@@ -35,13 +36,13 @@ def handle_daemon_commands(comm_inst):
                 logger.debug("No nodes connected. Will not introduce node.")
         elif cmd[0] == 'runCheck': # deprecated
             logger.debug('Status check; looks good.')
-            open(comm_inst._core.dataDir + '.runcheck', 'w+').close()
+            open(filepaths.run_check_file + '.runcheck', 'w+').close()
         elif cmd[0] == 'connectedPeers':
             response = '\n'.join(list(comm_inst.onlinePeers)).strip()
             if response == '':
                 response = 'none'
         elif cmd[0] == 'localCommand':
-            response = localcommand.local_command(comm_inst._core, cmd[1])
+            response = localcommand.local_command(cmd[1])
         elif cmd[0] == 'pex':
             for i in comm_inst.timers:
                 if i.timerFunction.__name__ == 'lookupAdders':
@@ -51,7 +52,7 @@ def handle_daemon_commands(comm_inst):
 
         if cmd[0] not in ('', None):
             if response != '':
-                localcommand.local_command(comm_inst._core, 'queueResponseAdd/' + cmd[4], post=True, postData={'data': response})
+                localcommand.local_command('queueResponseAdd/' + cmd[4], post=True, postData={'data': response})
         response = ''
 
     comm_inst.decrementThreadCount('handle_daemon_commands')
