@@ -19,14 +19,11 @@
 '''
 import urllib, requests, time
 import logger
-from onionrutils import getclientapiserver
-def local_command(core_inst, command, data='', silent = True, post=False, postData = {}, maxWait=20):
-    '''
-        Send a command to the local http API server, securely. Intended for local clients, DO NOT USE for remote peers.
-    '''
-    # TODO: URL encode parameters, just as an extra measure. May not be needed, but should be added regardless.
-    hostname = ''
-    waited = 0
+from . import getclientapiserver
+hostname = ''
+waited = 0
+maxWait = 3
+def get_hostname():
     while hostname == '':
         try:
             hostname = getclientapiserver.get_client_API_server(core_inst)
@@ -35,6 +32,16 @@ def local_command(core_inst, command, data='', silent = True, post=False, postDa
             waited += 1
             if waited == maxWait:
                 return False
+        return hostname
+hostname = get_hostname()
+
+def local_command(core_inst, command, data='', silent = True, post=False, postData = {}, maxWait=20):
+    '''
+        Send a command to the local http API server, securely. Intended for local clients, DO NOT USE for remote peers.
+    '''
+    # TODO: URL encode parameters, just as an extra measure. May not be needed, but should be added regardless.
+    if hostname == False:
+        hostname = get_hostname()
     if data != '':
         data = '&data=' + urllib.parse.quote_plus(data)
     payload = 'http://%s/%s%s' % (hostname, command, data)

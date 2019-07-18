@@ -17,10 +17,11 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-def get_client_API_server(core_inst):
+import filepaths
+def get_client_API_server():
     retData = ''
     try:
-        with open(core_inst.privateApiHostFile, 'r') as host:
+        with open(filepaths.private_API_host_file, 'r') as host:
             hostname = host.read()
     except FileNotFoundError:
         raise FileNotFoundError

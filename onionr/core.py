@@ -47,9 +47,6 @@ class Core:
             self.maxBlockSize = 10000000 # max block size in bytes
 
             self.onionrInst = None
-            self.queueDB = self.dataDir + 'queue.db'
-            self.peerDB = self.dataDir + 'peers.db'
-            self.blockDB = self.dataDir + 'blocks.db'
             self.blockDataLocation = self.dataDir + 'blocks/'
             self.blockDataDB = self.blockDataLocation + 'block-data.db'
             self.publicApiHostFile = self.dataDir + 'public-host.txt'
