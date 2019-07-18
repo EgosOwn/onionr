@@ -18,7 +18,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 from flask import Blueprint, Response
-import core, onionrblockapi, onionrexceptions
+import onionrblockapi, onionrexceptions
 from onionrutils import stringvalidators
 from coredb import daemonqueue
 shutdown_bp = Blueprint('shutdown', __name__)

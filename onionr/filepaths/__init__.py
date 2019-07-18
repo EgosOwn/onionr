@@ -13,3 +13,5 @@ forward_keys_file = home + 'forward-keys.db'
 tor_hs_address_file = home + 'hs/hostname'
 
 run_check_file = home + '.runcheck'
+
+data_nonce_file = home + 'block-nonces.dat'

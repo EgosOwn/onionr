@@ -29,8 +29,7 @@ def upload_blocks_from_communicator(comm_inst):
 
     triedPeers = []
     finishedUploads = []
-    core = comm_inst._core
-    comm_inst.blocksToUpload = core._crypto.randomShuffle(comm_inst.blocksToUpload)
+    comm_inst.blocksToUpload = comm_inst.crypto.randomShuffle(comm_inst.blocksToUpload)
     if len(comm_inst.blocksToUpload) != 0:
         for bl in comm_inst.blocksToUpload:
             if not stringvalidators.validate_hash(bl):
@@ -46,8 +45,8 @@ def upload_blocks_from_communicator(comm_inst):
                 data = {'block': block.Block(bl).getRaw()}
                 proxyType = proxypicker.pick_proxy(peer)
                 logger.info("Uploading block to " + peer, terminal=True)
-                if not basicrequests.do_post_request(core, url, data=data, proxyType=proxyType) == False:
-                    localcommand.local_command(core, 'waitforshare/' + bl, post=True)
+                if not basicrequests.do_post_request(url, data=data, proxyType=proxyType) == False:
+                    localcommand.local_command('waitforshare/' + bl, post=True)
                     finishedUploads.append(bl)
     for x in finishedUploads:
         try:

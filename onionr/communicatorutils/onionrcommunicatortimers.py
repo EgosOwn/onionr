@@ -27,7 +27,6 @@ class OnionrCommunicatorTimers:
         self.requiresPeer = requiresPeer
         self.daemonInstance = daemonInstance
         self.maxThreads = maxThreads
-        self._core = self.daemonInstance._core
         self.args = myArgs
 
         self.daemonInstance.timers.append(self)

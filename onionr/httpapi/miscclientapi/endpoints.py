@@ -23,12 +23,12 @@ class PrivateEndpoints:
     def __init__(self, client_api):
         private_endpoints_bp = Blueprint('privateendpoints', __name__)
         self.private_endpoints_bp = private_endpoints_bp
-        config = client_api._core.config
+        config = client_api.config
 
         @private_endpoints_bp.route('/serviceactive/<pubkey>')
         def serviceActive(pubkey):
             try:
-                if pubkey in client_api._core.onionrInst.communicatorInst.active_services:
+                if pubkey in client_api.onionrInst.communicatorInst.active_services:
                     return Response('true')
             except AttributeError as e:
                 pass
@@ -95,7 +95,7 @@ class PrivateEndpoints:
             #return Response("disabled")
             while True:
                 try:    
-                    return Response(client_api._core.serializer.getStats())
+                    return Response(client_api.serializer.getStats())
                 except AttributeError:
                     pass
         
@@ -105,7 +105,7 @@ class PrivateEndpoints:
         
         @private_endpoints_bp.route('/getActivePubkey')
         def getActivePubkey():
-            return Response(client_api._core._crypto.pubKey)
+            return Response(onionrcrypto.OnionrCrypto().pubKey)
 
         @private_endpoints_bp.route('/getHumanReadable/<name>')
         def getHumanReadable(name):

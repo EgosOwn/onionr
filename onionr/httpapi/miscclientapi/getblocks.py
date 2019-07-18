@@ -18,14 +18,12 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 from flask import Blueprint, Response, abort
-import core, onionrblockapi
+import onionrblockapi
 from httpapi import apiutils
 from onionrutils import stringvalidators
 from coredb import blockmetadb
 
-c = core.Core()
-
-client_get_block = apiutils.GetBlockData(c)
+client_get_block = apiutils.GetBlockData()
 
 client_get_blocks = Blueprint('miscclient', __name__)
 
@@ -39,7 +37,7 @@ def getBlockBodyData(name):
     resp = ''
     if stringvalidators.validate_hash(name):
         try:
-            resp = onionrblockapi.Block(name, decrypt=True, core=c).bcontent
+            resp = onionrblockapi.Block(name, decrypt=True).bcontent
         except TypeError:
             pass
     else:

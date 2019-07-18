@@ -19,6 +19,7 @@
 '''
 import secrets
 from etc import onionrvalues
+import onionrblocks
 def insert_deniable_block(comm_inst):
     '''Insert a fake block in order to make it more difficult to track real blocks'''
     fakePeer = ''
@@ -27,5 +28,5 @@ def insert_deniable_block(comm_inst):
         # This assumes on the libsodium primitives to have key-privacy
         fakePeer = onionrvalues.DENIABLE_PEER_ADDRESS
         data = secrets.token_hex(secrets.randbelow(1024) + 1)
-        comm_inst._core.insertBlock(data, header='pm', encryptType='asym', asymPeer=fakePeer, disableForward=True, meta={'subject': 'foo'})
+        onionrblocks.insert(data, header='pm', encryptType='asym', asymPeer=fakePeer, disableForward=True, meta={'subject': 'foo'})
     comm_inst.decrementThreadCount('insert_deniable_block')

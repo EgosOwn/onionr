@@ -18,9 +18,9 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 import platform
-def use_subprocess(core_inst):
+def use_subprocess(config_inst):
     use = True
-    if not core_inst.config.get('general.use_subprocess_pow_if_possible', True):
+    if not config_inst.get('general.use_subprocess_pow_if_possible', True):
         use = False
     if 'Windows' == platform.system():
         use = False

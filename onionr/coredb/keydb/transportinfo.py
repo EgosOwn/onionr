@@ -18,7 +18,8 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 import sqlite3
-def get_address_info(core_inst, address, info):
+from .. import dbfiles
+def get_address_info(address, info):
     '''
         Get info about an address from its database entry
 
@@ -34,7 +35,7 @@ def get_address_info(core_inst, address, info):
         introduced  9
     '''
 
-    conn = sqlite3.connect(core_inst.addressDB, timeout=30)
+    conn = sqlite3.connect(dbfiles.address_info_db, timeout=30)
     c = conn.cursor()
 
     command = (address,)
@@ -54,12 +55,12 @@ def get_address_info(core_inst, address, info):
 
     return retVal
 
-def set_address_info(core_inst, address, key, data):
+def set_address_info(address, key, data):
     '''
         Update an address for a key
     '''
 
-    conn = sqlite3.connect(core_inst.addressDB, timeout=30)
+    conn = sqlite3.connect(dbfiles.address_info_db, timeout=30)
     c = conn.cursor()
 
     command = (data, address)

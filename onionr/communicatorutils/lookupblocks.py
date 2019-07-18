@@ -37,7 +37,7 @@ def lookup_blocks_from_communicator(comm_inst):
         if not comm_inst.isOnline:
             break
         # check if disk allocation is used
-        if comm_inst._core.storage_counter.isFull():
+        if comm_inst.storage_counter.isFull():
             logger.debug('Not looking up new blocks due to maximum amount of allowed disk space used')
             break
         peer = onlinepeers.pick_online_peer(comm_inst) # select random online peer
@@ -72,7 +72,7 @@ def lookup_blocks_from_communicator(comm_inst):
                     if not i in existingBlocks:
                         # if block does not exist on disk and is not already in block queue
                         if i not in comm_inst.blockQueue:
-                            if onionrproofs.hashMeetsDifficulty(i) and not comm_inst._core._blacklist.inBlacklist(i):
+                            if onionrproofs.hashMeetsDifficulty(i) and not comm_inst.blacklist.inBlacklist(i):
                                 if len(comm_inst.blockQueue) <= 1000000:
                                     comm_inst.blockQueue[i] = [peer] # add blocks to download queue
                                     new_block_count += 1

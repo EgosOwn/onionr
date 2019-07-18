@@ -21,20 +21,22 @@ import sqlite3
 import onionrevents as events
 from onionrutils import stringvalidators
 from . import listkeys
-def add_peer(core_inst, peerID, name=''):
+from utils import gettransports
+from .. import dbfiles
+def add_peer(peerID, name=''):
     '''
         Adds a public key to the key database (misleading function name)
     '''
-    if peerID in core_inst.listPeers() or peerID == core_inst._crypto.pubKey:
+    if peerID in listkeys.list_peers() or peerID == core_inst._crypto.pubKey:
         raise ValueError("specified id is already known")
 
     # This function simply adds a peer to the DB
     if not stringvalidators.validate_pub_key(peerID):
         return False
 
-    events.event('pubkey_add', data = {'key': peerID}, onionr = core_inst.onionrInst)
+    #events.event('pubkey_add', data = {'key': peerID}, onionr = core_inst.onionrInst)
 
-    conn = sqlite3.connect(core_inst.peerDB, timeout=30)
+    conn = sqlite3.connect(dbfiles.user_id_info_db, timeout=30)
     hashID = core_inst._crypto.pubKeyHashID(peerID)
     c = conn.cursor()
     t = (peerID, name, 'unknown', hashID, 0)
@@ -54,7 +56,7 @@ def add_peer(core_inst, peerID, name=''):
 
     return True
 
-def add_address(core_inst, address):
+def add_address(address):
     '''
         Add an address to the address database (only tor currently)
     '''
@@ -62,9 +64,9 @@ def add_address(core_inst, address):
     if type(address) is None or len(address) == 0:
         return False
     if stringvalidators.validate_transport(address):
-        if address == core_inst.config.get('i2p.ownAddr', None) or address == core_inst.hsAddress:
+        if address == gettransports.transports[0]:
             return False
-        conn = sqlite3.connect(core_inst.addressDB, timeout=30)
+        conn = sqlite3.connect(dbfiles.address_info_db, timeout=30)
         c = conn.cursor()
         # check if address is in database
         # this is safe to do because the address is validated above, but we strip some chars here too just in case
@@ -84,7 +86,7 @@ def add_address(core_inst, address):
         conn.commit()
         conn.close()
 
-        events.event('address_add', data = {'address': address}, onionr = core_inst.onionrInst)
+        #events.event('address_add', data = {'address': address}, onionr = core_inst.onionrInst)
 
         return True
     else:

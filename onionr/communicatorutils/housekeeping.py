@@ -21,27 +21,28 @@ import sqlite3
 import logger
 from onionrusers import onionrusers
 from onionrutils import epoch
-from coredb import blockmetadb
+from coredb import blockmetadb, dbfiles
+from onionrstorage import removeblock, setdata
 def clean_old_blocks(comm_inst):
     '''Delete old blocks if our disk allocation is full/near full, and also expired blocks'''
 
     # Delete expired blocks
     for bHash in blockmetadb.get_expired_blocks():
-        comm_inst._core._blacklist.addToDB(bHash)
-        comm_inst._core.removeBlock(bHash)
+        comm_inst.blacklist.addToDB(bHash)
+        removeblock.remove_block(bHash)
         logger.info('Deleted block: %s' % (bHash,))
 
     while comm_inst._core.storage_counter.isFull():
         oldest = blockmetadb.get_block_list()[0]
-        comm_inst._core._blacklist.addToDB(oldest)
-        comm_inst._core.removeBlock(oldest)
+        comm_inst.blacklist.addToDB(oldest)
+        removeblock.remove_block(oldest)
         logger.info('Deleted block: %s' % (oldest,))
 
     comm_inst.decrementThreadCount('clean_old_blocks')
 
 def clean_keys(comm_inst):
     '''Delete expired forward secrecy keys'''
-    conn = sqlite3.connect(comm_inst._core.peerDB, timeout=10)
+    conn = sqlite3.connect(dbfiles.user_id_info_db, timeout=10)
     c = conn.cursor()
     time = epoch.get_epoch()
     deleteKeys = []

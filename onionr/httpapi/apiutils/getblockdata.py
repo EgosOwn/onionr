@@ -1,21 +1,13 @@
 import json
-import core, onionrblockapi
+import onionrblockapi
 from onionrutils import bytesconverter, stringvalidators
 class GetBlockData:
-    def __init__(self, client_api_inst=None):
-        if client_api_inst is None:
-            self.client_api_inst = None
-            self.c = core.Core()
-        elif isinstance(client_api_inst, core.Core):
-            self.client_api_inst = None
-            self.c = client_api_inst
-        else:
-            self.client_api_Inst = client_api_inst
-            self.c = core.Core()
+    def __init__(self, client_api_inst):
+        self.client_api_inst = client_api_inst
     
     def get_block_data(self, bHash, decrypt=False, raw=False, headerOnly=False):
         assert stringvalidators.validate_hash(bHash)
-        bl = onionrblockapi.Block(bHash, core=self.c)
+        bl = onionrblockapi.Block(bHash)
         if decrypt:
             bl.decrypt()
             if bl.isEncrypted and not bl.decrypted:

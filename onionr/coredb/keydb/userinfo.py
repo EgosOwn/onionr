@@ -18,7 +18,8 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 import sqlite3
-def get_user_info(core_inst, peer, info):
+from .. import dbfiles
+def get_user_info(peer, info):
     '''
         Get info about a peer from their database entry
 
@@ -29,7 +30,7 @@ def get_user_info(core_inst, peer, info):
         trust int           4
         hashID text         5
     '''
-    conn = sqlite3.connect(core_inst.peerDB, timeout=30)
+    conn = sqlite3.connect(dbfiles.user_id_info_db, timeout=30)
     c = conn.cursor()
 
     command = (peer,)
@@ -50,12 +51,12 @@ def get_user_info(core_inst, peer, info):
 
     return retVal
 
-def set_peer_info(core_inst, peer, key, data):
+def set_peer_info(peer, key, data):
     '''
         Update a peer for a key
     '''
 
-    conn = sqlite3.connect(core_inst.peerDB, timeout=30)
+    conn = sqlite3.connect(dbfiles.user_id_info_db, timeout=30)
     c = conn.cursor()
 
     command = (data, peer)
