@@ -17,19 +17,21 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import sqlite3, os, logger
+import sqlite3, os
+import logger, onionrcrypto
 from onionrutils import epoch, bytesconverter
+from coredb import dbfiles
+crypto = onionrcrypto.OnionrCrypto()
 class OnionrBlackList:
-    def __init__(self, coreInst):
-        self.blacklistDB = coreInst.dataDir + 'blacklist.db'
-        self._core = coreInst
+    def __init__(self):
+        self.blacklistDB = dbfiles.blacklist_db
 
-        if not os.path.exists(self.blacklistDB):
+        if not os.path.exists(dbfiles.blacklist_db):
             self.generateDB()
         return
 
     def inBlacklist(self, data):
-        hashed = bytesconverter.bytes_to_str(self._core._crypto.sha3Hash(data))
+        hashed = bytesconverter.bytes_to_str(crypto.sha3Hash(data))
         retData = False
 
         if not hashed.isalnum():
@@ -99,7 +101,7 @@ class OnionrBlackList:
         2=pubkey
         '''
         # we hash the data so we can remove data entirely from our node's disk
-        hashed = bytesconverter.bytes_to_str(self._core._crypto.sha3Hash(data))
+        hashed = bytesconverter.bytes_to_str(crypto.sha3Hash(data))
         if len(hashed) > 64:
             raise Exception("Hashed data is too large")
 

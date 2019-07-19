@@ -18,23 +18,25 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 
-import core as onionrcore, logger, config, onionrexceptions, nacl.exceptions
-import json, os, sys, datetime, base64, onionrstorage
+import logger, config, onionrexceptions, nacl.exceptions
+import json, os, sys, datetime, base64, onionrstorage, onionrcrypto
 from onionrusers import onionrusers
 from onionrutils import stringvalidators, epoch
 from coredb import blockmetadb
+from onionrstorage import removeblock
+import onionrblocks
 class Block:
+    crypto = onionrcrypto.OnionrCrypto()
     blockCacheOrder = list() # NEVER write your own code that writes to this!
     blockCache = dict() # should never be accessed directly, look at Block.getCache()
 
-    def __init__(self, hash = None, core = None, type = None, content = None, expire=None, decrypt=False, bypassReplayCheck=False):
+    def __init__(self, hash = None, type = None, content = None, expire=None, decrypt=False, bypassReplayCheck=False):
         # take from arguments
         # sometimes people input a bytes object instead of str in `hash`
         if (not hash is None) and isinstance(hash, bytes):
             hash = hash.decode()
 
         self.hash = hash
-        self.core = core
         self.btype = type
         self.bcontent = content
         self.expire = expire
@@ -56,10 +58,6 @@ class Block:
         self.validSig = False
         self.autoDecrypt = decrypt
 
-        # handle arguments
-        if self.getCore() is None:
-            self.core = onionrcore.Core()
-
         self.update()
 
     def decrypt(self, encodedData = True):
@@ -70,27 +68,26 @@ class Block:
         if self.decrypted:
             return True
         retData = False
-        core = self.getCore()
         # decrypt data
         if self.getHeader('encryptType') == 'asym':
             try:
-                self.bcontent = core._crypto.pubKeyDecrypt(self.bcontent, encodedData=encodedData)
-                bmeta = core._crypto.pubKeyDecrypt(self.bmetadata, encodedData=encodedData)
+                self.bcontent = crypto.pubKeyDecrypt(self.bcontent, encodedData=encodedData)
+                bmeta = crypto.pubKeyDecrypt(self.bmetadata, encodedData=encodedData)
                 try:
                     bmeta = bmeta.decode()
                 except AttributeError:
                     # yet another bytes fix
                     pass
                 self.bmetadata = json.loads(bmeta)
-                self.signature = core._crypto.pubKeyDecrypt(self.signature, encodedData=encodedData)
-                self.signer = core._crypto.pubKeyDecrypt(self.signer, encodedData=encodedData)
+                self.signature = crypto.pubKeyDecrypt(self.signature, encodedData=encodedData)
+                self.signer = crypto.pubKeyDecrypt(self.signer, encodedData=encodedData)
                 self.bheader['signer'] = self.signer.decode()
                 self.signedData =  json.dumps(self.bmetadata) + self.bcontent.decode()
 
                 # Check for replay attacks
                 try:
                     if epoch.get_epoch() - blockmetadb.get_block_date(self.hash) > 60:
-                        assert self.core._crypto.replayTimestampValidation(self.bmetadata['rply'])
+                        assert self.crypto.replayTimestampValidation(self.bmetadata['rply'])
                 except (AssertionError, KeyError, TypeError) as e:
                     if not self.bypassReplayCheck:
                         # Zero out variables to prevent reading of replays
@@ -106,7 +103,7 @@ class Block:
                     pass
                 else:
                     try:
-                        self.bcontent = onionrusers.OnionrUser(self.getCore(), self.signer).forwardDecrypt(self.bcontent)
+                        self.bcontent = onionrusers.OnionrUser(self.signer).forwardDecrypt(self.bcontent)
                     except (onionrexceptions.DecryptionError, nacl.exceptions.CryptoError) as e:
                         logger.error(str(e))
                         pass
@@ -127,9 +124,7 @@ class Block:
             Verify if a block's signature is signed by its claimed signer
         '''
 
-        core = self.getCore()
-
-        if core._crypto.edVerify(data=self.signedData, key=self.signer, sig=self.signature, encodedData=True):
+        if crypto.edVerify(data=self.signedData, key=self.signer, sig=self.signature, encodedData=True):
             self.validSig = True
         else:
             self.validSig = False
@@ -158,7 +153,7 @@ class Block:
             # import from file
             if blockdata is None:
                 try:
-                    blockdata = onionrstorage.getData(self.core, self.getHash()).decode()
+                    blockdata = onionrstorage.getData(self.getHash()).decode()
                 except AttributeError:
                     raise onionrexceptions.NoDataAvailable('Block does not exist')
             else:
@@ -220,7 +215,8 @@ class Block:
                 os.remove(self.getBlockFile())
             except TypeError:
                 pass
-            self.getCore().removeBlock(self.getHash())
+            
+            removeblock.remove_block(self.getHash())
             return True
         return False
 
@@ -238,14 +234,8 @@ class Block:
 
         try:
             if self.isValid() is True:
-                '''
-                if (not self.getBlockFile() is None) and (recreate is True):
-                    onionrstorage.store(self.core, self.getRaw().encode())
-                    #with open(self.getBlockFile(), 'wb') as blockFile:
-                    #    blockFile.write(self.getRaw().encode())
-                else:
-                '''
-                self.hash = self.getCore().insertBlock(self.getRaw(), header = self.getType(), sign = sign, meta = self.getMetadata(), expire = self.getExpire())
+
+                self.hash = onionrblocks.insert(self.getRaw(), header = self.getType(), sign = sign, meta = self.getMetadata(), expire = self.getExpire())
                 if self.hash != False:
                     self.update()
 
@@ -277,16 +267,6 @@ class Block:
         '''
 
         return self.hash
-
-    def getCore(self):
-        '''
-            Returns the Core instance being used by the Block
-
-            Outputs:
-            - (Core): the Core instance
-        '''
-
-        return self.core
 
     def getType(self):
         '''
@@ -363,7 +343,7 @@ class Block:
             if self.parent == self.getHash():
                 self.parent = self
             elif Block.exists(self.parent):
-                self.parent = Block(self.getMetadata('parent'), core = self.getCore())
+                self.parent = Block(self.getMetadata('parent'))
             else:
                 self.parent = None
 
@@ -445,7 +425,7 @@ class Block:
             if (not self.isSigned()) or (not stringvalidators.validate_pub_key(signer)):
                 return False
 
-            return bool(self.getCore()._crypto.edVerify(self.getSignedData(), signer, self.getSignature(), encodedData = encodedData))
+            return bool(crypto.edVerify(self.getSignedData(), signer, self.getSignature(), encodedData = encodedData))
         except:
             return False
 
@@ -511,7 +491,7 @@ class Block:
         '''
 
         if type(parent) == str:
-            parent = Block(parent, core = self.getCore())
+            parent = Block(parent)
 
         self.parent = parent
         self.setMetadata('parent', (None if parent is None else self.getParent().getHash()))
@@ -519,7 +499,7 @@ class Block:
 
     # static functions
 
-    def getBlocks(type = None, signer = None, signed = None, parent = None, reverse = False, limit = None, core = None):
+    def getBlocks(type = None, signer = None, signed = None, parent = None, reverse = False, limit = None):
         '''
             Returns a list of Block objects based on supplied filters
 
@@ -528,24 +508,22 @@ class Block:
             - signer (str/list): filters by signer (one in the list has to be a signer)
             - signed (bool): filters out by whether or not the block is signed
             - reverse (bool): reverses the list if True
-            - core (Core): lets you optionally supply a core instance so one doesn't need to be started
 
             Outputs:
             - (list): a list of Block objects that match the input
         '''
 
         try:
-            core = (core if not core is None else onionrcore.Core())
 
             if (not parent is None) and (not isinstance(parent, Block)):
-                parent = Block(hash = parent, core = core)
+                parent = Block(hash = parent)
 
             relevant_blocks = list()
             blocks = (blockmetadb.get_block_list() if type is None else blockmetadb.get_blocks_by_type(type))
 
             for block in blocks:
                 if Block.exists(block):
-                    block = Block(block, core = core)
+                    block = Block(block)
 
                     relevant = True
 
@@ -586,7 +564,7 @@ class Block:
 
         return list()
 
-    def mergeChain(child, file = None, maximumFollows = 1000, core = None):
+    def mergeChain(child, file = None, maximumFollows = 1000):
         '''
             Follows a child Block to its root parent Block, merging content
 
@@ -596,8 +574,6 @@ class Block:
             - maximumFollows (int): the maximum number of Blocks to follow
         '''
 
-        # validate data and instantiate Core
-        core = (core if not core is None else onionrcore.Core())
         maximumFollows = max(0, maximumFollows)
 
         # type conversions
@@ -617,7 +593,7 @@ class Block:
             if len(blocks) - 1 >= maximumFollows:
                 break
 
-            block = Block(blocks[-1], core = core).getParent()
+            block = Block(blocks[-1]).getParent()
 
             # end if there is no parent Block
             if block is None:
@@ -637,7 +613,7 @@ class Block:
 
         # combine block contents
         for hash in blocks:
-            block = Block(hash, core = core)
+            block = Block(hash)
             contents = block.getContent()
             contents = base64.b64decode(contents.encode())
 
@@ -669,16 +645,11 @@ class Block:
         # no input data? scrap it.
         if bHash is None:
             return False
-        '''
-        if type(hash) == Block:
-            blockfile = hash.getBlockFile()
-        else:
-            blockfile = onionrcore.Core().dataDir + 'blocks/%s.dat' % hash
-        '''
+
         if isinstance(bHash, Block):
             bHash = bHash.getHash()
         
-        ret = isinstance(onionrstorage.getData(onionrcore.Core(), bHash), type(None))
+        ret = isinstance(onionrstorage.getData(bHash), type(None))
 
         return not ret
 

@@ -19,17 +19,14 @@
 '''
 import time
 import stem
-import core
 from . import connectionserver, bootstrapservice
 from onionrutils import stringvalidators, basicrequests
-
+import config
 class OnionrServices:
     '''
         Create a client or server for connecting to peer interfaces
     '''
-    def __init__(self, onionr_core):
-        assert isinstance(onionr_core, core.Core)
-        self._core = onionr_core
+    def __init__(self):
         self.servers = {}
         self.clients = {}
         self.shutdown = False
@@ -45,11 +42,11 @@ class OnionrServices:
         TRY_WAIT = 3 # Seconds to wait before trying bootstrap again
         # HTTP is fine because .onion/i2p is encrypted/authenticated
         base_url = 'http://%s/' % (address,)
-        socks = self._core.config.get('tor.socksport')
+        socks = config.get('tor.socksport')
         for x in range(BOOTSTRAP_TRIES):
-            if basicrequests.do_get_request(self._core, base_url + 'ping', port=socks, ignoreAPI=True) == 'pong!':
+            if basicrequests.do_get_request(base_url + 'ping', port=socks, ignoreAPI=True) == 'pong!':
                 # if bootstrap sever is online, tell them our service address
-                connectionserver.ConnectionServer(peer, address, core_inst=self._core)
+                connectionserver.ConnectionServer(peer, address)
             else:
                 time.sleep(TRY_WAIT)
         else:

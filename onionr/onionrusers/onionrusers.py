@@ -21,11 +21,11 @@ import logger, onionrexceptions, json, sqlite3, time
 from onionrutils import stringvalidators, bytesconverter, epoch
 import unpaddedbase32
 import nacl.exceptions
-from coredb import keydb
+from coredb import keydb, dbfiles
 
-def deleteExpiredKeys(coreInst):
+def deleteExpiredKeys():
     # Fetch the keys we generated for the peer, that are still around
-    conn = sqlite3.connect(coreInst.forwardKeysFile, timeout=10)
+    conn = sqlite3.connect(dbfiles.forward_keys_db, timeout=10)
     c = conn.cursor()
 
     curTime = epoch.get_epoch()
@@ -35,8 +35,8 @@ def deleteExpiredKeys(coreInst):
     conn.close()
     return
 
-def deleteTheirExpiredKeys(coreInst, pubkey):
-    conn = sqlite3.connect(coreInst.peerDB, timeout=10)
+def deleteTheirExpiredKeys(pubkey):
+    conn = sqlite3.connect(dbfiles.user_id_info_db, timeout=10)
     c = conn.cursor()
 
     # Prepare the insert
@@ -51,40 +51,41 @@ DEFAULT_KEY_EXPIRE = 604800
 #DEFAULT_KEY_EXPIRE = 600
 
 class OnionrUser:
-    def __init__(self, coreInst, publicKey, saveUser=False):
+
+    def __init__(self, crypto_inst, publicKey, saveUser=False):
         '''
             OnionrUser is an abstraction for "users" of the network. 
             
-            Takes an instance of onionr core, a base32 encoded ed25519 public key, and a bool saveUser
+            Takes a base32 encoded ed25519 public key, and a bool saveUser
             saveUser determines if we should add a user to our peer database or not.
         '''
+        self.crypto = crypto_inst
         publicKey = unpaddedbase32.repad(bytesconverter.str_to_bytes(publicKey)).decode()
 
         self.trust = 0
-        self._core = coreInst
         self.publicKey = publicKey
 
         if saveUser:
             try:
-                self._core.addPeer(publicKey)
+                keydb.addkeys.add_peer(publicKey)
             except AssertionError:
                 pass
 
-        self.trust = self._core.getPeerInfo(self.publicKey, 'trust')
+        self.trust = keydb.userinfo.get_user_info(self.publicKey, 'trust')
         return
 
     def setTrust(self, newTrust):
         '''Set the peers trust. 0 = not trusted, 1 = friend, 2 = ultimate'''
-        self._core.setPeerInfo(self.publicKey, 'trust', newTrust)
+        keydb.userinfo.set_user_info(self.publicKey, 'trust', newTrust)
 
     def isFriend(self):
-        if self._core.getPeerInfo(self.publicKey, 'trust') == 1:
+        if keydb.userinfo.set_peer_info(self.publicKey, 'trust') == 1:
             return True
         return False
 
     def getName(self):
         retData = 'anonymous'
-        name = self._core.getPeerInfo(self.publicKey, 'name')
+        name = keydb.userinfo.get_user_info(self.publicKey, 'name')
         try:
             if len(name) > 0:
                 retData = name
@@ -93,20 +94,20 @@ class OnionrUser:
         return retData
 
     def encrypt(self, data):
-        encrypted = self._core._crypto.pubKeyEncrypt(data, self.publicKey, encodedData=True)
+        encrypted = self.crypto.pubKeyEncrypt(data, self.publicKey, encodedData=True)
         return encrypted
 
     def decrypt(self, data):
-        decrypted = self._core._crypto.pubKeyDecrypt(data, self.publicKey, encodedData=True)
+        decrypted = self.crypto.pubKeyDecrypt(data, self.publicKey, encodedData=True)
         return decrypted
 
     def forwardEncrypt(self, data):
-        deleteTheirExpiredKeys(self._core, self.publicKey)
-        deleteExpiredKeys(self._core)
+        deleteTheirExpiredKeys(self.publicKey)
+        deleteExpiredKeys()
         retData = ''
         forwardKey = self._getLatestForwardKey()
         if stringvalidators.validate_pub_key(forwardKey[0]):
-            retData = self._core._crypto.pubKeyEncrypt(data, forwardKey[0], encodedData=True)
+            retData = self.crypto.pubKeyEncrypt(data, forwardKey[0], encodedData=True)
         else:
             raise onionrexceptions.InvalidPubkey("No valid forward secrecy key available for this user")
         #self.generateForwardKey()
@@ -116,7 +117,7 @@ class OnionrUser:
         retData = ""
         for key in self.getGeneratedForwardKeys(False):
             try:
-                retData = self._core._crypto.pubKeyDecrypt(encrypted, privkey=key[1], encodedData=True)
+                retData = self.crypto.pubKeyDecrypt(encrypted, privkey=key[1], encodedData=True)
             except nacl.exceptions.CryptoError:
                 retData = False
             else:
@@ -128,7 +129,7 @@ class OnionrUser:
     def _getLatestForwardKey(self):
         # Get the latest forward secrecy key for a peer
         key = ""
-        conn = sqlite3.connect(self._core.peerDB, timeout=10)
+        conn = sqlite3.connect(dbfiles.user_id_info_db, timeout=10)
         c = conn.cursor()
 
         # TODO: account for keys created at the same time (same epoch)
@@ -142,7 +143,7 @@ class OnionrUser:
         return key
 
     def _getForwardKeys(self):
-        conn = sqlite3.connect(self._core.peerDB, timeout=10)
+        conn = sqlite3.connect(dbfiles.user_id_info_db, timeout=10)
         c = conn.cursor()
         keyList = []
 
@@ -157,11 +158,11 @@ class OnionrUser:
     def generateForwardKey(self, expire=DEFAULT_KEY_EXPIRE):
 
         # Generate a forward secrecy key for the peer
-        conn = sqlite3.connect(self._core.forwardKeysFile, timeout=10)
+        conn = sqlite3.connect(dbfiles.forward_keys_db, timeout=10)
         c = conn.cursor()
         # Prepare the insert
         time = epoch.get_epoch()
-        newKeys = self._core._crypto.generatePubKey()
+        newKeys = self.crypto.generatePubKey()
         newPub = bytesconverter.bytes_to_str(newKeys[0])
         newPriv = bytesconverter.bytes_to_str(newKeys[1])
 
@@ -175,7 +176,7 @@ class OnionrUser:
 
     def getGeneratedForwardKeys(self, genNew=True):
         # Fetch the keys we generated for the peer, that are still around
-        conn = sqlite3.connect(self._core.forwardKeysFile, timeout=10)
+        conn = sqlite3.connect(dbfiles.forward_keys_db, timeout=10)
         c = conn.cursor()
         pubkey = self.publicKey
         pubkey = bytesconverter.bytes_to_str(pubkey)
@@ -197,7 +198,7 @@ class OnionrUser:
             # Do not add if something went wrong with the key
             raise onionrexceptions.InvalidPubkey(newKey)
 
-        conn = sqlite3.connect(self._core.peerDB, timeout=10)
+        conn = sqlite3.connect(dbfiles.user_id_info_db, timeout=10)
         c = conn.cursor()
 
         # Get the time we're inserting the key at
@@ -222,8 +223,8 @@ class OnionrUser:
         return True
     
     @classmethod
-    def list_friends(cls, coreInst):
+    def list_friends(cls):
         friendList = []
-        for x in coreInst.listPeers(trust=1):
-            friendList.append(cls(coreInst, x))
+        for x in keydb.listkeys.list_peers(trust=1):
+            friendList.append(cls(x))
         return list(friendList)

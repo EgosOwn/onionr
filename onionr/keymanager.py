@@ -18,17 +18,15 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 from onionrutils import bytesconverter
-import onionrcrypto
+from onionrcrypto import generate
+import filepaths
 class KeyManager:
-    def __init__(self, crypto):
-        assert isinstance(crypto, onionrcrypto.OnionrCrypto)
-        self._core = crypto._core
-        self.keyFile = crypto._keyFile
-        self.crypto = crypto
+    def __init__(self):
+        self.keyFile = filepaths.keys_file
 
     def addKey(self, pubKey=None, privKey=None):
         if type(pubKey) is type(None) and type(privKey) is type(None):
-            pubKey, privKey = self.crypto.generatePubKey()
+            pubKey, privKey = generate.generate_pub_key()
         pubKey = bytesconverter.bytes_to_str(pubKey)
         privKey = bytesconverter.bytes_to_str(privKey)
         try:
@@ -71,10 +69,3 @@ class KeyManager:
             if pubKey in pair:
                 privKey = pair.split(',')[1]
         return privKey
-    
-    def changeActiveKey(self, pubKey):
-        '''Change crypto.pubKey and crypto.privKey to a given key pair by specifying the public key'''
-        if not pubKey in self.getPubkeyList():
-            raise ValueError('That pubkey does not exist')
-        self.crypto.pubKey = pubKey
-        self.crypto.privKey = self.getPrivkey(pubKey)

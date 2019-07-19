@@ -22,22 +22,18 @@
 import subprocess, os
 import multiprocessing, threading, time, json
 from multiprocessing import Pipe, Process
-import core, onionrblockapi, config, onionrutils, logger, onionrproofs
+import onionrblockapi, config, onionrutils, logger, onionrproofs, onionrcrypto
 from onionrutils import bytesconverter
-
+crypto = onionrcrypto.OnionrCrypto()
 class SubprocessPOW:
-    def __init__(self, data, metadata, core_inst=None, subproc_count=None):
+    def __init__(self, data, metadata, subproc_count=None):
         '''
             Onionr proof of work using multiple processes
-            Accepts block data, block metadata 
-            and optionally an onionr core library instance.
+            Accepts block data, block metadata
             if subproc_count is not set, os.cpu_count() is used to determine the number of processes
 
             Do to Python GIL multiprocessing or use of external libraries is necessary to accelerate CPU bound tasks
         '''
-        # Option to accept existing core instance to save memory
-        if core_inst is None:
-            core_inst = core.Core()
         # No known benefit to using more processes than there are cores.
         # Note: os.cpu_count perhaps not always accurate
         if subproc_count is None:
@@ -45,7 +41,6 @@ class SubprocessPOW:
         self.subproc_count = subproc_count
         self.result = ''
         self.shutdown = False
-        self.core_inst = core_inst
         self.data = data
         self.metadata = metadata
 
@@ -54,7 +49,7 @@ class SubprocessPOW:
 
         self.data = bytesconverter.str_to_bytes(data)
         # Calculate difficulty. Dumb for now, may use good algorithm in the future.
-        self.difficulty = onionrproofs.getDifficultyForNewBlock(bytes(json_metadata + b'\n' + self.data), coreInst=self.core_inst)
+        self.difficulty = onionrproofs.getDifficultyForNewBlock(bytes(json_metadata + b'\n' + self.data)
         
         logger.info('Computing POW (difficulty: %s)...' % self.difficulty)
 
@@ -101,7 +96,6 @@ class SubprocessPOW:
         metadata = self.metadata
         puzzle = self.puzzle
         difficulty = self.difficulty
-        mcore = core.Core() # I think we make a new core here because of multiprocess bugs
         while True:
             # Break if shutdown received
             if pipe.poll() and pipe.recv() == 'shutdown':
@@ -111,7 +105,7 @@ class SubprocessPOW:
             # Serialize metadata, combine with block data
             payload = json.dumps(metadata).encode() + b'\n' + data
             # Check sha3_256 hash of block, compare to puzzle. Send payload if puzzle finished
-            token = mcore._crypto.sha3Hash(payload)
+            token = crypto.sha3Hash(payload)
             token = bytesconverter.bytes_to_str(token) # ensure token is string
             if puzzle == token[0:difficulty]:
                 pipe.send(payload)

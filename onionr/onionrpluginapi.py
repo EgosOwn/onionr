@@ -18,7 +18,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 
-import onionrplugins, core as onionrcore, logger
+import onionrplugins, logger, onionrcrypto
 from onionrutils import localcommand
 from coredb import daemonqueue
 class DaemonAPI:
@@ -39,7 +39,7 @@ class DaemonAPI:
         return daemonqueue.daemon_queue_add(command, data)
 
     def local_command(self, command):
-        return localcommand.local_command(self.pluginapi.get_core(), command)
+        return localcommand.local_command(command)
 
     def queue_pop(self):
         return daemonqueue.daemon_queue()
@@ -149,15 +149,12 @@ class pluginapi:
     def __init__(self, onionr, data):
         self.onionr = onionr
         self.data = data
-        if self.onionr is None:
-            self.core = onionrcore.Core()
-        else:
-            self.core = self.onionr.onionrCore
 
         self.daemon = DaemonAPI(self)
         self.plugins = PluginAPI(self)
         self.commands = CommandAPI(self)
         self.web = WebAPI(self)
+        self.crypto = onionrcrypto.OnionrCrypto()
 
     def get_onionr(self):
         return self.onionr
@@ -165,11 +162,8 @@ class pluginapi:
     def get_data(self):
         return self.data
 
-    def get_core(self):
-        return self.core
-
     def get_crypto(self):
-        return self.get_core()._crypto
+        return self.crypto
 
     def get_daemonapi(self):
         return self.daemon

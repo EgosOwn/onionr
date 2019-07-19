@@ -21,13 +21,14 @@ import os, json, onionrexceptions
 import unpaddedbase32
 from onionrusers import onionrusers
 from onionrutils import bytesconverter, epoch
-
+from utils import identifyhome
 class ContactManager(onionrusers.OnionrUser):
-    def __init__(self, coreInst, publicKey, saveUser=False, recordExpireSeconds=5):
+    def __init__(self, publicKey, saveUser=False, recordExpireSeconds=5):
         publicKey = unpaddedbase32.repad(bytesconverter.str_to_bytes(publicKey)).decode()
-        super(ContactManager, self).__init__(coreInst, publicKey, saveUser=saveUser)
-        self.dataDir = coreInst.dataDir + '/contacts/'
-        self.dataFile = '%s/contacts/%s.json' % (coreInst.dataDir, publicKey)
+        super(ContactManager, self).__init__(publicKey, saveUser=saveUser)
+        home = identifyhome.identify_home()
+        self.dataDir = home + '/contacts/'
+        self.dataFile = '%s/contacts/%s.json' % (home, publicKey)
         self.lastRead = 0
         self.recordExpire = recordExpireSeconds
         self.data = self._loadData()

@@ -21,7 +21,7 @@
 # Imports some useful libraries
 import threading, time, locale, sys, os
 from onionrblockapi import Block
-import logger, config
+import logger, config, onionrblocks
 from onionrutils import escapeansi, epoch
 locale.setlocale(locale.LC_ALL, '')
 from coredb import blockmetadb
@@ -34,7 +34,6 @@ PLUGIN_VERSION = '0.0.1'
 
 class OnionrFlow:
     def __init__(self):
-        self.myCore = pluginapi.get_core()
         self.alreadyOutputed = []
         self.flowRunning = False
         self.channel = None
@@ -63,7 +62,7 @@ class OnionrFlow:
                 expireTime = epoch.get_epoch() + 43200
                 if len(message) > 0:
                     logger.info('Inserting message as block...', terminal=True)
-                    self.myCore.insertBlock(message, header='txt', expire=expireTime, meta={'ch': self.channel})
+                    onionrblocks.insert(message, header='txt', expire=expireTime, meta={'ch': self.channel})
 
         logger.info("Flow is exiting, goodbye", terminal=True)
         return

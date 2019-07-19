@@ -18,19 +18,18 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 import multiprocessing, nacl.encoding, nacl.hash, nacl.utils, time, math, threading, binascii, sys, json
-import core, config, logger, onionrblockapi
+import config, logger, onionrblockapi, storagecounter, onionrcrypto
 from onionrutils import bytesconverter
 
 config.reload()
-
-def getDifficultyModifier(coreOrUtilsInst=None):
-    '''Accepts a core or utils instance returns 
-    the difficulty modifier for block storage based 
+crypto = onionrcrypto.OnionrCrypto()
+def getDifficultyModifier():
+    '''returns the difficulty modifier for block storage based 
     on a variety of factors, currently only disk use.
     '''
     classInst = coreOrUtilsInst
     retData = 0
-    useFunc = classInst.storage_counter.getPercent
+    useFunc = storagecounter.StorageCounter().getPercent
 
     percentUse = useFunc()
 
@@ -43,7 +42,7 @@ def getDifficultyModifier(coreOrUtilsInst=None):
 
     return retData
 
-def getDifficultyForNewBlock(data, ourBlock=True, coreInst=None):
+def getDifficultyForNewBlock(data, ourBlock=True):
     '''
     Get difficulty for block. Accepts size in integer, Block instance, or str/bytes full block contents
     '''
@@ -59,7 +58,7 @@ def getDifficultyForNewBlock(data, ourBlock=True, coreInst=None):
     else:
         minDifficulty = config.get('general.minimum_block_pow', 4)
 
-    retData = max(minDifficulty, math.floor(dataSize / 100000)) + getDifficultyModifier(coreInst)
+    retData = max(minDifficulty, math.floor(dataSize / 100000)) + getDifficultyModifier()
 
     return retData
 
@@ -118,12 +117,11 @@ class DataPOW:
         self.mainHash = '0' * 70
         self.puzzle = self.mainHash[0:min(self.difficulty, len(self.mainHash))]
         
-        myCore = core.Core()
         for i in range(max(1, threadCount)):
-            t = threading.Thread(name = 'thread%s' % i, target = self.pow, args = (True,myCore))
+            t = threading.Thread(name = 'thread%s' % i, target = self.pow, args = (True))
             t.start()
 
-    def pow(self, reporting = False, myCore = None):
+    def pow(self, reporting = False):
         startTime = math.floor(time.time())
         self.hashing = True
         self.reporting = reporting
@@ -187,19 +185,12 @@ class DataPOW:
         return result
 
 class POW:
-    def __init__(self, metadata, data, threadCount = 1, forceDifficulty=0, coreInst=None):
+    def __init__(self, metadata, data, threadCount = 1, forceDifficulty=0):
         self.foundHash = False
         self.difficulty = 0
         self.data = data
         self.metadata = metadata
         self.threadCount = threadCount
-
-        try:
-            assert isinstance(coreInst, core.Core)
-        except AssertionError:
-            myCore = core.Core()
-        else:
-            myCore = coreInst
 
         json_metadata = json.dumps(metadata).encode()
 
@@ -212,21 +203,18 @@ class POW:
             self.difficulty = forceDifficulty
         else:
             # Calculate difficulty. Dumb for now, may use good algorithm in the future.
-            self.difficulty = getDifficultyForNewBlock(bytes(json_metadata + b'\n' + self.data), coreInst=myCore)
+            self.difficulty = getDifficultyForNewBlock(bytes(json_metadata + b'\n' + self.data))
             
-        
-        logger.info('Computing POW (difficulty: %s)...' % self.difficulty)
+        logger.info('Computing POW (difficulty: %s)...' % (self.difficulty,))
 
         self.mainHash = '0' * 64
         self.puzzle = self.mainHash[0:min(self.difficulty, len(self.mainHash))]
 
         for i in range(max(1, threadCount)):
-            t = threading.Thread(name = 'thread%s' % i, target = self.pow, args = (True,myCore))
+            t = threading.Thread(name = 'thread%s' % i, target = self.pow, args = (True))
             t.start()
-        self.myCore = myCore
-        return
 
-    def pow(self, reporting = False, myCore = None):
+    def pow(self, reporting = False):
         startTime = math.floor(time.time())
         self.hashing = True
         self.reporting = reporting
@@ -239,7 +227,7 @@ class POW:
             #token = nacl.hash.blake2b(rand + self.data).decode()
             self.metadata['pow'] = nonce
             payload = json.dumps(self.metadata).encode() + b'\n' + self.data
-            token = myCore._crypto.sha3Hash(payload)
+            token = crypto.sha3Hash(payload)
             try:
                 # on some versions, token is bytes
                 token = token.decode()

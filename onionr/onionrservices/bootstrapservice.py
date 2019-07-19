@@ -21,17 +21,14 @@ import time, threading, uuid
 from gevent.pywsgi import WSGIServer, WSGIHandler
 from stem.control import Controller
 from flask import Flask, Response
-import core
 from netcontroller import get_open_port
 from . import httpheaders
 from onionrutils import stringvalidators, epoch
 
-def bootstrap_client_service(peer, core_inst=None, bootstrap_timeout=300):
+def bootstrap_client_service(peer, onionr_inst=None, bootstrap_timeout=300):
     '''
         Bootstrap client services
     '''
-    if core_inst is None:
-        core_inst = core.Core()
     
     if not stringvalidators.validate_pub_key(peer):
         raise ValueError('Peer must be valid base32 ed25519 public key')
@@ -40,11 +37,11 @@ def bootstrap_client_service(peer, core_inst=None, bootstrap_timeout=300):
     bootstrap_app = Flask(__name__)
     http_server = WSGIServer(('127.0.0.1', bootstrap_port), bootstrap_app, log=None)
     try:
-        assert core_inst.onionrInst.communicatorInst is not None
+        assert onionr_inst.communicatorInst is not None
     except (AttributeError, AssertionError) as e:
         pass
     else:
-        core_inst.onionrInst.communicatorInst.service_greenlets.append(http_server)
+        onionr_inst.communicatorInst.service_greenlets.append(http_server)
     
     bootstrap_address = ''
     shutdown = False
@@ -71,9 +68,9 @@ def bootstrap_client_service(peer, core_inst=None, bootstrap_timeout=300):
         else:
             return Response("")
 
-    with Controller.from_port(port=core_inst.config.get('tor.controlPort')) as controller:
+    with Controller.from_port(port=onionr_inst.config.get('tor.controlPort')) as controller:
         # Connect to the Tor process for Onionr
-        controller.authenticate(core_inst.config.get('tor.controlpassword'))
+        controller.authenticate(onionr_inst.config.get('tor.controlpassword'))
         # Create the v3 onion service
         response = controller.create_ephemeral_hidden_service({80: bootstrap_port}, key_type = 'NEW', key_content = 'ED25519-V3', await_publication = True)
         core_inst.insertBlock(response.service_id, header='con', sign=True, encryptType='asym', 
@@ -86,4 +83,4 @@ def bootstrap_client_service(peer, core_inst=None, bootstrap_timeout=300):
         # This line reached when server is shutdown by being bootstrapped
     
     # Now that the bootstrap server has received a server, return the address
-    return core_inst.keyStore.get(bs_id)
+    return onionr_inst.keyStore.get(bs_id)

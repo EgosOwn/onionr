@@ -18,21 +18,25 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 import logger
-def mergeAdders(newAdderList, coreInst):
+from coredb import keydb
+import config, onionrblacklist
+from utils import gettransports
+def mergeAdders(newAdderList):
     '''
         Merge peer adders list to our database
     '''
+    blacklist = onionrblacklist.OnionrBlackList()
     try:
         retVal = False
         if newAdderList != False:
             for adder in newAdderList.split(','):
                 adder = adder.strip()
-                if not adder in coreInst.listAdders(randomOrder = False) and adder != coreInst.hsAddress and not coreInst._blacklist.inBlacklist(adder):
-                    if not coreInst.config.get('tor.v3onions') and len(adder) == 62:
+                if not adder in keydb.listkeys.list_adders(randomOrder = False) and adder != gettransports.transports[0] and not blacklist.inBlacklist(adder):
+                    if not config.get('tor.v3onions') and len(adder) == 62:
                         continue
-                    if coreInst.addAddress(adder):
-                        # Check if we have the maxmium amount of allowed stored peers
-                        if coreInst.config.get('peers.max_stored_peers') > len(coreInst.listAdders()):
+                    if keydb.addkeys.add_address(adder):
+                        # Check if we have the maximum amount of allowed stored peers
+                        if config.get('peers.max_stored_peers') > len(keydb.listkeys.list_adders()):
                             logger.info('Added %s to db.' % adder, timestamp = True)
                             retVal = True
                         else:

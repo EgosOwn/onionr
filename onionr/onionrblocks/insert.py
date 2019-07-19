@@ -1,17 +1,17 @@
 import json
 from onionrutils import bytesconverter, epoch
-import storagecounter, filepaths, onionrvalues, onionrstorage
+import storagecounter, filepaths, onionrstorage
 import onionrevents as events
-from etc import powchoice
-crypto = onionrcrypto.OnionrCrypto()
-use_subprocess = powchoice.use_subprocess()
-def insert_block(data, header='txt', sign=False, encryptType='', symKey='', asymPeer='', meta = {}, expire=None, disableForward=False):
+from etc import powchoice, onionrvalues
+def insert_block(onionr_inst, data, header='txt', sign=False, encryptType='', symKey='', asymPeer='', meta = {}, expire=None, disableForward=False):
     '''
         Inserts a block into the network
         encryptType must be specified to encrypt a block
     '''
+    use_subprocess = powchoice.use_subprocess(onionr_inst.config)
     requirements = onionrvalues.OnionrValues()
     storage_counter = storagecounter.StorageCounter()
+    crypto = onionr_inst.crypto
     allocationReachedMessage = 'Cannot insert block, disk allocation reached.'
     if storage_counter.isFull():
         logger.error(allocationReachedMessage)
@@ -23,7 +23,7 @@ def insert_block(data, header='txt', sign=False, encryptType='', symKey='', asym
 
     createTime = epoch.get_epoch()
 
-    dataNonce = bytesconverter.bytes_to_str(crypto.sha3Hash(data))
+    dataNonce = bytesconverter.bytes_to_str(hashers.sha3_hash(data))
     try:
         with open(filepaths.data_nonce_file, 'r') as nonces:
             if dataNonce in nonces:

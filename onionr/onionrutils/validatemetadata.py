@@ -21,9 +21,12 @@ import json
 import logger, onionrexceptions
 from etc import onionrvalues
 from onionrutils import stringvalidators, epoch, bytesconverter
-def validate_metadata(core_inst, metadata, blockData):
+import config, onionrvalues, filepaths, onionrcrypto
+def validate_metadata(metadata, blockData):
     '''Validate metadata meets onionr spec (does not validate proof value computation), take in either dictionary or json string'''
     # TODO, make this check sane sizes
+    crypto = onionrcrypto.OnionrCrypto()
+    requirements = onionrvalues.OnionrValues()
     retData = False
     maxClockDifference = 120
 
@@ -35,11 +38,11 @@ def validate_metadata(core_inst, metadata, blockData):
             pass
 
     # Validate metadata dict for invalid keys to sizes that are too large
-    maxAge = core_inst.config.get("general.max_block_age", onionrvalues.OnionrValues().default_expire)
+    maxAge = config.get("general.max_block_age", onionrvalues.OnionrValues().default_expire)
     if type(metadata) is dict:
         for i in metadata:
             try:
-                core_inst.requirements.blockMetadataLengths[i]
+                requirements.blockMetadataLengths[i]
             except KeyError:
                 logger.warn('Block has invalid metadata key ' + i)
                 break
@@ -49,7 +52,7 @@ def validate_metadata(core_inst, metadata, blockData):
                     testData = len(testData)
                 except (TypeError, AttributeError) as e:
                     testData = len(str(testData))
-                if core_inst.requirements.blockMetadataLengths[i] < testData:
+                if requirements.blockMetadataLengths[i] < testData:
                     logger.warn('Block metadata key ' + i + ' exceeded maximum size')
                     break
             if i == 'time':
@@ -78,9 +81,9 @@ def validate_metadata(core_inst, metadata, blockData):
         else:
             # if metadata loop gets no errors, it does not break, therefore metadata is valid
             # make sure we do not have another block with the same data content (prevent data duplication and replay attacks)
-            nonce = bytesconverter.bytes_to_str(core_inst._crypto.sha3Hash(blockData))
+            nonce = bytesconverter.bytes_to_str(crypto.sha3Hash(blockData))
             try:
-                with open(core_inst.dataNonceFile, 'r') as nonceFile:
+                with open(filepaths.data_nonce_file, 'r') as nonceFile:
                     if nonce in nonceFile.read():
                         retData = False # we've seen that nonce before, so we can't pass metadata
                         raise onionrexceptions.DataExists

@@ -21,12 +21,13 @@ import sqlite3
 import logger
 from onionrutils import epoch
 from . import scoresortedpeerlist, peerprofiles
-def peer_cleanup(core_inst):
+import onionrblacklist
+from coredb import keydb
+def peer_cleanup(onionr_inst):
     '''Removes peers who have been offline too long or score too low'''
-    config = core_inst.config
     logger.info('Cleaning peers...')
-
-    adders = scoresortedpeerlist.get_score_sorted_peer_list(core_inst)
+    blacklist = onionrblacklist.OnionrBlackList()
+    adders = scoresortedpeerlist.get_score_sorted_peer_list()
     adders.reverse()
     
     if len(adders) > 1:
@@ -36,14 +37,14 @@ def peer_cleanup(core_inst):
 
         for address in adders:
             # Remove peers that go below the negative score
-            if peerprofiles.PeerProfiles(address, core_inst).score < min_score:
-                core_inst.removeAddress(address)
+            if peerprofiles.PeerProfiles(address).score < min_score:
+                keydb.removekeys.remove_address(address)
                 try:
-                    if (int(epoch.get_epoch()) - int(core_inst.getPeerInfo(address, 'dateSeen'))) >= 600:
+                    if (int(epoch.get_epoch()) - int(keydb.transportinfo.get_address_info(address, 'dateSeen'))) >= 600:
                         expireTime = 600
                     else:
                         expireTime = 86400
-                    core_inst._blacklist.addToDB(address, dataType=1, expire=expireTime)
+                    blacklist.addToDB(address, dataType=1, expire=expireTime)
                 except sqlite3.IntegrityError: #TODO just make sure its not a unique constraint issue
                     pass
                 except ValueError:
@@ -51,4 +52,4 @@ def peer_cleanup(core_inst):
                 logger.warn('Removed address ' + address + '.')
 
     # Unban probably not malicious peers TODO improve
-    core_inst._blacklist.deleteExpired(dataType=1)
+    blacklist.deleteExpired(dataType=1)

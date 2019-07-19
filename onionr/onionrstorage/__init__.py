@@ -17,31 +17,31 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import core, sys, sqlite3, os, dbcreator, onionrexceptions
+import sys, sqlite3, os
 from onionrutils import bytesconverter, stringvalidators
-
+from coredb import dbfiles
+import filepaths, onionrcrypto, dbcreator, onionrexceptions
+from onionrcrypto import hashers
 DB_ENTRY_SIZE_LIMIT = 10000 # Will be a config option
 
-def dbCreate(coreInst):
+def dbCreate():
     try:
-        dbcreator.DBCreator(coreInst).createBlockDataDB()
+        dbcreator.DBCreator().createBlockDataDB()
     except FileExistsError:
         pass
 
-def _dbInsert(coreInst, blockHash, data):
-    assert isinstance(coreInst, core.Core)
-    dbCreate(coreInst)
-    conn = sqlite3.connect(coreInst.blockDataDB, timeout=10)
+def _dbInsert(blockHash, data):
+    dbCreate()
+    conn = sqlite3.connect(dbfiles.block_data_db, timeout=10)
     c = conn.cursor()
     data = (blockHash, data)
     c.execute('INSERT INTO blockData (hash, data) VALUES(?, ?);', data)
     conn.commit()
     conn.close()
 
-def _dbFetch(coreInst, blockHash):
-    assert isinstance(coreInst, core.Core)
-    dbCreate(coreInst)
-    conn = sqlite3.connect(coreInst.blockDataDB, timeout=10)
+def _dbFetch(blockHash):
+    dbCreate()
+    conn = sqlite3.connect(dbfiles.block_data_db, timeout=10)
     c = conn.cursor()
     for i in c.execute('SELECT data from blockData where hash = ?', (blockHash,)):
         return i[0]
@@ -49,14 +49,13 @@ def _dbFetch(coreInst, blockHash):
     conn.close()
     return None
 
-def deleteBlock(coreInst, blockHash):
+def deleteBlock(blockHash):
     # You should call core.removeBlock if you automatically want to remove storage byte count
-    assert isinstance(coreInst, core.Core)
-    if os.path.exists('%s/%s.dat' % (coreInst.blockDataLocation, blockHash)):
-        os.remove('%s/%s.dat' % (coreInst.blockDataLocation, blockHash))
+    if os.path.exists('%s/%s.dat' % (filepaths.block_data_location, blockHash)):
+        os.remove('%s/%s.dat' % (filepaths.block_data_location, blockHash))
         return True
-    dbCreate(coreInst)
-    conn = sqlite3.connect(coreInst.blockDataDB, timeout=10)
+    dbCreate()
+    conn = sqlite3.connect(dbfiles.block_data_db, timeout=10)
     c = conn.cursor()
     data = (blockHash,)
     c.execute('DELETE FROM blockData where hash = ?', data)
@@ -64,23 +63,21 @@ def deleteBlock(coreInst, blockHash):
     conn.close()
     return True
 
-def store(coreInst, data, blockHash=''):
-    assert isinstance(coreInst, core.Core)
+def store(data, blockHash=''):
     assert stringvalidators.validate_hash(blockHash)
-    ourHash = coreInst._crypto.sha3Hash(data)
+    ourHash = hashers.sha3_hash(data)
     if blockHash != '':
         assert ourHash == blockHash
     else:
         blockHash = ourHash
     
     if DB_ENTRY_SIZE_LIMIT >= sys.getsizeof(data):
-        _dbInsert(coreInst, blockHash, data)
+        _dbInsert(blockHash, data)
     else:
-        with open('%s/%s.dat' % (coreInst.blockDataLocation, blockHash), 'wb') as blockFile:
+        with open('%s/%s.dat' % (filepaths.block_data_location, blockHash), 'wb') as blockFile:
             blockFile.write(data)
 
-def getData(coreInst, bHash):
-    assert isinstance(coreInst, core.Core)
+def getData(bHash):
     assert stringvalidators.validate_hash(bHash)
 
     bHash = bytesconverter.bytes_to_str(bHash)
@@ -89,7 +86,7 @@ def getData(coreInst, bHash):
     # if no entry, check disk
     # If no entry in either, raise an exception
     retData = None
-    fileLocation = '%s/%s.dat' % (coreInst.blockDataLocation, bHash)
+    fileLocation = '%s/%s.dat' % (filepaths.block_data_location, bHash)
     if os.path.exists(fileLocation):
         with open(fileLocation, 'rb') as block:
             retData = block.read()

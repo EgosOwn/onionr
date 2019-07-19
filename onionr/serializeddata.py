@@ -18,10 +18,10 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 
-import core, json
+import json
 from coredb import blockmetadb
 class SerializedData:
-    def __init__(self, coreInst):
+    def __init__(self, o_inst):
         '''
         Serialized data is in JSON format:
         {
@@ -30,14 +30,13 @@ class SerializedData:
             etc
         }
         '''
-        assert isinstance(coreInst, core.Core)
-        self._core = coreInst
+        self.o_inst = o_inst
     
     def getStats(self):
         '''Return statistics about our node'''
         stats = {}
-        stats['uptime'] = self._core.onionrInst.communicatorInst.getUptime()
-        stats['connectedNodes'] = '\n'.join(self._core.onionrInst.communicatorInst.onlinePeers)
+        stats['uptime'] = self.o_inst.communicatorInst.getUptime()
+        stats['connectedNodes'] = '\n'.join(self.o_inst.communicatorInst.onlinePeers)
         stats['blockCount'] = len(blockmetadb.get_block_list())
-        stats['blockQueueCount'] = len(self._core.onionrInst.communicatorInst.blockQueue)
+        stats['blockQueueCount'] = len(self.o_inst.communicatorInst.blockQueue)
         return json.dumps(stats)

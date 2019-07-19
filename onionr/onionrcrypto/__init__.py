@@ -25,6 +25,7 @@ from onionrutils import stringvalidators, epoch, bytesconverter
 import filepaths
 import onionrexceptions, keymanager, onionrutils
 import config
+from . import generate, hashers
 config.reload()
 
 class OnionrCrypto:
@@ -175,9 +176,7 @@ class OnionrCrypto:
 
     def generatePubKey(self):
         '''Generate a Ed25519 public key pair, return tuple of base32encoded pubkey, privkey'''
-        private_key = nacl.signing.SigningKey.generate()
-        public_key = private_key.verify_key.encode(encoder=nacl.encoding.Base32Encoder())
-        return (public_key.decode(), private_key.encode(encoder=nacl.encoding.Base32Encoder()).decode())
+        return generate.generate_pub_key()
 
     def generateDeterministic(self, passphrase, bypassCheck=False):
         '''Generate a Ed25519 public key pair from a password'''
@@ -215,20 +214,10 @@ class OnionrCrypto:
         return result
 
     def sha3Hash(self, data):
-        try:
-            data = data.encode()
-        except AttributeError:
-            pass
-        hasher = hashlib.sha3_256()
-        hasher.update(data)
-        return hasher.hexdigest()
+        return hashers.sha3_hash(data)
 
     def blake2bHash(self, data):
-        try:
-            data = data.encode()
-        except AttributeError:
-            pass
-        return nacl.hash.blake2b(data)
+        return hashers.blake2b_hash(data)
 
     def verifyPow(self, blockContent):
         '''

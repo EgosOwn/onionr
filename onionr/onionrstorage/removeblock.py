@@ -1,7 +1,9 @@
 import sys, sqlite3
 import onionrexceptions, onionrstorage
 from onionrutils import stringvalidators
-def remove_block(core_inst, block):
+from coredb import dbfiles
+import storagecounter
+def remove_block(block):
     '''
         remove a block from this node (does not automatically blacklist)
 
@@ -9,13 +11,13 @@ def remove_block(core_inst, block):
     '''
 
     if stringvalidators.validate_hash(block):
-        conn = sqlite3.connect(core_inst.blockDB, timeout=30)
+        conn = sqlite3.connect(dbfiles.block_data_db, timeout=30)
         c = conn.cursor()
         t = (block,)
         c.execute('Delete from hashes where hash=?;', t)
         conn.commit()
         conn.close()
-        dataSize = sys.getsizeof(onionrstorage.getData(core_inst, block))
-        core_inst.storage_counter.removeBytes(dataSize)
+        dataSize = sys.getsizeof(onionrstorage.getData(block))
+        storagecounter.StorageCounter().removeBytes(dataSize)
     else:
         raise onionrexceptions.InvalidHexHash

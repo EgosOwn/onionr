@@ -18,14 +18,15 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 from . import peerprofiles
-def get_score_sorted_peer_list(coreInst):
-    peer_list = coreInst.listAdders()
+from coredb import keydb
+def get_score_sorted_peer_list():
+    peer_list = keydb.listkeys.list_adders()
     peer_scores = {}
     peer_times = {}
 
     for address in peer_list:
         # Load peer's profiles into a list
-        profile = peerprofiles.PeerProfiles(address, coreInst)
+        profile = peerprofiles.PeerProfiles(address)
         peer_scores[address] = profile.score
         if not isinstance(profile.connectTime, type(None)):
             peer_times[address] = profile.connectTime

@@ -17,19 +17,19 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import core, onionrexceptions, logger
+import onionrexceptions, logger
 from onionrutils import validatemetadata, blockmetadata
 from coredb import blockmetadb
-def importBlockFromData(content, coreInst):
+import onionrcrypto, onionrblacklist, onionrstorage
+def importBlockFromData(content):
+    crypto = onionrcrypto.OnionrCrypto()
+    blacklist = onionrblacklist.OnionrBlackList()
     retData = False
 
-    dataHash = coreInst._crypto.sha3Hash(content)
+    dataHash = crypto.sha3Hash(content)
 
-    if coreInst._blacklist.inBlacklist(dataHash):
+    if blacklist.inBlacklist(dataHash):
         raise onionrexceptions.BlacklistedBlock('%s is a blacklisted block' % (dataHash,))
-
-    if not isinstance(coreInst, core.Core):
-        raise Exception("coreInst must be an Onionr core instance")
 
     try:
         content = content.encode()
@@ -38,15 +38,15 @@ def importBlockFromData(content, coreInst):
 
     metas = blockmetadata.get_block_metadata_from_data(content) # returns tuple(metadata, meta), meta is also in metadata
     metadata = metas[0]
-    if validatemetadata.validate_metadata(coreInst, metadata, metas[2]): # check if metadata is valid
-        if coreInst._crypto.verifyPow(content): # check if POW is enough/correct
+    if validatemetadata.validate_metadata(metadata, metas[2]): # check if metadata is valid
+        if crypto.verifyPow(content): # check if POW is enough/correct
             logger.info('Block passed proof, saving.', terminal=True)
             try:
-                blockHash = coreInst.setData(content)
+                blockHash = onionrstorage.setdata(content)
             except onionrexceptions.DiskAllocationReached:
                 pass
             else:
                 blockmetadb.add_to_block_DB(blockHash, dataSaved=True)
-                blockmetadata.process_block_metadata(coreInst, blockHash) # caches block metadata values to block database
+                blockmetadata.process_block_metadata(blockHash) # caches block metadata values to block database
                 retData = True
     return retData

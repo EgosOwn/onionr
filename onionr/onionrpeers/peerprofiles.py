@@ -21,15 +21,13 @@ class PeerProfiles:
     '''
         PeerProfiles
     '''
-    def __init__(self, address, coreInst):
+    def __init__(self, address):
         self.address = address # node address
         self.score = None
         self.friendSigCount = 0
         self.success = 0
         self.failure = 0
         self.connectTime = None
-
-        self.coreInst = coreInst
 
         self.loadScore()
         self.getConnectTime()

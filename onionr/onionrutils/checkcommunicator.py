@@ -18,9 +18,10 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 import time, os
-def is_communicator_running(core_inst, timeout = 5, interval = 0.1):
+import filepaths
+def is_communicator_running(timeout = 5, interval = 0.1):
     try:
-        runcheck_file = core_inst.dataDir + '.runcheck'
+        runcheck_file = filepaths.run_check_file
 
         if not os.path.isfile(runcheck_file):
             open(runcheck_file, 'w+').close()

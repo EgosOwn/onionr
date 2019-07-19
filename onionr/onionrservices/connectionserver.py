@@ -20,7 +20,7 @@
 from gevent.pywsgi import WSGIServer
 from stem.control import Controller
 from flask import Flask
-import core, logger, httpapi
+import logger, httpapi
 import onionrexceptions
 from netcontroller import get_open_port
 from httpapi import apiutils
@@ -28,21 +28,17 @@ from onionrutils import stringvalidators, basicrequests, bytesconverter
 from . import httpheaders
 
 class ConnectionServer:
-    def __init__(self, peer, address, core_inst=None):
-        if core_inst is None:
-            self.core_inst = core.Core()
-        else:
-            self.core_inst = core_inst
+    def __init__(self, peer, address, onionr_inst=None):
 
         if not stringvalidators.validate_pub_key(peer):
             raise ValueError('Peer must be valid base32 ed25519 public key')
         
-        socks = core_inst.config.get('tor.socksport') # Load config for Tor socks port for proxy
+        socks = onionr_inst.config.get('tor.socksport') # Load config for Tor socks port for proxy
         service_app = Flask(__name__) # Setup Flask app for server.
         service_port = get_open_port()
-        service_ip = apiutils.setbindip.set_bind_IP(core_inst=self.core_inst)
+        service_ip = apiutils.setbindip.set_bind_IP()
         http_server = WSGIServer(('127.0.0.1', service_port), service_app, log=None)
-        core_inst.onionrInst.communicatorInst.service_greenlets.append(http_server)
+        onionr_inst.communicatorInst.service_greenlets.append(http_server)
 
         # TODO define basic endpoints useful for direct connections like stats
         
@@ -54,7 +50,7 @@ class ConnectionServer:
         
         @service_app.route('/close')
         def shutdown_server():
-            core_inst.onionrInst.communicatorInst.service_greenlets.remove(http_server)
+            onionr_inst.communicatorInst.service_greenlets.remove(http_server)
             http_server.stop()
             return Response('goodbye')
 
@@ -64,15 +60,15 @@ class ConnectionServer:
             resp = httpheaders.set_default_onionr_http_headers(resp)
             return resp
 
-        with Controller.from_port(port=core_inst.config.get('tor.controlPort')) as controller:
+        with Controller.from_port(port=onionr_inst.config.get('tor.controlPort')) as controller:
             # Connect to the Tor process for Onionr
-            controller.authenticate(core_inst.config.get('tor.controlpassword'))
+            controller.authenticate(onionr_inst.config.get('tor.controlpassword'))
             # Create the v3 onion service for the peer to connect to
             response = controller.create_ephemeral_hidden_service({80: service_port}, await_publication = True, key_type='NEW', key_content = 'ED25519-V3')
 
             try:
                 for x in range(3):
-                    attempt = basicrequests.do_post_request(self.core_inst, 'http://' + address + '/bs/' + response.service_id, port=socks)
+                    attempt = basicrequests.do_post_request('http://' + address + '/bs/' + response.service_id, port=socks)
                     if attempt == 'success':
                         break
                 else:
@@ -82,8 +78,8 @@ class ConnectionServer:
                 raise ConnectionError('Could not reach %s bootstrap address %s' % (peer, address))
             else:
                 # If no connection error, create the service and save it to local global key store
-                self.core_inst.keyStore.put('dc-' + response.service_id, bytesconverter.bytes_to_str(peer))
+                self.onionr_inst.keyStore.put('dc-' + response.service_id, bytesconverter.bytes_to_str(peer))
                 logger.info('hosting on %s with %s' % (response.service_id,  peer))
                 http_server.serve_forever()
                 http_server.stop()
-                self.core_inst.keyStore.delete('dc-' + response.service_id)
+                self.onionr_inst.keyStore.delete('dc-' + response.service_id)

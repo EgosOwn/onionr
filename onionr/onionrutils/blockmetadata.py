@@ -53,12 +53,12 @@ def get_block_metadata_from_data(blockData):
         meta = metadata['meta']
     return (metadata, meta, data)
 
-def process_block_metadata(core_inst, blockHash):
+def process_block_metadata(blockHash):
     '''
         Read metadata from a block and cache it to the block database
     '''
     curTime = epoch.get_rounded_epoch(roundS=60)
-    myBlock = onionrblockapi.Block(blockHash, core_inst)
+    myBlock = onionrblockapi.Block(blockHash)
     if myBlock.isEncrypted:
         myBlock.decrypt()
     if (myBlock.isEncrypted and myBlock.decrypted) or (not myBlock.isEncrypted):
@@ -67,7 +67,7 @@ def process_block_metadata(core_inst, blockHash):
         signer = bytesconverter.bytes_to_str(myBlock.signer)
         valid = myBlock.verifySig()
         if myBlock.getMetadata('newFSKey') is not None:
-            onionrusers.OnionrUser(core_inst, signer).addForwardKey(myBlock.getMetadata('newFSKey'))
+            onionrusers.OnionrUser(signer).addForwardKey(myBlock.getMetadata('newFSKey'))
             
         try:
             if len(blockType) <= 10:
@@ -85,7 +85,7 @@ def process_block_metadata(core_inst, blockHash):
             blockmetadb.update_block_info(blockHash, 'expire', expireTime)
         if not blockType is None:
             blockmetadb.update_block_info(blockHash, 'dataType', blockType)
-        onionrevents.event('processblocks', data = {'block': myBlock, 'type': blockType, 'signer': signer, 'validSig': valid}, onionr = core_inst.onionrInst)
+        #onionrevents.event('processblocks', data = {'block': myBlock, 'type': blockType, 'signer': signer, 'validSig': valid}, onionr = core_inst.onionrInst)
     else:
         pass
 

@@ -34,16 +34,17 @@ from utils import detectoptimization
 if detectoptimization.detect_optimization():
     sys.stderr.write('Error, Onionr cannot be run in optimized mode\n')
     sys.exit(1)
-
 import os, base64, random, shutil, time, platform, signal
 from threading import Thread
-import core, config, logger, onionrplugins as plugins, onionrevents as events
+import config, logger, onionrplugins as plugins, onionrevents as events
 import netcontroller
 from netcontroller import NetController
 from onionrblockapi import Block
 import onionrproofs, onionrexceptions, communicator, setupconfig
 import onionrcommands as commands # Many command definitions are here
 from utils import identifyhome
+from coredb import keydb
+import filepaths
 
 try:
     from urllib3.contrib.socks import SOCKSProxyManager
@@ -103,8 +104,6 @@ class Onionr:
                     plugins.disable(name, onionr = self, stop_event = False)
 
         self.communicatorInst = None
-        self.onionrCore = core.Core()
-        self.onionrCore.onionrInst = self
         #self.deleteRunFiles()
 
         self.clientAPIInst = '' # Client http api instance
@@ -168,11 +167,11 @@ class Onionr:
 
     def deleteRunFiles(self):
         try:
-            os.remove(self.onionrCore.publicApiHostFile)
+            os.remove(filepaths.public_API_host_file)
         except FileNotFoundError:
             pass
         try:
-            os.remove(self.onionrCore.privateApiHostFile)
+            os.remove(filepaths.private_API_host_file)
         except FileNotFoundError:
             pass
 
@@ -236,7 +235,7 @@ class Onionr:
 
     def listPeers(self):
         logger.info('Peer transport address list:')
-        for i in self.onionrCore.listAdders():
+        for i in keydb.listkeys.list_adders():
             logger.info(i, terminal=True)
 
     def getWebPassword(self):
@@ -304,7 +303,7 @@ class Onionr:
         '''
             Displays a list of keys (used to be called peers) (?)
         '''
-        logger.info('%sPublic keys in database: \n%s%s' % (logger.colors.fg.lightgreen, logger.colors.fg.green, '\n'.join(self.onionrCore.listPeers())), terminal=True)
+        logger.info('%sPublic keys in database: \n%s%s' % (logger.colors.fg.lightgreen, logger.colors.fg.green, '\n'.join(keydb.listkeys.list_peers()())), terminal=True)
 
     def addPeer(self):
         '''
