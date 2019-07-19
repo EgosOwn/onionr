@@ -114,7 +114,6 @@ def get_commands(onionr_inst):
     'import-blocks': importnewblocks.import_new_blocks,
     'importblocks': importnewblocks.import_new_blocks,
 
-    'introduce': onionr_inst.onionrCore.introduceNode,
     'pex': dopex.do_PEX,
 
     'getpassword': onionr_inst.printWebPassword,
@@ -158,7 +157,6 @@ cmd_help = {
     'listconn': 'list connected peers',
     'pex': 'exchange addresses with peers (done automatically)',
     'blacklist-block': 'deletes a block by hash and permanently removes it from your node',
-    'introduce': 'Introduce your node to the public Onionr network',
     'friend': '[add|remove] [public key/id]',
     'add-id': 'Generate a new ID (key pair)',
     'change-id': 'Change active ID',

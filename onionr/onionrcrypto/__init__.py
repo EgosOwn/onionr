@@ -22,14 +22,14 @@ import nacl.signing, nacl.encoding, nacl.public, nacl.hash, nacl.pwhash, nacl.ut
 import unpaddedbase32
 import logger, onionrproofs
 from onionrutils import stringvalidators, epoch, bytesconverter
-import onionrexceptions, keymanager, core, onionrutils
+import filepaths
+import onionrexceptions, keymanager, onionrutils
 import config
 config.reload()
 
 class OnionrCrypto:
-    def __init__(self, coreInstance):
-        self._core = coreInstance
-        self._keyFile = self._core.dataDir + 'keys.txt'
+    def __init__(self):
+        self._keyFile = filepaths.keys_file
         self.pubKey = None
         self.privKey = None
         self.secrets = secrets
@@ -39,8 +39,8 @@ class OnionrCrypto:
 
         # Load our own pub/priv Ed25519 keys, gen & save them if they don't exist
         if os.path.exists(self._keyFile):
-            if len(self._core.config.get('general.public_key', '')) > 0:
-                self.pubKey = self._core.config.get('general.public_key')
+            if len(config.get('general.public_key', '')) > 0:
+                self.pubKey = config.get('general.public_key')
             else:
                 self.pubKey = self.keyManager.getPubkeyList()[0]
             self.privKey = self.keyManager.getPrivkey(self.pubKey)
@@ -249,10 +249,10 @@ class OnionrCrypto:
         except AttributeError:
             pass
         
-        difficulty = onionrproofs.getDifficultyForNewBlock(blockContent, ourBlock=False, coreInst=self._core)
+        difficulty = onionrproofs.getDifficultyForNewBlock(blockContent, ourBlock=False)
         
-        if difficulty < int(self._core.config.get('general.minimum_block_pow')):
-            difficulty = int(self._core.config.get('general.minimum_block_pow'))
+        if difficulty < int(config.get('general.minimum_block_pow')):
+            difficulty = int(config.get('general.minimum_block_pow'))
         mainHash = '0000000000000000000000000000000000000000000000000000000000000000'#nacl.hash.blake2b(nacl.utils.random()).decode()
         puzzle = mainHash[:difficulty]
 

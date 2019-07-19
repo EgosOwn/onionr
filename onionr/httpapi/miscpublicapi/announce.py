@@ -32,7 +32,7 @@ def handle_announce(clientAPI, request):
     powHash = ''
     randomData = ''
     newNode = ''
-    ourAdder = clientAPI._core.hsAddress.encode()
+    ourAdder = clientAPI.hsAddress.encode()
     try:
         newNode = request.form['node'].encode()
     except KeyError:
@@ -45,17 +45,17 @@ def handle_announce(clientAPI, request):
         except KeyError:
             logger.warn('No random data specified for upload')
         else:
-            nodes = newNode + clientAPI._core.hsAddress.encode()
-            nodes = clientAPI._core._crypto.blake2bHash(nodes)
-            powHash = clientAPI._core._crypto.blake2bHash(randomData + nodes)
+            nodes = newNode + clientAPI.hsAddress.encode()
+            nodes = clientAPI.crypto.blake2bHash(nodes)
+            powHash = clientAPI.crypto.blake2bHash(randomData + nodes)
             try:
                 powHash = powHash.decode()
             except AttributeError:
                 pass
             if powHash.startswith('0' * onionrvalues.OnionrValues().announce_pow):
                 newNode = bytesconverter.bytes_to_str(newNode)
-                if stringvalidators.validate_transport(newNode) and not newNode in clientAPI._core.onionrInst.communicatorInst.newPeers:
-                    clientAPI._core.onionrInst.communicatorInst.newPeers.append(newNode)
+                if stringvalidators.validate_transport(newNode) and not newNode in clientAPI.onionrInst.communicatorInst.newPeers:
+                    clientAPI.onionrInst.communicatorInst.newPeers.append(newNode)
                     resp = 'Success'
             else:
                 logger.warn(newNode.decode() + ' failed to meet POW: ' + powHash)

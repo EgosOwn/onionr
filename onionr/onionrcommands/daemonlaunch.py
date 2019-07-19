@@ -24,10 +24,11 @@ import onionr, apiservers, logger, communicator
 import onionrevents as events
 from netcontroller import NetController
 from onionrutils import localcommand
+import filepaths
 from coredb import daemonqueue
 
 def _proper_shutdown(o_inst):
-    localcommand.local_command(o_inst.onionrCore, 'shutdown')
+    localcommand.local_command('shutdown')
     sys.exit(1)
 
 def daemon(o_inst):
@@ -36,9 +37,9 @@ def daemon(o_inst):
     '''
 
     # remove runcheck if it exists
-    if os.path.isfile('%s/.runcheck' % (o_inst.onionrCore.dataDir,)):
+    if os.path.isfile(filepaths.run_check_file):
         logger.debug('Runcheck file found on daemon start, deleting in advance.')
-        os.remove('%s/.runcheck' % (o_inst.onionrCore.dataDir,))
+        os.remove(filepaths.run_check_file)
 
     Thread(target=apiservers.ClientAPI, args=(o_inst, o_inst.debug, onionr.API_VERSION), daemon=True).start()
     Thread(target=apiservers.PublicAPI, args=[o_inst.getClientApi()], daemon=True).start()
@@ -46,7 +47,7 @@ def daemon(o_inst):
     apiHost = ''
     while apiHost == '':
         try:
-            with open(o_inst.onionrCore.publicApiHostFile, 'r') as hostFile:
+            with open(filepaths.public_API_host_file, 'r') as hostFile:
                 apiHost = hostFile.read()
         except FileNotFoundError:
             pass
@@ -55,30 +56,30 @@ def daemon(o_inst):
 
     logger.raw('', terminal=True)
     # print nice header thing :)
-    if o_inst.onionrCore.config.get('general.display_header', True):
+    if o_inst.config.get('general.display_header', True):
         o_inst.header()
     o_inst.version(verbosity = 5, function = logger.info)
     logger.debug('Python version %s' % platform.python_version())
 
     if o_inst._developmentMode:
         logger.warn('Development mode enabled', timestamp = False, terminal=True)
-    net = NetController(o_inst.onionrCore.config.get('client.public.port', 59497), apiServerIP=apiHost)
+    net = NetController(o_inst.config.get('client.public.port', 59497), apiServerIP=apiHost)
     logger.info('Tor is starting...', terminal=True)
     if not net.startTor():
-        localcommand.local_command(o_inst.onionrCore, 'shutdown')
+        localcommand.local_command('shutdown')
         sys.exit(1)
-    if len(net.myID) > 0 and o_inst.onionrCore.config.get('general.security_level', 1) == 0:
+    if len(net.myID) > 0 and o_inst.config.get('general.security_level', 1) == 0:
         logger.debug('Started .onion service: %s' % (logger.colors.underline + net.myID))
     else:
         logger.debug('.onion service disabled')
-    logger.info('Using public key: %s' % (logger.colors.underline + o_inst.onionrCore._crypto.pubKey[:52]), terminal=True)
+    logger.info('Using public key: %s' % (logger.colors.underline + o_inst._crypto.pubKey[:52]), terminal=True)
 
     try:
         time.sleep(1)
     except KeyboardInterrupt:
         _proper_shutdown(o_inst)
 
-    o_inst.onionrCore.torPort = net.socksPort
+    o_inst.torPort = net.socksPort
     communicatorThread = Thread(target=communicator.startCommunicator, args=(o_inst, str(net.socksPort)), daemon=True)
     communicatorThread.start()
     
@@ -105,7 +106,7 @@ def daemon(o_inst):
 
     signal.signal(signal.SIGINT, _ignore_sigint)
     daemonqueue.daemon_queue_add('shutdown')
-    localcommand.local_command(o_inst.onionrCore, 'shutdown')
+    localcommand.local_command('shutdown')
 
     net.killTor()
     time.sleep(5) # Time to allow threads to finish, if not any "daemon" threads will be slaughtered http://docs.python.org/library/threading.html#threading.Thread.daemon
@@ -123,7 +124,7 @@ def kill_daemon(o_inst):
     logger.warn('Stopping the running daemon...', timestamp = False, terminal=True)
     try:
         events.event('daemon_stop', onionr = o_inst)
-        net = NetController(o_inst.onionrCore.config.get('client.port', 59496))
+        net = NetController(o_inst.config.get('client.port', 59496))
         try:
             daemonqueue.daemon_queue_qdd('shutdown')
         except sqlite3.OperationalError:

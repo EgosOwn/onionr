@@ -22,6 +22,7 @@ import base64, sys, os
 import logger
 from onionrblockapi import Block
 from onionrutils import stringvalidators
+from onionrblocks import insert
 def add_file(o_inst, singleBlock=False, blockType='bin'):
     '''
         Adds a file to the onionr network
@@ -37,7 +38,7 @@ def add_file(o_inst, singleBlock=False, blockType='bin'):
         logger.info('Adding file... this might take a long time.', terminal=True)
         try:
             with open(filename, 'rb') as singleFile:
-                blockhash = o_inst.onionrCore.insertBlock(base64.b64encode(singleFile.read()), header=blockType)
+                blockhash = insert.insert_block(base64.b64encode(singleFile.read()), header=blockType)
             if len(blockhash) > 0:
                 logger.info('File %s saved in block %s' % (filename, blockhash), terminal=True)
         except:
@@ -66,5 +67,5 @@ def getFile(o_inst):
             return
 
         with open(fileName, 'wb') as myFile:
-            myFile.write(base64.b64decode(Block(bHash, core=o_inst.onionrCore).bcontent))
+            myFile.write(base64.b64decode(Block(bHash).bcontent))
     return

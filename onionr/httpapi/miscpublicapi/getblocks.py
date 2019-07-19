@@ -26,7 +26,7 @@ def get_public_block_list(clientAPI, publicAPI, request):
     # Provide a list of our blocks, with a date offset
     dateAdjust = request.args.get('date')
     bList = blockmetadb.get_block_list(dateRec=dateAdjust)
-    if clientAPI._core.config.get('general.hide_created_blocks', True):
+    if clientAPI.config.get('general.hide_created_blocks', True):
         for b in publicAPI.hideBlocks:
             if b in bList:
                 # Don't share blocks we created if they haven't been *uploaded* yet, makes it harder to find who created a block
@@ -37,7 +37,7 @@ def get_block_data(clientAPI, publicAPI, data):
     '''data is the block hash in hex'''
     resp = ''
     if stringvalidators.validate_hash(data):
-        if not clientAPI._core.config.get('general.hide_created_blocks', True) or data not in publicAPI.hideBlocks:
+        if not clientAPI.config.get('general.hide_created_blocks', True) or data not in publicAPI.hideBlocks:
             if data in blockmetadb.get_block_list():
                 block = clientAPI.getBlockData(data, raw=True)
                 try:

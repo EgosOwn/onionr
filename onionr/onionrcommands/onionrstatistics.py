@@ -23,7 +23,9 @@ from onionrblockapi import Block
 import onionr
 from onionrutils import checkcommunicator, mnemonickeys
 from utils import sizeutils
-from coredb import blockmetadb, daemonqueue
+from coredb import blockmetadb, daemonqueue, keydb
+import onionrcrypto
+crypto = onionrcrypto.OnionrCrypto()
 def show_stats(o_inst):
     try:
         # define stats messages here
@@ -31,7 +33,7 @@ def show_stats(o_inst):
         signedBlocks = len(Block.getBlocks(signed = True))
         messages = {
             # info about local client
-            'Onionr Daemon Status' : ((logger.colors.fg.green + 'Online') if checkcommunicator.is_communicator_running(o_inst.onionrCore, timeout = 9) else logger.colors.fg.red + 'Offline'),
+            'Onionr Daemon Status' : ((logger.colors.fg.green + 'Online') if checkcommunicator.is_communicator_running(timeout = 9) else logger.colors.fg.red + 'Offline'),
 
             # file and folder size stats
             'div1' : True, # this creates a solid line across the screen, a div
@@ -41,8 +43,8 @@ def show_stats(o_inst):
 
             # count stats
             'div2' : True,
-            'Known Peers' : str(max(len(o_inst.onionrCore.listPeers()) - 1, 0)),
-            'Enabled Plugins' : str(len(o_inst.onionrCore.config.get('plugins.enabled', list()))) + ' / ' + str(len(os.listdir(o_inst.dataDir + 'plugins/'))),
+            'Known Peers' : str(max(len(keydb.listkeys.list_peers()) - 1, 0)),
+            'Enabled Plugins' : str(len(o_inst.config.get('plugins.enabled', list()))) + ' / ' + str(len(os.listdir(o_inst.dataDir + 'plugins/'))),
             'Stored Blocks' : str(totalBlocks),
             'Percent Blocks Signed' : str(round(100 * signedBlocks / max(totalBlocks, 1), 2)) + '%'
         }
@@ -87,8 +89,8 @@ def show_details(o_inst):
     details = {
         'Node Address' : o_inst.get_hostname(),
         'Web Password' : o_inst.getWebPassword(),
-        'Public Key' : o_inst.onionrCore._crypto.pubKey,
-        'Human-readable Public Key' : mnemonickeys.get_human_readable_ID(o_inst.onionrCore)
+        'Public Key' : crypto.pubKey,
+        'Human-readable Public Key' : mnemonickeys.get_human_readable_ID()
     }
 
     for detail in details:

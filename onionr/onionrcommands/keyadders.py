@@ -19,18 +19,19 @@
 '''
 import sys
 import logger
+from coredb import keydb
 def add_peer(o_inst):
     try:
         newPeer = sys.argv[2]
     except IndexError:
         pass
     else:
-        if newPeer in o_inst.onionrCore.listPeers():
+        if newPeer in keydb.listkeys.list_peers():
             logger.info('We already have that key', terminal=True)
             return
         logger.info("Adding peer: " + logger.colors.underline + newPeer, terminal=True)
         try:
-            if o_inst.onionrCore.addPeer(newPeer):
+            if keydb.addkeys.add_peer(newPeer):
                 logger.info('Successfully added key', terminal=True)
         except AssertionError:
             logger.error('Failed to add key', terminal=True)
@@ -43,7 +44,7 @@ def add_address(o_inst):
         pass
     else:
         logger.info("Adding address: " + logger.colors.underline + newAddress, terminal=True)
-        if o_inst.onionrCore.addAddress(newAddress):
+        if keydb.addkeys.add_address(newAddress):
             logger.info("Successfully added address.", terminal=True)
         else:
             logger.warn("Unable to add address.", terminal=True)

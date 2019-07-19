@@ -18,14 +18,13 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 import os, shutil
-import logger, core
+import logger
 from onionrutils import localcommand
 
 def reset_tor():
-    c = core.Core()
     tor_dir = c.dataDir + 'tordata'
     if os.path.exists(tor_dir):
-        if localcommand.local_command(c, '/ping') == 'pong!':
+        if localcommand.local_command('/ping') == 'pong!':
             logger.warn('Cannot delete Tor data while Onionr is running', terminal=True)
         else:
             shutil.rmtree(tor_dir)

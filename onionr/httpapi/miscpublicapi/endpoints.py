@@ -19,10 +19,11 @@
 '''
 from flask import Response, Blueprint, request, send_from_directory, abort
 from . import getblocks, upload, announce
+from coredb import keydb
 class PublicEndpoints:
     def __init__(self, public_api):
         client_API = public_api.clientAPI
-        config = client_API._core.config
+        config = client_API.config
 
         public_endpoints_bp = Blueprint('publicendpoints', __name__)
         self.public_endpoints_bp = public_endpoints_bp
@@ -61,7 +62,7 @@ class PublicEndpoints:
 
         @public_endpoints_bp.route('/pex')
         def peer_exchange():
-            response = ','.join(client_API._core.listAdders(recent=3600))
+            response = ','.join(keydb.listkeys.list_adders(recent=3600))
             if len(response) == 0:
                 response = ''
             return Response(response)

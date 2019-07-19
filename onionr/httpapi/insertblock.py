@@ -19,13 +19,11 @@
 '''
 import json, threading
 from flask import Blueprint, Response, request
-import core
-
+import onionrblocks
 ib = Blueprint('insertblock', __name__)
 
 @ib.route('/insertblock', methods=['POST'])
 def client_api_insert_block():
-    c = core.Core()
     encrypt = False
     bData = request.get_json(force=True)
     message = bData['message']
@@ -59,5 +57,5 @@ def client_api_insert_block():
         meta = json.loads(bData['meta'])
     except KeyError:
         pass
-    threading.Thread(target=c.insertBlock, args=(message,), kwargs={'header': bType, 'encryptType': encryptType, 'sign':sign, 'asymPeer': to, 'meta': meta}).start()
+    threading.Thread(target=onionrblocks.insert.insert_block, args=(message,), kwargs={'header': bType, 'encryptType': encryptType, 'sign':sign, 'asymPeer': to, 'meta': meta}).start()
     return Response('success')

@@ -30,7 +30,7 @@ def accept_upload(clientAPI, request):
     else:
         if sys.getsizeof(data) < 100000000:
             try:
-                if blockimporter.importBlockFromData(data, clientAPI._core):
+                if blockimporter.importBlockFromData(data):
                     resp = 'success'
                 else:
                     logger.warn('Error encountered importing uploaded block')

@@ -19,7 +19,7 @@
 '''
 import base64
 from flask import Blueprint, Response, request, abort
-import core, onionrblockapi, onionrexceptions
+import onionrblockapi, onionrexceptions
 from onionrutils import stringvalidators
 
 site_api = Blueprint('siteapi', __name__)
