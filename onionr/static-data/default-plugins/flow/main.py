@@ -22,7 +22,7 @@
 import threading, time, locale, sys, os
 from onionrblockapi import Block
 import logger, config, onionrblocks
-from onionrutils import escapeansi, epoch
+from onionrutils import escapeansi, epoch, bytesconverter
 locale.setlocale(locale.LC_ALL, '')
 from coredb import blockmetadb
 sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
@@ -73,10 +73,11 @@ class OnionrFlow:
         try:
             while self.flowRunning:
                 for block in blockmetadb.get_blocks_by_type('txt'):
-                    block = Block(block)
-                    if block.getMetadata('ch') != self.channel:
+                    if block in self.alreadyOutputed:
                         continue
-                    if block.getHash() in self.alreadyOutputed:
+                    block = Block(block)
+                    b_hash = bytesconverter.bytes_to_str(block.getHash())
+                    if block.getMetadata('ch') != self.channel:
                         continue
                     if not self.flowRunning:
                         break
@@ -85,7 +86,7 @@ class OnionrFlow:
                     # Escape new lines, remove trailing whitespace, and escape ansi sequences
                     content = escapeansi.escape_ANSI(content.replace('\n', '\\n').replace('\r', '\\r').strip())
                     logger.info(block.getDate().strftime("%m/%d %H:%M") + ' - ' + logger.colors.reset + content, prompt = False, terminal=True)
-                    self.alreadyOutputed.append(block.getHash())
+                    self.alreadyOutputed.append(b_hash)
                 time.sleep(5)
         except KeyboardInterrupt:
             self.flowRunning = False
