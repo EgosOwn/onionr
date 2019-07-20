@@ -21,8 +21,9 @@
 # Imports some useful libraries
 import logger, config, threading, time, datetime, sys, json
 from onionrblockapi import Block
-from onionrutils import stringvalidators
-import onionrexceptions, onionrusers
+from onionrutils import stringvalidators, bytesconverter
+from onionrcrypto import encryption, getourkeypair
+import onionrexceptions, onionrusers, signing
 import locale
 locale.setlocale(locale.LC_ALL, '')
 plugin_name = 'encrypt'
@@ -63,22 +64,24 @@ class PlainEncryption:
                 sys.exit(1)
             # Build Message to encrypt
             data = {}
-            myPub = self.api.get_core()._crypto.pubKey
+            keypair = getourkeypair.get_our_keypair()
+            myPub = keypair[0]
             if sign:
-                data['sig'] = self.api.get_core()._crypto.edSign(plaintext, key=self.api.get_core()._crypto.privKey, encodeResult=True)
-                data['sig'] = self.api.get_core()._utils.bytesToStr(data['sig'])
+                data['sig'] = signing.ed_sign(plaintext, key=keypair[1], encodeResult=True)
+                data['sig'] = bytesconverter.bytes_to_str(data['sig'])
                 data['signer'] = myPub
             data['data'] = plaintext
             data = json.dumps(data)
             plaintext = data
-            encrypted = self.api.get_core()._crypto.pubKeyEncrypt(plaintext, pubkey, encodedData=True)
-            encrypted = self.api.get_core()._utils.bytesToStr(encrypted)
+            encrypted = encryption.pub_key_encrypt(plaintext, pubkey, encodedData=True)
+            encrypted = bytesconverter.bytes_to_str(encrypted)
             logger.info('Encrypted Message: \n\nONIONR ENCRYPTED DATA %s END ENCRYPTED DATA' % (encrypted,), terminal=True)
 
     def decrypt(self):
         plaintext = ""
         data = ""
         logger.info("Please enter your message (ctrl-d or -q to stop):", terminal=True)
+        keypair = getourkeypair.get_our_keypair()
         try:
             for line in sys.stdin:
                 if line == '-q\n':
@@ -89,8 +92,8 @@ class PlainEncryption:
         if len(data) <= 1:
             return
         encrypted = data.replace('ONIONR ENCRYPTED DATA ', '').replace('END ENCRYPTED DATA', '')
-        myPub = self.api.get_core()._crypto.pubKey
-        decrypted = self.api.get_core()._crypto.pubKeyDecrypt(encrypted, privkey=self.api.get_core()._crypto.privKey, encodedData=True)
+        myPub = keypair[0]
+        decrypted = encryption.pub_key_decrypt(encrypted, privkey=keypair[1], encodedData=True)
         if decrypted == False:
             logger.error("Decryption failed", terminal=True)
         else:
@@ -98,7 +101,7 @@ class PlainEncryption:
             logger.info('Decrypted Message: \n\n%s' % data['data'], terminal=True)
             try:
                 logger.info("Signing public key: %s" % (data['signer'],), terminal=True)
-                assert self.api.get_core()._crypto.edVerify(data['data'], data['signer'], data['sig']) != False
+                assert signing.ed_verify(data['data'], data['signer'], data['sig']) != False
             except (AssertionError, KeyError) as e:
                 logger.warn("WARNING: THIS MESSAGE HAS A MISSING OR INVALID SIGNATURE", terminal=True)
             else:

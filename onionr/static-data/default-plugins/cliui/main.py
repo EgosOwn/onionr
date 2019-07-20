@@ -31,7 +31,6 @@ PLUGIN_VERSION = '0.0.1'
 class OnionrCLIUI:
     def __init__(self, apiInst):
         self.api = apiInst
-        self.myCore = apiInst.get_core()
         self.shutdown = False
         self.running = 'undetermined'
         enabled = onionrplugins.get_enabled_plugins()
@@ -49,7 +48,7 @@ class OnionrCLIUI:
     
     def isRunning(self):
         while not self.shutdown:
-            if localcommand.local_command(self.myCore, 'ping', maxWait=5) == 'pong!':
+            if localcommand.local_command('ping', maxWait=5) == 'pong!':
                 self.running = 'Yes'
             else:
                 self.running = 'No'

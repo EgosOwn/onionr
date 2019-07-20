@@ -19,11 +19,10 @@
 '''
 import json
 from flask import Response, request, redirect, Blueprint, send_from_directory
-import core
-
-core_inst = core.Core()
+import deadsimplekv as simplekv
+import filepaths
 flask_blueprint = Blueprint('esoteric_control', __name__)
-
+key_store = simplekv.DeadSimpleKV(filepaths.cachedstorage, refresh_seconds=5)
 @flask_blueprint.route('/esoteric/ping')
 def ping():
     return 'pong!'
@@ -31,18 +30,18 @@ def ping():
 @flask_blueprint.route('/esoteric/send/<peer>', methods=['POST'])
 def send_message(peer):
     data = request.get_json(force=True)
-    core_inst.keyStore.refresh()
-    existing = core_inst.keyStore.get('s' + peer)
+    key_store.refresh()
+    existing = key_store.get('s' + peer)
     if existing is None:
         existing = []
     existing.append(data)
-    core_inst.keyStore.put('s' + peer, existing)
-    core_inst.keyStore.flush()
+    key_store.put('s' + peer, existing)
+    key_store.flush()
     return Response('success')
 
 @flask_blueprint.route('/esoteric/gets/<peer>')
 def get_sent(peer):
-    sent = core_inst.keyStore.get('s' + peer)
+    sent = key_store.get('s' + peer)
     if sent is None:
         sent = []
     return Response(json.dumps(sent))
@@ -50,22 +49,22 @@ def get_sent(peer):
 @flask_blueprint.route('/esoteric/addrec/<peer>', methods=['POST'])
 def add_rec(peer):
     data = request.get_json(force=True)
-    core_inst.keyStore.refresh()
-    existing = core_inst.keyStore.get('r' + peer)
+    key_store.refresh()
+    existing = key_store.get('r' + peer)
     if existing is None:
         existing = []
     existing.append(data)
-    core_inst.keyStore.put('r' + peer, existing)
-    core_inst.keyStore.flush()
+    key_store.put('r' + peer, existing)
+    key_store.flush()
     return Response('success')
 
 @flask_blueprint.route('/esoteric/getrec/<peer>')
 def get_messages(peer):
-    core_inst.keyStore.refresh()
-    existing = core_inst.keyStore.get('r' + peer)
+    key_store.refresh()
+    existing = key_store.get('r' + peer)
     if existing is None:
         existing = []
     else:
         existing = list(existing)
-        core_inst.keyStore.delete('r' + peer)
+        key_store.delete('r' + peer)
     return Response(json.dumps(existing))

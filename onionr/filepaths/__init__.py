@@ -9,6 +9,7 @@ private_API_host_file = home + 'private-host.txt'
 bootstrap_file_location = 'static-data/bootstrap-nodes.txt'
 data_nonce_file = home + 'block-nonces.dat'
 forward_keys_file = home + 'forward-keys.db'
+cached_storage = home + 'cachedstorage.dat'
 
 tor_hs_address_file = home + 'hs/hostname'
 
