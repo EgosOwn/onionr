@@ -18,11 +18,10 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 import multiprocessing, nacl.encoding, nacl.hash, nacl.utils, time, math, threading, binascii, sys, json
-import config, logger, onionrblockapi, storagecounter, onionrcrypto
+import config, logger, onionrblockapi, storagecounter
 from onionrutils import bytesconverter
-
+from onionrcrypto import hashers
 config.reload()
-crypto = onionrcrypto.OnionrCrypto()
 def getDifficultyModifier():
     '''returns the difficulty modifier for block storage based 
     on a variety of factors, currently only disk use.
@@ -227,7 +226,7 @@ class POW:
             #token = nacl.hash.blake2b(rand + self.data).decode()
             self.metadata['pow'] = nonce
             payload = json.dumps(self.metadata).encode() + b'\n' + self.data
-            token = crypto.sha3Hash(payload)
+            token = hashers.sha3_hash(payload)
             try:
                 # on some versions, token is bytes
                 token = token.decode()

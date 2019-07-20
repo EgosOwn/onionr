@@ -19,14 +19,14 @@
 '''
 
 import logger, config, onionrexceptions, nacl.exceptions
-import json, os, sys, datetime, base64, onionrstorage, onionrcrypto
+import json, os, sys, datetime, base64, onionrstorage
 from onionrusers import onionrusers
 from onionrutils import stringvalidators, epoch
 from coredb import blockmetadb
 from onionrstorage import removeblock
 import onionrblocks
+from onionrcrypto import encryption, cryptoutils as cryptoutils, signing
 class Block:
-    crypto = onionrcrypto.OnionrCrypto()
     blockCacheOrder = list() # NEVER write your own code that writes to this!
     blockCache = dict() # should never be accessed directly, look at Block.getCache()
 
@@ -71,23 +71,23 @@ class Block:
         # decrypt data
         if self.getHeader('encryptType') == 'asym':
             try:
-                self.bcontent = crypto.pubKeyDecrypt(self.bcontent, encodedData=encodedData)
-                bmeta = crypto.pubKeyDecrypt(self.bmetadata, encodedData=encodedData)
+                self.bcontent = encryption.pub_key_decrypt(self.bcontent, encodedData=encodedData)
+                bmeta = encryption.pub_key_decrypt(self.bmetadata, encodedData=encodedData)
                 try:
                     bmeta = bmeta.decode()
                 except AttributeError:
                     # yet another bytes fix
                     pass
                 self.bmetadata = json.loads(bmeta)
-                self.signature = crypto.pubKeyDecrypt(self.signature, encodedData=encodedData)
-                self.signer = crypto.pubKeyDecrypt(self.signer, encodedData=encodedData)
+                self.signature = encryption.pub_key_decrypt(self.signature, encodedData=encodedData)
+                self.signer = encryption.pub_key_decrypt(self.signer, encodedData=encodedData)
                 self.bheader['signer'] = self.signer.decode()
                 self.signedData =  json.dumps(self.bmetadata) + self.bcontent.decode()
 
                 # Check for replay attacks
                 try:
                     if epoch.get_epoch() - blockmetadb.get_block_date(self.hash) > 60:
-                        assert self.crypto.replayTimestampValidation(self.bmetadata['rply'])
+                        assert cryptoutils.replay_validator(self.bmetadata['rply'])
                 except (AssertionError, KeyError, TypeError) as e:
                     if not self.bypassReplayCheck:
                         # Zero out variables to prevent reading of replays
@@ -124,7 +124,7 @@ class Block:
             Verify if a block's signature is signed by its claimed signer
         '''
 
-        if crypto.edVerify(data=self.signedData, key=self.signer, sig=self.signature, encodedData=True):
+        if signing.ed_verify(data=self.signedData, key=self.signer, sig=self.signature, encodedData=True):
             self.validSig = True
         else:
             self.validSig = False
@@ -425,7 +425,7 @@ class Block:
             if (not self.isSigned()) or (not stringvalidators.validate_pub_key(signer)):
                 return False
 
-            return bool(crypto.edVerify(self.getSignedData(), signer, self.getSignature(), encodedData = encodedData))
+            return bool(signing.ed_verify(self.getSignedData(), signer, self.getSignature(), encodedData = encodedData))
         except:
             return False
 

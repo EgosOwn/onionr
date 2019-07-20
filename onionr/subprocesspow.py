@@ -49,9 +49,9 @@ class SubprocessPOW:
 
         self.data = bytesconverter.str_to_bytes(data)
         # Calculate difficulty. Dumb for now, may use good algorithm in the future.
-        self.difficulty = onionrproofs.getDifficultyForNewBlock(bytes(json_metadata + b'\n' + self.data)
+        self.difficulty = onionrproofs.getDifficultyForNewBlock(bytes(json_metadata + b'\n' + self.data))
         
-        logger.info('Computing POW (difficulty: %s)...' % self.difficulty)
+        logger.info('Computing POW (difficulty: %s)...' % (self.difficulty,))
 
         self.mainHash = '0' * 64
         self.puzzle = self.mainHash[0:min(self.difficulty, len(self.mainHash))]

@@ -129,7 +129,7 @@ HiddenServicePort 80 ''' + self.apiServerIP + ''':''' + str(self.hsPort)
                 logger.fatal('Failed to start Tor. Maybe a stray instance of Tor used by Onionr is still running? This can also be a result of file permissions being too open', terminal=True)
                 return False
         except KeyboardInterrupt:
-            logger.fatal('Got keyboard interrupt. Onionr will exit soon.', timestamp = False, level = logger.LEVEL_IMPORTANT, terminal=True)
+            logger.fatal('Got keyboard interrupt. Onionr will exit soon.', timestamp = False, terminal=True)
             return False
 
         logger.info('Finished starting Tor.', terminal=True)

@@ -2,8 +2,8 @@ import json
 import onionrblockapi
 from onionrutils import bytesconverter, stringvalidators
 class GetBlockData:
-    def __init__(self, client_api_inst):
-        self.client_api_inst = client_api_inst
+    def __init__(self, client_api_inst=None):
+        return
     
     def get_block_data(self, bHash, decrypt=False, raw=False, headerOnly=False):
         assert stringvalidators.validate_hash(bHash)

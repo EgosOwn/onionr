@@ -36,7 +36,7 @@ class OnionrCrypto:
         self.secrets = secrets
         self.deterministicRequirement = 25 # Min deterministic password/phrase length
         self.HASH_ID_ROUNDS = 2000
-        self.keyManager = keymanager.KeyManager(self)
+        self.keyManager = keymanager.KeyManager()
 
         # Load our own pub/priv Ed25519 keys, gen & save them if they don't exist
         if os.path.exists(self._keyFile):
@@ -52,47 +52,6 @@ class OnionrCrypto:
             self.keyManager.addKey(self.pubKey, self.privKey)
         return
 
-    def edVerify(self, data, key, sig, encodedData=True):
-        '''Verify signed data (combined in nacl) to an ed25519 key'''
-        try:
-            key = nacl.signing.VerifyKey(key=key, encoder=nacl.encoding.Base32Encoder)
-        except nacl.exceptions.ValueError:
-            #logger.debug('Signature by unknown key (cannot reverse hash)')
-            return False
-        except binascii.Error:
-            logger.warn('Could not load key for verification, invalid padding')
-            return False
-        retData = False
-        sig = base64.b64decode(sig)
-        try:
-            data = data.encode()
-        except AttributeError:
-            pass
-        if encodedData:
-            try:
-                retData = key.verify(data, sig) # .encode() is not the same as nacl.encoding
-            except nacl.exceptions.BadSignatureError:
-                pass
-        else:
-            try:
-                retData = key.verify(data, sig)
-            except nacl.exceptions.BadSignatureError:
-                pass
-        return retData
-
-    def edSign(self, data, key, encodeResult=False):
-        '''Ed25519 sign data'''
-        try:
-            data = data.encode()
-        except AttributeError:
-            pass
-        key = nacl.signing.SigningKey(seed=key, encoder=nacl.encoding.Base32Encoder)
-        retData = ''
-        if encodeResult:
-            retData = key.sign(data, encoder=nacl.encoding.Base64Encoder).signature.decode() # .encode() is not the same as nacl.encoding
-        else:
-            retData = key.sign(data).signature
-        return retData
 
     def pubKeyEncrypt(self, data, pubkey, encodedData=False):
         '''Encrypt to a public key (Curve25519, taken from base32 Ed25519 pubkey)'''
@@ -112,25 +71,6 @@ class OnionrCrypto:
         retVal = box.encrypt(data, encoder=encoding)
 
         return retVal
-
-    def pubKeyDecrypt(self, data, pubkey='', privkey='', encodedData=False):
-        '''pubkey decrypt (Curve25519, taken from Ed25519 pubkey)'''
-        decrypted = False
-        if encodedData:
-            encoding = nacl.encoding.Base64Encoder
-        else:
-            encoding = nacl.encoding.RawEncoder
-        if privkey == '':
-            privkey = self.privKey
-        ownKey = nacl.signing.SigningKey(seed=privkey, encoder=nacl.encoding.Base32Encoder()).to_curve25519_private_key()
-
-        if stringvalidators.validate_pub_key(privkey):
-            privkey = nacl.signing.SigningKey(seed=privkey, encoder=nacl.encoding.Base32Encoder()).to_curve25519_private_key()
-            anonBox = nacl.public.SealedBox(privkey)
-        else:
-            anonBox = nacl.public.SealedBox(ownKey)
-        decrypted = anonBox.decrypt(data, encoder=encoding)
-        return decrypted
 
     def symmetricEncrypt(self, data, key, encodedKey=False, returnEncoded=True):
         '''Encrypt data with a 32-byte key (Salsa20-Poly1305 MAC)'''
@@ -252,37 +192,3 @@ class OnionrCrypto:
             logger.debug("Invalid token, bad proof")
 
         return retData
-
-    @staticmethod
-    def replayTimestampValidation(timestamp):
-        if epoch.get_epoch() - int(timestamp) > 2419200:
-            return False
-        else:
-            return True
-
-    @staticmethod
-    def safeCompare(one, two):
-        # Do encode here to avoid spawning core
-        try:
-            one = one.encode()
-        except AttributeError:
-            pass
-        try:
-            two = two.encode()
-        except AttributeError:
-            pass
-        return hmac.compare_digest(one, two)
-        
-    @staticmethod
-    def randomShuffle(theList):
-        myList = list(theList)
-        shuffledList = []
-        myListLength = len(myList) + 1
-        while myListLength > 0:
-            removed = secrets.randbelow(myListLength)
-            try:
-                shuffledList.append(myList.pop(removed))
-            except IndexError:
-                pass
-            myListLength = len(myList)
-        return shuffledList

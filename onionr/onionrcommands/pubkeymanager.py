@@ -22,6 +22,7 @@ import sys, getpass
 import logger, onionrexceptions
 from onionrutils import stringvalidators, bytesconverter
 from onionrusers import onionrusers, contactmanager
+from coredb import keydb
 import unpaddedbase32
 def add_ID(o_inst):
     try:
@@ -82,22 +83,22 @@ def friend_command(o_inst):
         action = action.lower()
         if action == 'list':
             # List out peers marked as our friend
-            for friend in contactmanager.ContactManager.list_friends(o_inst.):
+            for friend in contactmanager.ContactManager.list_friends():
                 logger.info(friend.publicKey + ' - ' + friend.get_info('name'), terminal=True)
         elif action in ('add', 'remove'):
             try:
                 friend = sys.argv[3]
                 if not stringvalidators.validate_pub_key(friend):
                     raise onionrexceptions.InvalidPubkey('Public key is invalid')
-                if friend not in o_inst..listPeers():
+                if friend not in keydb.listkeys.list_peers():
                     raise onionrexceptions.KeyNotKnown
-                friend = onionrusers.OnionrUser(o_inst., friend)
+                friend = onionrusers.OnionrUser(friend)
             except IndexError:
                 logger.warn('Friend ID is required.', terminal=True)
                 action = 'error' # set to 'error' so that the finally block does not process anything
             except onionrexceptions.KeyNotKnown:
-                o_inst..addPeer(friend)
-                friend = onionrusers.OnionrUser(o_inst., friend)
+                o_inst.addPeer(friend)
+                friend = onionrusers.OnionrUser(friend)
             finally:
                 if action == 'add':
                     friend.setTrust(1)

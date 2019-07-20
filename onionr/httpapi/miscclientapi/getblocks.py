@@ -19,7 +19,7 @@
 '''
 from flask import Blueprint, Response, abort
 import onionrblockapi
-from httpapi import apiutils
+from .. import apiutils
 from onionrutils import stringvalidators
 from coredb import blockmetadb
 

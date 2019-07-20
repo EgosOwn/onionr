@@ -41,7 +41,6 @@ class PrivateAPI:
         self.config = config
         self.debug = debug
         self.startTime = epoch.get_epoch()
-        self._crypto = onionrInst.onionrCrypto
         app = flask.Flask(__name__)
         bindPort = int(config.get('client.client.port', 59496))
         self.bindPort = bindPort

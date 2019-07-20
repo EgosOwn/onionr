@@ -21,7 +21,7 @@ import json
 import logger, onionrexceptions
 from etc import onionrvalues
 from onionrutils import stringvalidators, epoch, bytesconverter
-import config, onionrvalues, filepaths, onionrcrypto
+import config, filepaths, onionrcrypto
 def validate_metadata(metadata, blockData):
     '''Validate metadata meets onionr spec (does not validate proof value computation), take in either dictionary or json string'''
     # TODO, make this check sane sizes

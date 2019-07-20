@@ -26,7 +26,7 @@ from netcontroller import NetController
 from onionrutils import localcommand
 import filepaths
 from coredb import daemonqueue
-
+from onionrcrypto import getourkeypair
 def _proper_shutdown(o_inst):
     localcommand.local_command('shutdown')
     sys.exit(1)
@@ -72,7 +72,7 @@ def daemon(o_inst):
         logger.debug('Started .onion service: %s' % (logger.colors.underline + net.myID))
     else:
         logger.debug('.onion service disabled')
-    logger.info('Using public key: %s' % (logger.colors.underline + o_inst._crypto.pubKey[:52]), terminal=True)
+    logger.info('Using public key: %s' % (logger.colors.underline + getourkeypair.get_keypair()[0][:52]), terminal=True)
 
     try:
         time.sleep(1)
