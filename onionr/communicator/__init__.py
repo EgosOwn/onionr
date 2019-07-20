@@ -29,8 +29,9 @@ from communicatorutils import daemonqueuehandler, announcenode, deniableinserts
 from communicatorutils import cooldownpeer, housekeeping, netcheck
 from onionrutils import localcommand, epoch
 from etc import humanreadabletime
-import onionrservices, onionr, filepaths
+import onionrservices, onionr, filepaths, storagecounter
 from coredb import daemonqueue, dbfiles
+from utils import gettransports
 OnionrCommunicatorTimers = onionrcommunicatortimers.OnionrCommunicatorTimers
 
 config.reload()
@@ -39,8 +40,11 @@ class OnionrCommunicatorDaemon:
         onionrInst.communicatorInst = self
         # configure logger and stuff
         onionr.Onionr.setupConfig('data/', self = self)
+        self.onionrInst = onionrInst
+        self.config = config
+        self.storage_counter = storagecounter.StorageCounter()
         self.proxyPort = proxyPort
-
+        self.hsAddress = gettransports.get()[0]
         self.isOnline = True # Assume we're connected to the internet
 
         # list of timer instances

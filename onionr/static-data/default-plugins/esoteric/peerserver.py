@@ -18,23 +18,24 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 import sys, os, json
-import core
+from utils import identifyhome
 from onionrutils import localcommand
+import deadsimplekv as simplekv, filepaths
 from flask import Response, request, redirect, Blueprint, abort, g
 sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
 direct_blueprint = Blueprint('esoteric', __name__)
-core_inst = core.Core()
 
-storage_dir = core_inst.dataDir
+key_store = simplekv.DeadSimpleKV(filepaths.cached_storage, refresh_seconds=5)
+storage_dir = identifyhome.identify_home()
 
 @direct_blueprint.before_request
 def request_setup():
-    core_inst.keyStore.refresh()
+    key_store.refresh()
     host = request.host
     host = host.strip('.b32.i2p')
     host = host.strip('.onion')
     g.host = host
-    g.peer = core_inst.keyStore.get('dc-' + g.host)
+    g.peer = key_store.get('dc-' + g.host)
 
 @direct_blueprint.route('/esoteric/ping')
 def pingdirect():
@@ -48,9 +49,9 @@ def sendto():
         msg = ''
     else:
         msg = json.dumps(msg)
-        localcommand.local_command(core_inst, '/esoteric/addrec/%s' % (g.peer,), post=True, postData=msg)
+        localcommand.local_command('/esoteric/addrec/%s' % (g.peer,), post=True, postData=msg)
     return Response('success')
 
 @direct_blueprint.route('/esoteric/poll')
 def poll_chat():
-    return Response(localcommand.local_command(core_inst, '/esoteric/gets/%s' % (g.peer,)))
+    return Response(localcommand.local_command('/esoteric/gets/%s' % (g.peer,)))

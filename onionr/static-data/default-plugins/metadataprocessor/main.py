@@ -33,7 +33,7 @@ def _processForwardKey(api, myBlock):
     '''
         Get the forward secrecy key specified by the user for us to use
     '''
-    peer = onionrusers.OnionrUser(api.get_core(), myBlock.signer)
+    peer = onionrusers.OnionrUser(myBlock.signer)
     key = myBlock.getMetadata('newFSKey')
 
     # We don't need to validate here probably, but it helps

@@ -18,30 +18,36 @@
     along with this program. If not, see <https://www.gnu.org/licenses/>.
 '''
 import urllib, requests, time
-import logger, config
+import logger, config, deadsimplekv
 from . import getclientapiserver
-hostname = ''
-waited = 0
-maxWait = 3
+import filepaths
 config.reload()
+
+cache = deadsimplekv.DeadSimpleKV(filepaths.cached_storage, refresh_seconds=1000)
 def get_hostname():
-    while hostname == '':
-        try:
+    hostname = ''
+    waited = 0
+    maxWait = 3
+    while True:
+        if cache.get('client_api') is None:
             hostname = getclientapiserver.get_client_API_server()
-        except FileNotFoundError:
+            cache.put('hostname', hostname)
+            cache.flush()
+        else:
+            hostname = cache.get('hostname')
+        if hostname == '' or hostname is None:
             time.sleep(1)
-            waited += 1
             if waited == maxWait:
                 return False
-        return hostname
+        else:
+            return hostname
 
 def local_command(command, data='', silent = True, post=False, postData = {}, maxWait=20):
     '''
         Send a command to the local http API server, securely. Intended for local clients, DO NOT USE for remote peers.
     '''
     # TODO: URL encode parameters, just as an extra measure. May not be needed, but should be added regardless.
-    if hostname == '':
-        hostname = get_hostname()
+    hostname = get_hostname()
     if data != '':
         data = '&data=' + urllib.parse.quote_plus(data)
     payload = 'http://%s/%s%s' % (hostname, command, data)

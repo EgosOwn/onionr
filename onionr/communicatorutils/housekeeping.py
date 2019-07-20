@@ -27,12 +27,12 @@ def clean_old_blocks(comm_inst):
     '''Delete old blocks if our disk allocation is full/near full, and also expired blocks'''
 
     # Delete expired blocks
-    for bHash in blockmetadb.get_expired_blocks():
+    for bHash in blockmetadb.expiredblocks.get_expired_blocks():
         comm_inst.blacklist.addToDB(bHash)
         removeblock.remove_block(bHash)
         logger.info('Deleted block: %s' % (bHash,))
 
-    while comm_inst._core.storage_counter.isFull():
+    while comm_inst.storage_counter.isFull():
         oldest = blockmetadb.get_block_list()[0]
         comm_inst.blacklist.addToDB(oldest)
         removeblock.remove_block(oldest)
@@ -57,6 +57,6 @@ def clean_keys(comm_inst):
     conn.commit()
     conn.close()
 
-    onionrusers.deleteExpiredKeys(comm_inst._core)
+    onionrusers.deleteExpiredKeys()
 
     comm_inst.decrementThreadCount('clean_keys')

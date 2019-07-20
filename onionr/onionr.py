@@ -42,7 +42,7 @@ from netcontroller import NetController
 from onionrblockapi import Block
 import onionrproofs, onionrexceptions, communicator, setupconfig
 import onionrcommands as commands # Many command definitions are here
-from utils import identifyhome
+from utils import identifyhome, createdirs
 from coredb import keydb
 import filepaths
 
@@ -75,6 +75,7 @@ class Onionr:
 
         # Load global configuration data
         data_exists = Onionr.setupConfig(self.dataDir, self)
+        createdirs.create_dirs()
 
         if netcontroller.tor_binary() is None:
             logger.error('Tor is not installed', terminal=True)

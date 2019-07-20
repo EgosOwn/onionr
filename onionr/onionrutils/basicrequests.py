@@ -48,7 +48,7 @@ def do_get_request(onionr_inst, url, port=0, proxyType='tor', ignoreAPI=False, r
     '''
     Do a get request through a local tor or i2p instance
     '''
-    API_VERSION = onionr_inst.onionrInst.API_VERSION
+    API_VERSION = onionr_inst.API_VERSION
     retData = False
     if proxyType == 'tor':
         if port == 0:

@@ -17,6 +17,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
+from coredb import keydb
 class PeerProfiles:
     '''
         PeerProfiles
@@ -36,20 +37,20 @@ class PeerProfiles:
     def loadScore(self):
         '''Load the node's score from the database'''
         try:
-            self.success = int(self.coreInst.getAddressInfo(self.address, 'success'))
+            self.success = int(keydb.transportinfo.get_address_info(self.address, 'success'))
         except (TypeError, ValueError) as e:
             self.success = 0
         self.score = self.success
     
     def getConnectTime(self):
         try:
-            self.connectTime = int(self.coreInst.getAddressInfo(self.address, 'lastConnect'))
+            self.connectTime = int(keydb.transportinfo.get_address_info(self.address, 'lastConnect'))
         except (KeyError, ValueError, TypeError) as e:
             pass
         
     def saveScore(self):
         '''Save the node's score to the database'''
-        self.coreInst.setAddressInfo(self.address, 'success', self.score)
+        keydb.transportinfo.set_address_info(self.address, 'success', self.score)
         return
 
     def addScore(self, toAdd):

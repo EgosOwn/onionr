@@ -22,7 +22,7 @@ from flask import Response, request, redirect, Blueprint, send_from_directory
 import deadsimplekv as simplekv
 import filepaths
 flask_blueprint = Blueprint('esoteric_control', __name__)
-key_store = simplekv.DeadSimpleKV(filepaths.cachedstorage, refresh_seconds=5)
+key_store = simplekv.DeadSimpleKV(filepaths.cached_storage, refresh_seconds=5)
 @flask_blueprint.route('/esoteric/ping')
 def ping():
     return 'pong!'

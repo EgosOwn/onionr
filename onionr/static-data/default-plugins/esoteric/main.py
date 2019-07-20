@@ -21,7 +21,7 @@
 # Imports some useful libraries
 import locale, sys, os, threading, json
 locale.setlocale(locale.LC_ALL, '')
-import onionrservices, logger
+import onionrservices, logger, config
 from onionrservices import bootstrapservice
 from onionrutils import stringvalidators, epoch, basicrequests
 
@@ -39,7 +39,6 @@ def exit_with_error(text=''):
 
 class Esoteric:
     def __init__(self, pluginapi):
-        self.myCore = pluginapi.get_core()
         self.peer = None
         self.transport = None
         self.shutdown = False
@@ -59,7 +58,7 @@ class Esoteric:
                     message += '\n'
             except EOFError:
                 message = json.dumps({'m': message, 't': epoch.get_epoch()})
-                print(basicrequests.do_post_request(self.myCore, 'http://%s/esoteric/sendto' % (self.transport,), port=self.socks, data=message))
+                print(basicrequests.do_post_request('http://%s/esoteric/sendto' % (self.transport,), port=self.socks, data=message))
                 message = ''
             except KeyboardInterrupt:
                 self.shutdown = True
@@ -73,12 +72,12 @@ class Esoteric:
             exit_with_error('You must specify a peer public key')
         self.peer = peer
         # Ask peer for transport address by creating block for them
-        peer_transport_address = bootstrapservice.bootstrap_client_service(peer, self.myCore)
+        peer_transport_address = bootstrapservice.bootstrap_client_service(peer)
         self.transport = peer_transport_address
-        self.socks = self.myCore.config.get('tor.socksport')
+        self.socks = config.get('tor.socksport')
 
         print('connected with', peer, 'on', peer_transport_address)
-        if basicrequests.do_get_request(self.myCore, 'http://%s/ping' % (peer_transport_address,), ignoreAPI=True, port=self.socks) == 'pong!':
+        if basicrequests.do_get_request('http://%s/ping' % (peer_transport_address,), ignoreAPI=True, port=self.socks) == 'pong!':
             print('connected', peer_transport_address)
             threading.Thread(target=self._sender_loop).start()
 
