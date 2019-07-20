@@ -14,7 +14,7 @@ relationships:
 
 sources:
 - git: https://gitlab.com/beardog/onionr.git
-  branch: master
+  branch: easy-releases
 
 dependencies:
 - deb: git
