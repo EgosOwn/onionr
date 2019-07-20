@@ -18,7 +18,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 
-import onionrplugins, logger, onionrcrypto
+import onionrplugins, logger
 from onionrutils import localcommand
 from coredb import daemonqueue
 class DaemonAPI:
@@ -154,16 +154,12 @@ class pluginapi:
         self.plugins = PluginAPI(self)
         self.commands = CommandAPI(self)
         self.web = WebAPI(self)
-        self.crypto = onionrcrypto.OnionrCrypto()
 
     def get_onionr(self):
         return self.onionr
 
     def get_data(self):
         return self.data
-
-    def get_crypto(self):
-        return self.crypto
 
     def get_daemonapi(self):
         return self.daemon

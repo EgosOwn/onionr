@@ -24,14 +24,7 @@ import filepaths, onionrcrypto, dbcreator, onionrexceptions
 from onionrcrypto import hashers
 DB_ENTRY_SIZE_LIMIT = 10000 # Will be a config option
 
-def dbCreate():
-    try:
-        dbcreator.DBCreator().createBlockDataDB()
-    except FileExistsError:
-        pass
-
 def _dbInsert(blockHash, data):
-    dbCreate()
     conn = sqlite3.connect(dbfiles.block_data_db, timeout=10)
     c = conn.cursor()
     data = (blockHash, data)
@@ -40,7 +33,6 @@ def _dbInsert(blockHash, data):
     conn.close()
 
 def _dbFetch(blockHash):
-    dbCreate()
     conn = sqlite3.connect(dbfiles.block_data_db, timeout=10)
     c = conn.cursor()
     for i in c.execute('SELECT data from blockData where hash = ?', (blockHash,)):
@@ -54,7 +46,6 @@ def deleteBlock(blockHash):
     if os.path.exists('%s/%s.dat' % (filepaths.block_data_location, blockHash)):
         os.remove('%s/%s.dat' % (filepaths.block_data_location, blockHash))
         return True
-    dbCreate()
     conn = sqlite3.connect(dbfiles.block_data_db, timeout=10)
     c = conn.cursor()
     data = (blockHash,)
@@ -91,7 +82,7 @@ def getData(bHash):
         with open(fileLocation, 'rb') as block:
             retData = block.read()
     else:
-        retData = _dbFetch(coreInst, bHash)
+        retData = _dbFetch(bHash)
         if retData is None:
             raise onionrexceptions.NoDataAvailable("Block data for %s is not available" % [bHash])
     return retData

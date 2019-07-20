@@ -21,7 +21,7 @@ import sqlite3, os
 import logger, onionrcrypto
 from onionrutils import epoch, bytesconverter
 from coredb import dbfiles
-crypto = onionrcrypto.OnionrCrypto()
+
 class OnionrBlackList:
     def __init__(self):
         self.blacklistDB = dbfiles.blacklist_db
@@ -31,7 +31,7 @@ class OnionrBlackList:
         return
 
     def inBlacklist(self, data):
-        hashed = bytesconverter.bytes_to_str(crypto.sha3Hash(data))
+        hashed = bytesconverter.bytes_to_str(onionrcrypto.hashers.sha3_hash(data))
         retData = False
 
         if not hashed.isalnum():
@@ -100,6 +100,7 @@ class OnionrBlackList:
         1=peer
         2=pubkey
         '''
+
         # we hash the data so we can remove data entirely from our node's disk
         hashed = bytesconverter.bytes_to_str(crypto.sha3Hash(data))
         if len(hashed) > 64:

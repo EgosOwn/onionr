@@ -1,12 +1,11 @@
 import sys, sqlite3
-import onionrstorage, onionrexceptions, onionrcrypto
+import onionrstorage, onionrexceptions, onionrcrypto as crypto
 import filepaths, storagecounter
 from coredb import dbfiles
 def set_data(data):
     '''
         Set the data assciated with a hash
     '''
-    crypto = onionrcrypto.OnionrCrypto()
     storage_counter = storagecounter.StorageCounter()
     data = data
     dataSize = sys.getsizeof(data)
@@ -14,7 +13,7 @@ def set_data(data):
     if not type(data) is bytes:
         data = data.encode()
 
-    dataHash = crypto.sha3Hash(data)
+    dataHash = crypto.hashers.sha3_hash(data)
 
     if type(dataHash) is bytes:
         dataHash = dataHash.decode()

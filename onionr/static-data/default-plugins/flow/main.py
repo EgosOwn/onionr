@@ -96,7 +96,6 @@ def on_init(api, data = None):
         inputted is executed. Could be called when daemon is starting or when
         just the client is running.
     '''
-
     # Doing this makes it so that the other functions can access the api object
     # by simply referencing the variable `pluginapi`.
     global pluginapi

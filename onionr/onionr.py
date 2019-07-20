@@ -34,6 +34,8 @@ from utils import detectoptimization
 if detectoptimization.detect_optimization():
     sys.stderr.write('Error, Onionr cannot be run in optimized mode\n')
     sys.exit(1)
+from utils import createdirs
+createdirs.create_dirs()
 import os, base64, random, shutil, time, platform, signal
 from threading import Thread
 import config, logger, onionrplugins as plugins, onionrevents as events
@@ -42,7 +44,7 @@ from netcontroller import NetController
 from onionrblockapi import Block
 import onionrproofs, onionrexceptions, communicator, setupconfig
 import onionrcommands as commands # Many command definitions are here
-from utils import identifyhome, createdirs
+from utils import identifyhome
 from coredb import keydb
 import filepaths
 
@@ -75,7 +77,6 @@ class Onionr:
 
         # Load global configuration data
         data_exists = Onionr.setupConfig(self.dataDir, self)
-        createdirs.create_dirs()
 
         if netcontroller.tor_binary() is None:
             logger.error('Tor is not installed', terminal=True)

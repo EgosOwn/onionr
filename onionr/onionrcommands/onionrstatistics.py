@@ -25,7 +25,6 @@ from onionrutils import checkcommunicator, mnemonickeys
 from utils import sizeutils
 from coredb import blockmetadb, daemonqueue, keydb
 import onionrcrypto
-crypto = onionrcrypto.OnionrCrypto()
 def show_stats(o_inst):
     try:
         # define stats messages here
@@ -89,7 +88,7 @@ def show_details(o_inst):
     details = {
         'Node Address' : o_inst.get_hostname(),
         'Web Password' : o_inst.getWebPassword(),
-        'Public Key' : crypto.pubKey,
+        'Public Key' : onionrcrypto.pub_key,
         'Human-readable Public Key' : mnemonickeys.get_human_readable_ID()
     }
 

@@ -30,9 +30,13 @@ def get_hostname():
     maxWait = 3
     while True:
         if cache.get('client_api') is None:
-            hostname = getclientapiserver.get_client_API_server()
-            cache.put('hostname', hostname)
-            cache.flush()
+            try:
+                hostname = getclientapiserver.get_client_API_server()
+            except FileNotFoundError:
+                hostname = False
+            else:
+                cache.put('hostname', hostname)
+                cache.flush()
         else:
             hostname = cache.get('hostname')
         if hostname == '' or hostname is None:
@@ -48,9 +52,11 @@ def local_command(command, data='', silent = True, post=False, postData = {}, ma
     '''
     # TODO: URL encode parameters, just as an extra measure. May not be needed, but should be added regardless.
     hostname = get_hostname()
+    if hostname == False: return False
     if data != '':
         data = '&data=' + urllib.parse.quote_plus(data)
     payload = 'http://%s/%s%s' % (hostname, command, data)
+
     try:
         if post:
             retData = requests.post(payload, data=postData, headers={'token': config.get('client.webpassword'), 'Connection':'close'}, timeout=(maxWait, maxWait)).text

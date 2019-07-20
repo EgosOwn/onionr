@@ -26,7 +26,6 @@ def getDifficultyModifier():
     '''returns the difficulty modifier for block storage based 
     on a variety of factors, currently only disk use.
     '''
-    classInst = coreOrUtilsInst
     retData = 0
     useFunc = storagecounter.StorageCounter().getPercent
 

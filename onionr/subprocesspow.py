@@ -22,9 +22,8 @@
 import subprocess, os
 import multiprocessing, threading, time, json
 from multiprocessing import Pipe, Process
-import onionrblockapi, config, onionrutils, logger, onionrproofs, onionrcrypto
+import onionrblockapi, config, onionrutils, logger, onionrproofs, onionrcrypto as crypto
 from onionrutils import bytesconverter
-crypto = onionrcrypto.OnionrCrypto()
 class SubprocessPOW:
     def __init__(self, data, metadata, subproc_count=None):
         '''
@@ -105,7 +104,7 @@ class SubprocessPOW:
             # Serialize metadata, combine with block data
             payload = json.dumps(metadata).encode() + b'\n' + data
             # Check sha3_256 hash of block, compare to puzzle. Send payload if puzzle finished
-            token = crypto.sha3Hash(payload)
+            token = crypto.hashers.sha3_hash(payload)
             token = bytesconverter.bytes_to_str(token) # ensure token is string
             if puzzle == token[0:difficulty]:
                 pipe.send(payload)

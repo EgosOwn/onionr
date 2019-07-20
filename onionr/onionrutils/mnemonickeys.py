@@ -23,6 +23,6 @@ import onionrcrypto
 def get_human_readable_ID(pub=''):
     '''gets a human readable ID from a public key'''
     if pub == '':
-        pub = onionrcrypto.OnionrCrypto().pubKey
+        pub = onionrcrypto.pub_key
     pub = base64.b16encode(base64.b32decode(pub)).decode()
     return ' '.join(pgpwords.wordify(pub))
