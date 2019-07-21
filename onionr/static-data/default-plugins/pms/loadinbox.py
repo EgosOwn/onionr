@@ -19,14 +19,16 @@
 '''
 import onionrblockapi
 from coredb import blockmetadb
-def load_inbox(myCore):
+import filepaths
+import deadsimplekv as simplekv
+def load_inbox():
     inbox_list = []
-    deleted = myCore.keyStore.get('deleted_mail')
+    deleted = simplekv.DeadSimpleKV(filepaths.cached_storage).get('deleted_mail')
     if deleted is None:
         deleted = []
 
     for blockHash in blockmetadb.get_blocks_by_type('pm'):
-        block = onionrblockapi.Block(blockHash, core=myCore)
+        block = onionrblockapi.Block(blockHash)
         block.decrypt()
         if block.decrypted and blockHash not in deleted:
             inbox_list.append(blockHash)

@@ -18,15 +18,13 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 import sqlite3, os
-import core
 from onionrutils import epoch
+from utils import identifyhome
 class SentBox:
-    def __init__(self, mycore):
-        assert isinstance(mycore, core.Core)
-        self.dbLocation = mycore.dataDir + 'sentbox.db'
+    def __init__(self):
+        self.dbLocation = identifyhome.identify_home() + '/sentbox.db'
         if not os.path.exists(self.dbLocation):
             self.createDB()
-        self.core = mycore
         return
     
     def connect(self):

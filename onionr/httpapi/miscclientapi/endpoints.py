@@ -19,6 +19,8 @@
 '''
 from flask import Response, Blueprint, request, send_from_directory, abort
 from httpapi import apiutils
+import onionrcrypto
+pub_key = onionrcrypto.pub_key
 class PrivateEndpoints:
     def __init__(self, client_api):
         private_endpoints_bp = Blueprint('privateendpoints', __name__)
@@ -105,7 +107,7 @@ class PrivateEndpoints:
         
         @private_endpoints_bp.route('/getActivePubkey')
         def getActivePubkey():
-            return Response(onionrcrypto.OnionrCrypto().pubKey)
+            return Response(pub_key)
 
         @private_endpoints_bp.route('/getHumanReadable/<name>')
         def getHumanReadable(name):

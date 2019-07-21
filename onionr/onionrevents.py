@@ -39,7 +39,6 @@ def __event_caller(event_name, data = {}, onionr = None):
             logger.warn('Event "%s" failed for plugin "%s".' % (event_name, plugin), terminal=True)
             logger.debug(str(e), terminal=True)
 
-
 def event(event_name, data = {}, onionr = None, threaded = True):
     '''
         Calls an event on all plugins (if defined)
@@ -62,12 +61,11 @@ def call(plugin, event_name, data = None, pluginapi = None):
             attribute = 'on_' + str(event_name).lower()
 
             if hasattr(plugin, attribute):
-                #logger.debug('Calling event ' + str(event_name))
                 getattr(plugin, attribute)(pluginapi, data)
 
             return True
         except Exception as e:
-            logger.error(str(e))
+            logger.error(str(e), terminal=True)
             return False
     else:
         return True

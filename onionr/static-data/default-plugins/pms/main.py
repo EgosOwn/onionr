@@ -25,7 +25,6 @@ import onionrexceptions
 from onionrusers import onionrusers
 from onionrutils import stringvalidators, escapeansi, bytesconverter
 import locale, sys, os, json
-from coredb import blockmetadb
 
 locale.setlocale(locale.LC_ALL, '')
 
@@ -35,7 +34,7 @@ PLUGIN_VERSION = '0.0.1'
 sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
 import sentboxdb, mailapi, loadinbox # import after path insert
 flask_blueprint = mailapi.flask_blueprint
-
+""" 
 def draw_border(text):
     # This function taken from https://stackoverflow.com/a/20757491 by https://stackoverflow.com/users/816449/bunyk, under https://creativecommons.org/licenses/by-sa/3.0/
     lines = text.splitlines()
@@ -62,10 +61,9 @@ class MailStrings:
 
 class OnionrMail:
     def __init__(self, pluginapi):
-        self.myCore = pluginapi.get_core()
         self.strings = MailStrings(self)
 
-        self.sentboxTools = sentboxdb.SentBox(self.myCore)
+        self.sentboxTools = sentboxdb.SentBox()
         self.sentboxList = []
         self.sentMessages = {}
         self.doSigs = True
@@ -293,7 +291,7 @@ class OnionrMail:
                 pass
             else:
                 logger.warn('Invalid choice.', terminal=True)
-        return
+        return """
 
 def add_deleted(keyStore, bHash):
     existing = keyStore.get('deleted_mail')
@@ -318,7 +316,5 @@ def on_init(api, data = None):
     '''
 
     pluginapi = api
-    mail = OnionrMail(pluginapi)
-    api.commands.register(['mail'], mail.menu)
-    api.commands.register_help('mail', 'Interact with OnionrMail')
+
     return

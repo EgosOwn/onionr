@@ -23,6 +23,7 @@ from gevent.pywsgi import WSGIServer
 from onionrutils import epoch
 import httpapi, filepaths, logger
 from . import register_private_blueprints
+import serializeddata
 class PrivateAPI:
     '''
         Client HTTP api
@@ -40,6 +41,7 @@ class PrivateAPI:
         config = onionrInst.config
         self.config = config
         self.debug = debug
+        self.serializer = serializeddata.SerializedData(onionrInst)
         self.startTime = epoch.get_epoch()
         app = flask.Flask(__name__)
         bindPort = int(config.get('client.client.port', 59496))

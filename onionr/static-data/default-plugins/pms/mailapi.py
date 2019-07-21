@@ -19,15 +19,15 @@
 '''
 import sys, os, json
 from flask import Response, request, redirect, Blueprint, abort
-import core
 from onionrusers import contactmanager
 from onionrutils import stringvalidators
+import filepaths
+import deadsimplekv as simplekv
 sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
 import loadinbox, sentboxdb
 
 flask_blueprint = Blueprint('mail', __name__)
-c = core.Core()
-kv = c.keyStore
+kv = simplekv.DeadSimpleKV(filepaths.cached_storage)
 
 @flask_blueprint.route('/mail/ping')
 def mail_ping():
@@ -48,12 +48,12 @@ def mail_delete(block):
 
 @flask_blueprint.route('/mail/getinbox')
 def list_inbox():
-    return ','.join(loadinbox.load_inbox(c))
+    return ','.join(loadinbox.load_inbox())
 
 @flask_blueprint.route('/mail/getsentbox')
 def list_sentbox():
     kv.refresh()
-    sentbox_list = sentboxdb.SentBox(c).listSent()
+    sentbox_list = sentboxdb.SentBox().listSent()
     list_copy = list(sentbox_list)
     deleted = kv.get('deleted_mail')
     if deleted is None:
@@ -62,5 +62,5 @@ def list_sentbox():
         if x['hash'] in deleted:
             sentbox_list.remove(x)
             continue
-        x['name'] = contactmanager.ContactManager(c, x['peer'], saveUser=False).get_info('name')
+        x['name'] = contactmanager.ContactManager(x['peer'], saveUser=False).get_info('name')
     return json.dumps(sentbox_list)

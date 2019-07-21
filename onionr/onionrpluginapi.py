@@ -92,8 +92,6 @@ class CommandAPI:
         for name in names:
             self.pluginapi.get_onionr().addCommand(name, call)
 
-        return
-
     def unregister(self, names):
         if isinstance(names, str):
             names = [names]

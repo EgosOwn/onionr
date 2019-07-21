@@ -236,7 +236,7 @@ class Onionr:
         commands.onionrstatistics.show_peers(self)
 
     def listPeers(self):
-        logger.info('Peer transport address list:')
+        logger.info('Peer transport address list:', terminal=True)
         for i in keydb.listkeys.list_adders():
             logger.info(i, terminal=True)
 
@@ -354,8 +354,7 @@ class Onionr:
         '''
             Displays a message suggesting help
         '''
-        if __name__ == '__main__':
-            logger.info('Do ' + logger.colors.bold + sys.argv[0] + ' --help' + logger.colors.reset + logger.colors.fg.green + ' for Onionr help.', terminal=True)
+        logger.info('Do ' + logger.colors.bold + sys.argv[0] + ' --help' + logger.colors.reset + logger.colors.fg.green + ' for Onionr help.', terminal=True)
 
     def start(self, input = False, override = False):
         '''
