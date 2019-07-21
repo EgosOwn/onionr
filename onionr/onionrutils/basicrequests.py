@@ -44,11 +44,15 @@ def do_post_request(onionr_inst, url, data={}, port=0, proxyType='tor', max_size
         retData = False
     return retData
 
-def do_get_request(onionr_inst, url, port=0, proxyType='tor', ignoreAPI=False, returnHeaders=False, max_size=5242880):
+def do_get_request(url, port=0, proxyType='tor', ignoreAPI=False, returnHeaders=False, max_size=5242880, onionr_inst=None):
     '''
     Do a get request through a local tor or i2p instance
     '''
-    API_VERSION = onionr_inst.API_VERSION
+    if not ignoreAPI:
+        if onionr_inst is None:
+            raise ValueError("Onionr inst must be set if ignoreAPI is False")
+    else:
+        API_VERSION = onionr_inst.API_VERSION
     retData = False
     if proxyType == 'tor':
         if port == 0:

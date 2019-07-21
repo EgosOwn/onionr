@@ -22,6 +22,7 @@ from onionrutils import stringvalidators, bytesconverter, epoch
 import unpaddedbase32
 import nacl.exceptions
 from coredb import keydb, dbfiles
+import onionrcrypto
 
 def deleteExpiredKeys():
     # Fetch the keys we generated for the peer, that are still around
@@ -48,18 +49,16 @@ def deleteTheirExpiredKeys(pubkey):
     conn.close()
 
 DEFAULT_KEY_EXPIRE = 604800
-#DEFAULT_KEY_EXPIRE = 600
 
 class OnionrUser:
 
-    def __init__(self, crypto_inst, publicKey, saveUser=False):
+    def __init__(self, publicKey, saveUser=False):
         '''
             OnionrUser is an abstraction for "users" of the network. 
             
             Takes a base32 encoded ed25519 public key, and a bool saveUser
             saveUser determines if we should add a user to our peer database or not.
         '''
-        self.crypto = crypto_inst
         publicKey = unpaddedbase32.repad(bytesconverter.str_to_bytes(publicKey)).decode()
 
         self.trust = 0
@@ -94,11 +93,11 @@ class OnionrUser:
         return retData
 
     def encrypt(self, data):
-        encrypted = self.crypto.pubKeyEncrypt(data, self.publicKey, encodedData=True)
+        encrypted = onionrcrypto.encryption.pub_key_encrypt(data, self.publicKey, encodedData=True)
         return encrypted
 
     def decrypt(self, data):
-        decrypted = self.crypto.pubKeyDecrypt(data, self.publicKey, encodedData=True)
+        decrypted = onionrcrypto.encryption.pub_key_decrypt(data, self.publicKey, encodedData=True)
         return decrypted
 
     def forwardEncrypt(self, data):
@@ -107,7 +106,7 @@ class OnionrUser:
         retData = ''
         forwardKey = self._getLatestForwardKey()
         if stringvalidators.validate_pub_key(forwardKey[0]):
-            retData = self.crypto.pubKeyEncrypt(data, forwardKey[0], encodedData=True)
+            retData = onionrcrypto.encryption.pub_key_encrypt(data, forwardKey[0], encodedData=True)
         else:
             raise onionrexceptions.InvalidPubkey("No valid forward secrecy key available for this user")
         #self.generateForwardKey()
@@ -117,7 +116,7 @@ class OnionrUser:
         retData = ""
         for key in self.getGeneratedForwardKeys(False):
             try:
-                retData = self.crypto.pubKeyDecrypt(encrypted, privkey=key[1], encodedData=True)
+                retData = onionrcrypto.encryption.pub_key_decrypt(encrypted, privkey=key[1], encodedData=True)
             except nacl.exceptions.CryptoError:
                 retData = False
             else:
@@ -162,7 +161,7 @@ class OnionrUser:
         c = conn.cursor()
         # Prepare the insert
         time = epoch.get_epoch()
-        newKeys = self.crypto.generatePubKey()
+        newKeys = onionrcrypto.generate()
         newPub = bytesconverter.bytes_to_str(newKeys[0])
         newPriv = bytesconverter.bytes_to_str(newKeys[1])
 

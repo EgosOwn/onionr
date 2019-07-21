@@ -5,7 +5,7 @@ import onionrevents as events
 from etc import powchoice, onionrvalues
 import config, onionrcrypto as crypto, subprocesspow, onionrexceptions
 from onionrusers import onionrusers
-from onionrutils import localcommand, blockmetadata
+from onionrutils import localcommand, blockmetadata, stringvalidators
 import coredb
 def insert_block(data, header='txt', sign=False, encryptType='', symKey='', asymPeer='', meta = {}, expire=None, disableForward=False):
     '''
@@ -66,7 +66,7 @@ def insert_block(data, header='txt', sign=False, encryptType='', symKey='', asym
 
     if encryptType == 'asym':
         meta['rply'] = createTime # Duplicate the time in encrypted messages to prevent replays
-        if not disableForward and sign and asymPeer != crypto.pubKey:
+        if not disableForward and sign and asymPeer != crypto.pub_key:
             try:
                 forwardEncrypted = onionrusers.OnionrUser(asymPeer).forwardEncrypt(data)
                 data = forwardEncrypted[0]
@@ -82,7 +82,7 @@ def insert_block(data, header='txt', sign=False, encryptType='', symKey='', asym
     plaintextMeta = jsonMeta
     if sign:
         signature = crypto.signing.ed_sign(jsonMeta.encode() + data, key=crypto.priv_key, encodeResult=True)
-        signer = crypto.pubKey
+        signer = crypto.pub_key
 
     if len(jsonMeta) > 1000:
         raise onionrexceptions.InvalidMetadata('meta in json encoded form must not exceed 1000 bytes')
@@ -96,8 +96,8 @@ def insert_block(data, header='txt', sign=False, encryptType='', symKey='', asym
             jsonMeta = json.dumps(meta)
             jsonMeta = crypto.encryption.pub_key_encrypt(jsonMeta, asymPeer, encodedData=True).decode()
             data = crypto.encryption.pub_key_encrypt(data, asymPeer, encodedData=True).decode()
-            signature = crypto.pub_key_encrypt(signature, asymPeer, encodedData=True).decode()
-            signer = crypto.pub_key_encrypt(signer, asymPeer, encodedData=True).decode()
+            signature = crypto.encryption.pub_key_encrypt(signature, asymPeer, encodedData=True).decode()
+            signer = crypto.encryption.pub_key_encrypt(signer, asymPeer, encodedData=True).decode()
             try:
                 onionrusers.OnionrUser(asymPeer, saveUser=True)
             except ValueError:

@@ -1,6 +1,7 @@
 import nacl.encoding, nacl.public, nacl.signing
 from .. import getourkeypair
 import unpaddedbase32
+from onionrutils import bytesconverter, stringvalidators
 pair = getourkeypair.get_keypair()
 our_pub_key = pair[0]
 our_priv_key = pair[1]

@@ -23,11 +23,12 @@ from onionrutils import stringvalidators
 from . import listkeys
 from utils import gettransports
 from .. import dbfiles
+import onionrcrypto
 def add_peer(peerID, name=''):
     '''
         Adds a public key to the key database (misleading function name)
     '''
-    if peerID in listkeys.list_peers() or peerID == core_inst._crypto.pubKey:
+    if peerID in listkeys.list_peers() or peerID == onionrcrypto.pub_key:
         raise ValueError("specified id is already known")
 
     # This function simply adds a peer to the DB
@@ -37,7 +38,7 @@ def add_peer(peerID, name=''):
     #events.event('pubkey_add', data = {'key': peerID}, onionr = core_inst.onionrInst)
 
     conn = sqlite3.connect(dbfiles.user_id_info_db, timeout=30)
-    hashID = core_inst._crypto.pubKeyHashID(peerID)
+    hashID = ""
     c = conn.cursor()
     t = (peerID, name, 'unknown', hashID, 0)
 

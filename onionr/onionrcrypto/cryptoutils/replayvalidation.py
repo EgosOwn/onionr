@@ -1,6 +1,6 @@
-import utils # onionr utils epoch, not this utils
+from onionrutils import epoch
 def replay_timestamp_validation(timestamp):
-    if utils.epoch.get_epoch() - int(timestamp) > 2419200:
+    if epoch.get_epoch() - int(timestamp) > 2419200:
         return False
     else:
         return True

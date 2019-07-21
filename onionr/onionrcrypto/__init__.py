@@ -19,7 +19,7 @@
 '''
 
 from . import generate, hashers, getourkeypair, signing, encryption
-
+generate = generate.generate_pub_key
 
 keypair = getourkeypair.get_keypair()
 pub_key = keypair[0]

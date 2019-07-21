@@ -57,5 +57,5 @@ def client_api_insert_block():
         meta = json.loads(bData['meta'])
     except KeyError:
         pass
-    threading.Thread(target=onionrblocks.insert.insert_block, args=(message,), kwargs={'header': bType, 'encryptType': encryptType, 'sign':sign, 'asymPeer': to, 'meta': meta}).start()
+    threading.Thread(target=onionrblocks.insert, args=(message,), kwargs={'header': bType, 'encryptType': encryptType, 'sign':sign, 'asymPeer': to, 'meta': meta}).start()
     return Response('success')
