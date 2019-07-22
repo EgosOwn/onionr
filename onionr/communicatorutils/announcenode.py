@@ -50,7 +50,7 @@ def announce_node(daemon):
 
             combinedNodes = ourID + peer
             if ourID != 1:
-                existingRand = bytesconverter.bytes_to_str(keydb.addressinfo.get_address_info(peer, 'powValue'))
+                existingRand = bytesconverter.bytes_to_str(keydb.transportinfo.get_address_info(peer, 'powValue'))
                 # Reset existingRand if it no longer meets the minimum POW
                 if type(existingRand) is type(None) or not existingRand.endswith('0' * ov.announce_pow):
                     existingRand = ''
@@ -76,7 +76,7 @@ def announce_node(daemon):
                 if basicrequests.do_post_request(url, data) == 'Success':
                     logger.info('Successfully introduced node to ' + peer, terminal=True)
                     retData = True
-                    keydb.addressinfo.set_address_info(peer, 'introduced', 1)
-                    keydb.addressinfo.set_address_info(peer, 'powValue', data['random'])
+                    keydb.transportinfo.set_address_info(peer, 'introduced', 1)
+                    keydb.transportinfo.set_address_info(peer, 'powValue', data['random'])
     daemon.decrementThreadCount('announce_node')
     return retData

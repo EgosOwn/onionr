@@ -64,7 +64,8 @@ def connect_new_peer_to_communicator(comm_inst, peer='', useBootstrap=False):
         if comm_inst.shutdown:
             return
         # Ping a peer,
-        if peeraction.peer_action(comm_inst, address, 'ping') == 'pong!':
+        ret = peeraction.peer_action(comm_inst, address, 'ping')
+        if ret == 'pong!':
             time.sleep(0.1)
             if address not in mainPeerList:
                 # Add a peer to our list if it isn't already since it successfully connected
@@ -85,5 +86,5 @@ def connect_new_peer_to_communicator(comm_inst, peer='', useBootstrap=False):
         else:
             # Mark a peer as tried if they failed to respond to ping
             tried.append(address)
-            logger.debug('Failed to connect to ' + address)
+            logger.debug('Failed to connect to %s: %s ' % (address, ret))
     return retData

@@ -214,7 +214,7 @@ class OnionrCommunicatorDaemon:
 
     def peerCleanup(self):
         '''This just calls onionrpeers.cleanupPeers, which removes dead or bad peers (offline too long, too slow)'''
-        onionrpeers.peer_cleanup()
+        onionrpeers.peer_cleanup(self.onionrInst)
         self.decrementThreadCount('peerCleanup')
 
     def getPeerProfileInstance(self, peer):

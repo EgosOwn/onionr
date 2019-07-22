@@ -21,6 +21,8 @@ import logger, onionrproofs
 from onionrutils import stringvalidators, epoch
 from communicator import peeraction, onlinepeers
 from coredb import blockmetadb
+import onionrblacklist
+blacklist = onionrblacklist.OnionrBlackList()
 def lookup_blocks_from_communicator(comm_inst):
     logger.info('Looking up new blocks...')
     tryAmount = 2
@@ -72,7 +74,7 @@ def lookup_blocks_from_communicator(comm_inst):
                     if not i in existingBlocks:
                         # if block does not exist on disk and is not already in block queue
                         if i not in comm_inst.blockQueue:
-                            if onionrproofs.hashMeetsDifficulty(i) and not comm_inst.blacklist.inBlacklist(i):
+                            if onionrproofs.hashMeetsDifficulty(i) and not blacklist.inBlacklist(i):
                                 if len(comm_inst.blockQueue) <= 1000000:
                                     comm_inst.blockQueue[i] = [peer] # add blocks to download queue
                                     new_block_count += 1

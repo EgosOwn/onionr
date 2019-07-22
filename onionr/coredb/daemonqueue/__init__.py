@@ -75,7 +75,7 @@ def daemon_queue_get_response(responseID=''):
     '''
         Get a response sent by communicator to the API, by requesting to the API
     '''
-    if len(responseID) > 0: raise ValueError('ResponseID should not be empty')
+    if len(responseID) == 0: raise ValueError('ResponseID should not be empty')
     resp = localcommand.local_command(dbfiles.daemon_queue_db, 'queueResponse/' + responseID)
     return resp
 

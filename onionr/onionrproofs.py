@@ -94,6 +94,7 @@ class DataPOW:
         self.data = data
         self.threadCount = threadCount
         self.rounds = 0
+        self.hashing = False
 
         if forceDifficulty == 0:
             dataLen = sys.getsizeof(data)
@@ -189,6 +190,7 @@ class POW:
         self.data = data
         self.metadata = metadata
         self.threadCount = threadCount
+        self.hashing = False
 
         json_metadata = json.dumps(metadata).encode()
 

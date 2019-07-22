@@ -21,6 +21,7 @@ import logger
 from onionrutils import stringvalidators
 from communicator import peeraction, onlinepeers
 from utils import gettransports
+transports = gettransports.get()
 def lookup_new_peer_transports_with_communicator(comm_inst):
     logger.info('Looking up new addresses...')
     tryAmount = 1
@@ -41,7 +42,7 @@ def lookup_new_peer_transports_with_communicator(comm_inst):
         invalid = []
         for x in newPeers:
             x = x.strip()
-            if not stringvalidators.validate_transport(x) or x in comm_inst.newPeers or x == gettransports.transports[0]:
+            if not stringvalidators.validate_transport(x) or x in comm_inst.newPeers or x in transports:
                 # avoid adding if its our address
                 invalid.append(x)
         for x in invalid:

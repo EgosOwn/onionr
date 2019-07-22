@@ -18,12 +18,14 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 from coredb import blockmetadb
+import onionrblacklist
 def should_download(comm_inst, block_hash):
+    blacklist = onionrblacklist.OnionrBlackList()
     ret_data = True
     if block_hash in blockmetadb.get_block_list(): # Dont download block we have
         ret_data = False
     else:
-        if comm_inst.blacklist.inBlacklist(block_hash): # Dont download blacklisted block
+        if blacklist.inBlacklist(block_hash): # Dont download blacklisted block
             ret_data = False
     if ret_data is False:
         # Remove block from communicator queue if it shouldnt be downloaded

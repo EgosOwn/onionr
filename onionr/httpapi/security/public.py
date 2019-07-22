@@ -20,11 +20,12 @@
 from flask import Blueprint, request, abort
 from onionrservices import httpheaders
 from onionrutils import epoch
-
+from utils import gettransports
 class PublicAPISecurity:
     def __init__(self, public_api):
         public_api_security_bp = Blueprint('publicapisecurity', __name__)
         self.public_api_security_bp = public_api_security_bp
+        transports = gettransports.get()
 
         @public_api_security_bp.before_app_request
         def validate_request():
@@ -32,10 +33,7 @@ class PublicAPISecurity:
             # If high security level, deny requests to public (HS should be disabled anyway for Tor, but might not be for I2P)
             if public_api.config.get('general.security_level', default=1) > 0:
                 abort(403)
-            if type(public_api.torAdder) is None and type(public_api.i2pAdder) is None:
-                # abort if our hs addresses are not known
-                abort(403)
-            if request.host not in (public_api.i2pAdder, public_api.torAdder):
+            if request.host not in transports:
                 # Disallow connection if wrong HTTP hostname, in order to prevent DNS rebinding attacks
                 abort(403)
             public_api.hitCount += 1 # raise hit count for valid requests

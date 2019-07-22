@@ -21,7 +21,7 @@ import sqlite3
 import logger
 from onionrutils import epoch
 from . import scoresortedpeerlist, peerprofiles
-import onionrblacklist
+import onionrblacklist, config
 from coredb import keydb
 def peer_cleanup(onionr_inst):
     '''Removes peers who have been offline too long or score too low'''
@@ -40,7 +40,7 @@ def peer_cleanup(onionr_inst):
             if peerprofiles.PeerProfiles(address).score < min_score:
                 keydb.removekeys.remove_address(address)
                 try:
-                    if (int(epoch.get_epoch()) - int(keydb.transportinfo.get_address_info(address, 'dateSeen'))) >= 600:
+                    if (int(epoch.get_epoch()) - int(keydb.transportinfo.get_address_info(address, 'lastConnect'))) >= 600:
                         expireTime = 600
                     else:
                         expireTime = 86400

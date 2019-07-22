@@ -25,7 +25,6 @@ import config, filepaths, onionrcrypto
 def validate_metadata(metadata, blockData):
     '''Validate metadata meets onionr spec (does not validate proof value computation), take in either dictionary or json string'''
     # TODO, make this check sane sizes
-    crypto = onionrcrypto.OnionrCrypto()
     requirements = onionrvalues.OnionrValues()
     retData = False
     maxClockDifference = 120
@@ -81,7 +80,7 @@ def validate_metadata(metadata, blockData):
         else:
             # if metadata loop gets no errors, it does not break, therefore metadata is valid
             # make sure we do not have another block with the same data content (prevent data duplication and replay attacks)
-            nonce = bytesconverter.bytes_to_str(crypto.sha3Hash(blockData))
+            nonce = bytesconverter.bytes_to_str(onionrcrypto.hashers.sha3_hash(blockData))
             try:
                 with open(filepaths.data_nonce_file, 'r') as nonceFile:
                     if nonce in nonceFile.read():

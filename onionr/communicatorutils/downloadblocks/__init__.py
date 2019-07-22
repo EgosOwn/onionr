@@ -20,13 +20,12 @@
 import communicator, onionrexceptions
 import logger, onionrpeers
 from onionrutils import blockmetadata, stringvalidators, validatemetadata
+from coredb import blockmetadb
 from . import shoulddownload
 from communicator import peeraction, onlinepeers
 import onionrcrypto, onionrstorage, onionrblacklist, storagecounter
-
 def download_blocks_from_communicator(comm_inst):
     assert isinstance(comm_inst, communicator.OnionrCommunicatorDaemon)
-    crypto = onionrcrypto.OnionrCrypto()
     blacklist = onionrblacklist.OnionrBlackList()
     storage_counter = storagecounter.StorageCounter()
     for blockHash in list(comm_inst.blockQueue):
@@ -54,7 +53,7 @@ def download_blocks_from_communicator(comm_inst):
         if len(blockPeers) == 0:
             peerUsed = onlinepeers.pick_online_peer(comm_inst)
         else:
-            blockPeers = crypto.randomShuffle(blockPeers)
+            blockPeers = onionrcrypto.cryptoutils.random_shuffle(blockPeers)
             peerUsed = blockPeers.pop(0)
 
         if not comm_inst.shutdown and peerUsed.strip() != '':
@@ -66,7 +65,7 @@ def download_blocks_from_communicator(comm_inst):
             except AttributeError:
                 pass
 
-            realHash = ccrypto.sha3Hash(content)
+            realHash = onionrcrypto.hashers.sha3_hash(content)
             try:
                 realHash = realHash.decode() # bytes on some versions for some reason
             except AttributeError:
@@ -76,7 +75,7 @@ def download_blocks_from_communicator(comm_inst):
                 metas = blockmetadata.get_block_metadata_from_data(content) # returns tuple(metadata, meta), meta is also in metadata
                 metadata = metas[0]
                 if validatemetadata.validate_metadata(metadata, metas[2]): # check if metadata is valid, and verify nonce
-                    if crypto.verifyPow(content): # check if POW is enough/correct
+                    if onionrcrypto.cryptoutils.verify_POW(content): # check if POW is enough/correct
                         logger.info('Attempting to save block %s...' % blockHash[:12])
                         try:
                             onionrstorage.setdata.set_data(content)

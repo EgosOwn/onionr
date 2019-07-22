@@ -22,14 +22,14 @@ from communicatorutils import proxypicker
 import onionrblockapi as block
 from onionrutils import localcommand, stringvalidators, basicrequests
 from communicator import onlinepeers
-
+import onionrcrypto
 def upload_blocks_from_communicator(comm_inst):
     # when inserting a block, we try to upload it to a few peers to add some deniability
     TIMER_NAME = "upload_blocks_from_communicator"
 
     triedPeers = []
     finishedUploads = []
-    comm_inst.blocksToUpload = comm_inst.crypto.randomShuffle(comm_inst.blocksToUpload)
+    comm_inst.blocksToUpload = onionrcrypto.cryptoutils.random_shuffle(comm_inst.blocksToUpload)
     if len(comm_inst.blocksToUpload) != 0:
         for bl in comm_inst.blocksToUpload:
             if not stringvalidators.validate_hash(bl):
