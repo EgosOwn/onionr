@@ -81,12 +81,12 @@ class OnionrCLIUI:
                 if self.flow_enabled:
                     self.subCommand("flow")
                 else:
-                    print('Plugin not enabled')
+                    logger.warn('flow plugin is not enabled')
             elif choice in ("2", "mail"):
                 if self.mail_enabled:
                     self.subCommand("mail")
                 else:
-                    print('Plugin not enabled')
+                    logger.warn('mail plugin not enabled')
             elif choice in ("3", "file sharing", "file"):
                 try:
                     filename = input("Enter full path to file: ").strip()

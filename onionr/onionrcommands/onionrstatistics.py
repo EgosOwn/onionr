@@ -109,7 +109,7 @@ def show_peers(o_inst):
                     if peers == 'none':
                         print('No current outgoing connections.')
                     else:
-                        print(peers)
+                        logger.info('Peers: %s' % peers)
                 else:
-                    print('Daemon probably not running. Unable to list connected peers.')
+                    logger.warn('Daemon probably not running. Unable to list connected peers.')
                 break

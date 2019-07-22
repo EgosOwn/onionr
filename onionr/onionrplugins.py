@@ -20,6 +20,7 @@
 import os, re, importlib
 import onionrevents as events, config, logger
 from utils import identifyhome
+
 # set data dir
 dataDir = identifyhome.identify_home()
 
@@ -67,9 +68,10 @@ def enable(name, onionr = None, start_event = True):
         if not name in enabled_plugins:
             try:
                 events.call(get_plugin(name), 'enable', onionr)
-            except ImportError: # Was getting import error on Gitlab CI test "data"
+            except ImportError as e: # Was getting import error on Gitlab CI test "data"
                 # NOTE: If you are experiencing issues with plugins not being enabled, it might be this resulting from an error in the module
                 # can happen inconsistently (especially between versions)
+                logger.debug('Failed to enable module; Import error: %s' % e)
                 return False
             else:
                 enabled_plugins.append(name)
@@ -82,6 +84,7 @@ def enable(name, onionr = None, start_event = True):
             return False
     else:
         logger.error('Failed to enable plugin \"%s\", disabling plugin.' % name, terminal=True)
+        logger.debug('Plugins folder not found: %s' % get_plugins_folder(str(name).lower()))
         disable(name)
 
         return False
@@ -169,6 +172,7 @@ def import_module_from_file(full_path_to_module):
     module_name, module_ext = os.path.splitext(module_file)
 
     module_name = module_dir # Module name must be unique otherwise it will get written in other imports
+    
     # Get module "spec" from filename
     spec = importlib.util.spec_from_file_location(module_name,full_path_to_module)
 

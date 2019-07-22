@@ -157,6 +157,12 @@ class Onionr:
         else:
             self.header(None)
 
+    def cmdHeader(self):
+        if len(sys.argv) >= 3:
+            self.header(logger.colors.fg.pink + sys.argv[2].replace('Onionr', logger.colors.bold + 'Onionr' + logger.colors.reset + logger.colors.fg.pink))
+        else:
+            self.header(None)
+
     def header(self, message = logger.colors.fg.pink + logger.colors.bold + 'Onionr' + logger.colors.reset + logger.colors.fg.pink + ' has started.'):
         if os.path.exists('static-data/header.txt') and logger.get_level() <= logger.LEVEL_INFO:
             with open('static-data/header.txt', 'rb') as file:
@@ -165,6 +171,17 @@ class Onionr:
 
                 if not message is None:
                     logger.info(logger.colors.fg.lightgreen + '-> ' + str(message) + logger.colors.reset + logger.colors.fg.lightgreen + ' <-\n', terminal=True)
+
+    def doExport(self, bHash):
+        exportDir = self.dataDir + 'block-export/'
+        if not os.path.exists(exportDir):
+            if os.path.exists(self.dataDir):
+                os.mkdir(exportDir)
+            else:
+                logger.error('Onionr Not initialized')
+        data = onionrstorage.getData(self.onionrCore, bHash)
+        with open('%s/%s.dat' % (exportDir, bHash), 'wb') as exportFile:
+            exportFile.write(data)
 
     def deleteRunFiles(self):
         try:
@@ -299,6 +316,7 @@ class Onionr:
             function(ONIONR_TAGLINE, terminal=True)
         if verbosity >= 2:
             function('Running on %s %s' % (platform.platform(), platform.release()), terminal=True)
+            function('Onionr data dir: %s' % self.dataDir)
 
     def doPEX(self):
         '''make communicator do pex'''
