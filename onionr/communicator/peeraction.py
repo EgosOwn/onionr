@@ -33,7 +33,7 @@ def peer_action(comm_inst, peer, action, data='', returnHeaders=False, max_resp_
 
     keydb.transportinfo.set_address_info(peer, 'lastConnectAttempt', epoch.get_epoch()) # mark the time we're trying to request this peer
     try:
-        retData = basicrequests.do_get_request(comm_inst.onionrInst, url, port=comm_inst.proxyPort, max_size=max_resp_size)
+        retData = basicrequests.do_get_request( url, port=comm_inst.proxyPort, max_size=max_resp_size)
     except streamedrequests.exceptions.ResponseLimitReached:
         logger.warn('Request failed due to max response size being overflowed', terminal=True)
         retData = False
