@@ -54,8 +54,11 @@ input{
   }
 
   .mailPing{
-      display: none;
       color: orange;
+  }
+
+  #addUnknownContact, .mailPing{
+      display: none;
   }
 
 .danger{
@@ -92,7 +95,7 @@ input{
     color: black;
 }
 
-#replyBtn{
+.break-up{
     margin-top: 1em;
 }
 
@@ -110,4 +113,8 @@ input{
     color: black;
     font-size: 1.5em;
     width: 10%;
+}
+
+.content{
+    min-height: 1000px;
 }

@@ -1,5 +1,5 @@
 '''
-    Onionr - P2P Anonymous Storage Network
+    Onionr - Private P2P Communication
 
     Core Onionr library, useful for external programs. Handles peer & data processing
 '''
@@ -17,34 +17,35 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import sqlite3, os, sys, time, math, base64, tarfile, nacl, logger, json, netcontroller, math, config, uuid
+import os, sys, json
+import logger, netcontroller, config
 from onionrblockapi import Block
+import coredb
 import deadsimplekv as simplekv
-import onionrutils, onionrcrypto, onionrproofs, onionrevents as events, onionrexceptions
+import onionrcrypto, onionrproofs, onionrevents as events, onionrexceptions
 import onionrblacklist
 from onionrusers import onionrusers
+from onionrstorage import removeblock, setdata
 import dbcreator, onionrstorage, serializeddata, subprocesspow
-from etc import onionrvalues
-
-if sys.version_info < (3, 6):
-    try:
-        import sha3
-    except ModuleNotFoundError:
-        logger.fatal('On Python 3 versions prior to 3.6.x, you need the sha3 module')
-        sys.exit(1)
+from etc import onionrvalues, powchoice
+from onionrutils import localcommand, stringvalidators, bytesconverter, epoch
+from onionrutils import blockmetadata
+from utils import identifyhome
+import storagecounter
 
 class Core:
     def __init__(self, torPort=0):
         '''
             Initialize Core Onionr library
         '''
-
         # set data dir
-        self.dataDir = os.environ.get('ONIONR_HOME', os.environ.get('DATA_DIR', 'data/'))
-        if not self.dataDir.endswith('/'):
-            self.dataDir += '/'
+        self.dataDir = identifyhome.identify_home()
 
         try:
+            self.usageFile = self.dataDir + 'disk-usage.txt'
+            self.config = config
+            self.maxBlockSize = 10000000 # max block size in bytes
+
             self.onionrInst = None
             self.queueDB = self.dataDir + 'queue.db'
             self.peerDB = self.dataDir + 'peers.db'
@@ -64,18 +65,14 @@ class Core:
             self.dbCreate = dbcreator.DBCreator(self)
             self.forwardKeysFile = self.dataDir + 'forward-keys.db'
             self.keyStore = simplekv.DeadSimpleKV(self.dataDir + 'cachedstorage.dat', refresh_seconds=5)
-
+            self.storage_counter = storagecounter.StorageCounter(self)
+            
             # Socket data, defined here because of multithreading constraints with gevent
             self.killSockets = False
             self.startSocket = {}
             self.socketServerConnData = {}
             self.socketReasons = {}
             self.socketServerResponseData = {}
-
-            self.usageFile = self.dataDir + 'disk-usage.txt'
-            self.config = config
-
-            self.maxBlockSize = 10000000 # max block size in bytes
 
             if not os.path.exists(self.dataDir):
                 os.mkdir(self.dataDir)
@@ -103,15 +100,15 @@ class Core:
             else:
                 logger.warn('Warning: address bootstrap file not found ' + self.bootstrapFileLocation)
 
-            self._utils = onionrutils.OnionrUtils(self)
+            self.use_subprocess = powchoice.use_subprocess(self)
             # Initialize the crypto object
             self._crypto = onionrcrypto.OnionrCrypto(self)
             self._blacklist = onionrblacklist.OnionrBlackList(self)
             self.serializer = serializeddata.SerializedData(self)
 
         except Exception as error:
-            logger.error('Failed to initialize core Onionr library.', error=error)
-            logger.fatal('Cannot recover from error.')
+            logger.error('Failed to initialize core Onionr library.', error=error, terminal=True)
+            logger.fatal('Cannot recover from error.', terminal=True)
             sys.exit(1)
         return
 
@@ -127,88 +124,19 @@ class Core:
         '''
             Adds a public key to the key database (misleading function name)
         '''
-        assert peerID not in self.listPeers()
-
-        # This function simply adds a peer to the DB
-        if not self._utils.validatePubKey(peerID):
-            return False
-
-        events.event('pubkey_add', data = {'key': peerID}, onionr = None)
-
-        conn = sqlite3.connect(self.peerDB, timeout=30)
-        hashID = self._crypto.pubKeyHashID(peerID)
-        c = conn.cursor()
-        t = (peerID, name, 'unknown', hashID, 0)
-
-        for i in c.execute("SELECT * FROM peers WHERE id = ?;", (peerID,)):
-            try:
-                if i[0] == peerID:
-                    conn.close()
-                    return False
-            except ValueError:
-                pass
-            except IndexError:
-                pass
-        c.execute('INSERT INTO peers (id, name, dateSeen, hashID, trust) VALUES(?, ?, ?, ?, ?);', t)
-        conn.commit()
-        conn.close()
-
-        return True
+        return coredb.keydb.addkeys.add_peer(self, peerID, name)
 
     def addAddress(self, address):
         '''
             Add an address to the address database (only tor currently)
         '''
-
-        if address == config.get('i2p.ownAddr', None) or address == self.hsAddress:
-            return False
-        if type(address) is None or len(address) == 0:
-            return False
-        if self._utils.validateID(address):
-            conn = sqlite3.connect(self.addressDB, timeout=30)
-            c = conn.cursor()
-            # check if address is in database
-            # this is safe to do because the address is validated above, but we strip some chars here too just in case
-            address = address.replace('\'', '').replace(';', '').replace('"', '').replace('\\', '')
-            for i in c.execute("SELECT * FROM adders WHERE address = ?;", (address,)):
-                try:
-                    if i[0] == address:
-                        conn.close()
-                        return False
-                except ValueError:
-                    pass
-                except IndexError:
-                    pass
-
-            t = (address, 1)
-            c.execute('INSERT INTO adders (address, type) VALUES(?, ?);', t)
-            conn.commit()
-            conn.close()
-
-            events.event('address_add', data = {'address': address}, onionr = None)
-
-            return True
-        else:
-            #logger.debug('Invalid ID: %s' % address)
-            return False
+        return coredb.keydb.addkeys.add_address(self, address)
 
     def removeAddress(self, address):
         '''
             Remove an address from the address database
         '''
-
-        if self._utils.validateID(address):
-            conn = sqlite3.connect(self.addressDB, timeout=30)
-            c = conn.cursor()
-            t = (address,)
-            c.execute('Delete from adders where address=?;', t)
-            conn.commit()
-            conn.close()
-
-            events.event('address_remove', data = {'address': address}, onionr = None)
-            return True
-        else:
-            return False
+        return coredb.keydb.removekeys.remove_address(self, address)
 
     def removeBlock(self, block):
         '''
@@ -216,16 +144,7 @@ class Core:
 
             **You may want blacklist.addToDB(blockHash)
         '''
-
-        if self._utils.validateHash(block):
-            conn = sqlite3.connect(self.blockDB, timeout=30)
-            c = conn.cursor()
-            t = (block,)
-            c.execute('Delete from hashes where hash=?;', t)
-            conn.commit()
-            conn.close()
-            dataSize = sys.getsizeof(onionrstorage.getData(self, block))
-            self._utils.storageCounter.removeBytes(dataSize)
+        removeblock.remove_block(self, block)
 
     def createAddressDB(self):
         '''
@@ -251,67 +170,19 @@ class Core:
 
             Should be in hex format!
         '''
-
-        if not os.path.exists(self.blockDB):
-            raise Exception('Block db does not exist')
-        if self._utils.hasBlock(newHash):
-            return
-        conn = sqlite3.connect(self.blockDB, timeout=30)
-        c = conn.cursor()
-        currentTime = self._utils.getEpoch() + self._crypto.secrets.randbelow(301)
-        if selfInsert or dataSaved:
-            selfInsert = 1
-        else:
-            selfInsert = 0
-        data = (newHash, currentTime, '', selfInsert)
-        c.execute('INSERT INTO hashes (hash, dateReceived, dataType, dataSaved) VALUES(?, ?, ?, ?);', data)
-        conn.commit()
-        conn.close()
-
-        return
-
-    def getData(self, hash):
-        '''
-            Simply return the data associated to a hash
-        '''
-
-        data = onionrstorage.getData(self, hash)
-
-        return data
+        coredb.blockmetadb.add.add_to_block_DB(self, newHash, selfInsert, dataSaved)
 
     def setData(self, data):
         '''
             Set the data assciated with a hash
         '''
+        return onionrstorage.setdata.set_data(self, data)
 
-        data = data
-        dataSize = sys.getsizeof(data)
-
-        if not type(data) is bytes:
-            data = data.encode()
-
-        dataHash = self._crypto.sha3Hash(data)
-
-        if type(dataHash) is bytes:
-            dataHash = dataHash.decode()
-        blockFileName = self.blockDataLocation + dataHash + '.dat'
-        if os.path.exists(blockFileName):
-            pass # TODO: properly check if block is already saved elsewhere
-            #raise Exception("Data is already set for " + dataHash)
-        else:
-            if self._utils.storageCounter.addBytes(dataSize) != False:
-                onionrstorage.store(self, data, blockHash=dataHash)
-                conn = sqlite3.connect(self.blockDB, timeout=30)
-                c = conn.cursor()
-                c.execute("UPDATE hashes SET dataSaved=1 WHERE hash = ?;", (dataHash,))
-                conn.commit()
-                conn.close()
-                with open(self.dataNonceFile, 'a') as nonceFile:
-                    nonceFile.write(dataHash + '\n')
-            else:
-                raise onionrexceptions.DiskAllocationReached
-
-        return dataHash
+    def getData(self, hash):
+        '''
+            Simply return the data associated to a hash
+        '''
+        return onionrstorage.getData(self, hash)
 
     def daemonQueue(self):
         '''
@@ -319,118 +190,31 @@ class Core:
 
             This function intended to be used by the client. Queue to exchange data between "client" and server.
         '''
-
-        retData = False
-        if not os.path.exists(self.queueDB):
-            self.dbCreate.createDaemonDB()
-        else:
-            conn = sqlite3.connect(self.queueDB, timeout=30)
-            c = conn.cursor()
-            try:
-                for row in c.execute('SELECT command, data, date, min(ID), responseID FROM commands group by id'):
-                    retData = row
-                    break
-            except sqlite3.OperationalError:
-                self.dbCreate.createDaemonDB()
-            else:
-                if retData != False:
-                    c.execute('DELETE FROM commands WHERE id=?;', (retData[3],))
-            conn.commit()
-            conn.close()
-
-        events.event('queue_pop', data = {'data': retData}, onionr = None)
-
-        return retData
+        return coredb.daemonqueue.daemon_queue(self)
 
     def daemonQueueAdd(self, command, data='', responseID=''):
         '''
             Add a command to the daemon queue, used by the communication daemon (communicator.py)
         '''
-
-        retData = True
-
-        date = self._utils.getEpoch()
-        conn = sqlite3.connect(self.queueDB, timeout=30)
-        c = conn.cursor()
-        t = (command, data, date, responseID)
-
-        try:
-            c.execute('INSERT INTO commands (command, data, date, responseID) VALUES(?, ?, ?, ?)', t)
-            conn.commit()
-        except sqlite3.OperationalError:
-            retData = False
-            self.daemonQueue()
-        events.event('queue_push', data = {'command': command, 'data': data}, onionr = None)
-        conn.close()
-        return retData
+        return coredb.daemonqueue.daemon_queue_add(self, command, data, responseID)
 
     def daemonQueueGetResponse(self, responseID=''):
         '''
             Get a response sent by communicator to the API, by requesting to the API
         '''
-        assert len(responseID) > 0
-        resp = self._utils.localCommand('queueResponse/' + responseID)
-        return resp
-
-    def daemonQueueWaitForResponse(self, responseID='', checkFreqSecs=1):
-        resp = 'failure'
-        while resp == 'failure':
-            resp = self.daemonQueueGetResponse(responseID)
-            time.sleep(1)
-        return resp
-
-    def daemonQueueSimple(self, command, data='', checkFreqSecs=1):
-        '''
-        A simplified way to use the daemon queue. Will register a command (with optional data) and wait, return the data
-        Not always useful, but saves time + LOC in some cases.
-        This is a blocking function, so be careful.
-        '''
-        responseID = str(uuid.uuid4()) # generate unique response ID
-        self.daemonQueueAdd(command, data=data, responseID=responseID)
-        return self.daemonQueueWaitForResponse(responseID, checkFreqSecs)
+        return coredb.daemonqueue.daemon_queue_get_response(self, responseID)
 
     def clearDaemonQueue(self):
         '''
             Clear the daemon queue (somewhat dangerous)
         '''
-        conn = sqlite3.connect(self.queueDB, timeout=30)
-        c = conn.cursor()
-
-        try:
-            c.execute('DELETE FROM commands;')
-            conn.commit()
-        except:
-            pass
-
-        conn.close()
-        events.event('queue_clear', onionr = None)
-
-        return
+        return coredb.daemonqueue.clear_daemon_queue(self)
 
     def listAdders(self, randomOrder=True, i2p=True, recent=0):
         '''
             Return a list of addresses
         '''
-        conn = sqlite3.connect(self.addressDB, timeout=30)
-        c = conn.cursor()
-        if randomOrder:
-            addresses = c.execute('SELECT * FROM adders ORDER BY RANDOM();')
-        else:
-            addresses = c.execute('SELECT * FROM adders;')
-        addressList = []
-        for i in addresses:
-            if len(i[0].strip()) == 0:
-                continue
-            addressList.append(i[0])
-        conn.close()
-        testList = list(addressList) # create new list to iterate
-        for address in testList:
-            try:
-                if recent > 0 and (self._utils.getEpoch() - self.getAddressInfo(address, 'lastConnect')) > recent:
-                    raise TypeError # If there is no last-connected date or it was too long ago, don't add peer to list if recent is not 0
-            except TypeError:
-                addressList.remove(address)
-        return addressList
+        return coredb.keydb.listkeys.list_adders(self, randomOrder, i2p, recent)
 
     def listPeers(self, randomOrder=True, getPow=False, trust=0):
         '''
@@ -439,35 +223,7 @@ class Core:
             randomOrder determines if the list should be in a random order
             trust sets the minimum trust to list
         '''
-        conn = sqlite3.connect(self.peerDB, timeout=30)
-        c = conn.cursor()
-
-        payload = ''
-
-        if trust not in (0, 1, 2):
-            logger.error('Tried to select invalid trust.')
-            return
-
-        if randomOrder:
-            payload = 'SELECT * FROM peers WHERE trust >= ? ORDER BY RANDOM();'
-        else:
-            payload = 'SELECT * FROM peers WHERE trust >= ?;'
-
-        peerList = []
-
-        for i in c.execute(payload, (trust,)):
-            try:
-                if len(i[0]) != 0:
-                    if getPow:
-                        peerList.append(i[0] + '-' + i[1])
-                    else:
-                        peerList.append(i[0])
-            except TypeError:
-                pass
-
-        conn.close()
-
-        return peerList
+        return coredb.keydb.listkeys.list_peers(self, randomOrder, getPow, trust)
 
     def getPeerInfo(self, peer, info):
         '''
@@ -480,46 +236,13 @@ class Core:
             trust int           4
             hashID text         5
         '''
-        conn = sqlite3.connect(self.peerDB, timeout=30)
-        c = conn.cursor()
-
-        command = (peer,)
-        infoNumbers = {'id': 0, 'name': 1, 'adders': 2, 'dateSeen': 3, 'trust': 4, 'hashID': 5}
-        info = infoNumbers[info]
-        iterCount = 0
-        retVal = ''
-
-        for row in c.execute('SELECT * FROM peers WHERE id=?;', command):
-            for i in row:
-                if iterCount == info:
-                    retVal = i
-                    break
-                else:
-                    iterCount += 1
-
-        conn.close()
-
-        return retVal
+        return coredb.keydb.userinfo.get_user_info(self, peer, info)
 
     def setPeerInfo(self, peer, key, data):
         '''
             Update a peer for a key
         '''
-
-        conn = sqlite3.connect(self.peerDB, timeout=30)
-        c = conn.cursor()
-
-        command = (data, peer)
-
-        # TODO: validate key on whitelist
-        if key not in ('id', 'name', 'pubkey', 'forwardKey', 'dateSeen', 'trust'):
-            raise Exception("Got invalid database key when setting peer info")
-
-        c.execute('UPDATE peers SET ' + key + ' = ? WHERE id=?', command)
-        conn.commit()
-        conn.close()
-
-        return
+        return coredb.keydb.userinfo.set_peer_info(self, peer, key, data)
 
     def getAddressInfo(self, address, info):
         '''
@@ -536,117 +259,35 @@ class Core:
             trust       8
             introduced  9
         '''
-
-        conn = sqlite3.connect(self.addressDB, timeout=30)
-        c = conn.cursor()
-
-        command = (address,)
-        infoNumbers = {'address': 0, 'type': 1, 'knownPeer': 2, 'speed': 3, 'success': 4, 'powValue': 5, 'failure': 6, 'lastConnect': 7, 'trust': 8, 'introduced': 9}
-        info = infoNumbers[info]
-        iterCount = 0
-        retVal = ''
-
-        for row in c.execute('SELECT * FROM adders WHERE address=?;', command):
-            for i in row:
-                if iterCount == info:
-                    retVal = i
-                    break
-                else:
-                    iterCount += 1
-        conn.close()
-
-        return retVal
+        return coredb.keydb.transportinfo.get_address_info(self, address, info)
 
     def setAddressInfo(self, address, key, data):
         '''
             Update an address for a key
         '''
-
-        conn = sqlite3.connect(self.addressDB, timeout=30)
-        c = conn.cursor()
-
-        command = (data, address)
-
-        if key not in ('address', 'type', 'knownPeer', 'speed', 'success', 'failure', 'powValue', 'lastConnect', 'lastConnectAttempt', 'trust', 'introduced'):
-            raise Exception("Got invalid database key when setting address info")
-        else:
-            c.execute('UPDATE adders SET ' + key + ' = ? WHERE address=?', command)
-            conn.commit()
-        conn.close()
-
-        return
+        return coredb.keydb.transportinfo.set_address_info(self, address, key, data)
 
     def getBlockList(self, dateRec = None, unsaved = False):
         '''
             Get list of our blocks
         '''
-        if dateRec == None:
-            dateRec = 0
-
-        conn = sqlite3.connect(self.blockDB, timeout=30)
-        c = conn.cursor()
-
-        execute = 'SELECT hash FROM hashes WHERE dateReceived >= ? ORDER BY dateReceived ASC;'
-        args = (dateRec,)
-        rows = list()
-        for row in c.execute(execute, args):
-            for i in row:
-                rows.append(i)
-        conn.close()
-        return rows
+        return coredb.blockmetadb.get_block_list(self, dateRec, unsaved)
 
     def getBlockDate(self, blockHash):
         '''
             Returns the date a block was received
         '''
-
-        conn = sqlite3.connect(self.blockDB, timeout=30)
-        c = conn.cursor()
-
-        execute = 'SELECT dateReceived FROM hashes WHERE hash=?;'
-        args = (blockHash,)
-        for row in c.execute(execute, args):
-            for i in row:
-                return int(i)
-        conn.close()
-        return None
+        return coredb.blockmetadb.get_block_date(self, blockHash)
 
     def getBlocksByType(self, blockType, orderDate=True):
         '''
             Returns a list of blocks by the type
         '''
-
-        conn = sqlite3.connect(self.blockDB, timeout=30)
-        c = conn.cursor()
-
-        if orderDate:
-            execute = 'SELECT hash FROM hashes WHERE dataType=? ORDER BY dateReceived;'
-        else:
-            execute = 'SELECT hash FROM hashes WHERE dataType=?;'
-
-        args = (blockType,)
-        rows = list()
-
-        for row in c.execute(execute, args):
-            for i in row:
-                rows.append(i)
-        conn.close()
-        return rows
+        return coredb.blockmetadb.get_blocks_by_type(self, blockType, orderDate)
 
     def getExpiredBlocks(self):
         '''Returns a list of expired blocks'''
-        conn = sqlite3.connect(self.blockDB, timeout=30)
-        c = conn.cursor()
-        date = int(self._utils.getEpoch())
-
-        execute = 'SELECT hash FROM hashes WHERE expire <= %s ORDER BY dateReceived;' % (date,)
-
-        rows = list()
-        for row in c.execute(execute):
-            for i in row:
-                rows.append(i)
-        conn.close()
-        return rows
+        return coredb.blockmetadb.expiredblocks.get_expired_blocks(self)
 
     def updateBlockInfo(self, hash, key, data):
         '''
@@ -663,18 +304,7 @@ class Core:
             dateClaimed  - timestamp claimed inside the block, only as trustworthy as the block author is
             expire       - expire date for a block
         '''
-
-        if key not in ('dateReceived', 'decrypted', 'dataType', 'dataFound', 'dataSaved', 'sig', 'author', 'dateClaimed', 'expire'):
-            return False
-
-        conn = sqlite3.connect(self.blockDB, timeout=30)
-        c = conn.cursor()
-        args = (data, hash)
-        c.execute("UPDATE hashes SET " + key + " = ? where hash = ?;", args)
-        conn.commit()
-        conn.close()
-
-        return True
+        return coredb.blockmetadb.updateblockinfo.update_block_info(self, hash, key, data)
 
     def insertBlock(self, data, header='txt', sign=False, encryptType='', symKey='', asymPeer='', meta = {}, expire=None, disableForward=False):
         '''
@@ -682,15 +312,17 @@ class Core:
             encryptType must be specified to encrypt a block
         '''
         allocationReachedMessage = 'Cannot insert block, disk allocation reached.'
-        if self._utils.storageCounter.isFull():
+        if self.storage_counter.isFull():
             logger.error(allocationReachedMessage)
             return False
         retData = False
 
-        createTime = self._utils.getRoundedEpoch()
+        if type(data) is None:
+            raise ValueError('Data cannot be none')
 
-        # check nonce
-        dataNonce = self._utils.bytesToStr(self._crypto.sha3Hash(data))
+        createTime = epoch.get_epoch()
+
+        dataNonce = bytesconverter.bytes_to_str(self._crypto.sha3Hash(data))
         try:
             with open(self.dataNonceFile, 'r') as nonces:
                 if dataNonce in nonces:
@@ -763,14 +395,18 @@ class Core:
             signature = self._crypto.symmetricEncrypt(signature, key=symKey, returnEncoded=True).decode()
             signer = self._crypto.symmetricEncrypt(signer, key=symKey, returnEncoded=True).decode()
         elif encryptType == 'asym':
-            if self._utils.validatePubKey(asymPeer):
+            if stringvalidators.validate_pub_key(asymPeer):
                 # Encrypt block data with forward secrecy key first, but not meta
                 jsonMeta = json.dumps(meta)
                 jsonMeta = self._crypto.pubKeyEncrypt(jsonMeta, asymPeer, encodedData=True).decode()
                 data = self._crypto.pubKeyEncrypt(data, asymPeer, encodedData=True).decode()
                 signature = self._crypto.pubKeyEncrypt(signature, asymPeer, encodedData=True).decode()
                 signer = self._crypto.pubKeyEncrypt(signer, asymPeer, encodedData=True).decode()
-                onionrusers.OnionrUser(self, asymPeer, saveUser=True)
+                try:
+                    onionrusers.OnionrUser(self, asymPeer, saveUser=True)
+                except ValueError:
+                    # if peer is already known
+                    pass
             else:
                 raise onionrexceptions.InvalidPubkey(asymPeer + ' is not a valid base32 encoded ed25519 key')
 
@@ -786,7 +422,10 @@ class Core:
             metadata['expire'] = expire
 
         # send block data (and metadata) to POW module to get tokenized block data
-        payload = subprocesspow.SubprocessPOW(data, metadata, self).start()
+        if self.use_subprocess:
+            payload = subprocesspow.SubprocessPOW(data, metadata, self).start()
+        else:
+            payload = onionrproofs.POW(metadata, data).waitForResult()
         if payload != False:
             try:
                 retData = self.setData(payload)
@@ -794,45 +433,29 @@ class Core:
                 logger.error(allocationReachedMessage)
                 retData = False
             else:
-                # Tell the api server through localCommand to wait for the daemon to upload this block to make stastical analysis more difficult
-                self._utils.localCommand('/waitforshare/' + retData, post=True)
+                # Tell the api server through localCommand to wait for the daemon to upload this block to make statistical analysis more difficult
+                if localcommand.local_command(self, '/ping', maxWait=10) == 'pong!':
+                    if self.config.get('general.security_level', 1) == 0:
+                        localcommand.local_command(self, '/waitforshare/' + retData, post=True, maxWait=5)
+                    self.daemonQueueAdd('uploadBlock', retData)
+                else:
+                    pass
                 self.addToBlockDB(retData, selfInsert=True, dataSaved=True)
-                #self.setBlockType(retData, meta['type'])
-                self._utils.processBlockMetadata(retData)
-                self.daemonQueueAdd('uploadBlock', retData)
+                blockmetadata.process_block_metadata(self, retData)
 
         if retData != False:
-            if plaintextPeer == 'OVPCZLOXD6DC5JHX4EQ3PSOGAZ3T24F75HQLIUZSDSMYPEOXCPFA====':
-                events.event('insertdeniable', {'content': plaintext, 'meta': plaintextMeta, 'hash': retData, 'peer': self._utils.bytesToStr(asymPeer)}, onionr = self.onionrInst, threaded = True)
+            if plaintextPeer == onionrvalues.DENIABLE_PEER_ADDRESS:
+                events.event('insertdeniable', {'content': plaintext, 'meta': plaintextMeta, 'hash': retData, 'peer': bytesconverter.bytes_to_str(asymPeer)}, onionr = self.onionrInst, threaded = True)
             else:
-                events.event('insertblock', {'content': plaintext, 'meta': plaintextMeta, 'hash': retData, 'peer': self._utils.bytesToStr(asymPeer)}, onionr = self.onionrInst, threaded = True)
+                events.event('insertblock', {'content': plaintext, 'meta': plaintextMeta, 'hash': retData, 'peer': bytesconverter.bytes_to_str(asymPeer)}, onionr = self.onionrInst, threaded = True)
         return retData
 
     def introduceNode(self):
         '''
             Introduces our node into the network by telling X many nodes our HS address
         '''
-
-        if(self._utils.isCommunicatorRunning(timeout=30)):
-            announceAmount = 2
-            nodeList = self.listAdders()
-
-            if len(nodeList) == 0:
-                for i in self.bootstrapList:
-                    if self._utils.validateID(i):
-                        self.addAddress(i)
-                        nodeList.append(i)
-
-            if announceAmount > len(nodeList):
-                announceAmount = len(nodeList)
-
-            for i in range(announceAmount):
-                self.daemonQueueAdd('announceNode', nodeList[i])
-
-            events.event('introduction', onionr = None)
-
-            return True
+        if localcommand.local_command(self, '/ping', maxWait=10) == 'pong!':
+            self.daemonQueueAdd('announceNode')
+            logger.info('Introduction command will be processed.', terminal=True)
         else:
-            logger.error('Onionr daemon is not running.')
-            return False
-        return
+            logger.warn('No running node detected. Cannot introduce.', terminal=True)

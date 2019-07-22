@@ -1,0 +1,32 @@
+.threadEntry{
+    margin-bottom: 2%;
+}
+.threadEntry button{
+    margin-right: 1%;
+}
+.threadEntry span, .sentboxList span{
+    padding-left: 1%;
+}
+
+.overlayContent{
+    background-color: lightgray;
+    border: 3px solid black;
+    border-radius: 3px;
+    color: black;
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+    min-height: 100%;
+    padding: 1em;
+    margin: 1em;
+}
+
+#draftText{
+    margin-top: 1em;
+    margin-bottom: 1em;
+    display: block;
+    width: 50%;
+    height: 75%;
+    min-width: 2%;
+    min-height: 5%;
+    background: white;
+    color: black;
+}

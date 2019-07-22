@@ -1,5 +1,5 @@
 '''
-    Onionr - P2P Anonymous Storage Network
+    Onionr - Private P2P Communication
 
     This module defines commands for CLI usage
 '''
@@ -21,6 +21,8 @@
 import webbrowser, sys
 import logger
 from . import pubkeymanager, onionrstatistics, daemonlaunch, filecommands, plugincommands, keyadders
+from . import banblocks, exportblocks, openwebinterface, resettor
+from onionrutils import importnewblocks
 
 def show_help(o_inst, command):
 
@@ -38,16 +40,6 @@ def show_help(o_inst, command):
         o_inst.version(0)
         for command, helpmessage in helpmenu.items():
             o_inst.showHelp(command)
-
-def open_home(o_inst):
-    try:
-        url = o_inst.onionrUtils.getClientAPIServer()
-    except FileNotFoundError:
-        logger.error('Onionr seems to not be running (could not get api host)')
-    else:
-        url = 'http://%s/#%s' % (url, o_inst.onionrCore.config.get('client.webpassword'))
-        print('If Onionr does not open automatically, use this URL:', url)
-        webbrowser.open_new_tab(url)
 
 def get_commands(onionr_inst):
     return {'': onionr_inst.showHelpSuggestion,
@@ -119,8 +111,8 @@ def get_commands(onionr_inst):
     'listconn': onionr_inst.listConn,
     'list-conn': onionr_inst.listConn,
 
-    'import-blocks': onionr_inst.onionrUtils.importNewBlocks,
-    'importblocks': onionr_inst.onionrUtils.importNewBlocks,
+    'import-blocks': importnewblocks.import_new_blocks,
+    'importblocks': importnewblocks.import_new_blocks,
 
     'introduce': onionr_inst.onionrCore.introduceNode,
     'pex': onionr_inst.doPEX,
@@ -137,7 +129,9 @@ def get_commands(onionr_inst):
     'friend': onionr_inst.friendCmd,
     'addid': onionr_inst.addID,
     'add-id': onionr_inst.addID,
-    'change-id': onionr_inst.changeID
+    'change-id': onionr_inst.changeID,
+
+    'reset-tor': resettor.reset_tor
     }
 
 cmd_help = {
@@ -168,5 +162,6 @@ cmd_help = {
     'friend': '[add|remove] [public key/id]',
     'add-id': 'Generate a new ID (key pair)',
     'change-id': 'Change active ID',
-    'open-home': 'Open your node\'s home/info screen'
+    'open-home': 'Open your node\'s home/info screen',
+    'reset-tor': 'Delete the Tor data directory. Only do this if Tor never starts.'
         }

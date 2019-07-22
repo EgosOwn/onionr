@@ -21,6 +21,7 @@
 import core as onionrcore, logger, config, onionrexceptions, nacl.exceptions
 import json, os, sys, datetime, base64, onionrstorage
 from onionrusers import onionrusers
+from onionrutils import stringvalidators, epoch
 
 class Block:
     blockCacheOrder = list() # NEVER write your own code that writes to this!
@@ -88,9 +89,9 @@ class Block:
 
                 # Check for replay attacks
                 try:
-                    if self.core._utils.getEpoch() - self.core.getBlockDate(self.hash) < 60:
+                    if epoch.get_epoch() - self.core.getBlockDate(self.hash) > 60:
                         assert self.core._crypto.replayTimestampValidation(self.bmetadata['rply'])
-                except (AssertionError, KeyError) as e:
+                except (AssertionError, KeyError, TypeError) as e:
                     if not self.bypassReplayCheck:
                         # Zero out variables to prevent reading of replays
                         self.bmetadata = {}
@@ -215,7 +216,10 @@ class Block:
         '''
 
         if self.exists():
-            os.remove(self.getBlockFile())
+            try:
+                os.remove(self.getBlockFile())
+            except TypeError:
+                pass
             self.getCore().removeBlock(self.getHash())
             return True
         return False
@@ -438,7 +442,7 @@ class Block:
         '''
 
         try:
-            if (not self.isSigned()) or (not self.getCore()._utils.validatePubKey(signer)):
+            if (not self.isSigned()) or (not stringvalidators.validate_pub_key(signer)):
                 return False
 
             return bool(self.getCore()._crypto.edVerify(self.getSignedData(), signer, self.getSignature(), encodedData = encodedData))

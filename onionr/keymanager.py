@@ -1,5 +1,5 @@
 '''
-    Onionr - P2P Anonymous Storage Network
+    Onionr - Private P2P Communication
 
     Load, save, and delete the user's public key pairs (does not handle peer keys)
 '''
@@ -17,20 +17,20 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
+from onionrutils import bytesconverter
 import onionrcrypto
 class KeyManager:
     def __init__(self, crypto):
         assert isinstance(crypto, onionrcrypto.OnionrCrypto)
         self._core = crypto._core
-        self._utils = self._core._utils
         self.keyFile = crypto._keyFile
         self.crypto = crypto
 
     def addKey(self, pubKey=None, privKey=None):
         if type(pubKey) is type(None) and type(privKey) is type(None):
             pubKey, privKey = self.crypto.generatePubKey()
-        pubKey = self.crypto._core._utils.bytesToStr(pubKey)
-        privKey = self.crypto._core._utils.bytesToStr(privKey)
+        pubKey = bytesconverter.bytes_to_str(pubKey)
+        privKey = bytesconverter.bytes_to_str(privKey)
         try:
             if pubKey in self.getPubkeyList():
                 raise ValueError('Pubkey already in list: %s' % (pubKey,))

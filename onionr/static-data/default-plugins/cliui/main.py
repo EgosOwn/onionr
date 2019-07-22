@@ -1,5 +1,5 @@
 '''
-    Onionr - P2P Anonymous Storage Network
+    Onionr - Private P2P Communication
 
     This is an interactive menu-driven CLI interface for Onionr
 '''
@@ -23,6 +23,7 @@ import threading, time, uuid, subprocess, sys
 import config, logger
 from onionrblockapi import Block
 import onionrplugins
+from onionrutils import localcommand
 
 plugin_name = 'cliui'
 PLUGIN_VERSION = '0.0.1'
@@ -39,8 +40,6 @@ class OnionrCLIUI:
 
     def subCommand(self, command, args=None):
             try:
-                #subprocess.run(["./onionr.py", command])
-                #subprocess.Popen(['./onionr.py', command], stdin=subprocess.STD, stdout=subprocess.STDOUT, stderr=subprocess.STDOUT)
                 if args != None:
                     subprocess.call(['./onionr.py', command, args])
                 else:
@@ -50,7 +49,7 @@ class OnionrCLIUI:
     
     def isRunning(self):
         while not self.shutdown:
-            if self.myCore._utils.localCommand('ping', maxWait=5) == 'pong!':
+            if localcommand.local_command(self.myCore, 'ping', maxWait=5) == 'pong!':
                 self.running = 'Yes'
             else:
                 self.running = 'No'
@@ -89,15 +88,20 @@ class OnionrCLIUI:
                 else:
                     print('Plugin not enabled')
             elif choice in ("3", "file sharing", "file"):
-                filename = input("Enter full path to file: ").strip()
-                self.subCommand("addfile", filename)
+                try:
+                    filename = input("Enter full path to file: ").strip()
+                except (EOFError, KeyboardInterrupt) as e:
+                    pass
+                else:
+                    if len(filename.strip()) > 0:
+                        self.subCommand("addfile", filename)
             elif choice in ("4", "quit"):
                 showMenu = False
                 self.shutdown = True
             elif choice == "":
                 pass
             else:
-                logger.error("Invalid choice")
+                logger.error("Invalid choice", terminal=True)
         return
 
 def on_init(api, data = None):

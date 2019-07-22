@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset='utf-8'>
+    <!--Mobile responsive-->
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>
+        Clandestine
+    </title>
+    <link rel='shortcut icon' type='image/ico' href='/shared/images/favicon.ico'>
+    <link rel='stylesheet' href='/shared/main/bulma.min.css'>
+    <link rel="stylesheet" href="/shared/main/styles-new.css">
+</head>
+
+<body>
+
+    <nav class="navbar is-dark" role="navigation" aria-label="main navigation">
+        <div class="navbar-brand">
+            <a class="navbar-item idLink" href="/">
+                <img src="/shared/images/favicon.ico" class="navabarLogo"> Onionr
+            </a>
+
+            <a role="button" class="navbar-burger burger" aria-label="menu" aria-expanded="false"
+                data-target="navbarBasicExample">
+                <span aria-hidden="true"></span>
+                <span aria-hidden="true"></span>
+                <span aria-hidden="true"></span>
+            </a>
+        </div>
+
+        <div id="navbarBasicExample" class="navbar-menu">
+            <div class="navbar-start">
+                <a class="navbar-item idLink" href="/">Home</a>
+                <a class="navbar-item idLink" href="/mail/">Mail</a>
+                <a class="navbar-item idLink" href="/friends/">Friends</a>
+                <a class="navbar-item idLink" href="/board/">Circles</a>
+                <a class="navbar-item idLink" href="/clandestine/">Clandestine</a>
+            </div>
+        </div>
+    </nav>
+
+    <!--Hero (Dark Section)-->
+    <section class="hero is-small is-dark">
+        <div class="hero-body">
+            <div class="container">
+                <div class="columns">
+                    <div class="column">
+                        <h1 class="title">
+                            Clandestine
+                        </h1>
+                        <h2 class="subtitle">
+                            Instant messaging
+                        </h2>
+                    </div>
+                    <div class="column is-7">
+                        <div class="field">
+                            <label class="label">Open Site</label>
+                            <div class="field has-addons">
+                                <p class="control">
+                                    <a class="button is-static">Identity</a>
+                                </p>
+                                <p class="control is-expanded">
+                                    <input id="myPub" class="input myPub" type="text" readonly>
+                                </p>
+                                <p class="control">
+                                    <a id="myPubCopy" class="button is-primary">Copy</a>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        </div>
+    </section>
+
+    <br>
+
+    <div class='content'>
+        <ul class='conversationList'></ul>
+    </div>
+    <script src='/shared/navbar.js'></script>
+    <script src='/shared/misc.js'></script>
+    <script src='/clandestine/js/main.js'></script>
+</body>
+
+</html>

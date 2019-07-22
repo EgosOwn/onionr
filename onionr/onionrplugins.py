@@ -1,5 +1,5 @@
 '''
-    Onionr - P2P Microblogging Platform & Social network
+    Onionr - Private P2P Communication
 
     This file deals with management of modules/plugins.
 '''
@@ -17,17 +17,15 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-
-import os, re, importlib, config, logger
-import onionrevents as events
-
+import os, re, importlib
+import onionrevents as events, config, logger
+from utils import identifyhome
 # set data dir
-dataDir = os.environ.get('ONIONR_HOME', os.environ.get('DATA_DIR', 'data/'))
-if not dataDir.endswith('/'):
-    dataDir += '/'
+dataDir = identifyhome.identify_home()
 
 _pluginsfolder = dataDir + 'plugins/'
 _instances = dict()
+config.reload()
 
 def reload(onionr = None, stop_event = True):
     '''
@@ -71,19 +69,19 @@ def enable(name, onionr = None, start_event = True):
                 events.call(get_plugin(name), 'enable', onionr)
             except ImportError: # Was getting import error on Gitlab CI test "data"
                 # NOTE: If you are experiencing issues with plugins not being enabled, it might be this resulting from an error in the module
-                # can happen inconsistenly (especially between versions)
+                # can happen inconsistently (especially between versions)
                 return False
             else:
                 enabled_plugins.append(name)
-                config.set('plugins.enabled', enabled_plugins, True)
-
+                config.set('plugins.enabled', enabled_plugins, savefile=True)
+                
                 if start_event is True:
                     start(name)
                 return True
         else:
             return False
     else:
-        logger.error('Failed to enable plugin \"%s\", disabling plugin.' % name)
+        logger.error('Failed to enable plugin \"%s\", disabling plugin.' % name, terminal=True)
         disable(name)
 
         return False
@@ -170,6 +168,7 @@ def import_module_from_file(full_path_to_module):
     module_dir, module_file = os.path.split(full_path_to_module)
     module_name, module_ext = os.path.splitext(module_file)
 
+    module_name = module_dir # Module name must be unique otherwise it will get written in other imports
     # Get module "spec" from filename
     spec = importlib.util.spec_from_file_location(module_name,full_path_to_module)
 
@@ -187,7 +186,7 @@ def get_plugin(name):
     if str(name).lower() in _instances:
         return _instances[str(name).lower()]
     else:
-        _instances[str(name).lower()] = import_module_from_file(get_plugins_folder(name, False) + 'main.py')
+        _instances[str(name).lower()] = import_module_from_file(get_plugins_folder(str(name).lower(), False) + 'main.py')
         return get_plugin(name)
 
 def get_plugins():
@@ -211,8 +210,6 @@ def get_enabled_plugins():
 
     check()
 
-    config.reload()
-
     return list(config.get('plugins.enabled', list()))
 
 def is_enabled(name):
@@ -233,6 +230,7 @@ def get_plugins_folder(name = None, absolute = True):
         path = _pluginsfolder
     else:
         # only allow alphanumeric characters
+        #path = _pluginsfolder + str(name.lower())
         path = _pluginsfolder + re.sub('[^0-9a-zA-Z_]+', '', str(name).lower())
 
     if absolute is True:
@@ -245,14 +243,12 @@ def get_plugin_data_folder(name, absolute = True):
         Returns the location of a plugin's data folder
     '''
 
-    return get_plugins_folder(name, absolute) + dataDir
+    return get_plugins_folder(name, absolute)
 
 def check():
     '''
         Checks to make sure files exist
     '''
-
-    config.reload()
 
     if not config.is_set('plugins'):
         logger.debug('Generating plugin configuration data...')
@@ -260,6 +256,8 @@ def check():
 
     if not os.path.exists(os.path.dirname(get_plugins_folder())):
         logger.debug('Generating plugin data folder...')
-        os.makedirs(os.path.dirname(get_plugins_folder()))
-
+        try:
+            os.makedirs(os.path.dirname(get_plugins_folder()))
+        except FileExistsError:
+            pass
     return

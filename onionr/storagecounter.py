@@ -1,5 +1,5 @@
 '''
-    Onionr - P2P Microblogging Platform & Social network.
+    Onionr - Private P2P Communication
 
     Keeps track of how much disk space we're using
 '''

@@ -17,7 +17,8 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-def checkNetwork(utilsInst, torPort=0):
+from onionrutils import basicrequests
+def checkNetwork(core_inst, torPort=0):
     '''Check if we are connected to the internet (through Tor)'''
     retData = False
     connectURLs = []
@@ -26,7 +27,7 @@ def checkNetwork(utilsInst, torPort=0):
             connectURLs = connectTest.read().split(',')
 
         for url in connectURLs:
-            if utilsInst.doGetRequest(url, port=torPort, ignoreAPI=True) != False:
+            if basicrequests.do_get_request(core_inst, url, port=torPort, ignoreAPI=True) != False:
                 retData = True
                 break
     except FileNotFoundError:

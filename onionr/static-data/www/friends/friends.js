@@ -1,5 +1,5 @@
 /*
-    Onionr - P2P Anonymous Storage Network
+    Onionr - Private P2P Communication
 
     This file handles the UI for managing friends/contacts
 
@@ -27,6 +27,10 @@ function removeFriend(pubkey){
 addForm.onsubmit = function(){
     var friend = document.getElementsByName('addKey')[0]
     var alias = document.getElementsByName('data')[0]
+    if (alias.value.toLowerCase() == 'anonymous'){
+        alert('Anonymous is a reserved name')
+        return false
+    }
 
     fetch('/friends/add/' + friend.value, {
         method: 'POST',
@@ -50,7 +54,10 @@ fetch('/friends/list', {
     var keys = [];
     for(var k in resp) keys.push(k);
     console.log(keys)
-    friendListDisplay.innerHTML = 'Click name to view info<br><br>'
+
+    if (keys.length == 0){
+        friendListDisplay.innerText = "None yet :("
+    }
     for (var i = 0; i < keys.length; i++){
         var peer = keys[i]
         var name = resp[keys[i]]['name']
@@ -61,7 +68,7 @@ fetch('/friends/list', {
         var nameText = document.createElement('input')
         removeButton = document.createElement('button')
         removeButton.classList.add('friendRemove')
-        removeButton.classList.add('dangerBtn')
+        removeButton.classList.add('button', 'is-danger')
         entry.setAttribute('data-pubkey', peer)
         removeButton.innerText = 'X'
         nameText.value = name
@@ -71,14 +78,6 @@ fetch('/friends/list', {
         entry.appendChild(removeButton)
         entry.appendChild(nameText)
         friendListDisplay.appendChild(entry)
-        entry.onclick = (function(entry, nameText, peer) {return function() {
-            if (nameText.length == 0){
-                nameText = 'Anonymous'
-            }
-            document.getElementById('friendPubkey').value = peer
-            document.getElementById('friendName').innerText = nameText
-            overlay('friendInfo')
-        };})(entry, nameText.value, peer);
     }
     // If friend delete buttons are pressed
 
@@ -90,8 +89,6 @@ fetch('/friends/list', {
             removeFriend(friendKey)
         }
     }
-  })
 
-  document.getElementById('defriend').onclick = function(){
-      removeFriend(document.getElementById('friendPubkey').value)
-  }
+
+  })

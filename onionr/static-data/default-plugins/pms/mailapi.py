@@ -1,5 +1,5 @@
 '''
-    Onionr - P2P Anonymous Storage Network
+    Onionr - Private P2P Communication
 
     HTTP endpoints for mail plugin.
 '''
@@ -21,6 +21,7 @@ import sys, os, json
 from flask import Response, request, redirect, Blueprint, abort
 import core
 from onionrusers import contactmanager
+from onionrutils import stringvalidators
 sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
 import loadinbox, sentboxdb
 
@@ -34,7 +35,7 @@ def mail_ping():
 
 @flask_blueprint.route('/mail/deletemsg/<block>', methods=['POST'])
 def mail_delete(block):
-    if not c._utils.validateHash(block):
+    if not stringvalidators.validate_hash(block):
         abort(504)
     existing = kv.get('deleted_mail')
     if existing is None:
@@ -42,6 +43,7 @@ def mail_delete(block):
     if block not in existing:
         existing.append(block)
     kv.put('deleted_mail', existing)
+    kv.flush()
     return 'success'
 
 @flask_blueprint.route('/mail/getinbox')
@@ -50,16 +52,15 @@ def list_inbox():
 
 @flask_blueprint.route('/mail/getsentbox')
 def list_sentbox():
+    kv.refresh()
     sentbox_list = sentboxdb.SentBox(c).listSent()
-    sentbox_list_copy = list(sentbox_list)
+    list_copy = list(sentbox_list)
     deleted = kv.get('deleted_mail')
     if deleted is None:
         deleted = []
-    for x in range(len(sentbox_list_copy) - 1):
-        if sentbox_list_copy[x]['hash'] in deleted:
-            x -= 1
-            sentbox_list.pop(x)
-        else:
-            sentbox_list[x]['name'] = contactmanager.ContactManager(c, sentbox_list_copy[x]['peer'], saveUser=False).get_info('name')
-
+    for x in list_copy:
+        if x['hash'] in deleted:
+            sentbox_list.remove(x)
+            continue
+        x['name'] = contactmanager.ContactManager(c, x['peer'], saveUser=False).get_info('name')
     return json.dumps(sentbox_list)

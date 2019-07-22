@@ -1,5 +1,5 @@
 /*
-    Onionr - P2P Anonymous Storage Network
+    Onionr - Private P2P Communication
 
     This file handles the mail interface
 
@@ -23,10 +23,22 @@ threadPart = document.getElementById('threads')
 threadPlaceholder = document.getElementById('threadPlaceholder')
 tabBtns = document.getElementById('tabBtns')
 threadContent = {}
-myPub = httpGet('/getActivePubkey')
 replyBtn = document.getElementById('replyBtn')
+addUnknownContact = document.getElementById('addUnknownContact')
 
-function openReply(bHash){
+function addContact(pubkey, friendName){
+    fetch('/friends/add/' + pubkey, {
+        method: 'POST',
+        headers: {
+          "token": webpass
+        }}).then(function(data) {
+            if (friendName.trim().length > 0){
+                post_to_url('/friends/setinfo/' + pubkey + '/name', {'data': friendName, 'token': webpass})
+            }
+        })
+}
+
+function openReply(bHash, quote, subject){
     var inbox = document.getElementsByClassName('threadEntry')
     var entry = ''
     var friendName = ''
@@ -36,21 +48,38 @@ function openReply(bHash){
             entry = inbox[i]
         }
     }
-    if (entry.getAttribute('data-nameSet') == 'true'){
+    if (entry.getAttribute('data-nameset') == 'true'){
         document.getElementById('friendSelect').value = entry.getElementsByTagName('input')[0].value
     }
     key = entry.getAttribute('data-pubkey')
     document.getElementById('draftID').value = key
-    setActiveTab('send message')
+    document.getElementById('draftSubject').value = 'RE: ' + subject
+
+    // Add quoted reply
+    var splitQuotes = quote.split('\n')
+    for (var x = 0; x < splitQuotes.length; x++){
+        splitQuotes[x] = '> ' + splitQuotes[x]
+    }
+    quote = '\n' + key.substring(0, 12) + ' wrote:' + '\n' + splitQuotes.join('\n')
+    document.getElementById('draftText').value = quote
+    setActiveTab('compose')
 }
 
-function openThread(bHash, sender, date, sigBool, pubkey){
+function openThread(bHash, sender, date, sigBool, pubkey, subjectLine){
+    addUnknownContact.style.display = 'none'
     var messageDisplay = document.getElementById('threadDisplay')
     var blockContent = httpGet('/getblockbody/' + bHash)
-    document.getElementById('fromUser').value = sender
+
+    document.getElementById('fromUser').value = sender || 'Anonymous'
+    document.getElementById('subjectView').innerText = subjectLine
     messageDisplay.innerText = blockContent
     var sigEl = document.getElementById('sigValid')
     var sigMsg = 'signature'
+
+    // show add unknown contact button if peer is unknown but still has pubkey
+    if (sender === pubkey && sender !== myPub && sigBool){
+        addUnknownContact.style.display = 'inline'
+    }
 
     if (sigBool){
         sigMsg = 'Good ' + sigMsg
@@ -64,7 +93,14 @@ function openThread(bHash, sender, date, sigBool, pubkey){
     sigEl.innerText = sigMsg
     overlay('messageDisplay')
     replyBtn.onclick = function(){
-        openReply(bHash)
+        openReply(bHash, messageDisplay.innerText, subjectLine)
+    }
+    addUnknownContact.onclick = function(){
+        var friendName = prompt("Enter an alias for this contact:")
+        if (friendName === null || friendName.length == 0){
+            return
+        }
+        addContact(pubkey, friendName)
     }
 }
 
@@ -74,11 +110,12 @@ function setActiveTab(tabName){
         case 'inbox':
             refreshPms()
             break
-        case 'sentbox':
+        case 'sent':
             getSentbox()
             break
-        case 'send message':
+        case 'compose':
             overlay('sendMessage')
+            setActiveTab('inbox')
             break
     }
 }
@@ -133,6 +170,7 @@ function loadInboxEntries(bHash){
         var humanDate = new Date(0)
         var metadata = resp['metadata']
         humanDate.setUTCSeconds(resp['meta']['time'])
+        humanDate = humanDate.toString()
         validSig.style.display = 'none'
         if (resp['meta']['signer'] != ''){
             senderInput.value = httpGet('/friends/getinfo/' + resp['meta']['signer'] + '/name')
@@ -144,16 +182,15 @@ function loadInboxEntries(bHash){
         }
         entry.setAttribute('data-nameSet', true)
         if (senderInput.value == ''){
-            senderInput.value = resp['meta']['signer']
+            senderInput.value = resp['meta']['signer'] || 'Anonymous'
             entry.setAttribute('data-nameSet', false)
         }
-        bHashDisplay.innerText = bHash.substring(0, 10)
+        //bHashDisplay.innerText = bHash.substring(0, 10)
         entry.setAttribute('data-hash', bHash)
         entry.setAttribute('data-pubkey', resp['meta']['signer'])
         senderInput.readOnly = true
-        dateStr.innerText = humanDate.toString()
-        deleteBtn.innerText = 'X'
-        deleteBtn.classList.add('dangerBtn', 'deleteBtn')
+        dateStr.innerText = humanDate.substring(0, humanDate.indexOf('('))
+        deleteBtn.classList.add('delete', 'deleteBtn')
         if (metadata['subject'] === undefined || metadata['subject'] === null) {
             subjectLine.innerText = '()'
         }
@@ -174,7 +211,7 @@ function loadInboxEntries(bHash){
             if (event.target.classList.contains('deleteBtn')){
                 return
             }
-            openThread(entry.getAttribute('data-hash'), senderInput.value, dateStr.innerText, resp['meta']['validSig'], entry.getAttribute('data-pubkey'))
+            openThread(entry.getAttribute('data-hash'), senderInput.value, dateStr.innerText, resp['meta']['validSig'], entry.getAttribute('data-pubkey'), subjectLine.innerText)
         }
 
         deleteBtn.onclick = function(){
@@ -190,6 +227,7 @@ function getInbox(){
     var requested = ''
     for(var i = 0; i < pms.length; i++) {
         if (pms[i].trim().length == 0){
+            threadPart.innerText = 'No messages to show ¯\\_(ツ)_/¯'
             continue
         }
         else{
@@ -216,7 +254,7 @@ function getSentbox(){
         if (keys.length == 0){
             threadPart.innerHTML = "nothing to show here yet."
         }
-        for (var i = 0; i < keys.length; i++){
+        for (var i = 0; i < keys.length; i++) (function(i, resp){
             var entry = document.createElement('div')
             var obj = resp[i]
             var toLabel = document.createElement('span')
@@ -225,39 +263,39 @@ function getSentbox(){
             var sentDate = document.createElement('span')
             var humanDate = new Date(0)
             humanDate.setUTCSeconds(resp[i]['date'])
+            humanDate = humanDate.toString()
             var preview = document.createElement('span')
             var deleteBtn = document.createElement('button')
             var message = resp[i]['message']
-            deleteBtn.classList.add('deleteBtn', 'dangerBtn')
-            deleteBtn.innerText = 'X'
+            deleteBtn.classList.add('deleteBtn', 'delete')
             toEl.readOnly = true
-            sentDate.innerText = humanDate
-            if (resp[i]['name'] == null){
+            sentDate.innerText = humanDate.substring(0, humanDate.indexOf('('))
+            if (resp[i]['name'] == null || resp[i]['name'].toLowerCase() == 'anonymous'){
                 toEl.value = resp[i]['peer']
             }
             else{
                 toEl.value = resp[i]['name']
             }
             preview.innerText = '(' + resp[i]['subject'] + ')'
+            entry.classList.add('sentboxList')
             entry.setAttribute('data-hash', resp[i]['hash'])
             entry.appendChild(deleteBtn)
             entry.appendChild(toLabel)
             entry.appendChild(toEl)
             entry.appendChild(preview)
             entry.appendChild(sentDate)
-            entry.onclick = (function(tree, el, msg) {return function() {
-                console.log(resp)
-                if (! entry.classList.contains('deleteBtn')){
-                    showSentboxWindow(el.value, msg)
-                }
-            };})(entry, toEl, message);
-            
-            deleteBtn.onclick = function(){
-                entry.parentNode.removeChild(entry);
-                deleteMessage(entry.getAttribute('data-hash'))
-            }
+
             threadPart.appendChild(entry)
-        } 
+
+            entry.onclick = function(e){
+                if (e.target.classList.contains('deleteBtn')){
+                    deleteMessage(e.target.parentNode.getAttribute('data-hash'))
+                    e.target.parentNode.parentNode.removeChild(e.target.parentNode)
+                    return
+                }
+                showSentboxWindow(toEl.value, message)
+            }
+        })(i, resp)
         threadPart.appendChild(entry)
       }.bind(threadPart))
 }
@@ -281,29 +319,18 @@ fetch('/mail/getinbox', {
 }
 
 tabBtns.onclick = function(event){
-    var children = tabBtns.children
+    var children = tabBtns.children[0].children
     for (var i = 0; i < children.length; i++) {
         var btn = children[i]
-        btn.classList.remove('activeTab')
+        btn.classList.remove('is-active')
     }
-    event.target.classList.add('activeTab')
+    event.target.parentElement.parentElement.classList.add('is-active')
     setActiveTab(event.target.innerText.toLowerCase())
-}
-
-var idStrings = document.getElementsByClassName('myPub')
-for (var i = 0; i < idStrings.length; i++){
-    if (idStrings[i].tagName.toLowerCase() == 'input'){
-        idStrings[i].value = myPub
-    }
-    else{
-        idStrings[i].innerText = myPub
-    }
 }
 
 for (var i = 0; i < document.getElementsByClassName('refresh').length; i++){
     document.getElementsByClassName('refresh')[i].style.float = 'right'
 }
-
 
 fetch('/friends/list', {
     headers: {
@@ -319,7 +346,7 @@ fetch('/friends/list', {
     friendSelectParent.appendChild(document.createElement('option'))
     for (var i = 0; i < keys.length; i++) {
         var option = document.createElement("option")
-        var name = resp[keys[i]]['name']
+        var name = resp[keys[i]]['name'] || ""
         option.value = keys[i]
         if (name.length == 0){
             option.text = keys[i]
@@ -328,12 +355,6 @@ fetch('/friends/list', {
             option.text = name
         }
         friendSelectParent.appendChild(option)
-    }
-
-    for (var i = 0; i < keys.length; i++){
-        
-        //friendSelectParent
-        //alert(resp[keys[i]]['name'])
     }
 })
 setActiveTab('inbox')

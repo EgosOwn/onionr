@@ -1,5 +1,5 @@
 '''
-    Onionr - P2P Anonymous Storage Network
+    Onionr - Private P2P Communication
 
     This processes metadata for Onionr blocks
 '''
@@ -23,6 +23,7 @@ import logger, config
 import os, sys, json, time, random, shutil, base64, getpass, datetime, re
 from onionrblockapi import Block
 import onionrusers, onionrexceptions
+from onionrutils import stringvalidators
 
 plugin_name = 'metadataprocessor'
 
@@ -36,45 +37,22 @@ def _processForwardKey(api, myBlock):
     key = myBlock.getMetadata('newFSKey')
 
     # We don't need to validate here probably, but it helps
-    if api.get_utils().validatePubKey(key):
+    if stringvalidators.validate_pub_key(key):
         peer.addForwardKey(key)
     else:
-        raise onionrexceptions.InvalidPubkey("%s is nota valid pubkey key" % (key,))
+        raise onionrexceptions.InvalidPubkey("%s is not a valid pubkey key" % (key,))
 
 def on_processblocks(api, data=None):
     # Generally fired by utils.
     myBlock = api.data['block']
     blockType = api.data['type']
-    logger.info('blockType is ' + blockType)
-
     # Process specific block types
 
     # forwardKey blocks, add a new forward secrecy key for a peer
     if blockType == 'forwardKey':
         if api.data['validSig'] == True:
             _processForwardKey(api, myBlock)
-    # socket blocks
-    elif blockType == 'socket':
-        if api.data['validSig'] == True and myBlock.decrypted: # we check if it is decrypted as a way of seeing if it was for us
-            logger.info('Detected socket advertised to us...')
-            try:
-                address = myBlock.getMetadata('address')
-            except KeyError:
-                raise onionrexceptions.MissingAddress("Missing address for new socket")
-            try:
-                port = myBlock.getMetadata('port')
-            except KeyError:
-                raise ValueError("Missing port for new socket")
-            try:
-                reason = myBlock.getMetadata('reason')
-            except KeyError:
-                raise ValueError("Missing socket reason")
-
-            socketInfo = json.dumps({'peer': api.data['signer'], 'address': address, 'port': port, 'create': False, 'reason': reason})
-            api.get_core().daemonQueueAdd('addSocket', socketInfo)
-        else:
-            logger.warn("socket is not for us or is invalid")
-
+    
 def on_init(api, data = None):
 
     pluginapi = api

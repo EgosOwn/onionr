@@ -1,5 +1,5 @@
 '''
-    Onionr - P2P Anonymous Storage Network
+    Onionr - Private P2P Communication
 
     This file handles maintenence of a blacklist database, for blocks and peers
 '''
@@ -18,6 +18,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 import sqlite3, os, logger
+from onionrutils import epoch, bytesconverter
 class OnionrBlackList:
     def __init__(self, coreInst):
         self.blacklistDB = coreInst.dataDir + 'blacklist.db'
@@ -28,7 +29,7 @@ class OnionrBlackList:
         return
 
     def inBlacklist(self, data):
-        hashed = self._core._utils.bytesToStr(self._core._crypto.sha3Hash(data))
+        hashed = bytesconverter.bytes_to_str(self._core._crypto.sha3Hash(data))
         retData = False
 
         if not hashed.isalnum():
@@ -56,7 +57,7 @@ class OnionrBlackList:
     def deleteExpired(self, dataType=0):
         '''Delete expired entries'''
         deleteList = []
-        curTime = self._core._utils.getEpoch()
+        curTime = epoch.get_epoch()
 
         try:
             int(dataType)
@@ -98,7 +99,7 @@ class OnionrBlackList:
         2=pubkey
         '''
         # we hash the data so we can remove data entirely from our node's disk
-        hashed = self._core._utils.bytesToStr(self._core._crypto.sha3Hash(data))
+        hashed = bytesconverter.bytes_to_str(self._core._crypto.sha3Hash(data))
         if len(hashed) > 64:
             raise Exception("Hashed data is too large")
 
@@ -115,7 +116,7 @@ class OnionrBlackList:
         if self.inBlacklist(hashed):
             return
         insert = (hashed,)
-        blacklistDate = self._core._utils.getEpoch()
+        blacklistDate = epoch.get_epoch()
         try:
             self._dbExecute("INSERT INTO blacklist (hash, dataType, blacklistDate, expire) VALUES(?, ?, ?, ?);", (str(hashed), dataType, blacklistDate, expire))
         except sqlite3.IntegrityError:

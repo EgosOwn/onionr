@@ -1,5 +1,5 @@
 '''
-    Onionr - P2P Anonymous Storage Network
+    Onionr - Private P2P Communication
 
     This file creates http endpoints for friend management
 '''
@@ -26,7 +26,8 @@ friends = Blueprint('friends', __name__)
 @friends.route('/friends/list')
 def list_friends():
     pubkey_list = {}
-    friend_list = contactmanager.ContactManager.list_friends(core.Core())
+    c = core.Core()
+    friend_list = contactmanager.ContactManager.list_friends(c)
     for friend in friend_list:
         pubkey_list[friend.publicKey] = {'name': friend.get_info('name')}
     return json.dumps(pubkey_list)

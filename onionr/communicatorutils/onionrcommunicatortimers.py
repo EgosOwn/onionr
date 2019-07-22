@@ -1,6 +1,5 @@
-#!/usr/bin/env python3
 '''
-    Onionr - P2P Anonymous Storage Network
+    Onionr - Private P2P Communication
 
     This file contains timer control for the communicator
 '''
@@ -20,7 +19,7 @@
 '''
 import threading, onionrexceptions, logger
 class OnionrCommunicatorTimers:
-    def __init__(self, daemonInstance, timerFunction, frequency, makeThread=True, threadAmount=1, maxThreads=5, requiresPeer=False):
+    def __init__(self, daemonInstance, timerFunction, frequency, makeThread=True, threadAmount=1, maxThreads=5, requiresPeer=False, myArgs=[]):
         self.timerFunction = timerFunction
         self.frequency = frequency
         self.threadAmount = threadAmount
@@ -29,6 +28,7 @@ class OnionrCommunicatorTimers:
         self.daemonInstance = daemonInstance
         self.maxThreads = maxThreads
         self._core = self.daemonInstance._core
+        self.args = myArgs
 
         self.daemonInstance.timers.append(self)
         self.count = 0
@@ -52,10 +52,10 @@ class OnionrCommunicatorTimers:
                 if self.makeThread:
                     for i in range(self.threadAmount):
                         if self.daemonInstance.threadCounts[self.timerFunction.__name__] >= self.maxThreads:
-                            logger.debug('%s is currently using the maximum number of threads, not starting another.' % self.timerFunction.__name__)
+                            logger.debug('%s is currently using the maximum number of threads, not starting another.' % self.timerFunction.__name__, terminal=True)
                         else:
                             self.daemonInstance.threadCounts[self.timerFunction.__name__] += 1
-                            newThread = threading.Thread(target=self.timerFunction)
+                            newThread = threading.Thread(target=self.timerFunction, args=self.args, daemon=True)
                             newThread.start()
                 else:
                     self.timerFunction()

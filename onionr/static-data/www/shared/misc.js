@@ -1,5 +1,5 @@
 /*
-    Onionr - P2P Anonymous Storage Network
+    Onionr - Private P2P Communication
 
     This file handles the mail interface
 
@@ -19,6 +19,8 @@
 
 webpass = document.location.hash.replace('#', '')
 nowebpass = false
+
+myPub = httpGet('/getActivePubkey')
 
 function post_to_url(path, params) {
 
@@ -91,4 +93,31 @@ for (var i = 0; i < document.getElementsByClassName('closeOverlay').length; i++)
     document.getElementsByClassName('closeOverlay')[i].onclick = function(e){
         document.getElementById(e.target.getAttribute('overlay')).style.visibility = 'hidden'
     }
+}
+
+var idStrings = document.getElementsByClassName('myPub')
+for (var i = 0; i < idStrings.length; i++){
+    if (idStrings[i].tagName.toLowerCase() == 'input'){
+        idStrings[i].value = myPub
+    }
+    else{
+        idStrings[i].innerText = myPub
+    }
+}
+
+/* Copy public ID on homepage  */
+myPubCopy.onclick = function() {
+    var copyText = document.getElementById("myPub");
+    copyText.select();
+    document.execCommand("copy")
+} 
+
+/* For Config toggle on homepage */
+var toggle  = document.getElementById("configToggle");
+var content = document.getElementById("configContent");
+
+if(typeof toggle !== 'undefined' && toggle !== null) {
+    toggle.addEventListener("click", function() {
+    content.classList.toggle("show");
+    })
 }

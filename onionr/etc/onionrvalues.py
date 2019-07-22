@@ -1,5 +1,5 @@
 '''
-    Onionr - P2P Microblogging Platform & Social network
+    Onionr - Private P2P Communication
 
     This file defines values and requirements used by Onionr
 '''
@@ -17,8 +17,10 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-
+DENIABLE_PEER_ADDRESS = "OVPCZLOXD6DC5JHX4EQ3PSOGAZ3T24F75HQLIUZSDSMYPEOXCPFA===="
 class OnionrValues:
     def __init__(self):
         self.passwordLength = 20
-        self.blockMetadataLengths = {'meta': 1000, 'sig': 200, 'signer': 200, 'time': 10, 'powRandomToken': 1000, 'encryptType': 4, 'expire': 14} #TODO properly refine values to minimum needed
+        self.blockMetadataLengths = {'meta': 1000, 'sig': 200, 'signer': 200, 'time': 10, 'pow': 1000, 'encryptType': 4, 'expire': 14} #TODO properly refine values to minimum needed
+        self.default_expire = 2592000
+        self.announce_pow = 5

@@ -1,5 +1,5 @@
 '''
-    Onionr - P2P Microblogging Platform & Social network
+    Onionr - Private P2P Communication
 
     This file deals with configuration management.
 '''
@@ -19,11 +19,9 @@
 '''
 
 import os, json, logger
-
+from utils import identifyhome
 # set data dir
-dataDir = os.environ.get('ONIONR_HOME', os.environ.get('DATA_DIR', 'data/'))
-if not dataDir.endswith('/'):
-    dataDir += '/'
+dataDir = identifyhome.identify_home()
 
 _configfile = os.path.abspath(dataDir + 'config.json')
 _config = {}
@@ -96,15 +94,8 @@ def check():
         Checks if the configuration file exists, creates it if not
     '''
 
-    try:
-        if not os.path.exists(os.path.dirname(get_config_file())):
-            os.path.mkdirs(os.path.dirname(get_config_file()))
-        if not os.path.isfile(get_config_file()):
-            open(get_config_file(), 'a', encoding="utf8").close()
-            save()
-    except:
-        pass
-        #logger.debug('Failed to check configuration file.')
+    if not os.path.exists(os.path.dirname(get_config_file())):
+        os.makedirs(os.path.dirname(get_config_file()))
 
 def save():
     '''
@@ -115,14 +106,13 @@ def save():
     try:
         with open(get_config_file(), 'w', encoding="utf8") as configfile:
             json.dump(get_config(), configfile, indent=2)
-    except:
+    except json.JSONDecodeError:
         logger.warn('Failed to write to configuration file.')
 
 def reload():
     '''
         Reloads the configuration data in memory from the file
     '''
-
     check()
     try:
         with open(get_config_file(), 'r', encoding="utf8") as configfile:

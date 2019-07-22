@@ -1,5 +1,5 @@
 '''
-    Onionr - P2P Anonymous Storage Network
+    Onionr - Private P2P Communication
 
     Proof of work module
 '''
@@ -17,8 +17,11 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import multiprocessing, nacl.encoding, nacl.hash, nacl.utils, time, math, threading, binascii, sys, base64, json
-import core, onionrutils, config, logger, onionrblockapi
+import multiprocessing, nacl.encoding, nacl.hash, nacl.utils, time, math, threading, binascii, sys, json
+import core, config, logger, onionrblockapi
+from onionrutils import bytesconverter
+
+config.reload()
 
 def getDifficultyModifier(coreOrUtilsInst=None):
     '''Accepts a core or utils instance returns 
@@ -27,12 +30,7 @@ def getDifficultyModifier(coreOrUtilsInst=None):
     '''
     classInst = coreOrUtilsInst
     retData = 0
-    if isinstance(classInst, core.Core):
-        useFunc = classInst._utils.storageCounter.getPercent
-    elif isinstance(classInst, onionrutils.OnionrUtils):
-        useFunc = classInst.storageCounter.getPercent
-    else:
-        useFunc = core.Core()._utils.storageCounter.getPercent
+    useFunc = classInst.storage_counter.getPercent
 
     percentUse = useFunc()
 
@@ -45,7 +43,7 @@ def getDifficultyModifier(coreOrUtilsInst=None):
 
     return retData
 
-def getDifficultyForNewBlock(data, ourBlock=True):
+def getDifficultyForNewBlock(data, ourBlock=True, coreInst=None):
     '''
     Get difficulty for block. Accepts size in integer, Block instance, or str/bytes full block contents
     '''
@@ -53,20 +51,15 @@ def getDifficultyForNewBlock(data, ourBlock=True):
     dataSize = 0
     if isinstance(data, onionrblockapi.Block):
         dataSize = len(data.getRaw().encode('utf-8'))
-    elif isinstance(data, str):
-        dataSize = len(data.encode('utf-8'))
-    elif isinstance(data, bytes):
-        dataSize = len(data)
-    elif isinstance(data, int):
-        dataSize = data
     else:
-        raise ValueError('not Block, str, or int')
+        dataSize = len(bytesconverter.str_to_bytes(data))
+
     if ourBlock:
         minDifficulty = config.get('general.minimum_send_pow', 4)
     else:
         minDifficulty = config.get('general.minimum_block_pow', 4)
 
-    retData = max(minDifficulty, math.floor(dataSize / 100000)) + getDifficultyModifier()
+    retData = max(minDifficulty, math.floor(dataSize / 100000)) + getDifficultyModifier(coreInst)
 
     return retData
 
@@ -87,7 +80,6 @@ def hashMeetsDifficulty(h):
     '''
         Return bool for a hash string to see if it meets pow difficulty defined in config
     '''
-    config.reload()
     hashDifficulty = getHashDifficulty(h)
     try:
         expected = int(config.get('general.minimum_block_pow'))
@@ -105,7 +97,6 @@ class DataPOW:
         self.data = data
         self.threadCount = threadCount
         self.rounds = 0
-        config.reload()
 
         if forceDifficulty == 0:
             dataLen = sys.getsizeof(data)
@@ -131,8 +122,6 @@ class DataPOW:
         for i in range(max(1, threadCount)):
             t = threading.Thread(name = 'thread%s' % i, target = self.pow, args = (True,myCore))
             t.start()
-        
-        return
 
     def pow(self, reporting = False, myCore = None):
         startTime = math.floor(time.time())
@@ -212,18 +201,19 @@ class POW:
         else:
             myCore = coreInst
 
-        dataLen = len(data) + len(json.dumps(metadata))
+        json_metadata = json.dumps(metadata).encode()
 
-        if forceDifficulty > 0:
-            self.difficulty = forceDifficulty
-        else:
-            # Calculate difficulty. Dumb for now, may use good algorithm in the future.
-            self.difficulty = getDifficultyForNewBlock(dataLen)
-            
         try:
             self.data = self.data.encode()
         except AttributeError:
             pass
+            
+        if forceDifficulty > 0:
+            self.difficulty = forceDifficulty
+        else:
+            # Calculate difficulty. Dumb for now, may use good algorithm in the future.
+            self.difficulty = getDifficultyForNewBlock(bytes(json_metadata + b'\n' + self.data), coreInst=myCore)
+            
         
         logger.info('Computing POW (difficulty: %s)...' % self.difficulty)
 
@@ -247,7 +237,7 @@ class POW:
         startNonce = nonce
         while self.hashing:
             #token = nacl.hash.blake2b(rand + self.data).decode()
-            self.metadata['powRandomToken'] = nonce
+            self.metadata['pow'] = nonce
             payload = json.dumps(self.metadata).encode() + b'\n' + self.data
             token = myCore._crypto.sha3Hash(payload)
             try:
@@ -259,7 +249,6 @@ class POW:
                 self.hashing = False
                 iFound = True
                 self.result = payload
-                print('count', nonce - startNonce)
                 break
             nonce += 1
                 

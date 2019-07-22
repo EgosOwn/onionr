@@ -1,22 +1,160 @@
 <!DOCTYPE HTML>
 <html>
-    <head>
-        <meta charset='utf-8'>
-        <meta name='viewport' content='width=device-width, initial-scale=1.0'>
-        <title>
-            OnionrBoard
-        </title>
-        <link rel='stylesheet' href='theme.css'>
-    </head>
-    <body>    
-        <div id='webpassWindow' class='hidden'>
-                <p>Welcome to OnionrBoard</p>
-                <p>Please enter the webpassword. You can get this from running the 'details' command in Onionr.</p>
-                <input id='webpassword' type='password' placeholder="Web password for daemon" value='CBF15ED9782FB482339E5F5B9DDCF3E58E523E71E8E9EF480596817AB5EA2E63'>
-                <button id='registerPassword'>Unlock Onionr</button>
+
+<head>
+    <meta charset='utf-8'>
+    <!--Mobile responsive-->
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>
+        Circles
+    </title>
+    <link rel='shortcut icon' type='image/ico' href='/shared/images/favicon.ico'>
+    <link rel='stylesheet' href='/shared/main/bulma.min.css'>
+    <link rel="stylesheet" href="/shared/main/styles-new.css">
+    <link rel="stylesheet" href="theme.css">
+    <script defer src='/shared/navbar.js'></script>
+    <script defer src='/shared/misc.js'></script>
+    <script defer src='board.js'></script>
+</head>
+
+<body>
+    <nav class="navbar is-dark" role="navigation" aria-label="main navigation">
+        <div class="navbar-brand">
+            <a class="navbar-item idLink" href="/">
+                <img src="/shared/images/favicon.ico" class="navbarLogo"> Onionr
+            </a>
+
+            <a role="button" class="navbar-burger burger" aria-label="menu" aria-expanded="false"
+                data-target="navbarBasicExample">
+                <span aria-hidden="true"></span>
+                <span aria-hidden="true"></span>
+                <span aria-hidden="true"></span>
+            </a>
         </div>
-        <input type='button' id='refreshFeed' value='Refresh Feed'>
-        <div id='feed'><span id='none'>None Yet :)</span></div>
-        <script src='board.js'></script>
-    </body>
+
+        <div id="navbarBasicExample" class="navbar-menu">
+            <div class="navbar-start">
+                <a class="navbar-item idLink" href="/">Home</a>
+                <a class="navbar-item idLink" href="/mail/">Mail</a>
+                <a class="navbar-item idLink" href="/friends/">Friends</a>
+                <a class="navbar-item idLink" href="/board/">Circles</a>
+            </div>
+        </div>
+    </nav>
+
+    <!--Hero (Dark Section)-->
+    <section class="hero is-small is-dark">
+        <div class="hero-body">
+            <div class="container">
+                <div class="columns">
+                    <div class="column">
+                        <h1 class="title">
+                            Circles
+                        </h1>
+                        <h2 class="subtitle">
+                            Anonymous message board
+                        </h2>
+                    </div>
+                    <div class="column is-7">
+                        <div class="field">
+                            <label class="label">Open Site</label>
+                            <div class="field has-addons">
+                                <p class="control">
+                                    <a class="button is-static">Identity</a>
+                                </p>
+                                <p class="control is-expanded">
+                                    <input id="myPub" class="input myPub" type="text" readonly>
+                                </p>
+                                <p class="control">
+                                    <a id="myPubCopy" class="button is-primary">Copy</a>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        </div>
+    </section>
+
+    <br>
+
+    <!--Start Content-->
+    <div class="container">
+        <div class="columns">
+            <!--Add Friend-->
+            <div class="column is-one-third">
+                <div class="card">
+                    <form method='POST' action='/' id='addMsg'>
+                        <header class="card-header">
+                            <p class="card-header-title">
+                                Post message
+                            </p>
+                        </header>
+                        <div class="card-content">
+                            <div class="content">
+                                    <textarea id='newMsgText' class="textarea" name='newMsgText' rows=10 cols=50 required
+                                        minlength="2"></textarea>
+                            </div>
+                        </div>
+                        <footer class="card-footer">
+                            <a class="card-footer-item">
+                                <input class='button' type='submit' value='Post'>
+                            </a>
+                        </footer>
+                    </form>
+                </div>
+            </div>
+            <!--Feed-->
+            <div class="column">
+                <div class="card">
+                    <header class="card-header">
+                        <p class="card-header-title">
+                            Feed
+                        </p>
+                    </header>
+                    <div class="card-content">
+                        <div class="content">
+                            <div class="field">
+                                <div class="field has-addons">
+                                    <p class="control">
+                                        <a class="button is-static">Board Name</a>
+                                    </p>
+                                    <p class="control is-expanded">
+                                        <input id='feedIDInput' class="input" placeholder="Board name" value="global">
+                                    </p>
+                                    <p class="control">
+                                        <a class="button is-success" id='refreshFeed'>Refresh Feed</a>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="content">
+                            <div id='feed'>
+                                <span id='none'>None Yet :)</span>
+                                <!--Message Items are appended here based on template-->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!--Template markup for Circle message-->
+    <template id="cMsgTemplate">
+        <div class="box cMsgBox">
+            <div class="columns">
+                <div class="column cMsg">
+                    Message
+                </div>
+                <div class="column is-narrow cMsgDate">
+                    Date
+                </div>
+            </div>
+        </div>
+    </template>
+</body>
+
 </html>

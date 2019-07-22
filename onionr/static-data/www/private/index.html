@@ -1,40 +1,192 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <meta charset='utf-8'>
-        <title>
-            Onionr
-        </title>
-        <link rel='shortcut icon' type='image/png' href='data:image/png;base64,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'>
-        <link rel='stylesheet' href='/shared/style/modal.css'>
-        <link rel='stylesheet' href='/shared/main/style.css'>
-    </head>
-    <body>
-        <div id="shutdownNotice" class='overlay'>
-            <div>
-                <p>Your node will shutdown. Thank you for using Onionr.</p>
+
+<head>
+    <meta charset='utf-8'>
+    <!--Mobile responsive-->
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>
+        Onionr
+    </title>
+    <link rel='shortcut icon' type='image/ico' href='/shared/images/favicon.ico'>
+    <link rel='stylesheet' href='/shared/main/bulma.min.css'>
+    <link rel="stylesheet" href="/shared/main/styles-new.css">
+</head>
+
+<body>
+    <div id="shutdownNotice" class='overlay'>
+        <div>
+            <p>Your node will shutdown. Thank you for using Onionr.</p>
+        </div>
+    </div>
+
+    <nav class="navbar is-dark" role="navigation" aria-label="main navigation">
+        <div class="navbar-brand">
+            <a class="navbar-item idLink" href="/">
+                <img src="/shared/images/favicon.ico" class='navbarLogo'> Onionr
+            </a>
+
+            <a role="button" class="navbar-burger burger" aria-label="menu" aria-expanded="false"
+                data-target="navbarBasicExample">
+                <span aria-hidden="true"></span>
+                <span aria-hidden="true"></span>
+                <span aria-hidden="true"></span>
+            </a>
+        </div>
+
+        <div id="navbarBasicExample" class="navbar-menu">
+            <div class="navbar-start">
+                <a class="navbar-item idLink" href="/">Home</a>
+                <a class="navbar-item idLink" href="/mail/">Mail</a>
+                <a class="navbar-item idLink" href="/friends/">Friends</a>
+                <a class="navbar-item idLink" href="/board/">Circles</a>
             </div>
         </div>
-        <div class='content'>
-            <img class='logo' src='/shared/onionr-icon.png' alt='onionr logo'>
-            <span class='logoText'>Onionr Web Control Panel</span>
-            <br><br>
-            <button id='shutdownNode'>Shutdown Node</button> <button id='refreshStats'>Refresh Stats</button>
-            <br><br>
-            <label>Site Hash: <input type='text' id='siteViewer'> <button id='openSite' class='primaryBtn openSiteBtn'>Open Onionr Site</button></label>
-            <br>
-            <br><br><a class='idLink' href='/mail/'>Mail</a> - <a class='idLink' href='/friends/'>Friend Manager</a>
-            <h2>Stats</h2>
-            <p>Uptime: <span id='uptime'></span></p>
-            <p>Last Received Connection: <span id='lastIncoming'>Unknown</span></p>
-            <p>Stored Blocks: <span id='storedBlocks'></span></p>
-            <p>Blocks in queue: <span id='blockQueue'></span></p>
-            <p>Connected nodes:</p>
-            <pre id='connectedNodes'></pre>
+    </nav>
+
+    <!--Hero (Dark Bar)-->
+    <section class="hero is-small is-dark">
+        <div class="hero-body">
+            <div class="container">
+                <div class="columns">
+                    <div class="column">
+                        <h1 class="title">
+                            Onionr
+                        </h1>
+                        <h2 class="subtitle">
+                            Private Decentralized Communication
+                        </h2>
+                    </div>
+                    <div class="column is-7">
+                        <div class="field">
+                            <label class="label">Open Site</label>
+                            <div class="field has-addons">
+                                <p class="control">
+                                    <a class="button is-static">Identity</a>
+                                </p>
+                                <p class="control is-expanded">
+                                    <input id="myPub" class="input myPub" type="text" readonly>
+                                </p>
+                                <p class="control">
+                                    <a id="myPubCopy" class="button is-primary">Copy</a>
+                                </p>
+                            </div>
+                        </div>
+                        <div class="field is-grouped is-grouped-centered">
+                            <p class="control">
+                                <a class="button is-danger is-outlined" id='shutdownNode'>Shutdown Node</a>
+                            </p>
+                            <p class="control">
+                                <a class="button is-link" id='refreshStats'>Refresh Stats</a>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-        <script src='/shared/misc.js'></script>
-        <script src='/shared/main/stats.js'></script>
-        <script src='/shared/panel.js'></script>
-        <script src=/shared/sites.js></script>
-    </body>
+        </div>
+    </section>
+
+    <br>
+
+    <!--Start of content-->
+    <div class="container">
+        <div class="columns">
+            <div class="column">
+                <!--Onionr Card-->
+                <div class="card">
+                    <header class="card-header">
+                        <p class="card-header-title">
+                            Onionr
+                        </p>
+                    </header>
+                    <div class="card-content">
+                        <div class="content">
+                            <div class="field">
+                                <label class="label">Open Site</label>
+                                <div class="field has-addons">
+                                    <p class="control is-expanded">
+                                        <input class="input" type="text" id='siteViewer' placeholder="Site Hash">
+                                    </p>
+                                    <p class="control">
+                                        <a id='openSite' class="button is-info">Open Onionr Site</a>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="column">
+                <!--Statistics Card-->
+                <div class="card">
+                    <header class="card-header">
+                        <p class="card-header-title">
+                            Statistics
+                        </p>
+                    </header>
+                    <div class="card-content">
+                        <div class="content">
+                            <div class="columns">
+                                <div class="column">
+                                    🔒 Security level: <span id='securityLevel'></span>
+                                </div>
+                                <div class="column">
+                                    🕰️ Uptime: <span id='uptime'></span>
+                                </div>
+                            </div>
+                            <h6>Session Connections</h6>
+                            <div class="columns">
+                                <div class="column">
+                                    ️ Last Received: <span id='lastIncoming'>None since start</span>
+                                </div>
+                                <div class="column">
+                                    ⬇️ Total Requests: <span id='totalRec'>None since start</span>
+                                </div>
+                            </div>
+                            🔗 Outgoing Connections:
+                            <div class="control">
+                                <pre id='connectedNodes' class="textarea" rows="5" readonly>Unable to get nodes</pre>
+                            </div>
+                            <br>
+                            <h6>Blocks</h6>
+                            <div class="columns">
+                                <div class="column">
+                                    💾 Stored Blocks: <span id='storedBlocks'></span>
+                                </div>
+                                <div class="column">
+                                    📨 Blocks in queue: <span id='blockQueue'></span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!--Configuration Card-->
+        <div class="card">
+            <header class="card-header" id="configToggle">
+                <p class="card-header-title">
+                    <a class="button is-white is-fullwidth">Edit Configuration</a>
+                </p>
+            </header>
+            <div class="card-content" id="configContent">
+                <div class="content">
+                    <p><em>Warning: </em><b>Some values can be dangerous to change. Use caution.</b></p>
+                    <textarea class='textarea configEditor' rows="20"></textarea>
+                    <a class="button is-primary saveConfig">Save Config</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <br>
+    <script src='/shared/navbar.js'></script>
+    <script src='/shared/misc.js'></script>
+    <script src='/shared/main/stats.js'></script>
+    <script src='/shared/panel.js'></script>
+    <script src='/shared/configeditor.js'></script>
+    <script src='/shared/sites.js'></script>
+</body>
+
 </html>

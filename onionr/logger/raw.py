@@ -1,0 +1,38 @@
+'''
+    Onionr - Private P2P Communication
+
+    Output raw data to file or terminal
+'''
+'''
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+'''
+import sys
+from . import settings, colors
+colors = colors.Colors
+def raw(data, fd = sys.stdout, terminal = False):
+    '''
+        Outputs raw data to console without formatting
+    '''
+
+    if terminal and (settings.get_settings() & settings.OUTPUT_TO_CONSOLE):
+        try:
+            ts = fd.write('%s\n' % data)
+        except OSError:
+            pass
+    if settings.get_settings() & settings.OUTPUT_TO_FILE:
+        try:
+            with open(settings._outputfile, "a+") as f:
+                f.write(colors.filter(data) + '\n')
+        except OSError:
+            pass
