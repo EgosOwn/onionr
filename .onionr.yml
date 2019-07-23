@@ -1,6 +1,6 @@
 # lazypkg config
 
-name: onionr
+name: onionr-git
 version: 0.1
 release: 1
 summary: anonymous P2P communication platform
