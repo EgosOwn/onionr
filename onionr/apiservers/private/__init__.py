@@ -55,10 +55,10 @@ class PrivateAPI:
         self.host = httpapi.apiutils.setbindip.set_bind_IP(filepaths.private_API_host_file)
         logger.info('Running api on %s:%s' % (self.host, self.bindPort))
         self.httpServer = ''
+        onionrInst.setClientAPIInst(self)
 
         self.queueResponse = {}
         self.get_block_data = httpapi.apiutils.GetBlockData(self)
-        onionrInst.setClientAPIInst(self)
         register_private_blueprints.register_private_blueprints(self, app)
         httpapi.load_plugin_blueprints(app)
         self.onionrInst = onionrInst

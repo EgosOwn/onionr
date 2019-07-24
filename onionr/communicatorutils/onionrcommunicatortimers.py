@@ -51,7 +51,8 @@ class OnionrCommunicatorTimers:
                 if self.makeThread:
                     for i in range(self.threadAmount):
                         if self.daemonInstance.threadCounts[self.timerFunction.__name__] >= self.maxThreads:
-                            logger.debug('%s is currently using the maximum number of threads, not starting another.' % self.timerFunction.__name__, terminal=True)
+                            pass
+                            #logger.debug('%s is currently using the maximum number of threads, not starting another.' % self.timerFunction.__name__, terminal=True)
                         else:
                             self.daemonInstance.threadCounts[self.timerFunction.__name__] += 1
                             newThread = threading.Thread(target=self.timerFunction, args=self.args, daemon=True)
