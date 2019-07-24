@@ -21,6 +21,7 @@ import base64
 import onionrproofs, logger
 from etc import onionrvalues
 from onionrutils import basicrequests, bytesconverter
+from utils import gettransports
 from communicator import onlinepeers
 from coredb import keydb
 def announce_node(daemon):
@@ -43,7 +44,10 @@ def announce_node(daemon):
             peer = onlinepeers.pick_online_peer(daemon)
 
         for x in range(1):
-            ourID = daemon.hsAddress
+            try:
+                ourID = gettransports.get()[0]
+            except IndexError:
+                break
 
             url = 'http://' + peer + '/announce'
             data = {'node': ourID}

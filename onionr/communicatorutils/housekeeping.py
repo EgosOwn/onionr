@@ -22,7 +22,7 @@ import logger
 from onionrusers import onionrusers
 from onionrutils import epoch
 from coredb import blockmetadb, dbfiles
-from onionrstorage import removeblock, setdata
+from onionrstorage import removeblock
 def clean_old_blocks(comm_inst):
     '''Delete old blocks if our disk allocation is full/near full, and also expired blocks'''
 

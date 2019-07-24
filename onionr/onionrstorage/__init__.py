@@ -22,7 +22,10 @@ from onionrutils import bytesconverter, stringvalidators
 from coredb import dbfiles
 import filepaths, onionrcrypto, dbcreator, onionrexceptions
 from onionrcrypto import hashers
+from . import setdata
 DB_ENTRY_SIZE_LIMIT = 10000 # Will be a config option
+
+set_data = setdata.set_data
 
 def _dbInsert(blockHash, data):
     conn = sqlite3.connect(dbfiles.block_data_db, timeout=10)

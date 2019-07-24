@@ -57,7 +57,7 @@ def connect_new_peer_to_communicator(comm_inst, peer='', useBootstrap=False):
         if not config.get('tor.v3onions') and len(address) == 62:
             continue
         # Don't connect to our own address
-        if address == comm_inst.hsAddress:
+        if address in transports:
             continue
         # Don't connect to invalid address or if its already been tried/connected, or if its cooled down
         if len(address) == 0 or address in tried or address in comm_inst.onlinePeers or address in comm_inst.cooldownPeer:

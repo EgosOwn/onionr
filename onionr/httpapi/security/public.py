@@ -25,14 +25,12 @@ class PublicAPISecurity:
     def __init__(self, public_api):
         public_api_security_bp = Blueprint('publicapisecurity', __name__)
         self.public_api_security_bp = public_api_security_bp
-        transports = gettransports.get()
 
         @public_api_security_bp.before_app_request
         def validate_request():
             '''Validate request has the correct hostname'''
             # If high security level, deny requests to public (HS should be disabled anyway for Tor, but might not be for I2P)
-            if len(transports) == 0:
-                transports = list(gettransports.get())
+            transports = gettransports.get()
             if public_api.config.get('general.security_level', default=1) > 0:
                 abort(403)
             if request.host not in transports:

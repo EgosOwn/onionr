@@ -78,7 +78,7 @@ def download_blocks_from_communicator(comm_inst):
                     if onionrcrypto.cryptoutils.verify_POW(content): # check if POW is enough/correct
                         logger.info('Attempting to save block %s...' % blockHash[:12])
                         try:
-                            onionrstorage.setdata.set_data(content)
+                            onionrstorage.set_data(content)
                         except onionrexceptions.DataExists:
                             logger.warn('Data is already set for %s ' % (blockHash,))
                         except onionrexceptions.DiskAllocationReached:

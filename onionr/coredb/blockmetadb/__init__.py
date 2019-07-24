@@ -21,6 +21,7 @@ import sqlite3
 from . import expiredblocks, updateblockinfo, add
 from .. import dbfiles
 update_block_info = updateblockinfo.update_block_info
+add_to_block_DB = add.add_to_block_DB
 def get_block_list(dateRec = None, unsaved = False):
     '''
         Get list of our blocks

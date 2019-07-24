@@ -124,7 +124,7 @@ def insert_block(data, header='txt', sign=False, encryptType='', symKey='', asym
         payload = onionrproofs.POW(metadata, data).waitForResult()
     if payload != False:
         try:
-            retData = onionrstorage.setdata.set_data(payload)
+            retData = onionrstorage.set_data(payload)
         except onionrexceptions.DiskAllocationReached:
             logger.error(allocationReachedMessage)
             retData = False

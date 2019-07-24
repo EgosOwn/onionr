@@ -20,13 +20,13 @@
 import onionrexceptions, logger
 from onionrutils import validatemetadata, blockmetadata
 from coredb import blockmetadb
-import onionrcrypto, onionrblacklist, onionrstorage
+import onionrblacklist, onionrstorage
+import onionrcrypto as crypto
 def importBlockFromData(content):
-    crypto = onionrcrypto.OnionrCrypto()
     blacklist = onionrblacklist.OnionrBlackList()
     retData = False
 
-    dataHash = crypto.sha3Hash(content)
+    dataHash = crypto.hashers.sha3_hash(content)
 
     if blacklist.inBlacklist(dataHash):
         raise onionrexceptions.BlacklistedBlock('%s is a blacklisted block' % (dataHash,))
@@ -39,10 +39,10 @@ def importBlockFromData(content):
     metas = blockmetadata.get_block_metadata_from_data(content) # returns tuple(metadata, meta), meta is also in metadata
     metadata = metas[0]
     if validatemetadata.validate_metadata(metadata, metas[2]): # check if metadata is valid
-        if crypto.verifyPow(content): # check if POW is enough/correct
+        if crypto.cryptoutils.verify_POW(content): # check if POW is enough/correct
             logger.info('Block passed proof, saving.', terminal=True)
             try:
-                blockHash = onionrstorage.setdata(content)
+                blockHash = onionrstorage.set_data(content)
             except onionrexceptions.DiskAllocationReached:
                 pass
             else:
