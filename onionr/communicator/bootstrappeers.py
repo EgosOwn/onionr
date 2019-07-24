@@ -25,6 +25,6 @@ def add_bootstrap_list_to_peer_list(comm_inst, peerList):
         Add the bootstrap list to the peer list (no duplicates)
     '''
     for i in bootstrap_peers:
-        if i not in peerList and i not in comm_inst.offlinePeers and i != gettransports.get()[0] and len(str(i).strip()) > 0:
+        if i not in peerList and i not in comm_inst.offlinePeers and not i in gettransports.get() and len(str(i).strip()) > 0:
             peerList.append(i)
             keydb.addkeys.add_address(i)

@@ -19,7 +19,7 @@
 '''
 import time, sys, secrets
 import onionrexceptions, logger, onionrpeers
-from utils import networkmerger
+from utils import networkmerger, gettransports
 from onionrutils import stringvalidators, epoch
 from communicator import peeraction, bootstrappeers
 from coredb import keydb
@@ -27,6 +27,7 @@ def connect_new_peer_to_communicator(comm_inst, peer='', useBootstrap=False):
     config = comm_inst.config
     retData = False
     tried = comm_inst.offlinePeers
+    transports = gettransports.get()
     if peer != '':
         if stringvalidators.validate_transport(peer):
             peerList = [peer]

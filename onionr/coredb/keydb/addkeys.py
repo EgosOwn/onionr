@@ -65,7 +65,7 @@ def add_address(address):
     if type(address) is None or len(address) == 0:
         return False
     if stringvalidators.validate_transport(address):
-        if address == gettransports.get()[0]:
+        if address in gettransports.get():
             return False
         conn = sqlite3.connect(dbfiles.address_info_db, timeout=30)
         c = conn.cursor()

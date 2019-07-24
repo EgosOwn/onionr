@@ -21,10 +21,7 @@ import os, json
 import config, logger
 from logger.settings import *
 
-def setup_config(dataDir, o_inst = None):
-    data_exists = os.path.exists(dataDir)
-    if not data_exists:
-        os.mkdir(dataDir)
+def setup_config(o_inst = None):
     config.reload()
     
     if not os.path.exists(config._configfile):
@@ -32,10 +29,6 @@ def setup_config(dataDir, o_inst = None):
             # this is the default config, it will be overwritten if a config file already exists. Else, it saves it
             with open('static-data/default_config.json', 'r') as configReadIn:
                 config.set_config(json.loads(configReadIn.read()))
-        else:
-            # the default config file doesn't exist, try hardcoded config
-            logger.warn('Default configuration file does not exist, switching to hardcoded fallback configuration!')
-            config.set_config({'dev_mode': True, 'log': {'file': {'output': True, 'path': dataDir + 'output.log'}, 'console': {'output': True, 'color': True}}})
 
         config.save()
 
@@ -85,5 +78,3 @@ def setup_config(dataDir, o_inst = None):
             set_level(map[verbosity])
         else:
             logger.warn('Verbosity level %s is not valid, using default verbosity.' % verbosity)
-
-    return data_exists

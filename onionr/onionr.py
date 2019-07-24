@@ -76,7 +76,7 @@ class Onionr:
             self.dataDir += '/'
 
         # Load global configuration data
-        data_exists = Onionr.setupConfig(self.dataDir, self)
+        data_exists = Onionr.setupConfig(self)
 
         if netcontroller.tor_binary() is None:
             logger.error('Tor is not installed', terminal=True)
@@ -149,8 +149,8 @@ class Onionr:
     def exitSigterm(self, signum, frame):
         self.killed = True
 
-    def setupConfig(dataDir, self = None):
-        return setupconfig.setup_config(dataDir, self)
+    def setupConfig(self):
+        return setupconfig.setup_config(self)
 
     def cmdHeader(self):
         if len(sys.argv) >= 3:

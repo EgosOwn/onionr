@@ -39,12 +39,11 @@ class OnionrCommunicatorDaemon:
     def __init__(self, onionrInst, proxyPort, developmentMode=config.get('general.dev_mode', False)):
         onionrInst.communicatorInst = self
         # configure logger and stuff
-        onionr.Onionr.setupConfig('data/', self = self)
+        onionr.Onionr.setupConfig(onionrInst)
         self.onionrInst = onionrInst
         self.config = config
         self.storage_counter = storagecounter.StorageCounter()
         self.proxyPort = proxyPort
-        self.hsAddress = gettransports.get()[0]
         self.isOnline = True # Assume we're connected to the internet
 
         # list of timer instances

@@ -34,7 +34,11 @@ class PublicAPI:
         self.i2pEnabled = config.get('i2p.host', False)
         self.hideBlocks = [] # Blocks to be denied sharing
         self.host = apiutils.setbindip.set_bind_IP(filepaths.public_API_host_file)
-        self.torAdder = gettransports.get()[0]
+        transports = []
+        while len(transports) == 0:
+            transports = gettransports.get()
+            time.sleep(0.3)
+        self.torAdder = transports[0]
         self.bindPort = config.get('client.public.port')
         self.lastRequest = 0
         self.hitCount = 0 # total rec requests to public api since server started

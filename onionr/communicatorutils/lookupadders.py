@@ -26,6 +26,8 @@ def lookup_new_peer_transports_with_communicator(comm_inst):
     logger.info('Looking up new addresses...')
     tryAmount = 1
     newPeers = []
+    if len(transports) == 0:
+        transports = list(gettransports.get())
     for i in range(tryAmount):
         # Download new peer address list from random online peers
         if len(newPeers) > 10000:

@@ -31,6 +31,8 @@ class PublicAPISecurity:
         def validate_request():
             '''Validate request has the correct hostname'''
             # If high security level, deny requests to public (HS should be disabled anyway for Tor, but might not be for I2P)
+            if len(transports) == 0:
+                transports = list(gettransports.get())
             if public_api.config.get('general.security_level', default=1) > 0:
                 abort(403)
             if request.host not in transports:
