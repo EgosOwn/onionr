@@ -138,11 +138,11 @@ def insert_block(data, header='txt', sign=False, encryptType='', symKey='', asym
                 pass
             coredb.blockmetadb.add.add_to_block_DB(retData, selfInsert=True, dataSaved=True)
             blockmetadata.process_block_metadata(retData)
-    '''
+
     if retData != False:
         if plaintextPeer == onionrvalues.DENIABLE_PEER_ADDRESS:
-            events.event('insertdeniable', {'content': plaintext, 'meta': plaintextMeta, 'hash': retData, 'peer': bytesconverter.bytes_to_str(asymPeer)}, onionr = self.onionrInst, threaded = True)
+            events.event('insertdeniable', {'content': plaintext, 'meta': plaintextMeta, 'hash': retData, 'peer': bytesconverter.bytes_to_str(asymPeer)}, threaded = True)
         else:
-            events.event('insertblock', {'content': plaintext, 'meta': plaintextMeta, 'hash': retData, 'peer': bytesconverter.bytes_to_str(asymPeer)}, onionr = self.onionrInst, threaded = True)
-    '''
+            events.event('insertblock', {'content': plaintext, 'meta': plaintextMeta, 'hash': retData, 'peer': bytesconverter.bytes_to_str(asymPeer)}, threaded = True)
+
     return retData

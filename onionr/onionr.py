@@ -348,7 +348,7 @@ class Onionr:
             Displays a "command not found" message
         '''
 
-        logger.error('Command not found.', timestamp = False, terminal=True)
+        logger.error('Invalid command.', timestamp = False, terminal=True)
 
     def showHelpSuggestion(self):
         '''

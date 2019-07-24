@@ -126,13 +126,13 @@ def kill_daemon(o_inst):
         events.event('daemon_stop', onionr = o_inst)
         net = NetController(o_inst.config.get('client.port', 59496))
         try:
-            daemonqueue.daemon_queue_qdd('shutdown')
+            daemonqueue.daemon_queue_add('shutdown')
         except sqlite3.OperationalError:
             pass
 
         net.killTor()
     except Exception as e:
-        logger.error('Failed to shutdown daemon.', error = e, timestamp = False, terminal=True)
+        logger.error('Failed to shutdown daemon: ' + str(e), error = e, timestamp = False, terminal=True)
     return
 
 def start(o_inst, input = False, override = False):
