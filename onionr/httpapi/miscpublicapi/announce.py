@@ -22,7 +22,8 @@ from flask import Response
 import logger
 from etc import onionrvalues
 from onionrutils import stringvalidators, bytesconverter
-
+from utils import gettransports
+import onionrcrypto as crypto
 def handle_announce(clientAPI, request):
     '''
     accept announcement posts, validating POW
@@ -32,7 +33,6 @@ def handle_announce(clientAPI, request):
     powHash = ''
     randomData = ''
     newNode = ''
-    ourAdder = clientAPI.hsAddress.encode()
     try:
         newNode = request.form['node'].encode()
     except KeyError:
@@ -45,9 +45,9 @@ def handle_announce(clientAPI, request):
         except KeyError:
             logger.warn('No random data specified for upload')
         else:
-            nodes = newNode + clientAPI.hsAddress.encode()
-            nodes = clientAPI.crypto.blake2bHash(nodes)
-            powHash = clientAPI.crypto.blake2bHash(randomData + nodes)
+            nodes = newNode + bytesconverter.str_to_bytes(gettransports.get()[0])
+            nodes = crypto.hashers.blake2b_hash(nodes)
+            powHash = crypto.hashers.blake2b_hash(randomData + nodes)
             try:
                 powHash = powHash.decode()
             except AttributeError:

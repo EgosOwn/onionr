@@ -61,6 +61,7 @@ class PrivateAPI:
         onionrInst.setClientAPIInst(self)
         register_private_blueprints.register_private_blueprints(self, app)
         httpapi.load_plugin_blueprints(app)
+        self.onionrInst = onionrInst
 
         self.httpServer = WSGIServer((self.host, bindPort), app, log=None, handler_class=httpapi.fdsafehandler.FDSafeHandler)
         self.httpServer.serve_forever()

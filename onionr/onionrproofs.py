@@ -117,7 +117,7 @@ class DataPOW:
         self.puzzle = self.mainHash[0:min(self.difficulty, len(self.mainHash))]
         
         for i in range(max(1, threadCount)):
-            t = threading.Thread(name = 'thread%s' % i, target = self.pow, args = (True))
+            t = threading.Thread(name = 'thread%s' % i, target = self.pow, args = (True,))
             t.start()
 
     def pow(self, reporting = False):
@@ -211,7 +211,7 @@ class POW:
         self.puzzle = self.mainHash[0:min(self.difficulty, len(self.mainHash))]
 
         for i in range(max(1, threadCount)):
-            t = threading.Thread(name = 'thread%s' % i, target = self.pow, args = (True))
+            t = threading.Thread(name = 'thread%s' % i, target = self.pow, args = (True,))
             t.start()
 
     def pow(self, reporting = False):
