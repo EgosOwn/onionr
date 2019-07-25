@@ -162,4 +162,4 @@ cmd_help = {
     'change-id': 'Change active ID',
     'open-home': 'Open your node\'s home/info screen',
     'reset-tor': 'Delete the Tor data directory. Only do this if Tor never starts.'
-        }
+}

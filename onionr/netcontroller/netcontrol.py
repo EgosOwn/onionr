@@ -133,6 +133,7 @@ HiddenServicePort 80 ''' + self.apiServerIP + ''':''' + str(self.hsPort)
             return False
 
         logger.info('Finished starting Tor.', terminal=True)
+
         self.readyState = True
 
         try:

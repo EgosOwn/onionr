@@ -1,0 +1,57 @@
+# lazypkg config
+
+name: onionr-git
+version: 0.1
+release: 1
+summary: anonymous P2P communication platform
+description: Onionr is a decentralized, peer-to-peer communication network, designed
+  to be anonymous and resistant to (meta)data analysis, spam, and corruption.
+license: GPL
+website: https://onionr.net/
+contact: contact@onionr.net
+maintainer: Aaron Esau
+maintainer-contact: aur@aaronesau.com
+
+relationships:
+- conflicts: onionr2
+
+sources:
+- git: https://gitlab.com/beardog/onionr.git
+  branch: master
+
+dependencies:
+- deb: git
+  required: true
+- deb: curl
+  required: true
+- deb: tor
+  required: true
+- deb: python3.7
+  pkgbuild: python
+  build: true
+  required: true
+- deb: python3-setuptools
+  pkgbuild: python-setuptools
+  build: true
+  required: true
+- deb: python3-pip
+  pkgbuild: python-pip
+  build: true
+  required: true
+
+movements:
+- install/onionr: /usr/bin/
+  chown: root:root
+  chmod: 755
+- install/onionr.service: /etc/systemd/system/
+  chown: root:root
+  chmod: 644
+- '.': /usr/share/onionr
+  chown: root:root
+  chmod: 755
+
+scripts:
+- build: install/build.sh
+- pre_install: install/pre_install.sh
+- post_install: install/post_install.sh
+

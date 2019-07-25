@@ -22,27 +22,31 @@ fi
 
 # install basic dependencies
 
-pacman --needed --noconfirm -S git curl python python-pip tor
+echo -e "\033[0;32mInstalling pacman dependencies...\033[0m"
+
+! ((pacman --needed --noconfirm -S git curl python python-pip tor > /dev/null) 2>&1 | grep -v warning 1>&2) | grep .
 
 # get the repository
 
+echo -e "\033[0;32mCloning Onionr repository...\033[0m"
+
 rm -rf "$OUTPUT_DIR" "$DATA_DIR" "$LOG_DIR"
 
-git clone https://gitlab.com/beardog/onionr "$OUTPUT_DIR"
+git clone --quiet https://gitlab.com/beardog/onionr "$OUTPUT_DIR" > /dev/null
 
 cd "$OUTPUT_DIR"
-git checkout "$BRANCH"
+git checkout -q "$BRANCH" > /dev/null
 
 # install python dependencies
 
-pip3 install --no-input -r "$OUTPUT_DIR/requirements.txt" --require-hashes
+echo -e "\033[0;32mInstalling pip dependencies...\033[0m"
 
-# create nologin onionr user if not exists
+pip3 install --no-input -r "$OUTPUT_DIR/requirements.txt" --require-hashes > /dev/null
 
-id -u onionr &>/dev/null || useradd -r -s /sbin/nologin onionr
+# set permissions on Onionr directory
 
 chmod 755 "$OUTPUT_DIR"
-chown -R onionr:onionr "$OUTPUT_DIR"
+chown -R root:root "$OUTPUT_DIR"
 
 # create directories
 
@@ -50,7 +54,7 @@ mkdir -p "$OUTPUT_DIR/onionr/data" "$LOG_DIR"
 mv "$OUTPUT_DIR/onionr/data" "$DATA_DIR"
 
 chmod -R 750 "$DATA_DIR" "$LOG_DIR"
-chown -R onionr:onionr "$DATA_DIR" "$LOG_DIR"
+chown -R root:root "$DATA_DIR" "$LOG_DIR"
 
 # create executable
 
@@ -60,6 +64,8 @@ chmod 755 "$EXECUTABLE"
 chown root:root "$EXECUTABLE"
 
 # create systemd service
+
+echo -e "\033[0;32mCreating systemd unit...\033[0m"
 
 SERVICE='/etc/systemd/system/onionr.service'
 
