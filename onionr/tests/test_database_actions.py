@@ -6,35 +6,34 @@ TEST_DIR = 'testdata/%s-%s' % (uuid.uuid4(), os.path.basename(__file__)) + '/'
 print("Test directory:", TEST_DIR)
 os.environ["ONIONR_HOME"] = TEST_DIR
 from urllib.request import pathname2url
-import core, onionr
-
-c = core.Core()
-
+from coredb import keydb
+from utils import createdirs
+createdirs.create_dirs()
 class OnionrTests(unittest.TestCase):
     
     def test_address_add(self):
         testAddresses = ['facebookcorewwwi.onion', '56kmnycrvepfarolhnx6t2dvmldfeyg7jdymwgjb7jjzg47u2lqw2sad.onion', '5bvb5ncnfr4dlsfriwczpzcvo65kn7fnnlnt2ln7qvhzna2xaldq.b32.i2p']
         for address in testAddresses:
-            c.addAddress(address)
-        dbAddresses = c.listAdders()
+            keydb.addkeys.add_address(address)
+        dbAddresses = keydb.listkeys.list_adders()
         for address in testAddresses:
             self.assertIn(address, dbAddresses)
         
         invalidAddresses = [None, '', '   ', '\t', '\n', ' test ', 24, 'fake.onion', 'fake.b32.i2p']
         for address in invalidAddresses:
             try:
-                c.addAddress(address)
+                keydb.addkeys.add_address(address)
             except TypeError:
                 pass
-        dbAddresses = c.listAdders()
+        dbAddresses = keydb.listkeys.list_adders()
         for address in invalidAddresses:
             self.assertNotIn(address, dbAddresses) 
     
     def test_address_info(self):
         adder = 'nytimes3xbfgragh.onion'
-        c.addAddress(adder)
-        self.assertNotEqual(c.getAddressInfo(adder, 'success'), 1000)
-        c.setAddressInfo(adder, 'success', 1000)
-        self.assertEqual(c.getAddressInfo(adder, 'success'), 1000)
+        keydb.addkeys.add_address(adder)
+        self.assertNotEqual(keydb.transportinfo.get_address_info(adder, 'success'), 1000)
+        keydb.transportinfo.set_address_info(adder, 'success', 1000)
+        self.assertEqual(keydb.transportinfo.get_address_info(adder, 'success'), 1000)
 
 unittest.main()

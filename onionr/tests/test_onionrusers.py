@@ -6,37 +6,38 @@ import json
 TEST_DIR = 'testdata/%s-%s' % (uuid.uuid4(), os.path.basename(__file__)) + '/'
 print("Test directory:", TEST_DIR)
 os.environ["ONIONR_HOME"] = TEST_DIR
-import core, onionr
 
-c = core.Core()
 import onionrexceptions
 from onionrusers import onionrusers
 from onionrusers import contactmanager
-
+import onionrcrypto as crypto
+from coredb import keydb
+from utils import identifyhome, createdirs
+createdirs.create_dirs()
 class OnionrUserTests(unittest.TestCase):
     '''
         Tests both the onionrusers class and the contactmanager (which inherits it)
     '''
     
     def test_users(self):
-        keypair = c._crypto.generatePubKey()
-        onionrusers.OnionrUser(c, keypair[0])
+        keypair = crypto.generate()
+        onionrusers.OnionrUser(keypair[0])
         return
 
     def test_contact_init_no_save(self):
-        contact = c._crypto.generatePubKey()[0]
-        contact = contactmanager.ContactManager(c, contact)
-        self.assertFalse(contact.publicKey in c.listPeers())
+        contact = crypto.generate()[0]
+        contact = contactmanager.ContactManager(contact)
+        self.assertFalse(contact.publicKey in keydb.listkeys.list_peers())
 
     def test_contact_create(self):
-        contact = c._crypto.generatePubKey()[0]
-        contact = contactmanager.ContactManager(c, contact, saveUser=True)
-        self.assertTrue(contact.publicKey in c.listPeers())
+        contact = crypto.generate()[0]
+        contact = contactmanager.ContactManager(contact, saveUser=True)
+        self.assertTrue(contact.publicKey in keydb.listkeys.list_peers())
     
     def test_contact_set_info(self):
-        contact = c._crypto.generatePubKey()[0]
-        contact = contactmanager.ContactManager(c, contact, saveUser=True)
-        fileLocation = '%s/contacts/%s.json' % (c.dataDir, contact.publicKey)
+        contact = crypto.generate()[0]
+        contact = contactmanager.ContactManager(contact, saveUser=True)
+        fileLocation = '%s/contacts/%s.json' % (identifyhome.identify_home(), contact.publicKey)
         contact.set_info('alias', 'bob')
         self.assertTrue(os.path.exists(fileLocation))
 
@@ -47,9 +48,9 @@ class OnionrUserTests(unittest.TestCase):
         self.assertEqual(data['alias'], 'bob')
     
     def test_contact_get_info(self):
-        contact = c._crypto.generatePubKey()[0]
-        contact = contactmanager.ContactManager(c, contact, saveUser=True)
-        fileLocation = '%s/contacts/%s.json' % (c.dataDir, contact.publicKey)
+        contact = crypto.generate()[0]
+        contact = contactmanager.ContactManager(contact, saveUser=True)
+        fileLocation = '%s/contacts/%s.json' % (identifyhome.identify_home(), contact.publicKey)
 
         with open(fileLocation, 'w') as contactFile:
             contactFile.write('{"alias": "bob"}')
@@ -59,16 +60,16 @@ class OnionrUserTests(unittest.TestCase):
         self.assertEqual(contact.get_info('fail'), None)
     
     def test_encrypt(self):
-        contactPair = c._crypto.generatePubKey()
-        contact = contactmanager.ContactManager(c, contactPair[0], saveUser=True)
+        contactPair = crypto.generate()
+        contact = contactmanager.ContactManager(contactPair[0], saveUser=True)
         encrypted = contact.encrypt('test')
-        decrypted = c._crypto.pubKeyDecrypt(encrypted, privkey=contactPair[1], encodedData=True).decode()
+        decrypted = crypto.encryption.pub_key_decrypt(encrypted, privkey=contactPair[1], encodedData=True).decode()
         self.assertEqual('test', decrypted)
     
     def test_delete_contact(self):
-        contact = c._crypto.generatePubKey()[0]
-        contact = contactmanager.ContactManager(c, contact, saveUser=True)
-        fileLocation = '%s/contacts/%s.json' % (c.dataDir, contact.publicKey)
+        contact = crypto.generate()[0]
+        contact = contactmanager.ContactManager(contact, saveUser=True)
+        fileLocation = '%s/contacts/%s.json' % (identifyhome.identify_home(), contact.publicKey)
         self.assertFalse(os.path.exists(fileLocation))
         with open(fileLocation, 'w') as contactFile:
             contactFile.write('{"alias": "test"}')

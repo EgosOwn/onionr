@@ -7,13 +7,12 @@ import nacl.signing, nacl.hash, nacl.encoding
 TEST_DIR = 'testdata/%s-%s' % (uuid.uuid4(), os.path.basename(__file__)) + '/'
 print("Test directory:", TEST_DIR)
 os.environ["ONIONR_HOME"] = TEST_DIR
-import core, onionr
-
-c = core.Core()
-
+import onionrblocks
+from utils import createdirs
+createdirs.create_dirs()
 class OnionrBlockTests(unittest.TestCase):
     def test_plaintext_insert(self):
         message = 'hello world'
-        c.insertBlock(message)
+        onionrblocks.insert(message)
 
 unittest.main()

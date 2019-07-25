@@ -32,7 +32,7 @@ if sys.version_info[0] == 2 or sys.version_info[1] < MIN_PY_VERSION:
 
 from utils import detectoptimization
 if detectoptimization.detect_optimization():
-    sys.stderr.write('Error, Onionr cannot be run in optimized mode\n')
+    sys.stderr.write('Error, Onionr cannot be run with an optimized Python interpreter\n')
     sys.exit(1)
 from utils import createdirs
 createdirs.create_dirs()

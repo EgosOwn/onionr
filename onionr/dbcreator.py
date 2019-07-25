@@ -17,8 +17,9 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-from coredb import dbfiles
 import sqlite3, os
+from coredb import dbfiles
+import filepaths
 
 def createAddressDB():
     '''
@@ -116,6 +117,9 @@ def createBlockDB():
 def createBlockDataDB():
     if os.path.exists(dbfiles.block_data_db):
         raise FileExistsError("Block data database already exists")
+    else:
+        if not os.path.exists(filepaths.block_data_location):
+            os.mkdir(filepaths.block_data_location)
     conn = sqlite3.connect(dbfiles.block_data_db)
     c = conn.cursor()
     c.execute('''CREATE TABLE blockData(

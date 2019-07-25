@@ -8,6 +8,8 @@ def create_dirs():
         os.mkdir(home)
     if not os.path.exists(filepaths.block_data_location):
         os.mkdir(filepaths.block_data_location)
+    if not os.path.exists(filepaths.contacts_location):
+        os.mkdir(filepaths.contacts_location)
 
     for db in dbcreator.create_funcs:
         try:

@@ -18,7 +18,8 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 
-from . import generate, hashers, getourkeypair, signing, encryption
+from . import generate, hashers, getourkeypair, signing, encryption, cryptoutils
+generate_deterministic = generate.generate_deterministic
 generate = generate.generate_pub_key
 
 keypair = getourkeypair.get_keypair()

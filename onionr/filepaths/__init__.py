@@ -4,6 +4,7 @@ if not home.endswith('/'): home += '/'
 
 usage_file = home + 'disk-usage.txt'
 block_data_location = home + 'blocks/'
+contacts_location = home + 'contacts/'
 public_API_host_file = home + 'public-host.txt'
 private_API_host_file = home + 'private-host.txt'
 bootstrap_file_location = 'static-data/bootstrap-nodes.txt'

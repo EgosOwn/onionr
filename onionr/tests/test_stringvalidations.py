@@ -5,10 +5,7 @@ import unittest, uuid
 TEST_DIR = 'testdata/%s-%s' % (uuid.uuid4(), os.path.basename(__file__)) + '/'
 print("Test directory:", TEST_DIR)
 os.environ["ONIONR_HOME"] = TEST_DIR
-import core, onionr
 from onionrutils import stringvalidators
-
-core.Core()
 
 class OnionrValidations(unittest.TestCase):
     
@@ -50,7 +47,6 @@ class OnionrValidations(unittest.TestCase):
         # Test ed25519 public key validity
         valids = ['JZ5VE72GUS3C7BOHDRIYZX4B5U5EJMCMLKHLYCVBQQF3UKHYIRRQ====', 'JZ5VE72GUS3C7BOHDRIYZX4B5U5EJMCMLKHLYCVBQQF3UKHYIRRQ']
         invalid = [None, '', '    ', 'dfsg', '\n', 'JZ5VE72GUS3C7BOHDRIYZX4B5U5EJMCMLKHLYCVBQQF3UKHYIR$Q====']
-        c = core.Core()
 
         for valid in valids:
             print('testing', valid)
