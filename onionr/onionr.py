@@ -40,9 +40,8 @@ import os, base64, random, shutil, time, platform, signal
 from threading import Thread
 import config, logger, onionrplugins as plugins, onionrevents as events
 import netcontroller
-from netcontroller import NetController
 from onionrblockapi import Block
-import onionrproofs, onionrexceptions, communicator, setupconfig
+import onionrexceptions, communicator, setupconfig
 import onionrcommands as commands # Many command definitions are here
 from utils import identifyhome
 from coredb import keydb
