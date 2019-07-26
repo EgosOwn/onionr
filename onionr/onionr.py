@@ -180,7 +180,7 @@ class Onionr:
                 os.mkdir(exportDir)
             else:
                 logger.error('Onionr Not initialized')
-        data = onionrstorage.getData(self.onionrCore, bHash)
+        data = onionrstorage.getData(bHash)
         with open('%s/%s.dat' % (exportDir, bHash), 'wb') as exportFile:
             exportFile.write(data)
 
