@@ -14,7 +14,7 @@ class OnionrValidations(unittest.TestCase):
         valid = ['facebookcorewwwi.onion', 'vww6ybal4bd7szmgncyruucpgfkqahzddi37ktceo3ah7ngmcopnpyyd.onion', 
         '5bvb5ncnfr4dlsfriwczpzcvo65kn7fnnlnt2ln7qvhzna2xaldq.b32.i2p']
 
-        invalid = [None, 'dsfewjirji0ejipdfs', '', '    ', '\n', '\r\n', 'f$ce%^okc+rewwwi.onion']
+        invalid = [None, 'dsfewjirji0ejipdfs', '', '    ', '\n', '\r\n', 'f$ce%^okc+rewwwi.onion', 'facebookc0rewwi.onion']
 
         for x in valid:
             print('testing', x)

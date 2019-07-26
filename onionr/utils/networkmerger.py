@@ -26,25 +26,21 @@ def mergeAdders(newAdderList):
         Merge peer adders list to our database
     '''
     blacklist = onionrblacklist.OnionrBlackList()
-    try:
-        retVal = False
-        if newAdderList != False:
-            for adder in newAdderList.split(','):
-                adder = adder.strip()
-                if not adder in keydb.listkeys.list_adders(randomOrder = False) and adder != gettransports.transports[0] and not blacklist.inBlacklist(adder):
-                    if not config.get('tor.v3onions') and len(adder) == 62:
-                        continue
-                    if keydb.addkeys.add_address(adder):
-                        # Check if we have the maximum amount of allowed stored peers
-                        if config.get('peers.max_stored_peers') > len(keydb.listkeys.list_adders()):
-                            logger.info('Added %s to db.' % adder, timestamp = True)
-                            retVal = True
-                        else:
-                            logger.warn('Reached the maximum amount of peers in the net database as allowed by your config.')
-                else:
-                    pass
-                    #logger.debug('%s is either our address or already in our DB' % adder)
-        return retVal
-    except Exception as error:
-        logger.error('Failed to merge adders.', error = error)
-        return False
+    retVal = False
+    if newAdderList != False:
+        for adder in newAdderList.split(','):
+            adder = adder.strip()
+            if not adder in keydb.listkeys.list_adders(randomOrder = False) and not adder in gettransports.get() and not blacklist.inBlacklist(adder):
+                if not config.get('tor.v3onions', True) and len(adder) == 62:
+                    continue
+                if keydb.addkeys.add_address(adder):
+                    # Check if we have the maximum amount of allowed stored peers
+                    if config.get('peers.max_stored_peers') > len(keydb.listkeys.list_adders()):
+                        logger.info('Added %s to db.' % adder, timestamp = True)
+                        retVal = True
+                    else:
+                        logger.warn('Reached the maximum amount of peers in the net database as allowed by your config.')
+            else:
+                pass
+                #logger.debug('%s is either our address or already in our DB' % adder)
+    return retVal
