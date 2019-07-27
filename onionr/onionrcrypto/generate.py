@@ -1,6 +1,7 @@
 import nacl.signing, nacl.encoding, nacl.pwhash
 import onionrexceptions
 from onionrutils import bytesconverter
+from etc import onionrvalues
 def generate_pub_key():
     '''Generate a Ed25519 public key pair, return tuple of base32encoded pubkey, privkey'''
     private_key = nacl.signing.SigningKey.generate()
@@ -9,7 +10,7 @@ def generate_pub_key():
 
 def generate_deterministic(passphrase, bypassCheck=False):
     '''Generate a Ed25519 public key pair from a password'''
-    passStrength = 25
+    passStrength = onionrvalues.PASSWORD_LENGTH
     passphrase = bytesconverter.str_to_bytes(passphrase) # Convert to bytes if not already
     # Validate passphrase length
     if not bypassCheck:

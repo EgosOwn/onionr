@@ -77,10 +77,6 @@ class Onionr:
         # Load global configuration data
         data_exists = Onionr.setupConfig(self)
 
-        # If block data folder does not exist
-        if not os.path.exists(self.dataDir + 'blocks/'):
-            os.mkdir(self.dataDir + 'blocks/')
-
         # Copy default plugins into plugins folder
         if not os.path.exists(plugins.get_plugins_folder()):
             if os.path.exists('static-data/default-plugins/'):

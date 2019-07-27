@@ -25,6 +25,7 @@ class KeyManager:
         self.keyFile = filepaths.keys_file
 
     def addKey(self, pubKey=None, privKey=None):
+        '''Add a new key pair, either specified or none to generate a new pair automatically'''
         if type(pubKey) is type(None) and type(privKey) is type(None):
             pubKey, privKey = generate.generate_pub_key()
         pubKey = bytesconverter.bytes_to_str(pubKey)
@@ -54,8 +55,11 @@ class KeyManager:
     def getPubkeyList(self):
         '''Return a list of the user's keys'''
         keyList = []
-        with open(self.keyFile, "r") as keyFile:
-            keyData = keyFile.read()
+        try:
+            with open(self.keyFile, "r") as keyFile:
+                keyData = keyFile.read()
+        except FileNotFoundError:
+            keyData = ''
         keyData = keyData.split('\n')
         for pair in keyData:
             if len(pair) > 0: keyList.append(pair.split(',')[0])

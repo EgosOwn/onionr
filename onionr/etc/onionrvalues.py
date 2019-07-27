@@ -18,6 +18,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 DENIABLE_PEER_ADDRESS = "OVPCZLOXD6DC5JHX4EQ3PSOGAZ3T24F75HQLIUZSDSMYPEOXCPFA===="
+PASSWORD_LENGTH = 25
 class OnionrValues:
     def __init__(self):
         self.passwordLength = 20

@@ -23,31 +23,35 @@ import logger, onionrexceptions
 from onionrutils import stringvalidators, bytesconverter
 from onionrusers import onionrusers, contactmanager
 from coredb import keydb
+import keymanager, onionrcrypto
 import unpaddedbase32
+from etc import onionrvalues
+DETERMINISTIC_REQUIREMENT = onionrvalues.PASSWORD_LENGTH
 def add_ID(o_inst):
+    key_manager = keymanager.KeyManager()
     try:
         sys.argv[2]
         assert sys.argv[2] == 'true'
     except (IndexError, AssertionError) as e:
-        newID = o_inst.crypto.keyManager.addKey()[0]
+        newID = key_manager.addKey()[0]
     else:
         logger.warn('Deterministic keys require random and long passphrases.', terminal=True)
         logger.warn('If a good passphrase is not used, your key can be easily stolen.', terminal=True)
         logger.warn('You should use a series of hard to guess words, see this for reference: https://www.xkcd.com/936/', terminal=True)
-        pass1 = getpass.getpass(prompt='Enter at least %s characters: ' % (o_inst.crypto.deterministicRequirement,))
+        pass1 = getpass.getpass(prompt='Enter at least %s characters: ' % (DETERMINISTIC_REQUIREMENT,))
         pass2 = getpass.getpass(prompt='Confirm entry: ')
-        if o_inst.crypto.safeCompare(pass1, pass2):
+        if onionrcrypto.cryptoutils.safe_compare(pass1, pass2):
             try:
                 logger.info('Generating deterministic key. This can take a while.', terminal=True)
-                newID, privKey = o_inst.crypto.generateDeterministic(pass1)
+                newID, privKey = onionrcrypto.generate_deterministic(pass1)
             except onionrexceptions.PasswordStrengthError:
-                logger.error('Passphrase must use at least %s characters.' % (o_inst.crypto.deterministicRequirement,), terminal=True)
+                logger.error('Passphrase must use at least %s characters.' % (DETERMINISTIC_REQUIREMENT,), terminal=True)
                 sys.exit(1)
         else:
             logger.error('Passwords do not match.', terminal=True)
             sys.exit(1)
         try:
-            o_inst.crypto.keyManager.addKey(pubKey=newID, 
+            key_manager.addKey(pubKey=newID, 
             privKey=privKey)
         except ValueError:
             logger.error('That ID is already available, you can change to it with the change-id command.', terminal=True)
@@ -55,6 +59,7 @@ def add_ID(o_inst):
     logger.info('Added ID: %s' % (bytesconverter.bytes_to_str(newID),), terminal=True)
 
 def change_ID(o_inst):
+    key_manager = keymanager.KeyManager()
     try:
         key = sys.argv[2]
         key = unpaddedbase32.repad(key.encode()).decode()
@@ -62,7 +67,7 @@ def change_ID(o_inst):
         logger.warn('Specify pubkey to use', terminal=True)
     else:
         if stringvalidators.validate_pub_key(key):
-            if key in o_inst.crypto.keyManager.getPubkeyList():
+            if key in key_manager.getPubkeyList():
                 o_inst.config.set('general.public_key', key)
                 o_inst.config.save()
                 logger.info('Set active key to: %s' % (key,), terminal=True)
