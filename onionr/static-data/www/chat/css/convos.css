@@ -1,0 +1,10 @@
+.conversationList li{
+    list-style: none;
+    padding-top: 1em;
+}
+
+.convoListContainer{
+    margin-left: 1%;
+    border-radius: 10px solid black;
+    min-height: 100%;
+}

@@ -6,11 +6,12 @@
     <!--Mobile responsive-->
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>
-        Clandestine
+        Onionr Chat
     </title>
     <link rel='shortcut icon' type='image/ico' href='/shared/images/favicon.ico'>
-    <link rel='stylesheet' href='/shared/main/bulma.min.css'>
+    <link rel="stylesheet" href="/shared/main/bulma.min.css">
     <link rel="stylesheet" href="/shared/main/styles-new.css">
+    <link rel="stylesheet" href="/chat/css/convos.css">
 </head>
 
 <body>
@@ -35,7 +36,7 @@
                 <a class="navbar-item idLink" href="/mail/">Mail</a>
                 <a class="navbar-item idLink" href="/friends/">Friends</a>
                 <a class="navbar-item idLink" href="/board/">Circles</a>
-                <a class="navbar-item idLink" href="/clandestine/">Clandestine</a>
+                <a class="navbar-item idLink" href="/chat/">Chat</a>
             </div>
         </div>
     </nav>
@@ -47,10 +48,10 @@
                 <div class="columns">
                     <div class="column">
                         <h1 class="title">
-                            Clandestine
+                            Onionr Chat
                         </h1>
                         <h2 class="subtitle">
-                            Instant messaging
+                            Instant Messaging
                         </h2>
                     </div>
                     <div class="column is-7">
@@ -77,12 +78,16 @@
 
     <br>
 
-    <div class='content'>
-        <ul class='conversationList'></ul>
+    <div class="columns">
+        <div class="column has-background-dark has-text-light is-one-fifth content convoListContainer">
+            <ul class='conversationList'></ul>
+        </div>
+        <div class="column chatBox"></div>
     </div>
+    
     <script src='/shared/navbar.js'></script>
     <script src='/shared/misc.js'></script>
-    <script src='/clandestine/js/main.js'></script>
+    <script src='/chat/js/main.js'></script>
 </body>
 
 </html>

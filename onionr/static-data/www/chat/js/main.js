@@ -5,7 +5,7 @@ function createConvoList(){
     console.log(friendList)
 
     for (friend in friendList){
-        var convoEntry = document.createElement('div')
+        var convoEntry = document.createElement('li')
         convoEntry.classList.add('convoEntry')
         convoEntry.setAttribute('data-pubkey', friend)
         convoEntry.innerText = friendList[friend]

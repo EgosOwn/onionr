@@ -24,6 +24,14 @@ static_files_bp = Blueprint('staticfiles', __name__)
 
 root = os.getcwd() + '/static-data/www/' # should be set to onionr install directory from onionr startup
 
+@static_files_bp.route('/chat/', endpoint='chatIndex')
+def chat_index():
+    return send_from_directory(root + 'chat/', "index.html")
+
+@static_files_bp.route('/chat/<path:path>', endpoint='chat')
+def load_chat(path):
+    return send_from_directory(root + 'chat/', path)
+
 @static_files_bp.route('/board/', endpoint='board')
 def loadBoard():
     return send_from_directory(root + 'board/', "index.html")

@@ -68,3 +68,5 @@ def set_peer_info(peer, key, data):
     c.execute('UPDATE peers SET ' + key + ' = ? WHERE id=?', command)
     conn.commit()
     conn.close()
+
+set_user_info = set_peer_info

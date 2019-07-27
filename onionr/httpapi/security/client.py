@@ -23,10 +23,10 @@ from onionrservices import httpheaders
 # Be extremely mindful of this. These are endpoints available without a password
 whitelist_endpoints = ('siteapi.site', 'www', 'staticfiles.onionrhome', 'staticfiles.homedata', 
 'staticfiles.board', 'staticfiles.profiles', 
-'staticfiles.profilesindex', 
+'staticfiles.profilesindex',
 'staticfiles.boardContent', 'staticfiles.sharedContent', 
 'staticfiles.mail', 'staticfiles.mailindex', 'staticfiles.friends', 'staticfiles.friendsindex',
-'staticfiles.clandestine', 'staticfiles.clandestineIndex')
+'staticfiles.chat', 'staticfiles.chatIndex')
 
 class ClientAPISecurity:
     def __init__(self, client_api):
