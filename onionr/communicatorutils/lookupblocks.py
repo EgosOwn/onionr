@@ -21,6 +21,7 @@ import logger, onionrproofs
 from onionrutils import stringvalidators, epoch
 from communicator import peeraction, onlinepeers
 from coredb import blockmetadb
+from utils import reconstructhash
 import onionrblacklist
 blacklist = onionrblacklist.OnionrBlackList()
 def lookup_blocks_from_communicator(comm_inst):
@@ -70,6 +71,7 @@ def lookup_blocks_from_communicator(comm_inst):
             # if request was a success
             for i in newBlocks.split('\n'):
                 if stringvalidators.validate_hash(i):
+                    i = reconstructhash.reconstruct_hash(i)
                     # if newline seperated string is valid hash
                     if not i in existingBlocks:
                         # if block does not exist on disk and is not already in block queue

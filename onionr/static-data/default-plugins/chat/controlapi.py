@@ -21,13 +21,13 @@ import json
 from flask import Response, request, redirect, Blueprint, send_from_directory
 import deadsimplekv as simplekv
 import filepaths
-flask_blueprint = Blueprint('esoteric_control', __name__)
+flask_blueprint = Blueprint('chat_control', __name__)
 key_store = simplekv.DeadSimpleKV(filepaths.cached_storage, refresh_seconds=5)
-@flask_blueprint.route('/esoteric/ping')
+@flask_blueprint.route('/chatapi/ping')
 def ping():
     return 'pong!'
 
-@flask_blueprint.route('/esoteric/send/<peer>', methods=['POST'])
+@flask_blueprint.route('/chatapi/send/<peer>', methods=['POST'])
 def send_message(peer):
     data = request.get_json(force=True)
     key_store.refresh()
@@ -39,14 +39,14 @@ def send_message(peer):
     key_store.flush()
     return Response('success')
 
-@flask_blueprint.route('/esoteric/gets/<peer>')
+@flask_blueprint.route('/chatapi/gets/<peer>')
 def get_sent(peer):
     sent = key_store.get('s' + peer)
     if sent is None:
         sent = []
     return Response(json.dumps(sent))
 
-@flask_blueprint.route('/esoteric/addrec/<peer>', methods=['POST'])
+@flask_blueprint.route('/chatapi/addrec/<peer>', methods=['POST'])
 def add_rec(peer):
     data = request.get_json(force=True)
     key_store.refresh()
@@ -58,7 +58,7 @@ def add_rec(peer):
     key_store.flush()
     return Response('success')
 
-@flask_blueprint.route('/esoteric/getrec/<peer>')
+@flask_blueprint.route('/chatapi/getrec/<peer>')
 def get_messages(peer):
     key_store.refresh()
     existing = key_store.get('r' + peer)

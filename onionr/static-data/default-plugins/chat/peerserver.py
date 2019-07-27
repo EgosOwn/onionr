@@ -23,7 +23,7 @@ from onionrutils import localcommand
 import deadsimplekv as simplekv, filepaths
 from flask import Response, request, redirect, Blueprint, abort, g
 sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
-direct_blueprint = Blueprint('esoteric', __name__)
+direct_blueprint = Blueprint('chat', __name__)
 
 key_store = simplekv.DeadSimpleKV(filepaths.cached_storage, refresh_seconds=5)
 storage_dir = identifyhome.identify_home()
@@ -37,11 +37,11 @@ def request_setup():
     g.host = host
     g.peer = key_store.get('dc-' + g.host)
 
-@direct_blueprint.route('/esoteric/ping')
+@direct_blueprint.route('/chat/ping')
 def pingdirect():
     return 'pong!'
 
-@direct_blueprint.route('/esoteric/sendto', methods=['POST', 'GET'])
+@direct_blueprint.route('/chat/sendto', methods=['POST', 'GET'])
 def sendto():
     try:
         msg = request.get_json(force=True)
@@ -49,9 +49,9 @@ def sendto():
         msg = ''
     else:
         msg = json.dumps(msg)
-        localcommand.local_command('/esoteric/addrec/%s' % (g.peer,), post=True, postData=msg)
+        localcommand.local_command('/chat/addrec/%s' % (g.peer,), post=True, postData=msg)
     return Response('success')
 
-@direct_blueprint.route('/esoteric/poll')
+@direct_blueprint.route('/chat/poll')
 def poll_chat():
-    return Response(localcommand.local_command('/esoteric/gets/%s' % (g.peer,)))
+    return Response(localcommand.local_command('/chat/gets/%s' % (g.peer,)))

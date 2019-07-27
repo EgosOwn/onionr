@@ -26,3 +26,13 @@ fetch('/friends/list', {
     }
     createConvoList()
 })
+
+// Correct conversation list height
+function correctConvoList(){
+    margin = 50
+    els = document.getElementsByClassName('convoListContainer')
+    for (x = 0; x < els.length; x++){
+        els[x].style.height = window.innerHeight - (2 * margin) + 'px'
+    }
+}
+setInterval(function(){correctConvoList()}, 30)

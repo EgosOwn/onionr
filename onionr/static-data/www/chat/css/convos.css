@@ -5,6 +5,11 @@
 
 .convoListContainer{
     margin-left: 1%;
-    border-radius: 10px solid black;
-    min-height: 100%;
+    border-radius: 5px;
+    border: 1px solid black;
+    overflow-y: scroll;
+}
+
+.chatContent{
+    padding-right: 5%;
 }

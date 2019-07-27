@@ -35,5 +35,4 @@ class KeyManagerTest(unittest.TestCase):
         with open(filepaths.keys_file, 'r') as keyfile:
             self.assertNotIn(new_key, keyfile.read())
         
-
 unittest.main()

@@ -21,17 +21,20 @@ from flask import Response, abort
 import config
 from onionrutils import bytesconverter, stringvalidators
 from coredb import blockmetadb
-
+from utils import reconstructhash
 def get_public_block_list(clientAPI, publicAPI, request):
     # Provide a list of our blocks, with a date offset
     dateAdjust = request.args.get('date')
     bList = blockmetadb.get_block_list(dateRec=dateAdjust)
+    share_list = ''
     if clientAPI.config.get('general.hide_created_blocks', True):
         for b in publicAPI.hideBlocks:
             if b in bList:
                 # Don't share blocks we created if they haven't been *uploaded* yet, makes it harder to find who created a block
                 bList.remove(b)
-    return Response('\n'.join(bList))
+    for b in bList:
+        share_list += '%s\n' % (reconstructhash.deconstruct_hash(b),)
+    return Response(share_list)
 
 def get_block_data(clientAPI, publicAPI, data):
     '''data is the block hash in hex'''

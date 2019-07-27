@@ -25,7 +25,7 @@ import onionrservices, logger, config
 from onionrservices import bootstrapservice
 from onionrutils import stringvalidators, epoch, basicrequests
 
-plugin_name = 'esoteric'
+plugin_name = 'chat'
 PLUGIN_VERSION = '0.0.0'
 sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
 import controlapi, peerserver
@@ -37,7 +37,7 @@ def exit_with_error(text=''):
         logger.error(text)
     sys.exit(1)
 
-class Esoteric:
+class Chat:
     def __init__(self, pluginapi):
         self.peer = None
         self.transport = None
@@ -58,7 +58,7 @@ class Esoteric:
                     message += '\n'
             except EOFError:
                 message = json.dumps({'m': message, 't': epoch.get_epoch()})
-                print(basicrequests.do_post_request('http://%s/esoteric/sendto' % (self.transport,), port=self.socks, data=message))
+                print(basicrequests.do_post_request('http://%s/chat/sendto' % (self.transport,), port=self.socks, data=message))
                 message = ''
             except KeyboardInterrupt:
                 self.shutdown = True
@@ -89,6 +89,6 @@ def on_init(api, data = None):
     '''
 
     pluginapi = api
-    chat = Esoteric(pluginapi)
-    api.commands.register(['esoteric'], chat.create)
+    chat = chat(pluginapi)
+    api.commands.register(['chat'], chat.create)
     return
