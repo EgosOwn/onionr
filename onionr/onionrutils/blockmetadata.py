@@ -85,7 +85,7 @@ def process_block_metadata(blockHash):
             blockmetadb.update_block_info(blockHash, 'expire', expireTime)
         if not blockType is None:
             blockmetadb.update_block_info(blockHash, 'dataType', blockType)
-        #onionrevents.event('processblocks', data = {'block': myBlock, 'type': blockType, 'signer': signer, 'validSig': valid}, onionr = core_inst.onionrInst)
+        onionrevents.event('processblocks', data = {'block': myBlock, 'type': blockType, 'signer': signer, 'validSig': valid})
     else:
         pass
 

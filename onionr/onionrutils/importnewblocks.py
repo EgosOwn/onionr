@@ -21,12 +21,12 @@ import glob
 import logger
 from onionrutils import blockmetadata
 from coredb import blockmetadb
-import filepaths, onionrcrypto
+import filepaths
+import onionrcrypto as crypto
 def import_new_blocks(scanDir=''):
     '''
         This function is intended to scan for new blocks ON THE DISK and import them
     '''
-    crypto = onionrcrypto.OnionrCrypto()
     blockList = blockmetadb.get_block_list()
     exist = False
     if scanDir == '':
@@ -39,7 +39,7 @@ def import_new_blocks(scanDir=''):
             logger.info('Found new block on dist %s' % block, terminal=True)
             with open(block, 'rb') as newBlock:
                 block = block.replace(scanDir, '').replace('.dat', '')
-                if crypto.sha3Hash(newBlock.read()) == block.replace('.dat', ''):
+                if crypto.hashers.sha3_hash(newBlock.read()) == block.replace('.dat', ''):
                     blockmetadb.add_to_block_DB(block.replace('.dat', ''), dataSaved=True)
                     logger.info('Imported block %s.' % block, terminal=True)
                     blockmetadata.process_block_metadata(block)

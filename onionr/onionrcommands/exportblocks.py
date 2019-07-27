@@ -19,21 +19,18 @@
 '''
 import sys, os
 import logger, onionrstorage
+from utils import createdirs
 from onionrutils import stringvalidators
+import filepaths
 def doExport(o_inst, bHash):
-    exportDir = o_inst.dataDir + 'block-export/'
-    if not os.path.exists(exportDir):
-        if os.path.exists(o_inst.dataDir):
-            os.mkdir(exportDir)
-        else:
-            logger.error('Onionr Not initialized', terminal=True)
-    data = onionrstorage.getData(o_inst.onionrCore, bHash)
-    with open('%s/%s.dat' % (exportDir, bHash), 'wb') as exportFile:
+    createdirs.create_dirs()
+    data = onionrstorage.getData(bHash)
+    with open('%s/%s.dat' % (filepaths.export_location, bHash), 'wb') as exportFile:
         exportFile.write(data)
         logger.info('Block exported as file', terminal=True)
 
 def export_block(o_inst):
-    exportDir = o_inst.dataDir + 'block-export/'
+    exportDir = filepaths.export_location
     try:
         assert stringvalidators.validate_hash(sys.argv[2])
     except (IndexError, AssertionError):

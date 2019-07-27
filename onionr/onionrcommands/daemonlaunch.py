@@ -27,6 +27,8 @@ from onionrutils import localcommand
 import filepaths
 from coredb import daemonqueue
 from onionrcrypto import getourkeypair
+from utils import hastor
+
 def _proper_shutdown(o_inst):
     localcommand.local_command('shutdown')
     sys.exit(1)
@@ -35,6 +37,9 @@ def daemon(o_inst):
     '''
         Starts the Onionr communication daemon
     '''
+    if not hastor.has_tor():
+        logger.error("Tor is not present in system path or Onionr directory", terminal=True)
+        sys.exit(1)
 
     # remove runcheck if it exists
     if os.path.isfile(filepaths.run_check_file):

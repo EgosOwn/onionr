@@ -4,12 +4,10 @@ import dbcreator, filepaths
 home = identifyhome.identify_home()
 
 def create_dirs():
-    if not os.path.exists(home):
-        os.mkdir(home)
-    if not os.path.exists(filepaths.block_data_location):
-        os.mkdir(filepaths.block_data_location)
-    if not os.path.exists(filepaths.contacts_location):
-        os.mkdir(filepaths.contacts_location)
+    gen_dirs = [home, filepaths.block_data_location, filepaths.contacts_location, filepaths.export_location]
+    for path in gen_dirs:
+        if not os.path.exists(path):
+            os.mkdir(path)
 
     for db in dbcreator.create_funcs:
         try:
