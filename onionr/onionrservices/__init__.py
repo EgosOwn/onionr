@@ -32,7 +32,7 @@ class OnionrServices:
         self.shutdown = False
         return
     
-    def create_server(self, peer, address):
+    def create_server(self, peer, address, comm_inst):
         '''
             When a client wants to connect, contact their bootstrap address and tell them our
             ephemeral address for our service by creating a new ConnectionServer instance
@@ -46,7 +46,7 @@ class OnionrServices:
         for x in range(BOOTSTRAP_TRIES):
             if basicrequests.do_get_request(base_url + 'ping', port=socks, ignoreAPI=True) == 'pong!':
                 # if bootstrap sever is online, tell them our service address
-                connectionserver.ConnectionServer(peer, address)
+                connectionserver.ConnectionServer(peer, address, comm_inst=comm_inst)
             else:
                 time.sleep(TRY_WAIT)
         else:

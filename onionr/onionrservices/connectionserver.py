@@ -21,24 +21,24 @@ from gevent.pywsgi import WSGIServer
 from stem.control import Controller
 from flask import Flask
 import logger, httpapi
-import onionrexceptions
+import onionrexceptions, config
 from netcontroller import get_open_port
 from httpapi import apiutils
 from onionrutils import stringvalidators, basicrequests, bytesconverter
 from . import httpheaders
 
 class ConnectionServer:
-    def __init__(self, peer, address, onionr_inst=None):
+    def __init__(self, peer, address, comm_inst=None):
 
         if not stringvalidators.validate_pub_key(peer):
             raise ValueError('Peer must be valid base32 ed25519 public key')
         
-        socks = onionr_inst.config.get('tor.socksport') # Load config for Tor socks port for proxy
+        socks = config.get('tor.socksport') # Load config for Tor socks port for proxy
         service_app = Flask(__name__) # Setup Flask app for server.
         service_port = get_open_port()
         service_ip = apiutils.setbindip.set_bind_IP()
         http_server = WSGIServer(('127.0.0.1', service_port), service_app, log=None)
-        onionr_inst.communicatorInst.service_greenlets.append(http_server)
+        comm_inst.service_greenlets.append(http_server)
 
         # TODO define basic endpoints useful for direct connections like stats
         
@@ -50,7 +50,7 @@ class ConnectionServer:
         
         @service_app.route('/close')
         def shutdown_server():
-            onionr_inst.communicatorInst.service_greenlets.remove(http_server)
+            comm_inst.service_greenlets.remove(http_server)
             http_server.stop()
             return Response('goodbye')
 
@@ -60,9 +60,9 @@ class ConnectionServer:
             resp = httpheaders.set_default_onionr_http_headers(resp)
             return resp
 
-        with Controller.from_port(port=onionr_inst.config.get('tor.controlPort')) as controller:
+        with Controller.from_port(port=config.get('tor.controlPort')) as controller:
             # Connect to the Tor process for Onionr
-            controller.authenticate(onionr_inst.config.get('tor.controlpassword'))
+            controller.authenticate(config.get('tor.controlpassword'))
             # Create the v3 onion service for the peer to connect to
             response = controller.create_ephemeral_hidden_service({80: service_port}, await_publication = True, key_type='NEW', key_content = 'ED25519-V3')
 

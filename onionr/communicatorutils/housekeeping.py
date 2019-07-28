@@ -22,20 +22,24 @@ import logger
 from onionrusers import onionrusers
 from onionrutils import epoch
 from coredb import blockmetadb, dbfiles
+import onionrstorage
 from onionrstorage import removeblock
+import onionrblacklist
 def clean_old_blocks(comm_inst):
     '''Delete old blocks if our disk allocation is full/near full, and also expired blocks'''
-
+    blacklist = onionrblacklist.OnionrBlackList()
     # Delete expired blocks
     for bHash in blockmetadb.expiredblocks.get_expired_blocks():
-        comm_inst.blacklist.addToDB(bHash)
+        blacklist.addToDB(bHash)
         removeblock.remove_block(bHash)
+        onionrstorage.deleteBlock(bHash)
         logger.info('Deleted block: %s' % (bHash,))
 
     while comm_inst.storage_counter.isFull():
         oldest = blockmetadb.get_block_list()[0]
-        comm_inst.blacklist.addToDB(oldest)
+        blacklist.addToDB(oldest)
         removeblock.remove_block(oldest)
+        onionrstorage.deleteBlock(bHash)
         logger.info('Deleted block: %s' % (oldest,))
 
     comm_inst.decrementThreadCount('clean_old_blocks')

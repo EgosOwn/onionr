@@ -75,13 +75,6 @@ class OnionrBlackList:
             self._dbExecute("DELETE FROM blacklist WHERE hash = ?", (thing,))
 
     def generateDB(self):
-        self._dbExecute('''CREATE TABLE blacklist(
-            hash text primary key not null,
-            dataType int,
-            blacklistDate int,
-            expire int
-            );
-        ''')
         return
 
     def clearDB(self):
@@ -102,7 +95,7 @@ class OnionrBlackList:
         '''
 
         # we hash the data so we can remove data entirely from our node's disk
-        hashed = bytesconverter.bytes_to_str(crypto.sha3Hash(data))
+        hashed = bytesconverter.bytes_to_str(onionrcrypto.hashers.sha3_hash(data))
         if len(hashed) > 64:
             raise Exception("Hashed data is too large")
 

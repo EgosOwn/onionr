@@ -163,5 +163,21 @@ def createDaemonDB():
     conn.commit()
     conn.close()
 
+def create_blacklist_db():
+    if os.path.exists(dbfiles.blacklist_db):
+        raise FileExistsError("Blacklist db already exists")
+    conn = sqlite3.connect(dbfiles.blacklist_db, timeout=10)
+    c = conn.cursor()
+    # Create table
+    c.execute('''CREATE TABLE blacklist(
+            hash text primary key not null,
+            dataType int,
+            blacklistDate int,
+            expire int
+            );
+        ''')
+    conn.commit()
+    conn.close()
 
-create_funcs = [createAddressDB, createPeerDB, createBlockDB, createBlockDataDB, createForwardKeyDB, createDaemonDB]
+
+create_funcs = [createAddressDB, createPeerDB, createBlockDB, createBlockDataDB, createForwardKeyDB, createDaemonDB, create_blacklist_db]

@@ -50,6 +50,7 @@ def sendto():
     else:
         msg = json.dumps(msg)
         localcommand.local_command('/chat/addrec/%s' % (g.peer,), post=True, postData=msg)
+        print(msg)
     return Response('success')
 
 @direct_blueprint.route('/chat/poll')

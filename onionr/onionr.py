@@ -93,7 +93,7 @@ class Onionr:
                 try:
                     os.mkdir(plugins.get_plugin_data_folder(name))
                 except Exception as e:
-                    logger.warn('Error enabling plugin: ' + str(e))
+                    #logger.warn('Error enabling plugin: ' + str(e), terminal=True)
                     plugins.disable(name, onionr = self, stop_event = False)
 
         self.communicatorInst = None

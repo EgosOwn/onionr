@@ -34,6 +34,6 @@ def service_creator(daemon):
                 signer = bytesconverter.bytes_to_str(bl.signer)
                 daemon.active_services.append(b)
                 daemon.active_services.append(signer)
-                daemon.services.create_server(signer, bs)
+                daemon.services.create_server(signer, bs, daemon)
     
     daemon.decrementThreadCount('service_creator')

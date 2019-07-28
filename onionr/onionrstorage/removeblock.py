@@ -11,7 +11,7 @@ def remove_block(block):
     '''
 
     if stringvalidators.validate_hash(block):
-        conn = sqlite3.connect(dbfiles.block_data_db, timeout=30)
+        conn = sqlite3.connect(dbfiles.block_meta_db, timeout=30)
         c = conn.cursor()
         t = (block,)
         c.execute('Delete from hashes where hash=?;', t)

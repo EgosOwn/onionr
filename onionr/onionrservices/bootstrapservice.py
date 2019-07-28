@@ -24,7 +24,7 @@ from flask import Flask, Response
 from netcontroller import get_open_port
 from . import httpheaders
 from onionrutils import stringvalidators, epoch
-
+import config, onionrblocks
 def bootstrap_client_service(peer, onionr_inst=None, bootstrap_timeout=300):
     '''
         Bootstrap client services
@@ -68,12 +68,12 @@ def bootstrap_client_service(peer, onionr_inst=None, bootstrap_timeout=300):
         else:
             return Response("")
 
-    with Controller.from_port(port=onionr_inst.config.get('tor.controlPort')) as controller:
+    with Controller.from_port(port=config.get('tor.controlPort')) as controller:
         # Connect to the Tor process for Onionr
-        controller.authenticate(onionr_inst.config.get('tor.controlpassword'))
+        controller.authenticate(config.get('tor.controlpassword'))
         # Create the v3 onion service
         response = controller.create_ephemeral_hidden_service({80: bootstrap_port}, key_type = 'NEW', key_content = 'ED25519-V3', await_publication = True)
-        core_inst.insertBlock(response.service_id, header='con', sign=True, encryptType='asym', 
+        onionrblocks.insert(response.service_id, header='con', sign=True, encryptType='asym', 
         asymPeer=peer, disableForward=True, expire=(epoch.get_epoch() + bootstrap_timeout))
         # Run the bootstrap server
         try:
