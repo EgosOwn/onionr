@@ -21,11 +21,12 @@ from gevent.pywsgi import WSGIServer
 from stem.control import Controller
 from flask import Flask
 import logger, httpapi
-import onionrexceptions, config
+import onionrexceptions, config, filepaths
 from netcontroller import get_open_port
 from httpapi import apiutils
 from onionrutils import stringvalidators, basicrequests, bytesconverter
 from . import httpheaders
+import deadsimplekv as simplekv
 
 class ConnectionServer:
     def __init__(self, peer, address, comm_inst=None):
@@ -39,6 +40,7 @@ class ConnectionServer:
         service_ip = apiutils.setbindip.set_bind_IP()
         http_server = WSGIServer(('127.0.0.1', service_port), service_app, log=None)
         comm_inst.service_greenlets.append(http_server)
+        key_store = simplekv.DeadSimpleKV(filepaths.cached_storage)
 
         # TODO define basic endpoints useful for direct connections like stats
         
@@ -78,8 +80,8 @@ class ConnectionServer:
                 raise ConnectionError('Could not reach %s bootstrap address %s' % (peer, address))
             else:
                 # If no connection error, create the service and save it to local global key store
-                self.onionr_inst.keyStore.put('dc-' + response.service_id, bytesconverter.bytes_to_str(peer))
+                key_store.put('dc-' + response.service_id, bytesconverter.bytes_to_str(peer))
                 logger.info('hosting on %s with %s' % (response.service_id,  peer))
                 http_server.serve_forever()
                 http_server.stop()
-                self.onionr_inst.keyStore.delete('dc-' + response.service_id)
+                key_store.delete('dc-' + response.service_id)

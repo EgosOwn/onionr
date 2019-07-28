@@ -45,12 +45,12 @@ def pingdirect():
 def sendto():
     try:
         msg = request.get_json(force=True)
-    except:
+    except json.JSONDecodeError:
         msg = ''
     else:
         msg = json.dumps(msg)
         localcommand.local_command('/chat/addrec/%s' % (g.peer,), post=True, postData=msg)
-        print(msg)
+    print('msg from', g.peer, msg)
     return Response('success')
 
 @direct_blueprint.route('/chat/poll')

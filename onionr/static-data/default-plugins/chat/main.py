@@ -42,6 +42,7 @@ class Chat:
         self.peer = None
         self.transport = None
         self.shutdown = False
+        self.pluginapi = pluginapi
     
     def _sender_loop(self):
         print('Enter a message to send, with ctrl-d or -s on a new line.')
@@ -58,7 +59,7 @@ class Chat:
                     message += '\n'
             except EOFError:
                 message = json.dumps({'m': message, 't': epoch.get_epoch()})
-                print(basicrequests.do_post_request('http://%s/chat/sendto' % (self.transport,), port=self.socks, data=message))
+                print(basicrequests.do_post_request(self.pluginapi.onionr, 'http://%s/chat/sendto' % (self.transport,), port=self.socks, data=message))
                 message = ''
             except KeyboardInterrupt:
                 self.shutdown = True
