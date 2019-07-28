@@ -24,7 +24,8 @@ from flask import Flask, Response
 from netcontroller import get_open_port
 from . import httpheaders
 from onionrutils import stringvalidators, epoch
-import config, onionrblocks
+import config, onionrblocks, filepaths
+import deadsimplekv as simplekv
 def bootstrap_client_service(peer, onionr_inst=None, bootstrap_timeout=300):
     '''
         Bootstrap client services
@@ -46,6 +47,7 @@ def bootstrap_client_service(peer, onionr_inst=None, bootstrap_timeout=300):
     bootstrap_address = ''
     shutdown = False
     bs_id = str(uuid.uuid4())
+    key_store = simplekv.DeadSimpleKV(filepaths.cached_storage)
 
     @bootstrap_app.route('/ping')
     def get_ping():
@@ -62,7 +64,7 @@ def bootstrap_client_service(peer, onionr_inst=None, bootstrap_timeout=300):
         if stringvalidators.validate_transport(address + '.onion'):
             # Set the bootstrap address then close the server
             bootstrap_address = address + '.onion'
-            core_inst.keyStore.put(bs_id, bootstrap_address)
+            key_store.put(bs_id, bootstrap_address)
             http_server.stop()
             return Response("success")
         else:
@@ -83,4 +85,4 @@ def bootstrap_client_service(peer, onionr_inst=None, bootstrap_timeout=300):
         # This line reached when server is shutdown by being bootstrapped
     
     # Now that the bootstrap server has received a server, return the address
-    return onionr_inst.keyStore.get(bs_id)
+    return key_store.get(bs_id)

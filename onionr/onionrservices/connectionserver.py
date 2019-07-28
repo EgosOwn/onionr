@@ -68,7 +68,7 @@ class ConnectionServer:
 
             try:
                 for x in range(3):
-                    attempt = basicrequests.do_post_request('http://' + address + '/bs/' + response.service_id, port=socks)
+                    attempt = basicrequests.do_post_request(comm_inst.onionrInst, 'http://' + address + '/bs/' + response.service_id, port=socks)
                     if attempt == 'success':
                         break
                 else:
