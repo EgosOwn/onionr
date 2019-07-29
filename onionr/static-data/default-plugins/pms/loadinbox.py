@@ -20,16 +20,17 @@
 import onionrblockapi
 from coredb import blockmetadb
 import filepaths
+from utils import reconstructhash, identifyhome
 import deadsimplekv as simplekv
 def load_inbox():
     inbox_list = []
-    deleted = simplekv.DeadSimpleKV(filepaths.cached_storage).get('deleted_mail')
+    deleted = simplekv.DeadSimpleKV(identifyhome.identify_home() + '/mailcache.dat').get('deleted_mail')
     if deleted is None:
         deleted = []
 
     for blockHash in blockmetadb.get_blocks_by_type('pm'):
         block = onionrblockapi.Block(blockHash)
         block.decrypt()
-        if block.decrypted and blockHash not in deleted:
+        if block.decrypted and reconstructhash.deconstruct_hash(blockHash) not in deleted:
             inbox_list.append(blockHash)
     return inbox_list

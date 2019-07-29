@@ -19,7 +19,7 @@
 '''
 import sqlite3, os
 from onionrutils import epoch
-from utils import identifyhome
+from utils import identifyhome, reconstructhash
 class SentBox:
     def __init__(self):
         self.dbLocation = identifyhome.identify_home() + '/sentbox.db'
@@ -58,6 +58,7 @@ class SentBox:
         return retData
 
     def addToSent(self, blockID, peer, message, subject=''):
+        blockID = reconstructhash.deconstruct_hash(blockID)
         self.connect()
         args = (blockID, peer, message, subject, epoch.get_epoch())
         self.cursor.execute('INSERT INTO sent VALUES(?, ?, ?, ?, ?)', args)
@@ -66,6 +67,7 @@ class SentBox:
         return
 
     def removeSent(self, blockID):
+        blockID = reconstructhash.deconstruct_hash(blockID)
         self.connect()
         args = (blockID,)
         self.cursor.execute('DELETE FROM sent where hash=?', args)

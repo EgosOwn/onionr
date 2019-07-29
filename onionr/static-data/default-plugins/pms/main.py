@@ -23,6 +23,7 @@ import logger, config, threading, time, datetime
 from onionrblockapi import Block
 import onionrexceptions
 from onionrusers import onionrusers
+from utils import reconstructhash
 from onionrutils import stringvalidators, escapeansi, bytesconverter
 import locale, sys, os, json
 
@@ -37,6 +38,7 @@ flask_blueprint = mailapi.flask_blueprint
 
 def add_deleted(keyStore, bHash):
     existing = keyStore.get('deleted_mail')
+    bHash = reconstructhash.reconstruct_hash(bHash)
     if existing is None:
         existing = []
     else:

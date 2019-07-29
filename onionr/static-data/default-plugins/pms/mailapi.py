@@ -21,13 +21,14 @@ import sys, os, json
 from flask import Response, request, redirect, Blueprint, abort
 from onionrusers import contactmanager
 from onionrutils import stringvalidators
+from utils import reconstructhash, identifyhome
 import filepaths
 import deadsimplekv as simplekv
 sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
 import loadinbox, sentboxdb
 
 flask_blueprint = Blueprint('mail', __name__)
-kv = simplekv.DeadSimpleKV(filepaths.cached_storage)
+kv = simplekv.DeadSimpleKV(identifyhome.identify_home() + '/mailcache.dat')
 
 @flask_blueprint.route('/mail/ping')
 def mail_ping():
@@ -37,6 +38,7 @@ def mail_ping():
 def mail_delete(block):
     if not stringvalidators.validate_hash(block):
         abort(504)
+    block = reconstructhash.deconstruct_hash(block)
     existing = kv.get('deleted_mail')
     if existing is None:
         existing = []

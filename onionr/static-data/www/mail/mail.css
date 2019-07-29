@@ -1,86 +1,22 @@
-.threads div{
-    padding-top: 1em;
+.threadEntry{
+    margin-bottom: 2%;
 }
-.threads div span{
-    padding-left: 0.2em;
-    padding-right: 0.2em;
+.threadEntry button{
+    margin-right: 1%;
 }
-
-#threadPlaceholder{
-    display: none;
-    margin-top: 1em;
-    font-size: 2em;
+.threadEntry span, .sentboxList span{
+    padding-left: 1%;
 }
 
-input{
-    background-color: white;
+.overlayContent{
+    background-color: lightgray;
+    border: 3px solid black;
+    border-radius: 3px;
     color: black;
-}
-
-.btn-group button {
-    border: 1px solid black;
-    padding: 10px 24px; /* Some padding */
-    cursor: pointer; /* Pointer/hand icon */
-    float: left; /* Float the buttons side by side */
-  }
-
-  .btn-group button:hover {
-    background-color: darkgray;
-  }
-
-  .btn-group {
-      margin-bottom: 2em;
-  }
-
-#tabBtns{
-    margin-bottom: 3em;
-    display: block;
-}
-
-  .activeTab{
-      color: black;
-      background-color: gray;
-  }
-
-  .overlayContent{
-      background-color: lightgray;
-      border: 3px solid black;
-      border-radius: 3px;
-      color: black;
-      font-family: Verdana, Geneva, Tahoma, sans-serif;
-      min-height: 100%;
-      padding: 1em;
-      margin: 1em;
-  }
-
-  .mailPing{
-      color: orange;
-  }
-
-  #addUnknownContact, .mailPing{
-      display: none;
-  }
-
-.danger{
-    color: red;
-}
-
-.warn{
-    color: orange;
-}
-
-.good{
-    color: greenyellow;
-}
-
-.pre{
-    padding-top: 1em;
-    word-wrap: break-word;
-    font-family: monospace;
-    white-space: pre;
-}
-.messageContent{
-    font-size: 1.5em;
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+    min-height: 100%;
+    padding: 1em;
+    margin: 1em;
 }
 
 #draftText{
@@ -95,26 +31,6 @@ input{
     color: black;
 }
 
-.break-up{
-    margin-top: 1em;
-}
-
-.primaryBtn{
-    border-radius: 3px;
-    padding: 3px;
-    color: black;
-    width: 5%;
-}
-
-.successBtn{
-    background-color: #28a745;
-    border-radius: 3px;
-    padding: 5px;
-    color: black;
-    font-size: 1.5em;
-    width: 10%;
-}
-
-.content{
-    min-height: 1000px;
+.sentboxList{
+    padding-top: 1em;
 }
