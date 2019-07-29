@@ -143,7 +143,7 @@ class WebAPI:
     def get_callbacks(self, scope = None):
         return self.pluginapi.get_onionr().api.getCallbacks(scope = scope)
 
-class pluginapi:
+class SharedAPI:
     def __init__(self, onionr, data):
         self.onionr = onionr
         self.data = data

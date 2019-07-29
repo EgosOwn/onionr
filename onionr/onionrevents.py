@@ -22,7 +22,7 @@ import config, logger, onionrplugins as plugins, onionrpluginapi as pluginapi
 from threading import Thread
 
 def get_pluginapi(onionr, data):
-    return pluginapi.pluginapi(onionr, data)
+    return pluginapi.SharedAPI(onionr, data)
 
 def __event_caller(event_name, data = {}, onionr = None):
     '''
