@@ -25,31 +25,36 @@ import logger, config, onionrblocks
 from onionrutils import escapeansi, epoch, bytesconverter
 locale.setlocale(locale.LC_ALL, '')
 from coredb import blockmetadb
+from utils import identifyhome, reconstructhash
+import deadsimplekv as simplekv
 sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
 import flowapi # import after path insert
 flask_blueprint = flowapi.flask_blueprint
 
 plugin_name = 'flow'
 PLUGIN_VERSION = '0.0.1'
+board_cache = simplekv.DeadSimpleKV(identifyhome.identify_home() + '/board-index.cache.json')
 
 class OnionrFlow:
     def __init__(self):
         self.alreadyOutputed = []
         self.flowRunning = False
-        self.channel = None
+        self.channel = ""
         return
 
     def start(self):
         logger.warn("Please note: everything said here is public, even if a random channel name is used.", terminal=True)
         message = ""
         self.flowRunning = True
-        newThread = threading.Thread(target=self.showOutput, daemon=True)
-        newThread.start()
         try:
-            self.channel = logger.readline("Enter a channel name or none for default:")
+            self.channel = logger.readline("Enter a channel name or none for default:").strip()
         except (KeyboardInterrupt, EOFError) as e:
             self.flowRunning = False
+        newThread = threading.Thread(target=self.showOutput, daemon=True)
+        newThread.start()
         while self.flowRunning:
+            if self.channel == "":
+                self.channel = "global"
             try:
                 message = logger.readline('\nInsert message into flow:').strip().replace('\n', '\\n').replace('\r', '\\r')
             except EOFError:
@@ -62,7 +67,7 @@ class OnionrFlow:
                 expireTime = epoch.get_epoch() + 43200
                 if len(message) > 0:
                     logger.info('Inserting message as block...', terminal=True)
-                    onionrblocks.insert(message, header='txt', expire=expireTime, meta={'ch': self.channel})
+                    onionrblocks.insert(message, header='brd', expire=expireTime, meta={'ch': self.channel})
 
         logger.info("Flow is exiting, goodbye", terminal=True)
         return
@@ -72,7 +77,7 @@ class OnionrFlow:
             time.sleep(1)
         try:
             while self.flowRunning:
-                for block in blockmetadb.get_blocks_by_type('txt'):
+                for block in blockmetadb.get_blocks_by_type('brd'):
                     if block in self.alreadyOutputed:
                         continue
                     block = Block(block)
@@ -105,3 +110,30 @@ def on_init(api, data = None):
     api.commands.register('flow', flow.start)
     api.commands.register_help('flow', 'Open the flow messaging interface')
     return
+
+def on_processblocks(api, data=None):
+    b_hash = reconstructhash.deconstruct_hash(data['block'].hash) # Get the 0-truncated block hash
+    metadata = data['block'].bmetadata # Get the block metadata
+
+    # Validate the channel name is sane for caching
+    try:
+        ch = metadata['ch']
+    except KeyError:
+        ch = 'global'
+    ch_len = len(ch)
+    if len(metadata['ch']) == 0:
+        ch = 'global'
+    elif len(metadata['ch']) > 12:
+        return
+    
+    existing_posts = board_cache.get(ch)
+    if existing_posts is None:
+        existing_posts = ''
+    else:
+        existing_posts += ','
+    check_list = existing_posts.split(',')
+    if len(check_list) > 30:
+        check_list.pop(0)
+    existing_posts = ','.join(check_list)
+    board_cache.put(ch, '%s%s' % (existing_posts, b_hash))
+    board_cache.flush()

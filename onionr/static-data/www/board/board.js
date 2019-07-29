@@ -4,6 +4,8 @@ var windowHeight = window.innerHeight;
 webpassword = webpass
 newPostForm = document.getElementById('addMsg')
 firstLoad = true
+lastLoadedBoard = 'global'
+
 function appendMessages(msg){
     var humanDate = new Date(0)
     if (msg.length == 0){
@@ -53,14 +55,29 @@ function appendMessages(msg){
 }
 
 function getBlocks(){
+    var feed = document.getElementById("feed")
+    var ch = document.getElementById('feedIDInput').value
+    if (lastLoadedBoard !== ch){
+        while (feed.firstChild) {
+            feed.removeChild(feed.firstChild);
+        }
+        requested = [] // reset requested list
+    }
+
+    lastLoadedBoard = ch
     if (document.getElementById('none') !== null){
         document.getElementById('none').remove();
 
     }
-    var feedText =  httpGet('/getblocksbytype/txt')
+    var feedText =  httpGet('/flow/getpostsbyboard/' + ch)
     var blockList = feedText.split(',').reverse()
+    console.log(blockList)
     for (i = 0; i < blockList.length; i++){
+        while (blockList[i].length < 64) blockList[i] = "0" + blockList[i]
         if (! requested.includes(blockList[i])){
+            if (blockList[i].length == 0){
+                continue
+            }
             bl = httpGet('/getblockdata/' + blockList[i])
             appendMessages(bl)
             requested.push(blockList[i])
@@ -75,7 +92,9 @@ document.getElementById('refreshFeed').onclick = function(){
 
 newPostForm.onsubmit = function(){
     var message = document.getElementById('newMsgText').value
-    var postData = {'message': message, 'type': 'txt', 'encrypt': false}
+    var channel = document.getElementById('feedIDInput').value
+    var meta = {'ch': channel}
+    var postData = {'message': message, 'type': 'txt', 'encrypt': false, 'meta': JSON.stringify(meta)}
     postData = JSON.stringify(postData)
     newPostForm.style.display = 'none'
     fetch('/insertblock', {
