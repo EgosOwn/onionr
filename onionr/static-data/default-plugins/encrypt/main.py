@@ -114,7 +114,6 @@ def on_init(api, data = None):
         inputted is executed. Could be called when daemon is starting or when
         just the client is running.
     '''
-
     pluginapi = api
     encrypt = PlainEncryption(pluginapi)
     api.commands.register(['encrypt'], encrypt.encrypt)
