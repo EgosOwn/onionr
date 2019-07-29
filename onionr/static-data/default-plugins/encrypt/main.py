@@ -22,8 +22,8 @@
 import logger, config, threading, time, datetime, sys, json
 from onionrblockapi import Block
 from onionrutils import stringvalidators, bytesconverter
-from onionrcrypto import encryption, getourkeypair
-import onionrexceptions, onionrusers, signing
+from onionrcrypto import encryption, keypair, signing
+import onionrexceptions, onionrusers
 import locale
 locale.setlocale(locale.LC_ALL, '')
 plugin_name = 'encrypt'
@@ -64,7 +64,6 @@ class PlainEncryption:
                 sys.exit(1)
             # Build Message to encrypt
             data = {}
-            keypair = getourkeypair.get_our_keypair()
             myPub = keypair[0]
             if sign:
                 data['sig'] = signing.ed_sign(plaintext, key=keypair[1], encodeResult=True)
