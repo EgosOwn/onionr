@@ -27,7 +27,7 @@ from onionrutils import localcommand
 import filepaths
 from coredb import daemonqueue
 from onionrcrypto import getourkeypair
-from utils import hastor
+from utils import hastor, logoheader
 
 def _proper_shutdown(o_inst):
     localcommand.local_command('shutdown')
@@ -62,7 +62,7 @@ def daemon(o_inst):
     logger.raw('', terminal=True)
     # print nice header thing :)
     if o_inst.config.get('general.display_header', True):
-        o_inst.header()
+        logoheader.header()
     o_inst.version(verbosity = 5, function = logger.info)
     logger.debug('Python version %s' % platform.python_version())
 

@@ -18,7 +18,6 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 import onionrplugins
-API_VERSION = 0
 def load_plugin_blueprints(flaskapp, blueprint='flask_blueprint'):
     '''Iterate enabled plugins and load any http endpoints they have'''
     for plugin in onionrplugins.get_enabled_plugins():

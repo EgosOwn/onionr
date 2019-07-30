@@ -33,3 +33,4 @@ onionr/data/*.log
 onionr-*.pkg.tar.gz
 pkg/
 src/
+spawnnodes.py

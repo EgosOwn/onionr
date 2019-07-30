@@ -17,8 +17,9 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import os, json
-import config, logger
+import os, json, base64
+import config, logger, netcontroller
+from etc import onionrvalues
 from logger.settings import *
 
 def setup_config(o_inst = None):
@@ -78,3 +79,14 @@ def setup_config(o_inst = None):
             set_level(map[verbosity])
         else:
             logger.warn('Verbosity level %s is not valid, using default verbosity.' % verbosity)
+
+    if type(config.get('client.webpassword')) is type(None):
+        config.set('client.webpassword', base64.b16encode(os.urandom(32)).decode('utf-8'), savefile=True)
+    if type(config.get('client.client.port')) is type(None):
+        randomPort = netcontroller.get_open_port()
+        config.set('client.client.port', randomPort, savefile=True)
+    if type(config.get('client.public.port')) is type(None):
+        randomPort = netcontroller.get_open_port()
+        config.set('client.public.port', randomPort, savefile=True)
+    if type(config.get('client.api_version')) is type(None):
+        config.set('client.api_version', onionrvalues.API_VERSION, savefile=True)

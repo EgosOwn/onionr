@@ -22,7 +22,7 @@ import logger
 from onionrblockapi import Block
 import onionr
 from onionrutils import checkcommunicator, mnemonickeys
-from utils import sizeutils
+from utils import sizeutils, gethostname, getconsolewidth
 from coredb import blockmetadb, daemonqueue, keydb
 import onionrcrypto
 def show_stats(o_inst):
@@ -60,7 +60,7 @@ def show_stats(o_inst):
 
         # pre-processing
         maxlength = 0
-        width = o_inst.getConsoleWidth()
+        width = getconsolewidth.get_console_width()
         for key, val in messages.items():
             if not (type(val) is bool and val is True):
                 maxlength = max(len(key), maxlength)
@@ -86,7 +86,7 @@ def show_stats(o_inst):
 
 def show_details(o_inst):
     details = {
-        'Node Address' : o_inst.get_hostname(),
+        'Node Address' : gethostname.get_hostname(),
         'Web Password' : o_inst.getWebPassword(),
         'Public Key' : onionrcrypto.pub_key,
         'Human-readable Public Key' : mnemonickeys.get_human_readable_ID()

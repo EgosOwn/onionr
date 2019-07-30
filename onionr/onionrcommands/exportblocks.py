@@ -22,14 +22,14 @@ import logger, onionrstorage
 from utils import createdirs
 from onionrutils import stringvalidators
 import filepaths
-def doExport(o_inst, bHash):
+def doExport(bHash):
     createdirs.create_dirs()
     data = onionrstorage.getData(bHash)
     with open('%s/%s.dat' % (filepaths.export_location, bHash), 'wb') as exportFile:
         exportFile.write(data)
         logger.info('Block exported as file', terminal=True)
 
-def export_block(o_inst):
+def export_block():
     exportDir = filepaths.export_location
     try:
         assert stringvalidators.validate_hash(sys.argv[2])
@@ -38,4 +38,4 @@ def export_block(o_inst):
         sys.exit(1)
     else:
         bHash = sys.argv[2]
-        doExport(o_inst, bHash)
+        doExport(bHash)

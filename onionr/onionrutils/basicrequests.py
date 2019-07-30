@@ -19,7 +19,7 @@
 '''
 import requests, streamedrequests
 import logger, onionrexceptions
-import httpapi
+from etc import onionrvalues
 def do_post_request(onionr_inst, url, data={}, port=0, proxyType='tor', max_size=10000):
     '''
     Do a POST request through a local tor or i2p instance
@@ -49,7 +49,7 @@ def do_get_request(url, port=0, proxyType='tor', ignoreAPI=False, returnHeaders=
     '''
     Do a get request through a local tor or i2p instance
     '''
-    API_VERSION = httpapi.API_VERSION
+    API_VERSION = onionrvalues.API_VERSION
     retData = False
     if proxyType == 'tor':
         if port == 0:

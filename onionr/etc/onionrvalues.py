@@ -19,6 +19,11 @@
 '''
 DENIABLE_PEER_ADDRESS = "OVPCZLOXD6DC5JHX4EQ3PSOGAZ3T24F75HQLIUZSDSMYPEOXCPFA===="
 PASSWORD_LENGTH = 25
+ONIONR_TAGLINE = 'Private P2P Communication - GPLv3 - https://Onionr.net'
+ONIONR_VERSION = '0.0.0' # for debugging and stuff
+ONIONR_VERSION_TUPLE = tuple(ONIONR_VERSION.split('.')) # (MAJOR, MINOR, VERSION)
+API_VERSION = '0' # increments of 1; only change when something fundamental about how the API works changes. This way other nodes know how to communicate without learning too much information about you.
+MIN_PY_VERSION = 6
 class OnionrValues:
     def __init__(self):
         self.passwordLength = 20

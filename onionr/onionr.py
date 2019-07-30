@@ -21,11 +21,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 import sys
-ONIONR_TAGLINE = 'Private P2P Communication - GPLv3 - https://Onionr.net'
-ONIONR_VERSION = '0.0.0' # for debugging and stuff
-ONIONR_VERSION_TUPLE = tuple(ONIONR_VERSION.split('.')) # (MAJOR, MINOR, VERSION)
-API_VERSION = '0' # increments of 1; only change when something fundamental about how the API works changes. This way other nodes know how to communicate without learning too much information about you.
-MIN_PY_VERSION = 6
+from etc import onionrvalues
 if sys.version_info[0] == 2 or sys.version_info[1] < MIN_PY_VERSION:
     sys.stderr.write('Error, Onionr requires Python 3.%s+\n' % (MIN_PY_VERSION,))
     sys.exit(1)
@@ -58,7 +54,7 @@ class Onionr:
             Main Onionr class. This is for the CLI program, and does not handle much of the logic.
             In general, external programs and plugins should not use this class.
         '''
-        self.API_VERSION = API_VERSION
+        self.API_VERSION = onionrvalues.API_VERSION
         self.userRunDir = os.getcwd() # Directory user runs the program from
         self.killed = False
         self.config = config
@@ -118,7 +114,7 @@ class Onionr:
             randomPort = netcontroller.get_open_port()
             config.set('client.public.port', randomPort, savefile=True)
         if type(config.get('client.api_version')) is type(None):
-            config.set('client.api_version', API_VERSION, savefile=True)
+            config.set('client.api_version', onionrvalues.API_VERSION, savefile=True)
 
         self.cmds = commands.get_commands(self)
         self.cmdhelp = commands.cmd_help
@@ -140,9 +136,6 @@ class Onionr:
     def exitSigterm(self, signum, frame):
         self.killed = True
 
-    def setupConfig(self):
-        return setupconfig.setup_config(self)
-
     def cmdHeader(self):
         if len(sys.argv) >= 3:
             self.header(logger.colors.fg.pink + sys.argv[2].replace('Onionr', logger.colors.bold + 'Onionr' + logger.colors.reset + logger.colors.fg.pink))
@@ -154,15 +147,6 @@ class Onionr:
             self.header(logger.colors.fg.pink + sys.argv[2].replace('Onionr', logger.colors.bold + 'Onionr' + logger.colors.reset + logger.colors.fg.pink))
         else:
             self.header(None)
-
-    def header(self, message = logger.colors.fg.pink + logger.colors.bold + 'Onionr' + logger.colors.reset + logger.colors.fg.pink + ' has started.'):
-        if os.path.exists('static-data/header.txt') and logger.get_level() <= logger.LEVEL_INFO:
-            with open('static-data/header.txt', 'rb') as file:
-                # only to stdout, not file or log or anything
-                sys.stderr.write(file.read().decode().replace('P', logger.colors.fg.pink).replace('W', logger.colors.reset + logger.colors.bold).replace('G', logger.colors.fg.green).replace('\n', logger.colors.reset + '\n').replace('B', logger.colors.bold).replace('A', '%s' % API_VERSION).replace('V', ONIONR_VERSION))
-
-                if not message is None:
-                    logger.info(logger.colors.fg.lightgreen + '-> ' + str(message) + logger.colors.reset + logger.colors.fg.lightgreen + ' <-\n', terminal=True)
 
     def doExport(self, bHash):
         exportDir = self.dataDir + 'block-export/'
@@ -185,36 +169,9 @@ class Onionr:
         except FileNotFoundError:
             pass
 
-    def get_hostname(self):
-        try:
-            with open(self.dataDir + 'hs/hostname', 'r') as hostname:
-                return hostname.read().strip()
-        except FileNotFoundError:
-            return "Not Generated"
-        except Exception:
-            return None
-
-    def getConsoleWidth(self):
-        '''
-            Returns an integer, the width of the terminal/cmd window
-        '''
-
-        columns = 80
-
-        try:
-            columns = int(os.popen('stty size', 'r').read().split()[1])
-        except:
-            # if it errors, it's probably windows, so default to 80.
-            pass
-
-        return columns
-
     '''
         Handle command line commands
     '''
-
-    def exportBlock(self):
-        commands.exportblocks.export_block(self)
 
     def showDetails(self):
         commands.onionrstatistics.show_details(self)
@@ -303,9 +260,9 @@ class Onionr:
             Displays the Onionr version
         '''
 
-        function('Onionr v%s (%s) (API v%s)' % (ONIONR_VERSION, platform.machine(), API_VERSION), terminal=True)
+        function('Onionr v%s (%s) (API v%s)' % (onionrvalues.ONIONR_VERSION, platform.machine(), onionrvalues.API_VERSION), terminal=True)
         if verbosity >= 1:
-            function(ONIONR_TAGLINE, terminal=True)
+            function(onionrvalues.ONIONR_TAGLINE, terminal=True)
         if verbosity >= 2:
             function('Running on %s %s' % (platform.platform(), platform.release()), terminal=True)
             function('Onionr data dir: %s' % self.dataDir)
