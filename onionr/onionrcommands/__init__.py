@@ -17,13 +17,13 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-
+'''
 import webbrowser, sys
 import logger
 from . import pubkeymanager, onionrstatistics, daemonlaunch, filecommands, plugincommands, keyadders
 from . import banblocks, exportblocks, openwebinterface, resettor, dopex
 from onionrutils import importnewblocks
-
+'''
 def show_help(o_inst, command):
 
     helpmenu = o_inst.getHelp()

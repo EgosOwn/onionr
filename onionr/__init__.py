@@ -36,7 +36,7 @@ except ImportError:
 
 # Onionr imports
 from etc import onionrvalues # For different Onionr related constants such as versions
-from onionr import setup
+import setup
 
 # Ensure we have at least the minimum python version
 if sys.version_info[0] == 2 or sys.version_info[1] < onionrvalues.MIN_PY_VERSION:
@@ -47,16 +47,19 @@ if sys.version_info[0] == 2 or sys.version_info[1] < onionrvalues.MIN_PY_VERSION
 from utils import detectoptimization
 if detectoptimization.detect_optimization():
     sys.stderr.write('Error, Onionr cannot be run with an optimized Python interpreter\n')
-    sys.exit(1)
+    sys.exit(2)
 
 # Create Onionr data directories, must be done before most imports
 from utils import createdirs
 createdirs.create_dirs()
 
+from onionrcommands import parser
+
 setup.setup_config()
 setup.setup_default_plugins()
 
 def onionr_main():
+    parser.register()
     return
 
 if __name__ == "__main__":

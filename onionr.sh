@@ -1,4 +1,4 @@
 #!/bin/sh
 cd "$(dirname "$0")"
 cd onionr/
-./onionr.py "$@"
+./__init__.py "$@"
