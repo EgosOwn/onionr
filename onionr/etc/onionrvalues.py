@@ -25,6 +25,7 @@ ONIONR_VERSION = '0.0.0' # for debugging and stuff
 ONIONR_VERSION_TUPLE = tuple(ONIONR_VERSION.split('.')) # (MAJOR, MINOR, VERSION)
 API_VERSION = '0' # increments of 1; only change when something fundamental about how the API works changes. This way other nodes know how to communicate without learning too much information about you.
 MIN_PY_VERSION = 6
+DEVELOPMENT_MODE = True
 
 platform = platform.system()
 if platform == 'Windows':

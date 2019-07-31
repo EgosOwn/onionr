@@ -17,11 +17,15 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import argparse, sys
+import sys
 from etc import onionrvalues
+import logger, onionrexceptions
+from . import arguments, recommend
 def register():
-    
-    parser = argparse.ArgumentParser(prog=onionrvalues.SCRIPT_NAME)
-    parser.add_argument("command", help="Onionr command to execute")
-    args = parser.parse_args()
-    print(args.start)
+    cmd = sys.argv[1]
+
+    try:
+        arguments.get_func(cmd)()
+    except onionrexceptions.NotFound:
+        recommend.recommend()
+        sys.exit(3)

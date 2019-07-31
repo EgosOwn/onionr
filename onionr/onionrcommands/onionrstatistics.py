@@ -20,11 +20,10 @@
 import os, uuid, time
 import logger
 from onionrblockapi import Block
-import onionr
 from onionrutils import checkcommunicator, mnemonickeys
 from utils import sizeutils, gethostname, getconsolewidth
 from coredb import blockmetadb, daemonqueue, keydb
-import onionrcrypto
+import onionrcrypto, config
 def show_stats(o_inst):
     try:
         # define stats messages here
@@ -43,7 +42,7 @@ def show_stats(o_inst):
             # count stats
             'div2' : True,
             'Known Peers' : str(max(len(keydb.listkeys.list_peers()) - 1, 0)),
-            'Enabled Plugins' : str(len(o_inst.config.get('plugins.enabled', list()))) + ' / ' + str(len(os.listdir(o_inst.dataDir + 'plugins/'))),
+            'Enabled Plugins' : str(len(config.get('plugins.enabled', list()))) + ' / ' + str(len(os.listdir(o_inst.dataDir + 'plugins/'))),
             'Stored Blocks' : str(totalBlocks),
             'Percent Blocks Signed' : str(round(100 * signedBlocks / max(totalBlocks, 1), 2)) + '%'
         }
@@ -84,10 +83,10 @@ def show_stats(o_inst):
     except Exception as e:
         logger.error('Failed to generate statistics table. ' + str(e), error = e, timestamp = False, terminal=True)
 
-def show_details(o_inst):
+def show_details():
     details = {
         'Node Address' : gethostname.get_hostname(),
-        'Web Password' : o_inst.getWebPassword(),
+        'Web Password' : config.get('client.webpassword'),
         'Public Key' : onionrcrypto.pub_key,
         'Human-readable Public Key' : mnemonickeys.get_human_readable_ID()
     }
