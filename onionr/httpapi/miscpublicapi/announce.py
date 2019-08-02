@@ -19,12 +19,13 @@
 '''
 import base64
 from flask import Response
+import deadsimplekv
 import logger
 from etc import onionrvalues
 from onionrutils import stringvalidators, bytesconverter
 from utils import gettransports
-import onionrcrypto as crypto
-def handle_announce(clientAPI, request):
+import onionrcrypto as crypto, filepaths
+def handle_announce(request):
     '''
     accept announcement posts, validating POW
     clientAPI should be an instance of the clientAPI server running, request is a instance of a flask request
@@ -33,6 +34,7 @@ def handle_announce(clientAPI, request):
     powHash = ''
     randomData = ''
     newNode = ''
+
     try:
         newNode = request.form['node'].encode()
     except KeyError:
@@ -54,8 +56,11 @@ def handle_announce(clientAPI, request):
                 pass
             if powHash.startswith('0' * onionrvalues.OnionrValues().announce_pow):
                 newNode = bytesconverter.bytes_to_str(newNode)
-                if stringvalidators.validate_transport(newNode) and not newNode in clientAPI.onionrInst.communicatorInst.newPeers:
+                announce_queue = deadsimplekv.DeadSimpleKV(filepaths.announce_cache)
+                if stringvalidators.validate_transport(newNode) and not newNode in announce_queue.get('new_peers'):
                     clientAPI.onionrInst.communicatorInst.newPeers.append(newNode)
+                    announce_queue.put('new_peers', announce_queue.get('new_peers').append(newNode))
+                    announce_queue.flush()
                     resp = 'Success'
             else:
                 logger.warn(newNode.decode() + ' failed to meet POW: ' + powHash)

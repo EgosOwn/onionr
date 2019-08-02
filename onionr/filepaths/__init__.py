@@ -11,6 +11,7 @@ bootstrap_file_location = 'static-data/bootstrap-nodes.txt'
 data_nonce_file = home + 'block-nonces.dat'
 forward_keys_file = home + 'forward-keys.db'
 cached_storage = home + 'cachedstorage.dat'
+announce_cache = home + 'announcecache.dat'
 export_location = home + 'block-export/'
 
 tor_hs_address_file = home + 'hs/hostname'

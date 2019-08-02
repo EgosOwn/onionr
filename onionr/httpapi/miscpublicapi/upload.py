@@ -20,7 +20,7 @@
 import sys
 from flask import Response, abort
 import blockimporter, onionrexceptions, logger
-def accept_upload(clientAPI, request):
+def accept_upload(request):
     resp = 'failure'
     try:
         data = request.form['block']

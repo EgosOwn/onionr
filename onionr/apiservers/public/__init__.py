@@ -21,14 +21,14 @@ import time
 import flask
 from gevent.pywsgi import WSGIServer
 from httpapi import apiutils, security, fdsafehandler, miscpublicapi
-import logger, onionr, filepaths
+import logger, config, filepaths
 from utils import gettransports
+from etc import onionrvalues
 class PublicAPI:
     '''
         The new client api server, isolated from the public api
     '''
-    def __init__(self, clientAPI):
-        config = clientAPI.config
+    def __init__(self):
         app = flask.Flask('PublicAPI')
         app.config['MAX_CONTENT_LENGTH'] = 5 * 1024 * 1024
         self.i2pEnabled = config.get('i2p.host', False)
@@ -43,12 +43,9 @@ class PublicAPI:
         self.lastRequest = 0
         self.hitCount = 0 # total rec requests to public api since server started
         self.config = config
-        self.clientAPI = clientAPI
-        self.API_VERSION = onionr.API_VERSION
+        self.API_VERSION = onionrvalues.API_VERSION
         logger.info('Running public api on %s:%s' % (self.host, self.bindPort))
 
-        # Set instances, then startup our public api server
-        clientAPI.setPublicAPIInstance(self)
         
         app.register_blueprint(security.public.PublicAPISecurity(self).public_api_security_bp)
         app.register_blueprint(miscpublicapi.endpoints.PublicEndpoints(self).public_endpoints_bp)

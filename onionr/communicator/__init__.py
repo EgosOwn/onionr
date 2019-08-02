@@ -19,7 +19,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 import sys, os, time
-import config, logger, onionr
+import config, logger
 import onionrexceptions, onionrpeers, onionrevents as events, onionrplugins as plugins, onionrblockapi as block
 from . import onlinepeers
 from communicatorutils import servicecreator, onionrcommunicatortimers
@@ -29,18 +29,15 @@ from communicatorutils import daemonqueuehandler, announcenode, deniableinserts
 from communicatorutils import cooldownpeer, housekeeping, netcheck
 from onionrutils import localcommand, epoch
 from etc import humanreadabletime
-import onionrservices, onionr, filepaths, storagecounter
+import onionrservices, filepaths, storagecounter
 from coredb import daemonqueue, dbfiles
 from utils import gettransports
 OnionrCommunicatorTimers = onionrcommunicatortimers.OnionrCommunicatorTimers
 
 config.reload()
 class OnionrCommunicatorDaemon:
-    def __init__(self, onionrInst, proxyPort, developmentMode=config.get('general.dev_mode', False)):
-        onionrInst.communicatorInst = self
+    def __init__(self, proxyPort, developmentMode=config.get('general.dev_mode', False)):
         # configure logger and stuff
-        onionr.Onionr.setupConfig(onionrInst)
-        self.onionrInst = onionrInst
         self.config = config
         self.storage_counter = storagecounter.StorageCounter()
         self.proxyPort = proxyPort
@@ -213,7 +210,7 @@ class OnionrCommunicatorDaemon:
 
     def peerCleanup(self):
         '''This just calls onionrpeers.cleanupPeers, which removes dead or bad peers (offline too long, too slow)'''
-        onionrpeers.peer_cleanup(self.onionrInst)
+        onionrpeers.peer_cleanup()
         self.decrementThreadCount('peerCleanup')
 
     def getPeerProfileInstance(self, peer):
@@ -247,8 +244,8 @@ class OnionrCommunicatorDaemon:
 
         self.decrementThreadCount('runCheck')
 
-def startCommunicator(onionrInst, proxyPort):
-    OnionrCommunicatorDaemon(onionrInst, proxyPort)
+def startCommunicator(proxyPort):
+    OnionrCommunicatorDaemon(proxyPort)
 
 def run_file_exists(daemon):
     if os.path.isfile(filepaths.run_check_file):

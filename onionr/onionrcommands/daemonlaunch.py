@@ -20,6 +20,9 @@
 
 import os, time, sys, platform, sqlite3, signal
 from threading import Thread
+
+import toomanyobjs
+
 import config, apiservers, logger, communicator
 import onionrevents as events
 from netcontroller import NetController
@@ -48,8 +51,8 @@ def daemon():
         logger.debug('Runcheck file found on daemon start, deleting in advance.')
         os.remove(filepaths.run_check_file)
 
-    Thread(target=apiservers.ClientAPI, args=(onionrvalues.API_VERSION), daemon=True).start()
-    Thread(target=apiservers.PublicAPI, args=[o_inst.getClientApi()], daemon=True).start()
+    Thread(target=apiservers.ClientAPI, daemon=True).start()
+    Thread(target=apiservers.PublicAPI, daemon=True).start()
 
     apiHost = ''
     while apiHost == '':

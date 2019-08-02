@@ -173,6 +173,8 @@ stem==1.7.1 \
     --hash=sha256:c9eaf3116cb60c15995cbd3dec3a5cbc50e9bb6e062c4d6d42201e566f498ca2
 streamedrequests==1.0.0 \
     --hash=sha256:1d9d07394804a6e1fd66bde74a804e71cab98e6920053865574a459f1cf7d3b7
+toomanyobjs==0.0.0 \
+    --hash=sha256:997e9399a33d4884eb535b6cc2c02705ed9ae1bcff56afbbf3ea81fc4ac9ab95
 unpaddedbase32==0.1.0 \
     --hash=sha256:5e4143fcaf77c9c6b4f60d18301c7570f0dac561dcf9b9aed8b5ba6ead7f218c
 urllib3==1.24.2 \

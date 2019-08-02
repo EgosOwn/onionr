@@ -19,13 +19,12 @@
 '''
 from flask import Response, Blueprint, request, send_from_directory, abort
 from httpapi import apiutils
-import onionrcrypto
+import onionrcrypto, config
 pub_key = onionrcrypto.pub_key
 class PrivateEndpoints:
     def __init__(self, client_api):
         private_endpoints_bp = Blueprint('privateendpoints', __name__)
         self.private_endpoints_bp = private_endpoints_bp
-        config = client_api.config
 
         @private_endpoints_bp.route('/serviceactive/<pubkey>')
         def serviceActive(pubkey):

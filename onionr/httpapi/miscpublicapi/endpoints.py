@@ -20,10 +20,9 @@
 from flask import Response, Blueprint, request, send_from_directory, abort
 from . import getblocks, upload, announce
 from coredb import keydb
+import config
 class PublicEndpoints:
     def __init__(self, public_api):
-        client_API = public_api.clientAPI
-        config = client_API.config
 
         public_endpoints_bp = Blueprint('publicendpoints', __name__)
         self.public_endpoints_bp = public_endpoints_bp
@@ -41,12 +40,12 @@ class PublicEndpoints:
         @public_endpoints_bp.route('/getblocklist')
         def get_block_list():
             '''Get a list of blocks, optionally filtered by epoch time stamp, excluding those hidden'''
-            return getblocks.get_public_block_list(client_API, public_api, request)
+            return getblocks.get_public_block_list(public_api, request)
 
         @public_endpoints_bp.route('/getdata/<name>')
         def get_block_data(name):
             # Share data for a block if we have it and it isn't hidden
-            return getblocks.get_block_data(client_API, public_api, name)
+            return getblocks.get_block_data(public_api, name)
 
         @public_endpoints_bp.route('/www/<path:path>')
         def www_public(path):
@@ -70,7 +69,7 @@ class PublicEndpoints:
         @public_endpoints_bp.route('/announce', methods=['post'])
         def accept_announce():
             '''Accept announcements with pow token to prevent spam'''
-            resp = announce.handle_announce(client_API, request)
+            resp = announce.handle_announce(request)
             return resp
 
         @public_endpoints_bp.route('/upload', methods=['post'])
@@ -78,4 +77,4 @@ class PublicEndpoints:
             '''Accept file uploads. In the future this will be done more often than on creation 
             to speed up block sync
             '''
-            return upload.accept_upload(client_API, request)
+            return upload.accept_upload(request)

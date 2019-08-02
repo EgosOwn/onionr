@@ -23,7 +23,7 @@ from gevent.pywsgi import WSGIServer
 from onionrutils import epoch
 import httpapi, filepaths, logger
 from . import register_private_blueprints
-import serializeddata
+import serializeddata, config
 class PrivateAPI:
     '''
         Client HTTP api
@@ -31,17 +31,15 @@ class PrivateAPI:
 
     callbacks = {'public' : {}, 'private' : {}}
 
-    def __init__(self, onionrInst, debug, API_VERSION):
+    def __init__(self):
         '''
             Initialize the api server, preping variables for later use
 
             This initialization defines all of the API entry points and handlers for the endpoints and errors
             This also saves the used host (random localhost IP address) to the data folder in host.txt
         '''
-        config = onionrInst.config
         self.config = config
-        self.debug = debug
-        self.serializer = serializeddata.SerializedData(onionrInst)
+        self.serializer = serializeddata.SerializedData()
         self.startTime = epoch.get_epoch()
         app = flask.Flask(__name__)
         bindPort = int(config.get('client.client.port', 59496))
@@ -55,13 +53,11 @@ class PrivateAPI:
         self.host = httpapi.apiutils.setbindip.set_bind_IP(filepaths.private_API_host_file)
         logger.info('Running api on %s:%s' % (self.host, self.bindPort))
         self.httpServer = ''
-        onionrInst.setClientAPIInst(self)
 
         self.queueResponse = {}
         self.get_block_data = httpapi.apiutils.GetBlockData(self)
         register_private_blueprints.register_private_blueprints(self, app)
         httpapi.load_plugin_blueprints(app)
-        self.onionrInst = onionrInst
 
         self.httpServer = WSGIServer((self.host, bindPort), app, log=None, handler_class=httpapi.fdsafehandler.FDSafeHandler)
         self.httpServer.serve_forever()

@@ -22,7 +22,10 @@ from etc import onionrvalues
 import logger, onionrexceptions
 from . import arguments, recommend
 def register():
-    cmd = sys.argv[1]
+    try:
+        cmd = sys.argv[1]
+    except IndexError:
+        cmd = ""
 
     try:
         arguments.get_func(cmd)()
