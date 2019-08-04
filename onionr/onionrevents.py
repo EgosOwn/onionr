@@ -21,35 +21,35 @@
 import config, logger, onionrplugins as plugins, onionrpluginapi as pluginapi
 from threading import Thread
 
-def get_pluginapi(onionr, data):
-    return pluginapi.SharedAPI(onionr, data)
+def get_pluginapi(data):
+    return pluginapi.SharedAPI(data)
 
-def __event_caller(event_name, data = {}, onionr = None):
+def __event_caller(event_name, data = {}):
     '''
         DO NOT call this function, this is for threading code only.
         Instead, call onionrevents.event
     '''
     for plugin in plugins.get_enabled_plugins():
         try:
-            call(plugins.get_plugin(plugin), event_name, data, get_pluginapi(onionr, data))
+            return call(plugins.get_plugin(plugin), event_name, data, get_pluginapi(data))
         except ModuleNotFoundError as e:
             logger.warn('Disabling nonexistant plugin "%s"...' % plugin, terminal=True)
-            plugins.disable(plugin, onionr, stop_event = False)
+            plugins.disable(plugin, stop_event = False)
         except Exception as e:
             logger.warn('Event "%s" failed for plugin "%s".' % (event_name, plugin), terminal=True)
             logger.debug(str(e), terminal=True)
 
-def event(event_name, data = {}, onionr = None, threaded = True):
+def event(event_name, data = {}, threaded = True):
     '''
         Calls an event on all plugins (if defined)
     '''
 
     if threaded:
-        thread = Thread(target = __event_caller, args = (event_name, data, onionr))
+        thread = Thread(target = __event_caller, args = (event_name, data))
         thread.start()
         return thread
     else:
-        __event_caller(event_name, data, onionr)
+        return __event_caller(event_name, data)
 
 def call(plugin, event_name, data = None, pluginapi = None):
     '''
@@ -61,7 +61,7 @@ def call(plugin, event_name, data = None, pluginapi = None):
             attribute = 'on_' + str(event_name).lower()
 
             if hasattr(plugin, attribute):
-                getattr(plugin, attribute)(pluginapi, data)
+                return getattr(plugin, attribute)(pluginapi, data)
 
             return True
         except Exception as e:

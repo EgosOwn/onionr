@@ -1,7 +1,10 @@
 import sys, os
 from . import readstatic
 import logger
+from etc import onionrvalues
 def header(message = logger.colors.fg.pink + logger.colors.bold + 'Onionr' + logger.colors.reset + logger.colors.fg.pink + ' has started.'):
+    if onionrvalues.DEVELOPMENT_MODE:
+        return
     header_path = readstatic.get_static_dir() + 'header.txt'
     if os.path.exists(header_path) and logger.settings.get_level() <= logger.settings.LEVEL_INFO:
         with open(header_path, 'rb') as file:

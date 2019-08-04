@@ -20,13 +20,14 @@
 import requests, streamedrequests
 import logger, onionrexceptions
 from etc import onionrvalues
-def do_post_request(onionr_inst, url, data={}, port=0, proxyType='tor', max_size=10000):
+from . import localcommand
+def do_post_request(url, data={}, port=0, proxyType='tor', max_size=10000):
     '''
     Do a POST request through a local tor or i2p instance
     '''
     if proxyType == 'tor':
         if port == 0:
-            port = onionr_inst.torPort
+            port = localcommand.local_command('/gettorsocks')
         proxies = {'http': 'socks4a://127.0.0.1:' + str(port), 'https': 'socks4a://127.0.0.1:' + str(port)}
     elif proxyType == 'i2p':
         proxies = {'http': 'http://127.0.0.1:4444'}

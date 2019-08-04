@@ -20,8 +20,9 @@
 
 import json
 from coredb import blockmetadb
+import communicator
 class SerializedData:
-    def __init__(self, o_inst):
+    def __init__(self):
         '''
         Serialized data is in JSON format:
         {
@@ -30,13 +31,14 @@ class SerializedData:
             etc
         }
         '''
-        self.o_inst = o_inst
+        self._too_many = None
     
     def getStats(self):
         '''Return statistics about our node'''
         stats = {}
-        stats['uptime'] = self.o_inst.communicatorInst.getUptime()
-        stats['connectedNodes'] = '\n'.join(self.o_inst.communicatorInst.onlinePeers)
+        comm_inst = self._too_many.get(communicator.OnionrCommunicatorDaemon)
+        stats['uptime'] = comm_inst.getUptime()
+        stats['connectedNodes'] = '\n'.join(comm_inst.onlinePeers)
         stats['blockCount'] = len(blockmetadb.get_block_list())
-        stats['blockQueueCount'] = len(self.o_inst.communicatorInst.blockQueue)
+        stats['blockQueueCount'] = len(comm_inst.blockQueue)
         return json.dumps(stats)

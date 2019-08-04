@@ -36,7 +36,7 @@ def add_peer(o_inst):
         except AssertionError:
             logger.error('Failed to add key', terminal=True)
 
-def add_address(o_inst):
+def add_address():
     try:
         newAddress = sys.argv[2]
         newAddress = newAddress.replace('http:', '').replace('/', '')

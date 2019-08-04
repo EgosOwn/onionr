@@ -50,9 +50,14 @@ def daemon():
     if os.path.isfile(filepaths.run_check_file):
         logger.debug('Runcheck file found on daemon start, deleting in advance.')
         os.remove(filepaths.run_check_file)
+    
+    # Create shared object
 
-    Thread(target=apiservers.ClientAPI, daemon=True).start()
-    Thread(target=apiservers.PublicAPI, daemon=True).start()
+    shared_state = toomanyobjs.TooMany()
+
+    Thread(target=shared_state.get(apiservers.ClientAPI).start, daemon=True).start()
+    Thread(target=shared_state.get(apiservers.PublicAPI).start, daemon=True).start()
+    shared_state.share_object() # share the parent object to the threads
 
     apiHost = ''
     while apiHost == '':
@@ -62,7 +67,6 @@ def daemon():
         except FileNotFoundError:
             pass
         time.sleep(0.5)
-    #onionr.Onionr.setupConfig('data/', self = o_inst)
 
     logger.raw('', terminal=True)
     # print nice header thing :)
@@ -73,7 +77,10 @@ def daemon():
 
     if onionrvalues.DEVELOPMENT_MODE:
         logger.warn('Development mode enabled', timestamp = False, terminal=True)
+
     net = NetController(config.get('client.public.port', 59497), apiServerIP=apiHost)
+    shared_state.add(net)
+
     logger.info('Tor is starting...', terminal=True)
     if not net.startTor():
         localcommand.local_command('shutdown')
@@ -88,9 +95,9 @@ def daemon():
         time.sleep(1)
     except KeyboardInterrupt:
         _proper_shutdown()
-    
+    events.event('init', threaded = False)
     events.event('daemon_start')
-    communicator.startCommunicator(str(net.socksPort))
+    communicator.startCommunicator(shared_state)
 
     localcommand.local_command('shutdown')
 

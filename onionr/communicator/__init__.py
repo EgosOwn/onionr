@@ -32,22 +32,23 @@ from etc import humanreadabletime
 import onionrservices, filepaths, storagecounter
 from coredb import daemonqueue, dbfiles
 from utils import gettransports
+from netcontroller import NetController
 OnionrCommunicatorTimers = onionrcommunicatortimers.OnionrCommunicatorTimers
 
 config.reload()
 class OnionrCommunicatorDaemon:
-    def __init__(self, proxyPort, developmentMode=config.get('general.dev_mode', False)):
+    def __init__(self, shared_state, developmentMode=config.get('general.dev_mode', False)):
         # configure logger and stuff
         self.config = config
         self.storage_counter = storagecounter.StorageCounter()
-        self.proxyPort = proxyPort
         self.isOnline = True # Assume we're connected to the internet
+        self.shared_state = shared_state
 
         # list of timer instances
         self.timers = []
 
         # initialize core with Tor socks port being 3rd argument
-        self.proxyPort = proxyPort
+        self.proxyPort = shared_state.get(NetController).socksPort
 
         self.blocksToUpload = []
 
@@ -158,6 +159,8 @@ class OnionrCommunicatorDaemon:
         cleanupTimer.count = (cleanupTimer.frequency - 60)
         blockCleanupTimer.count = (blockCleanupTimer.frequency - 5)
 
+        shared_state.add(self)
+
         # Main daemon loop, mainly for calling timers, don't do any complex operations here to avoid locking
         try:
             while not self.shutdown:
@@ -244,8 +247,8 @@ class OnionrCommunicatorDaemon:
 
         self.decrementThreadCount('runCheck')
 
-def startCommunicator(proxyPort):
-    OnionrCommunicatorDaemon(proxyPort)
+def startCommunicator(shared_state):
+    OnionrCommunicatorDaemon(shared_state)
 
 def run_file_exists(daemon):
     if os.path.isfile(filepaths.run_check_file):

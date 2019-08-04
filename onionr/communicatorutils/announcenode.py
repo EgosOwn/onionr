@@ -22,6 +22,7 @@ import onionrproofs, logger
 from etc import onionrvalues
 from onionrutils import basicrequests, bytesconverter
 from utils import gettransports
+from netcontroller import NetController
 from communicator import onlinepeers
 from coredb import keydb
 def announce_node(daemon):
@@ -77,7 +78,7 @@ def announce_node(daemon):
                     daemon.announceCache[peer] = data['random']
             if not announceFail:
                 logger.info('Announcing node to ' + url)
-                if basicrequests.do_post_request(daemon.onionrInst, url, data) == 'Success':
+                if basicrequests.do_post_request(url, data, port=daemon.shared_state.get(NetController)) == 'Success':
                     logger.info('Successfully introduced node to ' + peer, terminal=True)
                     retData = True
                     keydb.transportinfo.set_address_info(peer, 'introduced', 1)

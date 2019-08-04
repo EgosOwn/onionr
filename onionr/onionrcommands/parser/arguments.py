@@ -1,12 +1,17 @@
-from .. import onionrstatistics, version, daemonlaunch
+from .. import onionrstatistics, version, daemonlaunch, keyadders
 import onionrexceptions
+import onionrevents as events
 def get_arguments():
     '''This is a function because we need to be able to dynamically modify them with plugins'''
     args = {
         ('details', 'info'): onionrstatistics.show_details,
         ('version'): version.version,
-        ('start', 'daemon'): daemonlaunch.start
+        ('start', 'daemon'): daemonlaunch.start,
+        ('stop', 'kill'): daemonlaunch.kill_daemon,
+        ('add-address', 'addaddress', 'addadder'): keyadders.add_address
     }
+    args = events.event('init', data=args, threaded=False)
+    print(args)
     return args
 
 def get_help():

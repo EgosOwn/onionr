@@ -20,6 +20,7 @@
 from flask import Response, Blueprint, request, send_from_directory, abort
 from httpapi import apiutils
 import onionrcrypto, config
+from netcontroller import NetController
 pub_key = onionrcrypto.pub_key
 class PrivateEndpoints:
     def __init__(self, client_api):
@@ -111,3 +112,7 @@ class PrivateEndpoints:
         @private_endpoints_bp.route('/getHumanReadable/<name>')
         def getHumanReadable(name):
             return Response(mnemonickeys.get_human_readable_ID(name))
+        
+        @private_endpoints_bp.route('/gettorsocks')
+        def get_tor_socks():
+            return Response(client_api._too_many.get(NetController).socksPort)

@@ -23,7 +23,9 @@ from gevent.pywsgi import WSGIServer
 from onionrutils import epoch
 import httpapi, filepaths, logger
 from . import register_private_blueprints
+from etc import waitforsetvar
 import serializeddata, config
+from .. import public
 class PrivateAPI:
     '''
         Client HTTP api
@@ -48,8 +50,6 @@ class PrivateAPI:
         self.clientToken = config.get('client.webpassword')
         self.timeBypassToken = base64.b16encode(os.urandom(32)).decode()
 
-        self.publicAPI = None # gets set when the thread calls our setter... bad hack but kinda necessary with flask
-        #threading.Thread(target=PublicAPI, args=(self,)).start()
         self.host = httpapi.apiutils.setbindip.set_bind_IP(filepaths.private_API_host_file)
         logger.info('Running api on %s:%s' % (self.host, self.bindPort))
         self.httpServer = ''
@@ -58,8 +58,12 @@ class PrivateAPI:
         self.get_block_data = httpapi.apiutils.GetBlockData(self)
         register_private_blueprints.register_private_blueprints(self, app)
         httpapi.load_plugin_blueprints(app)
-
-        self.httpServer = WSGIServer((self.host, bindPort), app, log=None, handler_class=httpapi.fdsafehandler.FDSafeHandler)
+        self.app = app
+    
+    def start(self):
+        waitforsetvar.wait_for_set_var(self, "_too_many")
+        self.publicAPI = self._too_many.get(public.PublicAPI)
+        self.httpServer = WSGIServer((self.host, self.bindPort), self.app, log=None, handler_class=httpapi.fdsafehandler.FDSafeHandler)
         self.httpServer.serve_forever()
 
     def setPublicAPIInstance(self, inst):

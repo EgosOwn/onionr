@@ -23,7 +23,7 @@ from onionrutils import epoch
 from . import scoresortedpeerlist, peerprofiles
 import onionrblacklist, config
 from coredb import keydb
-def peer_cleanup(onionr_inst):
+def peer_cleanup():
     '''Removes peers who have been offline too long or score too low'''
     logger.info('Cleaning peers...')
     blacklist = onionrblacklist.OnionrBlackList()

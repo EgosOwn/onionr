@@ -26,7 +26,7 @@ def handle_daemon_commands(comm_inst):
     cmd = daemonqueue.daemon_queue()
     response = ''
     if cmd is not False:
-        events.event('daemon_command', onionr = comm_inst.onionrInst, data = {'cmd' : cmd})
+        events.event('daemon_command', data = {'cmd' : cmd})
         if cmd[0] == 'shutdown':
             comm_inst.shutdown = True
         elif cmd[0] == 'announceNode':

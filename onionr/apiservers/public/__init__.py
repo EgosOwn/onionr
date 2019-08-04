@@ -18,12 +18,21 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 import time
+import threading
 import flask
 from gevent.pywsgi import WSGIServer
 from httpapi import apiutils, security, fdsafehandler, miscpublicapi
 import logger, config, filepaths
 from utils import gettransports
-from etc import onionrvalues
+from etc import onionrvalues, waitforsetvar
+
+def _get_tor_adder(pub_api):
+    transports = []
+    while len(transports) == 0:
+        transports = gettransports.get()
+        time.sleep(0.3)
+    pub_api.torAdder = transports[0]
+
 class PublicAPI:
     '''
         The new client api server, isolated from the public api
@@ -34,11 +43,10 @@ class PublicAPI:
         self.i2pEnabled = config.get('i2p.host', False)
         self.hideBlocks = [] # Blocks to be denied sharing
         self.host = apiutils.setbindip.set_bind_IP(filepaths.public_API_host_file)
-        transports = []
-        while len(transports) == 0:
-            transports = gettransports.get()
-            time.sleep(0.3)
-        self.torAdder = transports[0]
+
+        threading.Thread(target=_get_tor_adder, args=[self], daemon=True).start()
+
+        self.torAdder = ""
         self.bindPort = config.get('client.public.port')
         self.lastRequest = 0
         self.hitCount = 0 # total rec requests to public api since server started
@@ -46,8 +54,11 @@ class PublicAPI:
         self.API_VERSION = onionrvalues.API_VERSION
         logger.info('Running public api on %s:%s' % (self.host, self.bindPort))
 
-        
         app.register_blueprint(security.public.PublicAPISecurity(self).public_api_security_bp)
         app.register_blueprint(miscpublicapi.endpoints.PublicEndpoints(self).public_endpoints_bp)
-        self.httpServer = WSGIServer((self.host, self.bindPort), app, log=None, handler_class=fdsafehandler.FDSafeHandler)
+        self.app = app
+
+    def start(self):
+        waitforsetvar.wait_for_set_var(self, "_too_many")
+        self.httpServer = WSGIServer((self.host, self.bindPort), self.app, log=None, handler_class=fdsafehandler.FDSafeHandler)
         self.httpServer.serve_forever()

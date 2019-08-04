@@ -107,9 +107,7 @@ def on_init(api, data = None):
     global pluginapi
     pluginapi = api
     flow = OnionrFlow()
-    api.commands.register('flow', flow.start)
-    api.commands.register_help('flow', 'Open the flow messaging interface')
-    return
+    return data
 
 def on_processblocks(api, data=None):
     b_hash = reconstructhash.deconstruct_hash(data['block'].hash) # Get the 0-truncated block hash
