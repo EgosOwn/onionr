@@ -116,4 +116,4 @@ class PrivateEndpoints:
         
         @private_endpoints_bp.route('/gettorsocks')
         def get_tor_socks():
-            return Response(client_api._too_many.get(NetController).socksPort)
+            return Response(str(client_api._too_many.get(NetController).socksPort))

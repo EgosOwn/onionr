@@ -7,11 +7,12 @@ class FDSafeHandler(WSGIHandler):
         self.timeout.start()
         try:
             WSGIHandler.handle(self)
-        except Exception as e:
-            self.handle_error(e)
-        finally:
-            self.timeout.close()
-
+        except gevent.Timeout as ex:
+            if ex is self.timeout:
+                pass
+            else: 
+                raise
+    '''
     def handle_error(self, two, three, four):
         if two is self.timeout:
             self.result = [b"Timeout"]
@@ -19,3 +20,4 @@ class FDSafeHandler(WSGIHandler):
             self.process_result()
         else:
             WSGIHandler.handle_error(self) 
+    '''

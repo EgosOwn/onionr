@@ -41,7 +41,6 @@ class PrivateAPI:
             This also saves the used host (random localhost IP address) to the data folder in host.txt
         '''
         self.config = config
-        self.serializer = serializeddata.SerializedData()
         self.startTime = epoch.get_epoch()
         app = flask.Flask(__name__)
         bindPort = int(config.get('client.client.port', 59496))
