@@ -144,17 +144,13 @@ class WebAPI:
         return self.pluginapi.get_onionr().api.getCallbacks(scope = scope)
 
 class SharedAPI:
-    def __init__(self, onionr, data):
-        self.onionr = onionr
+    def __init__(self, data):
         self.data = data
 
         self.daemon = DaemonAPI(self)
         self.plugins = PluginAPI(self)
         self.commands = CommandAPI(self)
         self.web = WebAPI(self)
-
-    def get_onionr(self):
-        return self.onionr
 
     def get_data(self):
         return self.data

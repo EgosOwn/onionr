@@ -31,7 +31,7 @@ def __event_caller(event_name, data = {}):
     '''
     for plugin in plugins.get_enabled_plugins():
         try:
-            return call(plugins.get_plugin(plugin), event_name, data, get_pluginapi(data))
+            call(plugins.get_plugin(plugin), event_name, data, get_pluginapi(data))
         except ModuleNotFoundError as e:
             logger.warn('Disabling nonexistant plugin "%s"...' % plugin, terminal=True)
             plugins.disable(plugin, stop_event = False)
@@ -49,7 +49,7 @@ def event(event_name, data = {}, threaded = True):
         thread.start()
         return thread
     else:
-        return __event_caller(event_name, data)
+        __event_caller(event_name, data)
 
 def call(plugin, event_name, data = None, pluginapi = None):
     '''
@@ -59,7 +59,8 @@ def call(plugin, event_name, data = None, pluginapi = None):
     if not plugin is None:
         try:
             attribute = 'on_' + str(event_name).lower()
-
+            if pluginapi is None:
+                pluginapi = get_pluginapi()
             if hasattr(plugin, attribute):
                 return getattr(plugin, attribute)(pluginapi, data)
 

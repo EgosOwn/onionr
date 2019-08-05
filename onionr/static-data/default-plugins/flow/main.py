@@ -96,6 +96,9 @@ class OnionrFlow:
         except KeyboardInterrupt:
             self.flowRunning = False
 
+def on_flow_cmd(api, data=None):
+    OnionrFlow().start()
+
 def on_init(api, data = None):
     '''
         This event is called after Onionr is initialized, but before the command
@@ -106,8 +109,6 @@ def on_init(api, data = None):
     # by simply referencing the variable `pluginapi`.
     global pluginapi
     pluginapi = api
-    flow = OnionrFlow()
-    return data
 
 def on_processblocks(api, data=None):
     b_hash = reconstructhash.deconstruct_hash(data['block'].hash) # Get the 0-truncated block hash

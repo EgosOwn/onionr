@@ -20,7 +20,18 @@
 import sys
 from etc import onionrvalues
 import logger, onionrexceptions
+import onionrplugins
+import onionrpluginapi
 from . import arguments, recommend
+
+def register_plugin_commands(cmd):
+    cmd = 'on_%s_cmd' % (cmd,)
+    for pl in onionrplugins.get_enabled_plugins():
+        pl = onionrplugins.get_plugin(pl)
+        if hasattr(pl, cmd):
+            getattr(pl, cmd)(onionrpluginapi.PluginAPI)
+            return True
+
 def register():
     try:
         cmd = sys.argv[1]
@@ -30,5 +41,6 @@ def register():
     try:
         arguments.get_func(cmd)()
     except onionrexceptions.NotFound:
-        recommend.recommend()
-        sys.exit(3)
+        if not register_plugin_commands(cmd):
+            recommend.recommend()
+            sys.exit(3)

@@ -10,8 +10,6 @@ def get_arguments():
         ('stop', 'kill'): daemonlaunch.kill_daemon,
         ('add-address', 'addaddress', 'addadder'): keyadders.add_address
     }
-    args = events.event('init', data=args, threaded=False)
-    print(args)
     return args
 
 def get_help():
