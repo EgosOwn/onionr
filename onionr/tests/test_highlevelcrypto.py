@@ -4,10 +4,12 @@ sys.path.append(".")
 import unittest, uuid, hashlib, base64
 import nacl.exceptions
 import nacl.signing, nacl.hash, nacl.encoding
-from onionrutils import stringvalidators, mnemonickeys
 TEST_DIR = 'testdata/%s-%s' % (uuid.uuid4(), os.path.basename(__file__)) + '/'
 print("Test directory:", TEST_DIR)
 os.environ["ONIONR_HOME"] = TEST_DIR
+from utils import createdirs
+createdirs.create_dirs()
+from onionrutils import stringvalidators, mnemonickeys
 import onionrcrypto as crypto, onionrexceptions
 
 class OnionrCryptoTests(unittest.TestCase):

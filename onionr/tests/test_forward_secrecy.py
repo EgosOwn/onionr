@@ -4,12 +4,16 @@ sys.path.append(".")
 import unittest, uuid
 TEST_DIR_1 = 'testdata/%s-%s' % (uuid.uuid4(), os.path.basename(__file__)) + '/'
 TEST_DIR_2 = 'testdata/%s-%s' % (uuid.uuid4(), os.path.basename(__file__)) + '/'
-import onionr, time
+import time
+
+os.environ["ONIONR_HOME"] = TEST_DIR_1
+from utils import createdirs
+createdirs.create_dirs()
 
 import onionrexceptions, onionrcrypto as crypto
 from onionrusers import onionrusers
 from onionrusers import contactmanager
-from utils import createdirs
+
 
 class OnionrForwardSecrecyTests(unittest.TestCase):
     '''
@@ -17,8 +21,6 @@ class OnionrForwardSecrecyTests(unittest.TestCase):
     '''
 
     def test_forward_encrypt(self):
-        os.environ["ONIONR_HOME"] = TEST_DIR_1
-        createdirs.create_dirs()
         
         friend = crypto.generate()
 

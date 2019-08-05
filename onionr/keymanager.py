@@ -19,6 +19,7 @@
 '''
 from onionrutils import bytesconverter
 from onionrcrypto import generate
+import os
 import filepaths
 class KeyManager:
     def __init__(self):
@@ -35,6 +36,7 @@ class KeyManager:
                 raise ValueError('Pubkey already in list: %s' % (pubKey,))
         except FileNotFoundError:
             pass
+
         with open(self.keyFile, "a") as keyFile:
             keyFile.write(pubKey + ',' + privKey + '\n')
         return (pubKey, privKey)

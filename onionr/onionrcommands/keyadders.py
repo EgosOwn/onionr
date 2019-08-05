@@ -20,21 +20,6 @@
 import sys
 import logger
 from coredb import keydb
-def add_peer(o_inst):
-    try:
-        newPeer = sys.argv[2]
-    except IndexError:
-        pass
-    else:
-        if newPeer in keydb.listkeys.list_peers():
-            logger.info('We already have that key', terminal=True)
-            return
-        logger.info("Adding peer: " + logger.colors.underline + newPeer, terminal=True)
-        try:
-            if keydb.addkeys.add_peer(newPeer):
-                logger.info('Successfully added key', terminal=True)
-        except AssertionError:
-            logger.error('Failed to add key', terminal=True)
 
 def add_address():
     try:

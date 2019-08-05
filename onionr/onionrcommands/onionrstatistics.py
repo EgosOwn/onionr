@@ -21,13 +21,15 @@ import os, uuid, time
 import logger
 from onionrblockapi import Block
 from onionrutils import checkcommunicator, mnemonickeys
-from utils import sizeutils, gethostname, getconsolewidth
+from utils import sizeutils, gethostname, getconsolewidth, identifyhome
 from coredb import blockmetadb, daemonqueue, keydb
 import onionrcrypto, config
-def show_stats(o_inst):
+from etc import onionrvalues
+def show_stats():
     try:
         # define stats messages here
         totalBlocks = len(blockmetadb.get_block_list())
+        home = identifyhome.identify_home()
         signedBlocks = len(Block.getBlocks(signed = True))
         messages = {
             # info about local client
@@ -35,14 +37,14 @@ def show_stats(o_inst):
 
             # file and folder size stats
             'div1' : True, # this creates a solid line across the screen, a div
-            'Total Block Size' : sizeutils.human_size(sizeutils.size(o_inst.dataDir + 'blocks/')),
-            'Total Plugin Size' : sizeutils.human_size(sizeutils.size(o_inst.dataDir + 'plugins/')),
-            'Log File Size' : sizeutils.human_size(sizeutils.size(o_inst.dataDir + 'output.log')),
+            'Total Block Size' : sizeutils.human_size(sizeutils.size(home + 'blocks/')),
+            'Total Plugin Size' : sizeutils.human_size(sizeutils.size(home + 'plugins/')),
+            'Log File Size' : sizeutils.human_size(sizeutils.size(home + 'output.log')),
 
             # count stats
             'div2' : True,
             'Known Peers' : str(max(len(keydb.listkeys.list_peers()) - 1, 0)),
-            'Enabled Plugins' : str(len(config.get('plugins.enabled', list()))) + ' / ' + str(len(os.listdir(o_inst.dataDir + 'plugins/'))),
+            'Enabled Plugins' : str(len(config.get('plugins.enabled', list()))) + ' / ' + str(len(os.listdir(home + 'plugins/'))),
             'Stored Blocks' : str(totalBlocks),
             'Percent Blocks Signed' : str(round(100 * signedBlocks / max(totalBlocks, 1), 2)) + '%'
         }
@@ -67,7 +69,7 @@ def show_stats(o_inst):
         groupsize = width - prewidth - len('[+] ')
 
         # generate stats table
-        logger.info(colors['title'] + 'Onionr v%s Statistics' % onionr.ONIONR_VERSION + colors['reset'], terminal=True)
+        logger.info(colors['title'] + 'Onionr v%s Statistics' % onionrvalues.ONIONR_VERSION + colors['reset'], terminal=True)
         logger.info(colors['border'] + '-' * (maxlength + 1) + '+' + colors['reset'], terminal=True)
         for key, val in messages.items():
             if not (type(val) is bool and val is True):

@@ -23,7 +23,11 @@ import logger
 from onionrblockapi import Block
 from onionrutils import stringvalidators
 from onionrblocks import insert
-def add_file(o_inst, singleBlock=False, blockType='bin'):
+
+def add_html(singleBlock=True, blockType='html'):
+    add_file(singleBlock, blockType)
+
+def add_file(singleBlock=False, blockType='bin'):
     '''
         Adds a file to the onionr network
     '''
@@ -46,7 +50,7 @@ def add_file(o_inst, singleBlock=False, blockType='bin'):
     else:
         logger.error('%s add-file <filename>' % sys.argv[0], timestamp = False, terminal=True)
 
-def getFile(o_inst):
+def get_file():
     '''
         Get a file from onionr blocks
     '''

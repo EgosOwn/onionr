@@ -8,10 +8,10 @@ print("Test directory:", TEST_DIR)
 os.environ["ONIONR_HOME"] = TEST_DIR
 from utils import createdirs
 from coredb import keydb
-import setupconfig, keymanager, filepaths
+import setup, keymanager, filepaths
 from onionrutils import stringvalidators
 createdirs.create_dirs()
-setupconfig.setup_config()
+setup.setup_config()
 pub_key = keymanager.KeyManager().getPubkeyList()[0]
 class KeyManagerTest(unittest.TestCase):
     def test_sane_default(self):

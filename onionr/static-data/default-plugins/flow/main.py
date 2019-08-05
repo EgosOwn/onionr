@@ -113,6 +113,8 @@ def on_init(api, data = None):
 def on_processblocks(api, data=None):
     b_hash = reconstructhash.deconstruct_hash(data['block'].hash) # Get the 0-truncated block hash
     metadata = data['block'].bmetadata # Get the block metadata
+    if data['block'].bheader['type'] != 'brd':
+        return
 
     # Validate the channel name is sane for caching
     try:
@@ -120,9 +122,9 @@ def on_processblocks(api, data=None):
     except KeyError:
         ch = 'global'
     ch_len = len(ch)
-    if len(metadata['ch']) == 0:
+    if ch_len == 0:
         ch = 'global'
-    elif len(metadata['ch']) > 12:
+    elif ch_len > 12:
         return
     
     existing_posts = board_cache.get(ch)

@@ -22,12 +22,13 @@ import sys, getpass
 import logger, onionrexceptions
 from onionrutils import stringvalidators, bytesconverter
 from onionrusers import onionrusers, contactmanager
+import config
 from coredb import keydb
 import keymanager, onionrcrypto
 import unpaddedbase32
 from etc import onionrvalues
 DETERMINISTIC_REQUIREMENT = onionrvalues.PASSWORD_LENGTH
-def add_ID(o_inst):
+def add_ID():
     key_manager = keymanager.KeyManager()
     try:
         sys.argv[2]
@@ -58,7 +59,7 @@ def add_ID(o_inst):
             return
     logger.info('Added ID: %s' % (bytesconverter.bytes_to_str(newID),), terminal=True)
 
-def change_ID(o_inst):
+def change_ID():
     key_manager = keymanager.KeyManager()
     try:
         key = sys.argv[2]
@@ -68,48 +69,11 @@ def change_ID(o_inst):
     else:
         if stringvalidators.validate_pub_key(key):
             if key in key_manager.getPubkeyList():
-                o_inst.config.set('general.public_key', key)
-                o_inst.config.save()
+                config.set('general.public_key', key)
+                config.save()
                 logger.info('Set active key to: %s' % (key,), terminal=True)
                 logger.info('Restart Onionr if it is running.', terminal=True)
             else:
                 logger.warn('That key does not exist', terminal=True)
         else:
             logger.warn('Invalid key %s' % (key,), terminal=True)
-
-def friend_command(o_inst):
-    friend = ''
-    try:
-        # Get the friend command
-        action = sys.argv[2]
-    except IndexError:
-        logger.info('Syntax: friend add/remove/list [address]', terminal=True)
-    else:
-        action = action.lower()
-        if action == 'list':
-            # List out peers marked as our friend
-            for friend in contactmanager.ContactManager.list_friends():
-                logger.info(friend.publicKey + ' - ' + friend.get_info('name'), terminal=True)
-        elif action in ('add', 'remove'):
-            try:
-                friend = sys.argv[3]
-                if not stringvalidators.validate_pub_key(friend):
-                    raise onionrexceptions.InvalidPubkey('Public key is invalid')
-                if friend not in keydb.listkeys.list_peers():
-                    raise onionrexceptions.KeyNotKnown
-                friend = onionrusers.OnionrUser(friend)
-            except IndexError:
-                logger.warn('Friend ID is required.', terminal=True)
-                action = 'error' # set to 'error' so that the finally block does not process anything
-            except onionrexceptions.KeyNotKnown:
-                o_inst.addPeer(friend)
-                friend = onionrusers.OnionrUser(friend)
-            finally:
-                if action == 'add':
-                    friend.setTrust(1)
-                    logger.info('Added %s as friend.' % (friend.publicKey,), terminal=True)
-                elif action == 'remove':
-                    friend.setTrust(0)
-                    logger.info('Removed %s as friend.' % (friend.publicKey,), terminal=True)
-        else:
-            logger.info('Syntax: friend add/remove/list [address]', terminal=True)

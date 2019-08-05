@@ -8,10 +8,10 @@ print("Test directory:", TEST_DIR)
 os.environ["ONIONR_HOME"] = TEST_DIR
 from utils import networkmerger, createdirs
 from coredb import keydb
-import setupconfig
+import setup
 from utils import createdirs
 createdirs.create_dirs()
-setupconfig.setup_config()
+setup.setup_config()
 class NetworkMergerTest(unittest.TestCase):
     def test_valid_merge(self):
         adders = 'facebookcorewwwi.onion,mporbyyjhmz2c62shctbi3ngrslne5lpcyav6uzhxok45iblodhgjoad.onion'
