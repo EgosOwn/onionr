@@ -107,6 +107,12 @@ class PlainEncryption:
                 logger.info("Message has good signature.", terminal=True)
         return
 
+def on_decrypt_cmd(api, data=None):
+    PlainEncryption(api).decrypt()
+
+def on_encrypt_cmd(api, data=None):
+    PlainEncryption(api).encrypt()
+
 def on_init(api, data = None):
     '''
         This event is called after Onionr is initialized, but before the command
@@ -115,7 +121,3 @@ def on_init(api, data = None):
     '''
     pluginapi = api
     encrypt = PlainEncryption(pluginapi)
-    api.commands.register(['encrypt'], encrypt.encrypt)
-    api.commands.register(['decrypt'], encrypt.decrypt)
-    
-    return

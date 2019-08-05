@@ -60,7 +60,7 @@ def call(plugin, event_name, data = None, pluginapi = None):
         try:
             attribute = 'on_' + str(event_name).lower()
             if pluginapi is None:
-                pluginapi = get_pluginapi()
+                pluginapi = get_pluginapi(data)
             if hasattr(plugin, attribute):
                 return getattr(plugin, attribute)(pluginapi, data)
 

@@ -1,4 +1,4 @@
-from .. import onionrstatistics, version, daemonlaunch, keyadders
+from .. import onionrstatistics, version, daemonlaunch, keyadders, openwebinterface
 import onionrexceptions
 import onionrevents as events
 def get_arguments():
@@ -8,7 +8,8 @@ def get_arguments():
         ('version'): version.version,
         ('start', 'daemon'): daemonlaunch.start,
         ('stop', 'kill'): daemonlaunch.kill_daemon,
-        ('add-address', 'addaddress', 'addadder'): keyadders.add_address
+        ('add-address', 'addaddress', 'addadder'): keyadders.add_address,
+        ('openhome', 'gui', 'openweb', 'open-home', 'open-web'): openwebinterface.open_home
     }
     return args
 

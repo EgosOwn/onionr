@@ -114,6 +114,4 @@ def on_init(api, data = None):
     # by simply referencing the variable `pluginapi`.
     pluginapi = api
     ui = OnionrCLIUI(api)
-    api.commands.register('interactive', ui.start)
-    api.commands.register_help('interactive', 'Open the CLI interface')
     return

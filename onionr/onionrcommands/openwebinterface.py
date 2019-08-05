@@ -20,12 +20,13 @@
 import webbrowser
 import logger
 from onionrutils import getclientapiserver
-def open_home(o_inst):
+import config
+def open_home():
     try:
         url = getclientapiserver.get_client_API_server()
     except FileNotFoundError:
         logger.error('Onionr seems to not be running (could not get api host)', terminal=True)
     else:
-        url = 'http://%s/#%s' % (url, o_inst.config.get('client.webpassword'))
+        url = 'http://%s/#%s' % (url, config.get('client.webpassword'))
         logger.info('If Onionr does not open automatically, use this URL: ' + url, terminal=True)
         webbrowser.open_new_tab(url)

@@ -17,7 +17,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import base64, os
+import base64, os, time
 import flask
 from gevent.pywsgi import WSGIServer
 from onionrutils import epoch
@@ -40,6 +40,7 @@ class PrivateAPI:
             This initialization defines all of the API entry points and handlers for the endpoints and errors
             This also saves the used host (random localhost IP address) to the data folder in host.txt
         '''
+        time.sleep(0.3)
         self.config = config
         self.serializer = serializeddata.SerializedData()
         self.startTime = epoch.get_epoch()

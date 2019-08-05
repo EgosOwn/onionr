@@ -21,28 +21,6 @@
 import onionrplugins, logger
 from onionrutils import localcommand
 from coredb import daemonqueue
-class DaemonAPI:
-    def __init__(self, pluginapi):
-        self.pluginapi = pluginapi
-
-    def start(self):
-        self.pluginapi.get_onionr().daemon()
-
-        return
-
-    def stop(self):
-        self.pluginapi.get_onionr().killDaemon()
-
-        return
-
-    def queue(self, command, data = ''):
-        return daemonqueue.daemon_queue_add(command, data)
-
-    def local_command(self, command):
-        return localcommand.local_command(command)
-
-    def queue_pop(self):
-        return daemonqueue.daemon_queue()
 
 class PluginAPI:
     def __init__(self, pluginapi):
@@ -64,7 +42,7 @@ class PluginAPI:
         onionrplugins.disable(name)
 
     def event(self, name, data = {}):
-        events.event(name, data = data, onionr = self.pluginapi.get_onionr())
+        events.event(name, data = data)
 
     def is_enabled(self, name):
         return onionrplugins.is_enabled(name)
@@ -85,72 +63,13 @@ class CommandAPI:
     def __init__(self, pluginapi):
         self.pluginapi = pluginapi
 
-    def register(self, names, call = None):
-        if isinstance(names, str):
-            names = [names]
-
-        for name in names:
-            self.pluginapi.get_onionr().addCommand(name, call)
-
-    def unregister(self, names):
-        if isinstance(names, str):
-            names = [names]
-
-        for name in names:
-            self.pluginapi.get_onionr().delCommand(name)
-
-        return
-
-    def register_help(self, names, description):
-        if isinstance(names, str):
-            names = [names]
-
-        for name in names:
-            self.pluginapi.get_onionr().addHelp(name, description)
-
-        return
-
-    def unregister_help(self, names):
-        if isinstance(names, str):
-            names = [names]
-
-        for name in names:
-            self.pluginapi.get_onionr().delHelp(name)
-
-        return
-
     def call(self, name):
         self.pluginapi.get_onionr().execute(name)
-
-        return
-
-    def get_commands(self):
-        return self.pluginapi.get_onionr().getCommands()
-
-class WebAPI:
-    def __init__(self, pluginapi):
-        self.pluginapi = pluginapi
-
-    def register_callback(self, action, callback, scope = 'public'):
-        return self.pluginapi.get_onionr().api.setCallback(action, callback, scope = scope)
-
-    def unregister_callback(self, action, scope = 'public'):
-        return self.pluginapi.get_onionr().api.removeCallback(action, scope = scope)
-
-    def get_callback(self, action, scope = 'public'):
-        return self.pluginapi.get_onionr().api.getCallback(action, scope=  scope)
-
-    def get_callbacks(self, scope = None):
-        return self.pluginapi.get_onionr().api.getCallbacks(scope = scope)
 
 class SharedAPI:
     def __init__(self, data):
         self.data = data
-
-        self.daemon = DaemonAPI(self)
         self.plugins = PluginAPI(self)
-        self.commands = CommandAPI(self)
-        self.web = WebAPI(self)
 
     def get_data(self):
         return self.data
@@ -160,12 +79,3 @@ class SharedAPI:
 
     def get_pluginapi(self):
         return self.plugins
-
-    def get_commandapi(self):
-        return self.commands
-
-    def get_webapi(self):
-        return self.web
-
-    def is_development_mode(self):
-        return self.get_onionr()._developmentMode

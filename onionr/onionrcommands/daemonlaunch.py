@@ -33,6 +33,7 @@ from etc import onionrvalues, cleanup
 from onionrcrypto import getourkeypair
 from utils import hastor, logoheader
 from . import version
+import serializeddata
 
 def _proper_shutdown():
     localcommand.local_command('shutdown')
@@ -57,6 +58,7 @@ def daemon():
 
     Thread(target=shared_state.get(apiservers.ClientAPI).start, daemon=True).start()
     Thread(target=shared_state.get(apiservers.PublicAPI).start, daemon=True).start()
+    shared_state.get(serializeddata.SerializedData)
     shared_state.share_object() # share the parent object to the threads
 
     apiHost = ''

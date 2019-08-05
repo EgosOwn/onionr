@@ -31,7 +31,6 @@ class SerializedData:
             etc
         }
         '''
-        self._too_many = None
     
     def getStats(self):
         '''Return statistics about our node'''

@@ -21,6 +21,7 @@ from flask import Response, Blueprint, request, send_from_directory, abort
 from httpapi import apiutils
 import onionrcrypto, config
 from netcontroller import NetController
+from serializeddata import SerializedData
 pub_key = onionrcrypto.pub_key
 class PrivateEndpoints:
     def __init__(self, client_api):
@@ -97,8 +98,9 @@ class PrivateEndpoints:
             #return Response("disabled")
             while True:
                 try:    
-                    return Response(client_api.serializer.getStats())
-                except AttributeError:
+                    return Response(client_api._too_many.get(SerializedData).getStats())
+                except AttributeError as e:
+                    print("damn", e)
                     pass
         
         @private_endpoints_bp.route('/getuptime')
