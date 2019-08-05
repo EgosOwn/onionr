@@ -40,7 +40,6 @@ class PrivateAPI:
             This initialization defines all of the API entry points and handlers for the endpoints and errors
             This also saves the used host (random localhost IP address) to the data folder in host.txt
         '''
-        time.sleep(0.3)
         self.config = config
         self.serializer = serializeddata.SerializedData()
         self.startTime = epoch.get_epoch()

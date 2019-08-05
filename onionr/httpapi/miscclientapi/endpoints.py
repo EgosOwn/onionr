@@ -100,7 +100,6 @@ class PrivateEndpoints:
                 try:    
                     return Response(client_api._too_many.get(SerializedData).getStats())
                 except AttributeError as e:
-                    print("damn", e)
                     pass
         
         @private_endpoints_bp.route('/getuptime')

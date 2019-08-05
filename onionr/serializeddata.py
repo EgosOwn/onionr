@@ -18,7 +18,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 
-import json
+import json, time
 from coredb import blockmetadb
 import communicator
 class SerializedData:
@@ -35,7 +35,11 @@ class SerializedData:
     def getStats(self):
         '''Return statistics about our node'''
         stats = {}
-        comm_inst = self._too_many.get(communicator.OnionrCommunicatorDaemon)
+        try:
+            self._too_many
+        except AttributeError:
+            time.sleep(1)
+        comm_inst = self._too_many.get(communicator.OnionrCommunicatorDaemon, args=(self._too_many,))
         stats['uptime'] = comm_inst.getUptime()
         stats['connectedNodes'] = '\n'.join(comm_inst.onlinePeers)
         stats['blockCount'] = len(blockmetadb.get_block_list())

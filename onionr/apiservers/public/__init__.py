@@ -38,7 +38,6 @@ class PublicAPI:
         The new client api server, isolated from the public api
     '''
     def __init__(self):
-        time.sleep(1)
         app = flask.Flask('PublicAPI')
         app.config['MAX_CONTENT_LENGTH'] = 5 * 1024 * 1024
         self.i2pEnabled = config.get('i2p.host', False)

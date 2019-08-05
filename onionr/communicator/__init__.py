@@ -144,7 +144,7 @@ class OnionrCommunicatorDaemon:
         if config.get('general.security_level', 1) == 0 and config.get('general.announce_node', True):
             # Default to high security level incase config breaks
             announceTimer = OnionrCommunicatorTimers(self, announcenode.announce_node, 3600, myArgs=[self], requiresPeer=True, maxThreads=1)
-            announceTimer.count = (announceTimer.frequency - 60)
+            announceTimer.count = (announceTimer.frequency - 120)
         else:
             logger.debug('Will not announce node.')
         

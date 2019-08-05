@@ -7,13 +7,13 @@ class FDSafeHandler(WSGIHandler):
         self.timeout.start()
         try:
             WSGIHandler.handle(self)
-        except Exception:
-            self.handle_error()
+        except Exception as e:
+            self.handle_error(e)
         finally:
             self.timeout.close()
 
-    def handle_error(self):
-        if v is self.timeout:
+    def handle_error(self, two, three, four):
+        if two is self.timeout:
             self.result = [b"Timeout"]
             self.start_response("200 OK", [])
             self.process_result()
