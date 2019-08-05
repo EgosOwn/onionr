@@ -78,7 +78,7 @@ def announce_node(daemon):
                     daemon.announceCache[peer] = data['random']
             if not announceFail:
                 logger.info('Announcing node to ' + url)
-                if basicrequests.do_post_request(url, data, port=daemon.shared_state.get(NetController)) == 'Success':
+                if basicrequests.do_post_request(url, data, port=daemon.shared_state.get(NetController).socksPort) == 'Success':
                     logger.info('Successfully introduced node to ' + peer, terminal=True)
                     retData = True
                     keydb.transportinfo.set_address_info(peer, 'introduced', 1)

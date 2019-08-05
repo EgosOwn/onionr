@@ -18,13 +18,14 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 import base64
-from flask import Response
+from flask import Response, g
 import deadsimplekv
 import logger
 from etc import onionrvalues
 from onionrutils import stringvalidators, bytesconverter
 from utils import gettransports
 import onionrcrypto as crypto, filepaths
+from communicator import OnionrCommunicatorDaemon
 def handle_announce(request):
     '''
     accept announcement posts, validating POW
@@ -57,9 +58,14 @@ def handle_announce(request):
             if powHash.startswith('0' * onionrvalues.OnionrValues().announce_pow):
                 newNode = bytesconverter.bytes_to_str(newNode)
                 announce_queue = deadsimplekv.DeadSimpleKV(filepaths.announce_cache)
-                if stringvalidators.validate_transport(newNode) and not newNode in announce_queue.get('new_peers'):
-                    clientAPI.onionrInst.communicatorInst.newPeers.append(newNode)
-                    announce_queue.put('new_peers', announce_queue.get('new_peers').append(newNode))
+                announce_queue_list = announce_queue.get('new_peers')
+                if announce_queue_list is None:
+                    announce_queue_list = []
+
+                if stringvalidators.validate_transport(newNode) and not newNode in announce_queue_list:
+                    #clientAPI.onionrInst.communicatorInst.newPeers.append(newNode)
+                    g.shared_state.get(OnionrCommunicatorDaemon).newPeers.append(newNode)
+                    announce_queue.put('new_peers', announce_queue_list.append(newNode))
                     announce_queue.flush()
                     resp = 'Success'
             else:

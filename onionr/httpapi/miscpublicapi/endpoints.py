@@ -17,7 +17,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-from flask import Response, Blueprint, request, send_from_directory, abort
+from flask import Response, Blueprint, request, send_from_directory, abort, g
 from . import getblocks, upload, announce
 from coredb import keydb
 import config
@@ -69,6 +69,7 @@ class PublicEndpoints:
         @public_endpoints_bp.route('/announce', methods=['post'])
         def accept_announce():
             '''Accept announcements with pow token to prevent spam'''
+            g.shared_state = public_api._too_many
             resp = announce.handle_announce(request)
             return resp
 

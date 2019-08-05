@@ -52,7 +52,7 @@ def connect_new_peer_to_communicator(comm_inst, peer='', useBootstrap=False):
     if len(peerList) == 0 or useBootstrap:
         # Avoid duplicating bootstrap addresses in peerList
         bootstrappeers.add_bootstrap_list_to_peer_list(comm_inst, peerList)
-
+    print(peerList)
     for address in peerList:
         if not config.get('tor.v3onions') and len(address) == 62:
             continue
