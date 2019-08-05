@@ -90,5 +90,4 @@ def on_init(api, data = None):
     '''
     pluginapi = api
     chat = Chat(pluginapi)
-    api.commands.register(['chat'], chat.create)
     return
