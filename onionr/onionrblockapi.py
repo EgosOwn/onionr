@@ -105,7 +105,7 @@ class Block:
                     try:
                         self.bcontent = onionrusers.OnionrUser(self.signer).forwardDecrypt(self.bcontent)
                     except (onionrexceptions.DecryptionError, nacl.exceptions.CryptoError) as e:
-                        logger.error(str(e))
+                        #logger.error(str(e))
                         pass
             except nacl.exceptions.CryptoError:
                 pass
