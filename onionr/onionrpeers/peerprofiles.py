@@ -18,6 +18,10 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 from coredb import keydb
+from onionrutils import epoch
+
+UPDATE_DELAY = 300
+
 class PeerProfiles:
     '''
         PeerProfiles
@@ -32,6 +36,8 @@ class PeerProfiles:
 
         self.loadScore()
         self.getConnectTime()
+
+        self.last_updated = {'connect_time': UPDATE_DELAY, 'score': UPDATE_DELAY} # Last time a given value was updated
         return
 
     def loadScore(self):
@@ -47,10 +53,17 @@ class PeerProfiles:
             self.connectTime = int(keydb.transportinfo.get_address_info(self.address, 'lastConnect'))
         except (KeyError, ValueError, TypeError) as e:
             pass
+    
+    def update_connect_time(self):
+        if epoch.get_epoch() - self.last_updated['connect_time'] >= UPDATE_DELAY:
+            self.last_updated['connect_time'] = epoch.get_epoch()
+            keydb.transportinfo.set_address_info(self.address, 'lastConnect', epoch.get_epoch())
         
     def saveScore(self):
         '''Save the node's score to the database'''
-        keydb.transportinfo.set_address_info(self.address, 'success', self.score)
+        if epoch.get_epoch() - self.last_updated['score'] >= UPDATE_DELAY:
+            self.last_updated['score'] = epoch.get_epoch()
+            keydb.transportinfo.set_address_info(self.address, 'success', self.score)
         return
 
     def addScore(self, toAdd):

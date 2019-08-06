@@ -106,9 +106,12 @@ function openThread(bHash, sender, date, sigBool, pubkey, subjectLine){
 
 function setActiveTab(tabName){
     threadPart.innerHTML = ""
+    window.inboxActive = false
     switch(tabName){
         case 'inbox':
+            window.inboxActive = true
             refreshPms()
+            getInbox()
             break
         case 'sent':
             getSentbox()
@@ -223,9 +226,14 @@ function loadInboxEntries(bHash){
 }
 
 function getInbox(){
+    if (! window.inboxActive){
+        return
+    }
+    var els = document.getElementsByClassName('threadEntry')
     var showed = false
     var requested = ''
     for(var i = 0; i < pms.length; i++) {
+        var add = true
         if (pms[i].trim().length == 0){
             threadPart.innerText = 'No messages to show ¯\\_(ツ)_/¯'
             continue
@@ -234,7 +242,14 @@ function getInbox(){
             threadPlaceholder.style.display = 'none'
             showed = true
         }
-        loadInboxEntries(pms[i])
+        for (var x = 0; x < els.length; x++){
+            if (pms[i] === els[x].getAttribute('data-hash')){
+                add = false
+            }
+        }
+        if (add && window.inboxActive) {
+            loadInboxEntries(pms[i])
+        }
     }
     if (! showed){
         threadPlaceholder.style.display = 'block'
@@ -306,7 +321,10 @@ function showSentboxWindow(to, content){
     overlay('sentboxDisplay')
 }
 
-function refreshPms(){
+function refreshPms(callNext){
+    if (! window.inboxActive){
+        return
+    }
 fetch('/mail/getinbox', {
     headers: {
       "token": webpass
@@ -314,7 +332,9 @@ fetch('/mail/getinbox', {
 .then((resp) => resp.text()) // Transform the data into json
 .then(function(data) {
     pms = data.split(',')
-    getInbox()
+    if (callNext){
+        getInbox()
+    }
   })
 }
 
@@ -361,3 +381,5 @@ setActiveTab('inbox')
 
 setInterval(function(){mailPing()}, 10000)
 mailPing()
+window.inboxInterval = setInterval(function(){refreshPms(true)}, 3000)
+refreshPms(true)

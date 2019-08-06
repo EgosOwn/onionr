@@ -7,7 +7,7 @@ class FDSafeHandler(WSGIHandler):
         self.timeout.start()
         try:
             WSGIHandler.handle(self)
-        except gevent.Timeout as ex:
+        except Timeout as ex:
             if ex is self.timeout:
                 pass
             else: 

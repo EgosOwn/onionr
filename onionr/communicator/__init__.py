@@ -224,8 +224,9 @@ class OnionrCommunicatorDaemon:
                 retData = i
                 break
         else:
-            # if the peer's profile is not loaded, return a new one. connectNewPeer adds it the list on connect
+            # if the peer's profile is not loaded, return a new one. connectNewPeer also adds it to the list on connect
             retData = onionrpeers.PeerProfiles(peer)
+            self.peerProfiles.append(retData)
         return retData
 
     def getUptime(self):

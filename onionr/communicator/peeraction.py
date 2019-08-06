@@ -49,6 +49,7 @@ def peer_action(comm_inst, peer, action, data='', returnHeaders=False, max_resp_
         except ValueError:
             pass
     else:
-        keydb.transportinfo.set_address_info(peer, 'lastConnect', epoch.get_epoch())
-        comm_inst.getPeerProfileInstance(peer).addScore(1)
+        peer_profile = comm_inst.getPeerProfileInstance(peer)
+        peer_profile.update_connect_time()
+        peer_profile.addScore(1)
     return retData # If returnHeaders, returns tuple of data, headers. if not, just data string
