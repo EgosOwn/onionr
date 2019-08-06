@@ -28,6 +28,6 @@ Do your best to use good english.
 
 For any non-trivial changes, please get in touch with us first to discuss your plans.
 
-Please try to use a similar coding style as the project.
+Please try to use a similar coding style as the project. We like PEP-8 despite being lazy with it in the past.
 
 **Thanks for contributing to Onionr!**

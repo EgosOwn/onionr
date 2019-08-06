@@ -68,3 +68,4 @@ function getStats(){
     lastIncoming.innerText = lastConnect
 }
 getStats()
+setInterval(function(){getStats()}, 10000)

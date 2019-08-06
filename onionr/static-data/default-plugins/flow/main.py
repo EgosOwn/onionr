@@ -33,7 +33,6 @@ flask_blueprint = flowapi.flask_blueprint
 
 plugin_name = 'flow'
 PLUGIN_VERSION = '0.0.1'
-board_cache = simplekv.DeadSimpleKV(identifyhome.identify_home() + '/board-index.cache.json')
 
 class OnionrFlow:
     def __init__(self):
@@ -105,16 +104,14 @@ def on_init(api, data = None):
         inputted is executed. Could be called when daemon is starting or when
         just the client is running.
     '''
-    # Doing this makes it so that the other functions can access the api object
-    # by simply referencing the variable `pluginapi`.
-    global pluginapi
-    pluginapi = api
+    return
 
 def on_processblocks(api, data=None):
-    b_hash = reconstructhash.deconstruct_hash(data['block'].hash) # Get the 0-truncated block hash
     metadata = data['block'].bmetadata # Get the block metadata
-    if data['block'].bheader['type'] != 'brd':
+    if data['type'] != 'brd':
         return
+    b_hash = reconstructhash.deconstruct_hash(data['block'].hash) # Get the 0-truncated block hash
+    board_cache = simplekv.DeadSimpleKV(identifyhome.identify_home() + '/board-index.cache.json') # get the board index cache
 
     # Validate the channel name is sane for caching
     try:
@@ -130,11 +127,10 @@ def on_processblocks(api, data=None):
     existing_posts = board_cache.get(ch)
     if existing_posts is None:
         existing_posts = ''
-    else:
-        existing_posts += ','
+
     check_list = existing_posts.split(',')
     if len(check_list) > 30:
         check_list.pop(0)
     existing_posts = ','.join(check_list)
-    board_cache.put(ch, '%s%s' % (existing_posts, b_hash))
+    board_cache.put(ch, '%s,%s' % (existing_posts, b_hash))
     board_cache.flush()

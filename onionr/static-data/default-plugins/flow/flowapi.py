@@ -22,10 +22,10 @@ from flask import Response, request, redirect, Blueprint, abort
 from utils import identifyhome
 import deadsimplekv as simplekv
 flask_blueprint = Blueprint('flow', __name__)
-board_cache = simplekv.DeadSimpleKV(identifyhome.identify_home() + '/board-index.cache.json')
 
 @flask_blueprint.route('/flow/getpostsbyboard/<board>')
 def get_post_by_board(board):
+    board_cache = simplekv.DeadSimpleKV(identifyhome.identify_home() + '/board-index.cache.json')
     board_cache.refresh()
     posts = board_cache.get(board)
     if posts is None:

@@ -94,7 +94,7 @@ newPostForm.onsubmit = function(){
     var message = document.getElementById('newMsgText').value
     var channel = document.getElementById('feedIDInput').value
     var meta = {'ch': channel}
-    var postData = {'message': message, 'type': 'txt', 'encrypt': false, 'meta': JSON.stringify(meta)}
+    var postData = {'message': message, 'type': 'brd', 'encrypt': false, 'meta': JSON.stringify(meta)}
     postData = JSON.stringify(postData)
     newPostForm.style.display = 'none'
     fetch('/insertblock', {
@@ -108,6 +108,7 @@ newPostForm.onsubmit = function(){
     .then(function(data) {
         newPostForm.style.display = 'block'
         alert('Queued for submission!')
+        setTimeout(function(){getBlocks()}, 3000)
       })
     return false
 }
