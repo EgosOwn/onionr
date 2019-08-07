@@ -25,7 +25,7 @@ from . import onlinepeers
 def peer_action(comm_inst, peer, action, returnHeaders=False, max_resp_size=5242880):
     '''Perform a get request to a peer'''
     penalty_score = -10
-    if not peer:
+    if len(peer) == 0:
         return False
     url = 'http://%s/%s' % (peer, action)
 
@@ -40,7 +40,7 @@ def peer_action(comm_inst, peer, action, returnHeaders=False, max_resp_size=5242
         ret_data = False
         penalty_score = -100
     # if request failed, (error), mark peer offline
-    if not ret_data:
+    if ret_data == False: # For some reason "if not" breaks this. Prob has to do with empty string.
         try:
             comm_inst.getPeerProfileInstance(peer).addScore(penalty_score)
             onlinepeers.remove_online_peer(comm_inst, peer)

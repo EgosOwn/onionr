@@ -2,7 +2,6 @@ friendList = {}
 convoListElement = document.getElementsByClassName('conversationList')[0]
 
 function createConvoList(){
-    console.log(friendList)
 
     for (friend in friendList){
         var convoEntry = document.createElement('li')
