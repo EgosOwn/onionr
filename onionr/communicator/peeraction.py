@@ -20,26 +20,27 @@
 import streamedrequests
 import logger
 from onionrutils import epoch, basicrequests
-from . import onlinepeers
 from coredb import keydb
-def peer_action(comm_inst, peer, action, data='', returnHeaders=False, max_resp_size=5242880):
+from . import onlinepeers
+def peer_action(comm_inst, peer, action, returnHeaders=False, max_resp_size=5242880):
     '''Perform a get request to a peer'''
     penalty_score = -10
-    if len(peer) == 0:
+    if not peer:
         return False
     url = 'http://%s/%s' % (peer, action)
-    if len(data) > 0:
-        url += '&data=' + data
 
-    keydb.transportinfo.set_address_info(peer, 'lastConnectAttempt', epoch.get_epoch()) # mark the time we're trying to request this peer
+    # mark the time we're trying to request this peer
+    keydb.transportinfo.set_address_info(peer, 'lastConnectAttempt', epoch.get_epoch())
+
     try:
-        retData = basicrequests.do_get_request( url, port=comm_inst.proxyPort, max_size=max_resp_size)
+        ret_data = basicrequests.do_get_request(url, port=comm_inst.proxyPort,
+                                                max_size=max_resp_size)
     except streamedrequests.exceptions.ResponseLimitReached:
         logger.warn('Request failed due to max response size being overflowed', terminal=True)
-        retData = False
+        ret_data = False
         penalty_score = -100
     # if request failed, (error), mark peer offline
-    if retData == False:
+    if not ret_data:
         try:
             comm_inst.getPeerProfileInstance(peer).addScore(penalty_score)
             onlinepeers.remove_online_peer(comm_inst, peer)
@@ -52,4 +53,4 @@ def peer_action(comm_inst, peer, action, data='', returnHeaders=False, max_resp_
         peer_profile = comm_inst.getPeerProfileInstance(peer)
         peer_profile.update_connect_time()
         peer_profile.addScore(1)
-    return retData # If returnHeaders, returns tuple of data, headers. if not, just data string
+    return ret_data # If returnHeaders, returns tuple of data, headers. if not, just data string
