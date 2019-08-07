@@ -46,7 +46,7 @@ class OnionrCommunicatorTimers:
                 if self.requiresPeer and len(self.daemonInstance.onlinePeers) == 0:
                     raise onionrexceptions.OnlinePeerNeeded
             except onionrexceptions.OnlinePeerNeeded:
-                pass
+                return
             else:
                 if self.makeThread:
                     for i in range(self.threadAmount):

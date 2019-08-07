@@ -17,7 +17,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import sys
+import sys, os
 from . import settings, colors
 colors = colors.Colors
 def raw(data, fd = sys.stdout, terminal = False):
@@ -31,8 +31,16 @@ def raw(data, fd = sys.stdout, terminal = False):
         except OSError:
             pass
     if settings.get_settings() & settings.OUTPUT_TO_FILE:
+        fdata = ''
         try:
-            with open(settings._outputfile, "a+") as f:
-                f.write(colors.filter(data) + '\n')
-        except OSError:
+            with open(settings._outputfile, 'r') as file:
+                fdata = file.read()
+        except FileNotFoundError:
             pass
+        fdata = fdata + '\n' + data
+        fdata = fdata.split('\n')
+        if len(fdata) >= settings.MAX_LOG_FILE_LINES:
+            fdata.pop(0)
+        fdata = '\n'.join(fdata)
+        with open(settings._outputfile, 'w') as file:
+            file.write(fdata)

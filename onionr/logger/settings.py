@@ -35,6 +35,8 @@ LEVEL_ERROR = 4
 LEVEL_FATAL = 5
 LEVEL_IMPORTANT = 6
 
+MAX_LOG_FILE_LINES = 10000
+
 _type = OUTPUT_TO_CONSOLE | USE_ANSI # the default settings for logging
 _level = LEVEL_DEBUG # the lowest level to log
 _outputfile = '%s/onionr.log' % (data_home,) # the file to log to

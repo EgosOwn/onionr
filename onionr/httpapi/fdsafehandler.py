@@ -12,12 +12,3 @@ class FDSafeHandler(WSGIHandler):
                 pass
             else: 
                 raise
-    '''
-    def handle_error(self, two, three, four):
-        if two is self.timeout:
-            self.result = [b"Timeout"]
-            self.start_response("200 OK", [])
-            self.process_result()
-        else:
-            WSGIHandler.handle_error(self) 
-    '''
