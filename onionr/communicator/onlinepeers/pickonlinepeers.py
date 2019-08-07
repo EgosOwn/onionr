@@ -20,16 +20,16 @@
 import secrets
 def pick_online_peer(comm_inst):
     '''randomly picks peer from pool without bias (using secrets module)'''
-    retData = ''
+    ret_data = ''
     while True:
-        peerLength = len(comm_inst.onlinePeers)
-        if peerLength <= 0:
+        peer_length = len(comm_inst.onlinePeers)
+        if peer_length <= 0:
             break
         try:
             # get a random online peer, securely. May get stuck in loop if network is lost or if all peers in pool magically disconnect at once
-            retData = comm_inst.onlinePeers[secrets.randbelow(peerLength)]
+            ret_data = comm_inst.onlinePeers[secrets.randbelow(peer_length)]
         except IndexError:
             pass
         else:
             break
-    return retData
+    return ret_data

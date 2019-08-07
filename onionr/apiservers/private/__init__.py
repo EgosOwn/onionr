@@ -72,7 +72,7 @@ class PrivateAPI:
         '''
             Validate that the client token matches the given token. Used to prevent CSRF and data exfiltration
         '''
-        if len(self.clientToken) == 0:
+        if not self.clientToken:
             logger.error("client password needs to be set")
             return False
         try:
