@@ -128,7 +128,9 @@ Onionr Mail: TRH763JURNY47QPBTTQ4LLPYCYQK6Q5YA33R6GANKZK5C5DKCIGQ
 
 ## Disclaimers and legal
 
-No matter how good Onionr and other software gets, there will always be ways for clever or well-funded adversaries to break your security. 
+No matter how good Onionr and other software gets, there will always be ways for clever or well-funded adversaries to break your security.
+
+Onionr does not protect your identity if you associate your user ID with your name either on Onionr or elsewhere.
 
 *Do not rely on Onionr or any other software to hold up if your life or liberty are at stake.*
 

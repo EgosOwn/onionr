@@ -57,16 +57,15 @@ def on_processblocks(api, data=None):
     if data['type'] != 'pm':
         return
     data['block'].decrypt()
-    metadata = data['block'].bmetadata # Get the block metadata
+    metadata = data['block'].bmetadata
 
     signer = bytesconverter.bytes_to_str(data['block'].signer)
     user = contactmanager.ContactManager(signer, saveUser=False)
     name = user.get_info("name")
-    if name != 'anonymous':
+    if name != 'anonymous' and name != None:
         signer = name.title()
     else:
         signer = signer[:5]
 
     if data['block'].decrypted:
-        notifier.notify(title="Onionr Mail - New Message",
-                       message="From: %s\n\nSubject: %s" % (signer, metadata['subject']))
+        notifier.notify(title="Onionr Mail - New Message", message="From: %s\n\nSubject: %s" % (signer, metadata['subject']))

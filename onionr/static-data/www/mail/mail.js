@@ -322,6 +322,9 @@ function showSentboxWindow(to, content){
 }
 
 function refreshPms(callNext){
+    if (threadPart.innerText.includes("¯\\_(ツ)_/¯")){
+        threadPart.innerText = ""
+    }
     if (! window.inboxActive){
         return
     }

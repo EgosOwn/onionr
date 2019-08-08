@@ -104,7 +104,10 @@ def daemon():
     localcommand.local_command('shutdown')
 
     net.killTor()
-    time.sleep(5) # Time to allow threads to finish, if not any "daemon" threads will be slaughtered http://docs.python.org/library/threading.html#threading.Thread.daemon
+    try:
+        time.sleep(5) # Time to allow threads to finish, if not any "daemon" threads will be slaughtered http://docs.python.org/library/threading.html#threading.Thread.daemon
+    except KeyboardInterrupt:
+        pass
     cleanup.delete_run_files()
 
 def _ignore_sigint(sig, frame):

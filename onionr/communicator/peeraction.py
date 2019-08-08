@@ -22,15 +22,13 @@ import logger
 from onionrutils import epoch, basicrequests
 from coredb import keydb
 from . import onlinepeers
+
 def peer_action(comm_inst, peer, action, returnHeaders=False, max_resp_size=5242880):
     '''Perform a get request to a peer'''
     penalty_score = -10
     if len(peer) == 0:
         return False
     url = 'http://%s/%s' % (peer, action)
-
-    # mark the time we're trying to request this peer
-    keydb.transportinfo.set_address_info(peer, 'lastConnectAttempt', epoch.get_epoch())
 
     try:
         ret_data = basicrequests.do_get_request(url, port=comm_inst.proxyPort,
@@ -44,6 +42,7 @@ def peer_action(comm_inst, peer, action, returnHeaders=False, max_resp_size=5242
         try:
             comm_inst.getPeerProfileInstance(peer).addScore(penalty_score)
             onlinepeers.remove_online_peer(comm_inst, peer)
+            keydb.transportinfo.set_address_info(peer, 'lastConnectAttempt', epoch.get_epoch())
             if action != 'ping' and not comm_inst.shutdown:
                 logger.warn('Lost connection to ' + peer, terminal=True)
                 onlinepeers.get_online_peers(comm_inst) # Will only add a new peer to pool if needed
