@@ -22,9 +22,10 @@
 import logger, config, threading, time, datetime
 from onionrblockapi import Block
 import onionrexceptions
-from onionrusers import onionrusers
+from onionrusers import onionrusers, contactmanager
 from utils import reconstructhash
 from onionrutils import stringvalidators, escapeansi, bytesconverter
+import notifier
 import locale, sys, os, json
 
 locale.setlocale(locale.LC_ALL, '')
@@ -52,13 +53,20 @@ def on_insertblock(api, data={}):
         sentboxTools = sentboxdb.SentBox()
         sentboxTools.addToSent(data['hash'], data['peer'], data['content'], meta['subject'])
 
-def on_init(api, data = None):
-    '''
-        This event is called after Onionr is initialized, but before the command
-        inputted is executed. Could be called when daemon is starting or when
-        just the client is running.
-    '''
+def on_processblocks(api, data=None):
+    if data['type'] != 'pm':
+        return
+    data['block'].decrypt()
+    metadata = data['block'].bmetadata # Get the block metadata
 
-    pluginapi = api
+    signer = bytesconverter.bytes_to_str(data['block'].signer)
+    user = contactmanager.ContactManager(signer, saveUser=False)
+    name = user.get_info("name")
+    if name != 'anonymous':
+        signer = name.title()
+    else:
+        signer = signer[:5]
 
-    return
+    if data['block'].decrypted:
+        notifier.notify(title="Onionr Mail - New Message",
+                       message="From: %s\n\nSubject: %s" % (signer, metadata['subject']))

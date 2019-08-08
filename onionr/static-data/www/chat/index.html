@@ -12,6 +12,10 @@
     <link rel="stylesheet" href="/shared/main/bulma.min.css">
     <link rel="stylesheet" href="/shared/main/styles-new.css">
     <link rel="stylesheet" href="/chat/css/convos.css">
+    <script defer src='/shared/navbar.js'></script>
+    <script defer src='/shared/misc.js'></script>
+    <script defer src='/chat/js/message-feed.js'></script>
+    <script defer src='/chat/js/main.js'></script>
 </head>
 
 <body>
@@ -56,7 +60,6 @@
                     </div>
                     <div class="column is-7">
                         <div class="field">
-                            <label class="label">Open Site</label>
                             <div class="field has-addons">
                                 <p class="control">
                                     <a class="button is-static">Identity</a>
@@ -73,21 +76,16 @@
                 </div>
             </div>
         </div>
-        </div>
     </section>
 
     <br>
 
     <div class="columns chatContent">
-        <div class="column has-background-dark has-text-light is-one-fifths content convoListContainer">
+        <div class="column has-background-grey-dark has-text-light is-one-fifths content convoListContainer">
             <ul class='conversationList'></ul>
         </div>
-        <div class="column chatBox has-text-dark has-background-dark is-four-fifths">yeet</div>
+        <div class="column chatBox has-text-light has-background-dark is-four-fifths">yeet</div>
     </div>
-    
-    <script src='/shared/navbar.js'></script>
-    <script src='/shared/misc.js'></script>
-    <script src='/chat/js/main.js'></script>
 </body>
 
 </html>

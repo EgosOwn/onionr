@@ -43,7 +43,7 @@ def show_stats():
 
             # count stats
             'div2' : True,
-            'Known Peers' : str(max(len(keydb.listkeys.list_peers()) - 1, 0)),
+            'Known Peers (nodes)' : str(max(len(keydb.listkeys.list_adders()) - 1, 0)),
             'Enabled Plugins' : str(len(config.get('plugins.enabled', list()))) + ' / ' + str(len(os.listdir(home + 'plugins/'))),
             'Stored Blocks' : str(totalBlocks),
             'Percent Blocks Signed' : str(round(100 * signedBlocks / max(totalBlocks, 1), 2)) + '%'
@@ -95,23 +95,3 @@ def show_details():
 
     for detail in details:
         logger.info('%s%s: \n%s%s\n' % (logger.colors.fg.lightgreen, detail, logger.colors.fg.green, details[detail]), terminal = True)
-
-def show_peers(o_inst):
-    randID = str(uuid.uuid4())
-    daemonqueue.daemon_queue_add('connectedPeers', responseID=randID)
-    while True:
-        try:
-            time.sleep(3)
-            peers = daemonqueue.daemon_queue_get_response(randID)
-        except KeyboardInterrupt:
-            break
-        if not type(peers) is None:
-            if peers not in ('', 'failure', None):
-                if peers != False:
-                    if peers == 'none':
-                        print('No current outgoing connections.')
-                    else:
-                        logger.info('Peers: %s' % peers)
-                else:
-                    logger.warn('Daemon probably not running. Unable to list connected peers.')
-                break
