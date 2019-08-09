@@ -1,7 +1,7 @@
 /*
     Onionr - Private P2P Communication
 
-    This file manages chat messages in the chat UI
+    Onionr chat message objects
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -16,9 +16,11 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>
 */
-let MessageCache = class {
-    constructor(user) {
-        this.user = user
-        this.cache = [] // array of Messages
+
+let Message = class {
+    constructor(text, to, time){
+        this.text = text // string
+        this.to = to // bool. False = not outgoing
+        this.time = time // epoch int
     }
 }

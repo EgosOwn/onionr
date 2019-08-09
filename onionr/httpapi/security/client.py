@@ -54,7 +54,7 @@ class ClientAPISecurity:
         def after_req(resp):
             # Security headers
             resp = httpheaders.set_default_onionr_http_headers(resp)
-            if request.endpoint == 'site':
+            if request.endpoint == 'siteapi.site':
                 resp.headers['Content-Security-Policy'] = "default-src 'none'; style-src data: 'unsafe-inline'; img-src data:"
             else:
                 resp.headers['Content-Security-Policy'] = "default-src 'none'; script-src 'self'; object-src 'none'; style-src 'self'; img-src 'self'; media-src 'none'; frame-src 'none'; font-src 'none'; connect-src 'self'"

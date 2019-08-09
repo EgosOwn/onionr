@@ -1,7 +1,7 @@
 '''
     Onionr - Private P2P Communication
 
-    Instant message conversations with Onionr peers
+    Search engine plugin for Onionr, to search for 
 '''
 '''
     This program is free software: you can redistribute it and/or modify
@@ -18,21 +18,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 
-# Imports some useful libraries
-import locale, sys, os, threading, json
-locale.setlocale(locale.LC_ALL, '')
-import onionrservices, logger, config
-from onionrservices import bootstrapservice
-from onionrutils import stringvalidators, epoch, basicrequests
 
-plugin_name = 'chat'
-PLUGIN_VERSION = '0.0.0'
-sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
-import controlapi, peerserver
-flask_blueprint = controlapi.flask_blueprint
-direct_blueprint = peerserver.direct_blueprint
+plugin_name = 'searchengine'
 
-def exit_with_error(text=''):
-    if text != '':
-        logger.error(text)
-    sys.exit(1)
+

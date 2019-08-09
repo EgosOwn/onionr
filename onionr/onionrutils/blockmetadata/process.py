@@ -1,7 +1,7 @@
 '''
     Onionr - Private P2P Communication
 
-    Module to fetch block metadata from raw block data and process it
+    Process block metadata with relevant actions
 '''
 '''
     This program is free software: you can redistribute it and/or modify
@@ -17,45 +17,19 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import json, sqlite3
-import logger, onionrevents
-from onionrusers import onionrusers
+
 from etc import onionrvalues
 import onionrblockapi
-from . import epoch, stringvalidators, bytesconverter
-from coredb import dbfiles, blockmetadb
-def get_block_metadata_from_data(blockData):
-    '''
-        accepts block contents as string, returns a tuple of 
-        metadata, meta (meta being internal metadata, which will be 
-        returned as an encrypted base64 string if it is encrypted, dict if not).
-    '''
-    meta = {}
-    metadata = {}
-    data = blockData
-    try:
-        blockData = blockData.encode()
-    except AttributeError:
-        pass
+from .. import epoch, bytesconverter
+from coredb import blockmetadb
+import logger
+import onionrevents
 
-    try:
-        metadata = json.loads(blockData[:blockData.find(b'\n')].decode())
-    except json.decoder.JSONDecodeError:
-        pass
-    else:
-        data = blockData[blockData.find(b'\n'):].decode()
-
-        if not metadata['encryptType'] in ('asym', 'sym'):
-            try:
-                meta = json.loads(metadata['meta'])
-            except KeyError:
-                pass
-        meta = metadata['meta']
-    return (metadata, meta, data)
-
-def process_block_metadata(blockHash):
+def process_block_metadata(blockHash: str):
     '''
         Read metadata from a block and cache it to the block database
+        
+        blockHash -> sha3_256 hex formatted hash of Onionr block
     '''
     curTime = epoch.get_rounded_epoch(roundS=60)
     myBlock = onionrblockapi.Block(blockHash)
@@ -67,10 +41,13 @@ def process_block_metadata(blockHash):
         signer = bytesconverter.bytes_to_str(myBlock.signer)
         valid = myBlock.verifySig()
         if myBlock.getMetadata('newFSKey') is not None:
-            onionrusers.OnionrUser(signer).addForwardKey(myBlock.getMetadata('newFSKey'))
+            try:
+                onionrusers.OnionrUser(signer).addForwardKey(myBlock.getMetadata('newFSKey'))
+            except onionrexceptions.InvalidPubkey:
+                logger.warn('%s has invalid forward secrecy key to add: %s' % (signer, myBlock.getMetadata('newFSKey')))
             
         try:
-            if len(blockType) <= 10:
+            if len(blockType) <= onionrvalues.MAX_BLOCK_TYPE_LENGTH:
                 blockmetadb.update_block_info(blockHash, 'dataType', blockType)
         except TypeError:
             logger.warn("Missing block information")
@@ -83,27 +60,4 @@ def process_block_metadata(blockHash):
             expireTime = onionrvalues.OnionrValues().default_expire + curTime
         finally:
             blockmetadb.update_block_info(blockHash, 'expire', expireTime)
-        if not blockType is None:
-            blockmetadb.update_block_info(blockHash, 'dataType', blockType)
         onionrevents.event('processblocks', data = {'block': myBlock, 'type': blockType, 'signer': signer, 'validSig': valid})
-    else:
-        pass
-
-def has_block(hash):
-    '''
-        Check for new block in the list
-    '''
-    conn = sqlite3.connect(dbfiles.block_meta_db)
-    c = conn.cursor()
-    if not stringvalidators.validate_hash(hash):
-        raise Exception("Invalid hash")
-    for result in c.execute("SELECT COUNT() FROM hashes WHERE hash = ?", (hash,)):
-        if result[0] >= 1:
-            conn.commit()
-            conn.close()
-            return True
-        else:
-            conn.commit()
-            conn.close()
-            return False
-    return False

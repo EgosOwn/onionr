@@ -42,11 +42,11 @@ def add_file(singleBlock=False, blockType='bin'):
         logger.info('Adding file... this might take a long time.', terminal=True)
         try:
             with open(filename, 'rb') as singleFile:
-                blockhash = insert.insert_block(base64.b64encode(singleFile.read()), header=blockType)
+                blockhash = insert(base64.b64encode(singleFile.read()), header=blockType)
             if len(blockhash) > 0:
                 logger.info('File %s saved in block %s' % (filename, blockhash), terminal=True)
-        except:
-            logger.error('Failed to save file in block.', timestamp = False, terminal=True)
+        except Exception as e:
+            logger.error('Failed to save file in block ' + str(e), timestamp = False, terminal=True)
     else:
         logger.error('%s add-file <filename>' % sys.argv[0], timestamp = False, terminal=True)
 

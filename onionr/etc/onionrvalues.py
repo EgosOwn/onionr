@@ -27,6 +27,8 @@ API_VERSION = '0' # increments of 1; only change when something fundamental abou
 MIN_PY_VERSION = 6
 DEVELOPMENT_MODE = True
 
+MAX_BLOCK_TYPE_LENGTH = 15
+
 platform = platform.system()
 if platform == 'Windows':
     SCRIPT_NAME = 'run-windows.bat'
