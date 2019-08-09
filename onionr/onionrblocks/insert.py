@@ -13,7 +13,6 @@ def insert_block(data, header='txt', sign=False, encryptType='', symKey='', asym
         encryptType must be specified to encrypt a block
     '''
     use_subprocess = powchoice.use_subprocess(config)
-    requirements = onionrvalues.OnionrValues()
     storage_counter = storagecounter.StorageCounter()
     allocationReachedMessage = 'Cannot insert block, disk allocation reached.'
     if storage_counter.isFull():

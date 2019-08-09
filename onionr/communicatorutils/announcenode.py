@@ -27,9 +27,8 @@ from communicator import onlinepeers
 from coredb import keydb
 def announce_node(daemon):
     '''Announce our node to our peers'''
-    ov = onionrvalues.OnionrValues()
-    retData = False
-    announceFail = False
+    ret_data = False
+    announce_fail = False
     
     # Do not let announceCache get too large
     if len(daemon.announceCache) >= 10000:
@@ -57,7 +56,7 @@ def announce_node(daemon):
             if ourID != 1:
                 existingRand = bytesconverter.bytes_to_str(keydb.transportinfo.get_address_info(peer, 'powValue'))
                 # Reset existingRand if it no longer meets the minimum POW
-                if type(existingRand) is type(None) or not existingRand.endswith('0' * ov.announce_pow):
+                if type(existingRand) is type(None) or not existingRand.endswith('0' * onionrvalues.ANNOUNCE_POW):
                     existingRand = ''
 
             if peer in daemon.announceCache:
@@ -66,22 +65,22 @@ def announce_node(daemon):
                 data['random'] = existingRand
             else:
                 daemon.announceProgress[peer] = True
-                proof = onionrproofs.DataPOW(combinedNodes, forceDifficulty=ov.announce_pow)
+                proof = onionrproofs.DataPOW(combinedNodes, forceDifficulty=onionrvalues.ANNOUNCE_POW)
                 del daemon.announceProgress[peer]
                 try:
                     data['random'] = base64.b64encode(proof.waitForResult()[1])
                 except TypeError:
                     # Happens when we failed to produce a proof
                     logger.error("Failed to produce a pow for announcing to " + peer)
-                    announceFail = True
+                    announce_fail = True
                 else:
                     daemon.announceCache[peer] = data['random']
-            if not announceFail:
+            if not announce_fail:
                 logger.info('Announcing node to ' + url)
                 if basicrequests.do_post_request(url, data, port=daemon.shared_state.get(NetController).socksPort) == 'Success':
                     logger.info('Successfully introduced node to ' + peer, terminal=True)
-                    retData = True
+                    ret_data = True
                     keydb.transportinfo.set_address_info(peer, 'introduced', 1)
                     keydb.transportinfo.set_address_info(peer, 'powValue', data['random'])
     daemon.decrementThreadCount('announce_node')
-    return retData
+    return ret_data

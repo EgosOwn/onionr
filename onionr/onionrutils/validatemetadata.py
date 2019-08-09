@@ -24,9 +24,8 @@ from onionrutils import stringvalidators, epoch, bytesconverter
 import config, filepaths, onionrcrypto
 def validate_metadata(metadata, blockData):
     '''Validate metadata meets onionr spec (does not validate proof value computation), take in either dictionary or json string'''
-    # TODO, make this check sane sizes
-    requirements = onionrvalues.OnionrValues()
-    retData = False
+
+    ret_data = False
     maxClockDifference = 120
 
     # convert to dict if it is json string
@@ -37,11 +36,11 @@ def validate_metadata(metadata, blockData):
             pass
 
     # Validate metadata dict for invalid keys to sizes that are too large
-    maxAge = config.get("general.max_block_age", onionrvalues.OnionrValues().default_expire)
+    maxAge = config.get("general.max_block_age", onionrvalues.DEFAULT_EXPIRE)
     if type(metadata) is dict:
         for i in metadata:
             try:
-                requirements.blockMetadataLengths[i]
+                onionrvalues.BLOCK_METADATA_LENGTHS[i]
             except KeyError:
                 logger.warn('Block has invalid metadata key ' + i)
                 break
@@ -51,7 +50,7 @@ def validate_metadata(metadata, blockData):
                     testData = len(testData)
                 except (TypeError, AttributeError) as e:
                     testData = len(str(testData))
-                if requirements.blockMetadataLengths[i] < testData:
+                if onionrvalues.BLOCK_METADATA_LENGTHS[i] < testData:
                     logger.warn('Block metadata key ' + i + ' exceeded maximum size')
                     break
             if i == 'time':
@@ -84,16 +83,16 @@ def validate_metadata(metadata, blockData):
             try:
                 with open(filepaths.data_nonce_file, 'r') as nonceFile:
                     if nonce in nonceFile.read():
-                        retData = False # we've seen that nonce before, so we can't pass metadata
+                        ret_data = False # we've seen that nonce before, so we can't pass metadata
                         raise onionrexceptions.DataExists
             except FileNotFoundError:
-                retData = True
+                ret_data = True
             except onionrexceptions.DataExists:
-                # do not set retData to True, because nonce has been seen before
+                # do not set ret_data to True, because nonce has been seen before
                 pass
             else:
-                retData = True
+                ret_data = True
     else:
         logger.warn('In call to utils.validateMetadata, metadata must be JSON string or a dictionary object')
 
-    return retData
+    return ret_data

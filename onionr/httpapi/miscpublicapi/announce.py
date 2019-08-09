@@ -55,7 +55,7 @@ def handle_announce(request):
                 powHash = powHash.decode()
             except AttributeError:
                 pass
-            if powHash.startswith('0' * onionrvalues.OnionrValues().announce_pow):
+            if powHash.startswith('0' * onionrvalues.ANNOUNCE_POW):
                 newNode = bytesconverter.bytes_to_str(newNode)
                 announce_queue = deadsimplekv.DeadSimpleKV(filepaths.announce_cache)
                 announce_queue_list = announce_queue.get('new_peers')

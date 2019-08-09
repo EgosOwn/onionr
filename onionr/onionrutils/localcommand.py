@@ -59,12 +59,12 @@ def local_command(command, data='', silent = True, post=False, postData = {}, ma
 
     try:
         if post:
-            retData = requests.post(payload, data=postData, headers={'token': config.get('client.webpassword'), 'Connection':'close'}, timeout=(maxWait, maxWait)).text
+            ret_data = requests.post(payload, data=postData, headers={'token': config.get('client.webpassword'), 'Connection':'close'}, timeout=(maxWait, maxWait)).text
         else:
-            retData = requests.get(payload, headers={'token': config.get('client.webpassword'), 'Connection':'close'}, timeout=(maxWait, maxWait)).text
+            ret_data = requests.get(payload, headers={'token': config.get('client.webpassword'), 'Connection':'close'}, timeout=(maxWait, maxWait)).text
     except Exception as error:
         if not silent:
             logger.error('Failed to make local request (command: %s):%s' % (command, error), terminal=True)
-        retData = False
+        ret_data = False
 
-    return retData
+    return ret_data
