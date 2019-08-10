@@ -9,4 +9,5 @@ def read_static(file, ret_bin=False):
     else:
         mode = 'r'
     with open(static_file, mode) as f:
-        return f.read()
+        data = f.read()
+    return data

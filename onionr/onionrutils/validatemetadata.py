@@ -22,11 +22,11 @@ import logger, onionrexceptions
 from etc import onionrvalues
 from onionrutils import stringvalidators, epoch, bytesconverter
 import config, filepaths, onionrcrypto
-def validate_metadata(metadata, blockData):
+def validate_metadata(metadata, block_data) -> bool:
     '''Validate metadata meets onionr spec (does not validate proof value computation), take in either dictionary or json string'''
 
     ret_data = False
-    maxClockDifference = 120
+    max_clock_difference = onionrvalues.MAX_BLOCK_CLOCK_SKEW
 
     # convert to dict if it is json string
     if type(metadata) is str:
@@ -36,7 +36,7 @@ def validate_metadata(metadata, blockData):
             pass
 
     # Validate metadata dict for invalid keys to sizes that are too large
-    maxAge = config.get("general.max_block_age", onionrvalues.DEFAULT_EXPIRE)
+    maxAge = min(config.get("general.max_block_age", onionrvalues.DEFAULT_EXPIRE), onionrvalues.DEFAULT_EXPIRE)
     if type(metadata) is dict:
         for i in metadata:
             try:
@@ -58,8 +58,8 @@ def validate_metadata(metadata, blockData):
                     logger.warn('Block metadata time stamp is not integer string or int')
                     break
                 isFuture = (metadata[i] - epoch.get_epoch())
-                if isFuture > maxClockDifference:
-                    logger.warn('Block timestamp is skewed to the future over the max %s: %s' (maxClockDifference, isFuture))
+                if isFuture > max_clock_difference:
+                    logger.warn('Block timestamp is skewed to the future over the max %s: %s' (max_clock_difference, isFuture))
                     break
                 if (epoch.get_epoch() - metadata[i]) > maxAge:
                     logger.warn('Block is outdated: %s' % (metadata[i],))
@@ -79,7 +79,7 @@ def validate_metadata(metadata, blockData):
         else:
             # if metadata loop gets no errors, it does not break, therefore metadata is valid
             # make sure we do not have another block with the same data content (prevent data duplication and replay attacks)
-            nonce = bytesconverter.bytes_to_str(onionrcrypto.hashers.sha3_hash(blockData))
+            nonce = bytesconverter.bytes_to_str(onionrcrypto.hashers.sha3_hash(block_data))
             try:
                 with open(filepaths.data_nonce_file, 'r') as nonceFile:
                     if nonce in nonceFile.read():

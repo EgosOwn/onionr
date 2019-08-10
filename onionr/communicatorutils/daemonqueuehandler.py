@@ -22,6 +22,7 @@ import onionrevents as events
 from onionrutils import localcommand
 from coredb import daemonqueue
 import filepaths
+from . import restarttor
 def handle_daemon_commands(comm_inst):
     cmd = daemonqueue.daemon_queue()
     response = ''
@@ -43,6 +44,11 @@ def handle_daemon_commands(comm_inst):
                 response = 'none'
         elif cmd[0] == 'localCommand':
             response = localcommand.local_command(cmd[1])
+        elif cmd[0] == 'clearOffline':
+            comm_inst.offlinePeers = []
+        elif cmd[0] == 'restartTor':
+            restarttor.restart(comm_inst)
+            comm_inst.offlinePeers = []
         elif cmd[0] == 'pex':
             for i in comm_inst.timers:
                 if i.timerFunction.__name__ == 'lookupAdders':

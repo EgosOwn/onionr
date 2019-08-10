@@ -21,6 +21,7 @@
 import logger
 from utils import netutils
 from onionrutils import localcommand, epoch
+from . import restarttor
 def net_check(comm_inst):
     '''Check if we are connected to the internet or not when we can't connect to any peers'''
     rec = False # for detecting if we have received incoming connections recently
@@ -33,7 +34,9 @@ def net_check(comm_inst):
             pass
         if not rec and not netutils.checkNetwork(torPort=comm_inst.proxyPort):
             if not comm_inst.shutdown:
-                logger.warn('Network check failed, are you connected to the Internet, and is Tor working?')
+                logger.warn('Network check failed, are you connected to the Internet, and is Tor working?', terminal=True)
+                restarttor.restart(comm_inst)
+                comm_inst.offlinePeers = []
             comm_inst.isOnline = False
         else:
             comm_inst.isOnline = True

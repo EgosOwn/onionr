@@ -138,7 +138,7 @@ class OnionrCommunicatorDaemon:
             deniableBlockTimer.count = (deniableBlockTimer.frequency - 175)
 
         # Timer to check for connectivity, through Tor to various high-profile onion services
-        netCheckTimer = OnionrCommunicatorTimers(self, netcheck.net_check, 600, myArgs=[self])
+        netCheckTimer = OnionrCommunicatorTimers(self, netcheck.net_check, 500, myArgs=[self], maxThreads=1)
 
         # Announce the public API server transport address to other nodes if security level allows
         if config.get('general.security_level', 1) == 0 and config.get('general.announce_node', True):
@@ -185,7 +185,10 @@ class OnionrCommunicatorDaemon:
             for server in self.service_greenlets:
                 server.stop()
         localcommand.local_command('shutdown') # shutdown the api
-        time.sleep(0.5)
+        try:
+            time.sleep(0.5)
+        except KeyboardInterrupt:
+            pass
 
     def lookupAdders(self):
         '''Lookup new peer addresses'''

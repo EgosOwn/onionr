@@ -26,8 +26,8 @@ ONIONR_VERSION_TUPLE = tuple(ONIONR_VERSION.split('.')) # (MAJOR, MINOR, VERSION
 API_VERSION = '0' # increments of 1; only change when something fundamental about how the API works changes. This way other nodes know how to communicate without learning too much information about you.
 MIN_PY_VERSION = 6
 DEVELOPMENT_MODE = True
-
 MAX_BLOCK_TYPE_LENGTH = 15
+MAX_BLOCK_CLOCK_SKEW = 120
 
 # Begin OnionrValues migrated values
 ANNOUNCE_POW = 5

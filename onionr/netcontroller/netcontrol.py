@@ -88,12 +88,12 @@ HiddenServicePort 80 ''' + self.apiServerIP + ''':''' + str(self.hsPort)
         torrc.close()
         return
 
-    def startTor(self):
+    def startTor(self, gen_torrc=True):
         '''
             Start Tor with onion service on port 80 & socks proxy on random port
         '''
-
-        self.generateTorrc()
+        if gen_torrc:
+            self.generateTorrc()
 
         if os.path.exists('./tor'):
             self.torBinary = './tor'

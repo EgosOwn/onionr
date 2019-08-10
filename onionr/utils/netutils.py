@@ -18,13 +18,14 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 from onionrutils import basicrequests
+from . import readstatic
+from onionrcrypto import cryptoutils
 def checkNetwork(torPort=0):
     '''Check if we are connected to the internet (through Tor)'''
     retData = False
     connectURLs = []
     try:
-        with open('static-data/connect-check.txt', 'r') as connectTest:
-            connectURLs = connectTest.read().split(',')
+        connectURLs = cryptoutils.random_shuffle(readstatic.read_static('connect-check.txt').split(','))
 
         for url in connectURLs:
             if basicrequests.do_get_request(url, port=torPort, ignoreAPI=True) != False:
