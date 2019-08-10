@@ -24,6 +24,8 @@ from .. import epoch, bytesconverter
 from coredb import blockmetadb
 import logger
 import onionrevents
+import onionrexceptions
+from onionrusers import onionrusers
 
 def process_block_metadata(blockHash: str):
     '''
