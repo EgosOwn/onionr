@@ -84,6 +84,9 @@ HashedControlPassword ''' + str(password) + '''
         if config.get('general.security_level', 1) == 0:
             torrcData += '''\nHiddenServiceDir ''' + self.dataDir + '''hs/
 \n''' + hsVer + '''\n
+HiddenServiceNumIntroductionPoints 6
+HiddenServiceMaxStreams 100
+HiddenServiceMaxStreamsCloseCircuit 1
 HiddenServicePort 80 ''' + self.apiServerIP + ''':''' + str(self.hsPort)
 
         torrc = open(self.torConfigLocation, 'w')
