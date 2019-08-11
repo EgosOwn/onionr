@@ -92,6 +92,12 @@ The following applies to Ubuntu Bionic. Other distros may have different package
 
 (--require-hashes is intended to prevent exploitation via compromise of PyPi/CA certificates)
 
+## Run Onionr
+
+* Run Onionr normally:  `$ ./onionr.sh start`
+* Run Onionr in background as daemon: `$ ./start-daemon.sh`
+* Open Onionr web interface  `$ ./onionr.sh openhome`
+
 # Help out
 
 Everyone is welcome to contribute. Help is wanted for the following:
