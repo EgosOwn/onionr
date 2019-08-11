@@ -4,4 +4,4 @@ set ONIONR_HOME=data%random%
 echo Using profile: %ONIONR_HOME%
 setlocal
 chdir onionr
-python onionr.py %*
+python __init__.py %*
