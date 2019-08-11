@@ -50,11 +50,11 @@ Currently usable:
 * Public anonymous chat
 * Simple webpage hosting - Will be greatly extended
 * File sharing (Work in progress)
+* Simple Message board
 
 Not yet usable:
 
 * Instant messaging
-* Forum/BBS
 
 **Onionr API and functionality is subject to non-backwards compatible change during pre-alpha development**
 
