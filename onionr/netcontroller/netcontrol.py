@@ -75,6 +75,8 @@ class NetController:
         torrcData = '''SocksPort ''' + str(self.socksPort) + ''' OnionTrafficOnly
 DataDirectory ''' + self.dataDir + '''tordata/
 CookieAuthentication 1
+KeepalivePeriod 40
+CircuitsAvailableTimeout 86400
 ControlPort ''' + str(controlPort) + '''
 HashedControlPassword ''' + str(password) + '''
         '''
