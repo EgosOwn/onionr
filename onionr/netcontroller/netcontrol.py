@@ -17,11 +17,12 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import os, sys, base64, subprocess, signal
+import os, sys, base64, subprocess, signal, time
 import config, logger
 from . import getopenport
 from utils import identifyhome
 config.reload()
+TOR_KILL_WAIT = 3
 class NetController:
     '''
         This class handles hidden service setup on Tor and I2P
@@ -179,5 +180,8 @@ HiddenServicePort 80 ''' + self.apiServerIP + ''':''' + str(self.hsPort)
             pass
         except FileNotFoundError:
             pass
-
-        return
+        time.sleep(TOR_KILL_WAIT)
+        try:
+            os.kill(int(pidN), signal.SIGKILL)
+        except (ProcessLookupError, PermissionError) as e:
+            pass
