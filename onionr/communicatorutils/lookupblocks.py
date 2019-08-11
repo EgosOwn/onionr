@@ -89,5 +89,5 @@ def lookup_blocks_from_communicator(comm_inst):
         if new_block_count > 1:
             block_string = "s"
         logger.info('Discovered %s new block%s' % (new_block_count, block_string), terminal=True)
-    comm_inst.decrementThreadCount('lookupBlocks')
+    comm_inst.decrementThreadCount('lookup_blocks_from_communicator')
     return

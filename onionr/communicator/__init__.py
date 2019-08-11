@@ -102,7 +102,7 @@ class OnionrCommunicatorDaemon:
         OnionrCommunicatorTimers(self, self.runCheck, 2, maxThreads=1)
 
         # Timers to periodically lookup new blocks and download them
-        OnionrCommunicatorTimers(self, self.lookupBlocks, config.get('timers.lookupBlocks', 25), requiresPeer=True, maxThreads=1)
+        OnionrCommunicatorTimers(self, lookupblocks.lookup_blocks_from_communicator, config.get('timers.lookupBlocks', 25), myArgs=[self], requiresPeer=True, maxThreads=1)
         OnionrCommunicatorTimers(self, self.getBlocks, config.get('timers.getBlocks', 30), requiresPeer=True, maxThreads=2)
 
         # Timer to reset the longest offline peer so contact can be attempted again
@@ -112,7 +112,7 @@ class OnionrCommunicatorDaemon:
         blockCleanupTimer = OnionrCommunicatorTimers(self, housekeeping.clean_old_blocks, 65, myArgs=[self])
 
         # Timer to discover new peers
-        OnionrCommunicatorTimers(self, self.lookupAdders, 60, requiresPeer=True)
+        OnionrCommunicatorTimers(self, lookupadders.lookup_new_peer_transports_with_communicator, 60, requiresPeer=True, myArgs=[self], maxThreads=2)
 
         # Timer for adjusting which peers we actively communicate to at any given time, to avoid over-using peers
         OnionrCommunicatorTimers(self, cooldownpeer.cooldown_peer, 30, myArgs=[self], requiresPeer=True)
@@ -189,14 +189,6 @@ class OnionrCommunicatorDaemon:
             time.sleep(0.5)
         except KeyboardInterrupt:
             pass
-
-    def lookupAdders(self):
-        '''Lookup new peer addresses'''
-        lookupadders.lookup_new_peer_transports_with_communicator(self)
-
-    def lookupBlocks(self):
-        '''Lookup new blocks & add them to download queue'''
-        lookupblocks.lookup_blocks_from_communicator(self)
 
     def getBlocks(self):
         '''download new blocks in queue'''

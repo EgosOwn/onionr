@@ -49,4 +49,4 @@ def lookup_new_peer_transports_with_communicator(comm_inst):
         for x in invalid:
             newPeers.remove(x)
         comm_inst.newPeers.extend(newPeers)
-    comm_inst.decrementThreadCount('lookupAdders')
+    comm_inst.decrementThreadCount('lookup_new_peer_transports_with_communicator')
