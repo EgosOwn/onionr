@@ -45,9 +45,13 @@ def upload_blocks_from_communicator(comm_inst):
                 data = {'block': block.Block(bl).getRaw()}
                 proxyType = proxypicker.pick_proxy(peer)
                 logger.info("Uploading block to " + peer, terminal=True)
-                if not basicrequests.do_post_request(url, data=data, proxyType=proxyType) == False:
-                    localcommand.local_command('waitforshare/' + bl, post=True)
-                    finishedUploads.append(bl)
+                resp = basicrequests.do_post_request(url, data=data, proxyType=proxyType)
+                if not resp == False:
+                    if resp == 'success':
+                        localcommand.local_command('waitforshare/' + bl, post=True)
+                        finishedUploads.append(bl)
+                    elif resp == 'exists':
+                        finishedUploads.append(bl)
     for x in finishedUploads:
         try:
             comm_inst.blocksToUpload.remove(x)

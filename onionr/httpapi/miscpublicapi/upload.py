@@ -33,10 +33,13 @@ def accept_upload(request):
                 if blockimporter.importBlockFromData(data):
                     resp = 'success'
                 else:
+                    resp = 'failure'
                     logger.warn('Error encountered importing uploaded block')
             except onionrexceptions.BlacklistedBlock:
                 logger.debug('uploaded block is blacklisted')
-                pass
+                resp = 'failure'
+            except onionrexceptions.DataExists:
+                resp = 'exists'
     if resp == 'failure':
         abort(400)
     resp = Response(resp)

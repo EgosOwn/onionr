@@ -44,7 +44,7 @@ def importBlockFromData(content):
             try:
                 blockHash = onionrstorage.set_data(content)
             except onionrexceptions.DiskAllocationReached:
-                pass
+                logger.warn('Failed to save block due to full disk allocation')
             else:
                 blockmetadb.add_to_block_DB(blockHash, dataSaved=True)
                 blockmetadata.process_block_metadata(blockHash) # caches block metadata values to block database

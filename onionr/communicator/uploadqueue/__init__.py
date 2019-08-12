@@ -38,11 +38,13 @@ class UploadQueue:
     '''
 
     def __init__(self, communicator: 'OnionrCommunicatorDaemon'):
+        '''Start the UploadQueue object, loading left over uploads into queue 
+        and registering save shutdown function
+        '''
         self.communicator = communicator
         cache = deadsimplekv.DeadSimpleKV(UPLOAD_MEMORY_FILE)
         self.store_obj = cache
         cache: list = cache.get('uploads')
-
         if cache == None:
             cache = []
         
@@ -52,7 +54,7 @@ class UploadQueue:
         atexit.register(self.save)
 
     def save(self):
+        '''Saves to disk on shutdown or if called manually'''
         bl: list = self.communicator.blocksToUpload
-        if len(bl) > 0:
-            self.store_obj.put('uploads', bl)
-            self.store_obj.flush()
+        self.store_obj.put('uploads', bl)
+        self.store_obj.flush()
