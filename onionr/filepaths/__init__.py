@@ -13,6 +13,7 @@ forward_keys_file = home + 'forward-keys.db'
 cached_storage = home + 'cachedstorage.dat'
 announce_cache = home + 'announcecache.dat'
 export_location = home + 'block-export/'
+upload_list = home + 'upload-list.json'
 
 tor_hs_address_file = home + 'hs/hostname'
 

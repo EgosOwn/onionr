@@ -21,7 +21,7 @@
 import sys, os, time
 import config, logger
 import onionrexceptions, onionrpeers, onionrevents as events, onionrplugins as plugins, onionrblockapi as block
-from . import onlinepeers
+from . import onlinepeers, uploadqueue
 from communicatorutils import servicecreator, onionrcommunicatortimers
 from communicatorutils import downloadblocks, lookupblocks, lookupadders
 from communicatorutils import servicecreator, connectnewpeers, uploadblocks
@@ -92,6 +92,8 @@ class OnionrCommunicatorDaemon:
 
         # time app started running for info/statistics purposes
         self.startTime = epoch.get_epoch()
+
+        uploadqueue.UploadQueue(self) # extends our upload list and saves our list when Onionr exits
 
         if developmentMode:
             OnionrCommunicatorTimers(self, self.heartbeat, 30)
