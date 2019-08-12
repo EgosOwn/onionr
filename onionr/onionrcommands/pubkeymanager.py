@@ -39,8 +39,11 @@ def add_ID():
         logger.warn('Deterministic keys require random and long passphrases.', terminal=True)
         logger.warn('If a good passphrase is not used, your key can be easily stolen.', terminal=True)
         logger.warn('You should use a series of hard to guess words, see this for reference: https://www.xkcd.com/936/', terminal=True)
-        pass1 = getpass.getpass(prompt='Enter at least %s characters: ' % (DETERMINISTIC_REQUIREMENT,))
-        pass2 = getpass.getpass(prompt='Confirm entry: ')
+        try:
+            pass1 = getpass.getpass(prompt='Enter at least %s characters: ' % (DETERMINISTIC_REQUIREMENT,))
+            pass2 = getpass.getpass(prompt='Confirm entry: ')
+        except KeyboardInterrupt:
+            sys.exit(42)
         if onionrcrypto.cryptoutils.safe_compare(pass1, pass2):
             try:
                 logger.info('Generating deterministic key. This can take a while.', terminal=True)
