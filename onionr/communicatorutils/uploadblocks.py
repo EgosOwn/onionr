@@ -44,7 +44,7 @@ def upload_blocks_from_communicator(comm_inst):
                 url = 'http://' + peer + '/upload'
                 data = {'block': block.Block(bl).getRaw()}
                 proxyType = proxypicker.pick_proxy(peer)
-                logger.info("Uploading block to " + peer, terminal=True)
+                logger.info("Uploading block %s to %s" % (bl[:8], peer), terminal=True)
                 resp = basicrequests.do_post_request(url, data=data, proxyType=proxyType)
                 if not resp == False:
                     if resp == 'success':
