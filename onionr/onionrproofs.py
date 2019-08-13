@@ -114,9 +114,6 @@ class DataPOW:
         self.hashing = True
         self.reporting = reporting
         iFound = False # if current thread is the one that found the answer
-        answer = ''
-        heartbeat = 200000
-        hbCount = 0
         
         while self.hashing:
             rand = nacl.utils.random()
@@ -208,10 +205,7 @@ class POW:
         self.hashing = True
         self.reporting = reporting
         iFound = False # if current thread is the one that found the answer
-        answer = ''
-        hbCount = 0
         nonce = int(binascii.hexlify(nacl.utils.random(64)), 16)
-        startNonce = nonce
         while self.hashing:
             #token = nacl.hash.blake2b(rand + self.data).decode()
             self.metadata['pow'] = nonce
