@@ -22,23 +22,15 @@ import config, logger, onionrblockapi, storagecounter
 from onionrutils import bytesconverter
 from onionrcrypto import hashers
 config.reload()
+
 def getDifficultyModifier():
     '''returns the difficulty modifier for block storage based 
     on a variety of factors, currently only disk use.
     '''
-    retData = 0
-    useFunc = storagecounter.StorageCounter().getPercent
+    percentUse = storagecounter.StorageCounter().getPercent()
+    difficultyIncrease = math.floor(4 * percentUse)
 
-    percentUse = useFunc()
-
-    if percentUse >= 0.50:
-        retData += 1
-    elif percentUse >= 0.75:
-        retData += 2
-    elif percentUse >= 0.95:
-        retData += 3
-
-    return retData
+    return difficultyIncrease
 
 def getDifficultyForNewBlock(data, ourBlock=True):
     '''
