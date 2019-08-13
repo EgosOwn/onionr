@@ -221,7 +221,7 @@ class POW:
         iFound = False # if current thread is the one that found the answer
         answer = ''
         hbCount = 0
-        nonce = int(binascii.hexlify(nacl.utils.random(2)), 16)
+        nonce = int(binascii.hexlify(nacl.utils.random(64)), 16)
         startNonce = nonce
         while self.hashing:
             #token = nacl.hash.blake2b(rand + self.data).decode()
