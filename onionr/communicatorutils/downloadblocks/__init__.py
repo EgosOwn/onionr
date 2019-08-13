@@ -28,7 +28,10 @@ def download_blocks_from_communicator(comm_inst):
     assert isinstance(comm_inst, communicator.OnionrCommunicatorDaemon)
     blacklist = onionrblacklist.OnionrBlackList()
     storage_counter = storagecounter.StorageCounter()
+    LOG_SKIP_COUNT = 10
+    count = 0
     for blockHash in list(comm_inst.blockQueue):
+        count += 1
         if len(comm_inst.onlinePeers) == 0:
             break
         triedQueuePeers = [] # List of peers we've tried for a block
@@ -112,7 +115,9 @@ def download_blocks_from_communicator(comm_inst):
             if removeFromQueue:
                 try:
                     del comm_inst.blockQueue[blockHash] # remove from block queue both if success or false
-                    logger.info('%s blocks remaining in queue' % [len(comm_inst.blockQueue)], terminal=True)
+                    if count == LOG_SKIP_COUNT:
+                        logger.info('%s blocks remaining in queue' % [len(comm_inst.blockQueue)], terminal=True)
+                        count = 0
                 except KeyError:
                     pass
         comm_inst.currentDownloading.remove(blockHash)
