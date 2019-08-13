@@ -17,7 +17,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import multiprocessing, nacl.encoding, nacl.hash, nacl.utils, time, math, threading, binascii, sys, json
+import multiprocessing, nacl.encoding, nacl.hash, nacl.utils, time, math, threading, binascii, sys, json, sys
 import config, logger, onionrblockapi, storagecounter
 from onionrutils import bytesconverter
 from onionrcrypto import hashers
@@ -32,25 +32,19 @@ def getDifficultyModifier():
 
     return difficultyIncrease
 
-def getDifficultyForNewBlock(data, ourBlock=True):
+def getDifficultyForNewBlock(data):
     '''
     Get difficulty for block. Accepts size in integer, Block instance, or str/bytes full block contents
     '''
-    retData = 0
-    dataSize = 0
     if isinstance(data, onionrblockapi.Block):
-        dataSize = len(data.getRaw().encode('utf-8'))
+        dataSizeInBytes = len(bytesconverter.str_to_bytes(data.getRaw()))
     else:
-        dataSize = len(bytesconverter.str_to_bytes(data))
+        dataSizeInBytes = len(bytesconverter.str_to_bytes(data))
 
-    if ourBlock:
-        minDifficulty = config.get('general.minimum_send_pow', 4)
-    else:
-        minDifficulty = config.get('general.minimum_block_pow', 4)
+    minDifficulty = config.get('general.minimum_send_pow', 4)
+    totalDifficulty = max(minDifficulty, math.floor(dataSizeInBytes / 1000000.0)) + getDifficultyModifier()
 
-    retData = max(minDifficulty, math.floor(dataSize / 100000)) + getDifficultyModifier()
-
-    return retData
+    return totalDifficulty
 
 def getHashDifficulty(hexHash):
     '''

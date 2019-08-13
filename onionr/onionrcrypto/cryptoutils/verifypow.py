@@ -19,7 +19,7 @@ def verify_POW(blockContent):
     except AttributeError:
         pass
     
-    difficulty = onionrproofs.getDifficultyForNewBlock(blockContent, ourBlock=False)
+    difficulty = onionrproofs.getDifficultyForNewBlock(blockContent)
     
     if difficulty < int(config.get('general.minimum_block_pow')):
         difficulty = int(config.get('general.minimum_block_pow'))
