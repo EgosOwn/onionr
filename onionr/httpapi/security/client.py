@@ -18,7 +18,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 import hmac
-from flask import Blueprint, request, abort
+from flask import Blueprint, request, abort, g
 from onionrservices import httpheaders
 # Be extremely mindful of this. These are endpoints available without a password
 whitelist_endpoints = ('siteapi.site', 'www', 'staticfiles.onionrhome', 'staticfiles.homedata', 
@@ -49,6 +49,12 @@ class ClientAPISecurity:
             except KeyError:
                 if not hmac.compare_digest(request.form['token'], client_api.clientToken):
                     abort(403)
+            
+            # Add shared objects
+            try:
+                g.too_many = self.client_api._too_many
+            except KeyError:
+                g.too_many = None
 
         @client_api_security_bp.after_app_request
         def after_req(resp):

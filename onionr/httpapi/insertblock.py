@@ -18,8 +18,10 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 import json, threading
-from flask import Blueprint, Response, request
+from flask import Blueprint, Response, request, g
 import onionrblocks
+from onionrcrypto import hashers
+from onionrutils import bytesconverter
 ib = Blueprint('insertblock', __name__)
 
 @ib.route('/insertblock', methods=['POST'])
@@ -27,10 +29,17 @@ def client_api_insert_block():
     encrypt = False
     bData = request.get_json(force=True)
     message = bData['message']
+    message_hash = bytesconverter.bytes_to_str(hashers.sha3_hash(message))
 
     # Detect if message (block body) is not specified
     if type(message) is None:
-        return 'failure', 406
+        return 'failure due to unspecified message', 400
+
+    # Detect if block with same message is already being inserted
+    if message_hash in g.too_many.get_by_string("OnionrCommunicatorDaemon").generating_blocks:
+        return 'failure due to duplicate insert', 400
+    else:
+        g.too_many.get_by_string("OnionrCommunicatorDaemon").generating_blocks.append(message_hash)
 
     subject = 'temp'
     encryptType = ''

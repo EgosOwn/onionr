@@ -25,11 +25,13 @@ from . import shoulddownload
 from communicator import peeraction, onlinepeers
 import onionrcrypto, onionrstorage, onionrblacklist, storagecounter
 def download_blocks_from_communicator(comm_inst):
+    '''Use Onionr communicator instance to download blocks in the communicator's queue'''
     assert isinstance(comm_inst, communicator.OnionrCommunicatorDaemon)
     blacklist = onionrblacklist.OnionrBlackList()
     storage_counter = storagecounter.StorageCounter()
-    LOG_SKIP_COUNT = 10
+    LOG_SKIP_COUNT = 10 # for how many iterations we skip logging the counter
     count = 0
+    # Iterate the block queue in the communicator
     for blockHash in list(comm_inst.blockQueue):
         count += 1
         if len(comm_inst.onlinePeers) == 0:

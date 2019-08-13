@@ -31,8 +31,8 @@ import sys
 # Ensure that PySocks is installed
 try:
     from urllib3.contrib.socks import SOCKSProxyManager
-except ImportError:
-    raise ImportError("You need the PySocks module (for use with socks5 proxy to use Tor)")
+except ModuleNotFoundError:
+    raise ModuleNotFoundError("You need the PySocks module (for use with socks5 proxy to use Tor)")
 
 # Onionr imports
 from etc import onionrvalues # For different Onionr related constants such as versions

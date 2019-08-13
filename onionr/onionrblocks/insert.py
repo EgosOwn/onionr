@@ -143,4 +143,5 @@ def insert_block(data, header='txt', sign=False, encryptType='', symKey='', asym
             events.event('insertdeniable', {'content': plaintext, 'meta': plaintextMeta, 'hash': retData, 'peer': bytesconverter.bytes_to_str(asymPeer)}, threaded = True)
         else:
             events.event('insertblock', {'content': plaintext, 'meta': plaintextMeta, 'hash': retData, 'peer': bytesconverter.bytes_to_str(asymPeer)}, threaded = True)
+    coredb.daemonqueue.daemon_queue_add('remove_from_insert_list', data=dataNonce)
     return retData

@@ -30,6 +30,8 @@ def handle_daemon_commands(comm_inst):
         events.event('daemon_command', data = {'cmd' : cmd})
         if cmd[0] == 'shutdown':
             comm_inst.shutdown = True
+        elif cmd[0] == 'remove_from_insert_list':
+            comm_inst.generating_blocks.remove(cmd[1])
         elif cmd[0] == 'announceNode':
             if len(comm_inst.onlinePeers) > 0:
                 comm_inst.announce(cmd[1])

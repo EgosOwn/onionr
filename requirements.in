@@ -9,4 +9,4 @@ deadsimplekv==0.1.1
 unpaddedbase32==0.1.0
 streamedrequests==1.0.0
 jinja2==2.10.1
-toomanyobjs==1.0.0
+toomanyobjs==1.1.0

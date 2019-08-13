@@ -65,6 +65,8 @@ class OnionrCommunicatorDaemon:
         self.announceProgress = {}
         self.announceCache = {}
 
+        self.generating_blocks = []
+
         # amount of threads running by name, used to prevent too many
         self.threadCounts = {}
 

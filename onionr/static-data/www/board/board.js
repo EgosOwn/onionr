@@ -107,7 +107,11 @@ newPostForm.onsubmit = function(){
     .then((resp) => resp.text()) // Transform the data into json
     .then(function(data) {
         newPostForm.style.display = 'block'
-        alert('Queued for submission!')
+        if (data == 'failure due to duplicate insert'){
+            alert('This message is already queued')
+            return
+        }
+        alert('Queued for submission! ' + data)
         setTimeout(function(){getBlocks()}, 3000)
       })
     return false
