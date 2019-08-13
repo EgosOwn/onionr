@@ -28,7 +28,7 @@ def getDifficultyModifier():
     on a variety of factors, currently only disk use.
     '''
     percentUse = storagecounter.StorageCounter().getPercent()
-    difficultyIncrease = math.floor(4 * percentUse)
+    difficultyIncrease = math.floor(4 * percentUse) # difficulty increase is a step function
 
     return difficultyIncrease
 
