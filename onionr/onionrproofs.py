@@ -63,19 +63,18 @@ def getHashDifficulty(hexHash):
 
     return difficulty
 
-def hashMeetsDifficulty(h):
+def hashMeetsDifficulty(hexHash):
     '''
         Return bool for a hash string to see if it meets pow difficulty defined in config
     '''
-    hashDifficulty = getHashDifficulty(h)
+    hashDifficulty = getHashDifficulty(hexHash)
+
     try:
         expected = int(config.get('general.minimum_block_pow'))
     except TypeError:
         raise ValueError('Missing general.minimum_block_pow config')
-    if hashDifficulty >= expected:
-        return True
-    else:
-        return False
+
+    return hashDifficulty >= expected
 
 class DataPOW:
     def __init__(self, data, forceDifficulty=0, threadCount = 1):
