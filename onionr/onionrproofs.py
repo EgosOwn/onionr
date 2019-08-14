@@ -71,21 +71,13 @@ def hashMeetsDifficulty(hexHash):
     return hashDifficulty >= expected
 
 class DataPOW:
-    def __init__(self, data, forceDifficulty=0, threadCount = 1):
-        self.foundHash = False
-        self.difficulty = 0
+    def __init__(self, data, minDifficulty = 0, threadCount = 1):
         self.data = data
         self.threadCount = threadCount
+        self.difficulty = max(minDifficulty, getDifficultyForNewBlock(data))
         self.rounds = 0
         self.hashing = False
-
-        if forceDifficulty == 0:
-            dataLen = sys.getsizeof(data)
-            self.difficulty = math.floor(dataLen / 1000000)
-            if self.difficulty <= 2:
-                self.difficulty = 4
-        else:
-            self.difficulty = forceDifficulty
+        self.foundHash = False
 
         try:
             self.data = self.data.encode()
@@ -164,7 +156,7 @@ class DataPOW:
         return result
 
 class POW:
-    def __init__(self, metadata, data, threadCount = 1, forceDifficulty=0):
+    def __init__(self, metadata, data, threadCount = 1, minDifficulty=0):
         self.foundHash = False
         self.difficulty = 0
         self.data = data
@@ -179,8 +171,8 @@ class POW:
         except AttributeError:
             pass
             
-        if forceDifficulty > 0:
-            self.difficulty = forceDifficulty
+        if minDifficulty > 0:
+            self.difficulty = minDifficulty
         else:
             # Calculate difficulty. Dumb for now, may use good algorithm in the future.
             self.difficulty = getDifficultyForNewBlock(bytes(json_metadata + b'\n' + self.data))
