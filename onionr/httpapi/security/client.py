@@ -20,19 +20,18 @@
 import hmac
 from flask import Blueprint, request, abort, g
 from onionrservices import httpheaders
+from . import pluginwhitelist
+
 # Be extremely mindful of this. These are endpoints available without a password
-whitelist_endpoints = ('siteapi.site', 'www', 'staticfiles.onionrhome', 'staticfiles.homedata', 
-'staticfiles.board', 'staticfiles.profiles', 
-'staticfiles.profilesindex',
-'staticfiles.boardContent', 'staticfiles.sharedContent', 
-'staticfiles.mail', 'staticfiles.mailindex', 'staticfiles.friends', 'staticfiles.friendsindex',
-'staticfiles.chat', 'staticfiles.chatIndex')
+whitelist_endpoints = ['www', 'staticfiles.homedata', 'staticfiles.sharedContent', 
+'staticfiles.friends', 'staticfiles.friendsindex', 'siteapi.site', 'staticfiles.onionrhome']
 
 class ClientAPISecurity:
     def __init__(self, client_api):
         client_api_security_bp = Blueprint('clientapisecurity', __name__)
         self.client_api_security_bp = client_api_security_bp
         self.client_api = client_api
+        pluginwhitelist.load_plugin_security_whitelist_endpoints(whitelist_endpoints)
 
         @client_api_security_bp.before_app_request
         def validate_request():
@@ -40,6 +39,13 @@ class ClientAPISecurity:
             # For the purpose of preventing DNS rebinding attacks
             if request.host != '%s:%s' % (client_api.host, client_api.bindPort):
                 abort(403)
+
+            # Add shared objects
+            try:
+                g.too_many = self.client_api._too_many
+            except KeyError:
+                g.too_many = None
+
             if request.endpoint in whitelist_endpoints:
                 return
             try:
@@ -49,12 +55,6 @@ class ClientAPISecurity:
             except KeyError:
                 if not hmac.compare_digest(request.form['token'], client_api.clientToken):
                     abort(403)
-            
-            # Add shared objects
-            try:
-                g.too_many = self.client_api._too_many
-            except KeyError:
-                g.too_many = None
 
         @client_api_security_bp.after_app_request
         def after_req(resp):

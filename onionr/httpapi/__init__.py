@@ -1,9 +1,9 @@
-'''
+"""
     Onionr - Private P2P Communication
 
     This file registers plugin's flask blueprints for the client http server
-'''
-'''
+"""
+"""
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -16,10 +16,11 @@
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
-'''
+"""
 import onionrplugins
-def load_plugin_blueprints(flaskapp, blueprint='flask_blueprint'):
-    '''Iterate enabled plugins and load any http endpoints they have'''
+
+def load_plugin_blueprints(flaskapp, blueprint: str = 'flask_blueprint'):
+    """Iterate enabled plugins and load any http endpoints they have"""
     for plugin in onionrplugins.get_enabled_plugins():
         plugin = onionrplugins.get_plugin(plugin)
         try:

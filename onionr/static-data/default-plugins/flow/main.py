@@ -30,6 +30,7 @@ import deadsimplekv as simplekv
 sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
 import flowapi # import after path insert
 flask_blueprint = flowapi.flask_blueprint
+security_whitelist = ['staticfiles.boardContent', 'staticfiles.board']
 
 plugin_name = 'flow'
 PLUGIN_VERSION = '0.0.1'

@@ -31,6 +31,7 @@ sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
 import controlapi, peerserver
 flask_blueprint = controlapi.flask_blueprint
 direct_blueprint = peerserver.direct_blueprint
+security_whitelist = ['staticfiles.chat', 'staticfiles.chatIndex']
 
 def exit_with_error(text=''):
     if text != '':
