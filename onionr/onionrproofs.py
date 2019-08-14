@@ -50,12 +50,8 @@ def getHashDifficulty(hexHash):
     '''
         Return the amount of leading zeroes in a hex hash string (hexHash)
     '''
-    difficulty = 0
     assert type(hexHash) is str
-
-    difficulty = len(hexHash) - len(hexHash.lstrip('0'))
-
-    return difficulty
+    return len(hexHash) - len(hexHash.lstrip('0'))
 
 def hashMeetsDifficulty(hexHash):
     '''

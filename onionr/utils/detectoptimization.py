@@ -21,7 +21,7 @@
 def detect_optimization():
     '''Returns true if Python is run in optimized mode (-o), based on optimization ignoring assert statements'''
     try:
-        assert True is False
+        assert False
     except AssertionError:
         return False
     return True
