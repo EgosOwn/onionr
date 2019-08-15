@@ -49,7 +49,6 @@ class Block:
         self.signature = None
         self.signedData = None
         self.blockFile = None
-        self.parent = None
         self.bheader = {}
         self.bmetadata = {}
         self.isEncrypted = False
@@ -83,6 +82,10 @@ class Block:
                 self.signer = encryption.pub_key_decrypt(self.signer, encodedData=encodedData)
                 self.bheader['signer'] = self.signer.decode()
                 self.signedData =  json.dumps(self.bmetadata) + self.bcontent.decode()
+
+                if not self.signer is None:
+                    if not self.verifySig():
+                        raise onionrexceptions.SignatureError("Block has invalid signature")
 
                 # Check for replay attacks
                 try:
@@ -130,7 +133,6 @@ class Block:
             self.validSig = False
         return self.validSig
 
-
     def update(self, data = None, file = None):
         '''
             Loads data from a block in to the current object.
@@ -167,7 +169,6 @@ class Block:
                 self.isEncrypted = True
             else:
                 self.bmetadata = json.loads(self.getHeader('meta', None))
-            self.parent = self.getMetadata('parent', None)
             self.btype = self.getMetadata('type', None)
             self.signed = ('sig' in self.getHeader() and self.getHeader('sig') != '')
             # TODO: detect if signer is hash of pubkey or not
@@ -182,9 +183,6 @@ class Block:
                 self.date = datetime.datetime.fromtimestamp(self.getDate())
 
             self.valid = True
-
-            if len(self.getRaw()) <= config.get('allocations.blockCache', 500000):
-                self.cache()
             
             if self.autoDecrypt:
                 self.decrypt()
@@ -331,24 +329,6 @@ class Block:
 
         return str(self.bcontent)
 
-    def getParent(self):
-        '''
-            Returns the Block's parent Block, or None
-
-            Outputs:
-            - (Block): the Block's parent
-        '''
-
-        if type(self.parent) == str:
-            if self.parent == self.getHash():
-                self.parent = self
-            elif Block.exists(self.parent):
-                self.parent = Block(self.getMetadata('parent'))
-            else:
-                self.parent = None
-
-        return self.parent
-
     def getDate(self):
         '''
             Returns the date that the block was received, if loaded from file
@@ -459,10 +439,7 @@ class Block:
             - (Block): the Block instance
         '''
 
-        if key == 'parent' and (not val is None) and (not val == self.getParent().getHash()):
-            self.setParent(val)
-        else:
-            self.bmetadata[key] = val
+        self.bmetadata[key] = val
         return self
 
     def setContent(self, bcontent):
@@ -479,27 +456,9 @@ class Block:
         self.bcontent = str(bcontent)
         return self
 
-    def setParent(self, parent):
-        '''
-            Sets the Block's parent
-
-            Inputs:
-            - parent (Block/str): the Block's parent, to be stored in metadata
-
-            Outputs:
-            - (Block): the Block instance
-        '''
-
-        if type(parent) == str:
-            parent = Block(parent)
-
-        self.parent = parent
-        self.setMetadata('parent', (None if parent is None else self.getParent().getHash()))
-        return self
-
     # static functions
 
-    def getBlocks(type = None, signer = None, signed = None, parent = None, reverse = False, limit = None):
+    def getBlocks(type = None, signer = None, signed = None, reverse = False, limit = None):
         '''
             Returns a list of Block objects based on supplied filters
 
@@ -514,9 +473,6 @@ class Block:
         '''
 
         try:
-
-            if (not parent is None) and (not isinstance(parent, Block)):
-                parent = Block(hash = parent)
 
             relevant_blocks = list()
             blocks = (blockmetadb.get_block_list() if type is None else blockmetadb.get_blocks_by_type(type))
@@ -544,14 +500,6 @@ class Block:
                         if not isSigner:
                             relevant = False
 
-                    if not parent is None:
-                        blockParent = block.getParent()
-
-                        if blockParent is None:
-                            relevant = False
-                        else:
-                            relevant = parent.getHash() == blockParent.getHash()
-
                     if relevant and (limit is None or len(relevant_Blocks) <= int(limit)):
                         relevant_blocks.append(block)
 
@@ -563,71 +511,6 @@ class Block:
             logger.debug('Failed to get blocks.', error = e)
 
         return list()
-
-    def mergeChain(child, file = None, maximumFollows = 1000):
-        '''
-            Follows a child Block to its root parent Block, merging content
-
-            Inputs:
-            - child (str/Block): the child Block to be followed
-            - file (str/file): the file to write the content to, instead of returning it
-            - maximumFollows (int): the maximum number of Blocks to follow
-        '''
-
-        maximumFollows = max(0, maximumFollows)
-
-        # type conversions
-        if type(child) == list:
-            child = child[-1]
-        if type(child) == str:
-            child = Block(child)
-        if (not file is None) and (type(file) == str):
-            file = open(file, 'ab')
-
-        # only store hashes to avoid intensive memory usage
-        blocks = [child.getHash()]
-
-        # generate a list of parent Blocks
-        while True:
-            # end if the maximum number of follows has been exceeded
-            if len(blocks) - 1 >= maximumFollows:
-                break
-
-            block = Block(blocks[-1]).getParent()
-
-            # end if there is no parent Block
-            if block is None:
-                break
-
-            # end if the Block is pointing to a previously parsed Block
-            if block.getHash() in blocks:
-                break
-
-            # end if the block is not valid
-            if not block.isValid():
-                break
-
-            blocks.append(block.getHash())
-
-        buffer = b''
-
-        # combine block contents
-        for hash in blocks:
-            block = Block(hash)
-            contents = block.getContent()
-            contents = base64.b64decode(contents.encode())
-
-            if file is None:
-                try:
-                    buffer += contents.encode()
-                except AttributeError:
-                    buffer += contents
-            else:
-                file.write(contents)
-        if file is not None:
-            file.close()
-
-        return (None if not file is None else buffer)
 
     def exists(bHash):
         '''
@@ -652,44 +535,3 @@ class Block:
         ret = isinstance(onionrstorage.getData(bHash), type(None))
 
         return not ret
-
-    def getCache(hash = None):
-        # give a list of the hashes of the cached blocks
-        if hash is None:
-            return list(Block.blockCache.keys())
-
-        # if they inputted self or a Block, convert to hash
-        if type(hash) == Block:
-            hash = hash.getHash()
-
-        # just to make sure someone didn't put in a bool or something lol
-        hash = str(hash)
-
-        # if it exists, return its content
-        if hash in Block.getCache():
-            return Block.blockCache[hash]
-
-        return None
-
-    def cache(block, override = False):
-        # why even bother if they're giving bad data?
-        if not type(block) == Block:
-            return False
-
-        # only cache if written to file
-        if block.getHash() is None:
-            return False
-
-        # if it's already cached, what are we here for?
-        if block.getHash() in Block.getCache() and not override:
-            return False
-
-        # dump old cached blocks if the size exceeds the maximum
-        if sys.getsizeof(Block.blockCacheOrder) >= config.get('allocations.block_cache_total', 50000000): # 50MB default cache size
-            del Block.blockCache[blockCacheOrder.pop(0)]
-
-        # cache block content
-        Block.blockCache[block.getHash()] = block.getRaw()
-        Block.blockCacheOrder.append(block.getHash())
-
-        return True

@@ -28,15 +28,6 @@ class PrivateEndpoints:
         private_endpoints_bp = Blueprint('privateendpoints', __name__)
         self.private_endpoints_bp = private_endpoints_bp
 
-        @private_endpoints_bp.route('/serviceactive/<pubkey>')
-        def serviceActive(pubkey):
-            try:
-                if pubkey in client_api.onionrInst.communicatorInst.active_services:
-                    return Response('true')
-            except AttributeError as e:
-                pass
-            return Response('false')
-
         @private_endpoints_bp.route('/www/<path:path>', endpoint='www')
         def wwwPublic(path):
             if not config.get("www.private.run", True):

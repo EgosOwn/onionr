@@ -43,6 +43,7 @@ def pingdirect():
 
 @direct_blueprint.route('/chat/sendto', methods=['POST', 'GET'])
 def sendto():
+    """Endpoint peers send chat messages to"""
     try:
         msg = request.get_json(force=True)
     except json.JSONDecodeError:
@@ -50,9 +51,9 @@ def sendto():
     else:
         msg = json.dumps(msg)
         localcommand.local_command('/chat/addrec/%s' % (g.peer,), post=True, postData=msg)
-    print('msg from', g.peer, msg)
     return Response('success')
 
 @direct_blueprint.route('/chat/poll')
 def poll_chat():
+    """Endpoints peers get new messages from"""
     return Response(localcommand.local_command('/chat/gets/%s' % (g.peer,)))

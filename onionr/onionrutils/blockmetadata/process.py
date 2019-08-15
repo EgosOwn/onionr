@@ -42,11 +42,12 @@ def process_block_metadata(blockHash: str):
 
         signer = bytesconverter.bytes_to_str(myBlock.signer)
         valid = myBlock.verifySig()
-        if myBlock.getMetadata('newFSKey') is not None:
-            try:
-                onionrusers.OnionrUser(signer).addForwardKey(myBlock.getMetadata('newFSKey'))
-            except onionrexceptions.InvalidPubkey:
-                logger.warn('%s has invalid forward secrecy key to add: %s' % (signer, myBlock.getMetadata('newFSKey')))
+        if valid:
+            if myBlock.getMetadata('newFSKey') is not None:
+                try:
+                    onionrusers.OnionrUser(signer).addForwardKey(myBlock.getMetadata('newFSKey'))
+                except onionrexceptions.InvalidPubkey:
+                    logger.warn('%s has invalid forward secrecy key to add: %s' % (signer, myBlock.getMetadata('newFSKey')))
             
         try:
             if len(blockType) <= onionrvalues.MAX_BLOCK_TYPE_LENGTH:

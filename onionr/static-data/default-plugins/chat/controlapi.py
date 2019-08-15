@@ -68,6 +68,3 @@ def get_messages(peer):
         existing = list(existing)
         key_store.delete('r' + peer)
     return Response(json.dumps(existing))
-
-#@flask_blueprint.route('/chatapi/connect/<peer>')
-#def create_connection(peer)

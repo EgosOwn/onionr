@@ -43,6 +43,9 @@ class DecryptionError(Exception):
 class PasswordStrengthError(Exception):
     pass
 
+class SignatureError(Exception):
+    pass
+
 # block exceptions
 
 class ReplayAttack(Exception):
