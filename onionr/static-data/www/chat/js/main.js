@@ -40,6 +40,8 @@ fetch('/friends/list', {
     for(var k in resp) keys.push(k)
     for (var i = 0; i < keys.length; i++){
         friendList[keys[i]] = resp[keys[i]]['name']
+        // Create a connection to each peer
+        createConnection(keys[i])
     }
     createConvoList()
 })

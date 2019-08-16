@@ -21,21 +21,25 @@ import threading
 
 from flask import Response
 from flask import Blueprint
+from flask import g
 import deadsimplekv
 
 import filepaths
 import onionrservices
 
+def _get_communicator(g):
+    return g.too_many.get_by_string("OnionrCommunicatorDaemon")
+
 class DirectConnectionManagement:
     def __init__(self, client_api):
         direct_conn_management_bp = Blueprint('direct_conn_management', __name__)
         self.direct_conn_management_bp = direct_conn_management_bp
-        communicator = client_api._too_many.get('OnionrCommunicatorDaemon')
 
-        cache = communicator.deadsimplekv(filepaths.cached_storage)
+        cache = deadsimplekv.DeadSimpleKV(filepaths.cached_storage)
 
         @direct_conn_management_bp.route('/dc-client/isconnected/<pubkey>')
         def is_connected(pubkey):
+            communicator = _get_communicator(g)
             resp = ""
             if pubkey in communicator.direct_connection_clients:
                 resp = communicator.direct_connection_clients[pubkey]
@@ -43,9 +47,10 @@ class DirectConnectionManagement:
         
         @direct_conn_management_bp.route('/dc-client/connect/<pubkey>')
         def make_new_connection(pubkey):
+            communicator = _get_communicator(g)
             resp = "pending"
             if pubkey in communicator.direct_connection_clients:
-                resp = communicator.active_services[pubkey]
+                resp = communicator.direct_connection_clients[pubkey]
             
             """Spawn a thread that will create the client and eventually add it to the
             communicator.active_services 

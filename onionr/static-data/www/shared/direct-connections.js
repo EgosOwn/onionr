@@ -23,33 +23,37 @@ let waitForConnection = function(pubkey){
         headers: {
           "token": webpass
         }})
+    .then((resp) => resp.text()) 
     .then(function(resp) {
-        if (resp.ok){
-            if (resp.text === ""){
-                // Try to get the client address again again in a few seconds
-                setTimeout(function(){waitForConnection(pubkey)}, 3000)
-            }
-            else{
-                // add to the dc object
-                direct_connections[pubkey] = resp
-            }
+        if (resp.text === ""){
+            // Try to get the client address again again in a few seconds
+            setTimeout(function(){waitForConnection(pubkey)}, 3000)
+        }
+        else{
+            // add to the dc object
+            direct_connections[pubkey] = resp
         }
     })   
 }
 
 let createConnection = function(pubkey){
+    // Tells the Onionr daemon to create a client connection to a remote peer for generic direct connections
+
+    // If the pubkey is already connected, don't bother
     if (direct_connections.hasOwnProperty(pubkey)){
         return
     }
+    
+    // Do the request, then spawn a function to wait for the connection to be created
     fetch('/dc-client/connect/' + pubkey, {
         headers: {
           "token": webpass
         }})
+    .then((resp) => resp.text()) 
     .then(function(resp) {
-        if (resp.ok){
-            if (resp.text === "pending"){
-                setTimeout(function(){waitForConnection(pubkey)}, 3000)
-            }
+        alert(resp)
+        if (resp === "pending"){
+            setTimeout(function(){waitForConnection(pubkey)}, 3000)
         }
     })
 }

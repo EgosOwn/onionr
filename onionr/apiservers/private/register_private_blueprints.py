@@ -19,6 +19,7 @@
 '''
 import os
 from httpapi import security, friendsapi, profilesapi, configapi, insertblock, miscclientapi, onionrsitesapi, apiutils
+from httpapi import directconnections
 def register_private_blueprints(private_api, app):
     app.register_blueprint(security.client.ClientAPISecurity(private_api).client_api_security_bp)
     app.register_blueprint(friendsapi.friends)
@@ -30,4 +31,5 @@ def register_private_blueprints(private_api, app):
     app.register_blueprint(onionrsitesapi.site_api)
     app.register_blueprint(apiutils.shutdown.shutdown_bp)
     app.register_blueprint(miscclientapi.staticfiles.static_files_bp)
+    app.register_blueprint(directconnections.DirectConnectionManagement(private_api).direct_conn_management_bp)
     return app

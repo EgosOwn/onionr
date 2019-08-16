@@ -26,7 +26,7 @@ from . import httpheaders
 from onionrutils import stringvalidators, epoch
 import config, onionrblocks, filepaths
 import deadsimplekv as simplekv
-def bootstrap_client_service(peer, onionr_inst=None, bootstrap_timeout=300):
+def bootstrap_client_service(peer, comm_inst=None, bootstrap_timeout=300):
     '''
         Bootstrap client services
     '''
@@ -38,11 +38,11 @@ def bootstrap_client_service(peer, onionr_inst=None, bootstrap_timeout=300):
     bootstrap_app = Flask(__name__)
     http_server = WSGIServer(('127.0.0.1', bootstrap_port), bootstrap_app, log=None)
     try:
-        assert onionr_inst.communicatorInst is not None
+        assert comm_inst is not None
     except (AttributeError, AssertionError) as e:
         pass
     else:
-        onionr_inst.communicatorInst.service_greenlets.append(http_server)
+        comm_inst.service_greenlets.append(http_server)
     
     bootstrap_address = ''
     shutdown = False
@@ -83,6 +83,8 @@ def bootstrap_client_service(peer, onionr_inst=None, bootstrap_timeout=300):
         except TypeError:
             pass
         # This line reached when server is shutdown by being bootstrapped
-    
+    # Add the address to the client pool
+    if not comm_inst is None:
+        comm_inst.direct_connection_clients[peer] = bs_id
     # Now that the bootstrap server has received a server, return the address
     return key_store.get(bs_id)
