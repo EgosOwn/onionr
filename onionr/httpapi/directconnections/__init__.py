@@ -17,10 +17,14 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-from flask import Response, Blueprint
+import threading
+
+from flask import Response
+from flask import Blueprint
 import deadsimplekv
 
 import filepaths
+import onionrservices
 
 class DirectConnectionManagement:
     def __init__(self, client_api):
@@ -46,5 +50,6 @@ class DirectConnectionManagement:
             """Spawn a thread that will create the client and eventually add it to the
             communicator.active_services 
             """
+            threading.Thread(target=onionrservices.OnionrServices().create_client, args=[pubkey, communicator]).start()
 
             return Response(resp)

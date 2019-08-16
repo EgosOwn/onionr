@@ -52,7 +52,8 @@ class OnionrServices:
         else:
             return False
 
-    def create_client(self, peer, comm_inst=None):
+    @staticmethod
+    def create_client(peer, comm_inst=None):
         # Create ephemeral onion service to bootstrap connection
         address = bootstrapservice.bootstrap_client_service(peer)
         if not comm_inst is None:
