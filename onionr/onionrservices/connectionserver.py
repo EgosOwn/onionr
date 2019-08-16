@@ -80,8 +80,10 @@ class ConnectionServer:
                 raise ConnectionError('Could not reach %s bootstrap address %s' % (peer, address))
             else:
                 # If no connection error, create the service and save it to local global key store
-                key_store.put('dc-' + response.service_id, bytesconverter.bytes_to_str(peer))
+                peer = bytesconverter.bytes_to_str(peer)
+                key_store.put('dc-' + peer, response.service_id)
+                key_store.flush()
                 logger.info('hosting on %s with %s' % (response.service_id,  peer))
                 http_server.serve_forever()
                 http_server.stop()
-                key_store.delete('dc-' + response.service_id)
+                key_store.delete('dc-' + peer)

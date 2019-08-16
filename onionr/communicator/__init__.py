@@ -136,6 +136,9 @@ class OnionrCommunicatorDaemon:
         else:
             self.services = None
         
+        # {peer_pubkey: ephemeral_address}, the address to reach them
+        self.direct_connection_clients = {}
+        
         # This timer creates deniable blocks, in an attempt to further obfuscate block insertion metadata
         if config.get('general.insert_deniable_blocks', True):
             deniableBlockTimer = OnionrCommunicatorTimers(self, deniableinserts.insert_deniable_block, 180, myArgs=[self], requiresPeer=True, maxThreads=1)

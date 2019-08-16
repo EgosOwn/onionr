@@ -86,7 +86,6 @@ class PrivateEndpoints:
         @private_endpoints_bp.route('/getstats')
         def getStats():
             # returns node stats
-            #return Response("disabled")
             while True:
                 try:    
                     return Response(client_api._too_many.get(SerializedData).getStats())

@@ -18,10 +18,9 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 from flask import Response, Blueprint
+import deadsimplekv
 
-def _in_pool(pubkey, communicator):
-    if pubkey in communicator.active_services
-
+import filepaths
 
 class DirectConnectionManagement:
     def __init__(self, client_api):
@@ -29,6 +28,23 @@ class DirectConnectionManagement:
         self.direct_conn_management_bp = direct_conn_management_bp
         communicator = client_api._too_many.get('OnionrCommunicatorDaemon')
 
-        @direct_conn_management_bp.route('/isconnected/<pubkey>')
+        cache = communicator.deadsimplekv(filepaths.cached_storage)
+
+        @direct_conn_management_bp.route('/dc-client/isconnected/<pubkey>')
         def is_connected(pubkey):
-            return
+            resp = ""
+            if pubkey in communicator.direct_connection_clients:
+                resp = communicator.direct_connection_clients[pubkey]
+            return Response(resp)
+        
+        @direct_conn_management_bp.route('/dc-client/connect/<pubkey>')
+        def make_new_connection(pubkey):
+            resp = "pending"
+            if pubkey in communicator.direct_connection_clients:
+                resp = communicator.active_services[pubkey]
+            
+            """Spawn a thread that will create the client and eventually add it to the
+            communicator.active_services 
+            """
+
+            return Response(resp)
