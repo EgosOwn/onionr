@@ -18,16 +18,33 @@
 */
 friendList = {}
 convoListElement = document.getElementsByClassName('conversationList')[0]
+firstConvoLoad = true
 
 function createConvoList(){
-
+    convoListElement.innerHTML = ""
     for (friend in friendList){
-        var convoEntry = document.createElement('li')
+        let convoEntry = document.createElement('li')
+        let connectStatus = document.createElement('span')
+
+        if (! firstConvoLoad){
+            connectStatus.innerText = " X"
+            connectStatus.style.color = "red"
+            connectStatus.classList.add("connectStatus")
+            console.log(direct_connections)
+            if (direct_connections.hasOwnProperty(friend)){
+                connectStatus.innerText = " ✅"
+                connectStatus.style.color = "green"
+            }
+        }
+
         convoEntry.classList.add('convoEntry')
         convoEntry.setAttribute('data-pubkey', friend)
         convoEntry.innerText = friendList[friend]
+        convoEntry.appendChild(connectStatus)
         convoListElement.append(convoEntry)
+        firstConvoLoad = false
     }
+    setTimeout(function(){createConvoList()}, 3000)
 }
 
 fetch('/friends/list', {

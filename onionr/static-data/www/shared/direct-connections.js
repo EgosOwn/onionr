@@ -25,7 +25,7 @@ let waitForConnection = function(pubkey){
         }})
     .then((resp) => resp.text()) 
     .then(function(resp) {
-        if (resp.text === ""){
+        if (resp === ""){
             // Try to get the client address again again in a few seconds
             setTimeout(function(){waitForConnection(pubkey)}, 3000)
         }
@@ -51,9 +51,11 @@ let createConnection = function(pubkey){
         }})
     .then((resp) => resp.text()) 
     .then(function(resp) {
-        alert(resp)
         if (resp === "pending"){
             setTimeout(function(){waitForConnection(pubkey)}, 3000)
+        }
+        else{
+            direct_connections[pubkey] = resp
         }
     })
 }

@@ -85,6 +85,6 @@ def bootstrap_client_service(peer, comm_inst=None, bootstrap_timeout=300):
         # This line reached when server is shutdown by being bootstrapped
     # Add the address to the client pool
     if not comm_inst is None:
-        comm_inst.direct_connection_clients[peer] = bs_id
+        comm_inst.direct_connection_clients[peer] = response.service_id
     # Now that the bootstrap server has received a server, return the address
     return key_store.get(bs_id)

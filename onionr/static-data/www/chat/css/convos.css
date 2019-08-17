@@ -13,3 +13,7 @@
 .chatContent{
     padding-right: 5%;
 }
+
+.connectStatus{
+    float: right;
+}
