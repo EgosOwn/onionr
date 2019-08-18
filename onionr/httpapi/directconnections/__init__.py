@@ -51,10 +51,10 @@ class DirectConnectionManagement:
             resp = "pending"
             if pubkey in communicator.direct_connection_clients:
                 resp = communicator.direct_connection_clients[pubkey]
-            
-            """Spawn a thread that will create the client and eventually add it to the
-            communicator.active_services 
-            """
-            threading.Thread(target=onionrservices.OnionrServices().create_client, args=[pubkey, communicator], daemon=True).start()
+            else:
+                """Spawn a thread that will create the client and eventually add it to the
+                communicator.active_services 
+                """
+                threading.Thread(target=onionrservices.OnionrServices().create_client, args=[pubkey, communicator], daemon=True).start()
 
             return Response(resp)

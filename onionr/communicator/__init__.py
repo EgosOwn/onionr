@@ -164,7 +164,7 @@ class OnionrCommunicatorDaemon:
         # Adjust initial timer triggers
         peerPoolTimer.count = (peerPoolTimer.frequency - 1)
         cleanupTimer.count = (cleanupTimer.frequency - 60)
-        blockCleanupTimer.count = (blockCleanupTimer.frequency - 5)
+        blockCleanupTimer.count = (blockCleanupTimer.frequency - 2)
 
         shared_state.add(self)
 
