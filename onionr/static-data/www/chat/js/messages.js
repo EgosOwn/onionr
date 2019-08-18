@@ -16,11 +16,16 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>
 */
-
+chatMessages = []
 let Message = class {
-    constructor(text, to, time){
-        this.text = text // string
-        this.to = to // bool. False = not outgoing
-        this.time = time // epoch int
+    constructor(text, peer, outgoing){
+        this.text = text // raw message string
+        this.peer = peer // peer by public key
+        this.outgoing = outgoing // boolean. false = outgoing message
+        this.time = new Date().toISOString()
+        //this.tempIdentifier = Math.floor(Math.random() * 100000000000000000);
+        chatMessages.push(this)
     }
 }
+
+//let addMessage = function(){}

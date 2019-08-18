@@ -16,9 +16,10 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>
 */
-let MessageCache = class {
-    constructor(user) {
-        this.user = user
-        this.cache = [] // array of Messages
+
+let showMessages = function(){
+    let feeds = document.getElementsByClassName("chatFeed")
+    for (x=0; x < feeds.length; x++){
+        
     }
 }

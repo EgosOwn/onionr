@@ -136,6 +136,12 @@ def insert_block(data, header='txt', sign=False, encryptType='', symKey='', asym
             else:
                 pass
             coredb.blockmetadb.add.add_to_block_DB(retData, selfInsert=True, dataSaved=True)
+
+            if expire is None:
+                coredb.blockmetadb.update_block_info(retData, 'expire', createTime + onionrvalues.DEFAULT_EXPIRE)
+            else:
+                coredb.blockmetadb.update_block_info(retData, 'expire', expire)
+            
             blockmetadata.process_block_metadata(retData)
 
     if retData != False:

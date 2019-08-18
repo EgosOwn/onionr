@@ -50,7 +50,7 @@
         "verbosity" : "default",
 
         "file": {
-            "output": false,
+            "output": true,
             "path": "output.log"
         },
 

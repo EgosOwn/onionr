@@ -25,11 +25,13 @@ function createConvoList(){
     for (friend in friendList){
         let convoEntry = document.createElement('li')
         let connectStatus = document.createElement('span')
-
-        if (! firstConvoLoad){
+        connectStatus.classList.add("connectStatus")
+        if (firstConvoLoad){
+            connectStatus.innerText = " ⌛"
+        }
+        else{
             connectStatus.innerText = " X"
             connectStatus.style.color = "red"
-            connectStatus.classList.add("connectStatus")
             console.log(direct_connections)
             if (direct_connections.hasOwnProperty(friend)){
                 connectStatus.innerText = " ✅"
