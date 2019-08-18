@@ -17,3 +17,17 @@
 .connectStatus{
     float: right;
 }
+
+.friendsTitle{
+    text-align: center;
+    display: block;
+}
+
+.chatInput{
+    position: fixed;
+    bottom: 0;
+
+}
+.chatInput textarea{
+    resize: none;
+}

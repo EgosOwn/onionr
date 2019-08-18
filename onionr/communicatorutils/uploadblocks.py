@@ -19,6 +19,7 @@
 '''
 import logger
 from communicatorutils import proxypicker
+import onionrexceptions
 import onionrblockapi as block
 from onionrutils import localcommand, stringvalidators, basicrequests
 from communicator import onlinepeers
@@ -42,7 +43,11 @@ def upload_blocks_from_communicator(comm_inst):
                     continue
                 triedPeers.append(peer)
                 url = 'http://' + peer + '/upload'
-                data = {'block': block.Block(bl).getRaw()}
+                try:
+                    data = {'block': block.Block(bl).getRaw()}
+                except onionrexceptions.NoDataAvailable:
+                    finishedUploads.append(bl)
+                    break
                 proxyType = proxypicker.pick_proxy(peer)
                 logger.info("Uploading block %s to %s" % (bl[:8], peer), terminal=True)
                 resp = basicrequests.do_post_request(url, data=data, proxyType=proxyType)
