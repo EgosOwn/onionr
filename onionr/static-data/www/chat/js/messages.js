@@ -16,16 +16,21 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>
 */
-chatMessages = []
+chatMessages = {}
 let Message = class {
     constructor(text, peer, outgoing){
         this.text = text // raw message string
         this.peer = peer // peer by public key
         this.outgoing = outgoing // boolean. false = outgoing message
-        this.time = new Date().toISOString()
-        //this.tempIdentifier = Math.floor(Math.random() * 100000000000000000);
-        chatMessages.push(this)
+        this.time = new Date().toISOString() // store message time
+        this.tempIdentifier = Math.floor(Math.random() * 100000000000000000) // assign a random id, doesnt need to be secure
+
+        // Add the message to the peer message feed object chatMessages
+        if (chatMessages.hasOwnProperty(peer)){
+            chatMessages[peer].push(this)
+        }
+        else{
+            chatMessages[peer] = [this]
+        }
     }
 }
-
-//let addMessage = function(){}

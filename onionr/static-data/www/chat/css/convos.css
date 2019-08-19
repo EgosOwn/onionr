@@ -60,3 +60,7 @@
     transform: rotate(180deg);
     direction: ltr;
 }
+
+#messageEntryTemplate{
+    display: none;
+}
