@@ -18,8 +18,10 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 import communicator, onionrblockapi
+import logger
 from onionrutils import stringvalidators, bytesconverter
 from coredb import blockmetadb
+from onionrservices import server_exists
 def service_creator(daemon):
     assert isinstance(daemon, communicator.OnionrCommunicatorDaemon)
     
@@ -30,10 +32,13 @@ def service_creator(daemon):
         if not b in daemon.active_services:
             bl = onionrblockapi.Block(b, decrypt=True)
             bs = bytesconverter.bytes_to_str(bl.bcontent) + '.onion'
+            if server_exists(bl.signer):
+                continue
             if stringvalidators.validate_pub_key(bl.signer) and stringvalidators.validate_transport(bs):
                 signer = bytesconverter.bytes_to_str(bl.signer)
                 daemon.active_services.append(b)
                 daemon.active_services.append(signer)
-                daemon.services.create_server(signer, bs, daemon)
-    
+                if not daemon.services.create_server(signer, bs, daemon):
+                    daemon.active_services.remove(b)
+                    daemon.active_services.remove(signer)
     daemon.decrementThreadCount('service_creator')

@@ -1,8 +1,9 @@
-/*
+'''
     Onionr - Private P2P Communication
 
-    Resize chat elements to help with responsiveness
-
+    Function to check if an onion server is created for a peer or not
+'''
+'''
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -14,11 +15,16 @@
     GNU General Public License for more details.
 
     You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <https://www.gnu.org/licenses/>
-*/
-let doResize = function(){
-    let chatInput = document.getElementsByClassName('chatInput')[0]
-    chatInput.style.width = "50%";
-}
-doResize()
-window.onresize = doResize
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+'''
+import deadsimplekv
+
+import filepaths
+from onionrutils import bytesconverter
+
+def server_exists(peer: str) -> bool:
+    '''checks if an onion server is created for a peer or not'''
+    peer = bytesconverter.bytes_to_str(peer)
+    kv = deadsimplekv.DeadSimpleKV(filepaths.cached_storage)
+    kv.refresh()
+    return not kv.get('dc-' + peer) is None

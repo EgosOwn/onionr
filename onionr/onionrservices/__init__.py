@@ -19,9 +19,10 @@
 '''
 import time
 import stem
-from . import connectionserver, bootstrapservice
+from . import connectionserver, bootstrapservice, serverexists
 from onionrutils import stringvalidators, basicrequests
 import config
+server_exists = serverexists.server_exists
 class OnionrServices:
     '''
         Create a client or server for connecting to peer interfaces
@@ -55,5 +56,10 @@ class OnionrServices:
     @staticmethod
     def create_client(peer, comm_inst=None):
         # Create ephemeral onion service to bootstrap connection
+        if not comm_inst == None:
+            try:
+                return comm_inst.direct_connection_clients[peer]
+            except KeyError:
+                pass
         address = bootstrapservice.bootstrap_client_service(peer, comm_inst)
         return address
