@@ -31,7 +31,6 @@ class OnionrServices:
         self.servers = {}
         self.clients = {}
         self.shutdown = False
-        return
     
     def create_server(self, peer, address, comm_inst):
         '''
@@ -55,7 +54,7 @@ class OnionrServices:
 
     @staticmethod
     def create_client(peer, comm_inst=None):
-        # Create ephemeral onion service to bootstrap connection
+        # Create ephemeral onion service to bootstrap connection to server
         if not comm_inst == None:
             try:
                 return comm_inst.direct_connection_clients[peer]

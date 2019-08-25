@@ -47,10 +47,9 @@ Onionr ships with various application plugins ready for use out of the box:
 Currently usable:
 
 * Mail
-* Public anonymous chat
+* Public anonymous chat/message board
 * Simple webpage hosting - Will be greatly extended
 * File sharing (Work in progress)
-* Simple Message board
 
 Not yet usable:
 

@@ -17,11 +17,11 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import threading
+import threading # For the client creation thread
 
-from flask import Response
-from flask import Blueprint
-from flask import g
+from flask import Response # For direct connection management HTTP endpoints
+from flask import Blueprint # To make the direct connection management blueprint in the webUI
+from flask import g # Mainly to access the shared toomanyobjs object
 import deadsimplekv
 
 import filepaths
@@ -49,12 +49,16 @@ class DirectConnectionManagement:
         def make_new_connection(pubkey):
             communicator = _get_communicator(g)
             resp = "pending"
+            if pubkey in communicator.shared_state.get_by_string("ServicePool").bootstrap_pending:
+                return Response(resp)
+                
             if pubkey in communicator.direct_connection_clients:
                 resp = communicator.direct_connection_clients[pubkey]
             else:
                 """Spawn a thread that will create the client and eventually add it to the
                 communicator.active_services 
                 """
-                threading.Thread(target=onionrservices.OnionrServices().create_client, args=[pubkey, communicator], daemon=True).start()
+                threading.Thread(target=onionrservices.OnionrServices().create_client, 
+                                 args=[pubkey, communicator], daemon=True).start()
 
             return Response(resp)

@@ -84,6 +84,9 @@ class InvalidAddress(Exception):
 class InvalidAPIVersion(Exception):
     pass
 
+class Timeout(Exception):
+    pass
+
 # file exceptions
 
 class DiskAllocationReached(Exception):
