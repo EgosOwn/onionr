@@ -26,9 +26,14 @@ import deadsimplekv
 
 import filepaths
 import onionrservices
+from onionrservices import pool
 
 def _get_communicator(g):
-    return g.too_many.get_by_string("OnionrCommunicatorDaemon")
+    while True:
+        try:
+            return g.too_many.get_by_string("OnionrCommunicatorDaemon")
+        except KeyError:
+            pass
 
 class DirectConnectionManagement:
     def __init__(self, client_api):
@@ -49,7 +54,7 @@ class DirectConnectionManagement:
         def make_new_connection(pubkey):
             communicator = _get_communicator(g)
             resp = "pending"
-            if pubkey in communicator.shared_state.get_by_string("ServicePool").bootstrap_pending:
+            if pubkey in communicator.shared_state.get(pool.ServicePool).bootstrap_pending:
                 return Response(resp)
                 
             if pubkey in communicator.direct_connection_clients:

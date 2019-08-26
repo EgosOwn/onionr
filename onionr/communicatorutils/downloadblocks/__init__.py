@@ -102,7 +102,7 @@ def download_blocks_from_communicator(comm_inst):
                         blacklist.addToDB(blockHash)
             else:
                 # if block didn't meet expected hash
-                tempHash = crypto.sha3Hash(content) # lazy hack, TODO use var
+                tempHash = onionrcrypto.hashers.sha3_hash(content) # lazy hack, TODO use var
                 try:
                     tempHash = tempHash.decode()
                 except AttributeError:

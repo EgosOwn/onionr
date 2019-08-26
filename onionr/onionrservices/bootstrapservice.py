@@ -17,17 +17,17 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import time, threading, uuid
+import time, threading, uuid, os
 from gevent.pywsgi import WSGIServer, WSGIHandler
 from stem.control import Controller
 from flask import Flask, Response
 from netcontroller import get_open_port
 from . import httpheaders
 from onionrutils import stringvalidators, epoch
+import logger
 import config, onionrblocks, filepaths
 import onionrexceptions
 import deadsimplekv as simplekv
-import warden
 from . import pool
 
 def __bootstrap_timeout(server: WSGIServer, timeout: int, signal_object):
@@ -39,7 +39,6 @@ def bootstrap_client_service(peer, comm_inst=None, bootstrap_timeout=300):
     '''
         Bootstrap client services
     '''
-    
     if not stringvalidators.validate_pub_key(peer):
         raise ValueError('Peer must be valid base32 ed25519 public key')
     
@@ -89,7 +88,7 @@ def bootstrap_client_service(peer, comm_inst=None, bootstrap_timeout=300):
             return Response("")
 
     with Controller.from_port(port=config.get('tor.controlPort')) as controller:
-        connection_pool.bootstrap_pending.append(peer)
+        if not connection_pool is None: connection_pool.bootstrap_pending.append(peer)
         # Connect to the Tor process for Onionr
         controller.authenticate(config.get('tor.controlpassword'))
         # Create the v3 onion service
@@ -97,7 +96,7 @@ def bootstrap_client_service(peer, comm_inst=None, bootstrap_timeout=300):
         onionrblocks.insert(response.service_id, header='con', sign=True, encryptType='asym', 
         asymPeer=peer, disableForward=True, expire=(epoch.get_epoch() + bootstrap_timeout))
         
-        threading.Thread(target=__bootstrap_timeout, args=[http_server, bootstrap_timeout], daemon=True)
+        threading.Thread(target=__bootstrap_timeout, args=[http_server, bootstrap_timeout, timed_out], daemon=True).start()
 
         # Run the bootstrap server
         try:
@@ -107,11 +106,11 @@ def bootstrap_client_service(peer, comm_inst=None, bootstrap_timeout=300):
         # This line reached when server is shutdown by being bootstrapped
     # Add the address to the client pool
     if not comm_inst is None:
+        connection_pool.bootstrap_pending.remove(peer)
+        if timed_out.timed_out:
+            logger.warn('Could not connect to %s due to timeout' % (peer,))
+            return None
         comm_inst.direct_connection_clients[peer] = response.service_id
-    
-    connection_pool.bootstrap_pending.remove(peer)
 
-    if timed_out.timed_out:
-        raise onionrexceptions.Timeout
     # Now that the bootstrap server has received a server, return the address
     return key_store.get(bs_id)

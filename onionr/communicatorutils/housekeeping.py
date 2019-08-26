@@ -25,6 +25,13 @@ from coredb import blockmetadb, dbfiles
 import onionrstorage
 from onionrstorage import removeblock
 import onionrblacklist
+
+def __remove_from_upload(comm_inst, block_hash: str):
+    try:
+        comm_inst.blocksToUpload.remove(block_hash)
+    except ValueError:
+        pass
+
 def clean_old_blocks(comm_inst):
     '''Delete old blocks if our disk allocation is full/near full, and also expired blocks'''
     blacklist = onionrblacklist.OnionrBlackList()
@@ -33,13 +40,15 @@ def clean_old_blocks(comm_inst):
         blacklist.addToDB(bHash)
         removeblock.remove_block(bHash)
         onionrstorage.deleteBlock(bHash)
+        __remove_from_upload(comm_inst, bHash)
         logger.info('Deleted block: %s' % (bHash,))
 
     while comm_inst.storage_counter.isFull():
         oldest = blockmetadb.get_block_list()[0]
         blacklist.addToDB(oldest)
         removeblock.remove_block(oldest)
-        onionrstorage.deleteBlock(bHash)
+        onionrstorage.deleteBlock(oldest)
+        __remove_from_upload.remove(comm_inst, oldest)
         logger.info('Deleted block: %s' % (oldest,))
 
     comm_inst.decrementThreadCount('clean_old_blocks')

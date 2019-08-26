@@ -113,7 +113,7 @@ class OnionrCommunicatorDaemon:
         OnionrCommunicatorTimers(self, onlinepeers.clear_offline_peer, 58, myArgs=[self])
 
         # Timer to cleanup old blocks
-        blockCleanupTimer = OnionrCommunicatorTimers(self, housekeeping.clean_old_blocks, 65, myArgs=[self])
+        blockCleanupTimer = OnionrCommunicatorTimers(self, housekeeping.clean_old_blocks, 20, myArgs=[self])
 
         # Timer to discover new peers
         OnionrCommunicatorTimers(self, lookupadders.lookup_new_peer_transports_with_communicator, 60, requiresPeer=True, myArgs=[self], maxThreads=2)

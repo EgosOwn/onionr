@@ -111,9 +111,10 @@ def on_processblocks(api, data=None):
     metadata = data['block'].bmetadata # Get the block metadata
     if data['type'] != 'brd':
         return
-    b_hash = reconstructhash.deconstruct_hash(data['block'].hash) # Get the 0-truncated block hash
-    board_cache = simplekv.DeadSimpleKV(identifyhome.identify_home() + '/board-index.cache.json') # get the board index cache
 
+    b_hash = reconstructhash.deconstruct_hash(data['block'].hash) # Get the 0-truncated block hash
+    board_cache = simplekv.DeadSimpleKV(identifyhome.identify_home() + '/board-index.cache.json', flush_on_exit=False) # get the board index cache
+    board_cache.refresh()
     # Validate the channel name is sane for caching
     try:
         ch = metadata['ch']
@@ -127,11 +128,7 @@ def on_processblocks(api, data=None):
     
     existing_posts = board_cache.get(ch)
     if existing_posts is None:
-        existing_posts = ''
-
-    check_list = existing_posts.split(',')
-    if len(check_list) > 30:
-        check_list.pop(0)
-    existing_posts = ','.join(check_list)
-    board_cache.put(ch, '%s,%s' % (existing_posts, b_hash))
+        existing_posts = []
+    existing_posts.append(data['block'].hash)
+    board_cache.put(ch, existing_posts)
     board_cache.flush()
