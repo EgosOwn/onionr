@@ -25,10 +25,10 @@ from utils import reconstructhash
 import onionrblacklist
 blacklist = onionrblacklist.OnionrBlackList()
 def lookup_blocks_from_communicator(comm_inst):
-    logger.info('Looking up new blocks...')
+    logger.info('Looking up new blocks')
     tryAmount = 2
     newBlocks = ''
-    existingBlocks = blockmetadb.get_block_list()
+    existingBlocks = blockmetadb.get_block_list() # List of existing saved blocks
     triedPeers = [] # list of peers we've tried this time around
     maxBacklog = 1560 # Max amount of *new* block hashes to have already in queue, to avoid memory exhaustion
     lastLookupTime = 0 # Last time we looked up a particular peer's list
@@ -89,5 +89,6 @@ def lookup_blocks_from_communicator(comm_inst):
         if new_block_count > 1:
             block_string = "s"
         logger.info('Discovered %s new block%s' % (new_block_count, block_string), terminal=True)
+        comm_inst.download_blocks_timer.count = int(comm_inst.download_blocks_timer.frequency * 0.99)
     comm_inst.decrementThreadCount('lookup_blocks_from_communicator')
     return
