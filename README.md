@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-    Private P2P Communication Network 🕵️
+    Private P2P Communication Network 📡
 </p>
 
 (***pre-alpha & experimental, not well tested or easy to use yet***)
