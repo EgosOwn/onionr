@@ -22,7 +22,7 @@ def get_arguments():
         ('addfile', 'add-file'): filecommands.add_file,
         ('get-file', 'getfile'): filecommands.get_file,
         ('export-block', 'exportblock'): exportblocks.export_block,
-        ('importblocks', 'import-blocks'): importnewblocks.import_new_blocks,
+        ('importblocks', 'import-blocks', 'import-block'): importnewblocks.import_new_blocks,
         ('addid', 'add-id'): pubkeymanager.add_ID,
         ('changeid', 'change-id'): pubkeymanager.change_ID,
         ('resettor', 'reset-tor'): resettor.reset_tor
