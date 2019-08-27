@@ -53,10 +53,11 @@ def insert_block(data, header='txt', sign=False, encryptType='', symKey='', asym
 
     meta['type'] = str(header)
 
-    if encryptType in ('asym', 'sym', ''):
+    if encryptType in ('asym', 'sym'):
         metadata['encryptType'] = encryptType
     else:
-        raise onionrexceptions.InvalidMetadata('encryptType must be asym or sym, or blank')
+        if not encryptType in ('', None):
+            raise onionrexceptions.InvalidMetadata('encryptType must be asym or sym, or blank')
 
     try:
         data = data.encode()

@@ -40,10 +40,5 @@ def get_block_metadata_from_data(block_data):
     else:
         data = block_data[block_data.find(b'\n'):].decode()
 
-        if not metadata['encryptType'] in ('asym', 'sym'):
-            try:
-                meta = json.loads(metadata['meta'])
-            except KeyError:
-                pass
         meta = metadata['meta']
     return (metadata, meta, data)
