@@ -18,7 +18,13 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 import os
+import mimetypes
 from flask import Blueprint, send_from_directory
+
+# Was having some mime type issues on windows, this appeared to fix it.
+# we have no-sniff set, so if the mime types are invalid sripts can't load.
+mimetypes.add_type('application/javascript', '.js')
+mimetypes.add_type('text/css', '.css')
 
 static_files_bp = Blueprint('staticfiles', __name__)
 
