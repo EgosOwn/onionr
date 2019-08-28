@@ -18,6 +18,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 import os, sys, base64, subprocess, signal, time
+import platform # For windows sigkill workaround
 import config, logger
 from . import getopenport
 from utils import identifyhome
@@ -184,6 +185,11 @@ HiddenServicePort 80 ''' + self.apiServerIP + ''':''' + str(self.hsPort)
         except FileNotFoundError:
             pass
         time.sleep(TOR_KILL_WAIT)
+
+        if 'windows' == platform.system().lower():
+            os.system('taskkill /PID %s /F' % (pidN,))
+            time.sleep(0.5)
+            return
         try:
             os.kill(int(pidN), signal.SIGKILL)
         except (ProcessLookupError, PermissionError) as e:
