@@ -22,7 +22,7 @@
 import logger, config, threading, time, datetime, sys, json
 from onionrblockapi import Block
 from onionrutils import stringvalidators, bytesconverter
-from onionrcrypto import encryption, keypair, signing
+from onionrcrypto import encryption, keypair, signing, getourkeypair
 import onionrexceptions, onionrusers
 import locale
 locale.setlocale(locale.LC_ALL, '')
@@ -80,7 +80,7 @@ class PlainEncryption:
         plaintext = ""
         data = ""
         logger.info("Please enter your message (ctrl-d or -q to stop):", terminal=True)
-        keypair = getourkeypair.get_our_keypair()
+        keypair = getourkeypair.get_keypair()
         try:
             for line in sys.stdin:
                 if line == '-q\n':
