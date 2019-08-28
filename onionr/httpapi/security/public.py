@@ -17,7 +17,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-from flask import Blueprint, request, abort
+from flask import Blueprint, request, abort, g
 from onionrservices import httpheaders
 from onionrutils import epoch
 from utils import gettransports
@@ -37,6 +37,13 @@ class PublicAPISecurity:
                 # Disallow connection if wrong HTTP hostname, in order to prevent DNS rebinding attacks
                 abort(403)
             public_api.hitCount += 1 # raise hit count for valid requests
+            try:
+                if 'onionr' in request.headers['User-Agent'].lower():
+                    g.is_onionr_client = True
+                else:
+                    g.is_onionr_client = False
+            except KeyError:
+                g.is_onionr_client = False
 
         @public_api_security_bp.after_app_request
         def send_headers(resp):
@@ -44,5 +51,11 @@ class PublicAPISecurity:
             resp = httpheaders.set_default_onionr_http_headers(resp)
             # Network API version
             resp.headers['X-API'] = public_api.API_VERSION
+            if g.is_onionr_client:
+                del resp.headers['Content-Security-Policy']
+                del resp.headers['X-Frame-Options']
+                del resp.headers['X-Content-Type-Options']
+                print('deleted')
+                print(resp.headers)
             public_api.lastRequest = epoch.get_rounded_epoch(roundS=5)
             return resp

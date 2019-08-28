@@ -33,7 +33,7 @@ def do_post_request(url, data={}, port=0, proxyType='tor', max_size=10000):
         proxies = {'http': 'http://127.0.0.1:4444'}
     else:
         return
-    headers = {'user-agent': 'PyOnionr', 'Connection':'close'}
+    headers = {'User-Agent': 'PyOnionr', 'Connection':'close'}
     try:
         proxies = {'http': 'socks4a://127.0.0.1:' + str(port), 'https': 'socks4a://127.0.0.1:' + str(port)}
         #r = requests.post(url, data=data, headers=headers, proxies=proxies, allow_redirects=False, timeout=(15, 30))
@@ -60,7 +60,7 @@ def do_get_request(url, port=0, proxyType='tor', ignoreAPI=False, returnHeaders=
         proxies = {'http': 'http://127.0.0.1:4444'}
     else:
         return
-    headers = {'user-agent': 'PyOnionr', 'Connection':'close'}
+    headers = {'User-Agent': 'PyOnionr', 'Connection':'close'}
     response_headers = dict()
     try:
         proxies = {'http': 'socks4a://127.0.0.1:' + str(port), 'https': 'socks4a://127.0.0.1:' + str(port)}
