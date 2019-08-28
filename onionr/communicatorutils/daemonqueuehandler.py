@@ -60,6 +60,8 @@ def handle_daemon_commands(comm_inst):
                     i.count = (i.frequency - 1)
         elif cmd[0] == 'uploadBlock':
             comm_inst.blocksToUpload.append(cmd[1])
+        else:
+            logger.debug('Received daemon queue command unable to be handled: %s' % (cmd[0],))
 
         if cmd[0] not in ('', None):
             if response != '':
