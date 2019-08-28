@@ -7,6 +7,7 @@ import config, onionrcrypto as crypto, subprocesspow, onionrexceptions
 from onionrusers import onionrusers
 from onionrutils import localcommand, blockmetadata, stringvalidators
 import coredb
+import onionrproofs
 def insert_block(data, header='txt', sign=False, encryptType='', symKey='', asymPeer='', meta = {}, expire=None, disableForward=False):
     '''
         Inserts a block into the network
