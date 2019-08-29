@@ -28,12 +28,12 @@ import onionrexceptions
 from onionrutils import importnewblocks # func to import new blocks
 import onionrevents as events
 def get_arguments():
-    '''This is a function because we need to be able to dynamically modify them with plugins'''
+    """This is a function because we need to be able to dynamically modify them with plugins"""
     args = {
-        ('blacklist', 'blacklist-block', 'remove-block', 'removeblock'): banblocks.ban_block,
+        ('blacklist', 'blacklist-block', 'remove-block', 'removeblock', 'banblock', 'ban-block'): banblocks.ban_block,
         ('details', 'info'): onionrstatistics.show_details,
         ('stats', 'statistics'): onionrstatistics.show_stats,
-        ('version'): version.version,
+        ('version',): version.version,
         ('start', 'daemon'): daemonlaunch.start,
         ('stop', 'kill'): daemonlaunch.kill_daemon,
         ('add-address', 'addaddress', 'addadder'): keyadders.add_address,
@@ -51,10 +51,17 @@ def get_arguments():
     }
     return args
 
-def get_help():
-    return
+def get_help(arg: str) -> str:
+    """Returns the help info string from a given command"""
+    arguments = get_arguments()
+    # Iterate the command alias tuples
+    for argument in arguments:
+        # Return the help message if its found in a command alias tuple
+        if arg in argument: return arguments[argument].onionr_help
+    raise KeyError
 
 def get_func(argument):
+    """Returns the function for a given command argument"""
     argument = argument.lower()
     args = get_arguments()
 

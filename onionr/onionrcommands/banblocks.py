@@ -41,3 +41,5 @@ def ban_block():
             logger.warn('That block is already blacklisted', terminal=True)
     else:
         logger.error('Invalid block hash', terminal=True)
+
+ban_block.onionr_help = "<block hash>: deletes and blacklists a block"

@@ -33,11 +33,35 @@ def register_plugin_commands(cmd):
             return True
 
 def register():
+    PROGRAM_NAME = "onionr"
+    def get_help_message(cmd: str, default: str = 'No help available for this command'):
+        for i in arguments.get_arguments():
+            for alias in i:
+                try:
+                    return arguments.get_help(cmd)
+                except AttributeError:
+                    pass
+        return default
+
     try:
         cmd = sys.argv[1]
     except IndexError:
         cmd = ""
-
+    
+    if cmd.replace('--', '').lower() == 'help':
+        try:
+            sys.argv[2]
+        except IndexError:
+            for i in arguments.get_arguments():
+                logger.info('%s <%s>: %s' % (PROGRAM_NAME, '/'.join(i), get_help_message(i[0])), terminal=True)
+        else:
+            try:
+                logger.info('%s %s: %s' % (PROGRAM_NAME, sys.argv[2], get_help_message(sys.argv[2])), terminal=True)
+            except KeyError:
+                logger.error('%s: command does not exist.' % [sys.argv[2]], terminal=True)
+                sys.exit(3)
+        return
+    
     try:
         arguments.get_func(cmd)()
     except onionrexceptions.NotFound:
