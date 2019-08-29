@@ -113,11 +113,6 @@ def on_decrypt_cmd(api, data=None):
 def on_encrypt_cmd(api, data=None):
     PlainEncryption(api).encrypt()
 
-def on_init(api, data = None):
-    '''
-        This event is called after Onionr is initialized, but before the command
-        inputted is executed. Could be called when daemon is starting or when
-        just the client is running.
-    '''
-    pluginapi = api
-    encrypt = PlainEncryption(pluginapi)
+on_encrypt_cmd.onionr_help = """encrypt <user_key>\nEncrypt text data to an Onionr user key. Similar to PGP"""
+on_decrypt_cmd.onionr_help = """decrypt\nDecrypt text data with your Onionr key. Similar to PGP"""
+ONIONR_COMMANDS = ['encrypt', 'decrypt']

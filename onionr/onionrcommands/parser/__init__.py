@@ -24,17 +24,28 @@ import onionrplugins
 import onionrpluginapi
 from . import arguments, recommend
 
+plugin_command = lambda cmd: 'on_%s_cmd' % (cmd,)
+
 def register_plugin_commands(cmd):
     cmd = 'on_%s_cmd' % (cmd,)
+    plugin_cmd = plugin_command(cmd)
     for pl in onionrplugins.get_enabled_plugins():
         pl = onionrplugins.get_plugin(pl)
-        if hasattr(pl, cmd):
-            getattr(pl, cmd)(onionrpluginapi.PluginAPI)
+        if hasattr(pl, plugin_cmd):
+            getattr(pl, plugin_cmd)(onionrpluginapi.PluginAPI)
             return True
 
 def register():
-    PROGRAM_NAME = "onionr"
     def get_help_message(cmd: str, default: str = 'No help available for this command'):
+        pl_cmd = plugin_command(cmd)
+        for pl in onionrplugins.get_enabled_plugins():
+            pl = onionrplugins.get_plugin(pl)
+            if hasattr(pl, pl_cmd):
+                try:
+                    return getattr(pl, pl_cmd).onionr_help
+                except AttributeError:
+                    pass
+        
         for i in arguments.get_arguments():
             for alias in i:
                 try:
@@ -43,17 +54,40 @@ def register():
                     pass
         return default
 
+    PROGRAM_NAME = "onionr"
+
     try:
         cmd = sys.argv[1]
     except IndexError:
         cmd = ""
+
+    is_help_cmd = False
+    if cmd.replace('--', '').lower() == 'help': is_help_cmd = True
+
+    try:
+        arguments.get_func(cmd)()
+    except onionrexceptions.NotFound:
+        if not register_plugin_commands(cmd) and not is_help_cmd:
+            recommend.recommend()
+            sys.exit(3)
     
-    if cmd.replace('--', '').lower() == 'help':
+    if is_help_cmd:
         try:
             sys.argv[2]
         except IndexError:
             for i in arguments.get_arguments():
                 logger.info('%s <%s>: %s' % (PROGRAM_NAME, '/'.join(i), get_help_message(i[0])), terminal=True)
+            for pl in onionrplugins.get_enabled_plugins():
+                pl = onionrplugins.get_plugin(pl)
+                if hasattr(pl, 'ONIONR_COMMANDS'):
+                    print('')
+                    try:
+                        logger.info('%s commands:' % (pl.plugin_name,), terminal=True)
+                    except AttributeError:
+                        logger.info('%s commands:' % (pl.__name__,), terminal=True)
+                    for plugin_cmd in pl.ONIONR_COMMANDS:
+                        logger.info('%s %s: %s' % (PROGRAM_NAME, plugin_cmd, get_help_message(plugin_cmd)), terminal=True)
+                    print('')
         else:
             try:
                 logger.info('%s %s: %s' % (PROGRAM_NAME, sys.argv[2], get_help_message(sys.argv[2])), terminal=True)
@@ -62,9 +96,3 @@ def register():
                 sys.exit(3)
         return
     
-    try:
-        arguments.get_func(cmd)()
-    except onionrexceptions.NotFound:
-        if not register_plugin_commands(cmd):
-            recommend.recommend()
-            sys.exit(3)
