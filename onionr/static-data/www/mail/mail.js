@@ -269,7 +269,7 @@ function getSentbox(){
         if (keys.length == 0){
             threadPart.innerHTML = "nothing to show here yet."
         }
-        for (var i = 0; i < keys.length; i++) (function(i, resp){
+        for (var i = keys.length - 1; i > 0; i--) (function(i, resp){
             var entry = document.createElement('div')
             var obj = resp[i]
             var toLabel = document.createElement('span')
@@ -334,7 +334,7 @@ fetch('/mail/getinbox', {
     }})
 .then((resp) => resp.text()) // Transform the data into json
 .then(function(data) {
-    pms = data.split(',')
+    pms = data.split(',').reverse()
     if (callNext){
         getInbox()
     }

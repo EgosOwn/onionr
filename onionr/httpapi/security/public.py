@@ -51,11 +51,10 @@ class PublicAPISecurity:
             resp = httpheaders.set_default_onionr_http_headers(resp)
             # Network API version
             resp.headers['X-API'] = public_api.API_VERSION
+            # Delete some HTTP headers for Onionr user agents
             if g.is_onionr_client:
                 del resp.headers['Content-Security-Policy']
                 del resp.headers['X-Frame-Options']
                 del resp.headers['X-Content-Type-Options']
-                print('deleted')
-                print(resp.headers)
             public_api.lastRequest = epoch.get_rounded_epoch(roundS=5)
             return resp
