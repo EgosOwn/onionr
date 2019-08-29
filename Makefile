@@ -36,5 +36,5 @@ reset:
 
 plugins-reset:
 	@echo "Resetting plugins..."
-	rm -rf onionr/$(ONIONR_HOME)/plugins/ | true > /dev/null 2>&1
+	@./onionr.sh reset-plugins | true > /dev/null 2>&1
 	@./onionr.sh version | grep -v "Failed" --color=always

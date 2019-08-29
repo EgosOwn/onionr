@@ -1,9 +1,29 @@
+'''
+    Onionr - Private P2P Communication
+
+    Sets CLI arguments for Onionr
+'''
+'''
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+'''
 from .. import onionrstatistics, version, daemonlaunch, keyadders, openwebinterface
 from .. import banblocks # Command to blacklist a block by its hash
 from .. import filecommands # commands to share files with onionr
 from .. import exportblocks # commands to export blocks
 from .. import pubkeymanager # commands to add or change id
 from .. import resettor # command to reset the tor data directory
+from .. import resetplugins # command to reinstall default plugins
 import onionrexceptions
 from onionrutils import importnewblocks # func to import new blocks
 import onionrevents as events
@@ -25,7 +45,8 @@ def get_arguments():
         ('importblocks', 'import-blocks', 'import-block'): importnewblocks.import_new_blocks,
         ('addid', 'add-id'): pubkeymanager.add_ID,
         ('changeid', 'change-id'): pubkeymanager.change_ID,
-        ('resettor', 'reset-tor'): resettor.reset_tor
+        ('resettor', 'reset-tor'): resettor.reset_tor,
+        ('resetplugins', 'reset-plugins'): resetplugins.reset
 
     }
     return args

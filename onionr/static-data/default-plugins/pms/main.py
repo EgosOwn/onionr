@@ -38,15 +38,15 @@ import sentboxdb, mailapi, loadinbox # import after path insert
 flask_blueprint = mailapi.flask_blueprint
 security_whitelist = ['staticfiles.mail', 'staticfiles.mailindex']
 
-def add_deleted(keyStore, bHash):
+def add_deleted(keyStore, b_hash):
     existing = keyStore.get('deleted_mail')
-    bHash = reconstructhash.reconstruct_hash(bHash)
+    bHash = reconstructhash.reconstruct_hash(b_hash)
     if existing is None:
         existing = []
     else:
         if bHash in existing:
             return
-    keyStore.put('deleted_mail', existing.append(bHash))
+    keyStore.put('deleted_mail', existing.append(b_hash))
 
 def on_insertblock(api, data={}):
     meta = json.loads(data['meta'])
