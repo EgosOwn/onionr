@@ -3,13 +3,12 @@
 
 <head>
     <meta charset='utf-8'>
-    <!--Mobile responsive-->
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>
         Onionr Mail
     </title>
     <link rel='shortcut icon' type='image/ico' href='/shared/images/favicon.ico'>
-    <link rel='stylesheet' href='/shared/main/bulma.min.css'>
+    <link rel="stylesheet" href="/shared/main/bulma.min.css">
     <link rel="stylesheet" href="/shared/main/styles-new.css">
     <link rel="stylesheet" href="/mail/mail.css">
 </head>
@@ -108,14 +107,20 @@
     </div>
     <div id='sendMessage' class='overlay'>
         <div class='overlayContent'>
-            <label>Select friend: <select id='friendSelect'></select></label>
+            <div class="field">
+                <label>Select friend: <select id='friendSelect'></select></label>
+            </div>
             <form method='post' action='' id='sendForm' enctype="application/x-www-form-urlencoded">
                 <span class='closeOverlay' overlay='sendMessage'></span>
-                To: <input id='draftID' type='text' name='to' placeholder='pubkey' required>
+                <div class="field">
+                    To: <input id='draftID' type='text' name='to' placeholder='pubkey' required>
+                </div>
                 Subject: <input name='subject' id='draftSubject' maxlength=25 type='text'
                     placeholder='message subject'>
-                <textarea name='message' placeholder='type your message...' id='draftText' required></textarea>
-                <input type='submit' value='Send' class='successBtn'>
+                <div class="field">
+                    <textarea name='message' class="textarea" placeholder='type your message...' id='draftText' required></textarea>
+                </div>
+                <input type='submit' value='Send' class='button is-success successBtn'>
             </form>
         </div>
     </div>

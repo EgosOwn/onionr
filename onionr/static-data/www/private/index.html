@@ -9,7 +9,8 @@
         Onionr
     </title>
     <link rel='shortcut icon' type='image/ico' href='/shared/images/favicon.ico'>
-    <link rel='stylesheet' href='/shared/main/bulma.min.css'>
+    <link rel="stylesheet" href="/shared/fontawesome-free-5.10.2/css/all.css">
+    <link rel="stylesheet" href="/shared/main/bulma.min.css">
     <link rel="stylesheet" href="/shared/main/styles-new.css">
     <script defer src='/shared/navbar.js'></script>
     <script defer src='/shared/misc.js'></script>
@@ -76,13 +77,19 @@
                                     <input id="myPub" class="input myPub" type="text" readonly>
                                 </p>
                                 <p class="control">
-                                    <a id="myPubCopy" class="button is-primary">Copy</a>
+                                    <a id="myPubCopy" class="button is-primary">
+                                        <span class="icon">
+                                            <i class="fas fa-copy"></i>
+                                        </span>
+                                    </a>
                                 </p>
                             </div>
                         </div>
                         <div class="field is-grouped is-grouped-centered">
                             <p class="control">
-                                <a class="button is-danger is-outlined" id='shutdownNode'>Shutdown Node</a>
+                                <a class="button is-danger is-outlined" id='shutdownNode'>
+                                    Shutdown
+                                </a>
                             </p>
                             <p class="control">
                                 <a class="button is-link" id='refreshStats'>Refresh Stats</a>
@@ -137,10 +144,14 @@
                         <div class="content">
                             <div class="columns">
                                 <div class="column">
-                                    🔒 Security level: <span id='securityLevel'></span>
+                                    <span class="icon">
+                                        <i class="fas fa-lock"></i>
+                                    </span>
+                                    Security level: <span id='securityLevel'></span>
                                 </div>
                                 <div class="column">
-                                    🕰️ Uptime: <span id='uptime'></span>
+                                    <i class="fas fa-clock"></i>
+                                    Uptime: <span id='uptime'></span>
                                 </div>
                             </div>
                             <h6>Session Connections</h6>
@@ -152,7 +163,8 @@
                                     ⬇️ Total Requests: <span id='totalRec'>None since start</span>
                                 </div>
                             </div>
-                            🔗 Outgoing Connections:
+                            <i class="fas fa-link"></i>
+                            Outgoing Connections:
                             <div class="control">
                                 <pre id='connectedNodes' class="textarea" rows="5" readonly>Unable to get nodes</pre>
                             </div>
@@ -160,10 +172,12 @@
                             <h6>Blocks</h6>
                             <div class="columns">
                                 <div class="column">
-                                    💾 Stored Blocks: <span id='storedBlocks'></span>
+                                    <i class="fas fa-hdd"></i>
+                                    Stored Blocks: <span id='storedBlocks'></span>
                                 </div>
                                 <div class="column">
-                                    📨 Blocks in queue: <span id='blockQueue'></span>
+                                    <i class="fas fa-mail-bulk"></i>
+                                    Blocks in queue: <span id='blockQueue'></span>
                                 </div>
                             </div>
                         </div>
