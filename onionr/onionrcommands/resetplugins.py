@@ -33,3 +33,5 @@ def reset():
     
     setup_default_plugins()
     logger.info('Default plugins have been reset.', terminal=True)
+
+reset.onionr_help = "reinstalls default Onionr plugins (e.g. mail). Should be done after git pulls or plugin modification."

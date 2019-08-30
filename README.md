@@ -8,16 +8,26 @@
     Private P2P Communication Network 📡
 </p>
 
-(***pre-alpha & experimental, not well tested or easy to use yet***)
+<img src='https://img.shields.io/github/license/beardog108/onionr'>
+<img src='https://gitlab.com/beardog/Onionr/badges/master/build.svg'>
+<img src='https://img.shields.io/badge/Docker%20%F0%9F%90%8B-Supported-success'>
+<img src='https://img.shields.io/badge/Python%20Version%20%F0%9F%90%8D-3.6+%20%E2%9C%93-blue'>
+<img src='https://img.shields.io/keybase/btc/beardog'> 
+<img src='https://img.shields.io/github/commit-activity/m/beardog108/onionr'>
 
-[![Open Source Love](https://badges.frapsoft.com/os/v3/open-source.png?v=103)](https://github.com/ellerbrock/open-source-badges/)
-<img src='https://gitlab.com/beardog/Onionr/badges/master/build.svg'> - [Onionr.net](https://onionr.net/) - [.onion](http://onionr.onionkvc5ibm37bmxwr56bdxcdnb6w3wm4bdghh5qo6f6za7gn7styid.onion/)
+<img src = 'https://img.shields.io/reddit/subreddit-subscribers/onionr?style=social'> <img src='https://img.shields.io/twitter/follow/onionrnet?style=social'>
+
+|                                      |                            |                            |
+| -----------                          | -----------                | -----------                |
+| [Install](#install-and-run-on-linux) | [Features](#main-features) | [Screenshots](#screenshots)|
+| [Docs](#documentation)               | [Get involved](#help-out)  | [Onionr.net](https://onionr.net/)/[.onion](http://onionr.onionkvc5ibm37bmxwr56bdxcdnb6w3wm4bdghh5qo6f6za7gn7styid.onion/)                  |
+
 
 <hr>
 
 **The main repository for this software is at https://GitLab.com/beardog/Onionr/**
 
-**The Github page is a mirror, do not submit PRs or issues there.**
+**The [Github repository](https://github.com/beardog108/onionr/) is a mirror, do not submit PRs or issues there.**
 
 # About
 
@@ -41,8 +51,6 @@ The whitepaper (subject to change prior to alpha release) is available [here](do
 * [X] 💻 Easy HTTP API for integration to websites
 * [X] 🕵️ Metadata analysis resistance and anonymity
 * [X] 📡 Transport agnosticism (no internet required)
-
-## Software Suite
 
 Onionr ships with various application plugins ready for use out of the box:
 
@@ -133,7 +141,9 @@ Email: beardog [ at ] mailbox.org
 
 Onionr Mail: TRH763JURNY47QPBTTQ4LLPYCYQK6Q5YA33R6GANKZK5C5DKCIGQ
 
-## Disclaimers and legal
+# Security
+
+Onionr is pre-alpha. This means it is unstable, probably insecure, and experimental.
 
 No matter how good Onionr and other software gets, there will always be ways for clever or well-funded adversaries to break your security.
 
@@ -148,8 +158,6 @@ Onionr is published under the GNU GPL v3 license, except for the logo.
 The Tor Project and I2P developers do not own, create, or endorse this project, and are not otherwise involved.
 
 Tor is a trademark for the Tor Project. We do not own it.
-
-The 'open source badge' is by Maik Ellerbrock and is licensed under a Creative Commons Attribution 4.0 International License.
 
 ## Onionr Logo
 
