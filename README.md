@@ -15,7 +15,9 @@
 
 <hr>
 
-**The main repository for this software is at https://gitlab.com/beardog/Onionr/**
+**The main repository for this software is at https://GitLab.com/beardog/Onionr/**
+
+**The Github page is a mirror, do not submit PRs or issues there.**
 
 # About
 

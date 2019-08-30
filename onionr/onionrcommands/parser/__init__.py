@@ -36,7 +36,9 @@ def register_plugin_commands(cmd):
             return True
 
 def register():
+    """Registers commands and handles help command processing"""
     def get_help_message(cmd: str, default: str = 'No help available for this command'):
+        """Return help message for a given command, supports plugin commands"""
         pl_cmd = plugin_command(cmd)
         for pl in onionrplugins.get_enabled_plugins():
             pl = onionrplugins.get_plugin(pl)
@@ -52,14 +54,16 @@ def register():
                     return arguments.get_help(cmd)
                 except AttributeError:
                     pass
-        return default
+        return default # Return the help string
 
     PROGRAM_NAME = "onionr"
 
+    # Get the command
     try:
         cmd = sys.argv[1]
     except IndexError:
-        cmd = ""
+        logger.debug("Detected Onionr run with no commands specified")
+        return
 
     is_help_cmd = False
     if cmd.replace('--', '').lower() == 'help': is_help_cmd = True
