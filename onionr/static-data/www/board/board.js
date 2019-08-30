@@ -94,7 +94,7 @@ newPostForm.onsubmit = function(){
     var message = document.getElementById('newMsgText').value
     var channel = document.getElementById('feedIDInput').value
     var meta = {'ch': channel}
-    var postData = {'message': message, 'type': 'brd', 'encrypt': false, 'meta': JSON.stringify(meta)}
+    var postData = {'message': message, 'sign': false, 'type': 'brd', 'encrypt': false, 'meta': JSON.stringify(meta)}
     postData = JSON.stringify(postData)
     newPostForm.style.display = 'none'
     fetch('/insertblock', {

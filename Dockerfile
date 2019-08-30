@@ -14,7 +14,7 @@ ENV LC_ALL en_US.UTF-8
 
 WORKDIR /srv/
 ADD ./requirements.txt /srv/requirements.txt
-RUN pip3 install -r requirements.txt
+RUN pip3 install --require-hashes -r requirements.txt
 
 WORKDIR /root/
 #Add Onionr source
