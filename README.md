@@ -8,7 +8,7 @@
     Private P2P Communication Network 📡
 </p>
 
-<img src='https://img.shields.io/github/license/beardog108/onionr'> <img src='https://gitlab.com/beardog/Onionr/badges/master/build.svg'> <img src='https://img.shields.io/badge/docker%20%F0%9F%90%8B-supported-success'> <img src='https://img.shields.io/badge/python%20version%20%F0%9F%90%8D-3.6+%20%E2%9C%93-blue'> <img src='https://img.shields.io/keybase/btc/beardog'> <img src='https://img.shields.io/github/commit-activity/m/beardog108/onionr'>
+<img src='https://img.shields.io/github/license/beardog108/onionr'> <img src='https://gitlab.com/beardog/Onionr/badges/master/build.svg'> <img src='https://img.shields.io/badge/docker%20%F0%9F%90%8B-supported-success'> <img src='https://img.shields.io/badge/python%20version%20%F0%9F%90%8D-3.6+-blue'> <img src='https://img.shields.io/github/commit-activity/m/beardog108/onionr'>
 
 <img src = 'https://img.shields.io/reddit/subreddit-subscribers/onionr?style=social'> <img src='https://img.shields.io/twitter/follow/onionrnet?style=social'>
 
@@ -159,5 +159,3 @@ Tor is a trademark for the Tor Project. We do not own it.
 The Onionr logo was created by [Anhar Ismail](https://github.com/anharismail) under the [Creative Commons Attribution 4.0 International License](https://creativecommons.org/licenses/by/4.0/). 
 
 If you modify and redistribute our code ("forking"), please use a different logo and project name to avoid confusion. Please do not use the project name or logo in a way that makes it seem like we endorse you without our permission.
-
-![node web illustration](docs/onionr-web.png)
