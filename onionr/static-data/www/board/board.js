@@ -39,7 +39,11 @@ function appendMessages(msg){
         var clone = document.importNode(template.content, true);
         var div = clone.querySelectorAll("div")
         div[2].textContent = msg['content']
-        div[3].textContent = msgDate
+        if (typeof msg['meta']['signer'] != 'undefined'){
+            div[3].textContent = msg['meta']['signer'].substr(0, 5)
+            div[3].title = msg['meta']['signer']
+        }
+        div[4].textContent = msgDate
 
         if (firstLoad){
             feed.appendChild(clone)
@@ -82,7 +86,7 @@ function getBlocks(){
             appendMessages(bl)
             requested.push(blockList[i])
             }
-        }
+    }
     firstLoad = false
 }
 
@@ -94,7 +98,8 @@ newPostForm.onsubmit = function(){
     var message = document.getElementById('newMsgText').value
     var channel = document.getElementById('feedIDInput').value
     var meta = {'ch': channel}
-    var postData = {'message': message, 'sign': false, 'type': 'brd', 'encrypt': false, 'meta': JSON.stringify(meta)}
+    let doSign = document.getElementById('postAnon').checked
+    var postData = {'message': message, 'sign': doSign, 'type': 'brd', 'encrypt': false, 'meta': JSON.stringify(meta)}
     postData = JSON.stringify(postData)
     newPostForm.style.display = 'none'
     fetch('/insertblock', {
@@ -111,7 +116,6 @@ newPostForm.onsubmit = function(){
             alert('This message is already queued')
             return
         }
-        alert('Queued for submission! ' + data)
         setTimeout(function(){getBlocks()}, 3000)
       })
     return false

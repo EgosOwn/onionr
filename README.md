@@ -10,7 +10,7 @@
 
 <img src='https://img.shields.io/github/license/beardog108/onionr'> <img src='https://gitlab.com/beardog/Onionr/badges/master/build.svg'> <img src='https://img.shields.io/badge/docker%20%F0%9F%90%8B-supported-success'> <img src='https://img.shields.io/badge/python%20version%20%F0%9F%90%8D-3.6+-blue'> <img src='https://img.shields.io/github/commit-activity/m/beardog108/onionr'>
 
-<img src = 'https://img.shields.io/reddit/subreddit-subscribers/onionr?style=social'> <img src='https://img.shields.io/twitter/follow/onionrnet?style=social'>
+<a href='https://www.reddit.com/r/onionr'><img src = 'https://img.shields.io/reddit/subreddit-subscribers/onionr?style=social'></a> <a href='https://twitter.com/onionrnet'><img src='https://img.shields.io/twitter/follow/onionrnet?style=social'></a>
 
 |                                      |                            |                            |
 | -----------                          | -----------                | -----------                |

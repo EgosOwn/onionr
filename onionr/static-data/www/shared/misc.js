@@ -106,11 +106,14 @@ for (var i = 0; i < idStrings.length; i++){
 }
 
 /* Copy public ID on homepage  */
-myPubCopy.onclick = function() {
-    var copyText = document.getElementById("myPub");
-    copyText.select();
-    document.execCommand("copy")
-} 
+if (typeof myPubCopy != "undefined"){
+
+    myPubCopy.onclick = function() {
+        var copyText = document.getElementById("myPub");
+        copyText.select()
+        document.execCommand("copy")
+    } 
+}
 
 /* For Config toggle on homepage */
 var toggle  = document.getElementById("configToggle");
