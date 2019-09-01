@@ -20,11 +20,19 @@
 import os, shutil
 import logger
 from onionrutils import localcommand
+from utils import identifyhome
 
-def reset_tor():
-    tor_dir = c.dataDir + 'tordata'
+def __delete(directory):
+    tor_dir = '%s/%s/' % (identifyhome.identify_home(), directory)
     if os.path.exists(tor_dir):
         if localcommand.local_command('/ping') == 'pong!':
             logger.warn('Cannot delete Tor data while Onionr is running', terminal=True)
         else:
             shutil.rmtree(tor_dir)
+            logger.info('Tor reset', terminal=True)
+
+def reset_tor():
+    __delete('tordata')
+
+def reset_tor_key_pair():
+    __delete('hs')

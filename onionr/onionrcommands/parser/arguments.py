@@ -22,7 +22,7 @@ from .. import banblocks # Command to blacklist a block by its hash
 from .. import filecommands # commands to share files with onionr
 from .. import exportblocks # commands to export blocks
 from .. import pubkeymanager # commands to add or change id
-from .. import resettor # command to reset the tor data directory
+from .. import resettor # commands to reset the tor data directory or transport keypair
 from .. import resetplugins # command to reinstall default plugins
 import onionrexceptions
 from onionrutils import importnewblocks # func to import new blocks
@@ -46,7 +46,8 @@ def get_arguments():
         ('addid', 'add-id'): pubkeymanager.add_ID,
         ('changeid', 'change-id'): pubkeymanager.change_ID,
         ('resettor', 'reset-tor'): resettor.reset_tor,
-        ('resetplugins', 'reset-plugins'): resetplugins.reset
+        ('resetplugins', 'reset-plugins'): resetplugins.reset,
+        ('reset-tor-node-transport'): resettor.reset_tor_key_pair
 
     }
     return args
