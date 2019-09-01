@@ -8,9 +8,17 @@
         Onionr Mail
     </title>
     <link rel='shortcut icon' type='image/ico' href='/shared/images/favicon.ico'>
+    <link rel="stylesheet" href="/shared/fontawesome-free-5.10.2/css/all.min.css">
+    <link rel='stylesheet' href="/shared/main/PNotifyBrightTheme.css">
     <link rel="stylesheet" href="/shared/main/bulma.min.css">
     <link rel="stylesheet" href="/shared/main/styles-new.css">
     <link rel="stylesheet" href="/mail/mail.css">
+    <script defer src='/shared/node_modules/pnotify/dist/iife/PNotify.js'></script>
+    <script defer src='/shared/node_modules/pnotify/dist/iife/PNotifyButtons.js'></script>
+    <script defer src='/shared/navbar.js'></script>
+    <script defer src='/shared/misc.js'></script>
+    <script defer src='/mail/mail.js'></script>
+    <script defer src='/mail/sendmail.js'></script>
 </head>
 
 <body>
@@ -63,7 +71,7 @@
                                     <input id="myPub" class="input myPub" type="text" readonly>
                                 </p>
                                 <p class="control">
-                                    <a id="myPubCopy" class="button is-primary">Copy</a>
+                                    <a id="myPubCopy" class="button is-primary"><i class="fas fa-copy"></i></a>
                                 </p>
                             </div>
                         </div>
@@ -108,12 +116,12 @@
     <div id='sendMessage' class='overlay'>
         <div class='overlayContent'>
             <div class="field">
-                <label>Select friend: <select id='friendSelect'></select></label>
+                <label><i class="fas fa-user"></i> Select friend: <select id='friendSelect'></select></label>
             </div>
             <form method='post' action='' id='sendForm' enctype="application/x-www-form-urlencoded">
                 <span class='closeOverlay' overlay='sendMessage'></span>
                 <div class="field">
-                    To: <input id='draftID' type='text' name='to' placeholder='pubkey' required>
+                    To: <input id='draftID' type='text' name='to' placeholder='pubkey or select above' required>
                 </div>
                 Subject: <input name='subject' id='draftSubject' maxlength=25 type='text'
                     placeholder='message subject'>
@@ -130,7 +138,7 @@
             <ul>
                 <li class="is-active">
                     <a>
-                        <span>Inbox</span>
+                        <span id="inboxTab">Inbox</span>
                     </a>
                 </li>
                 <li>
@@ -145,6 +153,7 @@
                 </li>
             </ul>
         </div>
+        <div class='content' id='noInbox'>No messages to show ¯\_(ツ)_/¯</div>
         <div class='content'>
             <div class='mailPing'>
                 API server either shutdown, has disabled mail, or has experienced a bug.
@@ -157,10 +166,6 @@
 
     <div id="infoOverlay" class='overlay'>
     </div>
-    <script src='/shared/navbar.js'></script>
-    <script src='/shared/misc.js'></script>
-    <script src='/mail/mail.js'></script>
-    <script src='/mail/sendmail.js'></script>
 </body>
 
 </html>

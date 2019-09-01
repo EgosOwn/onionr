@@ -19,6 +19,7 @@
     <script defer src='/shared/configeditor.js'></script>
     <script defer src='/shared/sites.js'></script>
     <script defer src='/private/js/console.js'></script>
+    <script>alert("Content security policy appears to not be working. Your browser security is weak!")</script>
 </head>
 
 <body>
@@ -160,7 +161,8 @@
                                     ️ Last Received: <span id='lastIncoming'>None since start</span>
                                 </div>
                                 <div class="column">
-                                    ⬇️ Total Requests: <span id='totalRec'>None since start</span>
+                                    <i class="fas fa-arrow-down"></i>
+                                     Total Requests: <span id='totalRec'>None since start</span>
                                 </div>
                             </div>
                             <i class="fas fa-link"></i>

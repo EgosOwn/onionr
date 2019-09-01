@@ -25,6 +25,7 @@ tabBtns = document.getElementById('tabBtns')
 threadContent = {}
 replyBtn = document.getElementById('replyBtn')
 addUnknownContact = document.getElementById('addUnknownContact')
+noInbox = document.getElementById('noInbox')
 
 function addContact(pubkey, friendName){
     fetch('/friends/add/' + pubkey, {
@@ -106,6 +107,7 @@ function openThread(bHash, sender, date, sigBool, pubkey, subjectLine){
 
 function setActiveTab(tabName){
     threadPart.innerHTML = ""
+    noInbox.style.display = 'none'
     window.inboxActive = false
     switch(tabName){
         case 'inbox':
@@ -118,7 +120,7 @@ function setActiveTab(tabName){
             break
         case 'compose':
             overlay('sendMessage')
-            setActiveTab('inbox')
+            document.getElementById('inboxTab').click()
             break
     }
 }
@@ -235,7 +237,7 @@ function getInbox(){
     for(var i = 0; i < pms.length; i++) {
         var add = true
         if (pms[i].trim().length == 0){
-            threadPart.innerText = 'No messages to show ¯\\_(ツ)_/¯'
+            noInbox.style.display = 'block'
             continue
         }
         else{
@@ -322,9 +324,6 @@ function showSentboxWindow(to, content){
 }
 
 function refreshPms(callNext){
-    if (threadPart.innerText.includes("¯\\_(ツ)_/¯")){
-        threadPart.innerText = ""
-    }
     if (! window.inboxActive){
         return
     }
@@ -335,6 +334,9 @@ fetch('/mail/getinbox', {
 .then((resp) => resp.text()) // Transform the data into json
 .then(function(data) {
     pms = data.split(',').reverse()
+    if (pms.length > 0){
+        noInbox.style.display = 'none'
+    }
     if (callNext){
         getInbox()
     }
