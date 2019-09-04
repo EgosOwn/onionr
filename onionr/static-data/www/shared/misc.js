@@ -112,15 +112,53 @@ if (typeof myPubCopy != "undefined"){
         var copyText = document.getElementById("myPub");
         copyText.select()
         document.execCommand("copy")
+        if (typeof PNotify != 'undefined'){
+            PNotify.success({
+                text: "Copied to clipboard"
+              })
+        }
+        console.log("copied pubkey to clipboard")
     } 
 }
 
 /* For Config toggle on homepage */
-var toggle  = document.getElementById("configToggle");
-var content = document.getElementById("configContent");
+var toggle  = document.getElementById("configToggle")
+var content = document.getElementById("configContent")
 
 if(typeof toggle !== 'undefined' && toggle !== null) {
     toggle.addEventListener("click", function() {
     content.classList.toggle("show");
     })
 }
+
+var aboutBtns = document.getElementsByClassName('aboutLink')
+var aboutModals = document.getElementsByClassName('aboutModal')
+var aboutCloseBtns = document.getElementsByClassName('closeAboutModal')
+
+var aboutText = ''
+
+setAbout = function(){
+    if (aboutText === ''){
+        setTimeout(function(){setAbout()}, 100)
+        return
+    }
+    let aboutBody = document.getElementsByClassName('aboutBody')
+    for (i = 0; i < aboutBody.length; i++){
+        aboutBody[i].innerHTML = aboutText
+    }
+}
+
+for (x = 0; x < aboutBtns.length; x++){
+    aboutBtns[x].onclick = function(){
+        for (i = 0; i < aboutModals.length; i++){
+            aboutModals[i].classList.add('is-active')
+        }
+    }
+}
+for (i = 0; i < aboutCloseBtns.length; i++){
+    aboutCloseBtns[i].onclick = function(e){
+        e.target.parentElement.parentElement.parentElement.classList.remove('is-active')
+    }
+}
+
+setAbout()

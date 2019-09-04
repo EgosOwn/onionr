@@ -17,6 +17,10 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
+FEATURE_POLICY = """vibrate; vr; webauthn; usb; sync-xhr; speaker; 
+picture-in-picture; payment; midi; microphone; magnetometer; gyroscope; 
+geolocation; fullscreen; encrypted-media; document-domain; 
+camera; accelerometer; ambient-light-sensor""".replace('\n', '') # have to remove \n for flask
 def set_default_onionr_http_headers(flask_response):
     '''Response headers'''
     flask_response.headers['Content-Security-Policy'] = "default-src 'none'; style-src data: 'unsafe-inline'; img-src data:"
@@ -25,4 +29,7 @@ def set_default_onionr_http_headers(flask_response):
     flask_response.headers['Server'] = ''
     flask_response.headers['Date'] = 'Thu, 1 Jan 1970 00:00:00 GMT' # Clock info is probably useful to attackers. Set to unix epoch.
     flask_response.headers['Connection'] = "close"
+    flask_response.headers['Clear-Site-Data'] = '"cache", "cookies", "storage", "executionContexts"'
+    flask_response.headers['Feature-Policy'] = FEATURE_POLICY
+    flask_response.headers['Referrer-Policy'] = 'no-referrer'
     return flask_response

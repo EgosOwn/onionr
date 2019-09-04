@@ -94,7 +94,7 @@ function getBlocks(){
     }
     var feedText =  httpGet('/flow/getpostsbyboard/' + ch)
     var blockList = feedText.split(',').reverse()
-    console.log(blockList)
+
     for (i = 0; i < blockList.length; i++){
         while (blockList[i].length < 64) blockList[i] = "0" + blockList[i]
         if (! requested.includes(blockList[i])){

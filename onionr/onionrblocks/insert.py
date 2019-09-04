@@ -115,7 +115,7 @@ def insert_block(data, header='txt', sign=False, encryptType='', symKey='', asym
 
     # ensure expire is integer and of sane length
     if type(expire) is not type(None):
-        assert len(str(int(expire))) < 14
+        assert len(str(int(expire))) < 20
         metadata['expire'] = expire
 
     # send block data (and metadata) to POW module to get tokenized block data

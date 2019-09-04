@@ -13,6 +13,7 @@
     <link rel="stylesheet" href="/shared/main/bulma.min.css">
     <link rel="stylesheet" href="/shared/main/styles-new.css">
     <script defer src='/shared/navbar.js'></script>
+    <script defer src='/shared/loadabout.js'></script>
     <script defer src='/shared/misc.js'></script>
     <script defer src='/shared/main/stats.js'></script>
     <script defer src='/shared/panel.js'></script>
@@ -50,6 +51,9 @@
                 <a class="navbar-item idLink" href="/friends/">Friends</a>
                 <a class="navbar-item idLink" href="/board/">Circles</a>
                 <a class="navbar-item idLink" href="/chat/">Chat</a>
+            </div>
+            <div class="navbar-end">
+                <a class="navbar-item idLink aboutLink">About</a>
             </div>
         </div>
     </nav>
@@ -205,6 +209,17 @@
         </div>
     </div>
     <br>
+    <div class="modal aboutModal">
+        <div class="modal-background"></div>
+        <div class="modal-card">
+          <header class="modal-card-head">
+            <button class="closeAboutModal delete" aria-label="close"></button>
+          </header>
+          <section class="modal-card-body aboutBody">
+            Loading... <i class="fas fa-spinner fa-spin"></i>
+          </section>
+        </div>
+      </div>
 </body>
 
 </html>

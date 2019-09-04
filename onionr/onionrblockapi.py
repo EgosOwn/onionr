@@ -118,8 +118,6 @@ class Block:
             else:
                 retData = True
                 self.decrypted = True
-        else:
-            logger.warn('symmetric decryption is not yet supported by this API')
         return retData
 
     def verifySig(self):
@@ -189,7 +187,7 @@ class Block:
 
             return True
         except Exception as e:
-            logger.warn('Failed to parse block %s.' % self.getHash(), error = e, timestamp = False)
+            logger.warn('Failed to parse block %s' % self.getHash(), error = e, timestamp = False)
 
             # if block can't be parsed, it's a waste of precious space. Throw it away.
             if not self.delete():
@@ -213,8 +211,9 @@ class Block:
                 os.remove(self.getBlockFile())
             except TypeError:
                 pass
-            
-            removeblock.remove_block(self.getHash())
+            b_hash = self.getHash()
+            onionrstorage.deleteBlock(b_hash)
+            removeblock.remove_block(b_hash)
             return True
         return False
 

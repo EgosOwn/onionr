@@ -9,9 +9,15 @@
         Friends
     </title>
     <link rel='shortcut icon' type='image/ico' href='/shared/images/favicon.ico'>
+    <link rel='stylesheet' href='/shared/main/PNotifyBrightTheme.css'>
     <link rel='stylesheet' href='/shared/main/bulma.min.css'>
     <link rel='stylesheet' href='/shared/main/styles-new.css'>
     <link rel='stylesheet' href='/friends/style.css'>
+    <script defer src="/shared/node_modules/pnotify/dist/iife/PNotify.js"></script>
+    <script defer src="/shared/node_modules/pnotify/dist/iife/PNotifyButtons.js"></script>
+    <script defer src="/shared/navbar.js"></script>
+    <script defer src="/shared/misc.js"></script>
+    <script defer src="/friends/friends.js"></script>
 </head>
 
 <body>
@@ -102,14 +108,14 @@
                                 <div class="field">
                                     <label class="label">Alias</label>
                                     <p class="control is-expanded">
-                                        <input id="" class="input" type="text" name='data' placeholder='Name'>
+                                        <input id="" class="input" type="text" name='data' placeholder='Name' required>
                                     </p>
                                 </div>
                         </div>
                     </div>
                     <footer class="card-footer">
                         <a class="card-footer-item">
-                            <button class="button" type='submit'>Add to list</button>
+                            <button class="button is-success" type='submit'>Add Friend</button>
                         </a>
                     </footer>
                 </div>
@@ -151,9 +157,6 @@
             </div>
         </div>
     </template>
-    <script src='/shared/navbar.js'></script>
-    <script src='/shared/misc.js'></script>
-    <script src='/friends/friends.js'></script>
 </body>
 
 </html>
