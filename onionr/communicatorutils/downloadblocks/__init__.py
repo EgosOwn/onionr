@@ -29,7 +29,7 @@ def download_blocks_from_communicator(comm_inst):
     assert isinstance(comm_inst, communicator.OnionrCommunicatorDaemon)
     blacklist = onionrblacklist.OnionrBlackList()
     storage_counter = storagecounter.StorageCounter()
-    LOG_SKIP_COUNT = 10 # for how many iterations we skip logging the counter
+    LOG_SKIP_COUNT = 50 # for how many iterations we skip logging the counter
     count = 0
     # Iterate the block queue in the communicator
     for blockHash in list(comm_inst.blockQueue):

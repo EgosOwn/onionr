@@ -29,6 +29,7 @@ def ping():
 
 @flask_blueprint.route('/chatapi/send/<peer>', methods=['POST'])
 def send_message(peer):
+    """Send a message to the peer"""
     data = request.get_json(force=True)
     key_store.refresh()
     existing = key_store.get('s' + peer)
@@ -41,6 +42,7 @@ def send_message(peer):
 
 @flask_blueprint.route('/chatapi/gets/<peer>')
 def get_sent(peer):
+    """Get messages sent to peer"""
     sent = key_store.get('s' + peer)
     if sent is None:
         sent = []
@@ -48,6 +50,7 @@ def get_sent(peer):
 
 @flask_blueprint.route('/chatapi/addrec/<peer>', methods=['POST'])
 def add_rec(peer):
+    """Add a received message from the peer"""
     data = request.get_json(force=True)
     key_store.refresh()
     existing = key_store.get('r' + peer)
@@ -60,6 +63,7 @@ def add_rec(peer):
 
 @flask_blueprint.route('/chatapi/getrec/<peer>')
 def get_messages(peer):
+    """Get received messages for the peer"""
     key_store.refresh()
     existing = key_store.get('r' + peer)
     if existing is None:

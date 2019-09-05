@@ -184,7 +184,11 @@ HiddenServicePort 80 ''' + self.apiServerIP + ''':''' + str(self.hsPort)
             pass
         except FileNotFoundError:
             pass
-        time.sleep(TOR_KILL_WAIT)
+        
+        try:
+            time.sleep(TOR_KILL_WAIT)
+        except KeyboardInterrupt:
+            pass
 
         if 'windows' == platform.system().lower():
             os.system('taskkill /PID %s /F' % (pidN,))

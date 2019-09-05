@@ -2,6 +2,7 @@ import sys, sqlite3
 import onionrstorage, onionrexceptions, onionrcrypto as crypto
 import filepaths, storagecounter
 from coredb import dbfiles
+from onionrutils import blockmetadata, bytesconverter
 def set_data(data):
     '''
         Set the data assciated with a hash
@@ -9,6 +10,8 @@ def set_data(data):
     storage_counter = storagecounter.StorageCounter()
     data = data
     dataSize = sys.getsizeof(data)
+    nonce_hash = crypto.hashers.sha3_hash(bytesconverter.str_to_bytes(blockmetadata.fromdata.get_block_metadata_from_data(data)[2]))
+    nonce_hash = bytesconverter.bytes_to_str(nonce_hash)
 
     if not type(data) is bytes:
         data = data.encode()
@@ -29,7 +32,7 @@ def set_data(data):
             conn.commit()
             conn.close()
             with open(filepaths.data_nonce_file, 'a') as nonceFile:
-                nonceFile.write(dataHash + '\n')
+                nonceFile.write(nonce_hash + '\n')
         else:
             raise onionrexceptions.DiskAllocationReached
     else:

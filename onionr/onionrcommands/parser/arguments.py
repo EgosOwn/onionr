@@ -24,6 +24,7 @@ from .. import exportblocks # commands to export blocks
 from .. import pubkeymanager # commands to add or change id
 from .. import resettor # commands to reset the tor data directory or transport keypair
 from .. import resetplugins # command to reinstall default plugins
+from .. import softreset # command to delete onionr blocks
 import onionrexceptions
 from onionrutils import importnewblocks # func to import new blocks
 import onionrevents as events
@@ -47,7 +48,8 @@ def get_arguments():
         ('changeid', 'change-id'): pubkeymanager.change_ID,
         ('resettor', 'reset-tor'): resettor.reset_tor,
         ('resetplugins', 'reset-plugins'): resetplugins.reset,
-        ('reset-tor-node-transport'): resettor.reset_tor_key_pair
+        ('reset-tor-node-transport',): resettor.reset_tor_key_pair,
+        ('soft-reset', 'softreset'): softreset.soft_reset
 
     }
     return args

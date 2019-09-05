@@ -25,7 +25,7 @@ test:
 
 soft-reset:
 	@echo "Soft-resetting Onionr..."
-	rm -f onionr/$(ONIONR_HOME)/blocks/*.dat onionr/data/*.db onionr/$(ONIONR_HOME)/block-nonces.dat | true > /dev/null 2>&1
+	./onionr.sh soft-reset
 	@./onionr.sh version | grep -v "Failed" --color=always
 
 reset:

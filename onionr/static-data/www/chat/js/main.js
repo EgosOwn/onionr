@@ -19,6 +19,7 @@
 friendList = {}
 convoListElement = document.getElementsByClassName('conversationList')[0]
 firstConvoLoad = true
+activeConvo = null;
 
 function createConvoList(){
     convoListElement.innerHTML = ""
