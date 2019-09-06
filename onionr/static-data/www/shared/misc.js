@@ -19,8 +19,16 @@
 
 webpass = document.location.hash.replace('#', '')
 nowebpass = false
+myPub = ""
 
-myPub = httpGet('/getHumanReadable')
+fetch('/getActivePubkey', {
+    headers: {
+      "token": webpass
+    }})
+.then((resp) => resp.text()) 
+.then(function(resp) {
+    myPub = resp
+})
 
 function post_to_url(path, params) {
 
@@ -95,15 +103,22 @@ for (var i = 0; i < document.getElementsByClassName('closeOverlay').length; i++)
     }
 }
 
-var idStrings = document.getElementsByClassName('myPub')
-for (var i = 0; i < idStrings.length; i++){
-    if (idStrings[i].tagName.toLowerCase() == 'input'){
-        idStrings[i].value = myPub
+function setIdStrings(){
+    if (myPub === ""){
+        setTimeout(function(){setIdStrings()}, 700)
+        return
     }
-    else{
-        idStrings[i].innerText = myPub
+    var idStrings = document.getElementsByClassName('myPub')
+    for (var i = 0; i < idStrings.length; i++){
+        if (idStrings[i].tagName.toLowerCase() == 'input'){
+            idStrings[i].value = myPub
+        }
+        else{
+            idStrings[i].innerText = myPub
+        }
     }
 }
+setIdStrings()
 
 /* Copy public ID on homepage  */
 if (typeof myPubCopy != "undefined"){

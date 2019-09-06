@@ -76,6 +76,16 @@ def validate_metadata(metadata, block_data) -> bool:
                 except AssertionError:
                     logger.warn('Invalid encryption mode')
                     break
+            elif i == 'sig':
+                try:
+                    metadata['encryptType']
+                except KeyError:
+                    signer = metadata['signer']
+                    sig = metadata['sig']
+                    encodedMeta = bytesconverter.str_to_bytes(metadata['meta'])
+                    encodedBlock = bytesconverter.str_to_bytes(block_data)
+                    if not onionrcrypto.signing.ed_verify(encodedMeta + encodedBlock[1:], signer, sig):
+                        break
         else:
             # if metadata loop gets no errors, it does not break, therefore metadata is valid
             # make sure we do not have another block with the same data content (prevent data duplication and replay attacks)

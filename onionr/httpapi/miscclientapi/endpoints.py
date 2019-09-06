@@ -18,6 +18,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 from flask import Response, Blueprint, request, send_from_directory, abort
+
 from httpapi import apiutils
 import onionrcrypto, config
 from netcontroller import NetController
@@ -25,7 +26,8 @@ from serializeddata import SerializedData
 from onionrutils import mnemonickeys
 from onionrutils import bytesconverter
 
-pub_key = onionrcrypto.pub_key
+pub_key = onionrcrypto.pub_key.replace('=', '')
+
 class PrivateEndpoints:
     def __init__(self, client_api):
         private_endpoints_bp = Blueprint('privateendpoints', __name__)
