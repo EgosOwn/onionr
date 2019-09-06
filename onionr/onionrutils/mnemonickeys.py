@@ -18,11 +18,25 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 import base64
-from etc import pgpwords
+
+import mnemonic
+import unpaddedbase32
+
 import onionrcrypto
+from etc import onionrvalues
+
+m = mnemonic.Mnemonic('english')
+
 def get_human_readable_ID(pub=''):
     '''gets a human readable ID from a public key'''
     if pub == '':
         pub = onionrcrypto.pub_key
-    pub = base64.b16encode(base64.b32decode(pub)).decode()
-    return ' '.join(pgpwords.wordify(pub))
+    
+    if not len(pub) == onionrvalues.MAIN_PUBLIC_KEY_SIZE:
+        pub = base64.b32decode(pub)
+    
+    return m.to_mnemonic(pub)
+
+def get_base32(words):
+    '''converts mnemonic to base32'''
+    return unpaddedbase32.b32encode(m.to_entropy(words))

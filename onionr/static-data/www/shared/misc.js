@@ -20,7 +20,7 @@
 webpass = document.location.hash.replace('#', '')
 nowebpass = false
 
-myPub = httpGet('/getActivePubkey')
+myPub = httpGet('/getHumanReadable')
 
 function post_to_url(path, params) {
 

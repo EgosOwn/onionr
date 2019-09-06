@@ -95,3 +95,6 @@ def show_details():
 
     for detail in details:
         logger.info('%s%s: \n%s%s\n' % (logger.colors.fg.lightgreen, detail, logger.colors.fg.green, details[detail]), terminal = True)
+
+show_details.onionr_help = "Shows relevant information for your Onionr install: note address, web password and active public key."
+show_stats.onionr_help = "Shows statistics for your Onionr node. Slow if Onionr is not running"

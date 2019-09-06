@@ -22,6 +22,9 @@ from httpapi import apiutils
 import onionrcrypto, config
 from netcontroller import NetController
 from serializeddata import SerializedData
+from onionrutils import mnemonickeys
+from onionrutils import bytesconverter
+
 pub_key = onionrcrypto.pub_key
 class PrivateEndpoints:
     def __init__(self, client_api):
@@ -100,10 +103,18 @@ class PrivateEndpoints:
         def getActivePubkey():
             return Response(pub_key)
 
+        @private_endpoints_bp.route('/getHumanReadable')
+        def getHumanReadableDefault():
+            return Response(mnemonickeys.get_human_readable_ID())
+
         @private_endpoints_bp.route('/getHumanReadable/<name>')
         def getHumanReadable(name):
             return Response(mnemonickeys.get_human_readable_ID(name))
         
+        @private_endpoints_bp.route('/getBase32FromHumanReadable/<words>')
+        def get_base32_from_human_readable(words):
+            return Response(bytesconverter.bytes_to_str(mnemonickeys.get_base32(words)))
+
         @private_endpoints_bp.route('/gettorsocks')
         def get_tor_socks():
             return Response(str(client_api._too_many.get(NetController).socksPort))
