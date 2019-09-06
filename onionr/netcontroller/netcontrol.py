@@ -37,7 +37,6 @@ def add_bridges(torrc: str)->str:
 
     return torrc
 
-
 class NetController:
     '''
         This class handles hidden service setup on Tor and I2P

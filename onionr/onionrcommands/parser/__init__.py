@@ -27,13 +27,13 @@ from . import arguments, recommend
 plugin_command = lambda cmd: 'on_%s_cmd' % (cmd,)
 
 def register_plugin_commands(cmd):
-    cmd = 'on_%s_cmd' % (cmd,)
     plugin_cmd = plugin_command(cmd)
     for pl in onionrplugins.get_enabled_plugins():
         pl = onionrplugins.get_plugin(pl)
         if hasattr(pl, plugin_cmd):
             getattr(pl, plugin_cmd)(onionrpluginapi.PluginAPI)
             return True
+    return False
 
 def register():
     """Registers commands and handles help command processing"""
