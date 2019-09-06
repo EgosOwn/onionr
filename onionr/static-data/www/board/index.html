@@ -10,6 +10,7 @@
     </title>
     <link rel='shortcut icon' type='image/ico' href='/shared/images/favicon.ico'>
     <link rel='stylesheet' href='/shared/main/PNotifyBrightTheme.css'>
+    <link rel="stylesheet" href="/shared/fontawesome-free-5.10.2/css/all.min.css">
     <link rel='stylesheet' href='/shared/main/bulma.min.css'>
     <link rel="stylesheet" href='/shared/main/styles-new.css'>
     <link rel="stylesheet" href="theme.css">
@@ -54,10 +55,10 @@
                 <div class="columns">
                     <div class="column">
                         <h1 class="title">
-                            Circles
+                            Circles <span class="is-pulled-right">v<span id='circlesVersion'></span></span>
                         </h1>
                         <h2 class="subtitle">
-                            Anonymous message board
+                            Anonymous message boards
                         </h2>
                     </div>
                 </div>
@@ -122,6 +123,7 @@
                             </div>
                         </div>
                         <div class="content">
+                            <span id='loadingBoard'>Loading board... <i class="fas fa-yin-yang fa-spin"></i></span>
                             <div id='feed'>
                                 <span id='none'>None yet, try refreshing 😃</span>
                                 <!--Message Items are appended here based on template-->

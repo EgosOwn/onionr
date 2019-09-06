@@ -6,14 +6,14 @@ function autoRefresh(){
 
 function setupInterval(){
     if (checkbox.checked){
-        refreshInterval = setInterval(autoRefresh, 10000)
+        refreshInterval = setInterval(autoRefresh, 3000)
         autoRefresh()
         return
     }
     clearInterval(refreshInterval)
 }
 
-var refreshInterval = setInterval(autoRefresh, 10000)
+var refreshInterval = setInterval(autoRefresh, 3000)
 setupInterval()
 
 checkbox.onchange = function(){setupInterval}

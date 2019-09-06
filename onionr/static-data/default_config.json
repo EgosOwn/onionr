@@ -85,6 +85,6 @@
 
     "timers" : {
         "lookupBlocks" : 25,
-        "getBlocks" : 30
+        "getBlocks" : 10
     }
 }
