@@ -24,6 +24,20 @@ from . import getopenport
 from utils import identifyhome
 config.reload()
 TOR_KILL_WAIT = 3
+
+def add_bridges(torrc: str)->str:
+    """Configure tor to use a bridge using Onionr config keys"""
+    if config.get('tor.use_bridge', False) == True:
+        bridge = config.get('tor.bridge_ip', None)
+        if not bridge is None:
+            fingerprint = config.get('tor.bridge_fingerprint', '') # allow blank fingerprint purposefully
+            torrc += '\nUseBridges 1\nBridge %s %s\n' % (bridge, fingerprint)
+        else:
+            logger.warn('bridge was enabled but not specified in config')
+
+    return torrc
+
+
 class NetController:
     '''
         This class handles hidden service setup on Tor and I2P
@@ -89,6 +103,8 @@ HiddenServiceNumIntroductionPoints 6
 HiddenServiceMaxStreams 100
 HiddenServiceMaxStreamsCloseCircuit 1
 HiddenServicePort 80 ''' + self.apiServerIP + ''':''' + str(self.hsPort)
+
+        torrcData = add_bridges(torrcData)
 
         torrc = open(self.torConfigLocation, 'w')
         torrc.write(torrcData)

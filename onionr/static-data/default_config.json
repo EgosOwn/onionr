@@ -61,7 +61,10 @@
     },
 
     "tor" : {
-        "v3onions" : true
+        "v3onions" : true,
+        "use_bridge": false,
+        "bridge_ip": "",
+        "bridge_fingerprint": ""
     },
 
     "i2p" : {
