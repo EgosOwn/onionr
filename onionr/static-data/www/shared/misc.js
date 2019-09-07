@@ -21,7 +21,7 @@ webpass = document.location.hash.replace('#', '')
 nowebpass = false
 myPub = ""
 
-fetch('/getActivePubkey', {
+fetch('/getHumanReadable', {
     headers: {
       "token": webpass
     }})

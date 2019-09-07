@@ -65,7 +65,7 @@ function appendMessages(msg, blockHash, beforeHash){
     }
     else{
         humanDate.setUTCSeconds(msgDate)
-        msgDate = humanDate.toDateString()
+        msgDate = humanDate.toLocaleTimeString() + ' ' + humanDate.toLocaleDateString()
     }
     el.className = 'entry'
     el.innerText = msg['content']
@@ -92,8 +92,9 @@ function appendMessages(msg, blockHash, beforeHash){
 
         div[0].setAttribute('data-bl', blockHash)
         div[2].textContent = msg['content']
-        if (typeof msg['meta']['signer'] != 'undefined'){
+        if (typeof msg['meta']['signer'] != 'undefined' && msg['meta']['signer'].length > 0){
             div[3].textContent = msg['meta']['signer'].substr(0, 5)
+            setHumanReadableIDOnPost(div[3], msg['meta']['signer'])
             div[3].title = msg['meta']['signer']
         }
         div[4].textContent = msgDate
