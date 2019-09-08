@@ -18,6 +18,6 @@ def remove_block(block):
         conn.commit()
         conn.close()
         dataSize = sys.getsizeof(onionrstorage.getData(block))
-        storagecounter.StorageCounter().removeBytes(dataSize)
+        storagecounter.StorageCounter().remove_bytes(dataSize)
     else:
         raise onionrexceptions.InvalidHexHash

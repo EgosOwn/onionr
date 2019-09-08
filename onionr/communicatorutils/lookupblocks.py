@@ -40,7 +40,7 @@ def lookup_blocks_from_communicator(comm_inst):
         if not comm_inst.isOnline:
             break
         # check if disk allocation is used
-        if comm_inst.storage_counter.isFull():
+        if comm_inst.storage_counter.is_full():
             logger.debug('Not looking up new blocks due to maximum amount of allowed disk space used')
             break
         peer = onlinepeers.pick_online_peer(comm_inst) # select random online peer

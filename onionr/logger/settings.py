@@ -64,7 +64,7 @@ def set_level(level):
     global _level
     _level = level
 
-def get_level():
+def get_level()->int:
     '''
         Get the lowest log level currently being outputted
     '''

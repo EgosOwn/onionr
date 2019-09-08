@@ -22,7 +22,7 @@ import config, logger, netcontroller
 from etc import onionrvalues
 from logger.settings import *
 
-def setup_config(o_inst = None):
+def setup_config():
     config.reload()
     
     if not os.path.exists(config._configfile):
@@ -41,14 +41,6 @@ def setup_config(o_inst = None):
     if config.get('log.file.output', True):
         settings = settings | OUTPUT_TO_FILE
     set_settings(settings)
-
-    if not o_inst is None:
-        if str(config.get('general.dev_mode', True)).lower() == 'true':
-            o_inst._developmentMode = True
-            set_level(LEVEL_DEBUG)
-        else:
-            o_inst._developmentMode = False
-            set_level(LEVEL_INFO)
 
     verbosity = str(config.get('log.verbosity', 'default')).lower().strip()
     if not verbosity in ['default', 'null', 'none', 'nil']:

@@ -1,3 +1,4 @@
+from typing import Union
 import json
 from onionrutils import bytesconverter, epoch
 import storagecounter, filepaths, onionrstorage
@@ -8,17 +9,21 @@ from onionrusers import onionrusers
 from onionrutils import localcommand, blockmetadata, stringvalidators
 import coredb
 import onionrproofs
-def insert_block(data, header='txt', sign=False, encryptType='', symKey='', asymPeer='', meta = {}, expire=None, disableForward=False):
-    '''
+import logger
+def insert_block(data: Union[str, bytes], header: str ='txt', 
+                sign: bool =False, encryptType:str ='', symKey:str ='',
+                asymPeer:str ='', meta:dict = {},
+                expire:Union[int, None] =None, disableForward:bool =False)->Union[str,bool]:
+    """
         Inserts a block into the network
         encryptType must be specified to encrypt a block
-    '''
+    """
     use_subprocess = powchoice.use_subprocess(config)
     storage_counter = storagecounter.StorageCounter()
     allocationReachedMessage = 'Cannot insert block, disk allocation reached.'
-    if storage_counter.isFull():
+    if storage_counter.is_full():
         logger.error(allocationReachedMessage)
-        return False
+        raise onionrexceptions.DiskAllocationReached
     retData = False
 
     if type(data) is None:

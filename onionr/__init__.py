@@ -36,7 +36,7 @@ except ModuleNotFoundError:
 
 # Onionr imports
 from etc import onionrvalues # For different Onionr related constants such as versions
-import setup
+import onionrsetup as setup
 
 # Ensure we have at least the minimum python version
 if sys.version_info[0] == 2 or sys.version_info[1] < onionrvalues.MIN_PY_VERSION:

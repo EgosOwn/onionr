@@ -3,7 +3,7 @@ import onionrstorage, onionrexceptions, onionrcrypto as crypto
 import filepaths, storagecounter
 from coredb import dbfiles
 from onionrutils import blockmetadata, bytesconverter
-def set_data(data):
+def set_data(data)->str:
     '''
         Set the data assciated with a hash
     '''
@@ -24,7 +24,7 @@ def set_data(data):
     try:
         onionrstorage.getData(dataHash)
     except onionrexceptions.NoDataAvailable:
-        if storage_counter.addBytes(dataSize) != False:
+        if storage_counter.add_bytes(dataSize) != False:
             onionrstorage.store(data, blockHash=dataHash)
             conn = sqlite3.connect(dbfiles.block_meta_db, timeout=30)
             c = conn.cursor()

@@ -43,7 +43,7 @@ def clean_old_blocks(comm_inst):
         __remove_from_upload(comm_inst, bHash)
         logger.info('Deleted block: %s' % (bHash,))
 
-    while comm_inst.storage_counter.isFull():
+    while comm_inst.storage_counter.is_full():
         oldest = blockmetadb.get_block_list()[0]
         blacklist.addToDB(oldest)
         removeblock.remove_block(oldest)

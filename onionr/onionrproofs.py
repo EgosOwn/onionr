@@ -27,7 +27,7 @@ def getDifficultyModifier():
     on a variety of factors, currently only disk use.
     '''
     retData = 0
-    useFunc = storagecounter.StorageCounter().getPercent
+    useFunc = storagecounter.StorageCounter().get_percent
 
     percentUse = useFunc()
 

@@ -8,7 +8,7 @@ print("Test directory:", TEST_DIR)
 os.environ["ONIONR_HOME"] = TEST_DIR
 from utils import networkmerger, createdirs
 from coredb import keydb
-import setup
+import onionrsetup as setup
 from utils import createdirs
 createdirs.create_dirs()
 setup.setup_config()

@@ -28,33 +28,33 @@ raw = raw.raw
 confirm = confirm.confirm
 
 # debug: when there is info that could be useful for debugging purposes only
-def debug(data, error = None, timestamp = True, prompt = True, terminal = False, level = settings.LEVEL_DEBUG):
+def debug(data: str, error = None, timestamp = True, prompt = True, terminal = False, level = settings.LEVEL_DEBUG):
     if settings.get_level() <= level:
         log('/', data, timestamp = timestamp, prompt = prompt, terminal = terminal)
     if not error is None:
         debug('Error: ' + str(error) + parse_error())
 
 # info: when there is something to notify the user of, such as the success of a process
-def info(data, timestamp = False, prompt = True, terminal = False, level = settings.LEVEL_INFO):
+def info(data: str, timestamp = False, prompt = True, terminal = False, level = settings.LEVEL_INFO):
     if settings.get_level() <= level:
         log('+', data, colors.fg.green, timestamp = timestamp, prompt = prompt, terminal = terminal)
 
 # warn: when there is a potential for something bad to happen
-def warn(data, error = None, timestamp = True, prompt = True, terminal = False, level = settings.LEVEL_WARN):
+def warn(data: str, error = None, timestamp = True, prompt = True, terminal = False, level = settings.LEVEL_WARN):
     if not error is None:
         debug('Error: ' + str(error) + parse_error())
     if settings.get_level() <= level:
         log('!', data, colors.fg.orange, timestamp = timestamp, prompt = prompt, terminal = terminal)
 
 # error: when only one function, module, or process of the program encountered a problem and must stop
-def error(data, error = None, timestamp = True, prompt = True, terminal = False, level = settings.LEVEL_ERROR):
+def error(data: str, error = None, timestamp = True, prompt = True, terminal = False, level = settings.LEVEL_ERROR):
     if settings.get_level() <= level:
         log('-', data, colors.fg.red, timestamp = timestamp, fd = sys.stderr, prompt = prompt, terminal = terminal)
     if not error is None:
         debug('Error: ' + str(error) + parse_error())
 
 # fatal: when the something so bad has happened that the program must stop
-def fatal(data, error = None, timestamp=True, prompt = True, terminal = False, level = settings.LEVEL_FATAL):
+def fatal(data: str, error = None, timestamp=True, prompt = True, terminal = False, level = settings.LEVEL_FATAL):
     if not error is None:
         debug('Error: ' + str(error) + parse_error(), terminal = terminal)
     if settings.get_level() <= level:

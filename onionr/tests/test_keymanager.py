@@ -8,7 +8,7 @@ print("Test directory:", TEST_DIR)
 os.environ["ONIONR_HOME"] = TEST_DIR
 from utils import createdirs
 from coredb import keydb
-import setup, keymanager, filepaths
+import onionrsetup as setup, keymanager, filepaths
 from onionrutils import stringvalidators
 createdirs.create_dirs()
 setup.setup_config()

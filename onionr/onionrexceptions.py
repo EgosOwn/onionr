@@ -1,9 +1,9 @@
-'''
-    Onionr - P2P Anonymous Storage Network
+"""
+    Onionr - Private P2P Communication
 
     This file contains exceptions for onionr
-'''
-'''
+"""
+"""
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -16,7 +16,7 @@
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
-'''
+"""
 
 # general exceptions
 class NotFound(Exception):
@@ -67,11 +67,11 @@ class NoDataAvailable(Exception):
     pass
 
 class InvalidHexHash(Exception):
-    '''When a string is not a valid hex string of appropriate length for a hash value'''
+    """When a string is not a valid hex string of appropriate length for a hash value"""
     pass
 
 class InvalidProof(Exception):
-    '''When a proof is invalid or inadequate'''
+    """When a proof is invalid or inadequate"""
     pass
 
 # network level exceptions

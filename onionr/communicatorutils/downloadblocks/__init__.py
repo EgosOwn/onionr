@@ -46,7 +46,7 @@ def download_blocks_from_communicator(comm_inst):
         if not shoulddownload.should_download(comm_inst, blockHash):
             continue
 
-        if comm_inst.shutdown or not comm_inst.isOnline or storage_counter.isFull():
+        if comm_inst.shutdown or not comm_inst.isOnline or storage_counter.is_full():
             # Exit loop if shutting down or offline, or disk allocation reached
             break
         # Do not download blocks being downloaded
