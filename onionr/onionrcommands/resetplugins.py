@@ -21,7 +21,7 @@ import os
 import shutil
 
 from utils import identifyhome
-from setup import setup_default_plugins
+from onionrsetup import setup_default_plugins
 import logger
 
 def reset():
