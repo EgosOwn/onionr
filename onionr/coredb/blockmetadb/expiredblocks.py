@@ -26,10 +26,11 @@ def get_expired_blocks():
     c = conn.cursor()
     date = int(epoch.get_epoch())
 
-    execute = 'SELECT hash FROM hashes WHERE expire <= %s ORDER BY dateReceived;' % (date,)
+    compiled = (date,)
+    execute = 'SELECT hash FROM hashes WHERE expire <= ? ORDER BY dateReceived;'
 
     rows = list()
-    for row in c.execute(execute):
+    for row in c.execute(execute, compiled):
         for i in row:
             rows.append(i)
     conn.close()

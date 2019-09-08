@@ -118,7 +118,7 @@ def reload():
     try:
         with open(get_config_file(), 'r', encoding="utf8") as configfile:
             set_config(json.loads(configfile.read()))
-    except:
+    except (FileNotFoundError, json.JSONDecodeError) as e:
         pass
         #logger.debug('Failed to parse configuration file.')
 

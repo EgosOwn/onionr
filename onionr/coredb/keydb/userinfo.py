@@ -61,9 +61,8 @@ def set_peer_info(peer, key, data):
 
     command = (data, peer)
 
-    # TODO: validate key on whitelist
     if key not in ('id', 'name', 'pubkey', 'forwardKey', 'dateSeen', 'trust'):
-        raise Exception("Got invalid database key when setting peer info")
+        raise ValueError("Got invalid database key when setting peer info")
 
     c.execute('UPDATE peers SET ' + key + ' = ? WHERE id=?', command)
     conn.commit()

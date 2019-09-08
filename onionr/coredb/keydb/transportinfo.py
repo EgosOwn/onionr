@@ -66,7 +66,7 @@ def set_address_info(address, key, data):
     command = (data, address)
 
     if key not in ('address', 'type', 'knownPeer', 'speed', 'success', 'failure', 'powValue', 'lastConnect', 'lastConnectAttempt', 'trust', 'introduced'):
-        raise Exception("Got invalid database key when setting address info")
+        raise ValueError("Got invalid database key when setting address info, must be in whitelist")
     else:
         c.execute('UPDATE adders SET ' + key + ' = ? WHERE address=?', command)
         conn.commit()
