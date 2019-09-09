@@ -31,5 +31,5 @@ def set_default_onionr_http_headers(flask_response):
     flask_response.headers['Connection'] = "close"
     flask_response.headers['Clear-Site-Data'] = '"cache", "cookies", "storage", "executionContexts"'
     flask_response.headers['Feature-Policy'] = FEATURE_POLICY
-    flask_response.headers['Referrer-Policy'] = 'no-referrer'
+    flask_response.headers['Referrer-Policy'] = 'same-origin'
     return flask_response

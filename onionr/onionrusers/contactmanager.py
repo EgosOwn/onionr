@@ -22,9 +22,17 @@ import unpaddedbase32
 from onionrusers import onionrusers
 from onionrutils import bytesconverter, epoch
 from utils import identifyhome
+
+import mnemonic
 class ContactManager(onionrusers.OnionrUser):
     def __init__(self, publicKey, saveUser=False, recordExpireSeconds=5):
-        publicKey = unpaddedbase32.repad(bytesconverter.str_to_bytes(publicKey)).decode()
+        try:
+            if " " in publicKey:
+                publicKey = mnemonic.Mnemonic('english').to_entropy(publicKey)
+                publicKey = unpaddedbase32.b32encode(bytesconverter.str_to_bytes(publicKey))
+        except ValueError:
+            pass
+        publicKey = bytesconverter.bytes_to_str(unpaddedbase32.repad(bytesconverter.str_to_bytes(publicKey)))
         super(ContactManager, self).__init__(publicKey, saveUser=saveUser)
         home = identifyhome.identify_home()
         self.dataDir = home + '/contacts/'

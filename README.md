@@ -93,6 +93,7 @@ The following applies to Ubuntu Bionic. Other distros may have different package
 * Clone the git repo: `$ git clone https://gitlab.com/beardog/onionr`
 * cd into install direction: `$ cd onionr/`
 * Install the Python dependencies ([virtualenv strongly recommended](https://virtualenv.pypa.io/en/stable/userguide/)): `$ pip3 install --require-hashes -r requirements.txt`
+* (Optional): Install desktop notification dependencies: `$ pip3 install --require-hashes -r requirements-notifications.txt`
 
 (--require-hashes is intended to prevent exploitation via compromise of PyPi/CA certificates)
 
