@@ -101,6 +101,7 @@ The following applies to Ubuntu Bionic. Other distros may have different package
 * Run Onionr normally:  `$ ./onionr.sh start`
 * Run Onionr in background as daemon: `$ ./start-daemon.sh`
 * Open Onionr web interface  `$ ./onionr.sh openhome`
+* Gracefully stop Onionr from CLI `$ ./onionr.sh stop`
 
 # Help out
 

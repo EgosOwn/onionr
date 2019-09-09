@@ -27,6 +27,8 @@ def pub_key_encrypt(data, pubkey, encodedData=False):
 
 def pub_key_decrypt(data, pubkey='', privkey='', encodedData=False):
     '''pubkey decrypt (Curve25519, taken from Ed25519 pubkey)'''
+    if pubkey != '':
+        pubkey = unpaddedbase32.repad(bytesconverter.str_to_bytes(pubkey))
     decrypted = False
     if encodedData:
         encoding = nacl.encoding.Base64Encoder
