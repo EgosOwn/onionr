@@ -76,7 +76,8 @@ def change_ID():
         logger.warn('Specify pubkey to use', terminal=True)
     else:
         if stringvalidators.validate_pub_key(key):
-            if key in key_manager.getPubkeyList():
+            key_list = key_manager.getPubkeyList()
+            if key in key_list or key.replace('=', '') in key_list:
                 config.set('general.public_key', key)
                 config.save()
                 logger.info('Set active key to: %s' % (key,), terminal=True)

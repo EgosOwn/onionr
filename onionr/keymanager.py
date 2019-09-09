@@ -21,6 +21,7 @@ from onionrutils import bytesconverter
 from onionrcrypto import generate
 import os
 import filepaths
+
 class KeyManager:
     def __init__(self):
         self.keyFile = filepaths.keys_file
@@ -72,6 +73,6 @@ class KeyManager:
         with open(self.keyFile, "r") as keyFile:
             keyData = keyFile.read()
         for pair in keyData.split('\n'):
-            if pubKey in pair:
+            if pubKey in pair or pubKey.replace('=', '') in pair:
                 privKey = pair.split(',')[1]
         return privKey

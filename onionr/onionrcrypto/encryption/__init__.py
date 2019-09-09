@@ -3,8 +3,8 @@ from .. import getourkeypair
 import unpaddedbase32
 from onionrutils import bytesconverter, stringvalidators
 pair = getourkeypair.get_keypair()
-our_pub_key = pair[0]
-our_priv_key = pair[1]
+our_pub_key = unpaddedbase32.repad(pair[0].encode())
+our_priv_key = unpaddedbase32.repad(pair[1].encode())
 
 def pub_key_encrypt(data, pubkey, encodedData=False):
     '''Encrypt to a public key (Curve25519, taken from base32 Ed25519 pubkey)'''
