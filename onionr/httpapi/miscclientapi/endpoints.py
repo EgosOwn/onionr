@@ -76,7 +76,7 @@ class PrivateEndpoints:
         @private_endpoints_bp.route('/waitforshare/<name>', methods=['post'])
         def waitforshare(name):
             '''Used to prevent the **public** api from sharing blocks we just created'''
-            assert name.isalnum()
+            if not name.isalnum(): raise ValueError('block hash needs to be alpha numeric')
             if name in client_api.publicAPI.hideBlocks:
                 client_api.publicAPI.hideBlocks.remove(name)
                 return Response("removed")

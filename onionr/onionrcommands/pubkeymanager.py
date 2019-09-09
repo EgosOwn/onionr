@@ -32,8 +32,8 @@ def add_ID():
     key_manager = keymanager.KeyManager()
     try:
         sys.argv[2]
-        assert sys.argv[2] == 'true'
-    except (IndexError, AssertionError) as e:
+        if not sys.argv[2].lower() == 'true': raise ValueError
+    except (IndexError, ValueError) as e:
         newID = key_manager.addKey()[0]
     else:
         logger.warn('Deterministic keys require random and long passphrases.', terminal=True)

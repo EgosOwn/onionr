@@ -1,12 +1,13 @@
 import json
 import onionrblockapi
 from onionrutils import bytesconverter, stringvalidators
+import onionrexceptions
 class GetBlockData:
     def __init__(self, client_api_inst=None):
         return
     
     def get_block_data(self, bHash, decrypt=False, raw=False, headerOnly=False):
-        assert stringvalidators.validate_hash(bHash)
+        if not stringvalidators.validate_hash(bHash): raise onionrexceptions.InvalidHexHash("block hash not valid hash format")
         bl = onionrblockapi.Block(bHash)
         if decrypt:
             bl.decrypt()

@@ -120,7 +120,7 @@ def insert_block(data: Union[str, bytes], header: str ='txt',
 
     # ensure expire is integer and of sane length
     if type(expire) is not type(None):
-        assert len(str(int(expire))) < 20
+        if not len(str(int(expire))) < 20: raise ValueError('expire must be valid int less than 20 digits in length')
         metadata['expire'] = expire
 
     # send block data (and metadata) to POW module to get tokenized block data

@@ -37,7 +37,7 @@ class OnionrServices:
             When a client wants to connect, contact their bootstrap address and tell them our
             ephemeral address for our service by creating a new ConnectionServer instance
         '''
-        assert stringvalidators.validate_transport(address)
+        if not stringvalidators.validate_transport(address): raise ValueError('address must be valid')
         BOOTSTRAP_TRIES = 10 # How many times to attempt contacting the bootstrap server
         TRY_WAIT = 3 # Seconds to wait before trying bootstrap again
         # HTTP is fine because .onion/i2p is encrypted/authenticated

@@ -90,8 +90,8 @@ class Block:
                 # Check for replay attacks
                 try:
                     if epoch.get_epoch() - blockmetadb.get_block_date(self.hash) > 60:
-                        assert cryptoutils.replay_validator(self.bmetadata['rply'])
-                except (AssertionError, KeyError, TypeError) as e:
+                        if not cryptoutils.replay_validator(self.bmetadata['rply']): raise onionrexceptions.ReplayAttack 
+                except (AssertionError, KeyError, TypeError, onionrexceptions.ReplayAttack) as e:
                     if not self.bypassReplayCheck:
                         # Zero out variables to prevent reading of replays
                         self.bmetadata = {}
@@ -101,7 +101,7 @@ class Block:
                         self.signature = ''
                         raise onionrexceptions.ReplayAttack('Signature is too old. possible replay attack')
                 try:
-                    assert self.bmetadata['forwardEnc'] is True
+                    if not self.bmetadata['forwardEnc']: raise KeyError
                 except (AssertionError, KeyError) as e:
                     pass
                 else:

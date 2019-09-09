@@ -32,8 +32,8 @@ def doExport(bHash):
 def export_block():
     exportDir = filepaths.export_location
     try:
-        assert stringvalidators.validate_hash(sys.argv[2])
-    except (IndexError, AssertionError):
+        if not stringvalidators.validate_hash(sys.argv[2]): raise ValueError
+    except (IndexError, ValueError):
         logger.error('No valid block hash specified.', terminal=True)
         sys.exit(1)
     else:

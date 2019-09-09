@@ -58,8 +58,9 @@ def process_block_metadata(blockHash: str):
         # Set block expire time if specified
         try:
             expireTime = int(myBlock.getHeader('expire'))
-            assert len(str(expireTime)) < 20 # test that expire time is an integer of sane length (for epoch)
-        except (AssertionError, ValueError, TypeError) as e:
+            # test that expire time is an integer of sane length (for epoch)
+            if not len(str(expireTime)) < 20: raise ValueError('timestamp invalid')
+        except (ValueError, TypeError) as e:
             expireTime = onionrvalues.DEFAULT_EXPIRE + curTime
         finally:
             expireTime = min(expireTime, curTime + onionrvalues.DEFAULT_EXPIRE)

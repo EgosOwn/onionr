@@ -66,14 +66,14 @@ def validate_metadata(metadata, block_data) -> bool:
                     break
             elif i == 'expire':
                 try:
-                    assert int(metadata[i]) > epoch.get_epoch()
-                except AssertionError:
+                    if not int(metadata[i]) > epoch.get_epoch(): raise ValueError
+                except ValueError:
                     logger.warn('Block is expired: %s less than %s' % (metadata[i], epoch.get_epoch()))
                     break
             elif i == 'encryptType':
                 try:
-                    assert metadata[i] in ('asym', 'sym', '')
-                except AssertionError:
+                    if not metadata[i] in ('asym', 'sym', ''): raise ValueError
+                except ValueError:
                     logger.warn('Invalid encryption mode')
                     break
             elif i == 'sig':

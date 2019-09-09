@@ -19,6 +19,7 @@ core
 .vscode/*
 venv/*
 onionr/fs*
+onionr/tmp/*
 
 *.dll
 *.exe

@@ -110,7 +110,7 @@ Everyone is welcome to contribute. Help is wanted for the following:
     * Creation of a shared lib for use from other languages and faster proof-of-work
     * Android and IOS development
     * Windows and Mac support (already partially supported, testers needed)
-    * General bug fixes and development of new features
+    * Bug fixes and development of new features
 * Testing
 * Translations/localizations
 * UI/UX design

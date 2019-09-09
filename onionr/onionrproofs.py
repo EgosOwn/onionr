@@ -60,12 +60,11 @@ def getDifficultyForNewBlock(data, ourBlock=True):
 
     return retData
 
-def getHashDifficulty(h):
+def getHashDifficulty(h: str):
     '''
         Return the amount of leading zeroes in a hex hash string (h)
     '''
     difficulty = 0
-    assert type(h) is str
     for character in h:
         if character == '0':
             difficulty += 1

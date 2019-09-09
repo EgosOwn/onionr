@@ -86,14 +86,14 @@ def validate_transport(id):
             if peerType == 'i2p':
                 try:
                     id.split('.b32.i2p')[2]
-                except:
+                except IndexError:
                     pass
                 else:
                     retVal = False
             elif peerType == 'onion':
                 try:
                     id.split('.onion')[2]
-                except:
+                except IndexError:
                     pass
                 else:
                     retVal = False

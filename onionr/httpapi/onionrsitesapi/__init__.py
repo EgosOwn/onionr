@@ -18,6 +18,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 import base64
+import binascii
 from flask import Blueprint, Response, request, abort
 import onionrblockapi, onionrexceptions
 from onionrutils import stringvalidators
@@ -37,7 +38,7 @@ def site(name):
             pass
         try:
             resp = base64.b64decode(resp)
-        except:
+        except binascii.Error:
             pass
     if resp == 'Not Found' or not resp:
         abort(404)

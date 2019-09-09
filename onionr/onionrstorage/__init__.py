@@ -58,10 +58,10 @@ def deleteBlock(blockHash):
     return True
 
 def store(data, blockHash=''):
-    assert stringvalidators.validate_hash(blockHash)
+    if not stringvalidators.validate_hash(blockHash): raise ValueError
     ourHash = hashers.sha3_hash(data)
     if blockHash != '':
-        assert ourHash == blockHash
+        if not ourHash == blockHash: raise ValueError('Hash specified does not meet internal hash check')
     else:
         blockHash = ourHash
     
@@ -72,7 +72,7 @@ def store(data, blockHash=''):
             blockFile.write(data)
 
 def getData(bHash):
-    assert stringvalidators.validate_hash(bHash)
+    if not stringvalidators.validate_hash(bHash): raise ValueError
 
     bHash = bytesconverter.bytes_to_str(bHash)
 

@@ -86,10 +86,7 @@ def clear_daemon_queue():
     conn = sqlite3.connect(dbfiles.daemon_queue_db, timeout=30)
     c = conn.cursor()
 
-    try:
-        c.execute('DELETE FROM commands;')
-        conn.commit()
-    except:
-        pass
+    c.execute('DELETE FROM commands;')
+    conn.commit()
 
     conn.close()

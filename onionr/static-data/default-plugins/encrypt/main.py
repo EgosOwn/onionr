@@ -100,8 +100,8 @@ class PlainEncryption:
             logger.info('Decrypted Message: \n\n%s' % data['data'], terminal=True)
             try:
                 logger.info("Signing public key: %s" % (data['signer'],), terminal=True)
-                assert signing.ed_verify(data['data'], data['signer'], data['sig']) != False
-            except (AssertionError, KeyError) as e:
+                if not signing.ed_verify(data['data'], data['signer'], data['sig']): raise ValueError
+            except (ValueError, KeyError) as e:
                 logger.warn("WARNING: THIS MESSAGE HAS A MISSING OR INVALID SIGNATURE", terminal=True)
             else:
                 logger.info("Message has good signature.", terminal=True)

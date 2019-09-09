@@ -54,8 +54,8 @@ def bootstrap_client_service(peer, comm_inst=None, bootstrap_timeout=300):
 
     http_server = WSGIServer(('127.0.0.1', bootstrap_port), bootstrap_app, log=None)
     try:
-        assert comm_inst is not None
-    except (AttributeError, AssertionError) as e:
+        if comm_inst is None: raise ValueError
+    except (AttributeError, ValueError) as e:
         pass
     else:
         comm_inst.service_greenlets.append(http_server)
