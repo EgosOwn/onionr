@@ -22,6 +22,7 @@ from flask import Blueprint, Response, request, g
 import onionrblocks
 from onionrcrypto import hashers
 from onionrutils import bytesconverter
+from onionrutils import mnemonickeys
 ib = Blueprint('insertblock', __name__)
 
 @ib.route('/insertblock', methods=['POST'])
@@ -48,7 +49,9 @@ def client_api_insert_block():
     to = ''
     try:
         if bData['encrypt']:
-            to = bData['to']
+            to = bData['to'].strip()
+            if " " in to:
+                to = mnemonickeys.get_base32(to)
             encrypt = True
             encryptType = 'asym'
     except KeyError:

@@ -177,18 +177,24 @@ function loadInboxEntries(bHash){
         humanDate.setUTCSeconds(resp['meta']['time'])
         humanDate = humanDate.toString()
         validSig.style.display = 'none'
-        if (resp['meta']['signer'] != ''){
-            senderInput.value = httpGet('/friends/getinfo/' + resp['meta']['signer'] + '/name')
+        if (typeof resp['meta']['signer'] != 'undefined' && resp['meta']['signer'] != ''){
+            let name = httpGet('/friends/getinfo/' + resp['meta']['signer'] + '/name')
+            if (name.length == 0){
+                setHumanReadableValue(senderInput, resp['meta']['signer'])
+                entry.setAttribute('data-nameSet', false)
+            }
+            else{
+                entry.setAttribute('data-nameSet', true)
+            }
+        }
+        else{
+            senderInput.value = 'Anonymous'
+            entry.setAttribute('data-nameSet', false)
         }
         if (! resp['meta']['validSig']){
             validSig.style.display = 'inline'
             validSig.innerText = 'Signature Validity: Bad'
             validSig.style.color = 'red'
-        }
-        entry.setAttribute('data-nameSet', true)
-        if (senderInput.value == ''){
-            senderInput.value = resp['meta']['signer'] || 'Anonymous'
-            entry.setAttribute('data-nameSet', false)
         }
         //bHashDisplay.innerText = bHash.substring(0, 10)
         entry.setAttribute('data-hash', bHash)

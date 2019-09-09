@@ -38,7 +38,9 @@ function sendMail(to, message, subject){
     .then((resp) => resp.text()) // Transform the data into json
     .then(function(data) {
         sendForm.style.display = 'block'
-        alert('Queued for sending!')
+        PNotify.success({
+            text: 'Queued for sending!'
+        })
       })
 }
 
@@ -50,12 +52,16 @@ friendPicker.onchange = function(){
 sendForm.onsubmit = function(){
     if (friendPicker.value.trim().length !== 0 && to.value.trim().length !== 0){
         if (friendPicker.value !== to.value){
-            alert('You have selected both a friend and entered a public key manually.')
+            PNotify.error({
+                text: 'You have selected both a friend and entered a public key manually.'
+            })
             return false
         }
     }
-    if (to.value.length !== 56 && to.value.length !== 52){
-        alert('Public key is not valid')   
+    if (! to.value.includes(" ") && to.value.length !== 56 && to.value.length !== 52){
+        PNotify.error({
+            text: 'User ID is not valid'
+        })
     }
     else{
         sendMail(to.value, messageContent.value, subject.value)

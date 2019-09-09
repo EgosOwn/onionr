@@ -19,14 +19,19 @@
 '''
 
 import sys, getpass
+
+import unpaddedbase32
+import vanityonionr
+import mnemonic
+
 import logger, onionrexceptions
 from onionrutils import stringvalidators, bytesconverter
 from onionrusers import onionrusers, contactmanager
 import config
 from coredb import keydb
 import keymanager, onionrcrypto
-import unpaddedbase32
 from etc import onionrvalues
+
 DETERMINISTIC_REQUIREMENT = onionrvalues.PASSWORD_LENGTH
 def add_ID():
     key_manager = keymanager.KeyManager()
@@ -80,3 +85,31 @@ def change_ID():
                 logger.warn('That key does not exist', terminal=True)
         else:
             logger.warn('Invalid key %s' % (key,), terminal=True)
+
+def add_vanity():
+    key_manager = keymanager.KeyManager()
+    tell = lambda tell: logger.info(tell, terminal=True)
+    words = ''
+    m = mnemonic.Mnemonic('english')
+    length = len(sys.argv) - 2
+    if length == 0: return
+    for i in range(2, len(sys.argv)):
+        words += ' '
+        words += sys.argv[i]
+    try:
+        if length == 1:
+            tell('Finding vanity, this should only take a few moments.')
+        else:
+            tell('Finding vanity, this will probably take a really long time.')
+        try:
+            vanity = vanityonionr.find_multiprocess(words)
+        except ValueError:
+            logger.warn('Vanity words must be valid english bip39', terminal=True)
+        else:
+            b32_pub = unpaddedbase32.b32encode(vanity[0])
+            tell('Found vanity address:\n' + m.to_mnemonic(vanity[0]))
+            tell('Base32 Public key: %s' % (b32_pub.decode(),))
+            key_manager.addKey(b32_pub, unpaddedbase32.b32encode(vanity[1]))
+    except KeyboardInterrupt:
+        pass
+add_vanity.onionr_help = "<space separated bip32 words> - Generates and stores an Onionr vanity address (see https://github.com/trezor/python-mnemonic/blob/master/mnemonic/wordlist/english.txt)"

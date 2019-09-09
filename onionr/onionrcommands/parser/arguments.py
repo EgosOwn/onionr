@@ -46,6 +46,7 @@ def get_arguments():
         ('importblocks', 'import-blocks', 'import-block'): importnewblocks.import_new_blocks,
         ('addid', 'add-id'): pubkeymanager.add_ID,
         ('changeid', 'change-id'): pubkeymanager.change_ID,
+        ('add-vanity', 'addvanity'): pubkeymanager.add_vanity,
         ('resettor', 'reset-tor'): resettor.reset_tor,
         ('resetplugins', 'reset-plugins'): resetplugins.reset,
         ('reset-tor-node-transport',): resettor.reset_tor_key_pair,
