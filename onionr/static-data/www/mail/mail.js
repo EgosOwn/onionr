@@ -184,6 +184,7 @@ function loadInboxEntries(bHash){
                 entry.setAttribute('data-nameSet', false)
             }
             else{
+                senderInput.value = name
                 entry.setAttribute('data-nameSet', true)
             }
         }
