@@ -278,9 +278,8 @@ function getSentbox(){
         if (keys.length == 0){
             threadPart.innerHTML = "nothing to show here yet."
         }
-        for (var i = keys.length - 1; i > 0; i--) (function(i, resp){
+        for (var i = keys.length - 1; i > -1; i--) (function(i, resp){
             var entry = document.createElement('div')
-            var obj = resp[i]
             var toLabel = document.createElement('span')
             toLabel.innerText = 'To: '
             var toEl = document.createElement('input')
