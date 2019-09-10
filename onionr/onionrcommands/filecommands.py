@@ -21,8 +21,15 @@
 import base64, sys, os
 import logger
 from onionrblockapi import Block
+import onionrexceptions
 from onionrutils import stringvalidators
+from etc import onionrvalues
 from onionrblocks import insert
+_ORIG_DIR = onionrvalues.ORIG_RUN_DIR_ENV_VAR
+
+def _get_dir(path: str)->str: 
+    if not os.getenv(_ORIG_DIR) is None: return os.getenv(_ORIG_DIR) + '/' + path
+    else: return path
 
 def add_html(singleBlock=True, blockType='html'):
     add_file(singleBlock, blockType)
@@ -35,13 +42,12 @@ def add_file(singleBlock=False, blockType='bin'):
     if len(sys.argv) >= 3:
         filename = sys.argv[2]
         contents = None
-
-        if not os.path.exists(filename):
+        if not os.path.exists(_get_dir(filename)):
             logger.error('That file does not exist. Improper path (specify full path)?', terminal=True)
             return
         logger.info('Adding file... this might take a long time.', terminal=True)
         try:
-            with open(filename, 'rb') as singleFile:
+            with open(_get_dir(filename), 'rb') as singleFile:
                 blockhash = insert(base64.b64encode(singleFile.read()), header=blockType)
             if len(blockhash) > 0:
                 logger.info('File %s saved in block %s' % (filename, blockhash), terminal=True)
@@ -55,7 +61,7 @@ def get_file():
         Get a file from onionr blocks
     '''
     try:
-        fileName = sys.argv[2]
+        fileName = _get_dir(sys.argv[2])
         bHash = sys.argv[3]
     except IndexError:
         logger.error("Syntax %s %s" % (sys.argv[0], '/path/to/filename <blockhash>'), terminal=True)
@@ -70,6 +76,9 @@ def get_file():
             logger.error('Block hash is invalid', terminal=True)
             return
 
-        with open(fileName, 'wb') as myFile:
-            myFile.write(base64.b64decode(Block(bHash).bcontent))
+        try:
+            with open(fileName, 'wb') as myFile:
+                myFile.write(base64.b64decode(Block(bHash).bcontent))
+        except onionrexceptions.NoDataAvailable:
+            logger.error('That block is not available. Trying again later may work.', terminal=True)
     return

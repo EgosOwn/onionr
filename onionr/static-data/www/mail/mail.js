@@ -26,6 +26,7 @@ threadContent = {}
 replyBtn = document.getElementById('replyBtn')
 addUnknownContact = document.getElementById('addUnknownContact')
 noInbox = document.getElementById('noInbox')
+humanReadableCache = {}
 
 function addContact(pubkey, friendName){
     fetch('/friends/add/' + pubkey, {
@@ -61,7 +62,14 @@ function openReply(bHash, quote, subject){
     for (var x = 0; x < splitQuotes.length; x++){
         splitQuotes[x] = '> ' + splitQuotes[x]
     }
-    quote = '\n' + key.substring(0, 12) + ' wrote:' + '\n' + splitQuotes.join('\n')
+
+    if (typeof humanReadableCache[key] != 'undefined'){
+        document.getElementById('draftID').value = humanReadableCache[key]
+        quote = '\n' + humanReadableCache[key].split(' ').slice(0,3).join(' ') + ' wrote:\n' + splitQuotes.join('\n')
+    }
+    else{
+        quote = '\n' + key.substring(0, 12) + ' wrote:' + '\n' + splitQuotes.join('\n')
+    }
     document.getElementById('draftText').value = quote
     setActiveTab('compose')
 }
@@ -184,6 +192,7 @@ function loadInboxEntries(bHash){
                 entry.setAttribute('data-nameSet', false)
             }
             else{
+                loadHumanReadableToCache(resp['meta']['signer'])
                 senderInput.value = name
                 entry.setAttribute('data-nameSet', true)
             }
@@ -295,6 +304,7 @@ function getSentbox(){
             sentDate.innerText = humanDate.substring(0, humanDate.indexOf('('))
             if (resp[i]['name'] == null || resp[i]['name'].toLowerCase() == 'anonymous'){
                 toEl.value = resp[i]['peer']
+                setHumanReadableValue(toEl, resp[i]['peer'])
             }
             else{
                 toEl.value = resp[i]['name']

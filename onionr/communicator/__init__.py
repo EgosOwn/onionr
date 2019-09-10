@@ -108,7 +108,7 @@ class OnionrCommunicatorDaemon:
         # Timers to periodically lookup new blocks and download them
         lookup_blocks_timer = OnionrCommunicatorTimers(self, lookupblocks.lookup_blocks_from_communicator, config.get('timers.lookupBlocks', 25), myArgs=[self], requiresPeer=True, maxThreads=1)
         # The block download timer is accessed by the block lookup function to trigger faster download starts
-        self.download_blocks_timer = OnionrCommunicatorTimers(self, self.getBlocks, config.get('timers.getBlocks', 30), requiresPeer=True, maxThreads=5)
+        self.download_blocks_timer = OnionrCommunicatorTimers(self, self.getBlocks, config.get('timers.getBlocks', 10), requiresPeer=True, maxThreads=5)
 
         # Timer to reset the longest offline peer so contact can be attempted again
         OnionrCommunicatorTimers(self, onlinepeers.clear_offline_peer, 58, myArgs=[self])

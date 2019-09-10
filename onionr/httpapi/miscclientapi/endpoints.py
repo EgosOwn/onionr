@@ -18,6 +18,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 from flask import Response, Blueprint, request, send_from_directory, abort
+import unpaddedbase32
 
 from httpapi import apiutils
 import onionrcrypto, config
@@ -111,6 +112,7 @@ class PrivateEndpoints:
 
         @private_endpoints_bp.route('/getHumanReadable/<name>')
         def getHumanReadable(name):
+            name = unpaddedbase32.repad(bytesconverter.str_to_bytes(name))
             return Response(mnemonickeys.get_human_readable_ID(name))
         
         @private_endpoints_bp.route('/getBase32FromHumanReadable/<words>')

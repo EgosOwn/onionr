@@ -31,6 +31,7 @@ def soft_reset():
     path = filepaths.block_data_location
     shutil.rmtree(path)
     os.remove(dbfiles.block_meta_db)
+    os.remove(filepaths.upload_list)
     logger.info("Soft reset Onionr", terminal=True)
 
 soft_reset.onionr_help = "Deletes Onionr blocks and their associated metadata, except for any exported block files."

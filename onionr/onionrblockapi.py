@@ -124,8 +124,7 @@ class Block:
         '''
             Verify if a block's signature is signed by its claimed signer
         '''
-
-        if signing.ed_verify(data=self.signedData, key=self.signer, sig=self.signature, encodedData=True):
+        if self.signer is None or signing.ed_verify(data=self.signedData, key=self.signer, sig=self.signature, encodedData=True):
             self.validSig = True
         else:
             self.validSig = False

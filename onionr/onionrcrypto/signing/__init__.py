@@ -4,6 +4,7 @@ import unpaddedbase32
 import nacl.encoding, nacl.signing, nacl.exceptions
 
 from onionrutils import bytesconverter
+from onionrutils import mnemonickeys
 import logger
 def ed_sign(data, key, encodeResult=False):
     '''Ed25519 sign data'''

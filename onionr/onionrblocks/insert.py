@@ -114,8 +114,9 @@ def insert_block(data: Union[str, bytes], header: str ='txt',
 
     # compile metadata
     metadata['meta'] = jsonMeta
-    metadata['sig'] = signature
-    metadata['signer'] = signer
+    if len(signature) > 0: # I don't like not pattern
+        metadata['sig'] = signature
+        metadata['signer'] = signer
     metadata['time'] = createTime
 
     # ensure expire is integer and of sane length
