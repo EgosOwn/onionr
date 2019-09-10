@@ -28,7 +28,7 @@ addUnknownContact = document.getElementById('addUnknownContact')
 noInbox = document.getElementById('noInbox')
 humanReadableCache = {}
 
-function addContact(pubkey, friendName){
+async function addContact(pubkey, friendName){
     fetch('/friends/add/' + pubkey, {
         method: 'POST',
         headers: {
@@ -77,7 +77,6 @@ function openReply(bHash, quote, subject){
 function openThread(bHash, sender, date, sigBool, pubkey, subjectLine){
     addUnknownContact.style.display = 'none'
     var messageDisplay = document.getElementById('threadDisplay')
-    //var blockContent = httpGet('/getblockbody/' + bHash)
 
     fetch('/getblockbody/' + bHash, {
         "method": "get",
