@@ -19,6 +19,8 @@
 '''
 
 import json
+
+from onionrutils import bytesconverter
 def get_block_metadata_from_data(block_data):
     '''
         accepts block contents as string, returns a tuple of 
@@ -34,11 +36,11 @@ def get_block_metadata_from_data(block_data):
         pass
 
     try:
-        metadata = json.loads(block_data[:block_data.find(b'\n')].decode())
+        metadata = json.loads(bytesconverter.bytes_to_str(block_data[:block_data.find(b'\n')]))
     except json.decoder.JSONDecodeError:
         pass
     else:
-        data = block_data[block_data.find(b'\n'):].decode()
+        data = block_data[block_data.find(b'\n'):]
 
         meta = metadata['meta']
     return (metadata, meta, data)

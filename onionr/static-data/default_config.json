@@ -1,93 +1,94 @@
 {
-    "general" : {
-        "dev_mode" : true,
-        "announce_node" : true,
-        "display_header" : false,
-        "minimum_block_pow" : 4,
-        "minimum_send_pow" : 4,
-        "use_subprocess_pow_if_possible" : true,
-        "socket_servers" : true,
-        "security_level" : 0,
-        "hide_created_blocks" : true,
-        "insert_deniable_blocks" : true,
-        "max_block_age" : 2678400,
-        "public_key" : "",
-        "random_bind_ip" : false
+    "general": {
+        "dev_mode": true,
+        "announce_node": true,
+        "display_header": false,
+        "minimum_block_pow": 4,
+        "minimum_send_pow": 4,
+        "use_subprocess_pow_if_possible": true,
+        "socket_servers": true,
+        "security_level": 0,
+        "hide_created_blocks": true,
+        "insert_deniable_blocks": true,
+        "max_block_age": 2678400,
+        "public_key": "",
+        "random_bind_ip": false,
+        "use_bootstrap_list": false
     },
 
-    "www" : {
-        "public" : {
-            "run" : true,
-            "path" : "static-data/www/public/"
+    "www": {
+        "public": {
+            "run": true,
+            "path": "static-data/www/public/"
         },
 
-        "private" : {
-            "run" : true,
-            "path" : "static-data/www/private/"
+        "private": {
+            "run": true,
+            "path": "static-data/www/private/"
         },
 
-        "ui" : {
-            "run" : true,
-            "private" : true
+        "ui": {
+            "run": true,
+            "private": true
         }
     },
 
-    "client" : {
+    "client": {
 
     },
 
-    "plugins" : {
-        "enabled" : {
+    "plugins": {
+        "enabled": {
 
         },
 
-        "disabled" : {
+        "disabled": {
 
         }
     },
 
-    "log" : {
-        "verbosity" : "default",
+    "log": {
+        "verbosity": "default",
 
         "file": {
             "output": true,
             "path": "output.log"
         },
 
-        "console" : {
-            "output" : true,
-            "color" : true
+        "console": {
+            "output": true,
+            "color": true
         }
     },
 
-    "tor" : {
-        "v3onions" : true,
+    "tor": {
+        "v3onions": true,
         "use_bridge": false,
         "bridge_ip": "",
         "bridge_fingerprint": ""
     },
 
-    "i2p" : {
-    	"host" : false,
-        "connect" : true,
-        "own_addr" : ""
+    "i2p": {
+    	"host": false,
+        "connect": true,
+        "own_addr": ""
      },
 
-    "allocations" : {
-        "disk" : 100000000,
-        "net_total" : 1000000000,
-        "blockCache" : 5000000,
-        "blockCacheTotal" : 50000000
+    "allocations": {
+        "disk": 100000000,
+        "net_total": 1000000000,
+        "blockCache": 5000000,
+        "blockCacheTotal": 50000000
     },
 
-    "peers" : {
-        "minimum_score" : -100,
-        "max_stored_peers" : 5000,
-        "max_connect" : 1000
+    "peers": {
+        "minimum_score": -100,
+        "max_stored_peers": 5000,
+        "max_connect": 1000
     },
 
-    "timers" : {
-        "lookupBlocks" : 25,
-        "getBlocks" : 10
+    "timers": {
+        "lookupBlocks": 25,
+        "getBlocks": 10
     }
 }

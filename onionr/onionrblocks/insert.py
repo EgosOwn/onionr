@@ -101,7 +101,7 @@ def insert_block(data: Union[str, bytes], header: str ='txt',
             # Encrypt block data with forward secrecy key first, but not meta
             jsonMeta = json.dumps(meta)
             jsonMeta = crypto.encryption.pub_key_encrypt(jsonMeta, asymPeer, encodedData=True).decode()
-            data = crypto.encryption.pub_key_encrypt(data, asymPeer, encodedData=True).decode()
+            data = crypto.encryption.pub_key_encrypt(data, asymPeer, encodedData=False)#.decode()
             signature = crypto.encryption.pub_key_encrypt(signature, asymPeer, encodedData=True).decode()
             signer = crypto.encryption.pub_key_encrypt(signer, asymPeer, encodedData=True).decode()
             try:

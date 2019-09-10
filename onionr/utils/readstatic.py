@@ -1,7 +1,7 @@
 import os
 def get_static_dir():
     return os.path.dirname(os.path.realpath(__file__)) + '/../static-data/'
-def read_static(file, ret_bin=False):
+def read_static(file:str, ret_bin:bool=False)->str:
     static_file = get_static_dir() + file
 
     if ret_bin:

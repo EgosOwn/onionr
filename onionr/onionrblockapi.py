@@ -17,7 +17,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-
+import binascii
 import logger, config, onionrexceptions, nacl.exceptions
 import json, os, sys, datetime, base64, onionrstorage
 from onionrusers import onionrusers
@@ -70,7 +70,10 @@ class Block:
         # decrypt data
         if self.getHeader('encryptType') == 'asym':
             try:
-                self.bcontent = encryption.pub_key_decrypt(self.bcontent, encodedData=encodedData)
+                try:
+                    self.bcontent = encryption.pub_key_decrypt(self.bcontent, encodedData=encodedData)
+                except binascii.Error:
+                    self.bcontent = encryption.pub_key_decrypt(self.bcontent, encodedData=not encodedData)
                 bmeta = encryption.pub_key_decrypt(self.bmetadata, encodedData=encodedData)
                 try:
                     bmeta = bmeta.decode()
@@ -81,7 +84,7 @@ class Block:
                 self.signature = encryption.pub_key_decrypt(self.signature, encodedData=encodedData)
                 self.signer = encryption.pub_key_decrypt(self.signer, encodedData=encodedData)
                 self.bheader['signer'] = self.signer.decode()
-                self.signedData =  json.dumps(self.bmetadata) + self.bcontent.decode()
+                self.signedData =  json.dumps(self.bmetadata).encode() + self.bcontent
 
                 if not self.signer is None:
                     if not self.verifySig():
@@ -152,15 +155,15 @@ class Block:
             # import from file
             if blockdata is None:
                 try:
-                    blockdata = onionrstorage.getData(self.getHash()).decode()
+                    blockdata = onionrstorage.getData(self.getHash())#.decode()
                 except AttributeError:
                     raise onionrexceptions.NoDataAvailable('Block does not exist')
             else:
                 self.blockFile = None
             # parse block
-            self.raw = str(blockdata)
-            self.bheader = json.loads(self.getRaw()[:self.getRaw().index('\n')])
-            self.bcontent = self.getRaw()[self.getRaw().index('\n') + 1:]
+            self.raw = blockdata
+            self.bheader = json.loads(self.getRaw()[:self.getRaw().index(b'\n')])
+            self.bcontent = self.getRaw()[self.getRaw().index(b'\n') + 1:]
             if ('encryptType' in self.bheader) and (self.bheader['encryptType'] in ('asym', 'sym')):
                 self.bmetadata = self.getHeader('meta', None)
                 self.isEncrypted = True
@@ -278,10 +281,10 @@ class Block:
             Returns the raw contents of the block, if saved to file
 
             Outputs:
-            - (str): the raw contents of the block, or None
+            - (bytes): the raw contents of the block, or None
         '''
 
-        return str(self.raw)
+        return self.raw
 
     def getHeader(self, key = None, default = None):
         '''
