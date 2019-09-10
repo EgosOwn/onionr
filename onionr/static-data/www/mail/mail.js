@@ -77,40 +77,48 @@ function openReply(bHash, quote, subject){
 function openThread(bHash, sender, date, sigBool, pubkey, subjectLine){
     addUnknownContact.style.display = 'none'
     var messageDisplay = document.getElementById('threadDisplay')
-    var blockContent = httpGet('/getblockbody/' + bHash)
+    //var blockContent = httpGet('/getblockbody/' + bHash)
 
-    document.getElementById('fromUser').value = sender || 'Anonymous'
-    document.getElementById('subjectView').innerText = subjectLine
-    messageDisplay.innerText = blockContent
-    var sigEl = document.getElementById('sigValid')
-    var sigMsg = 'signature'
-
-    // show add unknown contact button if peer is unknown but still has pubkey
-    if (sender === pubkey && sender !== myPub && sigBool){
-        addUnknownContact.style.display = 'inline'
-    }
-
-    if (sigBool){
-        sigMsg = 'Good ' + sigMsg
-        sigEl.classList.remove('danger')
-    }
-    else{
-        sigMsg = 'Bad/no ' + sigMsg + ' (message could be impersonating someone)'
-        sigEl.classList.add('danger')
-        replyBtn.style.display = 'none'
-    }
-    sigEl.innerText = sigMsg
-    overlay('messageDisplay')
-    replyBtn.onclick = function(){
-        openReply(bHash, messageDisplay.innerText, subjectLine)
-    }
-    addUnknownContact.onclick = function(){
-        var friendName = prompt("Enter an alias for this contact:")
-        if (friendName === null || friendName.length == 0){
-            return
+    fetch('/getblockbody/' + bHash, {
+        "method": "get",
+        headers: {
+            "token": webpass
+        }})
+    .then((resp) => resp.text())
+    .then(function(resp) {
+        document.getElementById('fromUser').value = sender || 'Anonymous'
+        document.getElementById('subjectView').innerText = subjectLine
+        messageDisplay.innerText = resp
+        var sigEl = document.getElementById('sigValid')
+        var sigMsg = 'signature'
+    
+        // show add unknown contact button if peer is unknown but still has pubkey
+        if (sender === pubkey && sender !== myPub && sigBool){
+            addUnknownContact.style.display = 'inline'
         }
-        addContact(pubkey, friendName)
-    }
+    
+        if (sigBool){
+            sigMsg = 'Good ' + sigMsg
+            sigEl.classList.remove('danger')
+        }
+        else{
+            sigMsg = 'Bad/no ' + sigMsg + ' (message could be impersonating someone)'
+            sigEl.classList.add('danger')
+            replyBtn.style.display = 'none'
+        }
+        sigEl.innerText = sigMsg
+        overlay('messageDisplay')
+        replyBtn.onclick = function(){
+            openReply(bHash, messageDisplay.innerText, subjectLine)
+        }
+        addUnknownContact.onclick = function(){
+            var friendName = prompt("Enter an alias for this contact:")
+            if (friendName === null || friendName.length == 0){
+                return
+            }
+            addContact(pubkey, friendName)
+        }
+    })
 }
 
 function setActiveTab(tabName){
@@ -139,7 +147,7 @@ function deleteMessage(bHash){
         headers: {
             "token": webpass
         }})
-    .then((resp) => resp.text()) // Transform the data into json
+    .then((resp) => resp.text())
     .then(function(resp) {
     })
 }
@@ -185,17 +193,25 @@ function loadInboxEntries(bHash){
         humanDate.setUTCSeconds(resp['meta']['time'])
         humanDate = humanDate.toString()
         validSig.style.display = 'none'
+
         if (typeof resp['meta']['signer'] != 'undefined' && resp['meta']['signer'] != ''){
-            let name = httpGet('/friends/getinfo/' + resp['meta']['signer'] + '/name')
-            if (name.length == 0){
-                setHumanReadableValue(senderInput, resp['meta']['signer'])
-                entry.setAttribute('data-nameSet', false)
-            }
-            else{
-                loadHumanReadableToCache(resp['meta']['signer'])
-                senderInput.value = name
-                entry.setAttribute('data-nameSet', true)
-            }
+            fetch('/friends/getinfo/' + resp['meta']['signer'] + '/name', {
+                headers: {
+                  "token": webpass
+                }})
+            .then(function(resp2){
+                if (!resp2.ok){
+                    setHumanReadableValue(senderInput, resp['meta']['signer'])
+                    entry.setAttribute('data-nameSet', false)
+                }
+                else{
+                    resp2 => resp2.text()
+                    loadHumanReadableToCache(resp['meta']['signer'])
+                    senderInput.value = resp2
+                    entry.setAttribute('data-nameSet', true)
+                }
+            })
+
         }
         else{
             senderInput.value = 'Anonymous'
@@ -347,7 +363,7 @@ fetch('/mail/getinbox', {
     headers: {
       "token": webpass
     }})
-.then((resp) => resp.text()) // Transform the data into json
+.then((resp) => resp.text())
 .then(function(data) {
     pms = data.split(',').reverse()
     if (pms.length > 0){

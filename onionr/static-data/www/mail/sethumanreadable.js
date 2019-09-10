@@ -15,7 +15,8 @@ function setHumanReadableValue(el, key){
         return
     }
     else{
-        setTimeout(function(){setHumanReadableValue(el, key)})
+        loadHumanReadableToCache(key)
+        setTimeout(function(){setHumanReadableValue(el, key)}, 100)
         return
     }
 }
