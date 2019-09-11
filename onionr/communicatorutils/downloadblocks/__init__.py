@@ -64,6 +64,7 @@ def download_blocks_from_communicator(comm_inst):
         if not comm_inst.shutdown and peerUsed.strip() != '':
             logger.info("Attempting to download %s from %s..." % (blockHash[:12], peerUsed))
         content = peeraction.peer_action(comm_inst, peerUsed, 'getdata/' + blockHash, max_resp_size=3000000) # block content from random peer (includes metadata)
+
         if content != False and len(content) > 0:
             try:
                 content = content.encode()

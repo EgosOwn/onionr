@@ -47,7 +47,8 @@ def get_block_data(publicAPI, data):
                 try:
                     block = block.encode() # Encode in case data is binary
                 except AttributeError:
-                    abort(404)
+                    if len(block) == 0:
+                        abort(404)
                 block = bytesconverter.str_to_bytes(block)
                 resp = block
     if len(resp) == 0:
