@@ -3,7 +3,6 @@ sys.path.append(".")
 import unittest, uuid
 
 import logger
-import config
 from utils import createdirs
 import onionrsetup as setup
 from utils import createdirs
@@ -14,6 +13,7 @@ import storagecounter
 import onionrstorage
 
 def _test_setup():
+    import config
     TEST_DIR = 'testdata/%s-%s' % (uuid.uuid4(), os.path.basename(__file__)) + '/'
     print("Test directory:", TEST_DIR)
     os.environ["ONIONR_HOME"] = TEST_DIR
@@ -23,11 +23,13 @@ def _test_setup():
 
 class TestStorageCounter(unittest.TestCase):
     def test_basic_amount(self):
+        import config
         _test_setup()
         self.assertIsNotNone(config.get('allocations.disk'))
         self.assertGreater(config.get('allocations.disk'), 1000000)
     
     def test_insert_too_much(self):
+        import config
         _test_setup()
         config.set('allocations.disk', 1000)
         self.assertRaises(onionrexceptions.DiskAllocationReached, onionrblocks.insert, "test")
