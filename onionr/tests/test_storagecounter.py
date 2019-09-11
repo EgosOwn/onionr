@@ -26,7 +26,7 @@ class TestStorageCounter(unittest.TestCase):
         import config
         _test_setup()
         self.assertIsNotNone(config.get('allocations.disk'))
-        self.assertGreater(config.get('allocations.disk'), 1000000)
+        self.assertGreaterEqual(config.get('allocations.disk'), 1000000)
     
     def test_insert_too_much(self):
         import config

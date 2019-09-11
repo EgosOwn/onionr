@@ -23,7 +23,6 @@ from etc import onionrvalues
 from logger.settings import *
 
 def setup_config():
-    config.reload()
     
     if not os.path.exists(config._configfile):
         if os.path.exists('static-data/default_config.json'):
@@ -32,6 +31,8 @@ def setup_config():
                 config.set_config(json.loads(configReadIn.read()))
 
         config.save()
+
+    config.reload()
 
     settings = 0b000
     if config.get('log.console.color', True):

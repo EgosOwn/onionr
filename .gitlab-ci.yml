@@ -3,5 +3,5 @@ test:
   script:
   - apt-get update -qy
   - apt-get install -y python3-pip tor
-  - pip3 install -r requirements.txt
+  - pip3 install --require-hashes -r requirements.txt
   - make test
