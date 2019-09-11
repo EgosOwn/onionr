@@ -21,14 +21,14 @@ import os, json, base64
 import config, logger, netcontroller
 from etc import onionrvalues
 from logger.settings import *
+from utils import readstatic
 
 def setup_config():
     
     if not os.path.exists(config._configfile):
-        if os.path.exists('static-data/default_config.json'):
-            # this is the default config, it will be overwritten if a config file already exists. Else, it saves it
-            with open('static-data/default_config.json', 'r') as configReadIn:
-                config.set_config(json.loads(configReadIn.read()))
+        # this is the default config, it will be overwritten if a config file already exists. Else, it saves it
+        conf_data = readstatic.read_static('default_config.json', ret_bin=False)
+        config.set_config(json.loads(conf_data))
 
         config.save()
 
