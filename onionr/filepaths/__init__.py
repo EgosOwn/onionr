@@ -14,6 +14,7 @@ cached_storage = home + 'cachedstorage.dat'
 announce_cache = home + 'announcecache.dat'
 export_location = home + 'block-export/'
 upload_list = home + 'upload-list.json'
+config_file = home + 'config.json'
 
 tor_hs_address_file = home + 'hs/hostname'
 

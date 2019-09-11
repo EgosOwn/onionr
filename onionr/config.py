@@ -19,12 +19,9 @@
 '''
 
 import os, json, logger
-from utils import identifyhome
+import filepaths
 
-# set data dir
-dataDir = identifyhome.identify_home()
-
-_configfile = os.path.abspath(dataDir + 'config.json')
+_configfile = filepaths.config_file
 _config = {}
 
 def get(key, default = None, save = False):

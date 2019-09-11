@@ -22,6 +22,7 @@ import os, platform
 def identify_home():
 
     path = os.environ.get('ONIONR_HOME', None)
+
     if path is None:
         system = platform.system()
         if system == 'Linux':
@@ -36,4 +37,5 @@ def identify_home():
         path = os.path.abspath(path)
     if not path.endswith('/'):
         path += '/'
+
     return path
