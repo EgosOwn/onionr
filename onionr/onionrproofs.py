@@ -17,91 +17,64 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import multiprocessing, nacl.encoding, nacl.hash, nacl.utils, time, math, threading, binascii, sys, json
+import multiprocessing, nacl.encoding, nacl.hash, nacl.utils, time, math, threading, binascii, sys, json, sys
 import config, logger, onionrblockapi, storagecounter
 from onionrutils import bytesconverter
 from onionrcrypto import hashers
 config.reload()
+
 def getDifficultyModifier():
     '''returns the difficulty modifier for block storage based 
     on a variety of factors, currently only disk use.
     '''
-    retData = 0
-    useFunc = storagecounter.StorageCounter().get_percent
+    percentUse = storagecounter.StorageCounter().getPercent()
+    difficultyIncrease = math.floor(4 * percentUse) # difficulty increase is a step function
 
-    percentUse = useFunc()
+    return difficultyIncrease
 
-    if percentUse >= 0.50:
-        retData += 1
-    elif percentUse >= 0.75:
-        retData += 2
-    elif percentUse >= 0.95:
-        retData += 3
-
-    return retData
-
-def getDifficultyForNewBlock(data, ourBlock=True):
+def getDifficultyForNewBlock(data):
     '''
     Get difficulty for block. Accepts size in integer, Block instance, or str/bytes full block contents
     '''
-    retData = 0
-    dataSize = 0
     if isinstance(data, onionrblockapi.Block):
-        dataSize = len(data.getRaw().encode('utf-8'))
+        dataSizeInBytes = len(bytesconverter.str_to_bytes(data.getRaw()))
     else:
-        dataSize = len(bytesconverter.str_to_bytes(data))
+        dataSizeInBytes = len(bytesconverter.str_to_bytes(data))
 
-    if ourBlock:
-        minDifficulty = config.get('general.minimum_send_pow', 4)
-    else:
-        minDifficulty = config.get('general.minimum_block_pow', 4)
+    minDifficulty = config.get('general.minimum_send_pow', 4)
+    totalDifficulty = max(minDifficulty, math.floor(dataSizeInBytes / 1000000.0)) + getDifficultyModifier()
 
-    retData = max(minDifficulty, math.floor(dataSize / 100000)) + getDifficultyModifier()
+    return totalDifficulty
 
     return retData
 
 def getHashDifficulty(h: str):
     '''
-        Return the amount of leading zeroes in a hex hash string (h)
+        Return the amount of leading zeroes in a hex hash string (hexHash)
     '''
-    difficulty = 0
-    for character in h:
-        if character == '0':
-            difficulty += 1
-        else:
-            break
-    return difficulty
+    return len(h) - len(h.lstrip('0'))
 
-def hashMeetsDifficulty(h):
+def hashMeetsDifficulty(hexHash):
     '''
         Return bool for a hash string to see if it meets pow difficulty defined in config
     '''
-    hashDifficulty = getHashDifficulty(h)
+    hashDifficulty = getHashDifficulty(hexHash)
+
     try:
         expected = int(config.get('general.minimum_block_pow'))
     except TypeError:
         raise ValueError('Missing general.minimum_block_pow config')
-    if hashDifficulty >= expected:
-        return True
-    else:
-        return False
+
+    return hashDifficulty >= expected
 
 class DataPOW:
-    def __init__(self, data, forceDifficulty=0, threadCount = 1):
-        self.foundHash = False
-        self.difficulty = 0
+    def __init__(self, data, minDifficulty = 0, threadCount = 1):
         self.data = data
         self.threadCount = threadCount
+        self.difficulty = max(minDifficulty, getDifficultyForNewBlock(data))
         self.rounds = 0
         self.hashing = False
-
-        if forceDifficulty == 0:
-            dataLen = sys.getsizeof(data)
-            self.difficulty = math.floor(dataLen / 1000000)
-            if self.difficulty <= 2:
-                self.difficulty = 4
-        else:
-            self.difficulty = forceDifficulty
+        self.foundHash = False
 
         try:
             self.data = self.data.encode()
@@ -124,9 +97,6 @@ class DataPOW:
         self.hashing = True
         self.reporting = reporting
         iFound = False # if current thread is the one that found the answer
-        answer = ''
-        heartbeat = 200000
-        hbCount = 0
         
         while self.hashing:
             rand = nacl.utils.random()
@@ -183,7 +153,7 @@ class DataPOW:
         return result
 
 class POW:
-    def __init__(self, metadata, data, threadCount = 1, forceDifficulty=0):
+    def __init__(self, metadata, data, threadCount = 1, minDifficulty=0):
         self.foundHash = False
         self.difficulty = 0
         self.data = data
@@ -198,8 +168,8 @@ class POW:
         except AttributeError:
             pass
             
-        if forceDifficulty > 0:
-            self.difficulty = forceDifficulty
+        if minDifficulty > 0:
+            self.difficulty = minDifficulty
         else:
             # Calculate difficulty. Dumb for now, may use good algorithm in the future.
             self.difficulty = getDifficultyForNewBlock(bytes(json_metadata + b'\n' + self.data))
@@ -218,10 +188,7 @@ class POW:
         self.hashing = True
         self.reporting = reporting
         iFound = False # if current thread is the one that found the answer
-        answer = ''
-        hbCount = 0
-        nonce = int(binascii.hexlify(nacl.utils.random(2)), 16)
-        startNonce = nonce
+        nonce = int(binascii.hexlify(nacl.utils.random(64)), 16)
         while self.hashing:
             #token = nacl.hash.blake2b(rand + self.data).decode()
             self.metadata['pow'] = nonce

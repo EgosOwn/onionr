@@ -44,12 +44,6 @@ if sys.version_info[0] == 2 or sys.version_info[1] < onionrvalues.MIN_PY_VERSION
     sys.stderr.write('Error, Onionr requires Python 3.%s+\n' % (onionrvalues.MIN_PY_VERSION,))
     sys.exit(1)
 
-# Ensure Python interpreter is not optimized TODO: Remove asserts and replace with ifs
-from utils import detectoptimization
-if detectoptimization.detect_optimization():
-    sys.stderr.write('Error, Onionr cannot be run with an optimized Python interpreter\n')
-    sys.exit(2)
-
 # Create Onionr data directories, must be done before most imports
 from utils import createdirs
 createdirs.create_dirs()

@@ -65,7 +65,7 @@ def announce_node(daemon):
                 data['random'] = existingRand
             else:
                 daemon.announceProgress[peer] = True
-                proof = onionrproofs.DataPOW(combinedNodes, forceDifficulty=onionrvalues.ANNOUNCE_POW)
+                proof = onionrproofs.DataPOW(combinedNodes, minDifficulty=onionrvalues.ANNOUNCE_POW)
                 del daemon.announceProgress[peer]
                 try:
                     data['random'] = base64.b64encode(proof.waitForResult()[1])
