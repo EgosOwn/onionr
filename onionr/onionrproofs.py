@@ -27,7 +27,7 @@ def getDifficultyModifier():
     '''returns the difficulty modifier for block storage based 
     on a variety of factors, currently only disk use.
     '''
-    percentUse = storagecounter.StorageCounter().getPercent()
+    percentUse = storagecounter.StorageCounter().get_percent()
     difficultyIncrease = math.floor(4 * percentUse) # difficulty increase is a step function
 
     return difficultyIncrease
