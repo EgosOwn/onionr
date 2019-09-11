@@ -25,6 +25,7 @@ class TestStorageCounter(unittest.TestCase):
     def test_basic_amount(self):
         import config
         _test_setup()
+        print(config.get('allocations.disk'))
         self.assertIsNotNone(config.get('allocations.disk'))
         self.assertGreaterEqual(config.get('allocations.disk'), 1000000)
     

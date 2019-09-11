@@ -1,7 +1,8 @@
 test:
-  image: ubuntu:bionic
+  image: ubuntu:disco
   script:
   - apt-get update -qy
   - apt-get install -y python3-pip tor
   - pip3 install --require-hashes -r requirements.txt
+  - python3 --version
   - make test
