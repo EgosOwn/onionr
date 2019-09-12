@@ -77,7 +77,7 @@ def download_blocks_from_communicator(comm_inst):
             except AttributeError:
                 pass
             if realHash == blockHash:
-                content = content.decode() # decode here because sha3Hash needs bytes above
+                #content = content.decode() # decode here because sha3Hash needs bytes above
                 metas = blockmetadata.get_block_metadata_from_data(content) # returns tuple(metadata, meta), meta is also in metadata
                 metadata = metas[0]
                 if validatemetadata.validate_metadata(metadata, metas[2]): # check if metadata is valid, and verify nonce

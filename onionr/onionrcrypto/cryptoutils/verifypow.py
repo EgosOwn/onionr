@@ -1,5 +1,6 @@
 from .. import hashers
 import config, onionrproofs, logger
+import onionrexceptions
 def verify_POW(blockContent):
     '''
         Verifies the proof of work associated with a block
@@ -31,6 +32,7 @@ def verify_POW(blockContent):
         retData = True
     else:
         logger.debug("Invalid token, bad proof")
+        raise onionrexceptions.InvalidProof('Proof for %s needs to be %s' % (blockHash, puzzle))
 
     return retData
 

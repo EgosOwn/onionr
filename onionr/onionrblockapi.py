@@ -72,8 +72,8 @@ class Block:
             try:
                 try:
                     self.bcontent = encryption.pub_key_decrypt(self.bcontent, encodedData=encodedData)
-                except binascii.Error:
-                    self.bcontent = encryption.pub_key_decrypt(self.bcontent, encodedData=not encodedData)
+                except (binascii.Error, ValueError) as e:
+                    self.bcontent = encryption.pub_key_decrypt(self.bcontent, encodedData=False)
                 bmeta = encryption.pub_key_decrypt(self.bmetadata, encodedData=encodedData)
                 try:
                     bmeta = bmeta.decode()

@@ -47,6 +47,9 @@ def lookup_new_peer_transports_with_communicator(comm_inst):
                 # avoid adding if its our address
                 invalid.append(x)
         for x in invalid:
-            newPeers.remove(x)
+            try:
+                newPeers.remove(x)
+            except ValueError:
+                pass
         comm_inst.newPeers.extend(newPeers)
     comm_inst.decrementThreadCount('lookup_new_peer_transports_with_communicator')
