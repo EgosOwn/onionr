@@ -101,39 +101,39 @@ class OnionrCommunicatorDaemon:
             OnionrCommunicatorTimers(self, self.heartbeat, 30)
 
         # Set timers, function reference, seconds
-        # requiresPeer True means the timer function won't fire if we have no connected peers
-        peerPoolTimer = OnionrCommunicatorTimers(self, onlinepeers.get_online_peers, 60, maxThreads=1, myArgs=[self])
-        OnionrCommunicatorTimers(self, self.runCheck, 2, maxThreads=1)
+        # requires_peer True means the timer function won't fire if we have no connected peers
+        peerPoolTimer = OnionrCommunicatorTimers(self, onlinepeers.get_online_peers, 60, max_threads=1, my_args=[self])
+        OnionrCommunicatorTimers(self, self.runCheck, 2, max_threads=1)
 
         # Timers to periodically lookup new blocks and download them
-        lookup_blocks_timer = OnionrCommunicatorTimers(self, lookupblocks.lookup_blocks_from_communicator, config.get('timers.lookupBlocks', 25), myArgs=[self], requiresPeer=True, maxThreads=1)
+        lookup_blocks_timer = OnionrCommunicatorTimers(self, lookupblocks.lookup_blocks_from_communicator, config.get('timers.lookupBlocks', 25), my_args=[self], requires_peer=True, max_threads=1)
         # The block download timer is accessed by the block lookup function to trigger faster download starts
-        self.download_blocks_timer = OnionrCommunicatorTimers(self, self.getBlocks, config.get('timers.getBlocks', 10), requiresPeer=True, maxThreads=5)
+        self.download_blocks_timer = OnionrCommunicatorTimers(self, self.getBlocks, config.get('timers.getBlocks', 10), requires_peer=True, max_threads=5)
 
         # Timer to reset the longest offline peer so contact can be attempted again
-        OnionrCommunicatorTimers(self, onlinepeers.clear_offline_peer, 58, myArgs=[self])
+        OnionrCommunicatorTimers(self, onlinepeers.clear_offline_peer, 58, my_args=[self])
 
         # Timer to cleanup old blocks
-        blockCleanupTimer = OnionrCommunicatorTimers(self, housekeeping.clean_old_blocks, 20, myArgs=[self])
+        blockCleanupTimer = OnionrCommunicatorTimers(self, housekeeping.clean_old_blocks, 20, my_args=[self])
 
         # Timer to discover new peers
-        OnionrCommunicatorTimers(self, lookupadders.lookup_new_peer_transports_with_communicator, 60, requiresPeer=True, myArgs=[self], maxThreads=2)
+        OnionrCommunicatorTimers(self, lookupadders.lookup_new_peer_transports_with_communicator, 60, requires_peer=True, my_args=[self], max_threads=2)
 
         # Timer for adjusting which peers we actively communicate to at any given time, to avoid over-using peers
-        OnionrCommunicatorTimers(self, cooldownpeer.cooldown_peer, 30, myArgs=[self], requiresPeer=True)
+        OnionrCommunicatorTimers(self, cooldownpeer.cooldown_peer, 30, my_args=[self], requires_peer=True)
 
         # Timer to read the upload queue and upload the entries to peers
-        OnionrCommunicatorTimers(self, uploadblocks.upload_blocks_from_communicator, 5, myArgs=[self], requiresPeer=True, maxThreads=1)
+        OnionrCommunicatorTimers(self, uploadblocks.upload_blocks_from_communicator, 5, my_args=[self], requires_peer=True, max_threads=1)
 
         # Timer to process the daemon command queue
-        OnionrCommunicatorTimers(self, daemonqueuehandler.handle_daemon_commands, 6, myArgs=[self], maxThreads=3)
+        OnionrCommunicatorTimers(self, daemonqueuehandler.handle_daemon_commands, 6, my_args=[self], max_threads=3)
 
         # Setup direct connections
         if config.get('general.socket_servers', False):
             self.services = onionrservices.OnionrServices()
             self.active_services = []
             self.service_greenlets = []
-            OnionrCommunicatorTimers(self, servicecreator.service_creator, 5, maxThreads=50, myArgs=[self])
+            OnionrCommunicatorTimers(self, servicecreator.service_creator, 5, max_threads=50, my_args=[self])
         else:
             self.services = None
         
@@ -142,25 +142,25 @@ class OnionrCommunicatorDaemon:
         
         # This timer creates deniable blocks, in an attempt to further obfuscate block insertion metadata
         if config.get('general.insert_deniable_blocks', True):
-            deniableBlockTimer = OnionrCommunicatorTimers(self, deniableinserts.insert_deniable_block, 180, myArgs=[self], requiresPeer=True, maxThreads=1)
+            deniableBlockTimer = OnionrCommunicatorTimers(self, deniableinserts.insert_deniable_block, 180, my_args=[self], requires_peer=True, max_threads=1)
             deniableBlockTimer.count = (deniableBlockTimer.frequency - 175)
 
         # Timer to check for connectivity, through Tor to various high-profile onion services
-        netCheckTimer = OnionrCommunicatorTimers(self, netcheck.net_check, 500, myArgs=[self], maxThreads=1)
+        netCheckTimer = OnionrCommunicatorTimers(self, netcheck.net_check, 500, my_args=[self], max_threads=1)
 
         # Announce the public API server transport address to other nodes if security level allows
         if config.get('general.security_level', 1) == 0 and config.get('general.announce_node', True):
             # Default to high security level incase config breaks
-            announceTimer = OnionrCommunicatorTimers(self, announcenode.announce_node, 3600, myArgs=[self], requiresPeer=True, maxThreads=1)
+            announceTimer = OnionrCommunicatorTimers(self, announcenode.announce_node, 3600, my_args=[self], requires_peer=True, max_threads=1)
             announceTimer.count = (announceTimer.frequency - 120)
         else:
             logger.debug('Will not announce node.')
         
         # Timer to delete malfunctioning or long-dead peers
-        cleanupTimer = OnionrCommunicatorTimers(self, self.peerCleanup, 300, requiresPeer=True)
+        cleanupTimer = OnionrCommunicatorTimers(self, self.peerCleanup, 300, requires_peer=True)
 
         # Timer to cleanup dead ephemeral forward secrecy keys 
-        forwardSecrecyTimer = OnionrCommunicatorTimers(self, housekeeping.clean_keys, 15, myArgs=[self], maxThreads=1)
+        forwardSecrecyTimer = OnionrCommunicatorTimers(self, housekeeping.clean_keys, 15, my_args=[self], max_threads=1)
 
         # Adjust initial timer triggers
         peerPoolTimer.count = (peerPoolTimer.frequency - 1)

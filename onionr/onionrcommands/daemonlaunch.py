@@ -1,7 +1,7 @@
 '''
     Onionr - Private P2P Communication
 
-    launch the api server and communicator
+    launch the api servers and communicator
 '''
 '''
     This program is free software: you can redistribute it and/or modify
@@ -56,8 +56,8 @@ def daemon():
 
     shared_state = toomanyobjs.TooMany()
 
-    Thread(target=shared_state.get(apiservers.ClientAPI).start, daemon=True).start()
-    Thread(target=shared_state.get(apiservers.PublicAPI).start, daemon=True).start()
+    Thread(target=shared_state.get(apiservers.ClientAPI).start, daemon=True, name='client HTTP API').start()
+    Thread(target=shared_state.get(apiservers.PublicAPI).start, daemon=True, name='public HTTP API').start()
     shared_state.get(serializeddata.SerializedData)
     shared_state.share_object() # share the parent object to the threads
 
@@ -91,7 +91,7 @@ def daemon():
         logger.debug('Started .onion service: %s' % (logger.colors.underline + net.myID))
     else:
         logger.debug('.onion service disabled')
-    logger.info('Using public key: %s' % (logger.colors.underline + getourkeypair.get_keypair()[0][:52]), terminal=True)
+    logger.info('Using public key: %s' % (logger.colors.underline + getourkeypair.get_keypair()[0][:52]))
 
     try:
         time.sleep(1)
@@ -116,7 +116,7 @@ def _ignore_sigint(sig, frame):
 
 def kill_daemon():
     '''
-        Shutdown the Onionr daemon
+        Shutdown the Onionr daemon (communicator)
     '''
 
     logger.warn('Stopping the running daemon...', timestamp = False, terminal=True)
@@ -133,7 +133,8 @@ def kill_daemon():
         logger.error('Failed to shutdown daemon: ' + str(e), error = e, timestamp = False, terminal=True)
     return
 
-def start(input = False, override = False):
+def start(input: bool = False, override: bool = False):
+    """If no lock file, make one and start onionr, error if there is and its not overridden"""
     if os.path.exists('.onionr-lock') and not override:
         logger.fatal('Cannot start. Daemon is already running, or it did not exit cleanly.\n(if you are sure that there is not a daemon running, delete .onionr-lock & try again).', terminal=True)
     else:
