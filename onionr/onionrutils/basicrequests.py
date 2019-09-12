@@ -21,7 +21,7 @@ import requests, streamedrequests
 import logger, onionrexceptions
 from etc import onionrvalues
 from . import localcommand
-def do_post_request(url, data={}, port=0, proxyType='tor', max_size=10000):
+def do_post_request(url, data={}, port=0, proxyType='tor', max_size=10000, content_type: str = ''):
     '''
     Do a POST request through a local tor or i2p instance
     '''
@@ -34,6 +34,8 @@ def do_post_request(url, data={}, port=0, proxyType='tor', max_size=10000):
     else:
         return
     headers = {'User-Agent': 'PyOnionr', 'Connection':'close'}
+    if len(content_type) > 0:
+        headers['Content-Type'] = content_type
     try:
         proxies = {'http': 'socks4a://127.0.0.1:' + str(port), 'https': 'socks4a://127.0.0.1:' + str(port)}
         #r = requests.post(url, data=data, headers=headers, proxies=proxies, allow_redirects=False, timeout=(15, 30))

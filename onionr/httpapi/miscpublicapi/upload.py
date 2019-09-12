@@ -22,25 +22,25 @@ from flask import Response, abort
 import blockimporter, onionrexceptions, logger
 def accept_upload(request):
     resp = 'failure'
-    try:
-        data = request.form['block']
-    except KeyError:
-        logger.warn('No block specified for upload')
-        pass
-    else:
-        if sys.getsizeof(data) < 100000000:
-            try:
-                if blockimporter.importBlockFromData(data):
-                    resp = 'success'
-                else:
-                    resp = 'failure'
-                    logger.warn('Error encountered importing uploaded block')
-            except onionrexceptions.BlacklistedBlock:
-                logger.debug('uploaded block is blacklisted')
+    data = request.get_data()
+    if sys.getsizeof(data) < 100000000:
+        try:
+            if blockimporter.importBlockFromData(data):
+                resp = 'success'
+            else:
                 resp = 'failure'
-            except onionrexceptions.DataExists:
-                resp = 'exists'
+                logger.warn('Error encountered importing uploaded block')
+        except onionrexceptions.BlacklistedBlock:
+            logger.debug('uploaded block is blacklisted')
+            resp = 'failure'
+        except onionrexceptions.InvalidProof:
+            resp = 'proof'
+        except onionrexceptions.DataExists:
+            resp = 'exists'
     if resp == 'failure':
         abort(400)
-    resp = Response(resp)
+    elif resp == 'proof':
+        resp = Response(resp, 400)
+    else:
+        resp = Response(resp)
     return resp

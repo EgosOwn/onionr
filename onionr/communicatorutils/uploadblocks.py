@@ -44,19 +44,22 @@ def upload_blocks_from_communicator(comm_inst):
                 triedPeers.append(peer)
                 url = 'http://' + peer + '/upload'
                 try:
-                    data = {'block': block.Block(bl).getRaw()}
+                    #data = {'block': block.Block(bl).getRaw()}
+                    data = block.Block(bl).getRaw()
                 except onionrexceptions.NoDataAvailable:
                     finishedUploads.append(bl)
                     break
                 proxyType = proxypicker.pick_proxy(peer)
                 logger.info("Uploading block %s to %s" % (bl[:8], peer), terminal=True)
-                resp = basicrequests.do_post_request(url, data=data, proxyType=proxyType)
+                resp = basicrequests.do_post_request(url, data=data, proxyType=proxyType, content_type='application/octet-stream')
                 if not resp == False:
                     if resp == 'success':
                         localcommand.local_command('waitforshare/' + bl, post=True)
                         finishedUploads.append(bl)
                     elif resp == 'exists':
                         finishedUploads.append(bl)
+                    else:
+                        logger.warn('Failed to upload %s, reason: %s' % (bl[:8], resp[:150]), terminal=True)
     for x in finishedUploads:
         try:
             comm_inst.blocksToUpload.remove(x)

@@ -26,15 +26,15 @@ def importBlockFromData(content):
     blacklist = onionrblacklist.OnionrBlackList()
     retData = False
 
-    dataHash = crypto.hashers.sha3_hash(content)
-
-    if blacklist.inBlacklist(dataHash):
-        raise onionrexceptions.BlacklistedBlock('%s is a blacklisted block' % (dataHash,))
-
     try:
         content = content.encode()
     except AttributeError:
         pass
+
+    dataHash = crypto.hashers.sha3_hash(content)
+
+    if blacklist.inBlacklist(dataHash):
+        raise onionrexceptions.BlacklistedBlock('%s is a blacklisted block' % (dataHash,))
 
     metas = blockmetadata.get_block_metadata_from_data(content) # returns tuple(metadata, meta), meta is also in metadata
     metadata = metas[0]
@@ -49,4 +49,6 @@ def importBlockFromData(content):
                 blockmetadb.add_to_block_DB(blockHash, dataSaved=True)
                 blockmetadata.process_block_metadata(blockHash) # caches block metadata values to block database
                 retData = True
+        else:
+            raise onionrexceptions.InvalidProof
     return retData
