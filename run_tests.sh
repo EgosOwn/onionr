@@ -1,5 +1,4 @@
 #!/bin/bash
-cd onionr;
 rm -rf testdata;
 mkdir testdata;
 ran=0

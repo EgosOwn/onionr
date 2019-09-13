@@ -17,7 +17,7 @@ The following exploits are of particular interest:
   * Discovering true server IPs when behind Tor/I2P (aside from Tor/i2p-level attacks)
   * Easily discovering which nodes are the block creator
 * XSS, CSRF, clickjacking, DNS rebinding
-* Timing attacks against the local http server ([see blog post](https://www.chaoswebs.net/blog/timebleed-breaking-privacy-with-a-simple-timing-attack.html))
+* Timing attacks against the local http server that are exploitable from a browser ([see blog post](https://www.chaoswebs.net/blog/timebleed-breaking-privacy-with-a-simple-timing-attack.html))
 * Discovering direct connection servers as a non participant.
 * Cryptography/protocol issues
 * Denying nodes access to the network by segmenting them out with Sybil nodes

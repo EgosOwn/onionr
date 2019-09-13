@@ -20,7 +20,7 @@ core
 venv/*
 onionr/fs*
 onionr/tmp/*
-
+testdata/*
 *.dll
 *.exe
 

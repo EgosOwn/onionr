@@ -1,5 +1,6 @@
 import sys, os
 sys.path.append(".")
+sys.path.append("onionr/")
 import unittest, uuid
 
 TEST_DIR = 'testdata/%s-%s' % (uuid.uuid4(), os.path.basename(__file__)) + '/'

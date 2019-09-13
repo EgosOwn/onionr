@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import sys, os, random
 sys.path.append(".")
+sys.path.append("onionr/")
 import unittest, uuid
 TEST_DIR_1 = 'testdata/%s-%s' % (uuid.uuid4(), os.path.basename(__file__)) + '/'
 TEST_DIR_2 = 'testdata/%s-%s' % (uuid.uuid4(), os.path.basename(__file__)) + '/'

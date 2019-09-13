@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import sys, os
 sys.path.append(".")
+sys.path.append("onionr/")
 import unittest, uuid, hashlib, base64
 import nacl.exceptions
 import nacl.signing, nacl.hash, nacl.encoding
