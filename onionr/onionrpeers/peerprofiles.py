@@ -19,6 +19,9 @@
 '''
 from coredb import keydb
 from onionrutils import epoch
+from onionrutils import stringvalidators
+import onionrblacklist
+import onionrexceptions
 
 UPDATE_DELAY = 300
 
@@ -27,6 +30,7 @@ class PeerProfiles:
         PeerProfiles
     '''
     def __init__(self, address):
+        if not stringvalidators.validate_transport(address): raise onionrexceptions.InvalidAddress
         self.address = address # node address
         self.score = None
         self.friendSigCount = 0
@@ -38,7 +42,9 @@ class PeerProfiles:
         self.getConnectTime()
 
         self.last_updated = {'connect_time': UPDATE_DELAY, 'score': UPDATE_DELAY} # Last time a given value was updated
-        return
+        
+        if not address in keydb.listkeys.list_adders() and not onionrblacklist.OnionrBlackList().inBlacklist(address):
+            keydb.addkeys.add_address(address)
 
     def loadScore(self):
         '''Load the node's score from the database'''
@@ -49,10 +55,13 @@ class PeerProfiles:
         self.score = self.success
     
     def getConnectTime(self):
+        """set the connectTime variable for when we last connected to them, using the db value"""
         try:
             self.connectTime = int(keydb.transportinfo.get_address_info(self.address, 'lastConnect'))
         except (KeyError, ValueError, TypeError) as e:
             pass
+        else:
+            return self.connectTime
     
     def update_connect_time(self):
         if epoch.get_epoch() - self.last_updated['connect_time'] >= UPDATE_DELAY:

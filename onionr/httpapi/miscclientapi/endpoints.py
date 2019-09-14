@@ -94,7 +94,7 @@ class PrivateEndpoints:
             # returns node stats
             while True:
                 try:    
-                    return Response(client_api._too_many.get(SerializedData).getStats())
+                    return Response(client_api._too_many.get(SerializedData).get_stats())
                 except AttributeError as e:
                     pass
         

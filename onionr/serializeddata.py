@@ -32,7 +32,7 @@ class SerializedData:
         }
         '''
     
-    def getStats(self):
+    def get_stats(self):
         '''Return statistics about our node'''
         stats = {}
         try:

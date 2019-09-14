@@ -17,6 +17,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
+from typing import Callable
 from .. import onionrstatistics, version, daemonlaunch, keyadders, openwebinterface
 from .. import banblocks # Command to blacklist a block by its hash
 from .. import filecommands # commands to share files with onionr
@@ -28,7 +29,7 @@ from .. import softreset # command to delete onionr blocks
 import onionrexceptions
 from onionrutils import importnewblocks # func to import new blocks
 import onionrevents as events
-def get_arguments():
+def get_arguments()->dict:
     """This is a function because we need to be able to dynamically modify them with plugins"""
     args = {
         ('blacklist', 'blacklist-block', 'remove-block', 'removeblock', 'banblock', 'ban-block'): banblocks.ban_block,
@@ -64,7 +65,7 @@ def get_help(arg: str) -> str:
         if arg in argument: return arguments[argument].onionr_help
     raise KeyError
 
-def get_func(argument):
+def get_func(argument: str) -> Callable:
     """Returns the function for a given command argument"""
     argument = argument.lower()
     args = get_arguments()

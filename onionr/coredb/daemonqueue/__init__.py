@@ -24,7 +24,7 @@ from onionrutils import localcommand, epoch
 from .. import dbfiles
 import dbcreator
 
-def daemon_queue():
+def daemon_queue()->str:
     '''
         Gives commands to the communication proccess/daemon by reading an sqlite3 database
 
@@ -51,7 +51,7 @@ def daemon_queue():
 
     return retData
 
-def daemon_queue_add(command, data='', responseID=''):
+def daemon_queue_add(command: str, data='', responseID: str =''):
     '''
         Add a command to the daemon queue, used by the communication daemon (communicator.py)
     '''
