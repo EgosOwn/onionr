@@ -24,6 +24,9 @@ import onionrblockapi as block
 from onionrutils import localcommand, stringvalidators, basicrequests
 from communicator import onlinepeers
 import onionrcrypto
+
+from . import session
+
 def upload_blocks_from_communicator(comm_inst):
     # when inserting a block, we try to upload it to a few peers to add some deniability
     TIMER_NAME = "upload_blocks_from_communicator"
@@ -42,7 +45,7 @@ def upload_blocks_from_communicator(comm_inst):
                 if peer in triedPeers:
                     continue
                 triedPeers.append(peer)
-                url = 'http://' + peer + '/upload'
+                url = 'http://%s/upload' % (peer,)
                 try:
                     #data = {'block': block.Block(bl).getRaw()}
                     data = block.Block(bl).getRaw()

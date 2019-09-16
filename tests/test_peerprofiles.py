@@ -52,7 +52,7 @@ class TestPeerProfiles(unittest.TestCase):
             p.addScore(1)
             self.assertEqual(p.score, keydb.transportinfo.get_address_info(p.address, 'success'))
 
-    def test_inc_score_with_sync_Delay(self):
+    def test_inc_score_with_sync_delay(self):
         p = peerprofiles.PeerProfiles(test_peers.pop())
         s = 0
         for x in range(2):

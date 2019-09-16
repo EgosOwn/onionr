@@ -24,7 +24,8 @@ import onionrexceptions, onionrpeers, onionrevents as events, onionrplugins as p
 from . import onlinepeers, uploadqueue
 from communicatorutils import servicecreator, onionrcommunicatortimers
 from communicatorutils import downloadblocks, lookupblocks, lookupadders
-from communicatorutils import servicecreator, connectnewpeers, uploadblocks
+from communicatorutils import servicecreator, connectnewpeers
+from communicatorutils import uploadblocks
 from communicatorutils import daemonqueuehandler, announcenode, deniableinserts
 from communicatorutils import cooldownpeer, housekeeping, netcheck
 from onionrutils import localcommand, epoch
@@ -50,6 +51,7 @@ class OnionrCommunicatorDaemon:
         # initialize core with Tor socks port being 3rd argument
         self.proxyPort = shared_state.get(NetController).socksPort
 
+        # Upload information, list of blocks to upload
         self.blocksToUpload = []
 
         # loop time.sleep delay in seconds
@@ -240,11 +242,6 @@ class OnionrCommunicatorDaemon:
         '''Show a heartbeat debug message'''
         logger.debug('Heartbeat. Node running for %s.' % humanreadabletime.human_readable_time(self.getUptime()))
         self.decrementThreadCount('heartbeat')
-
-    def announce(self, peer):
-        '''Announce to peers our address'''
-        if announcenode.announce_node(self) == False:
-            logger.warn('Could not introduce node.', terminal=True)
 
     def runCheck(self):
         if run_file_exists(self):
