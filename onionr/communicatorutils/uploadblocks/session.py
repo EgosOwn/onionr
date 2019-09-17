@@ -3,6 +3,7 @@
 
     Virtual upload "sessions" for blocks
 """
+from __future__ import annotations
 """
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -33,10 +34,12 @@ class UploadSession:
         block_hash = reconstructhash.reconstruct_hash(block_hash)
         if not stringvalidators.validate_hash(block_hash): raise ValueError
 
+        self.start_time = epoch.get_epoch()
         self.block_hash = reconstructhash.deconstruct_hash(block_hash)
         self.total_fail_count: int = 0
         self.total_success_count: int = 0
         self.peer_fails = {}
+        self.peer_exists = {}
     
     def fail_peer(self, peer):
         try:

@@ -43,7 +43,7 @@ class OnionrCommunicatorDaemon:
         self.config = config
         self.storage_counter = storagecounter.StorageCounter()
         self.isOnline = True # Assume we're connected to the internet
-        self.shared_state = shared_state
+        self.shared_state = shared_state # TooManyObjects module
 
         # list of timer instances
         self.timers = []
@@ -53,6 +53,8 @@ class OnionrCommunicatorDaemon:
 
         # Upload information, list of blocks to upload
         self.blocksToUpload = []
+        self.upload_session_manager = self.shared_state.get(uploadblocks.sessionmanager.BlockUploadSessionManager)
+        self.shared_state.share_object()
 
         # loop time.sleep delay in seconds
         self.delay = 1

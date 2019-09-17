@@ -93,13 +93,14 @@ def validate_metadata(metadata, block_data) -> bool:
             try:
                 with open(filepaths.data_nonce_file, 'r') as nonceFile:
                     if nonce in nonceFile.read():
-                        ret_data = False # we've seen that nonce before, so we can't pass metadata
+                        # we've seen that nonce before, so we can't pass metadata
                         raise onionrexceptions.DataExists
             except FileNotFoundError:
                 ret_data = True
             except onionrexceptions.DataExists:
-                # do not set ret_data to True, because nonce has been seen before
-                pass
+                # do not set ret_data to True, because data has been seen before
+                logger.warn(f'{nonce} seen before')
+                raise onionrexceptions.DataExists
             else:
                 ret_data = True
     else:

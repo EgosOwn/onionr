@@ -31,6 +31,9 @@ MAX_BLOCK_CLOCK_SKEW = 120
 MAIN_PUBLIC_KEY_SIZE = 32
 ORIG_RUN_DIR_ENV_VAR = 'ORIG_ONIONR_RUN_DIR'
 
+# Block creation anonymization requirements
+MIN_BLOCK_UPLOAD_PEER_PERCENT = 0.1
+
 # Begin OnionrValues migrated values
 ANNOUNCE_POW = 5
 DEFAULT_EXPIRE = 2592000
