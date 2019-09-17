@@ -3,6 +3,7 @@
 
     Upload blocks in the upload queue to peers from the communicator
 '''
+from __future__ import annotations
 '''
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -17,6 +18,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
+from typing import Union
 import logger
 from communicatorutils import proxypicker
 import onionrexceptions
@@ -25,12 +27,13 @@ from onionrutils import localcommand, stringvalidators, basicrequests
 from communicator import onlinepeers
 import onionrcrypto
 
-from . import session
-
-def upload_blocks_from_communicator(comm_inst):
-    # when inserting a block, we try to upload it to a few peers to add some deniability
+def upload_blocks_from_communicator(comm_inst: OnionrCommunicatorDaemon):
+    """Accepts a communicator instance and uploads blocks from its upload queue"""
+    """when inserting a block, we try to upload
+     it to a few peers to add some deniability & increase functionality"""
     TIMER_NAME = "upload_blocks_from_communicator"
 
+    session_manager = comm_inst.shared_state.get_by_string('BlockUploadSessionManager')
     triedPeers = []
     finishedUploads = []
     comm_inst.blocksToUpload = onionrcrypto.cryptoutils.random_shuffle(comm_inst.blocksToUpload)
@@ -40,20 +43,20 @@ def upload_blocks_from_communicator(comm_inst):
                 logger.warn('Requested to upload invalid block', terminal=True)
                 comm_inst.decrementThreadCount(TIMER_NAME)
                 return
+            session_manager.new_session(bl)
             for i in range(min(len(comm_inst.onlinePeers), 6)):
                 peer = onlinepeers.pick_online_peer(comm_inst)
                 if peer in triedPeers:
                     continue
                 triedPeers.append(peer)
-                url = 'http://%s/upload' % (peer,)
+                url = f'http://{peer}/upload'
                 try:
-                    #data = {'block': block.Block(bl).getRaw()}
                     data = block.Block(bl).getRaw()
                 except onionrexceptions.NoDataAvailable:
                     finishedUploads.append(bl)
                     break
                 proxyType = proxypicker.pick_proxy(peer)
-                logger.info("Uploading block %s to %s" % (bl[:8], peer), terminal=True)
+                logger.info(f"Uploading block {bl:[:8]} to {peer}", terminal=True)
                 resp = basicrequests.do_post_request(url, data=data, proxyType=proxyType, content_type='application/octet-stream')
                 if not resp == False:
                     if resp == 'success':
@@ -62,7 +65,7 @@ def upload_blocks_from_communicator(comm_inst):
                     elif resp == 'exists':
                         finishedUploads.append(bl)
                     else:
-                        logger.warn('Failed to upload %s, reason: %s' % (bl[:8], resp[:150]), terminal=True)
+                        logger.warn(f'Failed to upload {bl[:8]}, reason: {resp[:15]}'), terminal=True)
     for x in finishedUploads:
         try:
             comm_inst.blocksToUpload.remove(x)

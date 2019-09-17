@@ -33,6 +33,7 @@ class UploadSession:
         block_hash = reconstructhash.reconstruct_hash(block_hash)
         if not stringvalidators.validate_hash(block_hash): raise ValueError
 
+        self.start_time = epoch.get_epoch()
         self.block_hash = reconstructhash.deconstruct_hash(block_hash)
         self.total_fail_count: int = 0
         self.total_success_count: int = 0

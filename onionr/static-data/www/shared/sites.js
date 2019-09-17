@@ -13,6 +13,8 @@ document.getElementById('openSite').onclick = function(){
         window.location.href = '/site/' + hash
     }
     else{
-        alert('Invalid site hash')
+        PNotify.error({
+            text: 'Invalid site hash'
+        })
     }
 }
