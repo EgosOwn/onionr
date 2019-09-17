@@ -49,6 +49,8 @@ saveBtn.onclick = function(){
         }})
     .then((resp) => resp.text()) // Transform the data into text
     .then(function(data) {
-        alert('Config saved')
+        PNotify.success({
+            text: 'Config saved'
+        })
       })
 }

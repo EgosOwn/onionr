@@ -38,6 +38,7 @@ class UploadSession:
         self.total_fail_count: int = 0
         self.total_success_count: int = 0
         self.peer_fails = {}
+        self.peer_exists = {}
     
     def fail_peer(self, peer):
         try:

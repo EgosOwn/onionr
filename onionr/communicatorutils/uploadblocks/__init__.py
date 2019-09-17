@@ -18,7 +18,7 @@ from __future__ import annotations
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-from typing import Union
+from typing import Union, TYPE_CHECKING
 import logger
 from communicatorutils import proxypicker
 import onionrexceptions
@@ -26,6 +26,7 @@ import onionrblockapi as block
 from onionrutils import localcommand, stringvalidators, basicrequests
 from communicator import onlinepeers
 import onionrcrypto
+from . import sessionmanager
 
 def upload_blocks_from_communicator(comm_inst: OnionrCommunicatorDaemon):
     """Accepts a communicator instance and uploads blocks from its upload queue"""
@@ -33,7 +34,7 @@ def upload_blocks_from_communicator(comm_inst: OnionrCommunicatorDaemon):
      it to a few peers to add some deniability & increase functionality"""
     TIMER_NAME = "upload_blocks_from_communicator"
 
-    session_manager = comm_inst.shared_state.get_by_string('BlockUploadSessionManager')
+    session_manager: sessionmanager.BlockUploadSessionManager = comm_inst.shared_state.get(sessionmanager.BlockUploadSessionManager)
     triedPeers = []
     finishedUploads = []
     comm_inst.blocksToUpload = onionrcrypto.cryptoutils.random_shuffle(comm_inst.blocksToUpload)
@@ -43,11 +44,10 @@ def upload_blocks_from_communicator(comm_inst: OnionrCommunicatorDaemon):
                 logger.warn('Requested to upload invalid block', terminal=True)
                 comm_inst.decrementThreadCount(TIMER_NAME)
                 return
-            session_manager.new_session(bl)
+            session_manager.add_session(bl)
             for i in range(min(len(comm_inst.onlinePeers), 6)):
                 peer = onlinepeers.pick_online_peer(comm_inst)
-                if peer in triedPeers:
-                    continue
+                if peer in triedPeers: continue
                 triedPeers.append(peer)
                 url = f'http://{peer}/upload'
                 try:
@@ -60,12 +60,15 @@ def upload_blocks_from_communicator(comm_inst: OnionrCommunicatorDaemon):
                 resp = basicrequests.do_post_request(url, data=data, proxyType=proxyType, content_type='application/octet-stream')
                 if not resp == False:
                     if resp == 'success':
-                        localcommand.local_command('waitforshare/' + bl, post=True)
+                        session_manager.get
+                        localcommand.local_command(f'waitforshare/{bl}', post=True)
                         finishedUploads.append(bl)
                     elif resp == 'exists':
+                        comm_inst.getPeerProfileInstance(peer).addScore(-1)
                         finishedUploads.append(bl)
                     else:
-                        logger.warn(f'Failed to upload {bl[:8]}, reason: {resp[:15]}'), terminal=True)
+                        comm_inst.getPeerProfileInstance(peer).addScore(-5)
+                        logger.warn(f'Failed to upload {bl[:8]}, reason: {resp[:15]}', terminal=True)
     for x in finishedUploads:
         try:
             comm_inst.blocksToUpload.remove(x)
