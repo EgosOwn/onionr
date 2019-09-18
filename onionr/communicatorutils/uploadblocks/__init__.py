@@ -19,6 +19,8 @@ from __future__ import annotations
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 from typing import Union, TYPE_CHECKING
+import threading
+
 import logger
 from communicatorutils import proxypicker
 import onionrexceptions
@@ -44,9 +46,18 @@ def upload_blocks_from_communicator(comm_inst: OnionrCommunicatorDaemon):
                 logger.warn('Requested to upload invalid block', terminal=True)
                 comm_inst.decrementThreadCount(TIMER_NAME)
                 return
-            session_manager.add_session(bl)
+            session = session_manager.add_session(bl)
             for i in range(min(len(comm_inst.onlinePeers), 6)):
                 peer = onlinepeers.pick_online_peer(comm_inst)
+                try:
+                    session.peer_exists[peer]
+                    continue
+                except KeyError:
+                    pass
+                try:
+                    if session.peer_fails[peer] > 3: continue
+                except KeyError:
+                    pass
                 if peer in triedPeers: continue
                 triedPeers.append(peer)
                 url = f'http://{peer}/upload'
@@ -56,19 +67,22 @@ def upload_blocks_from_communicator(comm_inst: OnionrCommunicatorDaemon):
                     finishedUploads.append(bl)
                     break
                 proxyType = proxypicker.pick_proxy(peer)
-                logger.info(f"Uploading block {bl:[:8]} to {peer}", terminal=True)
+                logger.info(f"Uploading block {bl[:8]} to {peer}", terminal=True)
                 resp = basicrequests.do_post_request(url, data=data, proxyType=proxyType, content_type='application/octet-stream')
                 if not resp == False:
                     if resp == 'success':
-                        session_manager.get
-                        localcommand.local_command(f'waitforshare/{bl}', post=True)
-                        finishedUploads.append(bl)
+                        session.success()
+                        session.peer_exists[peer] = True
                     elif resp == 'exists':
-                        comm_inst.getPeerProfileInstance(peer).addScore(-1)
-                        finishedUploads.append(bl)
+                        session.peer_exists[peer] = True
                     else:
+                        session.fail()
+                        session.fail_peer(peer)
                         comm_inst.getPeerProfileInstance(peer).addScore(-5)
                         logger.warn(f'Failed to upload {bl[:8]}, reason: {resp[:15]}', terminal=True)
+                else:
+                    session.fail()
+        session_manager.clean_session()
     for x in finishedUploads:
         try:
             comm_inst.blocksToUpload.remove(x)

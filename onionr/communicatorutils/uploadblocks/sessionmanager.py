@@ -21,6 +21,10 @@ from __future__ import annotations
 from typing import Iterable, Union
 
 from onionrutils import bytesconverter
+from onionrutils import localcommand
+from etc import onionrvalues
+from etc import waitforsetvar
+from utils import reconstructhash
 
 from . import session
 
@@ -29,18 +33,22 @@ class BlockUploadSessionManager:
 
     Arguments: old_session: iterable of old UploadSession objects"""
     def __init__(self, old_sessions:Iterable=None):
+        #self._too_many: TooMany = None
         if old_sessions is None:
             self.sessions = []
         else:
             self.sessions = old_session
     
-    def add_session(self, session_or_block: Union(str, bytes, session.UploadSession, Block))->session.UploadSession:
-        """Create (or add existing) block upload session from a str/bytes block hex hash, existing UploadSession or Block object"""
+    def add_session(self, session_or_block: Union(str, bytes, session.UploadSession))->session.UploadSession:
+        """Create (or add existing) block upload session from a str/bytes block hex hash, existing UploadSession"""
         if isinstance(session_or_block, session.UploadSession): 
-            self.sessions.append(session_or_block)
+            if not session_or_block in self.sessions:
+                self.sessions.append(session_or_block)
             return session_or_block
-        # convert Block to hash string
-        if hasattr(session_or_block, 'bheader') and hasattr(session_or_block, 'raw'): session_or_block = session_or_block.hash
+        try:
+            return self.get_session(session_or_block)
+        except KeyError:
+            pass
         # convert bytes hash to str
         if isinstance(session_or_block, bytes): session_or_block = bytesconverter.bytes_to_str(session_or_block)
         # intentionally not elif
@@ -50,8 +58,18 @@ class BlockUploadSessionManager:
             return new_session
 
     def get_session(self, block_hash: Union(str, bytes))->session.UploadSession:
-        block_hash = bytesconverter.bytes_to_str(block_hash).replace('=', '')
-        for session in self.sessions: if session.block_hash == block_hash: return session
+        block_hash = reconstructhash.deconstruct_hash(bytesconverter.bytes_to_str(block_hash))
+        for session in self.sessions:
+            if session.block_hash == block_hash: return session
+        raise KeyError
 
-    def clean_session(self, specific_session: Union[str, UploadSession]):
-        return
+    def clean_session(self, specific_session: Union[str, UploadSession]=None):
+        comm_inst: OnionrCommunicatorDaemon = self._too_many.get_by_string("OnionrCommunicatorDaemon")
+        sessions_to_delete = []
+        if comm_inst.getUptime() < 120: return
+        for session in self.sessions:
+            if (session.total_success_count / len(comm_inst.onlinePeers)) >= onionrvalues.MIN_BLOCK_UPLOAD_PEER_PERCENT:
+                sessions_to_delete.append(session)
+        for session in sessions_to_delete:
+            self.sessions.remove(session)
+            localcommand.local_command('waitforshare/{session.block_hash}')

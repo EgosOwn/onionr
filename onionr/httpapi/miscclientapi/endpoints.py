@@ -26,6 +26,7 @@ from netcontroller import NetController
 from serializeddata import SerializedData
 from onionrutils import mnemonickeys
 from onionrutils import bytesconverter
+from utils import reconstructhash
 
 pub_key = onionrcrypto.pub_key.replace('=', '')
 
@@ -78,6 +79,7 @@ class PrivateEndpoints:
         def waitforshare(name):
             '''Used to prevent the **public** api from sharing blocks we just created'''
             if not name.isalnum(): raise ValueError('block hash needs to be alpha numeric')
+            name = reconstructhash.reconstruct_hash(name)
             if name in client_api.publicAPI.hideBlocks:
                 client_api.publicAPI.hideBlocks.remove(name)
                 return Response("removed")
