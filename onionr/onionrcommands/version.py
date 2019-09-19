@@ -11,5 +11,11 @@ def version(verbosity = 5, function = logger.info):
     if verbosity >= 1:
         function(onionrvalues.ONIONR_TAGLINE, terminal=True)
     if verbosity >= 2:
-        function('Running on %s %s' % (platform.platform(), platform.release()), terminal=True)
+        pf = platform.platform()
+        release = platform.release()
+        python_imp = platform.python_implementation()
+        python_version = platform.python_version()
+        function(f'{python_imp} {python_version} on {pf} {release}', terminal=True)
         function('Onionr data dir: %s' % identifyhome.identify_home(), terminal=True)
+
+version.onionr_help = 'Shows environment details including Onionr version & data directory, OS and Python version'
