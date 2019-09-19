@@ -72,4 +72,14 @@ class BlockUploadSessionManager:
                 sessions_to_delete.append(session)
         for session in sessions_to_delete:
             self.sessions.remove(session)
+            # TODO cleanup to one round of search
+            # Remove the blocks from the sessions, upload list, and waitforshare list
+            try:
+                comm_inst.blocksToUpload.remove(reconstructhash.reconstruct_hash(session.block_hash))
+            except ValueError:
+                pass
+            try:
+                comm_inst.blocksToUpload.remove(session.block_hash)
+            except ValueError:
+                pass
             localcommand.local_command('waitforshare/{session.block_hash}')

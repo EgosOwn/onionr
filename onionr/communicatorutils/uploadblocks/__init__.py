@@ -74,6 +74,7 @@ def upload_blocks_from_communicator(comm_inst: OnionrCommunicatorDaemon):
                         session.success()
                         session.peer_exists[peer] = True
                     elif resp == 'exists':
+                        session.success()
                         session.peer_exists[peer] = True
                     else:
                         session.fail()

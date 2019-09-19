@@ -30,7 +30,8 @@ def download_blocks_from_communicator(comm_inst):
     blacklist = onionrblacklist.OnionrBlackList()
     storage_counter = storagecounter.StorageCounter()
     LOG_SKIP_COUNT = 50 # for how many iterations we skip logging the counter
-    count = 0
+    count: int = 0
+    metadata_validation_result: bool = False
     # Iterate the block queue in the communicator
     for blockHash in list(comm_inst.blockQueue):
         count += 1
@@ -80,7 +81,11 @@ def download_blocks_from_communicator(comm_inst):
                 #content = content.decode() # decode here because sha3Hash needs bytes above
                 metas = blockmetadata.get_block_metadata_from_data(content) # returns tuple(metadata, meta), meta is also in metadata
                 metadata = metas[0]
-                if validatemetadata.validate_metadata(metadata, metas[2]): # check if metadata is valid, and verify nonce
+                try:
+                    metadata_validation_result = validatemetadata.validate_metadata(metadata, metas[2])
+                except onionrexceptions.DataExists:
+                    metadata_validation_result = False
+                if metadata_validation_result: # check if metadata is valid, and verify nonce
                     if onionrcrypto.cryptoutils.verify_POW(content): # check if POW is enough/correct
                         logger.info('Attempting to save block %s...' % blockHash[:12])
                         try:
