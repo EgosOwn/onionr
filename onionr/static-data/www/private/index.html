@@ -9,6 +9,7 @@
         Onionr
     </title>
     <link rel='shortcut icon' type='image/ico' href='/shared/images/favicon.ico'>
+    <link rel="stylesheet" href="/private/main.css">
     <link rel="stylesheet" href="/shared/fontawesome-free-5.10.2/css/all.min.css">
     <link rel='stylesheet' href='/shared/main/PNotifyBrightTheme.css'>
     <link rel="stylesheet" href="/shared/main/bulma.min.css">
@@ -100,7 +101,9 @@
                                 </a>
                             </p>
                             <p class="control">
-                                <a class="button is-link" id='refreshStats'>Refresh Stats</a>
+                                <a class="button is-warning is-outlined" id='restartNode'>
+                                    Restart
+                                </a>
                             </p>
                         </div>
                     </div>
@@ -120,7 +123,7 @@
                 <div class="card">
                     <header class="card-header">
                         <p class="card-header-title">
-                            Onionr
+                            Onionr Sites
                         </p>
                     </header>
                     <div class="card-content">
@@ -147,6 +150,13 @@
                         <p class="card-header-title">
                             Statistics
                         </p>
+                        <div class="field">
+                            <div class="is-pulled-right">
+                                <a class="button is-link" id='refreshStats'>
+                                    Refresh Stats
+                                </a>
+                            </div>
+                        </div>
                     </header>
                     <div class="card-content">
                         <div class="content">

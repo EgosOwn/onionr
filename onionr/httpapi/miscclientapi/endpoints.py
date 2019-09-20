@@ -27,6 +27,7 @@ from serializeddata import SerializedData
 from onionrutils import mnemonickeys
 from onionrutils import bytesconverter
 from utils import reconstructhash
+from onionrcommands import restartonionr
 
 pub_key = onionrcrypto.pub_key.replace('=', '')
 
@@ -90,6 +91,11 @@ class PrivateEndpoints:
         @private_endpoints_bp.route('/shutdown')
         def shutdown():
             return apiutils.shutdown.shutdown(client_api)
+
+        @private_endpoints_bp.route('/restartclean')
+        def restart_clean():
+            restartonionr.restart()
+            return Response("bye")
         
         @private_endpoints_bp.route('/getstats')
         def getStats():

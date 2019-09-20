@@ -1,13 +1,3 @@
-.configEditor{
-    width: 100%;
-    height: 300px;
-}
-
-.saveConfig{
-    margin-top: 1em;
-}
-
-
 .idLink{
     -webkit-touch-callout: none; /* iOS Safari */
     -webkit-user-select: none; /* Safari */
@@ -15,4 +5,7 @@
         -ms-user-select: none; /* Internet Explorer/Edge */
             user-select: none; /* Non-prefixed version, currently
                                   supported by Chrome and Opera */
+}
+#refreshStats{
+    margin: 5px;
 }
