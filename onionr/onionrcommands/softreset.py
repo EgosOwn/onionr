@@ -23,15 +23,24 @@ import shutil
 from onionrutils import localcommand
 from coredb import dbfiles
 import filepaths
+import onionrevents
 import logger
+
+def _ignore_not_found_delete(path):
+    try:
+        os.remove(path)
+    except FileNotFoundError:
+        pass
+
 def soft_reset():
     if localcommand.local_command('/ping') == 'pong!':
         logger.warn('Cannot soft reset while Onionr is running', terminal=True)
         return
     path = filepaths.block_data_location
     shutil.rmtree(path)
-    os.remove(dbfiles.block_meta_db)
-    os.remove(filepaths.upload_list)
+    _ignore_not_found_delete(dbfiles.block_meta_db)
+    _ignore_not_found_delete(filepaths.upload_list)
+    onionrevents.event('softreset')
     logger.info("Soft reset Onionr", terminal=True)
 
 soft_reset.onionr_help = "Deletes Onionr blocks and their associated metadata, except for any exported block files."

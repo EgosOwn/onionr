@@ -99,13 +99,12 @@ class OnionrFlow:
 def on_flow_cmd(api, data=None):
     OnionrFlow().start()
 
-def on_init(api, data = None):
-    '''
-        This event is called after Onionr is initialized, but before the command
-        inputted is executed. Could be called when daemon is starting or when
-        just the client is running.
-    '''
-    return
+def on_softreset(api, data=None):
+    try:
+        os.remove(identifyhome.identify_home() + '/board-index.cache.json')
+        logger.info('Cleared Circles board cache')
+    except FileNotFoundError:
+        pass
 
 def on_processblocks(api, data=None):
     metadata = data['block'].bmetadata # Get the block metadata
