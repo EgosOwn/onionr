@@ -1,10 +1,12 @@
 import os, filepaths
+
+def _safe_remove(path):
+    try:
+        os.remove(path)
+    except FileNotFoundError:
+        pass
+
 def delete_run_files():
-    try:
-        os.remove(filepaths.public_API_host_file)
-    except FileNotFoundError:
-        pass
-    try:
-        os.remove(filepaths.private_API_host_file)
-    except FileNotFoundError:
-        pass
+     _safe_remove(filepaths.public_API_host_file)
+     _safe_remove(filepaths.private_API_host_file)
+     _safe_remove(filepaths.daemon_mark_file)

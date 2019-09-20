@@ -1,7 +1,9 @@
 from utils import identifyhome
+import os
 home = identifyhome.identify_home()
 if not home.endswith('/'): home += '/'
 
+app_root = os.path.dirname(os.path.realpath(__file__)) + '/../../'
 usage_file = home + 'disk-usage.txt'
 block_data_location = home + 'blocks/'
 contacts_location = home + 'contacts/'
@@ -15,6 +17,7 @@ announce_cache = home + 'announcecache.dat'
 export_location = home + 'block-export/'
 upload_list = home + 'upload-list.json'
 config_file = home + 'config.json'
+daemon_mark_file = app_root + '/daemon-true.txt'
 
 tor_hs_address_file = home + 'hs/hostname'
 

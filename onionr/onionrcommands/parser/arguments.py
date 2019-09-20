@@ -26,6 +26,7 @@ from .. import pubkeymanager # commands to add or change id
 from .. import resettor # commands to reset the tor data directory or transport keypair
 from .. import resetplugins # command to reinstall default plugins
 from .. import softreset # command to delete onionr blocks
+from .. import restartonionr # command to restart Onionr
 import onionrexceptions
 from onionrutils import importnewblocks # func to import new blocks
 import onionrevents as events
@@ -38,6 +39,7 @@ def get_arguments()->dict:
         ('version',): version.version,
         ('start', 'daemon'): daemonlaunch.start,
         ('stop', 'kill'): daemonlaunch.kill_daemon,
+        ('restart',): restartonionr.restart,
         ('add-address', 'addaddress', 'addadder'): keyadders.add_address,
         ('openhome', 'gui', 'openweb', 'open-home', 'open-web'): openwebinterface.open_home,
         ('add-site', 'addsite', 'addhtml', 'add-html'): filecommands.add_html,

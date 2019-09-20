@@ -12,5 +12,7 @@ class TestFilePaths(unittest.TestCase):
     def test_filepaths_main(self):
         home = identifyhome.identify_home()
         self.assertTrue(filepaths.home.startswith(home))
+    def test_app_root_path(self):
+        self.assertTrue(os.path.exists(filepaths.app_root + '/onionr.sh'))
 
 unittest.main()

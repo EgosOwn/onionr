@@ -18,6 +18,10 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 import platform
+import os
+
+import filepaths
+
 DENIABLE_PEER_ADDRESS = "OVPCZLOXD6DC5JHX4EQ3PSOGAZ3T24F75HQLIUZSDSMYPEOXCPFA===="
 PASSWORD_LENGTH = 25
 ONIONR_TAGLINE = 'Private P2P Communication - GPLv3 - https://Onionr.net'
@@ -43,4 +47,7 @@ platform = platform.system()
 if platform == 'Windows':
     SCRIPT_NAME = 'run-windows.bat'
 else:
-    SCRIPT_NAME = 'onionr.sh'
+    if os.path.exists(filepaths.daemon_mark_file):
+        SCRIPT_NAME = 'start-daemon.sh'
+    else:
+        SCRIPT_NAME = 'onionr.sh'
