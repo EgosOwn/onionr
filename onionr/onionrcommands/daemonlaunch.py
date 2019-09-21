@@ -24,7 +24,7 @@ from threading import Thread
 import toomanyobjs
 
 import config, apiservers, logger, communicator
-import onionrevents as events
+from onionrplugins import onionrevents as events
 from netcontroller import NetController
 from onionrutils import localcommand
 import filepaths

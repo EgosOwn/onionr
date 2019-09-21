@@ -20,7 +20,9 @@
 '''
 import sys, os, time
 import config, logger
-import onionrexceptions, onionrpeers, onionrevents as events, onionrplugins as plugins, onionrblockapi as block
+import onionrexceptions, onionrpeers, onionrblockapi as block
+from onionrplugins import onionrevents as events
+import onionrplugins as plugins
 from . import onlinepeers, uploadqueue
 from communicatorutils import servicecreator, onionrcommunicatortimers
 from communicatorutils import downloadblocks, lookupblocks, lookupadders

@@ -29,7 +29,8 @@ from .. import softreset # command to delete onionr blocks
 from .. import restartonionr # command to restart Onionr
 import onionrexceptions
 from onionrutils import importnewblocks # func to import new blocks
-import onionrevents as events
+from onionrplugins import onionrevents as events
+
 def get_arguments()->dict:
     """This is a function because we need to be able to dynamically modify them with plugins"""
     args = {

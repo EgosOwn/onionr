@@ -23,7 +23,7 @@ import onionrblockapi
 from .. import epoch, bytesconverter
 from coredb import blockmetadb
 import logger
-import onionrevents
+from onionrplugins import onionrevents
 import onionrexceptions
 from onionrusers import onionrusers
 

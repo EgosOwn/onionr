@@ -18,7 +18,9 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 import os, re, importlib
-import onionrevents as events, config, logger
+
+from . import onionrevents as events
+import config, logger
 from utils import identifyhome
 
 # set data dir
