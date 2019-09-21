@@ -111,7 +111,8 @@ function appendMessages(msg, blockHash, beforeHash){
             }
             else{
                 //feed.insertAfter(clone, beforeEl)
-                beforeEl.insertAdjacentElement("beforebegin", clone)
+                console.log(clone)
+                beforeEl.insertAdjacentElement("beforebegin", clone.children[0])
             }
 
         }
