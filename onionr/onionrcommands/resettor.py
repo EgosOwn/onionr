@@ -34,5 +34,9 @@ def __delete(directory):
 def reset_tor():
     __delete('tordata')
 
+reset_tor.onionr_help = "Deletes Onionr's Tor data directory. Only do this as a last resort if you have serious Tor issues."
+
 def reset_tor_key_pair():
     __delete('hs')
+
+reset_tor_key_pair.onionr_help = "Delete's your Tor node address permanently. Note that through fingerprinting attackers may be able to know that your any new generated node address belongs to the same node as the deleted one."

@@ -47,3 +47,5 @@ def import_new_blocks(scanDir=''):
                     logger.warn('Failed to verify hash for %s' % block, terminal=True)
     if not exist:
         logger.info('No blocks found to import', terminal=True)
+
+import_new_blocks.onionr_help = f"Scans the Onionr data directory under {filepaths.block_data_location} for new block files (.dat, .db not supported) to import"

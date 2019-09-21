@@ -34,6 +34,8 @@ def _get_dir(path: str)->str:
 def add_html(singleBlock=True, blockType='html'):
     add_file(singleBlock, blockType)
 
+add_html.onionr_help = "Adds an HTML file into Onionr. Does not currently include dependant resources"
+
 def add_file(singleBlock=False, blockType='bin'):
     '''
         Adds a file to the onionr network
@@ -55,6 +57,8 @@ def add_file(singleBlock=False, blockType='bin'):
             logger.error('Failed to save file in block ' + str(e), timestamp = False, terminal=True)
     else:
         logger.error('%s add-file <filename>' % sys.argv[0], timestamp = False, terminal=True)
+
+add_file.onionr_help = "<file path> Add a file into the Onionr network"
 
 def get_file():
     '''
@@ -81,4 +85,5 @@ def get_file():
                 myFile.write(base64.b64decode(Block(bHash).bcontent))
         except onionrexceptions.NoDataAvailable:
             logger.error('That block is not available. Trying again later may work.', terminal=True)
-    return
+
+get_file.onionr_help = "<file path> <block hash>: Download a file from the onionr network."

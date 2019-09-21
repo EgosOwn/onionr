@@ -8,8 +8,8 @@ function checkHex(str) {
 
 document.getElementById('openSite').onclick = function(){
     var hash = document.getElementById('siteViewer').value
-
-    if (checkHex(hash) && hash.length == 64){
+    if (hash.length == 0){ return }
+    if (checkHex(hash) && hash.length >= 50){
         window.location.href = '/site/' + hash
     }
     else{

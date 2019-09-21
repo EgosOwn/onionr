@@ -33,3 +33,5 @@ def add_address():
             logger.info("Successfully added address.", terminal=True)
         else:
             logger.warn("Unable to add address.", terminal=True)
+
+add_address.onionr_help = "Adds a node transport address to the local node list"

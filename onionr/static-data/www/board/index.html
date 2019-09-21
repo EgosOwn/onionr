@@ -14,9 +14,12 @@
     <link rel='stylesheet' href='/shared/main/bulma.min.css'>
     <link rel="stylesheet" href='/shared/main/styles-new.css'>
     <link rel="stylesheet" href="theme.css">
+    <script defer src="/shared/base32.js"></script>
+    <script defer src="/shared/identicon.js"></script>
     <script defer src='/shared/node_modules/pnotify/dist/iife/PNotify.js'></script>
     <script defer src='/shared/node_modules/pnotify/dist/iife/PNotifyButtons.js'></script>
     <script defer src='/shared/navbar.js'></script>
+    <script defer src="/shared/useridenticons.js"></script>
     <script defer src='/shared/misc.js'></script>
     <script defer src='sethumanreadable.js'></script>
     <script defer src='board.js'></script>
@@ -117,7 +120,7 @@
                                     </p>
                                 </div>
                                 <input type="checkbox" class="checkbox" id="refreshCheckbox" checked>
-                                <label for="refreshCheckbox">Auto Refresh Feed</label>
+                                <label for="refreshCheckbox">Auto refresh feed</label>
                                 <br>
                                 <input type="checkbox" class="checkbox" id="postAnon" checked>
                                 <label for="postAnon">Sign posts</label>
@@ -144,6 +147,7 @@
                     Message
                 </div>
                 <div class="column cAuthor is-narrow"></div>
+                <img class="identicon image is-48x48" alt="user icon" src="/shared/images/anon.svg">
                 <div class="column is-narrow cMsgDate">
                     Date
                 </div>

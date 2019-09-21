@@ -89,6 +89,7 @@ function appendMessages(msg, blockHash, beforeHash){
         // Clone the new row and insert it into the table
         var clone = document.importNode(template.content, true)
         var div = clone.querySelectorAll("div")
+        var identicon = clone.querySelectorAll("img")
 
         div[0].setAttribute('data-bl', blockHash)
         div[2].textContent = msg['content']
@@ -96,6 +97,10 @@ function appendMessages(msg, blockHash, beforeHash){
             div[3].textContent = msg['meta']['signer'].substr(0, 5)
             setHumanReadableIDOnPost(div[3], msg['meta']['signer'])
             div[3].title = msg['meta']['signer']
+            identicon[0].src = "data:image/svg+xml;base64," + userIcon(msg['meta']['signer'])
+        }
+        else{
+            identicon[0].remove()
         }
         div[4].textContent = msgDate
 
@@ -110,8 +115,6 @@ function appendMessages(msg, blockHash, beforeHash){
                 feed.prepend(clone)
             }
             else{
-                //feed.insertAfter(clone, beforeEl)
-                console.log(clone)
                 beforeEl.insertAdjacentElement("beforebegin", clone.children[0])
             }
 

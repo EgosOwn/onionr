@@ -133,6 +133,8 @@ def kill_daemon():
         logger.error('Failed to shutdown daemon: ' + str(e), error = e, timestamp = False, terminal=True)
     return
 
+kill_daemon.onionr_help = "Gracefully stops the Onionr API servers"
+
 def start(input: bool = False, override: bool = False):
     """If no lock file, make one and start onionr, error if there is and its not overridden"""
     if os.path.exists('.onionr-lock') and not override:
@@ -148,3 +150,5 @@ def start(input: bool = False, override: bool = False):
                 os.remove('.onionr-lock')
             except FileNotFoundError:
                 pass
+
+start.onionr_help = "Start Onionr node (public and clients API servers)"

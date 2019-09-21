@@ -67,6 +67,8 @@ def add_ID():
             return
     logger.info('Added ID: %s' % (bytesconverter.bytes_to_str(newID),), terminal=True)
 
+add_ID.onionr_help = "If the first argument is true, Onionr will show a deterministic generation prompt. Otherwise it will generate & save a new random key pair."
+
 def change_ID():
     key_manager = keymanager.KeyManager()
     try:
@@ -86,6 +88,8 @@ def change_ID():
                 logger.warn('That key does not exist', terminal=True)
         else:
             logger.warn('Invalid key %s' % (key,), terminal=True)
+
+change_ID.onionr_help = "<pubkey>: Switches Onionr to use a different user ID key. You should immediately restart Onionr if it is running."
 
 def add_vanity():
     key_manager = keymanager.KeyManager()

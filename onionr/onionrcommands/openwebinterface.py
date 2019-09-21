@@ -30,3 +30,5 @@ def open_home():
         url = 'http://%s/#%s' % (url, config.get('client.webpassword'))
         logger.info('If Onionr does not open automatically, use this URL: ' + url, terminal=True)
         webbrowser.open_new_tab(url)
+
+open_home.onionr_help = "Opens the Onionr web UI in the default browser. Node must be running."

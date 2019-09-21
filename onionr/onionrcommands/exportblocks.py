@@ -39,3 +39,5 @@ def export_block():
     else:
         bHash = sys.argv[2]
         doExport(bHash)
+
+export_block.onionr_help = "<block hash>: Export an Onionr block to a file. Export directory is in the Onionr data directory under block-export/"

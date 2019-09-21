@@ -43,4 +43,4 @@ def soft_reset():
     onionrevents.event('softreset')
     logger.info("Soft reset Onionr", terminal=True)
 
-soft_reset.onionr_help = "Deletes Onionr blocks and their associated metadata, except for any exported block files."
+soft_reset.onionr_help = "Deletes Onionr blocks and their associated metadata, except for any exported block files. Does NOT delete data on other nodes in the network."
