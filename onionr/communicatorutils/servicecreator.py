@@ -17,7 +17,8 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import communicator, onionrblockapi
+import communicator
+from onionrblocks import onionrblockapi
 import logger
 from onionrutils import stringvalidators, bytesconverter
 from coredb import blockmetadb

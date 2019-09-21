@@ -24,7 +24,7 @@ import threading
 import logger
 from communicatorutils import proxypicker
 import onionrexceptions
-import onionrblockapi as block
+from onionrblocks import onionrblockapi as block
 from onionrutils import localcommand, stringvalidators, basicrequests
 from communicator import onlinepeers
 import onionrcrypto

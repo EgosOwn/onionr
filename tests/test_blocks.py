@@ -9,7 +9,7 @@ import onionrstorage
 from utils import createdirs
 from onionrutils import bytesconverter
 import onionrcrypto
-import onionrblockapi
+from onionrblocks import onionrblockapi
 
 def setup_test():
     TEST_DIR = 'testdata/%s-%s' % (uuid.uuid4(), os.path.basename(__file__)) + '/'

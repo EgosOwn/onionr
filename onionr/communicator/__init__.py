@@ -20,7 +20,8 @@
 '''
 import sys, os, time
 import config, logger
-import onionrexceptions, onionrpeers, onionrblockapi as block
+import onionrexceptions, onionrpeers
+from onionrblocks import onionrblockapi as block
 from onionrplugins import onionrevents as events
 import onionrplugins as plugins
 from . import onlinepeers, uploadqueue
@@ -32,7 +33,8 @@ from communicatorutils import daemonqueuehandler, announcenode, deniableinserts
 from communicatorutils import cooldownpeer, housekeeping, netcheck
 from onionrutils import localcommand, epoch
 from etc import humanreadabletime
-import onionrservices, filepaths, storagecounter
+import onionrservices, filepaths
+from onionrblocks import storagecounter
 from coredb import daemonqueue, dbfiles
 from utils import gettransports
 from netcontroller import NetController

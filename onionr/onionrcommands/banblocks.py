@@ -21,7 +21,8 @@ import sys
 import logger
 from onionrutils import stringvalidators
 from onionrstorage import removeblock
-import onionrblacklist
+from onionrblocks import onionrblacklist
+
 def ban_block():
     blacklist = onionrblacklist.OnionrBlackList()
     try:

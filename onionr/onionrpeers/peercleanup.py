@@ -21,7 +21,8 @@ import sqlite3
 import logger
 from onionrutils import epoch
 from . import scoresortedpeerlist, peerprofiles
-import onionrblacklist, config
+from onionrblocks import onionrblacklist
+import config
 from coredb import keydb
 def peer_cleanup():
     '''Removes peers who have been offline too long or score too low'''

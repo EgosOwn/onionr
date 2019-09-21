@@ -2,7 +2,7 @@ import sys, sqlite3
 import onionrexceptions, onionrstorage
 from onionrutils import stringvalidators
 from coredb import dbfiles
-import storagecounter
+from onionrblocks import storagecounter
 def remove_block(block):
     '''
         remove a block from this node (does not automatically blacklist)

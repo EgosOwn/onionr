@@ -19,7 +19,10 @@
 '''
 import sys
 from flask import Response, abort
-import blockimporter, onionrexceptions, logger
+
+from onionrblocks import blockimporter
+import onionrexceptions, logger
+
 def accept_upload(request):
     resp = 'failure'
     data = request.get_data()

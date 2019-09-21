@@ -18,7 +18,8 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 from coredb import blockmetadb
-import onionrblacklist
+from onionrblocks import onionrblacklist
+
 def should_download(comm_inst, block_hash):
     blacklist = onionrblacklist.OnionrBlackList()
     ret_data = True

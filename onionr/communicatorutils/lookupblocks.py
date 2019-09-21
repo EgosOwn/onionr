@@ -22,7 +22,7 @@ from onionrutils import stringvalidators, epoch
 from communicator import peeraction, onlinepeers
 from coredb import blockmetadb
 from utils import reconstructhash
-import onionrblacklist
+from onionrblocks import onionrblacklist
 blacklist = onionrblacklist.OnionrBlackList()
 def lookup_blocks_from_communicator(comm_inst):
     logger.info('Looking up new blocks')

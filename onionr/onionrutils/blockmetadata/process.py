@@ -19,7 +19,7 @@
 '''
 
 from etc import onionrvalues
-import onionrblockapi
+from onionrblocks import onionrblockapi
 from .. import epoch, bytesconverter
 from coredb import blockmetadb
 import logger

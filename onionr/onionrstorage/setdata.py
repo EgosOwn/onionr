@@ -1,6 +1,7 @@
 import sys, sqlite3
 import onionrstorage, onionrexceptions, onionrcrypto as crypto
-import filepaths, storagecounter
+import filepaths
+from onionrblocks import storagecounter
 from coredb import dbfiles
 from onionrutils import blockmetadata, bytesconverter
 def set_data(data)->str:

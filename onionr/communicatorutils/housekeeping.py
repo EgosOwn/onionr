@@ -24,7 +24,7 @@ from onionrutils import epoch
 from coredb import blockmetadb, dbfiles
 import onionrstorage
 from onionrstorage import removeblock
-import onionrblacklist
+from onionrblocks import onionrblacklist
 
 def __remove_from_upload(comm_inst, block_hash: str):
     try:

@@ -13,7 +13,7 @@ from utils import createdirs
 import onionrblocks
 import filepaths
 import onionrexceptions
-import storagecounter
+from onionrblocks import storagecounter
 import onionrstorage
 
 def _test_setup():

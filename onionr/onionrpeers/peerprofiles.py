@@ -20,7 +20,7 @@
 from coredb import keydb
 from onionrutils import epoch
 from onionrutils import stringvalidators
-import onionrblacklist
+from onionrblocks import onionrblacklist
 import onionrexceptions
 
 UPDATE_DELAY = 300

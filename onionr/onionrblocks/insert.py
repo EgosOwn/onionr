@@ -1,7 +1,8 @@
 from typing import Union
 import json
 from onionrutils import bytesconverter, epoch
-import storagecounter, filepaths, onionrstorage
+import filepaths, onionrstorage
+from . import storagecounter
 from onionrplugins import onionrevents as events
 from etc import powchoice, onionrvalues
 import config, onionrcrypto as crypto, subprocesspow, onionrexceptions

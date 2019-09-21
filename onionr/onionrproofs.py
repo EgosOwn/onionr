@@ -17,8 +17,11 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import multiprocessing, nacl.encoding, nacl.hash, nacl.utils, time, math, threading, binascii, sys, json, sys
-import config, logger, onionrblockapi, storagecounter
+import multiprocessing, time, math, threading, binascii, sys, json
+import nacl.encoding, nacl.hash, nacl.utils
+
+import config, logger
+from onionrblocks import onionrblockapi, storagecounter
 from onionrutils import bytesconverter
 from onionrcrypto import hashers
 config.reload()

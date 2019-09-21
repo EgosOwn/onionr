@@ -22,7 +22,8 @@
 import subprocess, os
 import multiprocessing, threading, time, json
 from multiprocessing import Pipe, Process
-import onionrblockapi, config, onionrutils, logger, onionrproofs, onionrcrypto as crypto
+from onionrblocks import onionrblockapi
+import config, onionrutils, logger, onionrproofs, onionrcrypto as crypto
 from onionrutils import bytesconverter
 class SubprocessPOW:
     def __init__(self, data, metadata, subproc_count=None):

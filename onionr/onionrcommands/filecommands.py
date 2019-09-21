@@ -1,9 +1,9 @@
-'''
+"""
     Onionr - Private P2P Communication
 
     This file handles the commands for adding and getting files from the Onionr network
-'''
-'''
+"""
+"""
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -16,11 +16,11 @@
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
-'''
+"""
 
 import base64, sys, os
 import logger
-from onionrblockapi import Block
+from onionrblocks.onionrblockapi import Block
 import onionrexceptions
 from onionrutils import stringvalidators
 from etc import onionrvalues
@@ -37,9 +37,9 @@ def add_html(singleBlock=True, blockType='html'):
 add_html.onionr_help = "Adds an HTML file into Onionr. Does not currently include dependant resources"
 
 def add_file(singleBlock=False, blockType='bin'):
-    '''
+    """
         Adds a file to the onionr network
-    '''
+    """
 
     if len(sys.argv) >= 3:
         filename = sys.argv[2]
@@ -61,9 +61,9 @@ def add_file(singleBlock=False, blockType='bin'):
 add_file.onionr_help = "<file path> Add a file into the Onionr network"
 
 def get_file():
-    '''
+    """
         Get a file from onionr blocks
-    '''
+    """
     try:
         fileName = _get_dir(sys.argv[2])
         bHash = sys.argv[3]

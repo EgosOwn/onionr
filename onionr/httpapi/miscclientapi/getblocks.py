@@ -18,7 +18,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 from flask import Blueprint, Response, abort
-import onionrblockapi
+from onionrblocks import onionrblockapi
 from .. import apiutils
 from onionrutils import stringvalidators
 from coredb import blockmetadb

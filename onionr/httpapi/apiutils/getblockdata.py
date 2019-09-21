@@ -1,5 +1,5 @@
 import json
-import onionrblockapi
+from onionrblocks import onionrblockapi
 from onionrutils import bytesconverter, stringvalidators
 import onionrexceptions
 class GetBlockData:

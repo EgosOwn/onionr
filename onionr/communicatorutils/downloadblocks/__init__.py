@@ -23,7 +23,8 @@ from onionrutils import blockmetadata, stringvalidators, validatemetadata
 from coredb import blockmetadb
 from . import shoulddownload
 from communicator import peeraction, onlinepeers
-import onionrcrypto, onionrstorage, onionrblacklist, storagecounter
+import onionrcrypto, onionrstorage
+from onionrblocks import onionrblacklist, storagecounter
 def download_blocks_from_communicator(comm_inst):
     '''Use Onionr communicator instance to download blocks in the communicator's queue'''
     assert isinstance(comm_inst, communicator.OnionrCommunicatorDaemon)

@@ -20,7 +20,8 @@
 import onionrexceptions, logger
 from onionrutils import validatemetadata, blockmetadata
 from coredb import blockmetadb
-import onionrblacklist, onionrstorage
+from . import onionrblacklist
+import onionrstorage
 import onionrcrypto as crypto
 def importBlockFromData(content):
     blacklist = onionrblacklist.OnionrBlackList()

@@ -19,7 +19,7 @@
 '''
 import os, uuid, time
 import logger
-from onionrblockapi import Block
+from onionrblocks import onionrblockapi
 from onionrutils import checkcommunicator, mnemonickeys
 from utils import sizeutils, gethostname, getconsolewidth, identifyhome
 from coredb import blockmetadb, daemonqueue, keydb
@@ -30,7 +30,7 @@ def show_stats():
         # define stats messages here
         totalBlocks = len(blockmetadb.get_block_list())
         home = identifyhome.identify_home()
-        signedBlocks = len(Block.getBlocks(signed = True))
+        signedBlocks = len(onionrblockapi.Block.getBlocks(signed = True))
         messages = {
             # info about local client
             'Onionr Daemon Status' : ((logger.colors.fg.green + 'Online') if checkcommunicator.is_communicator_running(timeout = 9) else logger.colors.fg.red + 'Offline'),
