@@ -146,9 +146,6 @@ function deleteMessage(bHash){
         headers: {
             "token": webpass
         }})
-    .then((resp) => resp.text())
-    .then(function(resp) {
-    })
 }
 
 function mailPing(){
@@ -204,10 +201,11 @@ function loadInboxEntries(bHash){
                     entry.setAttribute('data-nameSet', false)
                 }
                 else{
-                    resp2 => resp2.text()
+                    resp2.text().then(function(resp2){
                     loadHumanReadableToCache(resp['meta']['signer'])
                     senderInput.value = resp2
                     entry.setAttribute('data-nameSet', true)
+                    })
                 }
             })
 
