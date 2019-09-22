@@ -19,8 +19,6 @@ from __future__ import annotations
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 from typing import Union, TYPE_CHECKING
-import threading
-
 import logger
 from communicatorutils import proxypicker
 import onionrexceptions
