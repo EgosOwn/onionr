@@ -20,7 +20,6 @@
 
 # Imports some useful libraries
 import logger, config, threading, time, datetime, sys, json
-from onionrblockapi import Block
 from onionrutils import stringvalidators, bytesconverter
 from onionrcrypto import encryption, keypair, signing, getourkeypair
 import onionrexceptions, onionrusers

@@ -1,4 +1,4 @@
-# Onionr Block Spec v1.1.0
+# Onionr Block Spec v2.0.0
 
 # Block Description
 
@@ -20,13 +20,13 @@ The metadata section has the following fields. If a block contains any other fie
 
 ## meta
 
-Max byte size: 1000
+Max byte size (when in escaped json string format): 1000
 
-Meta is a string field which can contain arbitrary sub fields. It is intended for applications and plugins to use it for arbitrary metadata information. In the reference client, if the data section is encrypted or signed, the meta section also is.
+Meta is a string field which can contain arbitrary sub fields. It is intended for applications and plugins to use it for arbitrary metadata information. If the data section is encrypted or signed, the meta section also is.
 
 Common meta fields, such as 'type' are used by the reference Onionr client to describe the type of a block.
 
-## sig
+## sig (optional)
 
 Max byte size: 200
 
@@ -34,30 +34,30 @@ Sig is a field for storing public key signatures of the block, typically ed25519
 
 Note: the max field size is larger than a EdDSA signature (which is what is typically used) in order to allow other primitives for signing in alternative implementations or future versions.
 
-## signer
+## signer (optional, necessary if sig is present)
 
 Max byte size: 200
 
 Signer is a field for specifying the public key which signed the block. In the reference client this is a base64 encoded ed25519 public key.
 
-## time
+## time (mandatory)
 
 Max byte size: 10
 
-Time is an integer field for specifying the time of which a block was created. The trustworthiness of this field is based on one's trust of the block creator, however blocks with a time field set in the future (past a reasonable clock skew) are thrown out by the reference client.
+Time is an integer field for specifying the time of which a block was created. The trustworthiness of this field is based on one's trust of the block creator, however blocks with a time field set in the future at the point of block receipt (past a reasonable clock skew) are thrown out by the reference client.
 
-## expire
+## expire (optional)
 
 Max byte size: 10
 
 Expire is an integer field for specifying the time of which the block creator has indicated that the block should be deleted. The purpose of this is for voluntarily freeing the burden of unwanted blocks on the Onionr network, rather than security/privacy (since blocks could be trivially kept past expiration). Regardless, the reference client deletes blocks after a preset time if the expire field is either not set or longer than the preset time.
 
-## pow
+## pow (effectively mandatory)
 
 Max byte size: 1000
 
 Pow is a field for placing the nonce found to make a block meet a target proof of work. In theory, a block could meet a target without a random token in this field.
 
-## encryptType
+## encryptType (optional)
 
 encryptType is a field to specify the mode of encryption for a block. The values supported by Onionr are 'asym' and 'sym'.

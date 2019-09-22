@@ -89,6 +89,13 @@ def validate_metadata(metadata, block_data) -> bool:
         else:
             # if metadata loop gets no errors, it does not break, therefore metadata is valid
             # make sure we do not have another block with the same data content (prevent data duplication and replay attacks)
+
+            # Make sure time is set (validity was checked above if it is)
+            try:
+                metadata['time']
+            except KeyError:
+                return False
+
             nonce = bytesconverter.bytes_to_str(onionrcrypto.hashers.sha3_hash(block_data))
             try:
                 with open(filepaths.data_nonce_file, 'r') as nonceFile:

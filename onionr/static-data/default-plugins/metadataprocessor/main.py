@@ -21,7 +21,6 @@
 # useful libraries
 import logger, config
 import os, sys, json, time, random, shutil, base64, getpass, datetime, re
-from onionrblockapi import Block
 import onionrusers, onionrexceptions
 from onionrutils import stringvalidators
 

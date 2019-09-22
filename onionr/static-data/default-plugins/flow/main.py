@@ -20,7 +20,7 @@
 
 # Imports some useful libraries
 import threading, time, locale, sys, os
-from onionrblockapi import Block
+from onionrblocks.onionrblockapi import Block
 import logger, config, onionrblocks
 from onionrutils import escapeansi, epoch, bytesconverter
 locale.setlocale(locale.LC_ALL, '')

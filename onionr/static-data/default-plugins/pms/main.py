@@ -20,7 +20,6 @@
 
 # Imports some useful libraries
 import logger, config, threading, time, datetime
-from onionrblockapi import Block
 import onionrexceptions
 from onionrusers import onionrusers, contactmanager
 from utils import reconstructhash
