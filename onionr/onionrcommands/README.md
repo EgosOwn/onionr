@@ -4,6 +4,8 @@ This module contains handlers/functions for Onionr cli interface commands.
 
 ## Files
 
+parser/: Registers and handles Onionr CLI commands
+
 __init__.py: stores the command references (aside from plugins) and help info.
 
 banblocks.py: command handler for manually removing blocks from one's node

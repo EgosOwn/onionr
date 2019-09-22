@@ -2,7 +2,7 @@
 
 The following steps work broadly speaking for Windows, Mac, and Linux.
 
-1. Verify python3.6+ is installed: if its not see https://www.python.org/downloads/
+1. Verify python3.7+ is installed: if its not see https://www.python.org/downloads/
 
 2. Verify Tor is installed (does not need to be running, binary can be put into system path or Onionr directory)
 

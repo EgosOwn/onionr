@@ -18,7 +18,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 import sqlite3
-import onionrevents as events
+from onionrplugins import onionrevents as events
 from onionrutils import stringvalidators
 from .. import dbfiles
 def remove_address(address):

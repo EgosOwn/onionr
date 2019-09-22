@@ -17,9 +17,12 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-
-import config, logger, onionrplugins as plugins, onionrpluginapi as pluginapi
 from threading import Thread
+
+import config, logger
+import onionrplugins as plugins
+from . import onionrpluginapi as pluginapi
+
 
 def get_pluginapi(data):
     return pluginapi.SharedAPI(data)

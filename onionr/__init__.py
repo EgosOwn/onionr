@@ -49,7 +49,7 @@ from utils import createdirs
 createdirs.create_dirs()
 
 from onionrcommands import parser
-import onionrevents as events
+from onionrplugins import onionrevents as events
 
 setup.setup_config()
 setup.setup_default_plugins()

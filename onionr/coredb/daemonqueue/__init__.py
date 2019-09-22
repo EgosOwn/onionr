@@ -19,7 +19,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 import sqlite3, os
-import onionrevents as events
+from onionrplugins import onionrevents as events
 from onionrutils import localcommand, epoch
 from .. import dbfiles
 import dbcreator

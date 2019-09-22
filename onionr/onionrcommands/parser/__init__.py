@@ -21,12 +21,12 @@ import sys
 from etc import onionrvalues
 import logger, onionrexceptions
 import onionrplugins
-import onionrpluginapi
+from onionrplugins import onionrpluginapi
 from . import arguments, recommend
 
 plugin_command = lambda cmd: 'on_%s_cmd' % (cmd,)
 
-def register_plugin_commands(cmd):
+def register_plugin_commands(cmd)->bool:
     plugin_cmd = plugin_command(cmd)
     for pl in onionrplugins.get_enabled_plugins():
         pl = onionrplugins.get_plugin(pl)

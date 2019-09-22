@@ -23,7 +23,7 @@ import shutil
 from onionrutils import localcommand
 from coredb import dbfiles
 import filepaths
-import onionrevents
+from onionrplugins import onionrevents
 import logger
 
 def _ignore_not_found_delete(path):
