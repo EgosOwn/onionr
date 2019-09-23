@@ -1,0 +1,650 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.6.3" />
+<title>onionr.onionrexceptions API documentation</title>
+<meta name="description" content="Onionr - Private P2P Communication …" />
+<link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
+<link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" rel="stylesheet">
+<style>.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{font-weight:bold}#index h4 + ul{margin-bottom:.6em}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase;cursor:pointer}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>onionr.onionrexceptions</code></h1>
+</header>
+<section id="section-intro">
+<p>Onionr - Private P2P Communication</p>
+<p>This file contains exceptions for onionr</p>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">&#34;&#34;&#34;
+    Onionr - Private P2P Communication
+
+    This file contains exceptions for onionr
+&#34;&#34;&#34;
+&#34;&#34;&#34;
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see &lt;https://www.gnu.org/licenses/&gt;.
+&#34;&#34;&#34;
+
+# general exceptions
+class NotFound(Exception):
+    pass
+class Unknown(Exception):
+    pass
+class Invalid(Exception):
+    pass
+
+# communicator exceptions
+class OnlinePeerNeeded(Exception):
+    pass
+
+# crypto exceptions
+class InvalidPubkey(Exception):
+    pass
+
+class KeyNotKnown(Exception):
+    pass
+
+class DecryptionError(Exception):
+    pass
+
+class PasswordStrengthError(Exception):
+    pass
+
+class SignatureError(Exception):
+    pass
+
+# block exceptions
+
+class ReplayAttack(Exception):
+    pass
+
+class DifficultyTooLarge(Exception):
+    pass
+
+class InvalidMetadata(Exception):
+    pass
+
+class BlacklistedBlock(Exception):
+    pass
+
+class DataExists(Exception):
+    pass
+
+class NoDataAvailable(Exception):
+    pass
+
+class InvalidHexHash(Exception):
+    &#34;&#34;&#34;When a string is not a valid hex string of appropriate length for a hash value&#34;&#34;&#34;
+    pass
+
+class InvalidProof(Exception):
+    &#34;&#34;&#34;When a proof is invalid or inadequate&#34;&#34;&#34;
+    pass
+
+# network level exceptions
+class MissingPort(Exception):
+    pass
+
+class InvalidAddress(Exception):
+    pass
+
+class InvalidAPIVersion(Exception):
+    pass
+
+class Timeout(Exception):
+    pass
+
+# file exceptions
+
+class DiskAllocationReached(Exception):
+    pass
+
+# onionrsocket exceptions
+
+class MissingAddress(Exception):
+    pass
+
+# Contact exceptions
+
+class ContactDeleted(Exception):
+    pass</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="onionr.onionrexceptions.BlacklistedBlock"><code class="flex name class">
+<span>class <span class="ident">BlacklistedBlock</span></span>
+<span>(</span><span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Common base class for all non-exit exceptions.</p></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">class BlacklistedBlock(Exception):
+    pass</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>builtins.Exception</li>
+<li>builtins.BaseException</li>
+</ul>
+</dd>
+<dt id="onionr.onionrexceptions.ContactDeleted"><code class="flex name class">
+<span>class <span class="ident">ContactDeleted</span></span>
+<span>(</span><span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Common base class for all non-exit exceptions.</p></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">class ContactDeleted(Exception):
+    pass</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>builtins.Exception</li>
+<li>builtins.BaseException</li>
+</ul>
+</dd>
+<dt id="onionr.onionrexceptions.DataExists"><code class="flex name class">
+<span>class <span class="ident">DataExists</span></span>
+<span>(</span><span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Common base class for all non-exit exceptions.</p></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">class DataExists(Exception):
+    pass</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>builtins.Exception</li>
+<li>builtins.BaseException</li>
+</ul>
+</dd>
+<dt id="onionr.onionrexceptions.DecryptionError"><code class="flex name class">
+<span>class <span class="ident">DecryptionError</span></span>
+<span>(</span><span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Common base class for all non-exit exceptions.</p></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">class DecryptionError(Exception):
+    pass</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>builtins.Exception</li>
+<li>builtins.BaseException</li>
+</ul>
+</dd>
+<dt id="onionr.onionrexceptions.DifficultyTooLarge"><code class="flex name class">
+<span>class <span class="ident">DifficultyTooLarge</span></span>
+<span>(</span><span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Common base class for all non-exit exceptions.</p></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">class DifficultyTooLarge(Exception):
+    pass</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>builtins.Exception</li>
+<li>builtins.BaseException</li>
+</ul>
+</dd>
+<dt id="onionr.onionrexceptions.DiskAllocationReached"><code class="flex name class">
+<span>class <span class="ident">DiskAllocationReached</span></span>
+<span>(</span><span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Common base class for all non-exit exceptions.</p></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">class DiskAllocationReached(Exception):
+    pass</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>builtins.Exception</li>
+<li>builtins.BaseException</li>
+</ul>
+</dd>
+<dt id="onionr.onionrexceptions.Invalid"><code class="flex name class">
+<span>class <span class="ident">Invalid</span></span>
+<span>(</span><span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Common base class for all non-exit exceptions.</p></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">class Invalid(Exception):
+    pass</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>builtins.Exception</li>
+<li>builtins.BaseException</li>
+</ul>
+</dd>
+<dt id="onionr.onionrexceptions.InvalidAPIVersion"><code class="flex name class">
+<span>class <span class="ident">InvalidAPIVersion</span></span>
+<span>(</span><span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Common base class for all non-exit exceptions.</p></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">class InvalidAPIVersion(Exception):
+    pass</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>builtins.Exception</li>
+<li>builtins.BaseException</li>
+</ul>
+</dd>
+<dt id="onionr.onionrexceptions.InvalidAddress"><code class="flex name class">
+<span>class <span class="ident">InvalidAddress</span></span>
+<span>(</span><span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Common base class for all non-exit exceptions.</p></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">class InvalidAddress(Exception):
+    pass</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>builtins.Exception</li>
+<li>builtins.BaseException</li>
+</ul>
+</dd>
+<dt id="onionr.onionrexceptions.InvalidHexHash"><code class="flex name class">
+<span>class <span class="ident">InvalidHexHash</span></span>
+<span>(</span><span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>When a string is not a valid hex string of appropriate length for a hash value</p></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">class InvalidHexHash(Exception):
+    &#34;&#34;&#34;When a string is not a valid hex string of appropriate length for a hash value&#34;&#34;&#34;
+    pass</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>builtins.Exception</li>
+<li>builtins.BaseException</li>
+</ul>
+</dd>
+<dt id="onionr.onionrexceptions.InvalidMetadata"><code class="flex name class">
+<span>class <span class="ident">InvalidMetadata</span></span>
+<span>(</span><span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Common base class for all non-exit exceptions.</p></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">class InvalidMetadata(Exception):
+    pass</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>builtins.Exception</li>
+<li>builtins.BaseException</li>
+</ul>
+</dd>
+<dt id="onionr.onionrexceptions.InvalidProof"><code class="flex name class">
+<span>class <span class="ident">InvalidProof</span></span>
+<span>(</span><span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>When a proof is invalid or inadequate</p></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">class InvalidProof(Exception):
+    &#34;&#34;&#34;When a proof is invalid or inadequate&#34;&#34;&#34;
+    pass</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>builtins.Exception</li>
+<li>builtins.BaseException</li>
+</ul>
+</dd>
+<dt id="onionr.onionrexceptions.InvalidPubkey"><code class="flex name class">
+<span>class <span class="ident">InvalidPubkey</span></span>
+<span>(</span><span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Common base class for all non-exit exceptions.</p></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">class InvalidPubkey(Exception):
+    pass</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>builtins.Exception</li>
+<li>builtins.BaseException</li>
+</ul>
+</dd>
+<dt id="onionr.onionrexceptions.KeyNotKnown"><code class="flex name class">
+<span>class <span class="ident">KeyNotKnown</span></span>
+<span>(</span><span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Common base class for all non-exit exceptions.</p></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">class KeyNotKnown(Exception):
+    pass</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>builtins.Exception</li>
+<li>builtins.BaseException</li>
+</ul>
+</dd>
+<dt id="onionr.onionrexceptions.MissingAddress"><code class="flex name class">
+<span>class <span class="ident">MissingAddress</span></span>
+<span>(</span><span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Common base class for all non-exit exceptions.</p></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">class MissingAddress(Exception):
+    pass</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>builtins.Exception</li>
+<li>builtins.BaseException</li>
+</ul>
+</dd>
+<dt id="onionr.onionrexceptions.MissingPort"><code class="flex name class">
+<span>class <span class="ident">MissingPort</span></span>
+<span>(</span><span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Common base class for all non-exit exceptions.</p></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">class MissingPort(Exception):
+    pass</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>builtins.Exception</li>
+<li>builtins.BaseException</li>
+</ul>
+</dd>
+<dt id="onionr.onionrexceptions.NoDataAvailable"><code class="flex name class">
+<span>class <span class="ident">NoDataAvailable</span></span>
+<span>(</span><span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Common base class for all non-exit exceptions.</p></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">class NoDataAvailable(Exception):
+    pass</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>builtins.Exception</li>
+<li>builtins.BaseException</li>
+</ul>
+</dd>
+<dt id="onionr.onionrexceptions.NotFound"><code class="flex name class">
+<span>class <span class="ident">NotFound</span></span>
+<span>(</span><span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Common base class for all non-exit exceptions.</p></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">class NotFound(Exception):
+    pass</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>builtins.Exception</li>
+<li>builtins.BaseException</li>
+</ul>
+</dd>
+<dt id="onionr.onionrexceptions.OnlinePeerNeeded"><code class="flex name class">
+<span>class <span class="ident">OnlinePeerNeeded</span></span>
+<span>(</span><span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Common base class for all non-exit exceptions.</p></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">class OnlinePeerNeeded(Exception):
+    pass</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>builtins.Exception</li>
+<li>builtins.BaseException</li>
+</ul>
+</dd>
+<dt id="onionr.onionrexceptions.PasswordStrengthError"><code class="flex name class">
+<span>class <span class="ident">PasswordStrengthError</span></span>
+<span>(</span><span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Common base class for all non-exit exceptions.</p></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">class PasswordStrengthError(Exception):
+    pass</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>builtins.Exception</li>
+<li>builtins.BaseException</li>
+</ul>
+</dd>
+<dt id="onionr.onionrexceptions.ReplayAttack"><code class="flex name class">
+<span>class <span class="ident">ReplayAttack</span></span>
+<span>(</span><span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Common base class for all non-exit exceptions.</p></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">class ReplayAttack(Exception):
+    pass</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>builtins.Exception</li>
+<li>builtins.BaseException</li>
+</ul>
+</dd>
+<dt id="onionr.onionrexceptions.SignatureError"><code class="flex name class">
+<span>class <span class="ident">SignatureError</span></span>
+<span>(</span><span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Common base class for all non-exit exceptions.</p></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">class SignatureError(Exception):
+    pass</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>builtins.Exception</li>
+<li>builtins.BaseException</li>
+</ul>
+</dd>
+<dt id="onionr.onionrexceptions.Timeout"><code class="flex name class">
+<span>class <span class="ident">Timeout</span></span>
+<span>(</span><span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Common base class for all non-exit exceptions.</p></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">class Timeout(Exception):
+    pass</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>builtins.Exception</li>
+<li>builtins.BaseException</li>
+</ul>
+</dd>
+<dt id="onionr.onionrexceptions.Unknown"><code class="flex name class">
+<span>class <span class="ident">Unknown</span></span>
+<span>(</span><span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Common base class for all non-exit exceptions.</p></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">class Unknown(Exception):
+    pass</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>builtins.Exception</li>
+<li>builtins.BaseException</li>
+</ul>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="onionr" href="index.html">onionr</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="onionr.onionrexceptions.BlacklistedBlock" href="#onionr.onionrexceptions.BlacklistedBlock">BlacklistedBlock</a></code></h4>
+</li>
+<li>
+<h4><code><a title="onionr.onionrexceptions.ContactDeleted" href="#onionr.onionrexceptions.ContactDeleted">ContactDeleted</a></code></h4>
+</li>
+<li>
+<h4><code><a title="onionr.onionrexceptions.DataExists" href="#onionr.onionrexceptions.DataExists">DataExists</a></code></h4>
+</li>
+<li>
+<h4><code><a title="onionr.onionrexceptions.DecryptionError" href="#onionr.onionrexceptions.DecryptionError">DecryptionError</a></code></h4>
+</li>
+<li>
+<h4><code><a title="onionr.onionrexceptions.DifficultyTooLarge" href="#onionr.onionrexceptions.DifficultyTooLarge">DifficultyTooLarge</a></code></h4>
+</li>
+<li>
+<h4><code><a title="onionr.onionrexceptions.DiskAllocationReached" href="#onionr.onionrexceptions.DiskAllocationReached">DiskAllocationReached</a></code></h4>
+</li>
+<li>
+<h4><code><a title="onionr.onionrexceptions.Invalid" href="#onionr.onionrexceptions.Invalid">Invalid</a></code></h4>
+</li>
+<li>
+<h4><code><a title="onionr.onionrexceptions.InvalidAPIVersion" href="#onionr.onionrexceptions.InvalidAPIVersion">InvalidAPIVersion</a></code></h4>
+</li>
+<li>
+<h4><code><a title="onionr.onionrexceptions.InvalidAddress" href="#onionr.onionrexceptions.InvalidAddress">InvalidAddress</a></code></h4>
+</li>
+<li>
+<h4><code><a title="onionr.onionrexceptions.InvalidHexHash" href="#onionr.onionrexceptions.InvalidHexHash">InvalidHexHash</a></code></h4>
+</li>
+<li>
+<h4><code><a title="onionr.onionrexceptions.InvalidMetadata" href="#onionr.onionrexceptions.InvalidMetadata">InvalidMetadata</a></code></h4>
+</li>
+<li>
+<h4><code><a title="onionr.onionrexceptions.InvalidProof" href="#onionr.onionrexceptions.InvalidProof">InvalidProof</a></code></h4>
+</li>
+<li>
+<h4><code><a title="onionr.onionrexceptions.InvalidPubkey" href="#onionr.onionrexceptions.InvalidPubkey">InvalidPubkey</a></code></h4>
+</li>
+<li>
+<h4><code><a title="onionr.onionrexceptions.KeyNotKnown" href="#onionr.onionrexceptions.KeyNotKnown">KeyNotKnown</a></code></h4>
+</li>
+<li>
+<h4><code><a title="onionr.onionrexceptions.MissingAddress" href="#onionr.onionrexceptions.MissingAddress">MissingAddress</a></code></h4>
+</li>
+<li>
+<h4><code><a title="onionr.onionrexceptions.MissingPort" href="#onionr.onionrexceptions.MissingPort">MissingPort</a></code></h4>
+</li>
+<li>
+<h4><code><a title="onionr.onionrexceptions.NoDataAvailable" href="#onionr.onionrexceptions.NoDataAvailable">NoDataAvailable</a></code></h4>
+</li>
+<li>
+<h4><code><a title="onionr.onionrexceptions.NotFound" href="#onionr.onionrexceptions.NotFound">NotFound</a></code></h4>
+</li>
+<li>
+<h4><code><a title="onionr.onionrexceptions.OnlinePeerNeeded" href="#onionr.onionrexceptions.OnlinePeerNeeded">OnlinePeerNeeded</a></code></h4>
+</li>
+<li>
+<h4><code><a title="onionr.onionrexceptions.PasswordStrengthError" href="#onionr.onionrexceptions.PasswordStrengthError">PasswordStrengthError</a></code></h4>
+</li>
+<li>
+<h4><code><a title="onionr.onionrexceptions.ReplayAttack" href="#onionr.onionrexceptions.ReplayAttack">ReplayAttack</a></code></h4>
+</li>
+<li>
+<h4><code><a title="onionr.onionrexceptions.SignatureError" href="#onionr.onionrexceptions.SignatureError">SignatureError</a></code></h4>
+</li>
+<li>
+<h4><code><a title="onionr.onionrexceptions.Timeout" href="#onionr.onionrexceptions.Timeout">Timeout</a></code></h4>
+</li>
+<li>
+<h4><code><a title="onionr.onionrexceptions.Unknown" href="#onionr.onionrexceptions.Unknown">Unknown</a></code></h4>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.6.3</a>.</p>
+</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad()</script>
+</body>
+</html>

@@ -1,0 +1,743 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.6.3" />
+<title>onionr.communicator API documentation</title>
+<meta name="description" content="Onionr - Private P2P Communication …" />
+<link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
+<link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" rel="stylesheet">
+<style>.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{font-weight:bold}#index h4 + ul{margin-bottom:.6em}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase;cursor:pointer}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>onionr.communicator</code></h1>
+</header>
+<section id="section-intro">
+<p>Onionr - Private P2P Communication</p>
+<p>This file contains both the OnionrCommunicate class for communcating with peers
+and code to operate as a daemon, getting commands from the command queue database (see core.Core.daemonQueue)</p>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">&#39;&#39;&#39;
+    Onionr - Private P2P Communication
+
+    This file contains both the OnionrCommunicate class for communcating with peers
+    and code to operate as a daemon, getting commands from the command queue database (see core.Core.daemonQueue)
+&#39;&#39;&#39;
+&#39;&#39;&#39;
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see &lt;https://www.gnu.org/licenses/&gt;.
+&#39;&#39;&#39;
+import sys, os, time
+import config, logger
+import onionrexceptions, onionrpeers
+from onionrblocks import onionrblockapi as block
+from onionrplugins import onionrevents as events
+import onionrplugins as plugins
+from . import onlinepeers, uploadqueue
+from communicatorutils import servicecreator, onionrcommunicatortimers
+from communicatorutils import downloadblocks, lookupblocks, lookupadders
+from communicatorutils import servicecreator, connectnewpeers
+from communicatorutils import uploadblocks
+from communicatorutils import daemonqueuehandler, announcenode, deniableinserts
+from communicatorutils import cooldownpeer, housekeeping, netcheck
+from onionrutils import localcommand, epoch
+from etc import humanreadabletime
+import onionrservices, filepaths
+from onionrblocks import storagecounter
+from coredb import daemonqueue, dbfiles
+from utils import gettransports
+from netcontroller import NetController
+OnionrCommunicatorTimers = onionrcommunicatortimers.OnionrCommunicatorTimers
+
+config.reload()
+class OnionrCommunicatorDaemon:
+    def __init__(self, shared_state, developmentMode=config.get(&#39;general.dev_mode&#39;, False)):
+        # configure logger and stuff
+        self.config = config
+        self.storage_counter = storagecounter.StorageCounter()
+        self.isOnline = True # Assume we&#39;re connected to the internet
+        self.shared_state = shared_state # TooManyObjects module
+
+        # list of timer instances
+        self.timers = []
+
+        # initialize core with Tor socks port being 3rd argument
+        self.proxyPort = shared_state.get(NetController).socksPort
+
+        # Upload information, list of blocks to upload
+        self.blocksToUpload = []
+        self.upload_session_manager = self.shared_state.get(uploadblocks.sessionmanager.BlockUploadSessionManager)
+        self.shared_state.share_object()
+
+        # loop time.sleep delay in seconds
+        self.delay = 1
+
+        # lists of connected peers and peers we know we can&#39;t reach currently
+        self.onlinePeers = []
+        self.offlinePeers = []
+        self.cooldownPeer = {}
+        self.connectTimes = {}
+        self.peerProfiles = [] # list of peer&#39;s profiles (onionrpeers.PeerProfile instances)
+        self.newPeers = [] # Peers merged to us. Don&#39;t add to db until we know they&#39;re reachable
+        self.announceProgress = {}
+        self.announceCache = {}
+
+        self.generating_blocks = []
+
+        # amount of threads running by name, used to prevent too many
+        self.threadCounts = {}
+
+        # set true when shutdown command received
+        self.shutdown = False
+
+        # list of new blocks to download, added to when new block lists are fetched from peers
+        self.blockQueue = {}
+
+        # list of blocks currently downloading, avoid s
+        self.currentDownloading = []
+
+        # timestamp when the last online node was seen
+        self.lastNodeSeen = None
+
+        # Dict of time stamps for peer&#39;s block list lookup times, to avoid downloading full lists all the time
+        self.dbTimestamps = {}
+
+        # Clear the daemon queue for any dead messages
+        if os.path.exists(dbfiles.daemon_queue_db):
+            daemonqueue.clear_daemon_queue()
+
+        # Loads in and starts the enabled plugins
+        plugins.reload()
+
+        # time app started running for info/statistics purposes
+        self.startTime = epoch.get_epoch()
+
+        uploadqueue.UploadQueue(self) # extends our upload list and saves our list when Onionr exits
+
+        if developmentMode:
+            OnionrCommunicatorTimers(self, self.heartbeat, 30)
+
+        # Set timers, function reference, seconds
+        # requires_peer True means the timer function won&#39;t fire if we have no connected peers
+        peerPoolTimer = OnionrCommunicatorTimers(self, onlinepeers.get_online_peers, 60, max_threads=1, my_args=[self])
+        OnionrCommunicatorTimers(self, self.runCheck, 2, max_threads=1)
+
+        # Timers to periodically lookup new blocks and download them
+        lookup_blocks_timer = OnionrCommunicatorTimers(self, lookupblocks.lookup_blocks_from_communicator, config.get(&#39;timers.lookupBlocks&#39;, 25), my_args=[self], requires_peer=True, max_threads=1)
+        # The block download timer is accessed by the block lookup function to trigger faster download starts
+        self.download_blocks_timer = OnionrCommunicatorTimers(self, self.getBlocks, config.get(&#39;timers.getBlocks&#39;, 10), requires_peer=True, max_threads=5)
+
+        # Timer to reset the longest offline peer so contact can be attempted again
+        OnionrCommunicatorTimers(self, onlinepeers.clear_offline_peer, 58, my_args=[self])
+
+        # Timer to cleanup old blocks
+        blockCleanupTimer = OnionrCommunicatorTimers(self, housekeeping.clean_old_blocks, 20, my_args=[self])
+
+        # Timer to discover new peers
+        OnionrCommunicatorTimers(self, lookupadders.lookup_new_peer_transports_with_communicator, 60, requires_peer=True, my_args=[self], max_threads=2)
+
+        # Timer for adjusting which peers we actively communicate to at any given time, to avoid over-using peers
+        OnionrCommunicatorTimers(self, cooldownpeer.cooldown_peer, 30, my_args=[self], requires_peer=True)
+
+        # Timer to read the upload queue and upload the entries to peers
+        OnionrCommunicatorTimers(self, uploadblocks.upload_blocks_from_communicator, 5, my_args=[self], requires_peer=True, max_threads=1)
+
+        # Timer to process the daemon command queue
+        OnionrCommunicatorTimers(self, daemonqueuehandler.handle_daemon_commands, 6, my_args=[self], max_threads=3)
+
+        # Setup direct connections
+        if config.get(&#39;general.socket_servers&#39;, False):
+            self.services = onionrservices.OnionrServices()
+            self.active_services = []
+            self.service_greenlets = []
+            OnionrCommunicatorTimers(self, servicecreator.service_creator, 5, max_threads=50, my_args=[self])
+        else:
+            self.services = None
+        
+        # {peer_pubkey: ephemeral_address}, the address to reach them
+        self.direct_connection_clients = {}
+        
+        # This timer creates deniable blocks, in an attempt to further obfuscate block insertion metadata
+        if config.get(&#39;general.insert_deniable_blocks&#39;, True):
+            deniableBlockTimer = OnionrCommunicatorTimers(self, deniableinserts.insert_deniable_block, 180, my_args=[self], requires_peer=True, max_threads=1)
+            deniableBlockTimer.count = (deniableBlockTimer.frequency - 175)
+
+        # Timer to check for connectivity, through Tor to various high-profile onion services
+        netCheckTimer = OnionrCommunicatorTimers(self, netcheck.net_check, 500, my_args=[self], max_threads=1)
+
+        # Announce the public API server transport address to other nodes if security level allows
+        if config.get(&#39;general.security_level&#39;, 1) == 0 and config.get(&#39;general.announce_node&#39;, True):
+            # Default to high security level incase config breaks
+            announceTimer = OnionrCommunicatorTimers(self, announcenode.announce_node, 3600, my_args=[self], requires_peer=True, max_threads=1)
+            announceTimer.count = (announceTimer.frequency - 120)
+        else:
+            logger.debug(&#39;Will not announce node.&#39;)
+        
+        # Timer to delete malfunctioning or long-dead peers
+        cleanupTimer = OnionrCommunicatorTimers(self, self.peerCleanup, 300, requires_peer=True)
+
+        # Timer to cleanup dead ephemeral forward secrecy keys 
+        forwardSecrecyTimer = OnionrCommunicatorTimers(self, housekeeping.clean_keys, 15, my_args=[self], max_threads=1)
+
+        # Adjust initial timer triggers
+        peerPoolTimer.count = (peerPoolTimer.frequency - 1)
+        cleanupTimer.count = (cleanupTimer.frequency - 60)
+        blockCleanupTimer.count = (blockCleanupTimer.frequency - 2)
+        lookup_blocks_timer = (lookup_blocks_timer.frequency - 2)
+
+        shared_state.add(self)
+
+        # Main daemon loop, mainly for calling timers, don&#39;t do any complex operations here to avoid locking
+        try:
+            while not self.shutdown:
+                for i in self.timers:
+                    if self.shutdown:
+                        break
+                    i.processTimer()
+                time.sleep(self.delay)
+                # Debug to print out used FDs (regular and net)
+                #proc = psutil.Process()
+                #print(proc.open_files(), len(psutil.net_connections()))
+        except KeyboardInterrupt:
+            self.shutdown = True
+            pass
+
+        logger.info(&#39;Goodbye. (Onionr is cleaning up, and will exit)&#39;, terminal=True)
+        try:
+            self.service_greenlets
+        except AttributeError:
+            pass
+        else:
+            for server in self.service_greenlets:
+                server.stop()
+        localcommand.local_command(&#39;shutdown&#39;) # shutdown the api
+        try:
+            time.sleep(0.5)
+        except KeyboardInterrupt:
+            pass
+
+    def getBlocks(self):
+        &#39;&#39;&#39;download new blocks in queue&#39;&#39;&#39;
+        downloadblocks.download_blocks_from_communicator(self)
+
+    def decrementThreadCount(self, threadName):
+        &#39;&#39;&#39;Decrement amount of a thread name if more than zero, called when a function meant to be run in a thread ends&#39;&#39;&#39;
+        try:
+            if self.threadCounts[threadName] &gt; 0:
+                self.threadCounts[threadName] -= 1
+        except KeyError:
+            pass
+
+    def connectNewPeer(self, peer=&#39;&#39;, useBootstrap=False):
+        &#39;&#39;&#39;Adds a new random online peer to self.onlinePeers&#39;&#39;&#39;
+        connectnewpeers.connect_new_peer_to_communicator(self, peer, useBootstrap)
+
+    def peerCleanup(self):
+        &#39;&#39;&#39;This just calls onionrpeers.cleanupPeers, which removes dead or bad peers (offline too long, too slow)&#39;&#39;&#39;
+        onionrpeers.peer_cleanup()
+        self.decrementThreadCount(&#39;peerCleanup&#39;)
+
+    def getPeerProfileInstance(self, peer):
+        &#39;&#39;&#39;Gets a peer profile instance from the list of profiles, by address name&#39;&#39;&#39;
+        for i in self.peerProfiles:
+            # if the peer&#39;s profile is already loaded, return that
+            if i.address == peer:
+                retData = i
+                break
+        else:
+            # if the peer&#39;s profile is not loaded, return a new one. connectNewPeer also adds it to the list on connect
+            retData = onionrpeers.PeerProfiles(peer)
+            self.peerProfiles.append(retData)
+        return retData
+
+    def getUptime(self):
+        return epoch.get_epoch() - self.startTime
+
+    def heartbeat(self):
+        &#39;&#39;&#39;Show a heartbeat debug message&#39;&#39;&#39;
+        logger.debug(&#39;Heartbeat. Node running for %s.&#39; % humanreadabletime.human_readable_time(self.getUptime()))
+        self.decrementThreadCount(&#39;heartbeat&#39;)
+
+    def runCheck(self):
+        if run_file_exists(self):
+            logger.debug(&#39;Status check; looks good.&#39;)
+
+        self.decrementThreadCount(&#39;runCheck&#39;)
+
+def startCommunicator(shared_state):
+    OnionrCommunicatorDaemon(shared_state)
+
+def run_file_exists(daemon):
+    if os.path.isfile(filepaths.run_check_file):
+        os.remove(filepaths.run_check_file)
+        return True
+    return False</code></pre>
+</details>
+</section>
+<section>
+<h2 class="section-title" id="header-submodules">Sub-modules</h2>
+<dl>
+<dt><code class="name"><a title="onionr.communicator.bootstrappeers" href="bootstrappeers.html">onionr.communicator.bootstrappeers</a></code></dt>
+<dd>
+<section class="desc"><p>Onionr - Private P2P Communication …</p></section>
+</dd>
+<dt><code class="name"><a title="onionr.communicator.onlinepeers" href="onlinepeers/index.html">onionr.communicator.onlinepeers</a></code></dt>
+<dd>
+<section class="desc"></section>
+</dd>
+<dt><code class="name"><a title="onionr.communicator.peeraction" href="peeraction.html">onionr.communicator.peeraction</a></code></dt>
+<dd>
+<section class="desc"><p>Onionr - Private P2P Communication …</p></section>
+</dd>
+<dt><code class="name"><a title="onionr.communicator.uploadqueue" href="uploadqueue/index.html">onionr.communicator.uploadqueue</a></code></dt>
+<dd>
+<section class="desc"><p>Onionr - Private P2P Communication …</p></section>
+</dd>
+</dl>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="onionr.communicator.run_file_exists"><code class="name flex">
+<span>def <span class="ident">run_file_exists</span></span>(<span>daemon)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def run_file_exists(daemon):
+    if os.path.isfile(filepaths.run_check_file):
+        os.remove(filepaths.run_check_file)
+        return True
+    return False</code></pre>
+</details>
+</dd>
+<dt id="onionr.communicator.startCommunicator"><code class="name flex">
+<span>def <span class="ident">startCommunicator</span></span>(<span>shared_state)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def startCommunicator(shared_state):
+    OnionrCommunicatorDaemon(shared_state)</code></pre>
+</details>
+</dd>
+</dl>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="onionr.communicator.OnionrCommunicatorDaemon"><code class="flex name class">
+<span>class <span class="ident">OnionrCommunicatorDaemon</span></span>
+<span>(</span><span>shared_state, developmentMode=True)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">class OnionrCommunicatorDaemon:
+    def __init__(self, shared_state, developmentMode=config.get(&#39;general.dev_mode&#39;, False)):
+        # configure logger and stuff
+        self.config = config
+        self.storage_counter = storagecounter.StorageCounter()
+        self.isOnline = True # Assume we&#39;re connected to the internet
+        self.shared_state = shared_state # TooManyObjects module
+
+        # list of timer instances
+        self.timers = []
+
+        # initialize core with Tor socks port being 3rd argument
+        self.proxyPort = shared_state.get(NetController).socksPort
+
+        # Upload information, list of blocks to upload
+        self.blocksToUpload = []
+        self.upload_session_manager = self.shared_state.get(uploadblocks.sessionmanager.BlockUploadSessionManager)
+        self.shared_state.share_object()
+
+        # loop time.sleep delay in seconds
+        self.delay = 1
+
+        # lists of connected peers and peers we know we can&#39;t reach currently
+        self.onlinePeers = []
+        self.offlinePeers = []
+        self.cooldownPeer = {}
+        self.connectTimes = {}
+        self.peerProfiles = [] # list of peer&#39;s profiles (onionrpeers.PeerProfile instances)
+        self.newPeers = [] # Peers merged to us. Don&#39;t add to db until we know they&#39;re reachable
+        self.announceProgress = {}
+        self.announceCache = {}
+
+        self.generating_blocks = []
+
+        # amount of threads running by name, used to prevent too many
+        self.threadCounts = {}
+
+        # set true when shutdown command received
+        self.shutdown = False
+
+        # list of new blocks to download, added to when new block lists are fetched from peers
+        self.blockQueue = {}
+
+        # list of blocks currently downloading, avoid s
+        self.currentDownloading = []
+
+        # timestamp when the last online node was seen
+        self.lastNodeSeen = None
+
+        # Dict of time stamps for peer&#39;s block list lookup times, to avoid downloading full lists all the time
+        self.dbTimestamps = {}
+
+        # Clear the daemon queue for any dead messages
+        if os.path.exists(dbfiles.daemon_queue_db):
+            daemonqueue.clear_daemon_queue()
+
+        # Loads in and starts the enabled plugins
+        plugins.reload()
+
+        # time app started running for info/statistics purposes
+        self.startTime = epoch.get_epoch()
+
+        uploadqueue.UploadQueue(self) # extends our upload list and saves our list when Onionr exits
+
+        if developmentMode:
+            OnionrCommunicatorTimers(self, self.heartbeat, 30)
+
+        # Set timers, function reference, seconds
+        # requires_peer True means the timer function won&#39;t fire if we have no connected peers
+        peerPoolTimer = OnionrCommunicatorTimers(self, onlinepeers.get_online_peers, 60, max_threads=1, my_args=[self])
+        OnionrCommunicatorTimers(self, self.runCheck, 2, max_threads=1)
+
+        # Timers to periodically lookup new blocks and download them
+        lookup_blocks_timer = OnionrCommunicatorTimers(self, lookupblocks.lookup_blocks_from_communicator, config.get(&#39;timers.lookupBlocks&#39;, 25), my_args=[self], requires_peer=True, max_threads=1)
+        # The block download timer is accessed by the block lookup function to trigger faster download starts
+        self.download_blocks_timer = OnionrCommunicatorTimers(self, self.getBlocks, config.get(&#39;timers.getBlocks&#39;, 10), requires_peer=True, max_threads=5)
+
+        # Timer to reset the longest offline peer so contact can be attempted again
+        OnionrCommunicatorTimers(self, onlinepeers.clear_offline_peer, 58, my_args=[self])
+
+        # Timer to cleanup old blocks
+        blockCleanupTimer = OnionrCommunicatorTimers(self, housekeeping.clean_old_blocks, 20, my_args=[self])
+
+        # Timer to discover new peers
+        OnionrCommunicatorTimers(self, lookupadders.lookup_new_peer_transports_with_communicator, 60, requires_peer=True, my_args=[self], max_threads=2)
+
+        # Timer for adjusting which peers we actively communicate to at any given time, to avoid over-using peers
+        OnionrCommunicatorTimers(self, cooldownpeer.cooldown_peer, 30, my_args=[self], requires_peer=True)
+
+        # Timer to read the upload queue and upload the entries to peers
+        OnionrCommunicatorTimers(self, uploadblocks.upload_blocks_from_communicator, 5, my_args=[self], requires_peer=True, max_threads=1)
+
+        # Timer to process the daemon command queue
+        OnionrCommunicatorTimers(self, daemonqueuehandler.handle_daemon_commands, 6, my_args=[self], max_threads=3)
+
+        # Setup direct connections
+        if config.get(&#39;general.socket_servers&#39;, False):
+            self.services = onionrservices.OnionrServices()
+            self.active_services = []
+            self.service_greenlets = []
+            OnionrCommunicatorTimers(self, servicecreator.service_creator, 5, max_threads=50, my_args=[self])
+        else:
+            self.services = None
+        
+        # {peer_pubkey: ephemeral_address}, the address to reach them
+        self.direct_connection_clients = {}
+        
+        # This timer creates deniable blocks, in an attempt to further obfuscate block insertion metadata
+        if config.get(&#39;general.insert_deniable_blocks&#39;, True):
+            deniableBlockTimer = OnionrCommunicatorTimers(self, deniableinserts.insert_deniable_block, 180, my_args=[self], requires_peer=True, max_threads=1)
+            deniableBlockTimer.count = (deniableBlockTimer.frequency - 175)
+
+        # Timer to check for connectivity, through Tor to various high-profile onion services
+        netCheckTimer = OnionrCommunicatorTimers(self, netcheck.net_check, 500, my_args=[self], max_threads=1)
+
+        # Announce the public API server transport address to other nodes if security level allows
+        if config.get(&#39;general.security_level&#39;, 1) == 0 and config.get(&#39;general.announce_node&#39;, True):
+            # Default to high security level incase config breaks
+            announceTimer = OnionrCommunicatorTimers(self, announcenode.announce_node, 3600, my_args=[self], requires_peer=True, max_threads=1)
+            announceTimer.count = (announceTimer.frequency - 120)
+        else:
+            logger.debug(&#39;Will not announce node.&#39;)
+        
+        # Timer to delete malfunctioning or long-dead peers
+        cleanupTimer = OnionrCommunicatorTimers(self, self.peerCleanup, 300, requires_peer=True)
+
+        # Timer to cleanup dead ephemeral forward secrecy keys 
+        forwardSecrecyTimer = OnionrCommunicatorTimers(self, housekeeping.clean_keys, 15, my_args=[self], max_threads=1)
+
+        # Adjust initial timer triggers
+        peerPoolTimer.count = (peerPoolTimer.frequency - 1)
+        cleanupTimer.count = (cleanupTimer.frequency - 60)
+        blockCleanupTimer.count = (blockCleanupTimer.frequency - 2)
+        lookup_blocks_timer = (lookup_blocks_timer.frequency - 2)
+
+        shared_state.add(self)
+
+        # Main daemon loop, mainly for calling timers, don&#39;t do any complex operations here to avoid locking
+        try:
+            while not self.shutdown:
+                for i in self.timers:
+                    if self.shutdown:
+                        break
+                    i.processTimer()
+                time.sleep(self.delay)
+                # Debug to print out used FDs (regular and net)
+                #proc = psutil.Process()
+                #print(proc.open_files(), len(psutil.net_connections()))
+        except KeyboardInterrupt:
+            self.shutdown = True
+            pass
+
+        logger.info(&#39;Goodbye. (Onionr is cleaning up, and will exit)&#39;, terminal=True)
+        try:
+            self.service_greenlets
+        except AttributeError:
+            pass
+        else:
+            for server in self.service_greenlets:
+                server.stop()
+        localcommand.local_command(&#39;shutdown&#39;) # shutdown the api
+        try:
+            time.sleep(0.5)
+        except KeyboardInterrupt:
+            pass
+
+    def getBlocks(self):
+        &#39;&#39;&#39;download new blocks in queue&#39;&#39;&#39;
+        downloadblocks.download_blocks_from_communicator(self)
+
+    def decrementThreadCount(self, threadName):
+        &#39;&#39;&#39;Decrement amount of a thread name if more than zero, called when a function meant to be run in a thread ends&#39;&#39;&#39;
+        try:
+            if self.threadCounts[threadName] &gt; 0:
+                self.threadCounts[threadName] -= 1
+        except KeyError:
+            pass
+
+    def connectNewPeer(self, peer=&#39;&#39;, useBootstrap=False):
+        &#39;&#39;&#39;Adds a new random online peer to self.onlinePeers&#39;&#39;&#39;
+        connectnewpeers.connect_new_peer_to_communicator(self, peer, useBootstrap)
+
+    def peerCleanup(self):
+        &#39;&#39;&#39;This just calls onionrpeers.cleanupPeers, which removes dead or bad peers (offline too long, too slow)&#39;&#39;&#39;
+        onionrpeers.peer_cleanup()
+        self.decrementThreadCount(&#39;peerCleanup&#39;)
+
+    def getPeerProfileInstance(self, peer):
+        &#39;&#39;&#39;Gets a peer profile instance from the list of profiles, by address name&#39;&#39;&#39;
+        for i in self.peerProfiles:
+            # if the peer&#39;s profile is already loaded, return that
+            if i.address == peer:
+                retData = i
+                break
+        else:
+            # if the peer&#39;s profile is not loaded, return a new one. connectNewPeer also adds it to the list on connect
+            retData = onionrpeers.PeerProfiles(peer)
+            self.peerProfiles.append(retData)
+        return retData
+
+    def getUptime(self):
+        return epoch.get_epoch() - self.startTime
+
+    def heartbeat(self):
+        &#39;&#39;&#39;Show a heartbeat debug message&#39;&#39;&#39;
+        logger.debug(&#39;Heartbeat. Node running for %s.&#39; % humanreadabletime.human_readable_time(self.getUptime()))
+        self.decrementThreadCount(&#39;heartbeat&#39;)
+
+    def runCheck(self):
+        if run_file_exists(self):
+            logger.debug(&#39;Status check; looks good.&#39;)
+
+        self.decrementThreadCount(&#39;runCheck&#39;)</code></pre>
+</details>
+<h3>Methods</h3>
+<dl>
+<dt id="onionr.communicator.OnionrCommunicatorDaemon.connectNewPeer"><code class="name flex">
+<span>def <span class="ident">connectNewPeer</span></span>(<span>self, peer='', useBootstrap=False)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Adds a new random online peer to self.onlinePeers</p></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def connectNewPeer(self, peer=&#39;&#39;, useBootstrap=False):
+    &#39;&#39;&#39;Adds a new random online peer to self.onlinePeers&#39;&#39;&#39;
+    connectnewpeers.connect_new_peer_to_communicator(self, peer, useBootstrap)</code></pre>
+</details>
+</dd>
+<dt id="onionr.communicator.OnionrCommunicatorDaemon.decrementThreadCount"><code class="name flex">
+<span>def <span class="ident">decrementThreadCount</span></span>(<span>self, threadName)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Decrement amount of a thread name if more than zero, called when a function meant to be run in a thread ends</p></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def decrementThreadCount(self, threadName):
+    &#39;&#39;&#39;Decrement amount of a thread name if more than zero, called when a function meant to be run in a thread ends&#39;&#39;&#39;
+    try:
+        if self.threadCounts[threadName] &gt; 0:
+            self.threadCounts[threadName] -= 1
+    except KeyError:
+        pass</code></pre>
+</details>
+</dd>
+<dt id="onionr.communicator.OnionrCommunicatorDaemon.getBlocks"><code class="name flex">
+<span>def <span class="ident">getBlocks</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>download new blocks in queue</p></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def getBlocks(self):
+    &#39;&#39;&#39;download new blocks in queue&#39;&#39;&#39;
+    downloadblocks.download_blocks_from_communicator(self)</code></pre>
+</details>
+</dd>
+<dt id="onionr.communicator.OnionrCommunicatorDaemon.getPeerProfileInstance"><code class="name flex">
+<span>def <span class="ident">getPeerProfileInstance</span></span>(<span>self, peer)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Gets a peer profile instance from the list of profiles, by address name</p></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def getPeerProfileInstance(self, peer):
+    &#39;&#39;&#39;Gets a peer profile instance from the list of profiles, by address name&#39;&#39;&#39;
+    for i in self.peerProfiles:
+        # if the peer&#39;s profile is already loaded, return that
+        if i.address == peer:
+            retData = i
+            break
+    else:
+        # if the peer&#39;s profile is not loaded, return a new one. connectNewPeer also adds it to the list on connect
+        retData = onionrpeers.PeerProfiles(peer)
+        self.peerProfiles.append(retData)
+    return retData</code></pre>
+</details>
+</dd>
+<dt id="onionr.communicator.OnionrCommunicatorDaemon.getUptime"><code class="name flex">
+<span>def <span class="ident">getUptime</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def getUptime(self):
+    return epoch.get_epoch() - self.startTime</code></pre>
+</details>
+</dd>
+<dt id="onionr.communicator.OnionrCommunicatorDaemon.heartbeat"><code class="name flex">
+<span>def <span class="ident">heartbeat</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Show a heartbeat debug message</p></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def heartbeat(self):
+    &#39;&#39;&#39;Show a heartbeat debug message&#39;&#39;&#39;
+    logger.debug(&#39;Heartbeat. Node running for %s.&#39; % humanreadabletime.human_readable_time(self.getUptime()))
+    self.decrementThreadCount(&#39;heartbeat&#39;)</code></pre>
+</details>
+</dd>
+<dt id="onionr.communicator.OnionrCommunicatorDaemon.peerCleanup"><code class="name flex">
+<span>def <span class="ident">peerCleanup</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>This just calls onionrpeers.cleanupPeers, which removes dead or bad peers (offline too long, too slow)</p></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def peerCleanup(self):
+    &#39;&#39;&#39;This just calls onionrpeers.cleanupPeers, which removes dead or bad peers (offline too long, too slow)&#39;&#39;&#39;
+    onionrpeers.peer_cleanup()
+    self.decrementThreadCount(&#39;peerCleanup&#39;)</code></pre>
+</details>
+</dd>
+<dt id="onionr.communicator.OnionrCommunicatorDaemon.runCheck"><code class="name flex">
+<span>def <span class="ident">runCheck</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def runCheck(self):
+    if run_file_exists(self):
+        logger.debug(&#39;Status check; looks good.&#39;)
+
+    self.decrementThreadCount(&#39;runCheck&#39;)</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="onionr" href="../index.html">onionr</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-submodules">Sub-modules</a></h3>
+<ul>
+<li><code><a title="onionr.communicator.bootstrappeers" href="bootstrappeers.html">onionr.communicator.bootstrappeers</a></code></li>
+<li><code><a title="onionr.communicator.onlinepeers" href="onlinepeers/index.html">onionr.communicator.onlinepeers</a></code></li>
+<li><code><a title="onionr.communicator.peeraction" href="peeraction.html">onionr.communicator.peeraction</a></code></li>
+<li><code><a title="onionr.communicator.uploadqueue" href="uploadqueue/index.html">onionr.communicator.uploadqueue</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="onionr.communicator.run_file_exists" href="#onionr.communicator.run_file_exists">run_file_exists</a></code></li>
+<li><code><a title="onionr.communicator.startCommunicator" href="#onionr.communicator.startCommunicator">startCommunicator</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="onionr.communicator.OnionrCommunicatorDaemon" href="#onionr.communicator.OnionrCommunicatorDaemon">OnionrCommunicatorDaemon</a></code></h4>
+<ul class="">
+<li><code><a title="onionr.communicator.OnionrCommunicatorDaemon.connectNewPeer" href="#onionr.communicator.OnionrCommunicatorDaemon.connectNewPeer">connectNewPeer</a></code></li>
+<li><code><a title="onionr.communicator.OnionrCommunicatorDaemon.decrementThreadCount" href="#onionr.communicator.OnionrCommunicatorDaemon.decrementThreadCount">decrementThreadCount</a></code></li>
+<li><code><a title="onionr.communicator.OnionrCommunicatorDaemon.getBlocks" href="#onionr.communicator.OnionrCommunicatorDaemon.getBlocks">getBlocks</a></code></li>
+<li><code><a title="onionr.communicator.OnionrCommunicatorDaemon.getPeerProfileInstance" href="#onionr.communicator.OnionrCommunicatorDaemon.getPeerProfileInstance">getPeerProfileInstance</a></code></li>
+<li><code><a title="onionr.communicator.OnionrCommunicatorDaemon.getUptime" href="#onionr.communicator.OnionrCommunicatorDaemon.getUptime">getUptime</a></code></li>
+<li><code><a title="onionr.communicator.OnionrCommunicatorDaemon.heartbeat" href="#onionr.communicator.OnionrCommunicatorDaemon.heartbeat">heartbeat</a></code></li>
+<li><code><a title="onionr.communicator.OnionrCommunicatorDaemon.peerCleanup" href="#onionr.communicator.OnionrCommunicatorDaemon.peerCleanup">peerCleanup</a></code></li>
+<li><code><a title="onionr.communicator.OnionrCommunicatorDaemon.runCheck" href="#onionr.communicator.OnionrCommunicatorDaemon.runCheck">runCheck</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.6.3</a>.</p>
+</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad()</script>
+</body>
+</html>

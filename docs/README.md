@@ -1,4 +1,6 @@
-# Onionr Documentation
+<img src="onionr-logo.png" width="200px">
+
+# Documentation
 
 The Onionr [whitepaper](whitepaper.md) is the best place to start both for users and developers.
 
@@ -17,3 +19,4 @@ The Onionr [whitepaper](whitepaper.md) is the best place to start both for users
 * [Project layout](dev/layout.md)
 * [Plugin development guide](dev/plugins.md)
 * [Testing](dev/testing.md)
+* [Auto generated API docs (HTML)](html/onionr/index.html)

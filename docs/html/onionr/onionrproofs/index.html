@@ -1,0 +1,847 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.6.3" />
+<title>onionr.onionrproofs API documentation</title>
+<meta name="description" content="Onionr - Private P2P Communication …" />
+<link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
+<link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" rel="stylesheet">
+<style>.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{font-weight:bold}#index h4 + ul{margin-bottom:.6em}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase;cursor:pointer}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>onionr.onionrproofs</code></h1>
+</header>
+<section id="section-intro">
+<p>Onionr - Private P2P Communication</p>
+<p>Proof of work module</p>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">&#39;&#39;&#39;
+    Onionr - Private P2P Communication
+
+    Proof of work module
+&#39;&#39;&#39;
+&#39;&#39;&#39;
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see &lt;https://www.gnu.org/licenses/&gt;.
+&#39;&#39;&#39;
+import multiprocessing, time, math, threading, binascii, sys, json
+import nacl.encoding, nacl.hash, nacl.utils
+
+import config, logger
+from onionrblocks import onionrblockapi, storagecounter
+from onionrutils import bytesconverter
+from onionrcrypto import hashers
+config.reload()
+
+def getDifficultyModifier():
+    &#39;&#39;&#39;returns the difficulty modifier for block storage based 
+    on a variety of factors, currently only disk use.
+    &#39;&#39;&#39;
+    percentUse = storagecounter.StorageCounter().get_percent()
+    difficultyIncrease = math.floor(4 * percentUse) # difficulty increase is a step function
+
+    return difficultyIncrease
+
+def getDifficultyForNewBlock(data):
+    &#39;&#39;&#39;
+    Get difficulty for block. Accepts size in integer, Block instance, or str/bytes full block contents
+    &#39;&#39;&#39;
+    if isinstance(data, onionrblockapi.Block):
+        dataSizeInBytes = len(bytesconverter.str_to_bytes(data.getRaw()))
+    else:
+        dataSizeInBytes = len(bytesconverter.str_to_bytes(data))
+
+    minDifficulty = config.get(&#39;general.minimum_send_pow&#39;, 4)
+    totalDifficulty = max(minDifficulty, math.floor(dataSizeInBytes / 1000000.0)) + getDifficultyModifier()
+
+    return totalDifficulty
+
+    return retData
+
+def getHashDifficulty(h: str):
+    &#39;&#39;&#39;
+        Return the amount of leading zeroes in a hex hash string (hexHash)
+    &#39;&#39;&#39;
+    return len(h) - len(h.lstrip(&#39;0&#39;))
+
+def hashMeetsDifficulty(hexHash):
+    &#39;&#39;&#39;
+        Return bool for a hash string to see if it meets pow difficulty defined in config
+    &#39;&#39;&#39;
+    hashDifficulty = getHashDifficulty(hexHash)
+
+    try:
+        expected = int(config.get(&#39;general.minimum_block_pow&#39;))
+    except TypeError:
+        raise ValueError(&#39;Missing general.minimum_block_pow config&#39;)
+
+    return hashDifficulty &gt;= expected
+
+class DataPOW:
+    def __init__(self, data, minDifficulty = 0, threadCount = 1):
+        self.data = data
+        self.threadCount = threadCount
+        self.difficulty = max(minDifficulty, getDifficultyForNewBlock(data))
+        self.rounds = 0
+        self.hashing = False
+        self.foundHash = False
+
+        try:
+            self.data = self.data.encode()
+        except AttributeError:
+            pass
+        
+        self.data = nacl.hash.blake2b(self.data)
+
+        logger.info(&#39;Computing POW (difficulty: %s)...&#39; % self.difficulty)
+
+        self.mainHash = &#39;0&#39; * 70
+        self.puzzle = self.mainHash[0:min(self.difficulty, len(self.mainHash))]
+        
+        for i in range(max(1, threadCount)):
+            t = threading.Thread(name = &#39;thread%s&#39; % i, target = self.pow, args = (True,))
+            t.start()
+
+    def pow(self, reporting = False):
+        startTime = math.floor(time.time())
+        self.hashing = True
+        self.reporting = reporting
+        iFound = False # if current thread is the one that found the answer
+        
+        while self.hashing:
+            rand = nacl.utils.random()
+            token = nacl.hash.blake2b(rand + self.data).decode()
+            self.rounds += 1
+            #print(token)
+            if self.puzzle == token[0:self.difficulty]:
+                self.hashing = False
+                iFound = True
+                break
+                
+        if iFound:
+            endTime = math.floor(time.time())
+            if self.reporting:
+                logger.debug(&#39;Found token after %s seconds: %s&#39; % (endTime - startTime, token), timestamp=True)
+                logger.debug(&#39;Round count: %s&#39; % (self.rounds,))
+            self.result = (token, rand)
+
+    def shutdown(self):
+        self.hashing = False
+        self.puzzle = &#39;&#39;
+
+    def changeDifficulty(self, newDiff):
+        self.difficulty = newDiff
+
+    def getResult(self):
+        &#39;&#39;&#39;
+            Returns the result then sets to false, useful to automatically clear the result
+        &#39;&#39;&#39;
+        
+        try:
+            retVal = self.result
+        except AttributeError:
+            retVal = False
+            
+        self.result = False
+        return retVal
+
+    def waitForResult(self):
+        &#39;&#39;&#39;
+            Returns the result only when it has been found, False if not running and not found
+        &#39;&#39;&#39;
+        result = False
+        try:
+            while True:
+                result = self.getResult()
+                if not self.hashing:
+                    break
+                else:
+                    time.sleep(1)
+        except KeyboardInterrupt:
+            self.shutdown()
+            logger.warn(&#39;Got keyboard interrupt while waiting for POW result, stopping&#39;)
+        return result
+
+class POW:
+    def __init__(self, metadata, data, threadCount = 1, minDifficulty=0):
+        self.foundHash = False
+        self.difficulty = 0
+        self.data = data
+        self.metadata = metadata
+        self.threadCount = threadCount
+        self.hashing = False
+
+        json_metadata = json.dumps(metadata).encode()
+
+        try:
+            self.data = self.data.encode()
+        except AttributeError:
+            pass
+            
+        if minDifficulty &gt; 0:
+            self.difficulty = minDifficulty
+        else:
+            # Calculate difficulty. Dumb for now, may use good algorithm in the future.
+            self.difficulty = getDifficultyForNewBlock(bytes(json_metadata + b&#39;\n&#39; + self.data))
+            
+        logger.info(&#39;Computing POW (difficulty: %s)...&#39; % (self.difficulty,))
+
+        self.mainHash = &#39;0&#39; * 64
+        self.puzzle = self.mainHash[0:min(self.difficulty, len(self.mainHash))]
+
+        for i in range(max(1, threadCount)):
+            t = threading.Thread(name = &#39;thread%s&#39; % i, target = self.pow, args = (True,))
+            t.start()
+
+    def pow(self, reporting = False):
+        startTime = math.floor(time.time())
+        self.hashing = True
+        self.reporting = reporting
+        iFound = False # if current thread is the one that found the answer
+        nonce = int(binascii.hexlify(nacl.utils.random(64)), 16)
+        while self.hashing:
+            #token = nacl.hash.blake2b(rand + self.data).decode()
+            self.metadata[&#39;pow&#39;] = nonce
+            payload = json.dumps(self.metadata).encode() + b&#39;\n&#39; + self.data
+            token = hashers.sha3_hash(payload)
+            try:
+                # on some versions, token is bytes
+                token = token.decode()
+            except AttributeError:
+                pass
+            if self.puzzle == token[0:self.difficulty]:
+                self.hashing = False
+                iFound = True
+                self.result = payload
+                break
+            nonce += 1
+                
+        if iFound:
+            endTime = math.floor(time.time())
+            if self.reporting:
+                logger.debug(&#39;Found token after %s seconds: %s&#39; % (endTime - startTime, token), timestamp=True)
+
+    def shutdown(self):
+        self.hashing = False
+        self.puzzle = &#39;&#39;
+
+    def changeDifficulty(self, newDiff):
+        self.difficulty = newDiff
+
+    def getResult(self):
+        &#39;&#39;&#39;
+            Returns the result then sets to false, useful to automatically clear the result
+        &#39;&#39;&#39;
+        
+        try:
+            retVal = self.result
+        except AttributeError:
+            retVal = False
+            
+        self.result = False
+        return retVal
+
+    def waitForResult(self):
+        &#39;&#39;&#39;
+            Returns the result only when it has been found, False if not running and not found
+        &#39;&#39;&#39;
+        result = False
+        try:
+            while True:
+                result = self.getResult()
+                if not self.hashing:
+                    break
+                else:
+                    time.sleep(1)
+        except KeyboardInterrupt:
+            self.shutdown()
+            logger.warn(&#39;Got keyboard interrupt while waiting for POW result, stopping&#39;)
+        return result</code></pre>
+</details>
+</section>
+<section>
+<h2 class="section-title" id="header-submodules">Sub-modules</h2>
+<dl>
+<dt><code class="name"><a title="onionr.onionrproofs.subprocesspow" href="subprocesspow.html">onionr.onionrproofs.subprocesspow</a></code></dt>
+<dd>
+<section class="desc"><p>Onionr - Private P2P Communication …</p></section>
+</dd>
+</dl>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="onionr.onionrproofs.getDifficultyForNewBlock"><code class="name flex">
+<span>def <span class="ident">getDifficultyForNewBlock</span></span>(<span>data)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Get difficulty for block. Accepts size in integer, Block instance, or str/bytes full block contents</p></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def getDifficultyForNewBlock(data):
+    &#39;&#39;&#39;
+    Get difficulty for block. Accepts size in integer, Block instance, or str/bytes full block contents
+    &#39;&#39;&#39;
+    if isinstance(data, onionrblockapi.Block):
+        dataSizeInBytes = len(bytesconverter.str_to_bytes(data.getRaw()))
+    else:
+        dataSizeInBytes = len(bytesconverter.str_to_bytes(data))
+
+    minDifficulty = config.get(&#39;general.minimum_send_pow&#39;, 4)
+    totalDifficulty = max(minDifficulty, math.floor(dataSizeInBytes / 1000000.0)) + getDifficultyModifier()
+
+    return totalDifficulty
+
+    return retData</code></pre>
+</details>
+</dd>
+<dt id="onionr.onionrproofs.getDifficultyModifier"><code class="name flex">
+<span>def <span class="ident">getDifficultyModifier</span></span>(<span>)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>returns the difficulty modifier for block storage based
+on a variety of factors, currently only disk use.</p></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def getDifficultyModifier():
+    &#39;&#39;&#39;returns the difficulty modifier for block storage based 
+    on a variety of factors, currently only disk use.
+    &#39;&#39;&#39;
+    percentUse = storagecounter.StorageCounter().get_percent()
+    difficultyIncrease = math.floor(4 * percentUse) # difficulty increase is a step function
+
+    return difficultyIncrease</code></pre>
+</details>
+</dd>
+<dt id="onionr.onionrproofs.getHashDifficulty"><code class="name flex">
+<span>def <span class="ident">getHashDifficulty</span></span>(<span>h)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Return the amount of leading zeroes in a hex hash string (hexHash)</p></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def getHashDifficulty(h: str):
+    &#39;&#39;&#39;
+        Return the amount of leading zeroes in a hex hash string (hexHash)
+    &#39;&#39;&#39;
+    return len(h) - len(h.lstrip(&#39;0&#39;))</code></pre>
+</details>
+</dd>
+<dt id="onionr.onionrproofs.hashMeetsDifficulty"><code class="name flex">
+<span>def <span class="ident">hashMeetsDifficulty</span></span>(<span>hexHash)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Return bool for a hash string to see if it meets pow difficulty defined in config</p></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def hashMeetsDifficulty(hexHash):
+    &#39;&#39;&#39;
+        Return bool for a hash string to see if it meets pow difficulty defined in config
+    &#39;&#39;&#39;
+    hashDifficulty = getHashDifficulty(hexHash)
+
+    try:
+        expected = int(config.get(&#39;general.minimum_block_pow&#39;))
+    except TypeError:
+        raise ValueError(&#39;Missing general.minimum_block_pow config&#39;)
+
+    return hashDifficulty &gt;= expected</code></pre>
+</details>
+</dd>
+</dl>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="onionr.onionrproofs.DataPOW"><code class="flex name class">
+<span>class <span class="ident">DataPOW</span></span>
+<span>(</span><span>data, minDifficulty=0, threadCount=1)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">class DataPOW:
+    def __init__(self, data, minDifficulty = 0, threadCount = 1):
+        self.data = data
+        self.threadCount = threadCount
+        self.difficulty = max(minDifficulty, getDifficultyForNewBlock(data))
+        self.rounds = 0
+        self.hashing = False
+        self.foundHash = False
+
+        try:
+            self.data = self.data.encode()
+        except AttributeError:
+            pass
+        
+        self.data = nacl.hash.blake2b(self.data)
+
+        logger.info(&#39;Computing POW (difficulty: %s)...&#39; % self.difficulty)
+
+        self.mainHash = &#39;0&#39; * 70
+        self.puzzle = self.mainHash[0:min(self.difficulty, len(self.mainHash))]
+        
+        for i in range(max(1, threadCount)):
+            t = threading.Thread(name = &#39;thread%s&#39; % i, target = self.pow, args = (True,))
+            t.start()
+
+    def pow(self, reporting = False):
+        startTime = math.floor(time.time())
+        self.hashing = True
+        self.reporting = reporting
+        iFound = False # if current thread is the one that found the answer
+        
+        while self.hashing:
+            rand = nacl.utils.random()
+            token = nacl.hash.blake2b(rand + self.data).decode()
+            self.rounds += 1
+            #print(token)
+            if self.puzzle == token[0:self.difficulty]:
+                self.hashing = False
+                iFound = True
+                break
+                
+        if iFound:
+            endTime = math.floor(time.time())
+            if self.reporting:
+                logger.debug(&#39;Found token after %s seconds: %s&#39; % (endTime - startTime, token), timestamp=True)
+                logger.debug(&#39;Round count: %s&#39; % (self.rounds,))
+            self.result = (token, rand)
+
+    def shutdown(self):
+        self.hashing = False
+        self.puzzle = &#39;&#39;
+
+    def changeDifficulty(self, newDiff):
+        self.difficulty = newDiff
+
+    def getResult(self):
+        &#39;&#39;&#39;
+            Returns the result then sets to false, useful to automatically clear the result
+        &#39;&#39;&#39;
+        
+        try:
+            retVal = self.result
+        except AttributeError:
+            retVal = False
+            
+        self.result = False
+        return retVal
+
+    def waitForResult(self):
+        &#39;&#39;&#39;
+            Returns the result only when it has been found, False if not running and not found
+        &#39;&#39;&#39;
+        result = False
+        try:
+            while True:
+                result = self.getResult()
+                if not self.hashing:
+                    break
+                else:
+                    time.sleep(1)
+        except KeyboardInterrupt:
+            self.shutdown()
+            logger.warn(&#39;Got keyboard interrupt while waiting for POW result, stopping&#39;)
+        return result</code></pre>
+</details>
+<h3>Methods</h3>
+<dl>
+<dt id="onionr.onionrproofs.DataPOW.changeDifficulty"><code class="name flex">
+<span>def <span class="ident">changeDifficulty</span></span>(<span>self, newDiff)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def changeDifficulty(self, newDiff):
+    self.difficulty = newDiff</code></pre>
+</details>
+</dd>
+<dt id="onionr.onionrproofs.DataPOW.getResult"><code class="name flex">
+<span>def <span class="ident">getResult</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Returns the result then sets to false, useful to automatically clear the result</p></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def getResult(self):
+    &#39;&#39;&#39;
+        Returns the result then sets to false, useful to automatically clear the result
+    &#39;&#39;&#39;
+    
+    try:
+        retVal = self.result
+    except AttributeError:
+        retVal = False
+        
+    self.result = False
+    return retVal</code></pre>
+</details>
+</dd>
+<dt id="onionr.onionrproofs.DataPOW.pow"><code class="name flex">
+<span>def <span class="ident">pow</span></span>(<span>self, reporting=False)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def pow(self, reporting = False):
+    startTime = math.floor(time.time())
+    self.hashing = True
+    self.reporting = reporting
+    iFound = False # if current thread is the one that found the answer
+    
+    while self.hashing:
+        rand = nacl.utils.random()
+        token = nacl.hash.blake2b(rand + self.data).decode()
+        self.rounds += 1
+        #print(token)
+        if self.puzzle == token[0:self.difficulty]:
+            self.hashing = False
+            iFound = True
+            break
+            
+    if iFound:
+        endTime = math.floor(time.time())
+        if self.reporting:
+            logger.debug(&#39;Found token after %s seconds: %s&#39; % (endTime - startTime, token), timestamp=True)
+            logger.debug(&#39;Round count: %s&#39; % (self.rounds,))
+        self.result = (token, rand)</code></pre>
+</details>
+</dd>
+<dt id="onionr.onionrproofs.DataPOW.shutdown"><code class="name flex">
+<span>def <span class="ident">shutdown</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def shutdown(self):
+    self.hashing = False
+    self.puzzle = &#39;&#39;</code></pre>
+</details>
+</dd>
+<dt id="onionr.onionrproofs.DataPOW.waitForResult"><code class="name flex">
+<span>def <span class="ident">waitForResult</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Returns the result only when it has been found, False if not running and not found</p></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def waitForResult(self):
+    &#39;&#39;&#39;
+        Returns the result only when it has been found, False if not running and not found
+    &#39;&#39;&#39;
+    result = False
+    try:
+        while True:
+            result = self.getResult()
+            if not self.hashing:
+                break
+            else:
+                time.sleep(1)
+    except KeyboardInterrupt:
+        self.shutdown()
+        logger.warn(&#39;Got keyboard interrupt while waiting for POW result, stopping&#39;)
+    return result</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="onionr.onionrproofs.POW"><code class="flex name class">
+<span>class <span class="ident">POW</span></span>
+<span>(</span><span>metadata, data, threadCount=1, minDifficulty=0)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">class POW:
+    def __init__(self, metadata, data, threadCount = 1, minDifficulty=0):
+        self.foundHash = False
+        self.difficulty = 0
+        self.data = data
+        self.metadata = metadata
+        self.threadCount = threadCount
+        self.hashing = False
+
+        json_metadata = json.dumps(metadata).encode()
+
+        try:
+            self.data = self.data.encode()
+        except AttributeError:
+            pass
+            
+        if minDifficulty &gt; 0:
+            self.difficulty = minDifficulty
+        else:
+            # Calculate difficulty. Dumb for now, may use good algorithm in the future.
+            self.difficulty = getDifficultyForNewBlock(bytes(json_metadata + b&#39;\n&#39; + self.data))
+            
+        logger.info(&#39;Computing POW (difficulty: %s)...&#39; % (self.difficulty,))
+
+        self.mainHash = &#39;0&#39; * 64
+        self.puzzle = self.mainHash[0:min(self.difficulty, len(self.mainHash))]
+
+        for i in range(max(1, threadCount)):
+            t = threading.Thread(name = &#39;thread%s&#39; % i, target = self.pow, args = (True,))
+            t.start()
+
+    def pow(self, reporting = False):
+        startTime = math.floor(time.time())
+        self.hashing = True
+        self.reporting = reporting
+        iFound = False # if current thread is the one that found the answer
+        nonce = int(binascii.hexlify(nacl.utils.random(64)), 16)
+        while self.hashing:
+            #token = nacl.hash.blake2b(rand + self.data).decode()
+            self.metadata[&#39;pow&#39;] = nonce
+            payload = json.dumps(self.metadata).encode() + b&#39;\n&#39; + self.data
+            token = hashers.sha3_hash(payload)
+            try:
+                # on some versions, token is bytes
+                token = token.decode()
+            except AttributeError:
+                pass
+            if self.puzzle == token[0:self.difficulty]:
+                self.hashing = False
+                iFound = True
+                self.result = payload
+                break
+            nonce += 1
+                
+        if iFound:
+            endTime = math.floor(time.time())
+            if self.reporting:
+                logger.debug(&#39;Found token after %s seconds: %s&#39; % (endTime - startTime, token), timestamp=True)
+
+    def shutdown(self):
+        self.hashing = False
+        self.puzzle = &#39;&#39;
+
+    def changeDifficulty(self, newDiff):
+        self.difficulty = newDiff
+
+    def getResult(self):
+        &#39;&#39;&#39;
+            Returns the result then sets to false, useful to automatically clear the result
+        &#39;&#39;&#39;
+        
+        try:
+            retVal = self.result
+        except AttributeError:
+            retVal = False
+            
+        self.result = False
+        return retVal
+
+    def waitForResult(self):
+        &#39;&#39;&#39;
+            Returns the result only when it has been found, False if not running and not found
+        &#39;&#39;&#39;
+        result = False
+        try:
+            while True:
+                result = self.getResult()
+                if not self.hashing:
+                    break
+                else:
+                    time.sleep(1)
+        except KeyboardInterrupt:
+            self.shutdown()
+            logger.warn(&#39;Got keyboard interrupt while waiting for POW result, stopping&#39;)
+        return result</code></pre>
+</details>
+<h3>Methods</h3>
+<dl>
+<dt id="onionr.onionrproofs.POW.changeDifficulty"><code class="name flex">
+<span>def <span class="ident">changeDifficulty</span></span>(<span>self, newDiff)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def changeDifficulty(self, newDiff):
+    self.difficulty = newDiff</code></pre>
+</details>
+</dd>
+<dt id="onionr.onionrproofs.POW.getResult"><code class="name flex">
+<span>def <span class="ident">getResult</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Returns the result then sets to false, useful to automatically clear the result</p></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def getResult(self):
+    &#39;&#39;&#39;
+        Returns the result then sets to false, useful to automatically clear the result
+    &#39;&#39;&#39;
+    
+    try:
+        retVal = self.result
+    except AttributeError:
+        retVal = False
+        
+    self.result = False
+    return retVal</code></pre>
+</details>
+</dd>
+<dt id="onionr.onionrproofs.POW.pow"><code class="name flex">
+<span>def <span class="ident">pow</span></span>(<span>self, reporting=False)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def pow(self, reporting = False):
+    startTime = math.floor(time.time())
+    self.hashing = True
+    self.reporting = reporting
+    iFound = False # if current thread is the one that found the answer
+    nonce = int(binascii.hexlify(nacl.utils.random(64)), 16)
+    while self.hashing:
+        #token = nacl.hash.blake2b(rand + self.data).decode()
+        self.metadata[&#39;pow&#39;] = nonce
+        payload = json.dumps(self.metadata).encode() + b&#39;\n&#39; + self.data
+        token = hashers.sha3_hash(payload)
+        try:
+            # on some versions, token is bytes
+            token = token.decode()
+        except AttributeError:
+            pass
+        if self.puzzle == token[0:self.difficulty]:
+            self.hashing = False
+            iFound = True
+            self.result = payload
+            break
+        nonce += 1
+            
+    if iFound:
+        endTime = math.floor(time.time())
+        if self.reporting:
+            logger.debug(&#39;Found token after %s seconds: %s&#39; % (endTime - startTime, token), timestamp=True)</code></pre>
+</details>
+</dd>
+<dt id="onionr.onionrproofs.POW.shutdown"><code class="name flex">
+<span>def <span class="ident">shutdown</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def shutdown(self):
+    self.hashing = False
+    self.puzzle = &#39;&#39;</code></pre>
+</details>
+</dd>
+<dt id="onionr.onionrproofs.POW.waitForResult"><code class="name flex">
+<span>def <span class="ident">waitForResult</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Returns the result only when it has been found, False if not running and not found</p></section>
+<details class="source">
+<summary>Source code</summary>
+<pre><code class="python">def waitForResult(self):
+    &#39;&#39;&#39;
+        Returns the result only when it has been found, False if not running and not found
+    &#39;&#39;&#39;
+    result = False
+    try:
+        while True:
+            result = self.getResult()
+            if not self.hashing:
+                break
+            else:
+                time.sleep(1)
+    except KeyboardInterrupt:
+        self.shutdown()
+        logger.warn(&#39;Got keyboard interrupt while waiting for POW result, stopping&#39;)
+    return result</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="onionr" href="../index.html">onionr</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-submodules">Sub-modules</a></h3>
+<ul>
+<li><code><a title="onionr.onionrproofs.subprocesspow" href="subprocesspow.html">onionr.onionrproofs.subprocesspow</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="onionr.onionrproofs.getDifficultyForNewBlock" href="#onionr.onionrproofs.getDifficultyForNewBlock">getDifficultyForNewBlock</a></code></li>
+<li><code><a title="onionr.onionrproofs.getDifficultyModifier" href="#onionr.onionrproofs.getDifficultyModifier">getDifficultyModifier</a></code></li>
+<li><code><a title="onionr.onionrproofs.getHashDifficulty" href="#onionr.onionrproofs.getHashDifficulty">getHashDifficulty</a></code></li>
+<li><code><a title="onionr.onionrproofs.hashMeetsDifficulty" href="#onionr.onionrproofs.hashMeetsDifficulty">hashMeetsDifficulty</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="onionr.onionrproofs.DataPOW" href="#onionr.onionrproofs.DataPOW">DataPOW</a></code></h4>
+<ul class="">
+<li><code><a title="onionr.onionrproofs.DataPOW.changeDifficulty" href="#onionr.onionrproofs.DataPOW.changeDifficulty">changeDifficulty</a></code></li>
+<li><code><a title="onionr.onionrproofs.DataPOW.getResult" href="#onionr.onionrproofs.DataPOW.getResult">getResult</a></code></li>
+<li><code><a title="onionr.onionrproofs.DataPOW.pow" href="#onionr.onionrproofs.DataPOW.pow">pow</a></code></li>
+<li><code><a title="onionr.onionrproofs.DataPOW.shutdown" href="#onionr.onionrproofs.DataPOW.shutdown">shutdown</a></code></li>
+<li><code><a title="onionr.onionrproofs.DataPOW.waitForResult" href="#onionr.onionrproofs.DataPOW.waitForResult">waitForResult</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="onionr.onionrproofs.POW" href="#onionr.onionrproofs.POW">POW</a></code></h4>
+<ul class="">
+<li><code><a title="onionr.onionrproofs.POW.changeDifficulty" href="#onionr.onionrproofs.POW.changeDifficulty">changeDifficulty</a></code></li>
+<li><code><a title="onionr.onionrproofs.POW.getResult" href="#onionr.onionrproofs.POW.getResult">getResult</a></code></li>
+<li><code><a title="onionr.onionrproofs.POW.pow" href="#onionr.onionrproofs.POW.pow">pow</a></code></li>
+<li><code><a title="onionr.onionrproofs.POW.shutdown" href="#onionr.onionrproofs.POW.shutdown">shutdown</a></code></li>
+<li><code><a title="onionr.onionrproofs.POW.waitForResult" href="#onionr.onionrproofs.POW.waitForResult">waitForResult</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.6.3</a>.</p>
+</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad()</script>
+</body>
+</html>
