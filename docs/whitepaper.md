@@ -1,6 +1,7 @@
 <p align="center">
- <img src="onionr-logo.png" alt="<h1>Onionr</h1>" width=200>
+   <h1 align="center">Onionr</h1>
 </p>
+
 <p align="center">Anonymous, Decentralized, Distributed Network</p>
 
 # Introduction
