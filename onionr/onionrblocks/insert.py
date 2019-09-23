@@ -5,11 +5,12 @@ import filepaths, onionrstorage
 from . import storagecounter
 from onionrplugins import onionrevents as events
 from etc import powchoice, onionrvalues
-import config, onionrcrypto as crypto, subprocesspow, onionrexceptions
+import config, onionrcrypto as crypto, onionrexceptions
 from onionrusers import onionrusers
 from onionrutils import localcommand, blockmetadata, stringvalidators
 import coredb
 import onionrproofs
+from onionrproofs import subprocesspow
 import logger
 def insert_block(data: Union[str, bytes], header: str ='txt', 
                 sign: bool =False, encryptType:str ='', symKey:str ='',
