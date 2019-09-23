@@ -20,7 +20,8 @@
 import sys, sqlite3, os
 from onionrutils import bytesconverter, stringvalidators
 from coredb import dbfiles
-import filepaths, onionrcrypto, dbcreator, onionrexceptions
+import filepaths, onionrcrypto, onionrexceptions
+from onionrsetup import dbcreator
 from onionrcrypto import hashers
 from . import setdata
 DB_ENTRY_SIZE_LIMIT = 10000 # Will be a config option

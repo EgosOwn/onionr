@@ -19,7 +19,8 @@
 '''
 import os
 from . import identifyhome
-import dbcreator, filepaths
+from onionrsetup import dbcreator
+import filepaths
 home = identifyhome.identify_home()
 
 def create_dirs():

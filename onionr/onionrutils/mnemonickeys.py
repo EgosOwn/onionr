@@ -35,8 +35,8 @@ def get_human_readable_ID(pub=''):
     if not len(pub) == onionrvalues.MAIN_PUBLIC_KEY_SIZE:
         pub = base64.b32decode(pub)
     
-    return m.to_mnemonic(pub)
+    return m.to_mnemonic(pub).replace(' ', '-')
 
 def get_base32(words):
     '''converts mnemonic to base32'''
-    return unpaddedbase32.b32encode(m.to_entropy(words))
+    return unpaddedbase32.b32encode(m.to_entropy(words.replace('-', ' ')))

@@ -22,7 +22,7 @@ import sqlite3, os
 from onionrplugins import onionrevents as events
 from onionrutils import localcommand, epoch
 from .. import dbfiles
-import dbcreator
+from onionrsetup import dbcreator
 
 def daemon_queue()->str:
     '''
