@@ -21,13 +21,14 @@ import os, shutil
 
 import onionrplugins as plugins
 import logger
+import filepaths
 
 def setup_default_plugins():
     # Copy default plugins into plugins folder
     if not os.path.exists(plugins.get_plugins_folder()):
-        if os.path.exists('static-data/default-plugins/'):
-            names = [f for f in os.listdir("static-data/default-plugins/")]
-            shutil.copytree('static-data/default-plugins/', plugins.get_plugins_folder())
+        if os.path.exists('../static-data/default-plugins/'):
+            names = [f for f in os.listdir("../static-data/default-plugins/")]
+            shutil.copytree('../static-data/default-plugins/', plugins.get_plugins_folder())
 
             # Enable plugins
             for name in names:

@@ -21,7 +21,7 @@
 from typing import Union
 import os
 def get_static_dir()->str:
-    return os.path.dirname(os.path.realpath(__file__)) + '/../static-data/'
+    return os.path.dirname(os.path.realpath(__file__)) + '/../../static-data/'
 
 def read_static(file:str, ret_bin:bool=False)->Union[str, bytes]:
     static_file = get_static_dir() + file

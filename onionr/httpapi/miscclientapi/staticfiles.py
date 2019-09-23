@@ -28,7 +28,7 @@ mimetypes.add_type('text/css', '.css')
 
 static_files_bp = Blueprint('staticfiles', __name__)
 
-root = os.getcwd() + '/static-data/www/' # should be set to onionr install directory from onionr startup
+root = os.path.dirname(os.path.realpath(__file__)) + '/../../../static-data/www/' # should be set to onionr install directory from onionr startup
 
 @static_files_bp.route('/chat/', endpoint='chatIndex')
 def chat_index():

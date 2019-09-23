@@ -50,7 +50,7 @@ def client_api_insert_block():
     try:
         if bData['encrypt']:
             to = bData['to'].strip()
-            if " " in to:
+            if "-" in to:
                 to = mnemonickeys.get_base32(to)
             encrypt = True
             encryptType = 'asym'

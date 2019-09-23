@@ -58,7 +58,7 @@ sendForm.onsubmit = function(){
             return false
         }
     }
-    if (! to.value.includes(" ") && to.value.length !== 56 && to.value.length !== 52){
+    if (! to.value.includes("-") && to.value.length !== 56 && to.value.length !== 52){
         PNotify.error({
             text: 'User ID is not valid'
         })

@@ -31,7 +31,7 @@ class PublicEndpoints:
         def banner():
             # Display a bit of information to people who visit a node address in their browser
             try:
-                with open('static-data/index.html', 'r') as html:
+                with open('../static-data/index.html', 'r') as html:
                     resp = Response(html.read(), mimetype='text/html')
             except FileNotFoundError:
                 resp = Response("")

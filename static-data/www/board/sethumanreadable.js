@@ -35,5 +35,5 @@ function setHumanReadableIDOnPost(el, key){
         })
         return
     }
-    el.innerText = humanReadableKeys[key].split(' ').slice(0, 3).join(' ')
+    el.innerText = humanReadableKeys[key].split('-').slice(0, 3).join(' ')
 }
