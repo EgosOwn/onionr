@@ -34,6 +34,7 @@ from onionrcrypto import getourkeypair
 from utils import hastor, logoheader
 from . import version
 import serializeddata
+import runtests
 
 def _proper_shutdown():
     localcommand.local_command('shutdown')
@@ -52,12 +53,16 @@ def daemon():
         logger.debug('Runcheck file found on daemon start, deleting in advance.')
         os.remove(filepaths.run_check_file)
     
-    # Create shared object
+    # Create shared objects
 
     shared_state = toomanyobjs.TooMany()
 
     Thread(target=shared_state.get(apiservers.ClientAPI).start, daemon=True, name='client HTTP API').start()
     Thread(target=shared_state.get(apiservers.PublicAPI).start, daemon=True, name='public HTTP API').start()
+
+    # Init run time tester (ensures Onionr is running right, for testing purposes)
+
+    shared_state.get(runtests.OnionrRunTestManager)
     shared_state.get(serializeddata.SerializedData)
     shared_state.share_object() # share the parent object to the threads
 

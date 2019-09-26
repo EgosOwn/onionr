@@ -27,6 +27,7 @@ from .. import resettor # commands to reset the tor data directory or transport 
 from .. import resetplugins # command to reinstall default plugins
 from .. import softreset # command to delete onionr blocks
 from .. import restartonionr # command to restart Onionr
+from .. import runtimetestcmd
 import onionrexceptions
 from onionrutils import importnewblocks # func to import new blocks
 from onionrplugins import onionrevents as events
@@ -54,7 +55,8 @@ def get_arguments()->dict:
         ('resettor', 'reset-tor'): resettor.reset_tor,
         ('resetplugins', 'reset-plugins'): resetplugins.reset,
         ('reset-tor-node-transport',): resettor.reset_tor_key_pair,
-        ('soft-reset', 'softreset'): softreset.soft_reset
+        ('soft-reset', 'softreset'): softreset.soft_reset,
+        ('runtime-test', 'runtimetest'): runtimetestcmd.do_runtime_test
 
     }
     return args

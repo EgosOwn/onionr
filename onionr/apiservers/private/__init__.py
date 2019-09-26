@@ -83,7 +83,7 @@ class PrivateAPI:
         except TypeError:
             return False
 
-    def getUptime(self):
+    def getUptime(self)->int:
         while True:
             try:
                 return epoch.get_epoch() - self.startTime
