@@ -37,6 +37,6 @@ class OnionrRunTestManager:
                 last = i
                 i(self)
                 logger.info(last.__name__ + " passed")
-        except AssertionError:
+        except ValueError:
             logger.error(last.__name__ + ' failed')
     
