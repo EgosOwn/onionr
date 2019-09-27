@@ -97,7 +97,9 @@ function appendMessages(msg, blockHash, beforeHash){
             div[3].textContent = msg['meta']['signer'].substr(0, 5)
             setHumanReadableIDOnPost(div[3], msg['meta']['signer'])
             div[3].title = msg['meta']['signer']
-            identicon[0].src = "data:image/svg+xml;base64," + userIcon(msg['meta']['signer'])
+            userIcon(msg['meta']['signer']).then(function(data){
+                identicon[0].src = "data:image/svg+xml;base64," + data
+            })
         }
         else{
             identicon[0].remove()

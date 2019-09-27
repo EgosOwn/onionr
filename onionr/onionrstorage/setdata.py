@@ -39,4 +39,5 @@ def set_data(data)->str:
     else:
         raise onionrexceptions.DataExists("Data is already set for " + dataHash)
 
+    print(dataHash, nonce_hash)
     return dataHash

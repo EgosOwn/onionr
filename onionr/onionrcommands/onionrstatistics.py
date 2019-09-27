@@ -89,7 +89,7 @@ def show_details():
     details = {
         'Node Address' : gethostname.get_hostname(),
         'Web Password' : config.get('client.webpassword'),
-        'Public Key' : onionrcrypto.pub_key,
+        'Public Key' : onionrcrypto.pub_key.replace('=', ''),
         'Human-readable Public Key' : mnemonickeys.get_human_readable_ID()
     }
 

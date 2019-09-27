@@ -7,8 +7,13 @@ function toHexString(byteArray) {
     return s;
   }
 
-function userIcon(pubkey, imgSize=64){
-    pubkey = toHexString(base32.decode.asBytes(pubkey))
+  async function sha256(str) {
+    const buf = await crypto.subtle.digest("SHA-256", new TextEncoder("utf-8").encode(str));
+    return Array.prototype.map.call(new Uint8Array(buf), x=>(('00'+x.toString(16)).slice(-2))).join('');
+  }  
+
+async function userIcon(pubkey, imgSize=64){
+    pubkey = await sha256(base32.decode.asBytes(pubkey))
     let options = {
         //foreground: [0,0,0,1],               // rgba black
         background: [255, 255, 255, 255],         // rgba white
