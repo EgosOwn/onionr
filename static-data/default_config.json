@@ -13,28 +13,8 @@
         "max_block_age": 2678400,
         "public_key": "",
         "random_bind_ip": false,
-        "use_bootstrap_list": true
-    },
-
-    "www": {
-        "public": {
-            "run": true,
-            "path": "static-data/www/public/"
-        },
-
-        "private": {
-            "run": true,
-            "path": "static-data/www/private/"
-        },
-
-        "ui": {
-            "run": true,
-            "private": true
-        }
-    },
-
-    "client": {
-
+        "use_bootstrap_list": true,
+        "store_plaintext_blocks": true
     },
 
     "plugins": {

@@ -73,6 +73,8 @@ def validate_metadata(metadata, block_data) -> bool:
             elif i == 'encryptType':
                 try:
                     if not metadata[i] in ('asym', 'sym', ''): raise ValueError
+                    if not config.get('general.store_plaintext_blocks', True):
+                        break
                 except ValueError:
                     logger.warn('Invalid encryption mode')
                     break

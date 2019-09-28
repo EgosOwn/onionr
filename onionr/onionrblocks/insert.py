@@ -64,6 +64,7 @@ def insert_block(data: Union[str, bytes], header: str ='txt',
     if encryptType in ('asym', 'sym'):
         metadata['encryptType'] = encryptType
     else:
+        if not config.get('general.store_plaintext_blocks', True): raise onionrexceptions.InvalidMetadata("Plaintext blocks are disabled, yet a plaintext block was being inserted")
         if not encryptType in ('', None):
             raise onionrexceptions.InvalidMetadata('encryptType must be asym or sym, or blank')
 

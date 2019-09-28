@@ -44,7 +44,7 @@ fetch('/flow/version', {
     headers: {
       "token": webpass
     }})
-.then((resp) => resp.text()) // Transform the data into json
+.then((resp) => resp.text())
 .then(function(data) {
     document.getElementById('circlesVersion').innerText = data
 })
