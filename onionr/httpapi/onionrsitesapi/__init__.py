@@ -19,10 +19,16 @@
 '''
 import base64
 import binascii
+
+import unpaddedbase32
+
 from flask import Blueprint, Response, request, abort
+
 from onionrblocks import onionrblockapi
 import onionrexceptions
 from onionrutils import stringvalidators
+from utils import safezip
+from onionrutils import mnemonickeys
 
 site_api = Blueprint('siteapi', __name__)
 
@@ -30,6 +36,12 @@ site_api = Blueprint('siteapi', __name__)
 def site(name):
     bHash = name
     resp = 'Not Found'
+    if '-' in name:
+        name = mnemonickeys.get_base32(name)
+    if stringvalidators.validate_pub_key(name):
+        name = unpaddedbase32.repad(name)
+        
+
     if stringvalidators.validate_hash(bHash):
         try:
             resp = onionrblockapi.Block(bHash).bcontent

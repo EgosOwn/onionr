@@ -19,6 +19,8 @@ upload_list = home + 'upload-list.json'
 config_file = home + 'config.json'
 daemon_mark_file = app_root + '/daemon-true.txt'
 
+site_cache = home + 'onionr-sites.txt'
+
 tor_hs_address_file = home + 'hs/hostname'
 
 run_check_file = home + '.runcheck'
