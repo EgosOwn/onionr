@@ -67,7 +67,7 @@ class OnionrUser:
         if saveUser:
             try:
                 keydb.addkeys.add_peer(publicKey)
-            except AssertionError:
+            except (AssertionError, ValueError) as e:
                 pass
 
         self.trust = keydb.userinfo.get_user_info(self.publicKey, 'trust')

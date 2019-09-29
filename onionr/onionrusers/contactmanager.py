@@ -22,13 +22,13 @@ import unpaddedbase32
 from onionrusers import onionrusers
 from onionrutils import bytesconverter, epoch
 from utils import identifyhome
-
+from onionrutils import mnemonickeys
 import mnemonic
 class ContactManager(onionrusers.OnionrUser):
     def __init__(self, publicKey, saveUser=False, recordExpireSeconds=5):
         try:
-            if " " in publicKey:
-                publicKey = mnemonic.Mnemonic('english').to_entropy(publicKey)
+            if mnemonickeys.DELIMITER in publicKey:
+                publicKey = mnemonic.Mnemonic('english').to_entropy(publicKey.split(mnemonickeys.DELIMITER))
                 publicKey = unpaddedbase32.b32encode(bytesconverter.str_to_bytes(publicKey))
         except ValueError:
             pass

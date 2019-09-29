@@ -25,6 +25,8 @@ import unpaddedbase32
 import onionrcrypto
 from etc import onionrvalues
 
+DELIMITER = '-'
+
 m = mnemonic.Mnemonic('english')
 
 def get_human_readable_ID(pub=''):
@@ -35,8 +37,8 @@ def get_human_readable_ID(pub=''):
     if not len(pub) == onionrvalues.MAIN_PUBLIC_KEY_SIZE:
         pub = base64.b32decode(pub)
     
-    return m.to_mnemonic(pub).replace(' ', '-')
+    return m.to_mnemonic(pub).replace(' ', DELIMITER)
 
 def get_base32(words):
     '''converts mnemonic to base32'''
-    return unpaddedbase32.b32encode(m.to_entropy(words.replace('-', ' ')))
+    return unpaddedbase32.b32encode(m.to_entropy(words.replace(DELIMITER, ' ')))
