@@ -115,6 +115,7 @@ def daemon():
         pass
     cleanup.delete_run_files()
     sys.stderr.close()
+    sys.stdout.close()
 
 def _ignore_sigint(sig, frame):
     '''This space intentionally left blank'''
