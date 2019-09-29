@@ -35,7 +35,7 @@ def restart():
     daemonlaunch.kill_daemon()
     while localcommand.local_command('ping', maxWait=8) == 'pong!':
         time.sleep(0.3)
-    time.sleep(4)
+    time.sleep(9)
     subprocess.Popen([SCRIPT_NAME, 'start'])
 
 restart.onionr_help = 'Gracefully restart Onionr'
