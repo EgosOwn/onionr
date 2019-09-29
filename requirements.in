@@ -11,4 +11,3 @@ streamedrequests==1.0.0
 jinja2==2.10.1
 toomanyobjs==1.1.0
 mnemonic==0.18
-vanityonionr==0.0.0
