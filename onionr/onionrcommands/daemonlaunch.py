@@ -114,14 +114,6 @@ def daemon():
     except KeyboardInterrupt:
         pass
     cleanup.delete_run_files()
-    try:
-        sys.stderr.close()
-    except (IOError, BrokenPipeError) as e:
-        pass
-    try:
-        sys.stdout.close()
-    except (IOError, BrokenPipeError) as e:
-        pass
 
 def _ignore_sigint(sig, frame):
     '''This space intentionally left blank'''

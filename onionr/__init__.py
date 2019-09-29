@@ -60,3 +60,12 @@ def onionr_main():
 
 if __name__ == "__main__":
     onionr_main()
+
+    try:
+        sys.stderr.close()
+    except (IOError, BrokenPipeError) as e:
+        pass
+    try:
+        sys.stdout.close()
+    except (IOError, BrokenPipeError) as e:
+        pass
