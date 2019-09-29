@@ -27,7 +27,7 @@ import mnemonic
 class ContactManager(onionrusers.OnionrUser):
     def __init__(self, publicKey, saveUser=False, recordExpireSeconds=5):
         try:
-            if " " in publicKey:
+            if "-" in publicKey:
                 publicKey = mnemonic.Mnemonic('english').to_entropy(publicKey)
                 publicKey = unpaddedbase32.b32encode(bytesconverter.str_to_bytes(publicKey))
         except ValueError:
