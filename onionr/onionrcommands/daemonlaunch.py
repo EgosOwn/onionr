@@ -114,6 +114,7 @@ def daemon():
     except KeyboardInterrupt:
         pass
     cleanup.delete_run_files()
+    sys.stderr.close()
 
 def _ignore_sigint(sig, frame):
     '''This space intentionally left blank'''
