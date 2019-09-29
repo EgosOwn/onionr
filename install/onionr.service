@@ -1,21 +1,20 @@
 [Unit]
 Description=Onionr Daemon
 Documentation=https://onionr.net/docs/
-After=network.target tor.service
-Requires=network.target tor.service systemd-networkd-wait-online.service
+After=network-online.target
+Requires=network-online.target
 
 [Service]
-Environment="DATA_DIR=/usr/share/onionr"
-Environment="LOG_DIR=/var/log/onionr/"
+Environment="ONIONR_HOME=/var/lib/onionr"
+Environment="LOG_DIR=/var/log/onionr"
 
-ExecStart=/usr/bin/onionr --start
-ExecStop=/usr/bin/onionr --stop
+ExecStart=/usr/bin/onionr start
+ExecStop=/usr/bin/onionr stop
 
 KillMode=mixed
 KillSignal=SIGQUIT
-TimeoutStopSec=5s
-Type=simple
+TimeoutStopSec=30s
 Restart=on-abnormal
 
 [Install]
-WantedBy=tor.service
+WantedBy=multi-user.target
