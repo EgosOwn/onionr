@@ -25,6 +25,7 @@ import platform
 from etc import onionrvalues
 from onionrutils import localcommand
 import logger
+import filepaths
 
 from . import daemonlaunch
 
@@ -36,6 +37,8 @@ def restart():
     while localcommand.local_command('ping', maxWait=8) == 'pong!':
         time.sleep(0.3)
     time.sleep(9)
+    while os.path.exists(filepaths.private_API_host_file):
+        time.sleep(1)
     subprocess.Popen([SCRIPT_NAME, 'start'])
 
 restart.onionr_help = 'Gracefully restart Onionr'

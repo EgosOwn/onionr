@@ -65,7 +65,7 @@ function openReply(bHash, quote, subject){
 
     if (typeof humanReadableCache[key] != 'undefined'){
         document.getElementById('draftID').value = humanReadableCache[key]
-        quote = '\n' + humanReadableCache[key].split(' ').slice(0,3).join(' ') + ' wrote:\n' + splitQuotes.join('\n')
+        quote = '\n' + humanReadableCache[key].split('-').slice(0,3).join('-') + ' wrote:\n' + splitQuotes.join('\n')
     }
     else{
         quote = '\n' + key.substring(0, 12) + ' wrote:' + '\n' + splitQuotes.join('\n')
