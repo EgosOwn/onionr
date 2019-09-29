@@ -1,23 +1,16 @@
 #!/bin/sh
-
 set -e
 
-export OUTPUT_DIR=${OUTPUT_DIR:=/usr/share/onionr}
-
-if [ -n "$HOME" ]; then
-    export XDG_DATA_HOME=${XDG_DATA_HOME:=$HOME/.local/share/onionr}
-
-    export ONIONR_HOME=${ONIONR_HOME:=$XDG_DATA_HOME}
-    export LOG_DIR=${LOG_DIR:=$XDG_DATA_HOME/logs}
+if [[ $EUID -eq 0 ]]; then
+    export ONIONR_HOME=${ONIONR_HOME:-/var/lib/onionr}
+    export LOG_DIR=${LOG_DIR:-/var/log/onionr}
 else
-    export ONIONR_HOME=${ONIONR_HOME:=/etc/onionr}
-    export LOG_DIR=${LOG_DIR:=/var/log/onionr}
+    export ONIONR_HOME=${ONIONR_HOME:-${XDG_DATA_HOME:-$HOME/.local/share}/onionr}
+    export LOG_DIR=${LOG_DIR:-$ONIONR_HOME/logs}
 fi
 
 mkdir -p "$ONIONR_HOME" "$LOG_DIR"
 
-chmod -R 700 "$ONIONR_HOME" "$LOG_DIR"
-chown -R $USER:$USER "$ONIONR_HOME" "$LOG_DIR"
+chmod 0700 "$ONIONR_HOME" "$LOG_DIR"
 
-cd "$OUTPUT_DIR/onionr"
-exec python3.7 onionr.py "$@"
+exec ${ONIONR_BASEDIR:-/usr/share/onionr}/onionr.sh "$@"
