@@ -24,6 +24,10 @@ except ImportError:
 else:
     notifications_enabled = True
 
+import config
+
+if not config.get('general.show_notifications', True): notifications_enabled = False
+
 def notify(title: str = "Onionr", message: str = ""):
     """cross platform method to show a notification"""
     if not notifications_enabled: return
