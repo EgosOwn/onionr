@@ -44,6 +44,7 @@ def get_arguments()->dict:
         ('restart',): restartonionr.restart,
         ('add-address', 'addaddress', 'addadder'): keyadders.add_address,
         ('openhome', 'gui', 'openweb', 'open-home', 'open-web'): openwebinterface.open_home,
+        ('get-url', 'url', 'get-web'): openwebinterface.get_url,
         ('add-site', 'addsite', 'addhtml', 'add-html'): filecommands.add_html,
         ('addfile', 'add-file'): filecommands.add_file,
         ('get-file', 'getfile'): filecommands.get_file,
