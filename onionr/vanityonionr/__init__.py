@@ -32,7 +32,6 @@ import threading
 wordlist = niceware.WORD_LIST
 
 def find_vanity_mnemonic(start_words: str, queue):
-
     key_pair = [b"", b""]
     vanity_key = ""
     check = 0
@@ -40,7 +39,7 @@ def find_vanity_mnemonic(start_words: str, queue):
         key = nacl.signing.SigningKey.generate()
         key_pair[1] = key.encode(nacl.encoding.RawEncoder)
         key_pair[0] = key.verify_key.encode(encoder=nacl.encoding.RawEncoder)
-        vanity_key = niceware.bytes_to_passphrasec(key_pair[0])
+        vanity_key = '-'.join(niceware.bytes_to_passphrase(key_pair[0]))
         check += 1
     else:
         queue.put(key_pair)
@@ -75,7 +74,6 @@ def handler(start_words: str):
         time.sleep(1)
     return obj.result
 
-
 def find_multiprocess(start_words: str):
     start_words = start_words.strip()
     start_words = re.sub(' +', ' ', start_words)
@@ -86,6 +84,5 @@ def find_multiprocess(start_words: str):
             if word == validword:
                 break
         else:
-            raise ValueError('%s not in english bip39 wordlist' % (word,))
+            raise ValueError('%s not in wordlist' % (word,))
     return handler(start_words)
-    
