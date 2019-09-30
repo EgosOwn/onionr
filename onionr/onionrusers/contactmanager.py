@@ -17,18 +17,20 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import os, json, onionrexceptions
+import os, json
 import unpaddedbase32
+import niceware
+
+import onionrexceptions
 from onionrusers import onionrusers
 from onionrutils import bytesconverter, epoch
 from utils import identifyhome
 from onionrutils import mnemonickeys
-import mnemonic
 class ContactManager(onionrusers.OnionrUser):
     def __init__(self, publicKey, saveUser=False, recordExpireSeconds=5):
         try:
             if mnemonickeys.DELIMITER in publicKey:
-                publicKey = mnemonic.Mnemonic('english').to_entropy(publicKey.split(mnemonickeys.DELIMITER))
+                publicKey = mnemonickeys.get_base32(publicKey.split(mnemonickeys.DELIMITER))
                 publicKey = unpaddedbase32.b32encode(bytesconverter.str_to_bytes(publicKey))
         except ValueError:
             pass

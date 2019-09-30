@@ -21,9 +21,9 @@
 import sys, getpass
 
 import unpaddedbase32
-import vanityonionr
-import mnemonic
+import niceware
 
+import vanityonionr
 import logger, onionrexceptions
 from onionrutils import stringvalidators, bytesconverter
 from onionrusers import onionrusers, contactmanager
@@ -95,7 +95,6 @@ def add_vanity():
     key_manager = keymanager.KeyManager()
     tell = lambda tell: logger.info(tell, terminal=True)
     words = ''
-    m = mnemonic.Mnemonic('english')
     length = len(sys.argv) - 2
     if length == 0: return
     for i in range(2, len(sys.argv)):
@@ -112,7 +111,7 @@ def add_vanity():
             logger.warn('Vanity words must be valid english bip39', terminal=True)
         else:
             b32_pub = unpaddedbase32.b32encode(vanity[0])
-            tell('Found vanity address:\n' + m.to_mnemonic(vanity[0]))
+            tell('Found vanity address:\n' + niceware.bytes_to_passphrase(vanity[0]))
             tell('Base32 Public key: %s' % (b32_pub.decode(),))
             key_manager.addKey(b32_pub, unpaddedbase32.b32encode(vanity[1]))
     except KeyboardInterrupt:
