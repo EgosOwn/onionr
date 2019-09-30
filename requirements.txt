@@ -137,11 +137,9 @@ markupsafe==1.1.1 \
     --hash=sha256:cd5df75523866410809ca100dc9681e301e3c27567cf498077e8551b6d20e42f \
     --hash=sha256:e249096428b3ae81b08327a63a485ad0878de3fb939049038579ac0ef61e17e7 \
     # via jinja2
-mnemonic==0.18 \
-    --hash=sha256:02a7306a792370f4a0c106c2cf1ce5a0c84b9dbd7e71c6792fdb9ad88a727f1d
-pbkdf2==1.3 \
-    --hash=sha256:ac6397369f128212c43064a2b4878038dab78dab41875364554aaf2a684e6979 \
-    # via mnemonic
+niceware==0.2.1 \
+    --hash=sha256:0f8b192f2a1e800e068474f6e208be9c7e2857664b33a96f4045340de4e5c69c \
+    --hash=sha256:cf2dc0e1567d36d067c61b32fed0f1b9c4534ed511f9eeead4ba548d03b5c9eb
 pycparser==2.19 \
     --hash=sha256:a988718abfad80b6b157acce7bf130a30876d27603738ac39f140993246b25b3 \
     # via cffi

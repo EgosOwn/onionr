@@ -19,15 +19,13 @@
 '''
 import base64
 
-import mnemonic
+import niceware
 import unpaddedbase32
 
 import onionrcrypto
 from etc import onionrvalues
 
 DELIMITER = '-'
-
-m = mnemonic.Mnemonic('english')
 
 def get_human_readable_ID(pub=''):
     '''gets a human readable ID from a public key'''
@@ -37,8 +35,9 @@ def get_human_readable_ID(pub=''):
     if not len(pub) == onionrvalues.MAIN_PUBLIC_KEY_SIZE:
         pub = base64.b32decode(pub)
     
-    return m.to_mnemonic(pub).replace(' ', DELIMITER)
+    return DELIMITER.join(niceware.bytes_to_passphrase(pub))
+    #return niceware.bytes_to_passphrase(pub).replace(' ', DELIMITER)
 
 def get_base32(words):
     '''converts mnemonic to base32'''
-    return unpaddedbase32.b32encode(m.to_entropy(words.replace(DELIMITER, ' ')))
+    return unpaddedbase32.b32encode(niceware.passphrase_to_bytes(words.replace(DELIMITER, ' ')))

@@ -30,7 +30,7 @@ soft-reset:
 
 reset:
 	@echo "Hard-resetting Onionr..."
-	rm -rf onionr/$(ONIONR_HOME)/ | true > /dev/null 2>&1
+	rm -rf $(ONIONR_HOME)/ | true > /dev/null 2>&1
 	cd onionr/static-data/www/ui/; rm -rf ./dist; python compile.py
 	#@./onionr.sh version | grep -v "Failed" --color=always
 

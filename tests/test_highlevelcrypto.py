@@ -51,7 +51,7 @@ class OnionrCryptoTests(unittest.TestCase):
     
     def test_human_readable_length(self):
         human = mnemonickeys.get_human_readable_ID()
-        self.assertTrue(len(human.split('-')) == 24)
+        self.assertTrue(len(human.split('-')) == 16)
     
     def test_safe_compare(self):
         self.assertTrue(crypto.cryptoutils.safe_compare('test', 'test'))

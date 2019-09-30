@@ -21,7 +21,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-import mnemonic
+import niceware
 import nacl.signing, nacl.encoding
 
 import multiprocessing
@@ -29,8 +29,7 @@ from multiprocessing import Process, Pipe, Queue
 import re, time
 import threading
 
-m = mnemonic.Mnemonic("english")
-wordlist = m.wordlist
+wordlist = niceware.WORD_LIST
 
 def find_vanity_mnemonic(start_words: str, queue):
 
@@ -41,7 +40,7 @@ def find_vanity_mnemonic(start_words: str, queue):
         key = nacl.signing.SigningKey.generate()
         key_pair[1] = key.encode(nacl.encoding.RawEncoder)
         key_pair[0] = key.verify_key.encode(encoder=nacl.encoding.RawEncoder)
-        vanity_key = m.to_mnemonic(key_pair[0])
+        vanity_key = niceware.bytes_to_passphrasec(key_pair[0])
         check += 1
     else:
         queue.put(key_pair)
