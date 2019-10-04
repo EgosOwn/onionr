@@ -12,7 +12,7 @@
         "insert_deniable_blocks": true,
         "max_block_age": 2678400,
         "public_key": "",
-        "random_bind_ip": false,
+        "random_bind_ip": true,
         "use_bootstrap_list": true,
         "store_plaintext_blocks": true,
         "show_notifications": true

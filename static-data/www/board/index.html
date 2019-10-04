@@ -12,6 +12,7 @@
     <link rel='stylesheet' href='/shared/main/PNotifyBrightTheme.css'>
     <link rel="stylesheet" href="/shared/fontawesome-free-5.10.2/css/all.min.css">
     <link rel='stylesheet' href='/shared/main/bulma.min.css'>
+    <link rel='stylesheet' href='/shared/main/bulmaswatch.min.css'>
     <link rel="stylesheet" href='/shared/main/styles-new.css'>
     <link rel="stylesheet" href="theme.css">
     <script defer src="/shared/base32.js"></script>
@@ -23,6 +24,7 @@
     <script defer src='/shared/misc.js'></script>
     <script defer src="detect-plaintext-storage.js"></script>
     <script defer src='sethumanreadable.js'></script>
+    <script defer src="default-circle-picker.js"></script>
     <script defer src='board.js'></script>
     <script defer src='autorefresh.js'></script>
 </head>
@@ -111,7 +113,7 @@
                             <div class="field">
                                 <div class="field has-addons">
                                     <p class="control">
-                                        <a class="button is-static">Board Name</a>
+                                        <a class="button is-static">Circle Name</a>
                                     </p>
                                     <p class="control is-expanded">
                                         <input id='feedIDInput' class="input" placeholder="Board name" value="global">
@@ -120,6 +122,20 @@
                                         <a class="button is-success" id='refreshFeed'>Refresh Feed</a>
                                     </p>
                                 </div>
+                                <label for="recommendedBoards">Main Circles:</label>
+                                <select id="recommendedBoards">
+                                    <option value="global">Global</option>
+                                    <option value="onionr">Onionr</option>
+                                    <option value="games">Games</option>
+                                    <option value="politics">Politics</option>
+                                    <option value="tech">Tech</option>
+                                    <option value="random">Random</option>
+                                    <option value="privacy">Privacy</option>
+                                </select>
+                                <p class="control">
+                                    <br>
+                                        Note: All posts in Circles are publicly accessible.
+                                </p>
                                 <input type="checkbox" class="checkbox" id="refreshCheckbox" checked>
                                 <label for="refreshCheckbox">Auto refresh feed</label>
                                 <br>
@@ -128,7 +144,7 @@
                             </div>
                         </div>
                         <div class="content">
-                            <span id='loadingBoard'>Loading board... <i class="fas fa-yin-yang fa-spin"></i></span>
+                            <span id='loadingBoard'>Loading Circle... <i class="fas fa-yin-yang fa-spin"></i></span>
                             <div id='feed'>
                                 <span id='none'>None yet, try refreshing 😃</span>
                                 <!--Message Items are appended here based on template-->

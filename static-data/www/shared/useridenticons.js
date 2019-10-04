@@ -16,7 +16,7 @@ async function userIcon(pubkey, imgSize=64){
     pubkey = await sha256(base32.decode.asBytes(pubkey))
     let options = {
         //foreground: [0,0,0,1],               // rgba black
-        background: [255, 255, 255, 255],         // rgba white
+        background: [0, 0, 0, 0],         // rgba white
         //margin: 0.1,
         size: imgSize,
         format: 'svg'                             // use SVG instead of PNG

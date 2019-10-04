@@ -28,7 +28,7 @@
 
 # About
 
-Onionr ("Onion Relay") is a decentralized, peer-to-peer communication network, designed to be anonymous and resistant to (meta)data analysis, spam, and corruption.
+Onionr ("Onion Relay") is a decentralized/distributed peer-to-peer communication network, designed to be anonymous and resistant to (meta)data analysis, spam, and corruption.
 
 Onionr stores data in independent packages referred to as 'blocks'. The blocks are synced to all other nodes in the network. Blocks and user IDs cannot be easily proven to have been created by a particular user. Even if there is enough evidence to believe that a specific user created a block, nodes still operate behind Tor or I2P and as such cannot be trivially unmasked.
 

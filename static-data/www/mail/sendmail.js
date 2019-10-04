@@ -23,9 +23,9 @@ to = document.getElementById('draftID')
 subject = document.getElementById('draftSubject')
 friendPicker = document.getElementById('friendSelect')
 
-function sendMail(to, message, subject){
+function sendMail(toData, message, subject){
     //postData = {"postData": '{"to": "' + to + '", "message": "' + message + '"}'} // galaxy brain
-    postData = {'message': message, 'to': to, 'type': 'pm', 'encrypt': true, 'meta': JSON.stringify({'subject': subject})}
+    postData = {'message': message, 'to': toData, 'type': 'pm', 'encrypt': true, 'meta': JSON.stringify({'subject': subject})}
     postData = JSON.stringify(postData)
     sendForm.style.display = 'none'
     fetch('/insertblock', {
@@ -41,6 +41,7 @@ function sendMail(to, message, subject){
         PNotify.success({
             text: 'Queued for sending!'
         })
+        to.value = subject.value = messageContent.value = ""
       })
 }
 

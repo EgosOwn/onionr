@@ -40,4 +40,4 @@ def get_human_readable_ID(pub=''):
 
 def get_base32(words):
     '''converts mnemonic to base32'''
-    return unpaddedbase32.b32encode(niceware.passphrase_to_bytes(words.replace(DELIMITER, ' ')))
+    return unpaddedbase32.b32encode(niceware.passphrase_to_bytes(words.split(DELIMITER)))

@@ -12,6 +12,7 @@ import coredb
 import onionrproofs
 from onionrproofs import subprocesspow
 import logger
+
 def insert_block(data: Union[str, bytes], header: str ='txt', 
                 sign: bool =False, encryptType:str ='', symKey:str ='',
                 asymPeer:str ='', meta:dict = {},

@@ -59,3 +59,11 @@ html {
     max-width: 25%;
     margin-bottom: 1em;
 }
+html{
+    background-color: #212224;
+    color: white;
+}
+.textarea{
+    background-color: #212224;
+    color: white;
+}
