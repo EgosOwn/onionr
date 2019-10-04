@@ -40,4 +40,8 @@ def get_human_readable_ID(pub=''):
 
 def get_base32(words):
     '''converts mnemonic to base32'''
-    return unpaddedbase32.b32encode(niceware.passphrase_to_bytes(words.split(DELIMITER)))
+    try:
+        return unpaddedbase32.b32encode(niceware.passphrase_to_bytes(words.split(DELIMITER)))
+    except AttributeError:
+        ret = unpaddedbase32.b32encode(niceware.passphrase_to_bytes(words))
+        return ret

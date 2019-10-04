@@ -31,7 +31,7 @@ class ContactManager(onionrusers.OnionrUser):
         try:
             if mnemonickeys.DELIMITER in publicKey:
                 publicKey = mnemonickeys.get_base32(publicKey.split(mnemonickeys.DELIMITER))
-                publicKey = unpaddedbase32.b32encode(bytesconverter.str_to_bytes(publicKey))
+                #publicKey = unpaddedbase32.b32encode(bytesconverter.str_to_bytes(publicKey))
         except ValueError:
             pass
         publicKey = bytesconverter.bytes_to_str(unpaddedbase32.repad(bytesconverter.str_to_bytes(publicKey)))
