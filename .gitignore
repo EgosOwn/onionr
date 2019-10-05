@@ -24,6 +24,8 @@ testdata/*
 *.dll
 *.exe
 
+dist/*
+
 # log files
 output.log
 *.log
