@@ -18,6 +18,10 @@
         "show_notifications": true
     },
 
+    "ui": {
+        "theme": "dark"
+    },
+
     "plugins": {
         "enabled": {
 

@@ -1,0 +1,57 @@
+
+/* Config on homepage */
+#configContent{
+    display:none;
+  }
+#configContent.show{
+    display:block; /* P.S: Use `!important` if missing `#content` (selector specificity). */
+  }
+
+.hiddenOverlay {
+    visibility: hidden;
+    position: absolute;
+    left: 0px;
+    top: 0px;
+    width:100%;
+    height:100%;
+}
+
+
+/* https://stackoverflow.com/a/16778646/ 
+*  Kept due to shutdown message on homepage
+*/
+.overlay {
+    visibility: hidden;
+    position: absolute;
+    left: 0px;
+    top: 0px;
+    width:100%;
+    height:100%;
+    text-align:left;
+    z-index: 1000;
+    background-color: #2c2b3f;
+    color: white;
+ }
+
+ .closeOverlay{
+     background-color: white;
+     color: black;
+     border: 1px solid red;
+     border-radius: 5px;
+     float: right;
+     font-family: sans-serif;
+ }
+ .closeOverlay:after{
+     content: '❌';
+     padding: 5px;
+ }
+
+ .navbarLogo{
+    margin-right: 5px;
+    color: red;
+}
+
+.aboutLogo{
+    max-width: 25%;
+    margin-bottom: 1em;
+}

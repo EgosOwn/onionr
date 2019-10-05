@@ -25,6 +25,8 @@ newPostForm = document.getElementById('addMsg')
 firstLoad = true
 lastLoadedBoard = 'global'
 loadingMessage = document.getElementById('loadingBoard')
+loadedAny = false
+loadingTimeout = 8000
 
 let toggleLoadingMessage = function(){
     switch (loadingMessage.style.display){
@@ -107,6 +109,7 @@ function appendMessages(msg, blockHash, beforeHash){
         div[4].textContent = msgDate
 
         loadingMessage.style.display = "none"
+        loadedAny = true
         if (firstLoad){
             //feed.appendChild(clone)
             feed.prepend(clone)
@@ -130,10 +133,16 @@ function getBlocks(){
     var ch = document.getElementById('feedIDInput').value
     if (lastLoadedBoard !== ch){
         toggleLoadingMessage()
+        loadedAny = false
         while (feed.firstChild) {
             feed.removeChild(feed.firstChild);
         }
         requested = [] // reset requested list
+        setTimeout(function(){
+            if (! loadedAny && ch == document.getElementById('feedIDInput').value){
+                PNotify.notice("There are no posts for " + ch + " (yet).")
+            }
+        }, loadingTimeout)
     }
 
     lastLoadedBoard = ch
@@ -142,7 +151,7 @@ function getBlocks(){
 
     }
 
-    var feedText =  httpGet('/flow/getpostsbyboard/' + ch)
+    var feedText =  httpGet('/flow/getpostsbyboard/' + ch) // TODO switch to fetch
     var blockList = feedText.split(',')
 
     for (i = 0; i < blockList.length; i++){
@@ -182,7 +191,6 @@ function loadMessage(blockHash, blockList, count){
         //appendMessages(data, blockHash, before)
       })
 }
-
 
 document.getElementById('refreshFeed').onclick = function(){
     getBlocks()
