@@ -138,7 +138,7 @@ Note: probably not tax deductible
 
 Email: beardog [ at ] mailbox.org
 
-Onionr Mail: TRH763JURNY47QPBTTQ4LLPYCYQK6Q5YA33R6GANKZK5C5DKCIGQ
+Onionr Mail: particularizing-zabaione-defuze-iodizer-saucepan-patientest-sell-waken-chifforobe-embonpoint-aquanaut-chambermaid-barky-fumer-jolt-biotic
 
 # Security
 
