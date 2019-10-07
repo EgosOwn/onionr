@@ -45,9 +45,9 @@ def insert_block(data: Union[str, bytes], header: str ='txt',
     with open(filepaths.data_nonce_file, 'a') as nonceFile:
         nonceFile.write(dataNonce + '\n')
 
-    if type(data) is bytes:
-        data = data.decode()
-    data = str(data)
+    #if type(data) is bytes:
+    #    data = data.decode()
+    #data = str(data)
     plaintext = data
     plaintextMeta = {}
     plaintextPeer = asymPeer

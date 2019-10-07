@@ -20,9 +20,9 @@
 import logger
 from onionrutils import epoch
 
-from . import uicheck
+from . import uicheck, inserttest
 
-RUN_TESTS = [uicheck.check_ui]
+RUN_TESTS = [uicheck.check_ui, inserttest.insert_bin_test]
 
 class OnionrRunTestManager:
     def __init__(self):
