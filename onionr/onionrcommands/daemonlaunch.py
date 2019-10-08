@@ -143,7 +143,7 @@ kill_daemon.onionr_help = "Gracefully stops the Onionr API servers"
 def start(input: bool = False, override: bool = False):
     """If no lock file, make one and start onionr, error if there is and its not overridden"""
     if os.path.exists(filepaths.lock_file) and not override:
-        logger.fatal('Cannot start. Daemon is already running, or it did not exit cleanly.\n(if you are sure that there is not a daemon running, delete filepaths.lock_file & try again).', terminal=True)
+        logger.fatal('Cannot start. Daemon is already running, or it did not exit cleanly.\n(if you are sure that there is not a daemon running, delete onionr.lock & try again).', terminal=True)
     else:
         if not onionrvalues.DEVELOPMENT_MODE:
             lockFile = open(filepaths.lock_file, 'w')

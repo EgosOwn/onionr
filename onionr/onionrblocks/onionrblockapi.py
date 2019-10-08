@@ -17,12 +17,14 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
+import unpaddedbase32
 import binascii
 import logger, config, onionrexceptions, nacl.exceptions
 import json, os, sys, datetime, base64, onionrstorage
 from onionrusers import onionrusers
 from onionrutils import stringvalidators, epoch
 from coredb import blockmetadb
+from onionrutils import bytesconverter
 from onionrstorage import removeblock
 import onionrblocks
 from onionrcrypto import encryption, cryptoutils as cryptoutils, signing
@@ -127,7 +129,9 @@ class Block:
         '''
             Verify if a block's signature is signed by its claimed signer
         '''
-        if self.signer is None or signing.ed_verify(data=self.signedData, key=self.signer, sig=self.signature, encodedData=True):
+        if self.signer is None:
+            return False
+        if signing.ed_verify(data=self.signedData, key=self.signer, sig=self.signature, encodedData=True):
             self.validSig = True
         else:
             self.validSig = False
@@ -175,7 +179,7 @@ class Block:
             self.signer = self.getHeader('signer', None)
             self.signature = self.getHeader('sig', None)
             # signed data is jsonMeta + block content (no linebreak)
-            self.signedData = (None if not self.isSigned() else self.getHeader('meta') + self.getContent())
+            self.signedData = (None if not self.isSigned() else self.getHeader('meta').encode() + self.getContent())
             self.date = blockmetadb.get_block_date(self.getHash())
             self.claimedTime = self.getHeader('time', None)
 
@@ -328,7 +332,7 @@ class Block:
             - (str): the contents of the block
         '''
 
-        return str(self.bcontent)
+        return self.bcontent
 
     def getDate(self):
         '''
@@ -401,7 +405,7 @@ class Block:
             Outputs:
             - (bool): whether or not the signer of the block is the signer inputted
         '''
-
+        signer = unpaddedbase32.repad(bytesconverter.str_to_bytes(signer))
         try:
             if (not self.isSigned()) or (not stringvalidators.validate_pub_key(signer)):
                 return False

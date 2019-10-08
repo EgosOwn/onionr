@@ -18,6 +18,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 from typing import Callable
+
 from .. import onionrstatistics, version, daemonlaunch, keyadders, openwebinterface
 from .. import banblocks # Command to blacklist a block by its hash
 from .. import filecommands # commands to share files with onionr
@@ -28,6 +29,8 @@ from .. import resetplugins # command to reinstall default plugins
 from .. import softreset # command to delete onionr blocks
 from .. import restartonionr # command to restart Onionr
 from .. import runtimetestcmd
+from .. import motdcreator
+
 import onionrexceptions
 from onionrutils import importnewblocks # func to import new blocks
 from onionrplugins import onionrevents as events
@@ -57,7 +60,8 @@ def get_arguments()->dict:
         ('resetplugins', 'reset-plugins'): resetplugins.reset,
         ('reset-tor-node-transport',): resettor.reset_tor_key_pair,
         ('soft-reset', 'softreset'): softreset.soft_reset,
-        ('runtime-test', 'runtimetest'): runtimetestcmd.do_runtime_test
+        ('runtime-test', 'runtimetest'): runtimetestcmd.do_runtime_test,
+        ('makemotd', 'make-motd'): motdcreator.motd_creator
 
     }
     return args

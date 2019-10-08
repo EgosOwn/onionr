@@ -30,6 +30,7 @@ def register_private_blueprints(private_api, app):
     app.register_blueprint(insertblock.ib)
     app.register_blueprint(miscclientapi.getblocks.client_get_blocks)
     app.register_blueprint(miscclientapi.endpoints.PrivateEndpoints(private_api).private_endpoints_bp)
+    app.register_blueprint(miscclientapi.motd.bp)
     app.register_blueprint(onionrsitesapi.site_api)
     app.register_blueprint(apiutils.shutdown.shutdown_bp)
     app.register_blueprint(miscclientapi.staticfiles.static_files_bp)

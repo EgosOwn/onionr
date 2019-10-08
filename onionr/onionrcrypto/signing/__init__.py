@@ -27,7 +27,6 @@ def ed_verify(data, key, sig, encodedData=True):
     try:
         key = nacl.signing.VerifyKey(key=key, encoder=nacl.encoding.Base32Encoder)
     except nacl.exceptions.ValueError:
-        #logger.debug('Signature by unknown key (cannot reverse hash)')
         return False
     except binascii.Error:
         logger.warn('Could not load key for verification, invalid padding')
@@ -38,14 +37,8 @@ def ed_verify(data, key, sig, encodedData=True):
         data = data.encode()
     except AttributeError:
         pass
-    if encodedData:
-        try:
-            retData = key.verify(data, sig) # .encode() is not the same as nacl.encoding
-        except nacl.exceptions.BadSignatureError:
-            pass
-    else:
-        try:
-            retData = key.verify(data, sig)
-        except nacl.exceptions.BadSignatureError:
-            pass
+    try:
+        retData = key.verify(data, sig) # .encode() is not the same as nacl.encoding
+    except nacl.exceptions.BadSignatureError:
+        pass
     return retData

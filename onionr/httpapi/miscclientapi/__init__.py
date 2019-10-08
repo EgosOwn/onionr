@@ -1,1 +1,1 @@
-from . import getblocks, staticfiles, endpoints
+from . import getblocks, staticfiles, endpoints, motd
