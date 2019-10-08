@@ -18,6 +18,7 @@ export_location = home + 'block-export/'
 upload_list = home + 'upload-list.json'
 config_file = home + 'config.json'
 daemon_mark_file = app_root + '/daemon-true.txt'
+lock_file = home + 'onionr.lock'
 
 site_cache = home + 'onionr-sites.txt'
 
