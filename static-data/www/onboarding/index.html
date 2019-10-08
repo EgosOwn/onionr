@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="/private/main.css">
     <link rel="stylesheet" href="/shared/fontawesome-free-5.10.2/css/all.min.css">
     <link rel="stylesheet" href="/gettheme">
+    <link rel="stylesheet" href="onboarding.css">
     <script defer src='/shared/navbar.js'></script>
     <script defer src='/shared/loadabout.js'></script>
     <script defer src='/shared/misc.js'></script>
@@ -20,6 +21,7 @@
     <script defer src='/shared/configeditor.js'></script>
     <script defer src='/shared/sites.js'></script>
     <script defer src='/private/js/console.js'></script>
+    <script defer src='onboarding.js'></script>
     <script>alert("Content security policy appears to not be working. Your browser security is weak!")</script>
 </head>
 
@@ -29,34 +31,6 @@
             <p>Your node will shutdown. Thank you for using Onionr.</p>
         </div>
     </div>
-
-    <nav class="navbar is-dark" role="navigation" aria-label="main navigation">
-        <div class="navbar-brand">
-            <a class="navbar-item idLink" href="/">
-                <img src="/shared/images/favicon.ico" class='navbarLogo'> Onionr
-            </a>
-
-            <a role="button" class="navbar-burger burger" aria-label="menu" aria-expanded="false"
-                data-target="navbarBasicExample">
-                <span aria-hidden="true"></span>
-                <span aria-hidden="true"></span>
-                <span aria-hidden="true"></span>
-            </a>
-        </div>
-
-        <div id="navbarBasicExample" class="navbar-menu">
-            <div class="navbar-start">
-                <a class="navbar-item idLink" href="/">Home</a>
-                <a class="navbar-item idLink" href="/mail/">Mail</a>
-                <a class="navbar-item idLink" href="/friends/">Friends</a>
-                <a class="navbar-item idLink" href="/board/">Circles</a>
-                <a class="navbar-item idLink" href="/chat/">Chat</a>
-            </div>
-            <div class="navbar-end">
-                <a class="navbar-item idLink aboutLink">About</a>
-            </div>
-        </div>
-    </nav>
 
     <!--Hero (Dark Bar)-->
     <section class="hero is-small is-dark">
@@ -72,24 +46,7 @@
                         </h2>
                     </div>
                     <div class="column is-7">
-                        <div class="field">
-                            <div class="field has-addons">
-                                <p class="control">
-                                    <a class="button is-static">Identity</a>
-                                </p>
-                                <p class="control is-expanded">
-                                    <input id="myPub" class="input myPub" type="text" readonly>
-                                </p>
-                                <p class="control">
-                                    <a id="myPubCopy" class="button is-primary">
-                                        <span class="icon">
-                                            <i class="fas fa-copy"></i>
-                                        </span>
-                                    </a>
-                                </p>
-                            </div>
-                        </div>
-                        <div class="field is-grouped is-grouped-centered">
+                        <div class="field is-grouped is-pulled-right">
                             <p class="control">
                                 <a class="button is-danger is-outlined" id='shutdownNode'>
                                     Shutdown
@@ -110,124 +67,43 @@
 
     <br>
 
-    <!--Start of content-->
-    <div class="container">
-        <div class="columns">
-            <div class="column">
-                <!--Onionr Card-->
-                <div class="card">
-                    <header class="card-header">
-                        <p class="card-header-title">
-                            Onionr Sites
-                        </p>
-                    </header>
-                    <div class="card-content">
-                        <div class="content">
-                            <div class="field">
-                                <label class="label">Open Site</label>
-                                <div class="field has-addons">
-                                    <p class="control is-expanded">
-                                        <input class="input" type="text" id='siteViewer' placeholder="Site Hash">
-                                    </p>
-                                    <p class="control">
-                                        <a id='openSite' class="button is-info">Open Onionr Site</a>
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+    <div class="onboarding">
+        <p>Welcome. There are just a few questions for you to answer before you get started.</p>
+        <br>
+        <form method='post'>
+            <div class="field">
+                <div>
+                    I am worried about the following targeting me...
                 </div>
+                <i class="icon fas fa-laptop-code"></i> <input type="checkbox" name="hackers"> <label for="state"> Cyber criminals</label>
+                <br>
+                <i class="icon fas fa-eye"></i> <input type="checkbox" name="state"> <label for="state">Government (mass surveillance)</label>
+                <br>
+                <i class="icon fas fa-university"></i> <input type="checkbox" name="stateTarget"> <label for="stateTarget">Government (direct target)</label>
+                <br>
+                <i class="icon fas fa-binoculars"></i> <input type="checkbox" name="local"> <label for="local">Local area threat (LAN or physical)</label>
             </div>
-            <div class="column">
-                <!--Statistics Card-->
-                <div class="card">
-                    <header class="card-header">
-                        <p class="card-header-title">
-                            Statistics
-                        </p>
-                        <div class="field">
-                            <div class="is-pulled-right">
-                                <a class="button is-link" id='refreshStats'>
-                                    Refresh Stats
-                                </a>
-                            </div>
-                        </div>
-                    </header>
-                    <div class="card-content">
-                        <div class="content">
-                            <div class="columns">
-                                <div class="column">
-                                    <span class="icon">
-                                        <i class="fas fa-lock"></i>
-                                    </span>
-                                    Security level: <span id='securityLevel'></span>
-                                </div>
-                                <div class="column">
-                                    <i class="fas fa-clock"></i>
-                                    Uptime: <span id='uptime'></span>
-                                </div>
-                            </div>
-                            <h6>Session Connections</h6>
-                            <div class="columns">
-                                <div class="column">
-                                    ️ Last Received: <span id='lastIncoming'>None since start</span>
-                                </div>
-                                <div class="column">
-                                    <i class="fas fa-arrow-down"></i>
-                                     Total Requests: <span id='totalRec'>None since start</span>
-                                </div>
-                            </div>
-                            <i class="fas fa-link"></i>
-                            Outgoing Connections:
-                            <div class="control">
-                                <pre id='connectedNodes' class="textarea" rows="5" readonly>Unable to get nodes</pre>
-                            </div>
-                            <br>
-                            <h6>Blocks</h6>
-                            <div class="columns">
-                                <div class="column">
-                                    <i class="fas fa-hdd"></i>
-                                    Stored Blocks: <span id='storedBlocks'></span>
-                                </div>
-                                <div class="column">
-                                    <i class="fas fa-mail-bulk"></i>
-                                    Blocks in queue: <span id='blockQueue'></span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+            <br>
+            <div class="field">
+                <div>
+                    I want to contribute to Onionr by...
                 </div>
+                <i class="icon fas fa-network-wired"></i> <input checked type="checkbox" name="networkContribution"> <label for="networkContribution">Participating in data storage & sharing</label>
+                <br>
+                <i class="icon fas fa-book-open"></i> <input checked type="checkbox" name="networkContributionPlain"> <label for="networkContributionPlain">Storing plaintext data</label>
             </div>
-        </div>
-
-        <!--Configuration Card-->
-        <div class="card">
-            <header class="card-header" id="configToggle">
-                <p class="card-header-title">
-                    <a class="button is-white">Edit Configuration</a>
-                </p>
-            </header>
-            <div class="card-content" id="configContent">
-                <div class="content">
-                    <p><em>Warning: </em><b>Some values can be dangerous to change. Use caution.</b></p>
-                    <textarea class='textarea configEditor' rows="20"></textarea>
-                    <a class="button is-primary saveConfig">Save Config</a>
+            <div class="field">
+                <div>
+                    I prefer these words...
                 </div>
+                <select name="userIDWords">
+                    <option value=""></option>
+                </select>
             </div>
-        </div>
+            <br>
+            <input type="submit" value="Get Started" class="button is-primary">
+        </form>
     </div>
-    <br>
-    <div class="modal aboutModal">
-        <div class="modal-background"></div>
-        <div class="modal-card">
-          <header class="modal-card-head">
-            <button class="closeAboutModal delete" aria-label="close"></button>
-          </header>
-          <section class="modal-card-body aboutBody">
-            Loading... <i class="fas fa-spinner fa-spin"></i>
-          </section>
-        </div>
-      </div>
-</body>
 
+</body>
 </html>

@@ -36,8 +36,7 @@
         "verbosity": "default",
 
         "file": {
-            "output": true,
-            "path": "output.log"
+            "output": true
         },
 
         "console": {
@@ -52,12 +51,6 @@
         "bridge_ip": "",
         "bridge_fingerprint": ""
     },
-
-    "i2p": {
-    	"host": false,
-        "connect": true,
-        "own_addr": ""
-     },
 
     "allocations": {
         "disk": 100000000,

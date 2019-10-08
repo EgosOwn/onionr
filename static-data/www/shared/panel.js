@@ -18,7 +18,6 @@
 */
 
 shutdownBtn = document.getElementById('shutdownNode')
-refreshStatsBtn = document.getElementById('refreshStats')
 restartBtn = document.getElementById('restartNode')
 
 shutdownBtn.onclick = function(){
@@ -38,7 +37,3 @@ restartBtn.onclick = function(){
     }
 }
 
-
-refreshStatsBtn.onclick = function(){
-    getStats()
-}

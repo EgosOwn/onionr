@@ -1,0 +1,19 @@
+img{
+    vertical-align: middle;
+}
+.navbarLogo{
+    display: inline;
+}
+
+.onboarding{
+    padding-left: 5%;
+    text-align: justify;
+    font-size: 1.5em;
+}
+
+.icon{
+    padding-right: 1em;
+}
+form{
+    margin-left: 2%;
+}

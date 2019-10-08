@@ -80,7 +80,7 @@ systemctl start onionr
 
 # pretty header thing
 
-"$EXECUTABLE" --header 'Onionr successfully installed.'
+"$EXECUTABLE" details
 
 # and we're good!
 

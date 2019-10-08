@@ -2,32 +2,33 @@
 <html>
 
 <head>
-    <meta charset='utf-8'>
+    <meta charset="utf-8">
     <!--Mobile responsive-->
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>
         Onionr
     </title>
-    <link rel='shortcut icon' type='image/ico' href='/shared/images/favicon.ico'>
+    <link rel='shortcut icon' type='image/ico' href="/shared/images/favicon.ico">
     <link rel="stylesheet" href="/private/main.css">
     <link rel="stylesheet" href="/shared/fontawesome-free-5.10.2/css/all.min.css">
-    <link rel='stylesheet' href='/shared/main/PNotifyBrightTheme.css'>
+    <link rel='stylesheet' href="/shared/main/PNotifyBrightTheme.css">
     <link rel="stylesheet" href="/gettheme">
     <script defer src="/shared/node_modules/pnotify/dist/iife/PNotify.js"></script>
     <script defer src="/shared/node_modules/pnotify/dist/iife/PNotifyButtons.js"></script>
-    <script defer src='/shared/navbar.js'></script>
-    <script defer src='/shared/loadabout.js'></script>
-    <script defer src='/shared/misc.js'></script>
-    <script defer src='/shared/main/stats.js'></script>
-    <script defer src='/shared/panel.js'></script>
-    <script defer src='/shared/configeditor.js'></script>
-    <script defer src='/shared/sites.js'></script>
-    <script defer src='/private/js/console.js'></script>
+    <script defer src="/shared/navbar.js"></script>
+    <script defer src="/shared/loadabout.js"></script>
+    <script defer src="/shared/misc.js"></script>
+    <script defer src="/shared/main/stats.js"></script>
+    <script defer src="/shared/panel.js"></script>
+    <script defer src="/shared/configeditor.js"></script>
+    <script defer src="/shared/sites.js"></script>
+    <script defer src="/private/js/console.js"></script>
+    <script defer src="/private/js/motd.js"></script>
     <script>alert("Content security policy appears to not be working. Your browser security is weak!")</script>
 </head>
 
 <body>
-    <div id="shutdownNotice" class='overlay'>
+    <div id="shutdownNotice" class="overlay">
         <div>
             <p>Your node will shutdown. Thank you for using Onionr.</p>
         </div>
@@ -36,7 +37,7 @@
     <nav class="navbar is-dark" role="navigation" aria-label="main navigation">
         <div class="navbar-brand">
             <a class="navbar-item idLink" href="/">
-                <img src="/shared/images/favicon.ico" class='navbarLogo'> Onionr
+                <img src="/shared/images/favicon.ico" class="navbarLogo"> Onionr
             </a>
 
             <a role="button" class="navbar-burger burger" aria-label="menu" aria-expanded="false"
@@ -53,7 +54,6 @@
                 <a class="navbar-item idLink" href="/mail/">Mail</a>
                 <a class="navbar-item idLink" href="/friends/">Friends</a>
                 <a class="navbar-item idLink" href="/board/">Circles</a>
-                <a class="navbar-item idLink" href="/chat/">Chat</a>
             </div>
             <div class="navbar-end">
                 <a class="navbar-item idLink aboutLink">About</a>
@@ -94,12 +94,12 @@
                         </div>
                         <div class="field is-grouped is-grouped-centered">
                             <p class="control">
-                                <a class="button is-danger is-outlined" id='shutdownNode'>
+                                <a class="button is-danger is-outlined" id="shutdownNode">
                                     Shutdown
                                 </a>
                             </p>
                             <p class="control">
-                                <a class="button is-warning is-outlined" id='restartNode'>
+                                <a class="button is-warning is-outlined" id="restartNode">
                                     Restart
                                 </a>
                             </p>
@@ -148,6 +148,7 @@
                     </header>
                     <div class="card-content">
                         <div class="content motdContent">
+                            No MOTD currently.
                         </div>
                     </div>
                 </div>
@@ -167,21 +168,21 @@
                                     <span class="icon">
                                         <i class="fas fa-lock"></i>
                                     </span>
-                                    Security level: <span id='securityLevel'></span>
+                                    Security level: <span id="securityLevel"></span>
                                 </div>
                                 <div class="column">
                                     <i class="fas fa-clock"></i>
-                                    Uptime: <span id='uptime'></span>
+                                    Uptime: <span id="uptime"></span>
                                 </div>
                             </div>
                             <h6>Session Connections</h6>
                             <div class="columns">
                                 <div class="column">
-                                    ️ Last Received: <span id='lastIncoming'>None since start</span>
+                                    ️ Last Received: <span id="lastIncoming">None since start</span>
                                 </div>
                                 <div class="column">
                                     <i class="fas fa-arrow-down"></i>
-                                     Total Requests: <span id='totalRec'>None since start</span>
+                                     Total Requests: <span id="totalRec">None since start</span>
                                 </div>
                             </div>
                             <i class="fas fa-link"></i>
@@ -194,11 +195,11 @@
                             <div class="columns">
                                 <div class="column">
                                     <i class="fas fa-hdd"></i>
-                                    Stored Blocks: <span id='storedBlocks'></span>
+                                    Stored Blocks: <span id="storedBlocks"></span>
                                 </div>
                                 <div class="column">
                                     <i class="fas fa-mail-bulk"></i>
-                                    Blocks in queue: <span id='blockQueue'></span>
+                                    Blocks in queue: <span id="blockQueue"></span>
                                 </div>
                             </div>
                         </div>
@@ -217,7 +218,7 @@
             <div class="card-content" id="configContent">
                 <div class="content">
                     <p><em>Warning: </em><b>Some values can be dangerous to change. Use caution.</b></p>
-                    <textarea class='textarea configEditor' rows="20"></textarea>
+                    <textarea class="textarea configEditor" rows="20"></textarea>
                     <a class="button is-primary saveConfig">Save Config</a>
                 </div>
             </div>
