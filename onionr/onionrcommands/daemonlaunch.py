@@ -91,6 +91,7 @@ def daemon():
     logger.info('Tor is starting...', terminal=True)
     if not net.startTor():
         localcommand.local_command('shutdown')
+        cleanup.delete_run_files()
         sys.exit(1)
     if len(net.myID) > 0 and config.get('general.security_level', 1) == 0:
         logger.debug('Started .onion service: %s' % (logger.colors.underline + net.myID))
@@ -101,7 +102,7 @@ def daemon():
     try:
         time.sleep(1)
     except KeyboardInterrupt:
-        _proper_shutdown()
+        pass
     events.event('init', threaded = False)
     events.event('daemon_start')
     communicator.startCommunicator(shared_state)
@@ -150,10 +151,9 @@ def start(input: bool = False, override: bool = False):
             lockFile.write('delete at your own risk')
             lockFile.close()
         daemon()
-        if not onionrvalues.DEVELOPMENT_MODE:
-            try:
-                os.remove(filepaths.lock_file)
-            except FileNotFoundError:
-                pass
+        try:
+            os.remove(filepaths.lock_file)
+        except FileNotFoundError:
+            pass
 
 start.onionr_help = "Start Onionr node (public and clients API servers)"

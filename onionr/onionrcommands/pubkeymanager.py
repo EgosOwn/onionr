@@ -116,4 +116,4 @@ def add_vanity():
             key_manager.addKey(b32_pub, unpaddedbase32.b32encode(vanity[1]))
     except KeyboardInterrupt:
         pass
-add_vanity.onionr_help = "<space separated bip32 words> - Generates and stores an Onionr vanity address (see https://github.com/trezor/python-mnemonic/blob/master/mnemonic/wordlist/english.txt)"
+add_vanity.onionr_help = "<space separated words> - Generates and stores an Onionr vanity address (see https://github.com/moreati/python-niceware/blob/master/niceware/wordlist.py)"

@@ -128,15 +128,14 @@ HiddenServicePort 80 ''' + self.apiServerIP + ''':''' + str(self.hsPort)
             tor = subprocess.Popen([self.torBinary, '-f', self.torConfigLocation], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         except FileNotFoundError:
             logger.fatal("Tor was not found in your path or the Onionr directory. Please install Tor and try again.", terminal=True)
-            sys.exit(1)
+            return False
         else:
             # Test Tor Version
             torVersion = subprocess.Popen([self.torBinary, '--version'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             for line in iter(torVersion.stdout.readline, b''):
                 if 'Tor 0.2.' in line.decode():
                     logger.fatal('Tor 0.3+ required', terminal=True)
-                    sys.exit(1)
-                    break
+                    return False
             torVersion.kill()
 
         # wait for tor to get to 100% bootstrap
@@ -147,6 +146,13 @@ HiddenServicePort 80 ''' + self.apiServerIP + ''':''' + str(self.hsPort)
                     break
                 elif 'opening socks listener' in line.decode().lower():
                     logger.debug(line.decode().replace('\n', ''))
+                else:
+                    if 'err' in line.decode():
+                        logger.error(line.decode().replace('\n', ''))
+                    elif 'warn' in line.decode():
+                        logger.warn(line.decode().replace('\n', ''))
+                    else:
+                        logger.debug(line.decode().replace('\n', ''))
             else:
                 logger.fatal('Failed to start Tor. Maybe a stray instance of Tor used by Onionr is still running? This can also be a result of file permissions being too open', terminal=True)
                 return False
@@ -212,4 +218,8 @@ HiddenServicePort 80 ''' + self.apiServerIP + ''':''' + str(self.hsPort)
         try:
             os.kill(int(pidN), signal.SIGKILL)
         except (ProcessLookupError, PermissionError) as e:
+            pass
+        try:
+            os.remove(self.dataDir + 'tordata/lock')
+        except FileNotFoundError:
             pass
