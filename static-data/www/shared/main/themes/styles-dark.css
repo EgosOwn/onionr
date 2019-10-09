@@ -67,3 +67,7 @@ html{
     background-color: #1E1E1E;
     color: white;
 }
+
+.textarea::placeholder, .input::placeholder{
+    color: white;
+}
