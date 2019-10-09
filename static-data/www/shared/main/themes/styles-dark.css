@@ -63,7 +63,7 @@ html{
     background-color: #212224;
     color: white;
 }
-.textarea{
-    background-color: #212224;
+.textarea, .input{
+    background-color: #1E1E1E;
     color: white;
 }
