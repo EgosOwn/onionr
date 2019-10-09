@@ -7,5 +7,4 @@
 * ensure accessibility for Onionr web UI
 * make forward secrecy compatible with multiple devices
 * make uptime timer be human meaningful
-* add confirm for shutdown/restart
 * add way to mark key as dead
