@@ -19,7 +19,6 @@
 uptimeDisplay = document.getElementById('uptime')
 connectedDisplay = document.getElementById('connectedNodes')
 connectedDisplay.style.maxHeight = '300px'
-connectedDisplay.style.overflowY = 'scroll'
 storedBlockDisplay = document.getElementById('storedBlocks')
 queuedBlockDisplay = document.getElementById('blockQueue')
 lastIncoming = document.getElementById('lastIncoming')

@@ -13,3 +13,7 @@
 .motdCard{
     margin-top: 1em;
 }
+
+#connectedNodes{
+    overflow-y: auto;
+}
