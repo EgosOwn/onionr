@@ -51,7 +51,8 @@ fetch('/flow/version', {
     document.getElementById('circlesVersion').innerText = data
 })
 
-function appendMessages(msg, blockHash, beforeHash){
+function appendMessages(msg, blockHash, beforeHash, channel){
+    if (channel !== document.getElementById('feedIDInput').value){return}
     var humanDate = new Date(0)
     if (msg.length == 0){
         return
@@ -161,12 +162,12 @@ function getBlocks(){
                 continue
             }
             requested.push(blockList[i])
-            loadMessage(blockList[i], blockList, i)
+            loadMessage(blockList[i], blockList, i, ch)
         }
     }
 }
 
-function loadMessage(blockHash, blockList, count){
+function loadMessage(blockHash, blockList, count, channel){
     fetch('/getblockdata/' + blockHash, {
         method: 'GET',
         headers: {
@@ -187,7 +188,7 @@ function loadMessage(blockHash, blockList, count){
                 }
             }
         }
-        setTimeout(function(){appendMessages(data, blockHash, before)}, delay)
+        setTimeout(function(){appendMessages(data, blockHash, before, channel)}, delay)
         //appendMessages(data, blockHash, before)
       })
 }
