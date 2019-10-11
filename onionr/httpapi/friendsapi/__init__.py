@@ -38,7 +38,7 @@ def add_friend(pubkey):
 
 @friends.route('/friends/remove/<pubkey>', methods=['POST'])
 def remove_friend(pubkey):
-    contactmanager.ContactManager(pubkey).setTrust(0)
+    contactmanager.ContactManager(pubkey).delete_contact()
     return redirect(request.referrer + '#' + request.form['token'])
 
 @friends.route('/friends/setinfo/<pubkey>/<key>', methods=['POST'])

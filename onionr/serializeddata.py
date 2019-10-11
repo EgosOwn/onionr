@@ -40,8 +40,10 @@ class SerializedData:
         except AttributeError:
             time.sleep(1)
         comm_inst = self._too_many.get(communicator.OnionrCommunicatorDaemon, args=(self._too_many,))
+        connected = []
+        [connected.append(x) for x in comm_inst.onlinePeers if x not in connected] 
         stats['uptime'] = comm_inst.getUptime()
-        stats['connectedNodes'] = '\n'.join(comm_inst.onlinePeers)
+        stats['connectedNodes'] = '\n'.join(connected)
         stats['blockCount'] = len(blockmetadb.get_block_list())
         stats['blockQueueCount'] = len(comm_inst.blockQueue)
         return json.dumps(stats)

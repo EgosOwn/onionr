@@ -23,4 +23,4 @@ def pick_proxy(peer_address):
         return 'tor'
     elif peer_address.endswith('.i2p'):
         return 'i2p'
-    raise ValueError("Peer address was not string ending with acceptable value")
+    raise ValueError(f"Peer address was not string ending with acceptable value: {peer_address}")

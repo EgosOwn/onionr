@@ -141,7 +141,7 @@ function getBlocks(){
         requested = [] // reset requested list
         setTimeout(function(){
             if (! loadedAny && ch == document.getElementById('feedIDInput').value){
-                PNotify.notice("There are no posts for " + ch + " (yet).")
+                PNotify.notice("There are no posts for " + ch + ". You can be the first!")
             }
         }, loadingTimeout)
     }
