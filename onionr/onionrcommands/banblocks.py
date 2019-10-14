@@ -21,19 +21,26 @@ import sys
 import logger
 from onionrutils import stringvalidators
 from onionrstorage import removeblock
+from onionrstorage import deleteBlock
 from onionrblocks import onionrblacklist
+from utils import reconstructhash
 
 def ban_block():
+    """Deletes a block, permanently blacklisting it"""
     blacklist = onionrblacklist.OnionrBlackList()
     try:
         ban = sys.argv[2]
     except IndexError:
-        ban = logger.readline('Enter a block hash:')
+        # Get the hash if its not provided as a CLI argument
+        ban = logger.readline('Enter a block hash:').strip()
+    # Make sure the hash has no truncated zeroes
+    ban = reconstructhash.reconstruct_hash(ban)
     if stringvalidators.validate_hash(ban):
         if not blacklist.inBlacklist(ban):
             try:
                 blacklist.addToDB(ban)
                 removeblock.remove_block(ban)
+                deleteBlock(ban)
             except Exception as error:
                 logger.error('Could not blacklist block', error=error, terminal=True)
             else:

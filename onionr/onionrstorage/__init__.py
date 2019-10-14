@@ -46,7 +46,7 @@ def _dbFetch(blockHash):
     return None
 
 def deleteBlock(blockHash):
-    # You should call core.removeBlock if you automatically want to remove storage byte count
+    # You should call removeblock.remove_block if you automatically want to remove storage byte count
     if os.path.exists('%s/%s.dat' % (filepaths.block_data_location, blockHash)):
         os.remove('%s/%s.dat' % (filepaths.block_data_location, blockHash))
         return True

@@ -180,6 +180,7 @@ function loadInboxEntries(bHash){
         var entry = document.createElement('div')
         var bHashDisplay = document.createElement('span')
         var senderInput = document.createElement('input')
+        //var senderInput = document.createElement('div')
         var subjectLine = document.createElement('span')
         var dateStr = document.createElement('span')
         var validSig = document.createElement('span')

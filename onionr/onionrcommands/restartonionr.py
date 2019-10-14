@@ -36,8 +36,8 @@ def restart():
     daemonlaunch.kill_daemon()
     while localcommand.local_command('ping', maxWait=8) == 'pong!':
         time.sleep(0.3)
-    time.sleep(9)
-    while os.path.exists(filepaths.private_API_host_file):
+    time.sleep(15)
+    while os.path.exists(filepaths.private_API_host_file) or os.path.exists(filepaths.daemon_mark_file):
         time.sleep(1)
     subprocess.Popen([SCRIPT_NAME, 'start'])
 

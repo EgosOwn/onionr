@@ -20,6 +20,7 @@
 import json
 from onionrusers import contactmanager
 from flask import Blueprint, Response, request, abort, redirect
+from coredb import keydb
 
 friends = Blueprint('friends', __name__)
 
@@ -38,7 +39,9 @@ def add_friend(pubkey):
 
 @friends.route('/friends/remove/<pubkey>', methods=['POST'])
 def remove_friend(pubkey):
+    contactmanager.ContactManager(pubkey).setTrust(0)
     contactmanager.ContactManager(pubkey).delete_contact()
+    keydb.removekeys.remove_user(pubkey)
     return redirect(request.referrer + '#' + request.form['token'])
 
 @friends.route('/friends/setinfo/<pubkey>/<key>', methods=['POST'])

@@ -30,7 +30,7 @@ class ContactManager(onionrusers.OnionrUser):
     def __init__(self, publicKey, saveUser=False, recordExpireSeconds=5):
         try:
             if mnemonickeys.DELIMITER in publicKey:
-                publicKey = mnemonickeys.get_base32(publicKey.split(mnemonickeys.DELIMITER))
+                publicKey = mnemonickeys.get_base32(publicKey)
                 #publicKey = unpaddedbase32.b32encode(bytesconverter.str_to_bytes(publicKey))
         except ValueError:
             pass

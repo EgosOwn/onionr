@@ -17,6 +17,9 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
+import os
+import subprocess
+
 from flask import Response, Blueprint, request, send_from_directory, abort
 import unpaddedbase32
 
@@ -26,10 +29,13 @@ from netcontroller import NetController
 from serializeddata import SerializedData
 from onionrutils import mnemonickeys
 from onionrutils import bytesconverter
+from etc import onionrvalues
 from utils import reconstructhash
 from onionrcommands import restartonionr
 
 pub_key = onionrcrypto.pub_key.replace('=', '')
+
+SCRIPT_NAME = os.path.dirname(os.path.realpath(__file__)) + f'/../../../{onionrvalues.SCRIPT_NAME}'
 
 class PrivateEndpoints:
     def __init__(self, client_api):
@@ -94,7 +100,7 @@ class PrivateEndpoints:
 
         @private_endpoints_bp.route('/restartclean')
         def restart_clean():
-            restartonionr.restart()
+            subprocess.Popen([SCRIPT_NAME, 'restart'])
             return Response("bye")
         
         @private_endpoints_bp.route('/getstats')
