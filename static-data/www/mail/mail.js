@@ -179,8 +179,8 @@ function loadInboxEntries(bHash){
         //console.log(resp)
         var entry = document.createElement('div')
         var bHashDisplay = document.createElement('span')
-        var senderInput = document.createElement('input')
-        //var senderInput = document.createElement('div')
+        //var senderInput = document.createElement('input')
+        var senderInput = document.createElement('span')
         var subjectLine = document.createElement('span')
         var dateStr = document.createElement('span')
         var validSig = document.createElement('span')
@@ -204,7 +204,7 @@ function loadInboxEntries(bHash){
                 else{
                     resp2.text().then(function(resp2){
                     loadHumanReadableToCache(resp['meta']['signer'])
-                    senderInput.value = resp2
+                    senderInput.innerText = resp2
                     entry.setAttribute('data-nameSet', true)
                     })
                 }
@@ -212,7 +212,7 @@ function loadInboxEntries(bHash){
 
         }
         else{
-            senderInput.value = 'Anonymous'
+            senderInput.innerText = 'Anonymous'
             entry.setAttribute('data-nameSet', false)
         }
         if (! resp['meta']['validSig']){
@@ -246,7 +246,7 @@ function loadInboxEntries(bHash){
             if (event.target.classList.contains('deleteBtn')){
                 return
             }
-            openThread(entry.getAttribute('data-hash'), senderInput.value, dateStr.innerText, resp['meta']['validSig'], entry.getAttribute('data-pubkey'), subjectLine.innerText)
+            openThread(entry.getAttribute('data-hash'), senderInput.innerText, dateStr.innerText, resp['meta']['validSig'], entry.getAttribute('data-pubkey'), subjectLine.innerText)
         }
 
         deleteBtn.onclick = function(){
@@ -305,7 +305,8 @@ function getSentbox(){
             var entry = document.createElement('div')
             var toLabel = document.createElement('span')
             toLabel.innerText = 'To: '
-            var toEl = document.createElement('input')
+            var toEl = document.createElement('span')
+            toEl.classList.add('toElement')
             var sentDate = document.createElement('span')
             var humanDate = new Date(0)
             humanDate.setUTCSeconds(resp[i]['date'])
@@ -314,14 +315,14 @@ function getSentbox(){
             var deleteBtn = document.createElement('button')
             var message = resp[i]['message']
             deleteBtn.classList.add('deleteBtn', 'delete')
-            toEl.readOnly = true
+
             sentDate.innerText = humanDate.substring(0, humanDate.indexOf('('))
             if (resp[i]['name'] == null || resp[i]['name'].toLowerCase() == 'anonymous'){
-                toEl.value = resp[i]['peer']
+                toEl.innerText = resp[i]['peer']
                 setHumanReadableValue(toEl, resp[i]['peer'])
             }
             else{
-                toEl.value = resp[i]['name']
+                toEl.innerText = resp[i]['name']
             }
             preview.innerText = '(' + resp[i]['subject'] + ')'
             entry.classList.add('sentboxList')
@@ -340,7 +341,7 @@ function getSentbox(){
                     e.target.parentNode.parentNode.removeChild(e.target.parentNode)
                     return
                 }
-                showSentboxWindow(toEl.value, message)
+                showSentboxWindow(toEl.innerText, message)
             }
         })(i, resp)
         threadPart.appendChild(entry)

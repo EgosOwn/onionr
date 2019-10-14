@@ -29,7 +29,7 @@ function loadHumanReadableToCache(key){
 
 function setHumanReadableValue(el, key){
     if (typeof humanReadableCache[key] != 'undefined'){
-        el.value = humanReadableCache[key]
+        el.innerText = humanReadableCache[key].split('-').slice(0,3).join('-')
         return
     }
     else{
