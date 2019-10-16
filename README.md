@@ -126,7 +126,10 @@ Everyone is welcome to contribute. Help is wanted for the following:
 
 ## Contribute money:
 
-Donating at least $5 gets you cool Onionr stickers. Get in touch if you want them.
+Donating at least $4 gets you cool Onionr stickers. Get in touch if you want them.
+
+![sticker](docs/sticker.png)
+
 
 Bitcoin: [1onion55FXzm6h8KQw3zFw2igpHcV7LPq](bitcoin:1onion55FXzm6h8KQw3zFw2igpHcV7LPq) (Contact us for a unique address or for other coins)
 
