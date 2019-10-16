@@ -13,3 +13,4 @@
 * add edits to circles posts
 * use truncated words in mail instead of inputs
 * make node "speed" setting such as when ui is open to reduce bandwidth usage
+* localization support
