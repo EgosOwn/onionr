@@ -88,7 +88,6 @@ def show_stats():
 def show_details():
     details = {
         'Node Address' : gethostname.get_hostname(),
-        'Web Password' : config.get('client.webpassword'),
         'Public Key' : onionrcrypto.pub_key.replace('=', ''),
         'Human-readable Public Key' : mnemonickeys.get_human_readable_ID()
     }
@@ -96,5 +95,5 @@ def show_details():
     for detail in details:
         logger.info('%s%s: \n%s%s\n' % (logger.colors.fg.lightgreen, detail, logger.colors.fg.green, details[detail]), terminal = True)
 
-show_details.onionr_help = "Shows relevant information for your Onionr install: note address, web password and active public key."
+show_details.onionr_help = "Shows relevant information for your Onionr install: node address,  and active public key."
 show_stats.onionr_help = "Shows statistics for your Onionr node. Slow if Onionr is not running"
