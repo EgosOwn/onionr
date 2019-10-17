@@ -17,3 +17,9 @@ img{
 form{
     margin-left: 2%;
 }
+
+
+noscript{
+    font-size: 2em;
+    color: yellow;
+}
