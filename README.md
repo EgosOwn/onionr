@@ -108,6 +108,13 @@ The following applies to Ubuntu Bionic. Other distros may have different package
 * Open Onionr web interface  `$ ./onionr.sh openhome`
 * Gracefully stop Onionr from CLI `$ ./onionr.sh stop`
 
+
+# Contact
+
+Email: beardog [ at ] mailbox.org
+
+Onionr Mail: particularizing-zabaione-defuze-iodizer-saucepan-patientest-sell-waken-chifforobe-embonpoint-aquanaut-chambermaid-barky-fumer-jolt-biotic
+
 # Help out
 
 Everyone is welcome to contribute. Help is wanted for the following:
@@ -126,7 +133,7 @@ Everyone is welcome to contribute. Help is wanted for the following:
 
 ## Contribute money:
 
-Donating at least $4 gets you cool Onionr stickers. Get in touch if you want them.
+Donating at least $3 gets you cool Onionr stickers. Get in touch if you want them.
 
 ![sticker](docs/sticker.png)
 
@@ -138,12 +145,6 @@ Monero: 4B5BA24d1P3R5aWEpkGY5TP7buJJcn2aSGBVRQCHhpiahxeB4aWsu15XwmuTjC6VF62NApZe
 USD (Card/Paypal): [Ko-Fi](https://www.ko-fi.com/beardogkf)
 
 Note: probably not tax deductible
-
-# Contact
-
-Email: beardog [ at ] mailbox.org
-
-Onionr Mail: particularizing-zabaione-defuze-iodizer-saucepan-patientest-sell-waken-chifforobe-embonpoint-aquanaut-chambermaid-barky-fumer-jolt-biotic
 
 # Security
 
