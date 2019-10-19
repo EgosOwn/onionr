@@ -6,12 +6,9 @@
 * encrypt local data and keys
 * ensure accessibility for Onionr web UI
 * make forward secrecy compatible with multiple devices
-* make uptime timer be human meaningful
 * add way to mark key as dead
 * add hashable set password for web ui
-* add node online check for web ui
 * add edits to circles posts
-* use truncated words in mail instead of inputs
 * make node "speed" setting such as when ui is open to reduce bandwidth usage
 * localization support
 * add BCC support to mail
