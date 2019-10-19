@@ -1,11 +1,13 @@
 import os
+import time
 
 import onionrblocks
 import logger
 import coredb
+from communicator import peeraction
 
 def _check_remote_node(testmanager):
-        return
+    return
 
 def insert_bin_test(testmanager):
     data = os.urandom(32)

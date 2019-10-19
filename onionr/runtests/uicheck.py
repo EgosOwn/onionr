@@ -5,5 +5,5 @@ def check_ui(test_manager):
         result = localcommand.local_command(point)
         if not result: raise ValueError
         result = result.lower()
-        if not 'onionr' in result and not 'Onionr' in result:
-            raise ValueError
+        if not 'script' in result:
+            raise ValueError(f'uicheck failed on {point}')

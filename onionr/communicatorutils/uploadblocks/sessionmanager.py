@@ -67,8 +67,18 @@ class BlockUploadSessionManager:
         comm_inst: OnionrCommunicatorDaemon = self._too_many.get_by_string("OnionrCommunicatorDaemon")
         sessions_to_delete = []
         if comm_inst.getUptime() < 120: return
+        onlinePeerCount = len(comm_inst.onlinePeers)
+        
+        # If we have no online peers right now,
+        if onlinePeerCount == 0: return
+
         for session in self.sessions:
-            if (session.total_success_count / len(comm_inst.onlinePeers)) >= onionrvalues.MIN_BLOCK_UPLOAD_PEER_PERCENT:
+            # if over 50% of peers that were online for a session have become unavailable, don't kill sessions
+            if session.total_success_count > onlinePeerCount:
+                if onlinePeerCount / session.total_success_count >= 0.5: return
+            # Clean sessions if they have uploaded to enough online peers
+            if session.total_success_count <= 0: continue
+            if (session.total_success_count / onlinePeerCount) >= onionrvalues.MIN_BLOCK_UPLOAD_PEER_PERCENT:
                 sessions_to_delete.append(session)
         for session in sessions_to_delete:
             self.sessions.remove(session)

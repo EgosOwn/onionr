@@ -25,6 +25,9 @@
 import locale 
 locale.setlocale(locale.LC_ALL, '')
 
+ran_as_script = False
+if __name__ == "__main__": ran_as_script = True
+
 # Import standard libraries
 import sys
 
@@ -33,6 +36,7 @@ import sys
 try:
     from urllib3.contrib.socks import SOCKSProxyManager
 except ModuleNotFoundError:
+    # check here or else we get error when onionr runs with tor
     raise ModuleNotFoundError("You need the PySocks module (for use with socks5 proxy to use Tor)")
 
 # Onionr imports
@@ -58,7 +62,7 @@ def onionr_main():
     parser.register()
     return
 
-if __name__ == "__main__":
+if ran_as_script:
     onionr_main()
 
     # Cleanup standard out/err because Python refuses to do it itsself
