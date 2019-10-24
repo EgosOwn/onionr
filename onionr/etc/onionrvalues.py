@@ -1,9 +1,9 @@
-'''
+"""
     Onionr - Private P2P Communication
 
     This file defines values and requirements used by Onionr
-'''
-'''
+"""
+"""
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -16,7 +16,7 @@
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
-'''
+"""
 import platform
 import os
 
@@ -28,10 +28,14 @@ ONIONR_TAGLINE = 'Private P2P Communication - GPLv3 - https://Onionr.net'
 ONIONR_VERSION = '0.1.0' # for debugging and stuff
 ONIONR_VERSION_TUPLE = tuple(ONIONR_VERSION.split('.')) # (MAJOR, MINOR, VERSION)
 API_VERSION = '0' # increments of 1; only change when something fundamental about how the API works changes. This way other nodes know how to communicate without learning too much information about you.
-MIN_PY_VERSION = 7
+MIN_PY_VERSION = 7 # min version of 7 so we can take advantage of non-cyclic type hints
 DEVELOPMENT_MODE = False
+"""limit type length for a block (soft enforced, ignored if invalid but block still stored)."""
 MAX_BLOCK_TYPE_LENGTH = 15
+"""limit clock timestamp for new blocks to be skewed in the future in seconds,
+2 minutes to allow plenty of time for slow block insertion and slight clock inaccuracies"""
 MAX_BLOCK_CLOCK_SKEW = 120
+"""Onionr user IDs are ed25519 keys, which are always 32 bytes in length"""
 MAIN_PUBLIC_KEY_SIZE = 32
 ORIG_RUN_DIR_ENV_VAR = 'ORIG_ONIONR_RUN_DIR'
 
@@ -39,9 +43,14 @@ ORIG_RUN_DIR_ENV_VAR = 'ORIG_ONIONR_RUN_DIR'
 MIN_BLOCK_UPLOAD_PEER_PERCENT = 0.1
 
 # Begin OnionrValues migrated values
-ANNOUNCE_POW = 5
+"""Make announce take a few seconds (on average) to compute to discourage excessive node announcements"""
+ANNOUNCE_POW = 6
+"""30 days is plenty of time for someone to decide to renew a block"""
 DEFAULT_EXPIRE = 2592000
+# Metadata header section length limits, in bytes
 BLOCK_METADATA_LENGTHS = {'meta': 1000, 'sig': 200, 'signer': 200, 'time': 10, 'pow': 1000, 'encryptType': 4, 'expire': 14}
+
+"""Public key that signs MOTD messages shown in the web UI"""
 MOTD_SIGN_KEY = "TRH763JURNY47QPBTTQ4LLPYCYQK6Q5YA33R6GANKZK5C5DKCIGQ"
 
 platform = platform.system()
