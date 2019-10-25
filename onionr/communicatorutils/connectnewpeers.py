@@ -55,6 +55,8 @@ def connect_new_peer_to_communicator(comm_inst, peer='', useBootstrap=False):
             bootstrappeers.add_bootstrap_list_to_peer_list(comm_inst, peerList)
 
     for address in peerList:
+        address = address.strip()
+
         if not config.get('tor.v3onions') and len(address) == 62:
             continue
         # Don't connect to our own address
