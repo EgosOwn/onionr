@@ -19,6 +19,7 @@
 '''
 import sqlite3
 from .. import dbfiles
+from etc import onionrvalues
 def update_block_info(hash, key, data):
     '''
         sets info associated with a block
@@ -38,7 +39,7 @@ def update_block_info(hash, key, data):
                   'dataSaved', 'sig', 'author', 'dateClaimed', 'expire'):
         raise ValueError('Key must be in the allowed list')
 
-    conn = sqlite3.connect(dbfiles.block_meta_db, timeout=30)
+    conn = sqlite3.connect(dbfiles.block_meta_db, timeout=onionrvalues.DATABASE_LOCK_TIMEOUT)
     c = conn.cursor()
     args = (data, hash)
     # Unfortunately, not really possible

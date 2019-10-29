@@ -23,6 +23,7 @@ from onionrplugins import onionrevents as events
 from onionrutils import localcommand, epoch
 from .. import dbfiles
 from onionrsetup import dbcreator
+from etc import onionrvalues
 
 def daemon_queue()->str:
     '''
@@ -35,7 +36,7 @@ def daemon_queue()->str:
     if not os.path.exists(dbfiles.daemon_queue_db):
         dbcreator.createDaemonDB()
     else:
-        conn = sqlite3.connect(dbfiles.daemon_queue_db, timeout=30)
+        conn = sqlite3.connect(dbfiles.daemon_queue_db, timeout=onionrvalues.DATABASE_LOCK_TIMEOUT)
         c = conn.cursor()
         try:
             for row in c.execute('SELECT command, data, date, min(ID), responseID FROM commands group by id'):
@@ -59,7 +60,7 @@ def daemon_queue_add(command: str, data='', responseID: str =''):
     retData = True
 
     date = epoch.get_epoch()
-    conn = sqlite3.connect(dbfiles.daemon_queue_db, timeout=30)
+    conn = sqlite3.connect(dbfiles.daemon_queue_db, timeout=onionrvalues.DATABASE_LOCK_TIMEOUT)
     c = conn.cursor()
     t = (command, data, date, responseID)
     try:
@@ -83,7 +84,7 @@ def clear_daemon_queue():
     '''
         Clear the daemon queue (somewhat dangerous)
     '''
-    conn = sqlite3.connect(dbfiles.daemon_queue_db, timeout=30)
+    conn = sqlite3.connect(dbfiles.daemon_queue_db, timeout=onionrvalues.DATABASE_LOCK_TIMEOUT)
     c = conn.cursor()
 
     c.execute('DELETE FROM commands;')

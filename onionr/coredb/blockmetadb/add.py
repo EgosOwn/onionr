@@ -19,6 +19,7 @@
 '''
 import os, sqlite3, secrets
 from onionrutils import epoch, blockmetadata
+from etc import onionrvalues
 from .. import dbfiles
 def add_to_block_DB(newHash, selfInsert=False, dataSaved=False):
     '''
@@ -29,7 +30,7 @@ def add_to_block_DB(newHash, selfInsert=False, dataSaved=False):
 
     if blockmetadata.has_block(newHash):
         return
-    conn = sqlite3.connect(dbfiles.block_meta_db, timeout=30)
+    conn = sqlite3.connect(dbfiles.block_meta_db, timeout=onionrvalues.DATABASE_LOCK_TIMEOUT)
     c = conn.cursor()
     currentTime = epoch.get_epoch() + secrets.randbelow(301)
     if selfInsert or dataSaved:

@@ -19,6 +19,8 @@
 '''
 import sqlite3
 from .. import dbfiles
+from etc import onionrvalues
+
 def get_user_info(peer, info):
     '''
         Get info about a peer from their database entry
@@ -30,7 +32,7 @@ def get_user_info(peer, info):
         trust int           4
         hashID text         5
     '''
-    conn = sqlite3.connect(dbfiles.user_id_info_db, timeout=30)
+    conn = sqlite3.connect(dbfiles.user_id_info_db, timeout=onionrvalues.DATABASE_LOCK_TIMEOUT)
     c = conn.cursor()
 
     command = (peer,)
@@ -56,7 +58,7 @@ def set_peer_info(peer, key, data):
         Update a peer for a key
     '''
 
-    conn = sqlite3.connect(dbfiles.user_id_info_db, timeout=30)
+    conn = sqlite3.connect(dbfiles.user_id_info_db, timeout=onionrvalues.DATABASE_LOCK_TIMEOUT)
     c = conn.cursor()
 
     command = (data, peer)

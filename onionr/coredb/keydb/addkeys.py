@@ -24,6 +24,8 @@ from . import listkeys
 from utils import gettransports
 from .. import dbfiles
 import onionrcrypto
+from etc import onionrvalues
+
 def add_peer(peerID, name=''):
     '''
         Adds a public key to the key database (misleading function name)
@@ -37,7 +39,7 @@ def add_peer(peerID, name=''):
 
     #events.event('pubkey_add', data = {'key': peerID}, onionr = core_inst.onionrInst)
 
-    conn = sqlite3.connect(dbfiles.user_id_info_db, timeout=30)
+    conn = sqlite3.connect(dbfiles.user_id_info_db, timeout=onionrvalues.DATABASE_LOCK_TIMEOUT)
     hashID = ""
     c = conn.cursor()
     t = (peerID, name, 'unknown', hashID, 0)
@@ -67,7 +69,7 @@ def add_address(address):
     if stringvalidators.validate_transport(address):
         if address in gettransports.get():
             return False
-        conn = sqlite3.connect(dbfiles.address_info_db, timeout=30)
+        conn = sqlite3.connect(dbfiles.address_info_db, timeout=onionrvalues.DATABASE_LOCK_TIMEOUT)
         c = conn.cursor()
         # check if address is in database
         # this is safe to do because the address is validated above, but we strip some chars here too just in case

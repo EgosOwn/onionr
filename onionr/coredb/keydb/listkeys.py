@@ -20,6 +20,7 @@
 import sqlite3
 import logger
 from onionrutils import epoch
+from etc import onionrvalues
 from .. import dbfiles
 from . import userinfo, transportinfo
 def list_peers(randomOrder=True, getPow=False, trust=0):
@@ -29,7 +30,7 @@ def list_peers(randomOrder=True, getPow=False, trust=0):
         randomOrder determines if the list should be in a random order
         trust sets the minimum trust to list
     '''
-    conn = sqlite3.connect(dbfiles.user_id_info_db, timeout=30)
+    conn = sqlite3.connect(dbfiles.user_id_info_db, timeout=onionrvalues.DATABASE_LOCK_TIMEOUT)
     c = conn.cursor()
 
     payload = ''
@@ -63,7 +64,7 @@ def list_adders(randomOrder=True, i2p=True, recent=0):
     '''
         Return a list of transport addresses
     '''
-    conn = sqlite3.connect(dbfiles.address_info_db, timeout=30)
+    conn = sqlite3.connect(dbfiles.address_info_db, timeout=onionrvalues.DATABASE_LOCK_TIMEOUT)
     c = conn.cursor()
     if randomOrder:
         addresses = c.execute('SELECT * FROM adders ORDER BY RANDOM();')

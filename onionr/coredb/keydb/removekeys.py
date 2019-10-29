@@ -22,6 +22,7 @@ from onionrplugins import onionrevents as events
 from onionrutils import stringvalidators
 from onionrutils import mnemonickeys
 from .. import dbfiles
+from etc import onionrvalues
 
 def remove_address(address):
     '''
@@ -29,7 +30,7 @@ def remove_address(address):
     '''
 
     if stringvalidators.validate_transport(address):
-        conn = sqlite3.connect(dbfiles.address_info_db, timeout=30)
+        conn = sqlite3.connect(dbfiles.address_info_db, timeout=onionrvalues.DATABASE_LOCK_TIMEOUT)
         c = conn.cursor()
         t = (address,)
         c.execute('Delete from adders where address=?;', t)
@@ -47,7 +48,7 @@ def remove_user(pubkey: str)->bool:
     '''
     pubkey = mnemonickeys.get_base32(pubkey)
     if stringvalidators.validate_pub_key(pubkey):
-        conn = sqlite3.connect(dbfiles.user_id_info_db, timeout=30)
+        conn = sqlite3.connect(dbfiles.user_id_info_db, timeout=onionrvalues.DATABASE_LOCK_TIMEOUT)
         c = conn.cursor()
         t = (pubkey,)
         c.execute('Delete from peers where id=?;', t)

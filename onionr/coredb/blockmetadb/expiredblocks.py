@@ -20,9 +20,11 @@
 import sqlite3
 from onionrutils import epoch
 from .. import dbfiles
+from etc import onionrvalues
+
 def get_expired_blocks():
     '''Returns a list of expired blocks'''
-    conn = sqlite3.connect(dbfiles.block_meta_db, timeout=30)
+    conn = sqlite3.connect(dbfiles.block_meta_db, timeout=onionrvalues.DATABASE_LOCK_TIMEOUT)
     c = conn.cursor()
     date = int(epoch.get_epoch())
 

@@ -18,8 +18,11 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 import sqlite3
+
+from etc import onionrvalues
 from . import expiredblocks, updateblockinfo, add
 from .. import dbfiles
+
 update_block_info = updateblockinfo.update_block_info
 add_to_block_DB = add.add_to_block_DB
 def get_block_list(dateRec = None, unsaved = False):
@@ -29,7 +32,7 @@ def get_block_list(dateRec = None, unsaved = False):
     if dateRec == None:
         dateRec = 0
 
-    conn = sqlite3.connect(dbfiles.block_meta_db, timeout=30)
+    conn = sqlite3.connect(dbfiles.block_meta_db, timeout=onionrvalues.DATABASE_LOCK_TIMEOUT)
     c = conn.cursor()
 
     execute = 'SELECT hash FROM hashes WHERE dateReceived >= ? ORDER BY dateReceived ASC;'
@@ -46,7 +49,7 @@ def get_block_date(blockHash):
         Returns the date a block was received
     '''
 
-    conn = sqlite3.connect(dbfiles.block_meta_db, timeout=30)
+    conn = sqlite3.connect(dbfiles.block_meta_db, timeout=onionrvalues.DATABASE_LOCK_TIMEOUT)
     c = conn.cursor()
 
     execute = 'SELECT dateReceived FROM hashes WHERE hash=?;'
@@ -62,7 +65,7 @@ def get_blocks_by_type(blockType, orderDate=True):
         Returns a list of blocks by the type
     '''
 
-    conn = sqlite3.connect(dbfiles.block_meta_db, timeout=30)
+    conn = sqlite3.connect(dbfiles.block_meta_db, timeout=onionrvalues.DATABASE_LOCK_TIMEOUT)
     c = conn.cursor()
 
     if orderDate:

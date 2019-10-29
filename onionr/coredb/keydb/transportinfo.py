@@ -19,6 +19,8 @@
 '''
 import sqlite3
 from .. import dbfiles
+from etc import onionrvalues
+
 def get_address_info(address, info):
     '''
         Get info about an address from its database entry
@@ -35,7 +37,7 @@ def get_address_info(address, info):
         introduced  9
     '''
 
-    conn = sqlite3.connect(dbfiles.address_info_db, timeout=30)
+    conn = sqlite3.connect(dbfiles.address_info_db, timeout=onionrvalues.DATABASE_LOCK_TIMEOUT)
     c = conn.cursor()
 
     command = (address,)
@@ -60,7 +62,7 @@ def set_address_info(address, key, data):
         Update an address for a key
     '''
 
-    conn = sqlite3.connect(dbfiles.address_info_db, timeout=30)
+    conn = sqlite3.connect(dbfiles.address_info_db, timeout=onionrvalues.DATABASE_LOCK_TIMEOUT)
     c = conn.cursor()
 
     command = (data, address)
