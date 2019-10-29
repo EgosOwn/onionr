@@ -33,18 +33,22 @@ from onionrutils import mnemonickeys
 site_api = Blueprint('siteapi', __name__)
 
 @site_api.route('/site/<name>', endpoint='site')
-def site(name):
-    bHash = name
-    resp = 'Not Found'
-    if '-' in name:
+def site(name: str)->Response:
+    """Accept a site 'name', if pubkey then show multi-page site, if hash show single page site"""
+    resp: str = 'Not Found'
+
+    # If necessary convert the name to base32 from mnemonic
+    if mnemonickeys.DELIMITER in name:
         name = mnemonickeys.get_base32(name)
+
+    # Now make sure the key is regardless a valid base32 format ed25519 key (readding padding if necessary)
     if stringvalidators.validate_pub_key(name):
         name = unpaddedbase32.repad(name)
-        
+        resp = findsite.find_site(name)
 
-    if stringvalidators.validate_hash(bHash):
+    if stringvalidators.validate_hash(name):
         try:
-            resp = onionrblockapi.Block(bHash).bcontent
+            resp = onionrblockapi.Block(name).bcontent
         except onionrexceptions.NoDataAvailable:
             abort(404)
         except TypeError:
