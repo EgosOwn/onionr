@@ -50,7 +50,7 @@ def add_file(singleBlock=False, blockType='bin'):
         logger.info('Adding file... this might take a long time.', terminal=True)
         try:
             with open(_get_dir(filename), 'rb') as singleFile:
-                blockhash = insert(base64.b64encode(singleFile.read()), header=blockType)
+                blockhash = insert(singleFile.read(), header=blockType)
             if len(blockhash) > 0:
                 logger.info('File %s saved in block %s' % (filename, blockhash), terminal=True)
         except Exception as e:
@@ -82,7 +82,7 @@ def get_file():
 
         try:
             with open(fileName, 'wb') as myFile:
-                myFile.write(base64.b64decode(Block(bHash).bcontent))
+                myFile.write(Block(bHash).bcontent)
         except onionrexceptions.NoDataAvailable:
             logger.error('That block is not available. Trying again later may work.', terminal=True)
 

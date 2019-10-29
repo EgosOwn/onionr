@@ -41,7 +41,7 @@ def importBlockFromData(content):
     metadata = metas[0]
     if validatemetadata.validate_metadata(metadata, metas[2]): # check if metadata is valid
         if crypto.cryptoutils.verify_POW(content): # check if POW is enough/correct
-            logger.info('Block passed proof, saving.', terminal=True)
+            logger.info('Imported block passed proof, saving.', terminal=True)
             try:
                 blockHash = onionrstorage.set_data(content)
             except onionrexceptions.DiskAllocationReached:
