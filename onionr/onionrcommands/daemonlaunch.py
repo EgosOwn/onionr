@@ -124,9 +124,9 @@ def kill_daemon():
     '''
         Shutdown the Onionr daemon (communicator)
     '''
-
     logger.warn('Stopping the running daemon...', timestamp = False, terminal=True)
     try:
+        os.fork()
         events.event('daemon_stop')
         net = NetController(config.get('client.port', 59496))
         try:

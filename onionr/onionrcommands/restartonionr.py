@@ -33,6 +33,7 @@ SCRIPT_NAME = os.path.dirname(os.path.realpath(__file__)) + f'/../../{onionrvalu
 
 def restart():
     logger.info('Restarting Onionr', terminal=True)
+    os.fork()
     daemonlaunch.kill_daemon()
     while localcommand.local_command('ping', maxWait=8) == 'pong!':
         time.sleep(0.3)
