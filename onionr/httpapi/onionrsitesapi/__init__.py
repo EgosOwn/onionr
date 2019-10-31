@@ -29,6 +29,7 @@ import onionrexceptions
 from onionrutils import stringvalidators
 from utils import safezip
 from onionrutils import mnemonickeys
+from . import sitefiles
 
 site_api = Blueprint('siteapi', __name__)
 
@@ -44,9 +45,9 @@ def site(name: str)->Response:
     # Now make sure the key is regardless a valid base32 format ed25519 key (readding padding if necessary)
     if stringvalidators.validate_pub_key(name):
         name = unpaddedbase32.repad(name)
-        resp = findsite.find_site(name)
+        resp = sitefiles.get_file('index.html')
 
-    if stringvalidators.validate_hash(name):
+    elif stringvalidators.validate_hash(name):
         try:
             resp = onionrblockapi.Block(name).bcontent
         except onionrexceptions.NoDataAvailable:
