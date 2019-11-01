@@ -19,6 +19,7 @@
 """
 import base64
 import binascii
+import mimetypes
 
 import unpaddedbase32
 
@@ -37,6 +38,7 @@ site_api = Blueprint('siteapi', __name__)
 def site(name: str)->Response:
     """Accept a site 'name', if pubkey then show multi-page site, if hash show single page site"""
     resp: str = 'Not Found'
+    mime_type = 'text/html'
 
     # If necessary convert the name to base32 from mnemonic
     if mnemonickeys.DELIMITER in name:

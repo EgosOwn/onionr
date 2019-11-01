@@ -126,7 +126,12 @@ def kill_daemon():
     '''
     logger.warn('Stopping the running daemon...', timestamp = False, terminal=True)
     try:
-        os.fork()
+        # On platforms where we can, fork out to prevent locking
+        try:
+            pid = os.fork()
+            if pid != 0: return
+        except (AttributeError, OSError) as e: pass
+
         events.event('daemon_stop')
         net = NetController(config.get('client.port', 59496))
         try:
