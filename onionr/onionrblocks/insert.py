@@ -26,7 +26,8 @@ def insert_block(data: Union[str, bytes], header: str ='txt',
     our_private_key = crypto.priv_key
     our_pub_key = crypto.pub_key
 
-    if signingKey != '':
+    if signing_key != '':
+        # if it was specified to use an alternative private key
         our_private_key = signing_key
         our_pub_key = crypto.cryptoutils.get_pub_key_from_priv(our_private_key)
 

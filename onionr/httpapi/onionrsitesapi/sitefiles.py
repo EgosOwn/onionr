@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Union, Tuple
 import tarfile
 import io
 import os
@@ -6,8 +6,11 @@ import os
 from coredb import blockmetadb
 from onionrblocks import onionrblockapi
 from onionrblocks import insert
-from onionrtypes import UserID, DeterministicKeyPassphrase # Import types. Just for type hiting
-from onionrcrypto import generate
+
+# Import types. Just for type hiting
+from onionrtypes import UserID, DeterministicKeyPassphrase, BlockHash
+
+from onionrcrypto import generate_deterministic
 
 def find_site_gzip(user_id: str)->str:
     sites = blockmetadb.get_blocks_by_type('osite')
@@ -25,8 +28,8 @@ def get_file(user_id, file)->Union[bytes, None]:
             return site.extractfile(file)
     return None
 
-def create_site(admin_pass: DeterministicKeyPassphrase, directory:str='.')->UserID:
-    public_key, private_key = generate.generate_deterministic(admin_pass)
+def create_site(admin_pass: DeterministicKeyPassphrase, directory:str='.')->Tuple[UserID, BlockHash]:
+    public_key, private_key = generate_deterministic(admin_pass)
 
     raw_tar = io.BytesIO()
 
@@ -36,6 +39,6 @@ def create_site(admin_pass: DeterministicKeyPassphrase, directory:str='.')->User
 
     raw_tar.seek(0)
 
-    insert.insert(raw_tar.read())
+    block_hash = insert(raw_tar.read(), signing_key=private_key)
 
-    return public_key
+    return (public_key, block_hash)

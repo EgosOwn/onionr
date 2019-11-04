@@ -74,7 +74,9 @@ def register():
         try: 
             if cmd != 'start': os.chdir(os.environ['ORIG_ONIONR_RUN_DIR'])
         except KeyError: pass
-        arguments.get_func(cmd)()
+        try:
+            arguments.get_func(cmd)()
+        except KeyboardInterrupt: pass
     except onionrexceptions.NotFound:
         if not register_plugin_commands(cmd) and not is_help_cmd:
             recommend.recommend()
