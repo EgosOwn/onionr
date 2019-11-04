@@ -12,15 +12,24 @@ import coredb
 import onionrproofs
 from onionrproofs import subprocesspow
 import logger
+from onionrtypes import UserIDSecretKey
 
 def insert_block(data: Union[str, bytes], header: str ='txt', 
                 sign: bool =False, encryptType:str ='', symKey:str ='',
                 asymPeer:str ='', meta:dict = {},
-                expire:Union[int, None] =None, disableForward:bool =False)->Union[str,bool]:
+                expire:Union[int, None] =None, disableForward:bool =False, 
+                signing_key:UserIDSecretKey ='')->Union[str,bool]:
     """
         Inserts a block into the network
         encryptType must be specified to encrypt a block
     """
+    our_private_key = crypto.priv_key
+    our_pub_key = crypto.pub_key
+
+    if signingKey != '':
+        our_private_key = signing_key
+        our_pub_key = crypto.cryptoutils.get_pub_key_from_priv(our_private_key)
+
     use_subprocess = powchoice.use_subprocess(config)
     storage_counter = storagecounter.StorageCounter()
     allocationReachedMessage = 'Cannot insert block, disk allocation reached.'
@@ -56,6 +65,7 @@ def insert_block(data: Union[str, bytes], header: str ='txt',
     signature = ''
     signer = ''
     metadata = {}
+
     # metadata is full block metadata, meta is internal, user specified metadata
 
     # only use header if not set in provided meta
@@ -76,7 +86,7 @@ def insert_block(data: Union[str, bytes], header: str ='txt',
 
     if encryptType == 'asym':
         meta['rply'] = createTime # Duplicate the time in encrypted messages to prevent replays
-        if not disableForward and sign and asymPeer != crypto.pub_key:
+        if not disableForward and sign and asymPeer != our_pub_key:
             try:
                 forwardEncrypted = onionrusers.OnionrUser(asymPeer).forwardEncrypt(data)
                 data = forwardEncrypted[0]
@@ -91,8 +101,8 @@ def insert_block(data: Union[str, bytes], header: str ='txt',
     jsonMeta = json.dumps(meta)
     plaintextMeta = jsonMeta
     if sign:
-        signature = crypto.signing.ed_sign(jsonMeta.encode() + data, key=crypto.priv_key, encodeResult=True)
-        signer = crypto.pub_key
+        signature = crypto.signing.ed_sign(jsonMeta.encode() + data, key=our_private_key, encodeResult=True)
+        signer = our_pub_key
 
     if len(jsonMeta) > 1000:
         raise onionrexceptions.InvalidMetadata('meta in json encoded form must not exceed 1000 bytes')

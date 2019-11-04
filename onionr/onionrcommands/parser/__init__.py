@@ -18,6 +18,8 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 import sys
+import os
+
 from etc import onionrvalues
 import logger, onionrexceptions
 import onionrplugins
@@ -69,6 +71,9 @@ def register():
     if cmd.replace('--', '').lower() == 'help': is_help_cmd = True
 
     try:
+        try: 
+            if cmd != 'start': os.chdir(os.environ['ORIG_ONIONR_RUN_DIR'])
+        except KeyError: pass
         arguments.get_func(cmd)()
     except onionrexceptions.NotFound:
         if not register_plugin_commands(cmd) and not is_help_cmd:

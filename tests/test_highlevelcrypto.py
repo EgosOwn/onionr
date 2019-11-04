@@ -93,6 +93,11 @@ class OnionrCryptoTests(unittest.TestCase):
         # Try to encrypt arbitrary bytes
         crypto.encryption.pub_key_encrypt(os.urandom(32), keyPair2[0])
     
+    def test_pub_from_priv(self):
+        priv = nacl.signing.SigningKey.generate().encode(encoder=nacl.encoding.Base32Encoder)
+        pub = crypto.cryptoutils.getpubfrompriv.get_pub_key_from_priv(priv)
+        self.assertTrue(stringvalidators.validate_pub_key(pub))
+
     def test_deterministic(self):
         password = os.urandom(32)
         gen = crypto.generate_deterministic(password)

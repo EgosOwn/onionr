@@ -30,6 +30,7 @@ from .. import softreset # command to delete onionr blocks
 from .. import restartonionr # command to restart Onionr
 from .. import runtimetestcmd
 from .. import motdcreator
+from httpapi import onionrsitesapi
 
 import onionrexceptions
 from onionrutils import importnewblocks # func to import new blocks
@@ -48,7 +49,8 @@ def get_arguments()->dict:
         ('add-address', 'addaddress', 'addadder'): keyadders.add_address,
         ('openhome', 'gui', 'openweb', 'open-home', 'open-web'): openwebinterface.open_home,
         ('get-url', 'url', 'get-web'): openwebinterface.get_url,
-        ('add-site', 'addsite', 'addhtml', 'add-html'): filecommands.add_html,
+        ('addhtml', 'add-html'): filecommands.add_html,
+        ('addsite', 'add-site'): onionrsitesapi.sitefiles.create_site,
         ('addfile', 'add-file'): filecommands.add_file,
         ('get-file', 'getfile'): filecommands.get_file,
         ('export-block', 'exportblock'): exportblocks.export_block,
