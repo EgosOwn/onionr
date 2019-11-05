@@ -177,6 +177,9 @@ class OnionrCommunicatorDaemon:
         lookup_blocks_timer = (lookup_blocks_timer.frequency - 2)
 
         shared_state.add(self)
+        
+        if config.get('general.use_bootstrap', True):
+            bootstrappeers.add_bootstrap_list_to_peer_list(self, [], db_only=True)
 
         # Main daemon loop, mainly for calling timers, don't do any complex operations here to avoid locking
         try:

@@ -17,10 +17,8 @@ def create_multipage_site():
     except IndexError:
         logger.warn('''It is critical that this passphrase is long.
 If you want to update your site later you must remember the passphrase.''', terminal=True)
-        logger.info(f'Please enter a site passphrase of at least {onionrvalues.PASSWORD_LENGTH} characters.', terminal=True)
-        passphrase = getpass.getpass()
-        logger.info('Confirm:', terminal=True)
-        confirm = getpass.getpass()
+        passphrase = getpass.getpass(f'Please enter a site passphrase of at least {onionrvalues.PASSWORD_LENGTH} characters.')
+        confirm = getpass.getpass('Confirm passphrase:')
         if passphrase != confirm:
             logger.error('Passphrases do not match', terminal=True)
             error_encountered = True
