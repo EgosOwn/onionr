@@ -30,6 +30,6 @@ def read_static(file:str, ret_bin:bool=False)->Union[str, bytes]:
         mode = 'rb'
     else:
         mode = 'r'
-    with open(static_file, mode) as f:
+    with open(static_file, mode, encoding='utf-8') as f:
         data = f.read()
     return data
