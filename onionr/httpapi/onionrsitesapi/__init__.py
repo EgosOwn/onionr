@@ -47,7 +47,7 @@ def site(name: str)->Response:
     # Now make sure the key is regardless a valid base32 format ed25519 key (readding padding if necessary)
     if stringvalidators.validate_pub_key(name):
         name = unpaddedbase32.repad(name)
-        resp = sitefiles.get_file('index.html')
+        resp = sitefiles.get_file(name, 'index.html')
 
     elif stringvalidators.validate_hash(name):
         try:

@@ -14,9 +14,13 @@ from onionrcrypto import generate_deterministic
 
 def find_site_gzip(user_id: str)->str:
     sites = blockmetadb.get_blocks_by_type('osite')
+    user_site = None
     for site in sites:
-        if onionrblockapi.Block(site).isSigner(user_id):
-            return tarfile.open(fileobj=io.BytesIO(site.bcontent), mode='r')
+        block = onionrblockapi.Block(site)
+        if block.isSigner(user_id):
+            user_site = block
+    if not user_site is None:
+        return tarfile.open(fileobj=io.BytesIO(user_site.bcontent), mode='r')
     return None
 
 def get_file(user_id, file)->Union[bytes, None]:

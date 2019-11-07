@@ -178,8 +178,9 @@ streamedrequests==1.0.0 \
     --hash=sha256:1d9d07394804a6e1fd66bde74a804e71cab98e6920053865574a459f1cf7d3b7
 toomanyobjs==1.1.0 \
     --hash=sha256:99e27468f9dad19127be9e2fb086b42acd69aed9ad7e63cef74d6e4389be0534
-unpaddedbase32==0.1.0 \
-    --hash=sha256:5e4143fcaf77c9c6b4f60d18301c7570f0dac561dcf9b9aed8b5ba6ead7f218c
+unpaddedbase32==0.2.0 \
+    --hash=sha256:4aacee75f8fd6c8cf129842ecba45ca59c11bfb13dae19d86f32b48fa3715403 \
+    --hash=sha256:b7b780c31d27d55e66abf6c221216a35690ee8892c2daacff7f2528e229bd9c3
 urllib3==1.24.2 \
     --hash=sha256:4c291ca23bbb55c76518905869ef34bdd5f0e46af7afe6861e8375643ffee1a0 \
     --hash=sha256:9a247273df709c4fedb38c711e44292304f73f39ab01beda9f6b9fc375669ac3

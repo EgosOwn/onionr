@@ -202,6 +202,7 @@ class OnionrCommunicatorDaemon:
         except AttributeError:
             pass
         else:
+            # Stop onionr direct connection services
             for server in self.service_greenlets:
                 server.stop()
         localcommand.local_command('shutdown') # shutdown the api
