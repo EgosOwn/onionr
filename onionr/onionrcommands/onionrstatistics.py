@@ -20,6 +20,7 @@
 import os, uuid, time
 import logger
 from onionrblocks import onionrblockapi
+from onionrblocks import onionrblacklist
 from onionrutils import checkcommunicator, mnemonickeys
 from utils import sizeutils, gethostname, getconsolewidth, identifyhome
 from coredb import blockmetadb, daemonqueue, keydb
@@ -31,6 +32,8 @@ def show_stats():
         totalBlocks = len(blockmetadb.get_block_list())
         home = identifyhome.identify_home()
         signedBlocks = len(onionrblockapi.Block.getBlocks(signed = True))
+        totalBanned = len(onionrblacklist.OnionrBlackList().getList())
+
         messages = {
             # info about local client
             'Onionr Daemon Status' : ((logger.colors.fg.green + 'Online') if checkcommunicator.is_communicator_running(timeout = 9) else logger.colors.fg.red + 'Offline'),
@@ -46,6 +49,7 @@ def show_stats():
             'Known Peers (nodes)' : str(max(len(keydb.listkeys.list_adders()) - 1, 0)),
             'Enabled Plugins' : str(len(config.get('plugins.enabled', list()))) + ' / ' + str(len(os.listdir(home + 'plugins/'))),
             'Stored Blocks' : str(totalBlocks),
+            'Deleted Blocks' : str(totalBanned),
             'Percent Blocks Signed' : str(round(100 * signedBlocks / max(totalBlocks, 1), 2)) + '%'
         }
 
