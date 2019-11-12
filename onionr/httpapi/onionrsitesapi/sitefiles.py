@@ -3,6 +3,8 @@ import tarfile
 import io
 import os
 
+import unpaddedbase32
+
 from coredb import blockmetadb
 from onionrblocks import onionrblockapi
 from onionrblocks import insert
@@ -12,9 +14,11 @@ from onionrtypes import UserID, DeterministicKeyPassphrase, BlockHash
 
 from onionrcrypto import generate_deterministic
 
-def find_site_gzip(user_id: str)->str:
+def find_site_gzip(user_id: str)->tarfile.TarFile:
+    """Return verified site tar object"""
     sites = blockmetadb.get_blocks_by_type('osite')
     user_site = None
+    user_id = unpaddedbase32.repad(user_id)
     for site in sites:
         block = onionrblockapi.Block(site)
         if block.isSigner(user_id):
@@ -24,12 +28,13 @@ def find_site_gzip(user_id: str)->str:
     return None
 
 def get_file(user_id, file)->Union[bytes, None]:
+    """Get a site file content"""
     ret_data = ""
     site = find_site_gzip(user_id)
     if site is None: return None
-    for file in site.getmembers():
-        if file.name == file:
-            return site.extractfile(file)
+    for t_file in site.getmembers():
+        if t_file.name.replace('./', '') == file:
+            return site.extractfile(t_file)
     return None
 
 def create_site(admin_pass: DeterministicKeyPassphrase, directory:str='.')->Tuple[UserID, BlockHash]:
@@ -43,6 +48,6 @@ def create_site(admin_pass: DeterministicKeyPassphrase, directory:str='.')->Tupl
 
     raw_tar.seek(0)
 
-    block_hash = insert(raw_tar.read(), signing_key=private_key)
+    block_hash = insert(raw_tar.read(), header='osite', signing_key=private_key, sign=True)
 
     return (public_key, block_hash)

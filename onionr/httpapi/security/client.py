@@ -24,7 +24,7 @@ from . import pluginwhitelist
 
 # Be extremely mindful of this. These are endpoints available without a password
 whitelist_endpoints = ['www', 'staticfiles.homedata', 'staticfiles.sharedContent', 
-'staticfiles.friends', 'staticfiles.friendsindex', 'siteapi.site', 'staticfiles.onionrhome',
+'staticfiles.friends', 'staticfiles.friendsindex', 'siteapi.site', 'siteapi.siteFile', 'staticfiles.onionrhome',
 'themes.getTheme', 'staticfiles.onboarding', 'staticfiles.onboardingIndex']
 
 class ClientAPISecurity:

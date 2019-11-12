@@ -59,8 +59,8 @@ setup.setup_config()
 setup.setup_default_plugins()
 
 def onionr_main():
+    """Onionr entrypoint, start command processor"""
     parser.register()
-    return
 
 if ran_as_script:
     onionr_main()

@@ -34,7 +34,7 @@ from . import sitefiles
 
 site_api = Blueprint('siteapi', __name__)
 
-@site_api.route('/site/<name>', endpoint='site')
+@site_api.route('/site/<name>/', endpoint='site')
 def site(name: str)->Response:
     """Accept a site 'name', if pubkey then show multi-page site, if hash show single page site"""
     resp: str = 'Not Found'
@@ -48,6 +48,36 @@ def site(name: str)->Response:
     if stringvalidators.validate_pub_key(name):
         name = unpaddedbase32.repad(name)
         resp = sitefiles.get_file(name, 'index.html')
+
+    elif stringvalidators.validate_hash(name):
+        try:
+            resp = onionrblockapi.Block(name).bcontent
+        except onionrexceptions.NoDataAvailable:
+            abort(404)
+        except TypeError:
+            pass
+        try:
+            resp = base64.b64decode(resp)
+        except binascii.Error:
+            pass
+    if resp == 'Not Found' or not resp:
+        abort(404)
+    return Response(resp)
+
+@site_api.route('/site/<name>/<file>', endpoint='siteFile')
+def site_file(name: str, file: str)->Response:
+    """Accept a site 'name', if pubkey then show multi-page site, if hash show single page site"""
+    resp: str = 'Not Found'
+    mime_type = 'text/html'
+
+    # If necessary convert the name to base32 from mnemonic
+    if mnemonickeys.DELIMITER in name:
+        name = mnemonickeys.get_base32(name)
+
+    # Now make sure the key is regardless a valid base32 format ed25519 key (readding padding if necessary)
+    if stringvalidators.validate_pub_key(name):
+        name = unpaddedbase32.repad(name)
+        resp = sitefiles.get_file(name, file)
 
     elif stringvalidators.validate_hash(name):
         try:
