@@ -64,11 +64,11 @@ def site(name: str)->Response:
         abort(404)
     return Response(resp)
 
-@site_api.route('/site/<name>/<file>', endpoint='siteFile')
+@site_api.route('/site/<name>/<path:file>', endpoint='siteFile')
 def site_file(name: str, file: str)->Response:
     """Accept a site 'name', if pubkey then show multi-page site, if hash show single page site"""
     resp: str = 'Not Found'
-    mime_type = 'text/html'
+    mime_type = mimetypes.MimeTypes().guess_type(file)[0]
 
     # If necessary convert the name to base32 from mnemonic
     if mnemonickeys.DELIMITER in name:
@@ -92,4 +92,4 @@ def site_file(name: str, file: str)->Response:
             pass
     if resp == 'Not Found' or not resp:
         abort(404)
-    return Response(resp)
+    return Response(resp, mimetype=mime_type)

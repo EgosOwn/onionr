@@ -49,6 +49,7 @@ class ClientAPISecurity:
 
             if request.endpoint in whitelist_endpoints:
                 return
+            if request.path.startswith('/site/'): return
             try:
                 if not hmac.compare_digest(request.headers['token'], client_api.clientToken):
                     if not hmac.compare_digest(request.form['token'], client_api.clientToken):
@@ -61,8 +62,8 @@ class ClientAPISecurity:
         def after_req(resp):
             # Security headers
             resp = httpheaders.set_default_onionr_http_headers(resp)
-            if request.endpoint == 'siteapi.site':
-                resp.headers['Content-Security-Policy'] = "default-src 'none'; style-src data: 'unsafe-inline'; img-src data:"
+            if request.endpoint in ('siteapi.site', 'siteapi.siteFile'):
+                resp.headers['Content-Security-Policy'] = "default-src 'none'; style-src 'self' data: 'unsafe-inline'; img-src 'self' data:; media-src 'self' data:"
             else:
                 resp.headers['Content-Security-Policy'] = "default-src 'none'; script-src 'self'; object-src 'none'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; media-src 'none'; frame-src 'none'; font-src 'self'; connect-src 'self'"
             return resp

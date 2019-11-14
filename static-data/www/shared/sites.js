@@ -9,12 +9,12 @@ function checkHex(str) {
 document.getElementById('openSite').onclick = function(){
     var hash = document.getElementById('siteViewer').value
     if (hash.length == 0){ return }
-    if (checkHex(hash) && hash.length >= 50){
+    if (checkHex(hash) && hash.length >= 50 || hash.length == 52 || hash.length == 56){
         window.location.href = '/site/' + hash
     }
     else{
         PNotify.notice({
-            text: 'Invalid site hash'
+            text: 'Invalid site hash/ID'
         })
     }
 }
