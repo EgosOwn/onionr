@@ -21,6 +21,7 @@ import glob
 import logger
 from onionrutils import blockmetadata
 from coredb import blockmetadb
+from onionrblocks import blockimporter
 import filepaths
 import onionrcrypto as crypto
 def import_new_blocks(scanDir=''):
@@ -40,9 +41,10 @@ def import_new_blocks(scanDir=''):
             with open(block, 'rb') as newBlock:
                 block = block.replace(scanDir, '').replace('.dat', '')
                 if crypto.hashers.sha3_hash(newBlock.read()) == block.replace('.dat', ''):
-                    blockmetadb.add_to_block_DB(block.replace('.dat', ''), dataSaved=True)
-                    logger.info('Imported block %s.' % block, terminal=True)
-                    blockmetadata.process_block_metadata(block)
+                    if blockimporter.importBlockFromData(newBlock.read()):
+                        logger.info('Imported block %s.' % block, terminal=True)
+                    else:
+                        logger.warn('Unable to import block %s.' % block, terminal=True)
                 else:
                     logger.warn('Failed to verify hash for %s' % block, terminal=True)
     if not exist:
