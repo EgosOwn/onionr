@@ -18,12 +18,13 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 from onionrtypes import RestartRequiredStatus
-from onionrblocks.onionrblockapi import Block
+from onionrblocks import onionrblockapi
+
 from etc import onionrvalues
 import onionrexceptions
 import notifier
 
-def update_event(bl: Block)->RestartRequiredStatus:
+def update_event(bl)->RestartRequiredStatus:
     """Show update notification if available, return bool of if update happend"""
     if not bl.isSigner(onionrvalues.UPDATE_SIGN_KEY): raise onionrexceptions.InvalidUpdate
     notifier.notify(message="A new Onionr update is available. Stay updated to remain secure.")
