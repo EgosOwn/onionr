@@ -55,6 +55,9 @@ BLOCK_METADATA_LENGTHS = {'meta': 1000, 'sig': 200, 'signer': 200, 'time': 10, '
 """Public key that signs MOTD messages shown in the web UI"""
 MOTD_SIGN_KEY = "TRH763JURNY47QPBTTQ4LLPYCYQK6Q5YA33R6GANKZK5C5DKCIGQ"
 
+"""Public key that signs update notifications."""
+UPDATE_SIGN_KEY = "TRH763JURNY47QPBTTQ4LLPYCYQK6Q5YA33R6GANKZK5C5DKCIGQ"
+
 platform = platform.system()
 if platform == 'Windows':
     SCRIPT_NAME = 'run-windows.bat'

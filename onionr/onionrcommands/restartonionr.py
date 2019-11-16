@@ -23,6 +23,7 @@ import subprocess
 import platform
 
 from etc import onionrvalues
+from etc import cleanup
 from onionrutils import localcommand
 import logger
 import filepaths
@@ -38,7 +39,9 @@ def restart():
     try:
         pid = os.fork()
         if pid != 0: return
-    except (AttributeError, OSError) as e: pass
+    except (AttributeError, OSError) as e: 
+        if platform.platform() != 'Windows':
+            logger.warn('Could not fork on restart')
 
     daemonlaunch.kill_daemon()
     while localcommand.local_command('ping', maxWait=8) == 'pong!':
@@ -46,6 +49,8 @@ def restart():
     time.sleep(15)
     while os.path.exists(filepaths.private_API_host_file) or os.path.exists(filepaths.daemon_mark_file):
         time.sleep(1)
+    
+    cleanup.delete_run_files()
     subprocess.Popen([SCRIPT_NAME, 'start'])
 
 restart.onionr_help = 'Gracefully restart Onionr'

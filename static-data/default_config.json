@@ -1,6 +1,6 @@
 {
     "general": {
-        "dev_mode": true,
+        "dev_mode": false,
         "announce_node": true,
         "display_header": false,
         "minimum_block_pow": 4,
@@ -16,6 +16,11 @@
         "use_bootstrap_list": true,
         "store_plaintext_blocks": true,
         "show_notifications": true
+    },
+
+    "transports": {
+        "tor": true,
+        "manual_disk": true
     },
 
     "ui": {

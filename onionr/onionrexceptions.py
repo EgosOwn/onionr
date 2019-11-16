@@ -51,6 +51,9 @@ class SignatureError(Exception):
 class ReplayAttack(Exception):
     pass
 
+class InvalidUpdate(Exception):
+    pass
+
 class DifficultyTooLarge(Exception):
     pass
 

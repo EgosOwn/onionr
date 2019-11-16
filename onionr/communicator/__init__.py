@@ -19,6 +19,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 import sys, os, time
+
 import config, logger
 import onionrexceptions, onionrpeers
 from onionrblocks import onionrblockapi as block

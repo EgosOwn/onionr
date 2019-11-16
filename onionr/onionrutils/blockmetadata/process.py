@@ -26,6 +26,7 @@ import logger
 from onionrplugins import onionrevents
 import onionrexceptions
 from onionrusers import onionrusers
+from onionrutils import updater
 
 def process_block_metadata(blockHash: str):
     '''
@@ -67,4 +68,5 @@ def process_block_metadata(blockHash: str):
             expireTime = min(expireTime, curTime + onionrvalues.DEFAULT_EXPIRE)
             blockmetadb.update_block_info(blockHash, 'expire', expireTime)
 
+        if blockType == 'update': updater.update_event(myBlock)
         onionrevents.event('processblocks', data = {'block': myBlock, 'type': blockType, 'signer': signer, 'validSig': valid})

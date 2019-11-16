@@ -6,3 +6,5 @@ UserIDSecretKey = NewType('UserIDSecretKey', str)
 DeterministicKeyPassphrase = NewType('DeterministicKeyPassphrase', str)
 
 BlockHash = NewType('BlockHash', str)
+
+RestartRequiredStatus = NewType('RestartRequiredStatus', bool)
