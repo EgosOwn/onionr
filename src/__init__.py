@@ -22,30 +22,29 @@
 '''
 
 # Set the user's locale for encoding reasons
-import locale 
+import locale # noqa
 locale.setlocale(locale.LC_ALL, '')
 
 ran_as_script = False
 if __name__ == "__main__": ran_as_script = True
 
 # Import standard libraries
-import sys
+import sys # noqa
 
-# 3rd party lib imports
-# Ensure that PySocks is installed
 try:
-    from urllib3.contrib.socks import SOCKSProxyManager
-except ModuleNotFoundError:
-    # check here or else we get error when onionr runs with tor
-    raise ModuleNotFoundError("You need the PySocks module (for use with socks5 proxy to use Tor)")
+    from etc import dependencycheck # noqa
+except ModuleNotFoundError as e:
+    print('Onionr needs ' + str(e) + ' installed')
 
 # Onionr imports
 from etc import onionrvalues # For different Onionr related constants such as versions
 import onionrsetup as setup
 
+min_ver = onionrvalues.MIN_PY_VERSION
+
 # Ensure we have at least the minimum python version
-if sys.version_info[0] == 2 or sys.version_info[1] < onionrvalues.MIN_PY_VERSION:
-    sys.stderr.write('Error, Onionr requires Python 3.%s+\n' % (onionrvalues.MIN_PY_VERSION,))
+if sys.version_info[0] == 2 or sys.version_info[1] < min_ver:
+    sys.stderr.write('Error, Onionr requires Python 3.' + str(min_ver) + '\n')
     sys.exit(1)
 
 # Create Onionr data directories, must be done before most imports
@@ -58,9 +57,11 @@ from onionrplugins import onionrevents as events
 setup.setup_config()
 setup.setup_default_plugins()
 
+
 def onionr_main():
     """Onionr entrypoint, start command processor"""
     parser.register()
+
 
 if ran_as_script:
     onionr_main()
@@ -68,9 +69,9 @@ if ran_as_script:
     # Cleanup standard out/err because Python refuses to do it itsself
     try:
         sys.stderr.close()
-    except (IOError, BrokenPipeError) as e:
+    except (IOError, BrokenPipeError):
         pass
     try:
         sys.stdout.close()
-    except (IOError, BrokenPipeError) as e:
+    except (IOError, BrokenPipeError):
         pass

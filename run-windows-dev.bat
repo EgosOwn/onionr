@@ -3,5 +3,5 @@ echo This script is only intended for use in Onionr development, as it uses a ra
 set ONIONR_HOME=data%random%
 echo Using profile: %ONIONR_HOME%
 setlocal
-chdir onionr
+chdir src
 python __init__.py %*

@@ -2,7 +2,7 @@
 rm -rf dist
 mkdir dist
 mkdir dist/onionr/
-cp -t dist/onionr/ -r docs static-data install onionr onionr.sh start-daemon.sh setprofile.sh
+cp -t dist/onionr/ -r docs static-data install src onionr.sh start-daemon.sh setprofile.sh
 cp *.md dist/onionr/
 PIP_USER=false
 export PIP_USER

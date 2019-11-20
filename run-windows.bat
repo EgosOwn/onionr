@@ -1,4 +1,4 @@
 @echo off
 setlocal
-chdir onionr
+chdir src
 python __init__.py %*

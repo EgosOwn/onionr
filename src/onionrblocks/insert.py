@@ -53,6 +53,7 @@ def insert_block(data: Union[str, bytes], header: str ='txt',
 
     use_subprocess = powchoice.use_subprocess(config)
     storage_counter = storagecounter.StorageCounter()
+    
     allocationReachedMessage = 'Cannot insert block, disk allocation reached.'
     if storage_counter.is_full():
         logger.error(allocationReachedMessage)
@@ -181,7 +182,8 @@ def insert_block(data: Union[str, bytes], header: str ='txt',
             coredb.blockmetadb.add.add_to_block_DB(retData, selfInsert=True, dataSaved=True)
 
             if expire is None:
-                coredb.blockmetadb.update_block_info(retData, 'expire', createTime + onionrvalues.DEFAULT_EXPIRE)
+                coredb.blockmetadb.update_block_info(retData, 'expire', 
+                                                     createTime + onionrvalues.DEFAULT_EXPIRE)
             else:
                 coredb.blockmetadb.update_block_info(retData, 'expire', expire)
             

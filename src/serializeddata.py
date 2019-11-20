@@ -1,9 +1,9 @@
-'''
+"""
     Onionr - Private P2P Communication
 
     This module serializes various data pieces for use in other modules, in particular the web api
-'''
-'''
+"""
+"""
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -16,24 +16,27 @@
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
-'''
+"""
 
-import json, time
-from coredb import blockmetadb
-import communicator
+import json # noqa
+import time # noqa
+
+from coredb import blockmetadb # noqa
+import communicator # noqa
+
 class SerializedData:
     def __init__(self):
-        '''
+        """
         Serialized data is in JSON format:
         {
             'success': bool,
             'foo': 'bar',
             etc
         }
-        '''
+        """
     
     def get_stats(self):
-        '''Return statistics about our node'''
+        """Return statistics about our node"""
         stats = {}
         try:
             self._too_many

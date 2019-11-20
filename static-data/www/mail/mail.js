@@ -91,8 +91,8 @@ function openThread(bHash, sender, date, sigBool, pubkey, subjectLine){
         var sigEl = document.getElementById('sigValid')
         var sigMsg = 'signature'
     
-        // show add unknown contact button if peer is unknown but still has pubkey
-        if (sender === pubkey && sender !== myPub && sigBool){
+        // show add unknown contact button if peer is unknown
+        if (sender !== myPub && sigBool){
             addUnknownContact.style.display = 'inline'
         }
     

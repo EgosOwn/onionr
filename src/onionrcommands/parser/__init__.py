@@ -72,7 +72,7 @@ def register():
 
     try:
         try: 
-            if cmd != 'start': os.chdir(os.environ['ORIG_ONIONR_RUN_DIR'])
+            if not cmd in ('start', 'details', 'show-details') : os.chdir(os.environ['ORIG_ONIONR_RUN_DIR'])
         except KeyError: pass
         try:
             arguments.get_func(cmd)()

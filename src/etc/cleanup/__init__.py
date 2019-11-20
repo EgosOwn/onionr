@@ -1,9 +1,9 @@
-'''
+"""
     Onionr - Private P2P Communication
 
-    Get the node's Tor hostname
-'''
-'''
+    cleanup files
+"""
+"""
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -16,14 +16,17 @@
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
-'''
-from . import identifyhome
-import filepaths
-def get_hostname():
+"""
+import os, filepaths
+
+def _safe_remove(path):
     try:
-        with open(identifyhome.identify_home() + '/hs/hostname', 'r') as hostname:
-            return hostname.read().strip()
+        os.remove(path)
     except FileNotFoundError:
-        return "Not Generated"
-    except Exception:
-        return None
+        pass
+
+def delete_run_files():
+     _safe_remove(filepaths.public_API_host_file)
+     _safe_remove(filepaths.private_API_host_file)
+     _safe_remove(filepaths.daemon_mark_file)
+     _safe_remove(filepaths.lock_file)

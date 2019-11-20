@@ -3,6 +3,16 @@
 
     view and interact with onionr sites
 """
+
+from typing import Union
+
+import onionrexceptions
+from onionrutils import mnemonickeys
+from onionrutils import stringvalidators
+from coredb import blockmetadb
+from onionrblocks.onionrblockapi import Block
+from onionrtypes import BlockHash
+
 """
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -17,21 +27,21 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-from typing import Union
 
-import onionrexceptions
-from onionrutils import mnemonickeys
-from onionrutils import stringvalidators
-from coredb import blockmetadb
-from onionrblocks.onionrblockapi import Block
 
-def find_site(user_id: str)->Union[str, None]:
-    """Returns block hash string for latest block for a site by a given user id"""
-    if '-' in user_id: user_id = mnemonickeys.get_base32(user_id)
-    if not stringvalidators.validate_pub_key(user_id): raise onionrexceptions.InvalidPubkey
+def find_site(user_id: str) -> Union[BlockHash, None]:
+    """Returns block hash str for latest block for a site by a given user id"""
+    # If mnemonic delim in key, convert to base32 version
+    if mnemonickeys.DELIMITER in user_id:
+        user_id = mnemonickeys.get_base32(user_id)
+
+    if not stringvalidators.validate_pub_key(user_id):
+        raise onionrexceptions.InvalidPubkey
+
     found_site = None
     sites = blockmetadb.get_blocks_by_type('zsite')
 
+    # Find site by searching all site blocks. eww O(N) ☹️, TODO: event based
     for site in sites:
         site = Block(site)
         if site.isSigner(user_id) and site.verifySig():

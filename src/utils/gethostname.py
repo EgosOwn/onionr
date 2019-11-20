@@ -1,7 +1,7 @@
 '''
     Onionr - Private P2P Communication
 
-    Create required Onionr directories
+    Get the node's Tor hostname
 '''
 '''
     This program is free software: you can redistribute it and/or modify
@@ -17,25 +17,14 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import os
 from . import identifyhome
-from onionrsetup import dbcreator
 import filepaths
-home = identifyhome.identify_home()
-
-def create_dirs():
-    """Creates onionr data-related directories in order of the hardcoded list below,
-    then trigger creation of DBs"""
-    gen_dirs = [home, filepaths.block_data_location, filepaths.contacts_location, filepaths.export_location]
-    for path in gen_dirs:
-        if not os.path.exists(path):
-            try:
-                os.mkdir(path)
-            except FileExistsError:
-                pass
-
-    for db in dbcreator.create_funcs:
-        try:
-            db()
-        except FileExistsError:
-            pass
+def get_hostname():
+    try:
+        print(identifyhome.identify_home())
+        with open(identifyhome.identify_home() + '/hs/hostname', 'r') as hostname:
+            return hostname.read().strip()
+    except FileNotFoundError:
+        return "Not Generated"
+    except Exception:
+        return None

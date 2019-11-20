@@ -1,9 +1,9 @@
-'''
+"""
     Onionr - Private P2P Communication
 
     validate new block's metadata
-'''
-'''
+"""
+"""
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -16,14 +16,15 @@
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
-'''
+"""
 import json
 import logger, onionrexceptions
 from etc import onionrvalues
-from onionrutils import stringvalidators, epoch, bytesconverter
+from . import stringvalidators, epoch, bytesconverter
 import config, filepaths, onionrcrypto
+
 def validate_metadata(metadata, block_data) -> bool:
-    '''Validate metadata meets onionr spec (does not validate proof value computation), take in either dictionary or json string'''
+    """Validate metadata meets onionr spec (does not validate proof value computation), take in either dictionary or json string"""
 
     ret_data = False
     max_clock_difference = onionrvalues.MAX_BLOCK_CLOCK_SKEW
