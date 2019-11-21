@@ -51,14 +51,6 @@ friendPicker.onchange = function(){
 }
 
 sendForm.onsubmit = function(){
-    if (friendPicker.value.trim().length !== 0 && to.value.trim().length !== 0){
-        if (friendPicker.value !== to.value){
-            PNotify.error({
-                text: 'You have selected both a friend and entered a public key manually.'
-            })
-            return false
-        }
-    }
     if (! to.value.includes("-") && to.value.length !== 56 && to.value.length !== 52){
         PNotify.error({
             text: 'User ID is not valid'

@@ -51,7 +51,7 @@ function openReply(bHash, quote, subject){
         }
     }
     if (entry.getAttribute('data-nameset') == 'true'){
-        document.getElementById('friendSelect').value = entry.getElementsByTagName('input')[0].value
+        document.getElementById('friendSelect').value = document.getElementById('fromUser').value
     }
     key = entry.getAttribute('data-pubkey')
     document.getElementById('draftID').value = key
@@ -86,6 +86,7 @@ function openThread(bHash, sender, date, sigBool, pubkey, subjectLine){
     .then((resp) => resp.text())
     .then(function(resp) {
         document.getElementById('fromUser').value = sender || 'Anonymous'
+        document.getElementById('fromUser').value = pubkey || ''
         document.getElementById('subjectView').innerText = subjectLine
         messageDisplay.innerText = resp
         var sigEl = document.getElementById('sigValid')
