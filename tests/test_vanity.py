@@ -1,6 +1,6 @@
 import sys, os
 sys.path.append(".")
-sys.path.append("onionr/")
+sys.path.append("src/")
 import unittest
 import vanityonionr
 

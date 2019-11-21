@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import unittest, sys
 sys.path.append(".")
-sys.path.append("onionr/")
+sys.path.append("src/")
 
 from utils import reconstructhash
 

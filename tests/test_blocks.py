@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import sys, os
 sys.path.append(".")
-sys.path.append("onionr/")
+sys.path.append("src/")
 import unittest, uuid, hashlib
 
 import onionrblocks
