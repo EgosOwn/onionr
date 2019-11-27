@@ -1,0 +1,13 @@
+.donateHeader{
+    font-size: 2em;
+}
+
+.donateFinished{
+    display: block;
+    margin-top: 1em;
+}
+
+.donateBody p{
+    padding-top: 1em;
+    text-align: justify;
+}

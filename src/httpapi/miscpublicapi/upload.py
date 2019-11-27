@@ -3,6 +3,14 @@
 
     Accept block uploads to the public API server
 '''
+import sys
+from flask import Response
+from flask import abort
+
+from onionrblocks import blockimporter
+import onionrexceptions
+import logger
+
 '''
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -17,18 +25,15 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import sys
-from flask import Response, abort
 
-from onionrblocks import blockimporter
-import onionrexceptions, logger
 
 def accept_upload(request):
+    """Accept uploaded blocks to our public Onionr protocol API server"""
     resp = 'failure'
     data = request.get_data()
     if sys.getsizeof(data) < 100000000:
         try:
-            if blockimporter.importBlockFromData(data):
+            if blockimporter.import_block_from_data(data):
                 resp = 'success'
             else:
                 resp = 'failure'

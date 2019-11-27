@@ -29,3 +29,5 @@ run_check_file = home + '.runcheck'
 data_nonce_file = home + 'block-nonces.dat'
 
 keys_file = home + 'keys.txt'
+
+onboarding_mark_file = home + 'onboarding-completed'

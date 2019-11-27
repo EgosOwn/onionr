@@ -12,11 +12,13 @@
     <link rel="stylesheet" href="/private/main.css">
     <link rel="stylesheet" href="/shared/fontawesome-free-5.10.2/css/all.min.css">
     <link rel="stylesheet" href="/gettheme">
+    <link rel="stylesheet" href="donate-modal.css">
     <link rel="stylesheet" href="onboarding.css">
     <script defer src='/shared/navbar.js'></script>
     <script defer src='/shared/loadabout.js'></script>
     <script defer src='/shared/misc.js'></script>
     <script defer src='/private/js/console.js'></script>
+    <script defer src='donate.js'></script>
     <script defer src='onboarding.js'></script>
     <script>alert("Content security policy appears to not be working. Your browser security is weak!")</script>
 </head>
@@ -65,8 +67,20 @@
 
     <br>
 
+    <div class="modal donateModal">
+        <div class="modal-background"></div>
+        <div class="modal-card">
+          <header class="modal-card-head">
+            <button class="closeAboutModal delete" aria-label="close"></button>
+          </header>
+          <section class="modal-card-body donateBody">
+            Loading... <i class="fas fa-spinner fa-spin"></i>
+          </section>
+        </div>
+    </div>
+
     <div class="onboarding">
-        <noscript><h1>Unforuntately, this requires JavaScript. Don't worry, all scripts are open source and locally loaded.</h1></noscript>
+        <noscript><h1>Unfortunately, this requires JavaScript. Don't worry, all scripts are open source and locally loaded.</h1></noscript>
         <p>Welcome. There are just a few questions for you to answer before you get started.</p>
         <br>
         <form method='post' id="onboardingForm">
@@ -94,11 +108,13 @@
                 <div>
                     I want to...
                 </div>
-                <i class="icon fas fa-user"></i> <input type="checkbox" name="useDeterministic"> <label for="useDeterministic">Use a seed to re(generate) an ID</label>
+                <i class="icon fas fa-user"></i> <input type="checkbox" name="useDeterministic"> <label for="useDeterministic">Use a seed to re(generate) a user ID</label>
                 <br>
                 <i class="icon fas fa-envelope"></i> <input type="checkbox" name="useMail" checked> <label for="useMail">Use OnionrMail</label>
                 <br>
                 <i class="icon fas fa-comments"></i> <input type="checkbox" name="useCircles" checked> <label for="useMail">Use Circles (message board system)</label>
+                <br>
+                <i class="icon fas fa-palette"></i> <input type="checkbox" name="useDarkTheme" checked> <label for="useDark">Use Dark Theme</label>
 
                 <br>
             </div>

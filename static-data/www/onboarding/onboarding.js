@@ -16,11 +16,12 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>
 */
+
 fetch('/getnewkeys', {
     headers: {
         "token": webpass
     }})
-    .then((resp) => resp.text()) // Transform the data into text
+    .then((resp) => resp.text())
     .then(function(resp) {
         keys = resp.split('')
 })
@@ -28,6 +29,19 @@ fetch('/getnewkeys', {
 function getCheckValue(elName){
     return document.getElementsByName(elName)[0].checked
 }
+
+function sendConfig(configInfo){
+    fetch('/setonboarding', {
+        method: 'POST',
+        headers: {
+          "token": webpass,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({configInfo})
+        }).then(function(data) {
+        })
+}
+
 
 document.getElementById('onboardingForm').onsubmit = function(e){
     submitInfo = {}
@@ -39,6 +53,14 @@ document.getElementById('onboardingForm').onsubmit = function(e){
     submitInfo.donate = getCheckValue('donate')
     submitInfo.deterministic = getCheckValue('useDeterministic')
     submitInfo.mail = getCheckValue('useMail')
+    submitInfo.circles = getCheckValue('useCircles')
+
+    if (submitInfo.donate){
+        openDonateModal(submitInfo)
+        return false
+    }
+
+    sendConfig(submitInfo)
 
     e.preventDefault()
 }

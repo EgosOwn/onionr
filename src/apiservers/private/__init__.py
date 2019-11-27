@@ -3,6 +3,21 @@
 
     This file handles all incoming http requests to the client, using Flask
 '''
+import base64
+import os
+
+import flask
+from gevent.pywsgi import WSGIServer
+
+from onionrutils import epoch
+import httpapi
+from filepaths import private_API_host_file
+import logger
+
+from etc import waitforsetvar
+from . import register_private_blueprints
+import config
+from .. import public
 '''
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -17,39 +32,33 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import base64, os, time
-import flask
-from gevent.pywsgi import WSGIServer
-from onionrutils import epoch
-import httpapi, filepaths, logger
-from . import register_private_blueprints
-from etc import waitforsetvar
-import serializeddata, config
-from .. import public
+
+
 class PrivateAPI:
     '''
         Client HTTP api
     '''
 
-    callbacks = {'public' : {}, 'private' : {}}
+    callbacks = {'public': {}, 'private': {}}
 
     def __init__(self):
         '''
             Initialize the api server, preping variables for later use
 
-            This initialization defines all of the API entry points and handlers for the endpoints and errors
+            This initialization defines all of the API entry points
+            and handlers for the endpoints and errors
             This also saves the used host (random localhost IP address) to the data folder in host.txt
         '''
         self.config = config
+
         self.startTime = epoch.get_epoch()
         app = flask.Flask(__name__)
-        bindPort = int(config.get('client.client.port', 59496))
-        self.bindPort = bindPort
+        bind_port = int(config.get('client.client.port', 59496))
+        self.bindPort = bind_port
 
         self.clientToken = config.get('client.webpassword')
-        self.timeBypassToken = base64.b16encode(os.urandom(32)).decode()
 
-        self.host = httpapi.apiutils.setbindip.set_bind_IP(filepaths.private_API_host_file)
+        self.host = httpapi.apiutils.setbindip.set_bind_IP(private_API_host_file)
         logger.info('Running api on %s:%s' % (self.host, self.bindPort))
         self.httpServer = ''
 
@@ -58,7 +67,7 @@ class PrivateAPI:
         register_private_blueprints.register_private_blueprints(self, app)
         httpapi.load_plugin_blueprints(app)
         self.app = app
-    
+
     def start(self):
         waitforsetvar.wait_for_set_var(self, "_too_many")
         self.publicAPI = self._too_many.get(public.PublicAPI)
