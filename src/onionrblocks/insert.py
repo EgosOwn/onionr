@@ -37,10 +37,11 @@ from onionrtypes import UserIDSecretKey
 
 def _check_upload_queue():
     """Returns the current upload queue len
-    raises OverflowError if max
+    raises OverflowError if max, false if api not running
     """
     max_upload_queue: int = 5000
     queue = localcommand.local_command('/gethidden', maxWait=10)
+    up_queue = False
 
     try:
         up_queue = len(queue.splitlines())
@@ -65,6 +66,14 @@ def insert_block(data: Union[str, bytes], header: str = 'txt',
     our_pub_key = crypto.pub_key
 
     is_offline = True
+
+    storage_counter = storagecounter.StorageCounter()
+
+    allocationReachedMessage = 'Cannot insert block, disk allocation reached.'
+    if storage_counter.is_full():
+        logger.error(allocationReachedMessage)
+        raise onionrexceptions.DiskAllocationReached
+
     if not _check_upload_queue() is False: is_offline = False
 
     if signing_key != '':
@@ -73,12 +82,7 @@ def insert_block(data: Union[str, bytes], header: str = 'txt',
         our_pub_key = bytesconverter.bytes_to_str(crypto.cryptoutils.get_pub_key_from_priv(our_private_key))
 
     use_subprocess = powchoice.use_subprocess(config)
-    storage_counter = storagecounter.StorageCounter()
     
-    allocationReachedMessage = 'Cannot insert block, disk allocation reached.'
-    if storage_counter.is_full():
-        logger.error(allocationReachedMessage)
-        raise onionrexceptions.DiskAllocationReached
     retData = False
 
     if type(data) is None:
