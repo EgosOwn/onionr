@@ -41,10 +41,14 @@ def _check_upload_queue():
     """
     max_upload_queue: int = 5000
     queue = localcommand.local_command('/gethidden', maxWait=10)
-    up_queue = len(queue.splitlines())
 
-    if up_queue >= max_upload_queue:
-        raise OverflowError
+    try:
+        up_queue = len(queue.splitlines())
+    except AttributeError:
+        pass
+    else:
+        if up_queue >= max_upload_queue:
+            raise OverflowError
     return up_queue
 
 
