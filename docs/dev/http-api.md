@@ -37,6 +37,9 @@ Please note: endpoints that simply provide static web app files are not document
 * /getblockheader/hash
     - Methods: GET
     - Returns the header (metadata section) of a block.
+* /gethidden/
+    - Methods: GET
+    - Returns line separated list of hidden blocks
 * /hitcount
     - Methods: GET
     - Return the amount of requests the public api server has received this session

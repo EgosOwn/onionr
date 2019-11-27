@@ -34,17 +34,34 @@ from onionrproofs import subprocesspow
 import logger
 from onionrtypes import UserIDSecretKey
 
-def insert_block(data: Union[str, bytes], header: str ='txt', 
-                sign: bool =False, encryptType:str ='', symKey:str ='',
-                asymPeer:str ='', meta:dict = {},
-                expire:Union[int, None] =None, disableForward:bool =False, 
-                signing_key:UserIDSecretKey ='')->Union[str,bool]:
+
+def _check_upload_queue():
+    """Returns the current upload queue len
+    raises OverflowError if max
+    """
+    max_upload_queue: int = 5000
+    queue = localcommand.local_command('/gethidden', maxWait=10)
+    up_queue = len(queue.splitlines())
+
+    if up_queue >= max_upload_queue:
+        raise OverflowError
+    return up_queue
+
+
+def insert_block(data: Union[str, bytes], header: str = 'txt',
+                 sign: bool = False, encryptType: str = '', symKey: str = '',
+                 asymPeer: str = '', meta: dict = {},
+                 expire: Union[int, None] = None, disableForward: bool = False,
+                 signing_key: UserIDSecretKey = '') -> Union[str, bool]:
     """
         Inserts a block into the network
         encryptType must be specified to encrypt a block
     """
     our_private_key = crypto.priv_key
     our_pub_key = crypto.pub_key
+
+    is_offline = True
+    if not _check_upload_queue() is False: is_offline = False
 
     if signing_key != '':
         # if it was specified to use an alternative private key
@@ -76,9 +93,6 @@ def insert_block(data: Union[str, bytes], header: str ='txt',
     with open(filepaths.data_nonce_file, 'a') as nonceFile:
         nonceFile.write(dataNonce + '\n')
 
-    #if type(data) is bytes:
-    #    data = data.decode()
-    #data = str(data)
     plaintext = data
     plaintextMeta = {}
     plaintextPeer = asymPeer
@@ -150,7 +164,7 @@ def insert_block(data: Union[str, bytes], header: str ='txt',
 
     # compile metadata
     metadata['meta'] = jsonMeta
-    if len(signature) > 0: # I don't like not pattern
+    if len(signature) > 0:  # I don't like not pattern
         metadata['sig'] = signature
         metadata['signer'] = signer
     metadata['time'] = createTime
@@ -173,7 +187,7 @@ def insert_block(data: Union[str, bytes], header: str ='txt',
             retData = False
         else:
             # Tell the api server through localCommand to wait for the daemon to upload this block to make statistical analysis more difficult
-            if localcommand.local_command('/ping', maxWait=10) == 'pong!':
+            if not is_offline or localcommand.local_command('/ping', maxWait=10) == 'pong!':
                 if config.get('general.security_level', 1) == 0:
                     localcommand.local_command('/waitforshare/' + retData, post=True, maxWait=5)
                 coredb.daemonqueue.daemon_queue_add('uploadBlock', retData)
@@ -194,5 +208,5 @@ def insert_block(data: Union[str, bytes], header: str ='txt',
             events.event('insertdeniable', {'content': plaintext, 'meta': plaintextMeta, 'hash': retData, 'peer': bytesconverter.bytes_to_str(asymPeer)}, threaded = True)
         else:
             events.event('insertblock', {'content': plaintext, 'meta': plaintextMeta, 'hash': retData, 'peer': bytesconverter.bytes_to_str(asymPeer)}, threaded = True)
-    coredb.daemonqueue.daemon_queue_add('remove_from_insert_list', data=dataNonce)
+    coredb.daemonqueue.daemon_queue_add('remove_from_insert_list', data= dataNonce)
     return retData
