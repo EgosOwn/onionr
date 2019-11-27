@@ -30,8 +30,7 @@ def reset():
     plugin_dir = home + '/plugins/'
     if not os.path.exists(home): return
     if os.path.exists(plugin_dir): shutil.rmtree(plugin_dir)
-    
-    setup_default_plugins()
+
     logger.info('Default plugins have been reset.', terminal=True)
 
 reset.onionr_help = "reinstalls default Onionr plugins (e.g. mail). Should be done after git pulls or plugin modification."
