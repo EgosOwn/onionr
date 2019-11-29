@@ -46,6 +46,7 @@ def daemon():
     '''
     if not hastor.has_tor():
         logger.error("Tor is not present in system path or Onionr directory", terminal=True)
+        cleanup.delete_run_files()
         sys.exit(1)
 
     # remove runcheck if it exists
