@@ -73,5 +73,9 @@
     "timers": {
         "lookupBlocks": 25,
         "getBlocks": 10
+    },
+
+    "onboarding": {
+        "done": false
     }
 }

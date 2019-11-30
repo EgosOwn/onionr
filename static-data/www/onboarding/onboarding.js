@@ -39,6 +39,7 @@ function sendConfig(configInfo){
         },
         body: JSON.stringify({configInfo})
         }).then(function(data) {
+            window.location.href = window.location.origin + '/' + window.location.hash
         })
 }
 
@@ -54,6 +55,7 @@ document.getElementById('onboardingForm').onsubmit = function(e){
     submitInfo.deterministic = getCheckValue('useDeterministic')
     submitInfo.mail = getCheckValue('useMail')
     submitInfo.circles = getCheckValue('useCircles')
+    submitInfo.useDark = getCheckValue('useDarkTheme')
 
     if (submitInfo.donate){
         openDonateModal(submitInfo)

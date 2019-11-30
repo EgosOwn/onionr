@@ -140,3 +140,7 @@ class PrivateEndpoints:
         @private_endpoints_bp.route('/gettorsocks')
         def get_tor_socks():
             return Response(str(client_api._too_many.get(NetController).socksPort))
+
+        @private_endpoints_bp.route('/setonboarding', methods=['POST'])
+        def set_onboarding():
+            return Response(config.onboarding.set_config_from_onboarding(request.get_json()))
