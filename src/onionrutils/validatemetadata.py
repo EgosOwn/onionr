@@ -60,7 +60,7 @@ def validate_metadata(metadata, block_data) -> bool:
                     break
                 isFuture = (metadata[i] - epoch.get_epoch())
                 if isFuture > max_clock_difference:
-                    logger.warn('Block timestamp is skewed to the future over the max %s: %s' (max_clock_difference, isFuture))
+                    logger.warn('Block timestamp is skewed to the future over the max %s: %s', (max_clock_difference, isFuture))
                     break
                 if (epoch.get_epoch() - metadata[i]) > maxAge:
                     logger.warn('Block is outdated: %s' % (metadata[i],))
