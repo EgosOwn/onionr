@@ -1,8 +1,10 @@
 '''
     Onionr - Private P2P Communication
 
-    z-fill (zero fill) a string to a specific length, intended for reconstructing block hashes
+    z-fill (zero fill) a string to a specific length
+    intended for reconstructing block hashes
 '''
+from typing import Union
 '''
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -17,10 +19,16 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-def reconstruct_hash(hex_hash, length=64):
+
+
+def reconstruct_hash(hex_hash: Union[str, bytes],
+                     length: int = 64) -> Union[str, bytes]:
+    """Pad hash hex string with zeros, return result"""
     return hex_hash.zfill(length)
 
-def deconstruct_hash(hex_hash):
+
+def deconstruct_hash(hex_hash: Union[str, bytes]) -> Union[str, bytes]:
+    """Remove leading zeros from hex hash, return result"""
     new_hash = ''
     ret_bytes = False
     try:

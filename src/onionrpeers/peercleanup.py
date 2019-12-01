@@ -41,10 +41,8 @@ def peer_cleanup():
             if peerprofiles.PeerProfiles(address).score < min_score:
                 keydb.removekeys.remove_address(address)
                 try:
-                    if (int(epoch.get_epoch()) - int(keydb.transportinfo.get_address_info(address, 'lastConnect'))) >= 600:
-                        expireTime = 600
-                    else:
-                        expireTime = 86400
+                    lastConnect = int(keydb.transportinfo.get_address_info(address, 'lastConnect'))
+                    expireTime = 86400 - int(epoch.get_epoch()) - lastConnect
                     blacklist.addToDB(address, dataType=1, expire=expireTime)
                 except sqlite3.IntegrityError: #TODO just make sure its not a unique constraint issue
                     pass
