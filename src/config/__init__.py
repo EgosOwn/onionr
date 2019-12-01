@@ -21,6 +21,8 @@
 import os, json, logger
 import filepaths
 
+from . import onboarding
+
 _configfile = filepaths.config_file
 _config = {}
 

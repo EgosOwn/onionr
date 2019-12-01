@@ -8,3 +8,5 @@ DeterministicKeyPassphrase = NewType('DeterministicKeyPassphrase', str)
 BlockHash = NewType('BlockHash', str)
 
 OnboardingConfig = NewType('OnboardingConfig', str)
+
+JSONSerializable = NewType('JSONSerializable', str)

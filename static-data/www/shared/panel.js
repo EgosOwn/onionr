@@ -41,3 +41,16 @@ restartBtn.onclick = function(){
     }
 }
 
+
+fetch('/config/get/onboarding.done', {
+    method: 'GET',
+    headers: {
+        "content-type": "application/json",
+        "token": webpass
+    }})
+.then((resp) => resp.text()) // Transform the data into text
+.then(function(data) {
+    if (data === 'false'){
+        window.location.href = window.location.pathname = "/onboarding/" + window.location.hash
+    }
+    })

@@ -4,6 +4,36 @@
     This file contains both the OnionrCommunicate class for communcating with peers
     and code to operate as a daemon, getting commands from the command queue database (see core.Core.daemonQueue)
 '''
+import os
+import time
+
+import config
+import logger
+import onionrpeers
+import onionrplugins as plugins
+from . import onlinepeers, uploadqueue
+from communicatorutils import servicecreator
+from communicatorutils import onionrcommunicatortimers
+from communicatorutils import downloadblocks
+from communicatorutils import lookupblocks
+from communicatorutils import lookupadders
+from communicatorutils import connectnewpeers
+from communicatorutils import uploadblocks
+from communicatorutils import daemonqueuehandler
+from communicatorutils import announcenode, deniableinserts
+from communicatorutils import cooldownpeer
+from communicatorutils import housekeeping
+from communicatorutils import netcheck
+from onionrutils import localcommand
+from onionrutils import epoch
+from etc import humanreadabletime
+import onionrservices
+import filepaths
+from onionrblocks import storagecounter
+from coredb import daemonqueue
+from coredb import dbfiles
+from netcontroller import NetController
+
 '''
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -18,37 +48,20 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import sys, os, time
 
-import config, logger
-import onionrexceptions, onionrpeers
-from onionrblocks import onionrblockapi as block
-from onionrplugins import onionrevents as events
-import onionrplugins as plugins
-from . import onlinepeers, uploadqueue
-from communicatorutils import servicecreator, onionrcommunicatortimers
-from communicatorutils import downloadblocks, lookupblocks, lookupadders
-from communicatorutils import servicecreator, connectnewpeers
-from communicatorutils import uploadblocks
-from communicatorutils import daemonqueuehandler, announcenode, deniableinserts
-from communicatorutils import cooldownpeer, housekeeping, netcheck
-from onionrutils import localcommand, epoch
-from etc import humanreadabletime
-import onionrservices, filepaths
-from onionrblocks import storagecounter
-from coredb import daemonqueue, dbfiles
-from utils import gettransports
-from netcontroller import NetController
 OnionrCommunicatorTimers = onionrcommunicatortimers.OnionrCommunicatorTimers
 
 config.reload()
 class OnionrCommunicatorDaemon:
-    def __init__(self, shared_state, developmentMode=config.get('general.dev_mode', False)):
+    def __init__(self, shared_state, developmentMode=None):
+        if developmentMode is None:
+            developmentMode = config.get('general.dev_mode', False)
+
         # configure logger and stuff
         self.config = config
         self.storage_counter = storagecounter.StorageCounter()
-        self.isOnline = True # Assume we're connected to the internet
-        self.shared_state = shared_state # TooManyObjects module
+        self.isOnline = True  # Assume we're connected to the internet
+        self.shared_state = shared_state  # TooManyObjects module
 
         # list of timer instances
         self.timers = []
@@ -69,8 +82,10 @@ class OnionrCommunicatorDaemon:
         self.offlinePeers = []
         self.cooldownPeer = {}
         self.connectTimes = {}
-        self.peerProfiles = [] # list of peer's profiles (onionrpeers.PeerProfile instances)
-        self.newPeers = [] # Peers merged to us. Don't add to db until we know they're reachable
+        # list of peer's profiles (onionrpeers.PeerProfile instances)
+        self.peerProfiles = []
+        # Peers merged to us. Don't add to db until we know they're reachable
+        self.newPeers = []
         self.announceProgress = {}
         self.announceCache = {}
 
@@ -181,6 +196,12 @@ class OnionrCommunicatorDaemon:
         
         if config.get('general.use_bootstrap', True):
             bootstrappeers.add_bootstrap_list_to_peer_list(self, [], db_only=True)
+
+        if not config.get('onboarding.done', True):
+            logger.info('First run detected. Run openhome to get setup.', terminal=True)
+
+            while not config.get('onboarding.done', True):
+                time.sleep(5)
 
         # Main daemon loop, mainly for calling timers, don't do any complex operations here to avoid locking
         try:

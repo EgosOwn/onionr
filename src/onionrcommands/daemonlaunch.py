@@ -20,6 +20,7 @@
 
 import os, time, sys, platform, sqlite3, signal
 from threading import Thread
+from gevent import time
 
 import toomanyobjs
 
@@ -104,6 +105,7 @@ def daemon():
         time.sleep(1)
     except KeyboardInterrupt:
         pass
+
     events.event('init', threaded = False)
     events.event('daemon_start')
     communicator.startCommunicator(shared_state)
