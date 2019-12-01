@@ -17,10 +17,6 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-requested = []
-
-var windowHeight = window.innerHeight;
-webpassword = webpass
 newPostForm = document.getElementById('addMsg')
 firstLoad = true
 lastLoadedBoard = 'global'
@@ -30,14 +26,12 @@ loadingTimeout = 8000
 
 let toggleLoadingMessage = function(){
     switch (loadingMessage.style.display){
-        case "block":
-        case "inline":
         case "inline-block":
             loadingMessage.style.display = "none"
-        break;
+            break;
         default:
             loadingMessage.style.display = "initial"
-        break;
+            break;
     }
 }
 
@@ -45,37 +39,36 @@ fetch('/flow/version', {
     method: 'GET',
     headers: {
       "token": webpass
-    }})
-.then((resp) => resp.text())
-.then(function(data) {
-    document.getElementById('circlesVersion').innerText = data
+}})
+.then((ver) => ver.text())
+.then(function(ver) {
+    document.getElementById('circlesVersion').innerText = ver
 })
 
-function appendMessages(msg, blockHash, beforeHash, channel){
-    if (channel !== document.getElementById('feedIDInput').value){return}
+function appendMessages(msg, blockHash, beforeHash, channel) {
+    if (channel !== document.getElementById('feedIDInput').value) return // ignore if channel name isn't matching
+    if (msg.length == 0) return // ignore empty messages
+
     var humanDate = new Date(0)
-    if (msg.length == 0){
-        return
-    }
-    //var msg = JSON.parse(msg)
-    var el = document.createElement('div')
     var msgDate = msg['meta']['time']
     var feed = document.getElementById("feed")
     var beforeEl = null
 
     if (msgDate === undefined){
         msgDate = 'unknown'
-    }
-    else{
+    } else {
         humanDate.setUTCSeconds(msgDate)
         msgDate = humanDate.toLocaleTimeString() + ' ' + humanDate.toLocaleDateString()
     }
+
+    var el = document.createElement('div')
     el.className = 'entry'
     el.innerText = msg['content']
-    if (beforeHash !== null){
-        for (x = 0; x < feed.children.length; x++){
-            if (feed.children[x].getAttribute('data-bl') === beforeHash){
-                beforeEl = feed.children[x]
+
+    if (beforeHash !== null) {
+        for (i = 0; i < feed.children.length; i++) {
+            if (feed.children[i].getAttribute('data-bl') === beforeHash) {
+                beforeEl = feed.children[i]
             }
         }
     }
@@ -133,12 +126,13 @@ function getBlocks(){
     var feed = document.getElementById("feed")
     var ch = document.getElementById('feedIDInput').value
     if (lastLoadedBoard !== ch){
+        requested = []
+    
         toggleLoadingMessage()
         loadedAny = false
-        while (feed.firstChild) {
-            feed.removeChild(feed.firstChild);
-        }
-        requested = [] // reset requested list
+
+        while (feed.firstChild) feed.removeChild(feed.firstChild); // remove all messages from feed
+
         setTimeout(function(){
             if (! loadedAny && ch == document.getElementById('feedIDInput').value){
                 PNotify.notice("There are no posts for " + ch + ". You can be the first!")
@@ -156,13 +150,12 @@ function getBlocks(){
     var blockList = feedText.split(',')
 
     for (i = 0; i < blockList.length; i++){
-        while (blockList[i].length < 64) { blockList[i] = "0" + blockList[i] }
+        blockList[i] = "0".repeat(64 - blockList[i].length) + blockList[i] // pad hash with zeroes
+
         if (! requested.includes(blockList[i])){
-            if (blockList[i].length == 0){
-                continue
-            }
-            requested.push(blockList[i])
-            loadMessage(blockList[i], blockList, i, ch)
+            if (blockList[i].length == 0) continue
+            else requested.push(blockList[i])
+            loadMessage(blockList[i], blockList, i, ch);
         }
     }
 }
@@ -172,15 +165,14 @@ function loadMessage(blockHash, blockList, count, channel){
         method: 'GET',
         headers: {
           "token": webpass
-        }})
+    }})
     .then((resp) => resp.json())
     .then(function(data) {
         let before = blockList[count - 1]
         let delay = 2000
         if (typeof before == "undefined"){
             before = null
-        }
-        else{
+        } else {
             let existing = document.getElementsByClassName('cMsgBox')
             for (x = 0; x < existing.length; x++){
                 if (existing[x].getAttribute('data-bl') === before){
@@ -190,10 +182,10 @@ function loadMessage(blockHash, blockList, count, channel){
         }
         setTimeout(function(){appendMessages(data, blockHash, before, channel)}, delay)
         //appendMessages(data, blockHash, before)
-      })
+    })
 }
 
-document.getElementById('refreshFeed').onclick = function(){
+document.getElementById('refreshFeed').onclick = function() {
     getBlocks()
 }
 
@@ -211,7 +203,8 @@ newPostForm.onsubmit = function(){
         headers: {
           "content-type": "application/json",
           "token": webpass
-        }})
+        }
+    })
     .then((resp) => resp.text()) // Transform the data into json
     .then(function(data) {
         newPostForm.style.display = 'block'
@@ -223,8 +216,8 @@ newPostForm.onsubmit = function(){
         }
         PNotify.success({
             text: "Message queued for posting"
-          })
+        })
         setTimeout(function(){getBlocks()}, 500)
-      })
+    })
     return false
 }

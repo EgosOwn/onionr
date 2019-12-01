@@ -21,7 +21,6 @@ def reconstruct_hash(hex_hash, length=64):
     return hex_hash.zfill(length)
 
 def deconstruct_hash(hex_hash):
-    new_hash = ''
     ret_bytes = False
     try:
         hex_hash = hex_hash.decode()
@@ -29,15 +28,10 @@ def deconstruct_hash(hex_hash):
     except AttributeError:
         pass
 
-    c = 0
-    for x in hex_hash:
-        if x == '0':
-            c += 1
-        else:
-            break
-    new_hash = hex_hash[c:]
+    num_zeroes = hex_hash.count('0')
+    new_hash = hex_hash[num_zeroes:]
 
     if ret_bytes:
-
         new_hash = new_hash.encode()
+    
     return new_hash

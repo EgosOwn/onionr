@@ -85,10 +85,7 @@ class PrivateAPI:
             logger.error("client password needs to be set")
             return False
         try:
-            if not hmac.compare_digest(self.clientToken, token):
-                return False
-            else:
-                return True
+            return hmac.compare_digest(self.clientToken, token)
         except TypeError:
             return False
 
