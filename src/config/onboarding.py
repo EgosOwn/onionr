@@ -37,15 +37,21 @@ def set_config_from_onboarding(config_settings: OnboardingConfig):
 
     network_security_level = 0
     theme = "dark"
+    get = _get_val_or_none
 
-    if _get_val_or_none(config_settings, 'stateTarget') == True:
+    if get(config_settings, 'stateTarget') or not get(config_settings, 
+                                                      'networkContribution'):
         config.set('general.security_level', 1)
 
-    if _get_val_or_none(config_settings, 'useDark') == False:
-        config.set('ui.theme', 'light')
+    config.set('ui.theme', 'light')
+    if get(config_settings, 'useDark'):
+        config.set('ui.theme', 'dark')
+    
+    if not get(config_settings, 'useMail'):
+        config.set('plugins.disabled', ['pms'])
     
     config.set('general.store_plaintext_blocks',
-               _get_val_or_none(config_settings, 'plainContrib'))
+               get(config_settings, 'plainContrib'))
 
     
     config.set('onboarding.done', True, savefile=True)

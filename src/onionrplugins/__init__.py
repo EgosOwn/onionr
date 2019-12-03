@@ -30,7 +30,7 @@ _pluginsfolder = dataDir + 'plugins/'
 _instances = dict()
 config.reload()
 
-def reload(onionr = None, stop_event = True):
+def reload(stop_event = True):
     '''
         Reloads all the plugins
     '''
@@ -47,10 +47,10 @@ def reload(onionr = None, stop_event = True):
 
         if stop_event is True:
             for plugin in enabled_plugins:
-                stop(plugin, onionr)
+                stop(plugin)
 
         for plugin in enabled_plugins:
-            start(plugin, onionr)
+            start(plugin)
 
         return True
     except:
@@ -58,7 +58,7 @@ def reload(onionr = None, stop_event = True):
 
     return False
 
-def enable(name, onionr = None, start_event = True):
+def enable(name, start_event = True):
     '''
         Enables a plugin
     '''
@@ -69,7 +69,7 @@ def enable(name, onionr = None, start_event = True):
         enabled_plugins = get_enabled_plugins()
         if not name in enabled_plugins:
             try:
-                events.call(get_plugin(name), 'enable', onionr)
+                events.call(get_plugin(name), 'enable')
             except ImportError as e: # Was getting import error on Gitlab CI test "data"
                 # NOTE: If you are experiencing issues with plugins not being enabled, it might be this resulting from an error in the module
                 # can happen inconsistently (especially between versions)
@@ -92,7 +92,7 @@ def enable(name, onionr = None, start_event = True):
         return False
 
 
-def disable(name, onionr = None, stop_event = True):
+def disable(name, stop_event = True):
     '''
         Disables a plugin
     '''
@@ -105,12 +105,12 @@ def disable(name, onionr = None, stop_event = True):
         config.set('plugins.enabled', enabled_plugins, True)
 
     if exists(name):
-        events.call(get_plugin(name), 'disable', onionr)
+        events.call(get_plugin(name), 'disable')
 
         if stop_event is True:
             stop(name)
 
-def start(name, onionr = None):
+def start(name):
     '''
         Starts the plugin
     '''
@@ -124,7 +124,7 @@ def start(name, onionr = None):
             if plugin is None:
                 raise Exception('Failed to import module.')
             else:
-                events.call(plugin, 'start', onionr)
+                events.call(plugin, 'start')
 
             return plugin
         except:
@@ -134,7 +134,7 @@ def start(name, onionr = None):
 
     return None
 
-def stop(name, onionr = None):
+def stop(name):
     '''
         Stops the plugin
     '''
@@ -148,7 +148,7 @@ def stop(name, onionr = None):
             if plugin is None:
                 raise Exception('Failed to import module.')
             else:
-                events.call(plugin, 'stop', onionr)
+                events.call(plugin, 'stop')
 
             return plugin
         except:

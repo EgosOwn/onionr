@@ -32,7 +32,9 @@ def __event_caller(event_name, data = {}):
         DO NOT call this function, this is for threading code only.
         Instead, call onionrevents.event
     '''
+    disabled = config.get('plugins.disabled')
     for plugin in plugins.get_enabled_plugins():
+        if plugin in disabled: continue
         try:
             call(plugins.get_plugin(plugin), event_name, data, get_pluginapi(data))
         except ModuleNotFoundError as e:

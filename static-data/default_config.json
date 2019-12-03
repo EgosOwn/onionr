@@ -76,6 +76,6 @@
     },
 
     "onboarding": {
-        "done": false
+        "done": true
     }
 }
