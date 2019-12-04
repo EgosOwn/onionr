@@ -62,7 +62,6 @@ function appendMessages(msg, blockHash, beforeHash, channel) {
     }
 
     var el = document.createElement('div')
-    el.className = 'entry'
     el.innerText = msg['content']
 
     if (beforeHash !== null) {
@@ -86,6 +85,9 @@ function appendMessages(msg, blockHash, beforeHash, channel) {
         var clone = document.importNode(template.content, true)
         var div = clone.querySelectorAll("div")
         var identicon = clone.querySelectorAll("img")
+
+        div[0].classList.add('entry')
+        div[0].setAttribute('timestamp', msg['meta']['time'])
 
         div[0].setAttribute('data-bl', blockHash)
         div[2].textContent = msg['content']
@@ -158,6 +160,7 @@ function getBlocks(){
             loadMessage(blockList[i], blockList, i, ch);
         }
     }
+    sortEntries()
 }
 
 function loadMessage(blockHash, blockList, count, channel){
