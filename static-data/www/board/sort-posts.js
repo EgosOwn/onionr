@@ -17,21 +17,14 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-function sortEntries(){
+function sortEntries() {
     var entries = document.getElementsByClassName('entry')
 
-    var timestamp = 0;
-    if (entries.length > 0){
-        timestamp = entries[0].getAttribute('timestamp')
+    if (entries.length > 1) {
+        const sortBy = 'timestamp'
+        const parent = entries[0].parentNode
+
+        const sorted = Array.from(entries).sort((a, b) => b.getAttribute(sortBy) - a.getAttribute(sortBy))
+        sorted.forEach(element => parent.appendChild(element))
     }
-
-    for (i = 0; i < entries.length; i++){
-
-        if (entries[i].getAttribute('timestamp') > timestamp){
-            if(entries[i].previousElementSibling){
-                entries[i].parentNode.insertBefore(entries[i], entries[i].previousElementSibling)
-            }
-        }
-    }
-
 }

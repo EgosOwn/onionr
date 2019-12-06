@@ -58,7 +58,7 @@ function appendMessages(msg, blockHash, beforeHash, channel) {
         msgDate = 'unknown'
     } else {
         humanDate.setUTCSeconds(msgDate)
-        msgDate = humanDate.toLocaleTimeString() + ' ' + humanDate.toLocaleDateString()
+        msgDate = humanDate.toLocaleString("en-US", {timeZone: "Etc/GMT"})
     }
 
     var el = document.createElement('div')
