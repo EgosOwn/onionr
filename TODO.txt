@@ -1,4 +1,3 @@
-* Remove nav bar links for disabled plugins
 * add GUI config editor
 * add multi-device forward secrecy
 * document anonymity & security theory

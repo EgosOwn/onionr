@@ -1,3 +1,53 @@
+/*
+    Onionr - Private P2P Communication
+
+    This file handles the navbar layout and folding 
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+*/
+
+let navbarLinks = document.querySelectorAll('.navbar-start .navbar-item')
+
+let deleteNavbar = function(){
+  fetch('/config/get/plugins.disabled', {
+    headers: {
+        "token": webpass
+    }})
+    .then((resp) => resp.json())
+    .then(function(disabled) {
+
+      if (disabled.length > 0){
+
+        for (x=0; x < navbarLinks.length; x++){
+          if (disabled.includes('pms')){
+            if (navbarLinks[x].innerText == 'Mail'){
+              navbarLinks[x].style.display = 'none'
+            }
+        }
+        if (disabled.includes('flow')){
+          if (navbarLinks[x].innerText == 'Circles'){
+            navbarLinks[x].style.display = 'none'
+          }
+      }
+    
+      }
+  }})
+
+}
+deleteNavbar()
+
+
 document.addEventListener('DOMContentLoaded', () => {
     // This function taken from the official bulma docs
     /*
@@ -25,7 +75,7 @@ document.addEventListener('DOMContentLoaded', () => {
 */
 
     // Get all "navbar-burger" elements
-    const $navbarBurgers = Array.prototype.slice.call(document.querySelectorAll('.navbar-burger'), 0);
+    const $navbarBurgers = Array.prototype.slice.call(document.querySelectorAll('.navbar-burger'), 0)
   
     // Check if there are any navbar burgers
     if ($navbarBurgers.length > 0) {
@@ -47,3 +97,4 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   
   });
+

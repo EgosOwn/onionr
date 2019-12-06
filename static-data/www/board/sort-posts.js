@@ -26,7 +26,7 @@ function sortEntries(){
     }
 
     for (i = 0; i < entries.length; i++){
-        console.log(i)
+
         if (entries[i].getAttribute('timestamp') > timestamp){
             if(entries[i].previousElementSibling){
                 entries[i].parentNode.insertBefore(entries[i], entries[i].previousElementSibling)

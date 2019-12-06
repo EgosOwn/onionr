@@ -35,8 +35,6 @@ def _get_val_or_none(json: dict, key: str) -> Union[None, JSONSerializable]:
 
 def set_config_from_onboarding(config_settings: OnboardingConfig):
 
-    network_security_level = 0
-    theme = "dark"
     get = _get_val_or_none
 
     if get(config_settings, 'stateTarget') or not get(config_settings, 
@@ -47,18 +45,25 @@ def set_config_from_onboarding(config_settings: OnboardingConfig):
     if get(config_settings, 'useDark'):
         config.set('ui.theme', 'dark')
     
+    if not get(config_settings,
+               'useCircles') or config.get('general.security_level') > 0:
+        config.set('plugins.disabled',
+                   config.get('plugins.disabled').append('flow'))
+
     if not get(config_settings, 'useMail'):
-        config.set('plugins.disabled', ['pms'])
+        config.set('plugins.disabled',
+                   config.get('plugins.disabled').append('pms'))
     
     config.set('general.store_plaintext_blocks',
                get(config_settings, 'plainContrib'))
 
-    
     config.set('onboarding.done', True, savefile=True)
+
 
 def set_onboarding_finished():
     """Create the onboarding completed setting file"""
     Path(onboarding_mark_file).touch()
+
 
 def is_onboarding_finished() -> bool:
     return True
