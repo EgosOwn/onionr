@@ -77,7 +77,7 @@ class SubprocessPOW:
         """spawn the multiproc handler threads"""
         # Create a new thread for each subprocess
         for _ in range(self.subproc_count): # noqa
-            threading.Thread(target=self._spawn_proc).start()
+            threading.Thread(target=self._spawn_proc, daemon=True).start()
         # Monitor the processes for a payload, shut them down when its found
         while True:
             if self.payload is None:
@@ -90,7 +90,7 @@ class SubprocessPOW:
         """Create a child proof of work process
         wait for data and send shutdown signal when its found"""
         parent_conn, child_conn = Pipe()
-        p = Process(target=self.do_pow, args=(child_conn,))
+        p = Process(target=self.do_pow, args=(child_conn,), daemon=True)
         p.start()
         p.join()
         payload = None

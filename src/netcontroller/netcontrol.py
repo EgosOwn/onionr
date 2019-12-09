@@ -18,10 +18,12 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 import os, sys, base64, subprocess, signal, time
+import multiprocessing
 import platform # For windows sigkill workaround
 import config, logger
 from . import getopenport
 from utils import identifyhome
+from . import watchdog
 config.reload()
 TOR_KILL_WAIT = 3
 
@@ -174,6 +176,8 @@ HiddenServicePort 80 ''' + self.apiServerIP + ''':''' + str(self.hsPort)
         torPidFile = open(self.dataDir + 'torPid.txt', 'w')
         torPidFile.write(str(tor.pid))
         torPidFile.close()
+
+        multiprocessing.Process(target=watchdog.watchdog, args=[os.getpid(), tor.pid]).start()
 
         return True
 
