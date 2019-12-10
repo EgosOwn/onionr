@@ -5,6 +5,7 @@
 """
 
 import time
+import os
 
 import psutil
 
@@ -26,6 +27,12 @@ import psutil
 
 def watchdog(parent_proc, child_proc):
     """watch for proc1 to die, then kill proc2"""
+
+    try:
+        if os.forkpty() != 0:
+            return
+    except AttributeError:
+        pass
 
     parent_proc = psutil.Process(parent_proc)
     child_proc = psutil.Process(child_proc)

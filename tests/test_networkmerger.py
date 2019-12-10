@@ -7,7 +7,7 @@ import unittest, uuid
 TEST_DIR = 'testdata/%s-%s' % (uuid.uuid4(), os.path.basename(__file__)) + '/'
 print("Test directory:", TEST_DIR)
 os.environ["ONIONR_HOME"] = TEST_DIR
-from utils import networkmerger, createdirs
+from utils import networkmerger
 from coredb import keydb
 import onionrsetup as setup
 from utils import createdirs

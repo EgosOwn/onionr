@@ -22,8 +22,10 @@ import multiprocessing
 import platform # For windows sigkill workaround
 import config, logger
 from . import getopenport
-from utils import identifyhome
 from . import watchdog
+from . import customtorrc
+from utils import identifyhome
+
 config.reload()
 TOR_KILL_WAIT = 3
 
@@ -106,6 +108,8 @@ HiddenServiceMaxStreamsCloseCircuit 1
 HiddenServicePort 80 ''' + self.apiServerIP + ''':''' + str(self.hsPort)
 
         torrcData = add_bridges(torrcData)
+
+        torrcData += customtorrc.get_custom_torrc()
 
         torrc = open(self.torConfigLocation, 'w')
         torrc.write(torrcData)
