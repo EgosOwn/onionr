@@ -1,9 +1,27 @@
-'''
+"""
     Onionr - Private P2P Communication
 
-    Netcontroller library, used to control/work with Tor/I2P and send requests through them
-'''
-'''
+    Netcontroller library, used to control/work with Tor and send requests through them
+"""
+import os
+import base64
+import subprocess
+import signal
+import time
+import multiprocessing
+import platform  # For windows sigkill workaround
+
+from onionrtypes import BooleanSuccessState
+import config
+import logger
+from .. import getopenport
+from .. import watchdog
+from . import customtorrc
+from . import gentorrc
+from . import addbridges
+from . import torbinary
+from utils import identifyhome
+"""
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -16,112 +34,36 @@
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
-'''
-import os, sys, base64, subprocess, signal, time
-import multiprocessing
-import platform # For windows sigkill workaround
-import config, logger
-from . import getopenport
-from . import watchdog
-from . import customtorrc
-from utils import identifyhome
+"""
 
 config.reload()
 TOR_KILL_WAIT = 3
+addbridges = addbridges.add_bridges
 
-def add_bridges(torrc: str)->str:
-    """Configure tor to use a bridge using Onionr config keys"""
-    if config.get('tor.use_bridge', False) == True:
-        bridge = config.get('tor.bridge_ip', None)
-        if not bridge is None:
-            fingerprint = config.get('tor.bridge_fingerprint', '') # allow blank fingerprint purposefully
-            torrc += '\nUseBridges 1\nBridge %s %s\n' % (bridge, fingerprint)
-        else:
-            logger.warn('bridge was enabled but not specified in config')
-
-    return torrc
 
 class NetController:
-    '''
-        This class handles hidden service setup on Tor and I2P
-    '''
+    """
+        This class handles hidden service setup on Tor
+    """
 
     def __init__(self, hsPort, apiServerIP='127.0.0.1'):
         # set data dir
         self.dataDir = identifyhome.identify_home()
-
+        self.socksPort = getopenport.get_open_port()
         self.torConfigLocation = self.dataDir + 'torrc'
         self.readyState = False
-        self.socksPort = getopenport.get_open_port()
         self.hsPort = hsPort
         self._torInstnace = ''
         self.myID = ''
         self.apiServerIP = apiServerIP
+        self.torBinary = torbinary.tor_binary()
 
-        if os.path.exists('./tor'):
-            self.torBinary = './tor'
-        elif os.path.exists('/usr/bin/tor'):
-            self.torBinary = '/usr/bin/tor'
-        else:
-            self.torBinary = 'tor'
-
-    def generateTorrc(self):
-        '''
-            Generate a torrc file for our tor instance
-        '''
-        hsVer = '# v2 onions'
-        if config.get('tor.v3onions'):
-            hsVer = 'HiddenServiceVersion 3'
-
-        if os.path.exists(self.torConfigLocation):
-            os.remove(self.torConfigLocation)
-
-        # Set the Tor control password. Meant to make it harder to manipulate our Tor instance
-        plaintext = base64.b64encode(os.urandom(50)).decode()
-        config.set('tor.controlpassword', plaintext, savefile=True)
-        config.set('tor.socksport', self.socksPort, savefile=True)
-
-        controlPort = getopenport.get_open_port()
-
-        config.set('tor.controlPort', controlPort, savefile=True)
-
-        hashedPassword = subprocess.Popen([self.torBinary, '--hash-password', plaintext], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        for line in iter(hashedPassword.stdout.readline, b''):
-            password = line.decode()
-            if 'warn' not in password:
-                break
-
-        torrcData = '''SocksPort ''' + str(self.socksPort) + ''' OnionTrafficOnly
-DataDirectory ''' + self.dataDir + '''tordata/
-CookieAuthentication 1
-KeepalivePeriod 40
-CircuitsAvailableTimeout 86400
-ControlPort ''' + str(controlPort) + '''
-HashedControlPassword ''' + str(password) + '''
-        '''
-        if config.get('general.security_level', 1) == 0:
-            torrcData += '''\nHiddenServiceDir ''' + self.dataDir + '''hs/
-\n''' + hsVer + '''\n
-HiddenServiceNumIntroductionPoints 6
-HiddenServiceMaxStreams 100
-HiddenServiceMaxStreamsCloseCircuit 1
-HiddenServicePort 80 ''' + self.apiServerIP + ''':''' + str(self.hsPort)
-
-        torrcData = add_bridges(torrcData)
-
-        torrcData += customtorrc.get_custom_torrc()
-
-        torrc = open(self.torConfigLocation, 'w')
-        torrc.write(torrcData)
-        torrc.close()
-        return
-
-    def startTor(self, gen_torrc=True):
-        '''
+    def startTor(self, gen_torrc=True) -> BooleanSuccessState:
+        """
             Start Tor with onion service on port 80 & socks proxy on random port
-        '''
+        """
         if gen_torrc:
-            self.generateTorrc()
+            gentorrc.generate_torrc(self, self.apiServerIP)
 
         if os.path.exists('./tor'):
             self.torBinary = './tor'
@@ -137,7 +79,9 @@ HiddenServicePort 80 ''' + self.apiServerIP + ''':''' + str(self.hsPort)
             return False
         else:
             # Test Tor Version
-            torVersion = subprocess.Popen([self.torBinary, '--version'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            torVersion = subprocess.Popen([self.torBinary, '--version'],
+                                          stdout=subprocess.PIPE,
+                                          stderr=subprocess.PIPE)
             for line in iter(torVersion.stdout.readline, b''):
                 if 'Tor 0.2.' in line.decode():
                     logger.fatal('Tor 0.3+ required', terminal=True)
@@ -177,18 +121,18 @@ HiddenServicePort 80 ''' + self.apiServerIP + ''':''' + str(self.hsPort)
         except FileNotFoundError:
             self.myID = ""
 
-        torPidFile = open(self.dataDir + 'torPid.txt', 'w')
-        torPidFile.write(str(tor.pid))
-        torPidFile.close()
+        with open(self.dataDir + 'torPid.txt', 'w') as tor_pid_file:
+            tor_pid_file.write(str(tor.pid))
 
-        multiprocessing.Process(target=watchdog.watchdog, args=[os.getpid(), tor.pid]).start()
+        multiprocessing.Process(target=watchdog.watchdog,
+                                args=[os.getpid(), tor.pid]).start()
 
         return True
 
     def killTor(self):
-        '''
+        """
             Properly kill tor based on pid saved to file
-        '''
+        """
 
         try:
             pid = open(self.dataDir + 'torPid.txt', 'r')
@@ -199,7 +143,7 @@ HiddenServicePort 80 ''' + self.apiServerIP + ''':''' + str(self.hsPort)
 
         try:
             int(pidN)
-        except:
+        except ValueError:
             return
 
         try:
@@ -220,12 +164,12 @@ HiddenServicePort 80 ''' + self.apiServerIP + ''':''' + str(self.hsPort)
             pass
 
         if 'windows' == platform.system().lower():
-            os.system('taskkill /PID %s /F' % (pidN,))
+            os.system(f'taskkill /PID {pidN} /F')
             time.sleep(0.5)
             return
         try:
             os.kill(int(pidN), signal.SIGKILL)
-        except (ProcessLookupError, PermissionError) as e:
+        except (ProcessLookupError, PermissionError):
             pass
         try:
             os.remove(self.dataDir + 'tordata/lock')

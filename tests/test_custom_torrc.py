@@ -8,7 +8,7 @@ print("Test directory:", TEST_DIR)
 os.environ["ONIONR_HOME"] = TEST_DIR
 from utils import createdirs, identifyhome
 import onionrsetup as setup
-from netcontroller import customtorrc
+from netcontroller.torcontrol import customtorrc
 createdirs.create_dirs()
 setup.setup_config()
 

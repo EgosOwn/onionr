@@ -1,9 +1,11 @@
-'''
+"""
     Onionr - Private P2P Communication
 
-    get the tor binary path
-'''
-'''
+    Add bridge info to torrc configuration string
+"""
+import config
+import logger
+"""
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -16,13 +18,18 @@
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
-'''
-import os
-from shutil import which
+"""
 
-def tor_binary():
-    '''Return tor binary path or none if not exists'''
-    tor_path = './tor'
-    if not os.path.exists(tor_path):
-        tor_path = which('tor')
-    return tor_path
+
+def add_bridges(torrc: str) -> str:
+    """Configure tor to use a bridge using Onionr config keys"""
+    if config.get('tor.use_bridge', False) is True:
+        bridge = config.get('tor.bridge_ip', None)
+        if bridge is not None:
+            # allow blank fingerprint purposefully
+            fingerprint = config.get('tor.bridge_fingerprint', '')
+            torrc += '\nUseBridges 1\nBridge %s %s\n' % (bridge, fingerprint)
+        else:
+            logger.warn('bridge was enabled but not specified in config')
+
+    return torrc
