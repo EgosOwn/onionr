@@ -104,3 +104,6 @@ class MissingAddress(Exception):
 
 class ContactDeleted(Exception):
     pass
+
+class PythonVersion(Exception):
+    pass

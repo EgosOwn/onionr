@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
-'''
+"""
     Onionr - Private P2P Communication
 
     This file initializes Onionr when ran to be a daemon or with commands
 
     Run with 'help' for usage.
-'''
-'''
+"""
+"""
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -19,7 +19,7 @@
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
-'''
+"""
 
 # Set the user's locale for encoding reasons
 import locale # noqa
@@ -37,8 +37,12 @@ except ModuleNotFoundError as e:
     print('Onionr needs ' + str(e) + ' installed')
 
 # Onionr imports
-from etc import onionrvalues # For different Onionr related constants such as versions
-import onionrsetup as setup
+
+# For different Onionr related constants such as versions
+from etc import onionrvalues # noqa
+
+import onionrexceptions # noqa
+import onionrsetup as setup # noqa
 
 min_ver = onionrvalues.MIN_PY_VERSION
 
@@ -51,10 +55,20 @@ if sys.version_info[0] == 2 or sys.version_info[1] < min_ver:
 from utils import createdirs
 createdirs.create_dirs()
 
-from onionrcommands import parser
-from onionrplugins import onionrevents as events
+import bigbrother # noqa
+from onionrcommands import parser # noqa
+from onionrplugins import onionrevents as events # noqa
 
 setup.setup_config()
+
+import config # noqa
+
+if config.get('advanced.security_auditing', True):
+    try:
+        bigbrother.enable_ministries()
+    except onionrexceptions.PythonVersion:
+        pass
+
 setup.setup_default_plugins()
 
 
