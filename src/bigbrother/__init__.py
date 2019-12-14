@@ -35,6 +35,9 @@ def _auditing_supported():
 def sys_hook_entrypoint(event, info):
     if event == 'socket.connect':
         ministry.ofcommunication.detect_socket_leaks(info)
+    elif event == 'exec':
+        # logs and block both exec and eval
+        ministry.ofexec.block_exec(event, info)
 
 
 def enable_ministries(disable_hooks: Iterable = []):

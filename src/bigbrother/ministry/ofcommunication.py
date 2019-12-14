@@ -6,6 +6,7 @@
 import ipaddress
 
 import logger
+from onionrexceptions import NetworkLeak
 """
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -30,9 +31,15 @@ def detect_socket_leaks(socket_event):
     ip_address = socket_event[1][0]
 
     # validate is valid ip address (no hostname, etc)
-    # raises valueerror if not
-    ipaddress.ip_address(ip_address)
+    # raises NetworkLeak if not
+    try:
+        ipaddress.ip_address(ip_address)
+    except ValueError:
+        logger.warn(f'Conn made to {ip_address} outside of Tor/similar')
+        raise NetworkLeak('Conn to non local IP, this is a privacy concern!')
+
+    # Validate that the IP is localhost ipv4
 
     if not ip_address.startswith('127'):
         logger.warn(f'Conn made to {ip_address} outside of Tor/similar')
-        raise ValueError('Conn to non loopback IP, this is a privacy concern!')
+        raise NetworkLeak('Conn to non local IP, this is a privacy concern!')

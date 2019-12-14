@@ -105,5 +105,15 @@ class MissingAddress(Exception):
 class ContactDeleted(Exception):
     pass
 
+# Version Errors
+
 class PythonVersion(Exception):
+    pass
+
+# Auditing exceptions
+
+class NetworkLeak(Exception):
+    pass
+
+class ArbitraryCodeExec(Exception):
     pass
