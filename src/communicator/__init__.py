@@ -63,6 +63,9 @@ class OnionrCommunicatorDaemon:
         self.isOnline = True  # Assume we're connected to the internet
         self.shared_state = shared_state  # TooManyObjects module
 
+        if config.get('general.offline_mode', False):
+            self.isOnline = False
+
         # list of timer instances
         self.timers = []
 
