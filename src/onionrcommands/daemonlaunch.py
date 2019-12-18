@@ -1,30 +1,19 @@
-'''
-    Onionr - Private P2P Communication
-
-    launch the api servers and communicator
-'''
-'''
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <https://www.gnu.org/licenses/>.
-'''
-
-import os, time, sys, platform, sqlite3, signal
+""" Onionr - Private P2P Communication
+   launch the api servers and communicator
+"""
+import os
+import sys
+import platform
+import sqlite3
 from threading import Thread
 from gevent import time
 
 import toomanyobjs
 
-import config, apiservers, logger, communicator
+import config
+import apiservers
+import logger
+import communicator
 from onionrplugins import onionrevents as events
 from netcontroller import NetController
 from onionrutils import localcommand
