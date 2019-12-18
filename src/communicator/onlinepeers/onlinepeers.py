@@ -36,7 +36,7 @@ def get_online_peers(comm_inst):
     needed = maxPeers - len(comm_inst.onlinePeers)
 
     last_seen = 'never'
-    if not isinstance(comm_inst.lastNodeSeen, None):
+    if not isinstance(comm_inst.lastNodeSeen, type(None)):
         last_seen = humanreadabletime.human_readable_time(
             comm_inst.lastNodeSeen)
 
