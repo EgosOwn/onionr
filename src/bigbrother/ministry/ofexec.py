@@ -1,9 +1,10 @@
 """
     Onionr - Private P2P Communication
 
-    Prevent eval/exec and log it
+    Prevent eval/exec/os.system and log it
 """
 import base64
+import platform
 
 import logger
 from utils import identifyhome
@@ -24,12 +25,30 @@ from onionrexceptions import ArbitraryCodeExec
 """
 
 
+def block_system(cmd):
+    allowed = 'taskkill /PID '
+    is_ok = False
+    if platform.platform == 'Windows':
+        if cmd.startswith(allowed):
+            for c in cmd.split(allowed)[1]:
+                if not c.isalnum() or c not in ('/', 'F', ' '):
+                    break
+            else:
+                is_ok = True
+    if not is_ok:
+        logger.warn('POSSIBLE EXPLOIT DETECTED, SEE LOGS', terminal=True)
+        logger.warn(f'POSSIBLE EXPLOIT: shell command not in whitelist: {cmd}')
+        raise ArbitraryCodeExec('os.system command not in whitelist')
+
+
 def block_exec(event, info):
-    """Prevent arbitrary code execution in eval/exec and log it"""
+    """Prevent arbitrary code execution in eval/exec and log it
+    """
     # because libraries have stupid amounts of compile/exec/eval,
     # We have to use a whitelist where it can be tolerated
     whitelisted_code = [
                         'netrc.py',
+                        'shlex.py',
                         '<werkzeug routing>',
                         'werkzeug/test.py',
                         'multiprocessing/popen_fork.py',

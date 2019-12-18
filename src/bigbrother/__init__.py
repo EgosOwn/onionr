@@ -38,6 +38,8 @@ def sys_hook_entrypoint(event, info):
     elif event == 'exec':
         # logs and block both exec and eval
         ministry.ofexec.block_exec(event, info)
+    elif event == 'system':
+        ministry.ofexec.block_system(info)
 
 
 def enable_ministries(disable_hooks: Iterable = []):
