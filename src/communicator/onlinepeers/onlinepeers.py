@@ -35,6 +35,11 @@ def get_online_peers(comm_inst):
     maxPeers = int(config.get('peers.max_connect', 10))
     needed = maxPeers - len(comm_inst.onlinePeers)
 
+    last_seen = 'never'
+    if not isinstance(comm_inst.lastNodeSeen, None):
+        last_seen = humanreadabletime.human_readable_time(
+            comm_inst.lastNodeSeen)
+
     for i in range(needed):
         if len(comm_inst.onlinePeers) == 0:
             comm_inst.connectNewPeer(useBootstrap=True)
@@ -45,7 +50,9 @@ def get_online_peers(comm_inst):
             break
     else:
         if len(comm_inst.onlinePeers) == 0:
-            logger.debug('Couldn\'t connect to any peers.' + (' Last node seen %s ago.' % humanreadabletime.human_readable_time(time.time() - comm_inst.lastNodeSeen) if not comm_inst.lastNodeSeen is None else ''), terminal=True)
+            logger.debug
+            ('Couldn\'t connect to any peers.' +
+             f' Last node seen {last_seen}  ago.')
         else:
             comm_inst.lastNodeSeen = time.time()
     comm_inst.decrementThreadCount('get_online_peers')
