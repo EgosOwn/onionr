@@ -28,6 +28,9 @@ def get_online_peers(comm_inst):
         ]connects to more peers if we have none connected
     """
     config = comm_inst.config
+    if config.get('general.offline_mode', False):
+        comm_inst.decrementThreadCount('get_online_peers')
+        return
     logger.debug('Refreshing peer pool...')
     maxPeers = int(config.get('peers.max_connect', 10))
     needed = maxPeers - len(comm_inst.onlinePeers)
