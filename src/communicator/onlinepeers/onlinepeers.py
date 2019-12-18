@@ -1,9 +1,12 @@
-'''
+"""
     Onionr - Private P2P Communication
 
     get online peers in a communicator instance
-'''
-'''
+"""
+import time
+from etc import humanreadabletime
+import logger
+"""
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -16,14 +19,14 @@
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
-'''
-import time
-from etc import humanreadabletime
-import logger
+"""
+
+
 def get_online_peers(comm_inst):
-    '''
-        Manages the comm_inst.onlinePeers attribute list, connects to more peers if we have none connected
-    '''
+    """
+        Manages the comm_inst.onlinePeers attribute list,
+        ]connects to more peers if we have none connected
+    """
     config = comm_inst.config
     logger.debug('Refreshing peer pool...')
     maxPeers = int(config.get('peers.max_connect', 10))
