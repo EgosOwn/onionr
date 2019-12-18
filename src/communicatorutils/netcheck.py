@@ -37,9 +37,12 @@ def net_check(comm_inst):
             pass
         if not rec and not netutils.checkNetwork(torPort=comm_inst.proxyPort):
             if not comm_inst.shutdown:
-                logger.warn('Network check failed, are you connected to the Internet, and is Tor working?', terminal=True)
-                restarttor.restart(comm_inst)
-                comm_inst.offlinePeers = []
+                if not comm_inst.config.get('general.offline_mode', False):
+                    logger.warn('Network check failed, are you connected to ' +
+                                'the Internet, and is Tor working?',
+                                terminal=True)
+                    restarttor.restart(comm_inst)
+                    comm_inst.offlinePeers = []
             comm_inst.isOnline = False
         else:
             comm_inst.isOnline = True
