@@ -36,7 +36,8 @@ def detect_socket_leaks(socket_event):
         ipaddress.ip_address(ip_address)
     except ValueError:
         logger.warn(f'Conn made to {ip_address} outside of Tor/similar')
-        raise NetworkLeak('Conn to non local IP, this is a privacy concern!')
+        raise \
+            NetworkLeak('Conn to host/non local IP, this is a privacy issue!')
 
     # Validate that the IP is localhost ipv4
 
