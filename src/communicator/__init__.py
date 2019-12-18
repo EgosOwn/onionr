@@ -173,7 +173,8 @@ class OnionrCommunicatorDaemon:
             deniableBlockTimer.count = (deniableBlockTimer.frequency - 175)
 
         # Timer to check for connectivity, through Tor to various high-profile onion services
-        netCheckTimer = OnionrCommunicatorTimers(self, netcheck.net_check, 500, my_args=[self], max_threads=1)
+        OnionrCommunicatorTimers(self, netcheck.net_check, 500,
+                                 my_args=[self], max_threads=1)
 
         # Announce the public API server transport address to other nodes if security level allows
         if config.get('general.security_level', 1) == 0 and config.get('general.announce_node', True):
@@ -214,9 +215,6 @@ class OnionrCommunicatorDaemon:
                         break
                     i.processTimer()
                 time.sleep(self.delay)
-                # Debug to print out used FDs (regular and net)
-                #proc = psutil.Process()
-                #print(proc.open_files(), len(psutil.net_connections()))
         except KeyboardInterrupt:
             self.shutdown = True
             pass
