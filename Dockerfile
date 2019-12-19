@@ -1,10 +1,10 @@
-FROM ubuntu:disco
+FROM python
 
 #Base settings
 ENV HOME /root
 
 #Install needed packages
-RUN apt update && apt install -y python3 python3-dev python3-pip tor locales nano sqlite3
+RUN apt update && apt install -y  tor locales
 
 RUN sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen && \
     locale-gen
