@@ -1,9 +1,22 @@
-'''
-    Onionr - Private P2P Communication
+"""Onionr - Private P2P Communication.
 
-    This module defines user ID-related CLI commands
-'''
-'''
+This module defines user ID-related CLI commands
+"""
+import sys
+import getpass
+
+import unpaddedbase32
+import niceware
+
+import vanityonionr
+import logger
+import onionrexceptions
+from onionrutils import stringvalidators, bytesconverter
+import config
+import keymanager
+import onionrcrypto
+from etc import onionrvalues
+"""
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -16,60 +29,72 @@
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
-'''
+"""
 
-import sys, getpass
-
-import unpaddedbase32
-import niceware
-
-import vanityonionr
-import logger, onionrexceptions
-from onionrutils import stringvalidators, bytesconverter
-from onionrusers import onionrusers, contactmanager
-import config
-from coredb import keydb
-import keymanager, onionrcrypto
-from etc import onionrvalues
 
 DETERMINISTIC_REQUIREMENT = onionrvalues.PASSWORD_LENGTH
+
+
 def add_ID():
+    """Command to create a new user ID key pair."""
     key_manager = keymanager.KeyManager()
     try:
-        sys.argv[2]
-        if not sys.argv[2].lower() == 'true': raise ValueError
-    except (IndexError, ValueError) as e:
+        sys.argv[2]  # pylint: disable=W0104
+        if not sys.argv[2].lower() == 'true':
+            raise ValueError
+    except (IndexError, ValueError):
         newID = key_manager.addKey()[0]
     else:
-        logger.warn('Deterministic keys require random and long passphrases.', terminal=True)
-        logger.warn('If a good passphrase is not used, your key can be easily stolen.', terminal=True)
-        logger.warn('You should use a series of hard to guess words, see this for reference: https://www.xkcd.com/936/', terminal=True)
+        logger.warn(
+            'Deterministic keys require random and long passphrases.',
+            terminal=True)
+        logger.warn(
+            'If a good passphrase is not used, your key can be easily stolen.',
+            terminal=True)
+        logger.warn(
+            'You should use a series of hard to guess words, ' +
+            'see this for reference: https://www.xkcd.com/936/',
+            terminal=True)
         try:
-            pass1 = getpass.getpass(prompt='Enter at least %s characters: ' % (DETERMINISTIC_REQUIREMENT,))
+            pass1 = getpass.getpass(
+                prompt='Enter at least %s characters: ' %
+                (DETERMINISTIC_REQUIREMENT,))
             pass2 = getpass.getpass(prompt='Confirm entry: ')
         except KeyboardInterrupt:
             sys.exit(42)
         if onionrcrypto.cryptoutils.safe_compare(pass1, pass2):
             try:
-                logger.info('Generating deterministic key. This can take a while.', terminal=True)
+                logger.info(
+                    'Generating deterministic key. This can take a while.',
+                    terminal=True)
                 newID, privKey = onionrcrypto.generate_deterministic(pass1)
             except onionrexceptions.PasswordStrengthError:
-                logger.error('Passphrase must use at least %s characters.' % (DETERMINISTIC_REQUIREMENT,), terminal=True)
+                logger.error('Passphrase must use at least %s characters.' % (
+                    DETERMINISTIC_REQUIREMENT,), terminal=True)
                 sys.exit(1)
         else:
             logger.error('Passwords do not match.', terminal=True)
             sys.exit(1)
         try:
-            key_manager.addKey(pubKey=newID, 
-            privKey=privKey)
+            key_manager.addKey(pubKey=newID,
+                               privKey=privKey)
         except ValueError:
-            logger.error('That ID is already available, you can change to it with the change-id command.', terminal=True)
+            logger.error(
+                'That ID is already available, you can change to it ' +
+                'with the change-id command.', terminal=True)
             return
-    logger.info('Added ID: %s' % (bytesconverter.bytes_to_str(newID),), terminal=True)
+    logger.info('Added ID: %s' %
+                (bytesconverter.bytes_to_str(newID),), terminal=True)
 
-add_ID.onionr_help = "If the first argument is true, Onionr will show a deterministic generation prompt. Otherwise it will generate & save a new random key pair."
+
+add_ID.onionr_help = "If the first argument is true, "  # type: ignore
+add_ID.onionr_help += "Onionr will show a deterministic "  # type: ignore
+add_ID.onionr_help += "generation prompt. Otherwise it will "  # type: ignore
+add_ID.onionr_help += "generate & save a new random key pair."  # type: ignore
+
 
 def change_ID():
+    """Command to change active ID from argv or stdin."""
     key_manager = keymanager.KeyManager()
     try:
         key = sys.argv[2]
@@ -89,14 +114,24 @@ def change_ID():
         else:
             logger.warn('Invalid key %s' % (key,), terminal=True)
 
-change_ID.onionr_help = "<pubkey>: Switches Onionr to use a different user ID key. You should immediately restart Onionr if it is running."
+
+change_ID.onionr_help = "<pubkey>: Switches Onionr to "  # type: ignore
+change_ID.onionr_help += "use a different user ID key. "  # type: ignore
+change_ID.onionr_help += "You should immediately restart "  # type: ignore
+change_ID.onionr_help += "Onionr if it is running."  # type: ignore
+
 
 def add_vanity():
+    """Command to generate menmonic vanity key pair."""
     key_manager = keymanager.KeyManager()
-    tell = lambda tell: logger.info(tell, terminal=True)
+
+    def tell(tell):
+        return logger.info(tell, terminal=True)
+
     words = ''
     length = len(sys.argv) - 2
-    if length == 0: return
+    if length == 0:
+        return
     for i in range(2, len(sys.argv)):
         words += ' '
         words += sys.argv[i]
@@ -108,12 +143,19 @@ def add_vanity():
         try:
             vanity = vanityonionr.find_multiprocess(words)
         except ValueError:
-            logger.warn('Vanity words must be valid english bip39', terminal=True)
+            logger.warn('Vanity words must be valid english bip39',
+                        terminal=True)
         else:
             b32_pub = unpaddedbase32.b32encode(vanity[0])
-            tell('Found vanity address:\n' + niceware.bytes_to_passphrase(vanity[0]))
+            tell('Found vanity address:\n' +
+                 niceware.bytes_to_passphrase(vanity[0]))
             tell('Base32 Public key: %s' % (b32_pub.decode(),))
             key_manager.addKey(b32_pub, unpaddedbase32.b32encode(vanity[1]))
     except KeyboardInterrupt:
         pass
-add_vanity.onionr_help = "<space separated words> - Generates and stores an Onionr vanity address (see https://github.com/moreati/python-niceware/blob/master/niceware/wordlist.py)"
+
+
+add_vanity.onionr_help = "<space separated words> - "  # type: ignore
+add_vanity.onionr_help += "Generates and stores an "  # type: ignore
+add_vanity.onionr_help += "Onionr vanity address "  # type: ignore
+add_vanity.onionr_help += "(see is.gd/YklHGe)"  # type: ignore

@@ -1,7 +1,6 @@
-"""
-    Onionr - Private P2P Communication
+"""Onionr - Private P2P Communication.
 
-    This module loads in the Onionr arguments and their help messages
+This module loads in the Onionr arguments and their help messages
 """
 import sys
 import os
@@ -28,10 +27,12 @@ from . import arguments, recommend
 
 
 def plugin_command(cmd):
+    """Build a plugin command function name."""
     return f'on_{cmd}_cmd'
 
 
 def register_plugin_commands(cmd) -> bool:
+    """Find a plugin command hook and execute it for a given cmd."""
     plugin_cmd = plugin_command(cmd)
     for pl in onionrplugins.get_enabled_plugins():
         pl = onionrplugins.get_plugin(pl)
@@ -46,11 +47,10 @@ def _show_term(msg: str):
 
 
 def register():
-    """Registers commands and handles help command processing"""
+    """Register commands and handles help command processing."""
     def get_help_message(cmd: str,
                          default: str = 'No help available for this command'):
-        """Return help message for a given command, supports plugin commands"""
-
+        """Print help message for a given command, supports plugin commands."""
         pl_cmd = plugin_command(cmd)
         for pl in onionrplugins.get_enabled_plugins():
             pl = onionrplugins.get_plugin(pl)
@@ -61,7 +61,7 @@ def register():
                     pass
 
         for i in arguments.get_arguments():
-            for alias in i:
+            for _ in i:
                 try:
                     return arguments.get_help(cmd)
                 except AttributeError:
@@ -78,16 +78,19 @@ def register():
         return
 
     is_help_cmd = False
-    if cmd.replace('--', '').lower() == 'help': is_help_cmd = True
+    if cmd.replace('--', '').lower() == 'help':
+        is_help_cmd = True
 
     try:
         try:
             if cmd not in ('start', 'details', 'show-details'):
                 os.chdir(os.environ['ORIG_ONIONR_RUN_DIR'])
-        except KeyError: pass
+        except KeyError:
+            pass
         try:
             arguments.get_func(cmd)()
-        except KeyboardInterrupt: pass
+        except KeyboardInterrupt:
+            pass
     except onionrexceptions.NotFound:
         if not register_plugin_commands(cmd) and not is_help_cmd:
             recommend.recommend()

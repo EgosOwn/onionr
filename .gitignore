@@ -21,6 +21,8 @@ testdata/*
 *.dll
 *.exe
 
+.mypy_cache/
+
 dist/*
 
 # log files

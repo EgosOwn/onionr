@@ -1,7 +1,6 @@
-"""
-    Onionr - Private P2P Communication
+"""Onionr - Private P2P Communication.
 
-    add keys (transport and pubkey)
+add keys (transport and pubkey)
 """
 import sys
 import logger
@@ -23,7 +22,7 @@ from coredb import keydb
 
 
 def add_address():
-    """Command to add a peer address from either an arg or stdin"""
+    """Command to add a peer address from either an arg or stdin."""
     try:
         newAddress = sys.argv[2]
         newAddress = newAddress.replace('http:', '').replace('/', '')
@@ -38,4 +37,4 @@ def add_address():
             logger.warn("Unable to add address.", terminal=True)
 
 
-add_address.onionr_help = "Adds a node transport address to the node list"
+add_address.onionr_help = "Adds a node transport address"  # type: ignore

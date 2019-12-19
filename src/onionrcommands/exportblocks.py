@@ -1,9 +1,15 @@
-'''
-    Onionr - Private P2P Communication
+"""Onionr - Private P2P Communication.
 
-    This file handles the command for exporting blocks to disk
-'''
-'''
+This file handles the command for exporting blocks to disk
+"""
+import sys
+
+import logger
+import onionrstorage
+from utils import createdirs
+from onionrutils import stringvalidators
+import filepaths
+"""
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -16,28 +22,31 @@
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
-'''
-import sys, os
-import logger, onionrstorage
-from utils import createdirs
-from onionrutils import stringvalidators
-import filepaths
-def doExport(bHash):
+"""
+
+
+def _do_export(b_hash):
     createdirs.create_dirs()
-    data = onionrstorage.getData(bHash)
-    with open('%s/%s.dat' % (filepaths.export_location, bHash), 'wb') as exportFile:
-        exportFile.write(data)
+    data = onionrstorage.getData(b_hash)
+    with open('%s/%s.dat' % (filepaths.export_location,
+                             b_hash), 'wb') as export:
+        export.write(data)
         logger.info('Block exported as file', terminal=True)
 
+
 def export_block():
-    exportDir = filepaths.export_location
+    """Export block based on hash from stdin or argv."""
     try:
-        if not stringvalidators.validate_hash(sys.argv[2]): raise ValueError
+        if not stringvalidators.validate_hash(sys.argv[2]):
+            raise ValueError
     except (IndexError, ValueError):
         logger.error('No valid block hash specified.', terminal=True)
         sys.exit(1)
     else:
-        bHash = sys.argv[2]
-        doExport(bHash)
+        b_hash = sys.argv[2]
+        _do_export(b_hash)
 
-export_block.onionr_help = "<block hash>: Export an Onionr block to a file. Export directory is in the Onionr data directory under block-export/"
+
+export_block.onionr_help = "<block hash>: Export block to "  # type: ignore
+export_block.onionr_help += "a file. Export directory is in "  # type: ignore
+export_block.onionr_help += "Onionr home under block-export"  # type: ignore

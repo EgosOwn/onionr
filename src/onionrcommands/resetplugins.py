@@ -1,9 +1,13 @@
-'''
-    Onionr - Private P2P Communication
+"""Onionr - Private P2P Communication.
 
-    Reset default plugins from source
-'''
-'''
+Reset default plugins from source
+"""
+import os
+import shutil
+
+from utils import identifyhome
+import logger
+"""
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -16,21 +20,21 @@
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
-'''
-import os
-import shutil
+"""
 
-from utils import identifyhome
-from onionrsetup import setup_default_plugins
-import logger
 
 def reset():
-    """Reinstalls Onionr default plugins"""
+    """Reinstalls Onionr default plugins."""
     home = identifyhome.identify_home()
     plugin_dir = home + '/plugins/'
-    if not os.path.exists(home): return
-    if os.path.exists(plugin_dir): shutil.rmtree(plugin_dir)
+    if not os.path.exists(home):
+        return
+    if os.path.exists(plugin_dir):
+        shutil.rmtree(plugin_dir)
 
     logger.info('Default plugins have been reset.', terminal=True)
 
-reset.onionr_help = "reinstalls default Onionr plugins (e.g. mail). Should be done after git pulls or plugin modification."
+
+reset.onionr_help = "reinstalls default Onionr plugins"  # type: ignore
+reset.onionr_help += "(e.g. mail). Should be done after "  # type: ignore
+reset.onionr_help += "git pulls or plugin modification."  # type: ignore

@@ -1,9 +1,15 @@
-'''
-    Onionr - Private P2P Communication
+"""Onionr - Private P2P Communication.
 
-    This file contains the command for banning blocks from the node
-'''
-'''
+This file contains the command for banning blocks from the node
+"""
+import sys
+import logger
+from onionrutils import stringvalidators
+from onionrstorage import removeblock
+from onionrstorage import deleteBlock
+from onionrblocks import onionrblacklist
+from utils import reconstructhash
+"""
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -16,17 +22,11 @@
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
-'''
-import sys
-import logger
-from onionrutils import stringvalidators
-from onionrstorage import removeblock
-from onionrstorage import deleteBlock
-from onionrblocks import onionrblacklist
-from utils import reconstructhash
+"""
+
 
 def ban_block():
-    """Deletes a block, permanently blacklisting it"""
+    """Delete a block, permanently blacklisting it."""
     blacklist = onionrblacklist.OnionrBlackList()
     try:
         ban = sys.argv[2]
@@ -41,8 +41,9 @@ def ban_block():
                 blacklist.addToDB(ban)
                 removeblock.remove_block(ban)
                 deleteBlock(ban)
-            except Exception as error:
-                logger.error('Could not blacklist block', error=error, terminal=True)
+            except Exception as error:  # pylint: disable=W0703
+                logger.error('Could not blacklist block',
+                             error=error, terminal=True)
             else:
                 logger.info('Block blacklisted', terminal=True)
         else:
@@ -50,4 +51,6 @@ def ban_block():
     else:
         logger.error('Invalid block hash', terminal=True)
 
-ban_block.onionr_help = "<block hash>: deletes and blacklists a block"
+
+ban_block.onionr_help = "<block hash>: "  # type: ignore
+ban_block.onionr_help += "deletes and blacklists a block"  # type: ignore

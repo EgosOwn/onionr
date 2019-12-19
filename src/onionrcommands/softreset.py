@@ -1,8 +1,15 @@
-"""
-    Onionr - Private P2P Communication
+"""Onionr - Private P2P Communication.
 
-    Command to soft-reset Onionr (deletes blocks)
+Command to soft-reset Onionr (deletes blocks)
 """
+import os
+import shutil
+
+from onionrutils import localcommand
+from coredb import dbfiles
+import filepaths
+from onionrplugins import onionrevents
+import logger
 """
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -17,14 +24,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-import os
-import shutil
 
-from onionrutils import localcommand
-from coredb import dbfiles
-import filepaths
-from onionrplugins import onionrevents
-import logger
 
 def _ignore_not_found_delete(path):
     try:
@@ -32,9 +32,15 @@ def _ignore_not_found_delete(path):
     except FileNotFoundError:
         pass
 
+
 def soft_reset():
+    """Command to soft reset Onionr home data.
+
+    Onionr must not be running
+    """
     if localcommand.local_command('/ping') == 'pong!':
-        logger.warn('Cannot soft reset while Onionr is running', terminal=True)
+        logger.warn('Cannot soft reset while Onionr is running',
+                    terminal=True)
         return
     path = filepaths.block_data_location
     shutil.rmtree(path)
@@ -43,4 +49,9 @@ def soft_reset():
     onionrevents.event('softreset')
     logger.info("Soft reset Onionr", terminal=True)
 
-soft_reset.onionr_help = "Deletes Onionr blocks and their associated metadata, except for any exported block files. Does NOT delete data on other nodes in the network."
+
+soft_reset.onionr_help = "Deletes Onionr blocks and their "  # type: ignore
+soft_reset.onionr_help += "associated metadata, except for "  # type: ignore
+soft_reset.onionr_help += "any exported block files. Does NOT "  # type: ignore
+soft_reset.onionr_help += "delete data on "  # type: ignore
+soft_reset.onionr_help += "other nodes in the network."  # type: ignore

@@ -1,5 +1,6 @@
-""" Onionr - Private P2P Communication
-   launch the api servers and communicator
+"""Onionr - Private P2P Communication.
+
+launch the api servers and communicator
 """
 import os
 import sys
@@ -47,10 +48,7 @@ def _proper_shutdown():
 
 
 def daemon():
-    """
-        Starts the Onionr communication daemon
-    """
-
+    """Start the Onionr communication daemon."""
     offline_mode = config.get('general.offline_mode', False)
 
     if not hastor.has_tor():
@@ -143,44 +141,43 @@ def daemon():
     cleanup.delete_run_files()
 
 
-def _ignore_sigint(sig, frame):
-    """This space intentionally left blank"""
+def _ignore_sigint(sig, frame):  # pylint: disable=W0612,W0613
+    """Space intentionally left blank."""
     return
 
 
 def kill_daemon():
-    """
-        Shutdown the Onionr daemon (communicator)
-    """
+    """Shutdown the Onionr daemon (communicator)."""
     logger.warn('Stopping the running daemon...', timestamp=False,
                 terminal=True)
+
+    # On platforms where we can, fork out to prevent locking
     try:
-        # On platforms where we can, fork out to prevent locking
-        try:
-            pid = os.fork()
-            if pid != 0: return
-        except (AttributeError, OSError): pass
+        pid = os.fork()
+        if pid != 0:
+            return
+    except (AttributeError, OSError):
+        pass
 
-        events.event('daemon_stop')
-        net = NetController(config.get('client.port', 59496))
-        try:
-            daemonqueue.daemon_queue_add('shutdown')
-        except sqlite3.OperationalError:
-            pass
+    events.event('daemon_stop')
+    net = NetController(config.get('client.port', 59496))
+    try:
+        daemonqueue.daemon_queue_add('shutdown')
+    except sqlite3.OperationalError:
+        pass
 
-        net.killTor()
-    except Exception as e:
-        logger.error('Failed to shutdown daemon: ' + str(e),
-                     error=e, timestamp=False, terminal=True)
-    return
+    net.killTor()
 
 
-kill_daemon.onionr_help = "Gracefully stops the Onionr API servers"
+kill_daemon.onionr_help = "Gracefully stops the "  # type: ignore
+kill_daemon.onionr_help += "Onionr API servers"  # type: ignore
 
 
-def start(input: bool = False, override: bool = False):
-    """If no lock file, make one and start onionr,
-    error if there is and its not overridden"""
+def start(override: bool = False):
+    """If no lock file, make one and start onionr.
+
+    Error exit if there is and its not overridden
+    """
     if os.path.exists(filepaths.lock_file) and not override:
         logger.fatal('Cannot start. Daemon is already running,'
                      + ' or it did not exit cleanly.\n'
@@ -188,14 +185,18 @@ def start(input: bool = False, override: bool = False):
                      + ' delete onionr.lock & try again).', terminal=True)
     else:
         if not onionrvalues.DEVELOPMENT_MODE:
-            lockFile = open(filepaths.lock_file, 'w')
-            lockFile.write('delete at your own risk')
-            lockFile.close()
+            lock_file = open(filepaths.lock_file, 'w')
+            lock_file.write('delete at your own risk')
+            lock_file.close()
+
+        # Start Onionr daemon
         daemon()
+
         try:
             os.remove(filepaths.lock_file)
         except FileNotFoundError:
             pass
 
 
-start.onionr_help = "Start Onionr node (public and clients API servers)"
+start.onionr_help = "Start Onionr node "  # type: ignore
+start.onionr_help += "(public and clients API servers)"  # type: ignore

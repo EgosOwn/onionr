@@ -1,7 +1,6 @@
-"""
-    Onionr - Private P2P Communication
+"""Onionr - Private P2P Communication.
 
-    Sets CLI arguments for Onionr
+Sets CLI arguments for Onionr
 """
 from typing import Callable
 
@@ -38,8 +37,11 @@ from onionrutils import importnewblocks  # func to import new blocks
 
 
 def get_arguments() -> dict:
-    """This is a function because we need to be able
-    to dynamically modify them with plugins"""
+    """Return command argument dict, minus plugin cmds.
+
+    This is a function because we need to be able to
+    dynamically modify them with plugins
+    """
     args = {
         ('blacklist', 'blacklist-block', 'remove-block',
          'removeblock', 'banblock', 'ban-block'): banblocks.ban_block,
@@ -76,7 +78,7 @@ def get_arguments() -> dict:
 
 
 def get_help(arg: str) -> str:
-    """Returns the help info string from a given command"""
+    """Return the help info string from a given command."""
     arguments = get_arguments()
     # Iterate the command alias tuples
     for argument in arguments:
@@ -87,7 +89,7 @@ def get_help(arg: str) -> str:
 
 
 def get_func(argument: str) -> Callable:
-    """Returns the function for a given command argument"""
+    """Return the function for a given command argument."""
     argument = argument.lower()
     args = get_arguments()
 
