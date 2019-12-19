@@ -1,9 +1,17 @@
-'''
+"""
     Onionr - Private P2P Communication
 
     This module loads in the Onionr arguments and their help messages
-'''
-'''
+"""
+import sys
+import os
+
+import logger
+import onionrexceptions
+import onionrplugins
+from onionrplugins import onionrpluginapi
+from . import arguments, recommend
+"""
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -16,19 +24,14 @@
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
-'''
-import sys
-import os
+"""
 
-from etc import onionrvalues
-import logger, onionrexceptions
-import onionrplugins
-from onionrplugins import onionrpluginapi
-from . import arguments, recommend
 
-plugin_command = lambda cmd: 'on_%s_cmd' % (cmd,)
+def plugin_command(cmd):
+    return f'on_{cmd}_cmd'
 
-def register_plugin_commands(cmd)->bool:
+
+def register_plugin_commands(cmd) -> bool:
     plugin_cmd = plugin_command(cmd)
     for pl in onionrplugins.get_enabled_plugins():
         pl = onionrplugins.get_plugin(pl)
@@ -37,10 +40,17 @@ def register_plugin_commands(cmd)->bool:
             return True
     return False
 
+
+def _show_term(msg: str):
+    logger.info(msg, terminal=True)
+
+
 def register():
     """Registers commands and handles help command processing"""
-    def get_help_message(cmd: str, default: str = 'No help available for this command'):
+    def get_help_message(cmd: str,
+                         default: str = 'No help available for this command'):
         """Return help message for a given command, supports plugin commands"""
+
         pl_cmd = plugin_command(cmd)
         for pl in onionrplugins.get_enabled_plugins():
             pl = onionrplugins.get_plugin(pl)
@@ -49,14 +59,14 @@ def register():
                     return getattr(pl, pl_cmd).onionr_help
                 except AttributeError:
                     pass
-        
+
         for i in arguments.get_arguments():
             for alias in i:
                 try:
                     return arguments.get_help(cmd)
                 except AttributeError:
                     pass
-        return default # Return the help string
+        return default  # Return the help string
 
     PROGRAM_NAME = "onionr"
 
@@ -71,8 +81,9 @@ def register():
     if cmd.replace('--', '').lower() == 'help': is_help_cmd = True
 
     try:
-        try: 
-            if not cmd in ('start', 'details', 'show-details') : os.chdir(os.environ['ORIG_ONIONR_RUN_DIR'])
+        try:
+            if cmd not in ('start', 'details', 'show-details'):
+                os.chdir(os.environ['ORIG_ONIONR_RUN_DIR'])
         except KeyError: pass
         try:
             arguments.get_func(cmd)()
@@ -81,29 +92,35 @@ def register():
         if not register_plugin_commands(cmd) and not is_help_cmd:
             recommend.recommend()
             sys.exit(3)
-    
+
     if is_help_cmd:
         try:
             sys.argv[2]
         except IndexError:
             for i in arguments.get_arguments():
-                logger.info('%s <%s>: %s' % (PROGRAM_NAME, '/'.join(i), get_help_message(i[0])), terminal=True)
+                _show_term('%s <%s>: %s' % (PROGRAM_NAME, '/'.join(i),
+                                            get_help_message(i[0])))
             for pl in onionrplugins.get_enabled_plugins():
                 pl = onionrplugins.get_plugin(pl)
                 if hasattr(pl, 'ONIONR_COMMANDS'):
                     print('')
                     try:
-                        logger.info('%s commands:' % (pl.plugin_name,), terminal=True)
+                        _show_term('%s commands:' % (pl.plugin_name,))
                     except AttributeError:
-                        logger.info('%s commands:' % (pl.__name__,), terminal=True)
+                        _show_term('%s commands:' % (pl.__name__,))
                     for plugin_cmd in pl.ONIONR_COMMANDS:
-                        logger.info('%s %s: %s' % (PROGRAM_NAME, plugin_cmd, get_help_message(plugin_cmd)), terminal=True)
+                        _show_term('%s %s: %s' %
+                                   (PROGRAM_NAME,
+                                    plugin_cmd,
+                                    get_help_message(plugin_cmd)),)
                     print('')
         else:
             try:
-                logger.info('%s %s: %s' % (PROGRAM_NAME, sys.argv[2], get_help_message(sys.argv[2])), terminal=True)
+                _show_term('%s %s: %s' % (PROGRAM_NAME,
+                                          sys.argv[2],
+                                          get_help_message(sys.argv[2])))
             except KeyError:
-                logger.error('%s: command does not exist.' % [sys.argv[2]], terminal=True)
+                logger.error('%s: command does not exist.' % [sys.argv[2]],
+                             terminal=True)
                 sys.exit(3)
         return
-    
