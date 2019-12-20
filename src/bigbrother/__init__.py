@@ -1,7 +1,6 @@
-"""
-    Onionr - Private P2P Communication
+"""Onionr - Private P2P Communication.
 
-    Processes interpreter hook events to detect security leaks
+Processes interpreter hook events to detect security leaks
 """
 import sys
 from typing import Iterable
@@ -33,6 +32,7 @@ def _auditing_supported():
 
 
 def sys_hook_entrypoint(event, info):
+    """Entrypoint for big brother sys auditors."""
     if event == 'socket.connect':
         ministry.ofcommunication.detect_socket_leaks(info)
     elif event == 'exec':
@@ -42,7 +42,8 @@ def sys_hook_entrypoint(event, info):
         ministry.ofexec.block_system(info)
 
 
-def enable_ministries(disable_hooks: Iterable = []):
-    """Enable auditors"""
+def enable_ministries(disable_hooks: Iterable = None):
+    """Enable auditors."""
+    disable_hooks = disable_hooks or []
     _auditing_supported()  # raises PythonVersion exception if <3.8
     sys.addaudithook(sys_hook_entrypoint)

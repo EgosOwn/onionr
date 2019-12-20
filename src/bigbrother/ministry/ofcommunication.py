@@ -1,7 +1,6 @@
-"""
-    Onionr - Private P2P Communication
+"""Onionr - Private P2P Communication.
 
-    Ensure sockets don't get made to non localhost
+Ensure sockets don't get made to non localhost
 """
 import ipaddress
 
@@ -24,7 +23,8 @@ from onionrexceptions import NetworkLeak
 
 
 def detect_socket_leaks(socket_event):
-    """is called by the big brother broker whenever
+    """Is called by the big brother broker whenever.
+
     a socket connection happens.
     raises exception & logs if not to loopback
     """
