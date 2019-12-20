@@ -18,6 +18,7 @@ def generate_torrc(net_controller, api_server_ip):
     """
     socks_port = net_controller.socksPort
     hs_ver = '# v2 onions'
+    hs_port = net_controller.hsPort
     home_dir = identifyhome.identify_home()
     tor_config_location = home_dir + '/torrc'
 
@@ -60,7 +61,7 @@ HashedControlPassword """ + str(password) + """
 HiddenServiceNumIntroductionPoints 6
 HiddenServiceMaxStreams 100
 HiddenServiceMaxStreamsCloseCircuit 1
-HiddenServicePort 80 """ + api_server_ip + """:""" + str(socks_port)
+HiddenServicePort 80 """ + api_server_ip + """:""" + str(hs_port)
 
     torrc_data = add_bridges(torrc_data)
 
