@@ -1,9 +1,10 @@
-'''
-    Onionr - Private P2P Communication
+"""Onionr - Private P2P Communication.
 
-    Identify a data directory for Onionr
-'''
-'''
+Identify a data directory for Onionr
+"""
+import os
+import platform
+"""
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -16,14 +17,18 @@
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
-'''
-import os, platform
+"""
 
-def identify_home():
 
+def identify_home() -> str:
+    """Return path of home directory.
+
+    Take env into account with sane OS defaults
+    """
     path = os.environ.get('ONIONR_HOME', None)
 
-    if not os.getcwd().endswith('src') and path is not None:
+    if path is not None and not os.getcwd().endswith('src') \
+            and 'test' not in path:
         path = 'src/' + path
 
     if path is None:
@@ -33,7 +38,8 @@ def identify_home():
         elif system == 'Windows':
             path = os.path.expanduser('~') + '\\AppData\\Local\\onionr\\'
         elif system == 'Darwin':
-            path = os.path.expanduser('~' + '/Library/Application Support/onionr/')
+            path = os.path.expanduser('~' +
+                                      '/Library/Application Support/onionr/')
         else:
             path = 'data/'
     else:
