@@ -1,8 +1,17 @@
-"""
-    Onionr - Private P2P Communication
+"""Onionr - Private P2P Communication.
 
-    Class to remember blocks that need to be uploaded and not shared on startup/shutdown
+Class to remember blocks that need to be uploaded
+and not shared on startup/shutdown
 """
+import atexit
+from typing import TYPE_CHECKING
+
+import deadsimplekv
+
+import filepaths
+from onionrutils import localcommand
+if TYPE_CHECKING:
+    from communicator import OnionrCommunicatorDaemon
 """
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -18,43 +27,37 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-import atexit
-import json
-
-import deadsimplekv
-
-import filepaths
-from onionrutils import localcommand
-
 UPLOAD_MEMORY_FILE = filepaths.upload_list
+
 
 def _add_to_hidden_blocks(cache):
     for bl in cache:
         localcommand.local_command('waitforshare/' + bl, post=True)
 
+
 class UploadQueue:
-    """
-        Saves and loads block upload info from json file
-    """
+    """Saves and loads block upload info from json file."""
 
     def __init__(self, communicator: 'OnionrCommunicatorDaemon'):
-        """Start the UploadQueue object, loading left over uploads into queue 
-        and registering save shutdown function
+        """Start the UploadQueue object, loading left over uploads into queue.
+
+        register save shutdown function
         """
         self.communicator = communicator
-        cache = deadsimplekv.DeadSimpleKV(UPLOAD_MEMORY_FILE)
+        cache: deadsimplekv.DeadSimpleKV = deadsimplekv.DeadSimpleKV(
+            UPLOAD_MEMORY_FILE)
         self.store_obj = cache
-        cache: list = cache.get('uploads')
-        if cache == None:
+        cache = cache.get('uploads')
+        if cache is None:
             cache = []
-        
+
         _add_to_hidden_blocks(cache)
         self.communicator.blocksToUpload.extend(cache)
 
         atexit.register(self.save)
 
     def save(self):
-        """Saves to disk on shutdown or if called manually"""
-        bl: list = self.communicator.blocksToUpload
+        """Save to disk on shutdown or if called manually."""
+        bl: deadsimplekv.DeadSimpleKV = self.communicator.blocksToUpload
         self.store_obj.put('uploads', bl)
         self.store_obj.flush()
