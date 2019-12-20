@@ -28,7 +28,7 @@ def block_system(cmd):
     """Prevent os.system except for whitelisted commands+contexts."""
     allowed = 'taskkill /PID '
     is_ok = False
-    if platform.platform == 'Windows':
+    if platform.system() == 'Windows':
         if cmd.startswith(allowed):
             for c in cmd.split(allowed)[1]:
                 if not c.isalnum() or c not in ('/', 'F', ' '):
