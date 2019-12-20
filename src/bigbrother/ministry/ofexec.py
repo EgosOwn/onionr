@@ -1,7 +1,6 @@
-"""
-    Onionr - Private P2P Communication
+"""Onionr - Private P2P Communication.
 
-    Prevent eval/exec/os.system and log it
+Prevent eval/exec/os.system and log it
 """
 import base64
 import platform
@@ -26,6 +25,7 @@ from onionrexceptions import ArbitraryCodeExec
 
 
 def block_system(cmd):
+    """Prevent os.system except for whitelisted commands+contexts."""
     allowed = 'taskkill /PID '
     is_ok = False
     if platform.platform == 'Windows':
@@ -42,8 +42,7 @@ def block_system(cmd):
 
 
 def block_exec(event, info):
-    """Prevent arbitrary code execution in eval/exec and log it
-    """
+    """Prevent arbitrary code execution in eval/exec and log it."""
     # because libraries have stupid amounts of compile/exec/eval,
     # We have to use a whitelist where it can be tolerated
     whitelisted_code = [
