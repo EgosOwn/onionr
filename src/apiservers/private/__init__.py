@@ -1,10 +1,9 @@
-'''
-    Onionr - Private P2P Communication
+"""Onionr - Private P2P Communication.
 
-    This file handles all incoming http requests to the client, using Flask
-'''
-import base64
-import os
+This file handles all incoming http requests to the client, using Flask
+"""
+from typing import Dict
+import hmac
 
 import flask
 from gevent.pywsgi import WSGIServer
@@ -18,7 +17,7 @@ from etc import waitforsetvar
 from . import register_private_blueprints
 import config
 from .. import public
-'''
+"""
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -31,24 +30,22 @@ from .. import public
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
-'''
+"""
 
 
 class PrivateAPI:
-    '''
-        Client HTTP api
-    '''
+    """Client HTTP api for controlling onionr and using UI."""
 
-    callbacks = {'public': {}, 'private': {}}
+    callbacks: Dict[str, Dict] = {'public': {}, 'private': {}}
 
     def __init__(self):
-        '''
-            Initialize the api server, preping variables for later use
+        """Initialize the api server, preping variables for later use.
 
-            This initialization defines all of the API entry points
-            and handlers for the endpoints and errors
-            This also saves the used host (random localhost IP address) to the data folder in host.txt
-        '''
+        This initialization defines all of the API entry points
+        and handlers for the endpoints and errors
+        This also saves the used host (random localhost IP address)
+        to the data folder in host.txt
+        """
         self.config = config
 
         self.startTime = epoch.get_epoch()
@@ -58,7 +55,8 @@ class PrivateAPI:
 
         self.clientToken = config.get('client.webpassword')
 
-        self.host = httpapi.apiutils.setbindip.set_bind_IP(private_API_host_file)
+        self.host = httpapi.apiutils.setbindip.set_bind_IP(
+            private_API_host_file)
         logger.info('Running api on %s:%s' % (self.host, self.bindPort))
         self.httpServer = ''
 
@@ -69,18 +67,25 @@ class PrivateAPI:
         self.app = app
 
     def start(self):
+        """Start client gevent API web server with flask client app."""
         waitforsetvar.wait_for_set_var(self, "_too_many")
-        self.publicAPI = self._too_many.get(public.PublicAPI)
-        self.httpServer = WSGIServer((self.host, self.bindPort), self.app, log=None, handler_class=httpapi.fdsafehandler.FDSafeHandler)
+        fd_handler = httpapi.fdsafehandler.FDSafeHandler
+        self.publicAPI = self._too_many.get(  # pylint: disable=E1101
+            public.PublicAPI)
+        self.httpServer = WSGIServer((self.host, self.bindPort),
+                                     self.app, log=None,
+                                     handler_class=fd_handler)
         self.httpServer.serve_forever()
 
     def setPublicAPIInstance(self, inst):
+        """Dynamically set public API instance."""
         self.publicAPI = inst
 
     def validateToken(self, token):
-        '''
-            Validate that the client token matches the given token. Used to prevent CSRF and data exfiltration
-        '''
+        """Validate that the client token matches the given token.
+
+        Used to prevent CSRF and other attacks.
+        """
         if not self.clientToken:
             logger.error("client password needs to be set")
             return False
@@ -89,7 +94,8 @@ class PrivateAPI:
         except TypeError:
             return False
 
-    def getUptime(self)->int:
+    def getUptime(self) -> int:
+        """Safely wait for uptime to be set and return it."""
         while True:
             try:
                 return epoch.get_epoch() - self.startTime
@@ -97,5 +103,10 @@ class PrivateAPI:
                 # Don't error on race condition with startup
                 pass
 
-    def getBlockData(self, bHash, decrypt=False, raw=False, headerOnly=False):
-        return self.get_block_data.get_block_data(bHash, decrypt=decrypt, raw=raw, headerOnly=headerOnly)
+    def getBlockData(self, bHash, decrypt=False, raw=False,
+                     headerOnly=False) -> bytes:
+        """Returns block data bytes."""
+        return self.get_block_data.get_block_data(bHash,
+                                                  decrypt=decrypt,
+                                                  raw=raw,
+                                                  headerOnly=headerOnly)

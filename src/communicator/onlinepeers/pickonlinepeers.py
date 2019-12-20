@@ -34,7 +34,7 @@ def pick_online_peer(comm_inst):
 
         try:
             # Get a random online peer, securely.
-            # May get stuck in loop if network is lost or if all peers in pool magically disconnect at once
+            # May get stuck in loop if network is lost
             ret_data = comm_inst.onlinePeers[secrets.randbelow(peer_length)]
         except IndexError:
             pass

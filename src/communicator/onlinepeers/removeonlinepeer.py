@@ -1,9 +1,8 @@
-'''
-    Onionr - Private P2P Communication
+"""Onionr - Private P2P Communication.
 
-    remove an online peer from the pool in a communicator instance
-'''
-'''
+remove an online peer from the pool in a communicator instance
+"""
+"""
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -16,9 +15,11 @@
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
-'''
+"""
+
+
 def remove_online_peer(comm_inst, peer):
-    '''Remove an online peer'''
+    """Remove an online peer."""
     try:
         del comm_inst.connectTimes[peer]
     except KeyError:
