@@ -25,6 +25,8 @@ from utils import gettransports
 from netcontroller import NetController
 from communicator import onlinepeers
 from coredb import keydb
+import onionrexceptions
+
 def announce_node(daemon):
     '''Announce our node to our peers'''
     ret_data = False
@@ -41,12 +43,17 @@ def announce_node(daemon):
                 peer = i
                 break
         else:
-            peer = onlinepeers.pick_online_peer(daemon)
+            try:
+                peer = onlinepeers.pick_online_peer(daemon)
+            except onionrexceptions.OnlinePeerNeeded:
+                peer = ""
 
-        for x in range(1):
+        for _ in range(1):
             try:
                 ourID = gettransports.get()[0]
-            except IndexError:
+                if not peer:
+                    raise onionrexceptions.OnlinePeerNeeded
+            except (IndexError, onionrexceptions.OnlinePeerNeeded):
                 break
 
             url = 'http://' + peer + '/announce'

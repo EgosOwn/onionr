@@ -17,12 +17,15 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
+from gevent import time
+
 import logger, onionrproofs
 from onionrutils import stringvalidators, epoch
 from communicator import peeraction, onlinepeers
 from coredb import blockmetadb
 from utils import reconstructhash
 from onionrblocks import onionrblacklist
+import onionrexceptions
 blacklist = onionrblacklist.OnionrBlackList()
 def lookup_blocks_from_communicator(comm_inst):
     logger.info('Looking up new blocks')
@@ -43,7 +46,12 @@ def lookup_blocks_from_communicator(comm_inst):
         if comm_inst.storage_counter.is_full():
             logger.debug('Not looking up new blocks due to maximum amount of allowed disk space used')
             break
-        peer = onlinepeers.pick_online_peer(comm_inst) # select random online peer
+        try:
+            # select random online peer
+            peer = onlinepeers.pick_online_peer(comm_inst)
+        except onionrexceptions.OnlinePeerNeeded:
+            time.sleep(1)
+            continue
         # if we've already tried all the online peers this time around, stop
         if peer in triedPeers:
             if len(comm_inst.onlinePeers) == len(triedPeers):

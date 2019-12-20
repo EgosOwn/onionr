@@ -1,11 +1,14 @@
-"""
-    Onionr - Private P2P Communication
+"""Onionr - Private P2P Communication.
 
-    get online peers in a communicator instance
+get online peers in a communicator instance
 """
 import time
+from typing import TYPE_CHECKING
+
 from etc import humanreadabletime
 import logger
+if TYPE_CHECKING:
+    from communicator import OnionrCommunicatorDaemon
 """
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -22,25 +25,25 @@ import logger
 """
 
 
-def get_online_peers(comm_inst):
-    """
-        Manages the comm_inst.onlinePeers attribute list,
-        ]connects to more peers if we have none connected
+def get_online_peers(comm_inst: 'OnionrCommunicatorDaemon'):
+    """Manage the comm_inst.onlinePeers attribute list.
+
+    Connect to more peers if we have none connected
     """
     config = comm_inst.config
     if config.get('general.offline_mode', False):
         comm_inst.decrementThreadCount('get_online_peers')
         return
     logger.debug('Refreshing peer pool...')
-    maxPeers = int(config.get('peers.max_connect', 10))
-    needed = maxPeers - len(comm_inst.onlinePeers)
+    max_peers = int(config.get('peers.max_connect', 10))
+    needed = max_peers - len(comm_inst.onlinePeers)
 
     last_seen = 'never'
     if not isinstance(comm_inst.lastNodeSeen, type(None)):
         last_seen = humanreadabletime.human_readable_time(
             comm_inst.lastNodeSeen)
 
-    for i in range(needed):
+    for _ in range(needed):
         if len(comm_inst.onlinePeers) == 0:
             comm_inst.connectNewPeer(useBootstrap=True)
         else:
@@ -50,8 +53,7 @@ def get_online_peers(comm_inst):
             break
     else:
         if len(comm_inst.onlinePeers) == 0:
-            logger.debug
-            ('Couldn\'t connect to any peers.' +
+            logger.debug('Couldn\'t connect to any peers.' +
              f' Last node seen {last_seen}  ago.')
         else:
             comm_inst.lastNodeSeen = time.time()

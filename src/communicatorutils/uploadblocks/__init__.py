@@ -45,8 +45,11 @@ def upload_blocks_from_communicator(comm_inst: OnionrCommunicatorDaemon):
                 comm_inst.decrementThreadCount(TIMER_NAME)
                 return
             session = session_manager.add_session(bl)
-            for i in range(min(len(comm_inst.onlinePeers), 6)):
-                peer = onlinepeers.pick_online_peer(comm_inst)
+            for _ in range(min(len(comm_inst.onlinePeers), 6)):
+                try:
+                    peer = onlinepeers.pick_online_peer(comm_inst)
+                except onionrexceptions.OnlinePeerNeeded:
+                    continue
                 try:
                     session.peer_exists[peer]
                     continue

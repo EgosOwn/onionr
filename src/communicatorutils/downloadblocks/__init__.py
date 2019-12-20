@@ -43,8 +43,7 @@ def download_blocks_from_communicator(comm_inst: "OnionrCommunicatorDaemon"):
     # Iterate the block queue in the communicator
     for blockHash in list(comm_inst.blockQueue):
         count += 1
-        if len(comm_inst.onlinePeers) == 0:
-            break
+
         triedQueuePeers = [] # List of peers we've tried for a block
         try:
             blockPeers = list(comm_inst.blockQueue[blockHash])
@@ -62,9 +61,15 @@ def download_blocks_from_communicator(comm_inst: "OnionrCommunicatorDaemon"):
         if blockHash in comm_inst.currentDownloading:
             continue
 
+        if len(comm_inst.onlinePeers) == 0:
+            break
+
         comm_inst.currentDownloading.append(blockHash) # So we can avoid concurrent downloading in other threads of same block
         if len(blockPeers) == 0:
-            peerUsed = onlinepeers.pick_online_peer(comm_inst)
+            try:
+                peerUsed = onlinepeers.pick_online_peer(comm_inst)
+            except onionrexceptions.OnlinePeerNeeded:
+                continue
         else:
             blockPeers = onionrcrypto.cryptoutils.random_shuffle(blockPeers)
             peerUsed = blockPeers.pop(0)

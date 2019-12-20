@@ -1,9 +1,13 @@
-'''
-    Onionr - Private P2P Communication
+"""Onionr - Private P2P Communication.
 
-    clear offline peer in a communicator instance
-'''
-'''
+clear offline peer in a communicator instance
+"""
+from typing import TYPE_CHECKING
+
+import logger
+if TYPE_CHECKING:
+    from communicator import OnionrCommunicatorDaemon
+"""
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -16,14 +20,16 @@
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
-'''
-import logger
-def clear_offline_peer(comm_inst):
-    '''Removes the longest offline peer to retry later'''
+"""
+
+
+def clear_offline_peer(comm_inst: 'OnionrCommunicatorDaemon'):
+    """Remove the longest offline peer to retry later."""
     try:
         removed = comm_inst.offlinePeers.pop(0)
     except IndexError:
         pass
     else:
-        logger.debug('Removed ' + removed + ' from offline list, will try them again.')
+        logger.debug('Removed ' + removed +
+                     ' from offline list, will try them again.')
     comm_inst.decrementThreadCount('clear_offline_peer')
