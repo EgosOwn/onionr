@@ -61,7 +61,7 @@ def block_exec(event, info):
         if info[0].co_filename.endswith(source):
             return
 
-    if info[0].co_filename.startswith(home + 'plugins/'):
+    if home + 'plugins/' in info[0].co_filename:
         return
 
     code_b64 = base64.b64encode(info[0].co_code).decode()

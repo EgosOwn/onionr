@@ -23,6 +23,9 @@ def identify_home():
 
     path = os.environ.get('ONIONR_HOME', None)
 
+    if not os.getcwd().endswith('src') and path is not None:
+        path = 'src/' + path
+
     if path is None:
         system = platform.system()
         if system == 'Linux':
