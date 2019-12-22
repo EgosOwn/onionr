@@ -1,8 +1,11 @@
-'''
+"""
     Onionr - Private P2P Communication
 
     Download blocks using the communicator instance
-'''
+"""
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from communicator import OnionrCommunicatorDaemon
 import onionrexceptions
 import logger
 import onionrpeers
@@ -12,12 +15,13 @@ from communicator import onlinepeers
 from onionrutils import blockmetadata
 from onionrutils import validatemetadata
 from coredb import blockmetadb
+from coredb import daemonqueue
 import onionrcrypto
 import onionrstorage
 from onionrblocks import onionrblacklist
 from onionrblocks import storagecounter
 from . import shoulddownload
-'''
+"""
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -30,11 +34,11 @@ from . import shoulddownload
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
-'''
+"""
 
 
 def download_blocks_from_communicator(comm_inst: "OnionrCommunicatorDaemon"):
-    '''Use communicator instance to download blocks in the comms's queue'''
+    """Use communicator instance to download blocks in the comms's queue"""
     blacklist = onionrblacklist.OnionrBlackList()
     storage_counter = storagecounter.StorageCounter()
     LOG_SKIP_COUNT = 50 # for how many iterations we skip logging the counter
@@ -109,6 +113,7 @@ def download_blocks_from_communicator(comm_inst: "OnionrCommunicatorDaemon"):
                             removeFromQueue = False
                         else:
                             blockmetadb.add_to_block_DB(blockHash, dataSaved=True) # add block to meta db
+                            daemonqueue.daemon_queue_add('uploadEvent', blockHash)
                             blockmetadata.process_block_metadata(blockHash) # caches block metadata values to block database
                     else:
                         logger.warn('POW failed for block %s.' % (blockHash,))

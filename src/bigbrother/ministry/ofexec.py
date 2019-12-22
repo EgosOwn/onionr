@@ -57,6 +57,8 @@ def block_exec(event, info):
                        ]
     home = identifyhome.identify_home()
 
+    code_b64 = base64.b64encode(info[0].co_code).decode()
+
     for source in whitelisted_code:
         if info[0].co_filename.endswith(source):
             return
@@ -64,7 +66,6 @@ def block_exec(event, info):
     if home + 'plugins/' in info[0].co_filename:
         return
 
-    code_b64 = base64.b64encode(info[0].co_code).decode()
     logger.warn('POSSIBLE EXPLOIT DETECTED, SEE LOGS', terminal=True)
     logger.warn('POSSIBLE EXPLOIT DETECTED: ' + info[0].co_filename)
     logger.warn('Prevented exec/eval. Report this with the sample below')

@@ -57,7 +57,7 @@ class PrivateEndpoints:
             # Responses from the daemon. TODO: change to direct var access instead of http endpoint
             client_api.queueResponse[name] = request.form['data']
             return Response('success')
-        
+
         @private_endpoints_bp.route('/queueResponse/<name>')
         def queueResponse(name):
             # Fetch a daemon queue response
@@ -72,7 +72,7 @@ class PrivateEndpoints:
                 return resp, 404
             else:
                 return resp
-            
+
         @private_endpoints_bp.route('/ping')
         def ping():
             # Used to check if client api is working
@@ -102,24 +102,24 @@ class PrivateEndpoints:
         def restart_clean():
             subprocess.Popen([SCRIPT_NAME, 'restart'])
             return Response("bye")
-        
+
         @private_endpoints_bp.route('/gethidden')
         def get_hidden_blocks():
             return Response('\n'.join(client_api.publicAPI.hideBlocks))
-        
+
         @private_endpoints_bp.route('/getstats')
         def getStats():
             # returns node stats
             while True:
-                try:    
+                try:
                     return Response(client_api._too_many.get(SerializedData).get_stats())
                 except AttributeError as e:
                     pass
-        
+
         @private_endpoints_bp.route('/getuptime')
         def showUptime():
             return Response(str(client_api.getUptime()))
-        
+
         @private_endpoints_bp.route('/getActivePubkey')
         def getActivePubkey():
             return Response(pub_key)
@@ -132,7 +132,7 @@ class PrivateEndpoints:
         def getHumanReadable(name):
             name = unpaddedbase32.repad(bytesconverter.str_to_bytes(name))
             return Response(mnemonickeys.get_human_readable_ID(name))
-        
+
         @private_endpoints_bp.route('/getBase32FromHumanReadable/<words>')
         def get_base32_from_human_readable(words):
             return Response(bytesconverter.bytes_to_str(mnemonickeys.get_base32(words)))
@@ -144,3 +144,4 @@ class PrivateEndpoints:
         @private_endpoints_bp.route('/setonboarding', methods=['POST'])
         def set_onboarding():
             return Response(config.onboarding.set_config_from_onboarding(request.get_json()))
+

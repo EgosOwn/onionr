@@ -3,10 +3,14 @@
 
     Accept block uploads to the public API server
 '''
+from gevent import threading
+
 import sys
 from flask import Response
 from flask import abort
 
+from onionrutils import localcommand
+from coredb import daemonqueue
 from onionrblocks import blockimporter
 import onionrexceptions
 import logger
@@ -31,9 +35,12 @@ def accept_upload(request):
     """Accept uploaded blocks to our public Onionr protocol API server"""
     resp = 'failure'
     data = request.get_data()
+    b_hash = ''
     if sys.getsizeof(data) < 100000000:
         try:
-            if blockimporter.import_block_from_data(data):
+            b_hash = blockimporter.import_block_from_data(data)
+            if b_hash:
+                daemonqueue.daemon_queue_add('uploadEvent', b_hash)
                 resp = 'success'
             else:
                 resp = 'failure'

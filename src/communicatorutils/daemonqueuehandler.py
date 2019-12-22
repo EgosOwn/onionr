@@ -1,9 +1,15 @@
-'''
-    Onionr - P2P Anonymous Storage Network
+"""Onionr - P2P Anonymous Storage Network.
 
-    Handle daemon queue commands in the communicator
-'''
-'''
+Handle daemon queue commands in the communicator
+"""
+import logger
+from onionrplugins import onionrevents as events
+from onionrutils import localcommand
+from coredb import daemonqueue
+import filepaths
+from . import restarttor
+from communicatorutils.uploadblocks import mixmate
+"""
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -16,13 +22,9 @@
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
-'''
-import logger
-from onionrplugins import onionrevents as events
-from onionrutils import localcommand
-from coredb import daemonqueue
-import filepaths
-from . import restarttor
+"""
+
+
 def handle_daemon_commands(comm_inst):
     cmd = daemonqueue.daemon_queue()
     response = ''
@@ -62,6 +64,13 @@ def handle_daemon_commands(comm_inst):
                     i.count = (i.frequency - 1)
         elif cmd[0] == 'uploadBlock':
             comm_inst.blocksToUpload.append(cmd[1])
+        elif cmd[0] == 'uploadEvent':
+            try:
+                mixmate.block_mixer(comm_inst.blocksToUpload, cmd[1])
+            except ValueError:
+                pass
+            else:
+                localcommand.local_command('/waitforshare/' + cmd[1], post=True, maxWait=5)
         else:
             logger.debug('Received daemon queue command unable to be handled: %s' % (cmd[0],))
 

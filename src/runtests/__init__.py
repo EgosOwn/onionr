@@ -7,6 +7,7 @@ import logger
 from onionrutils import epoch
 
 from . import uicheck, inserttest, stresstest
+from . import ownnode
 """
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -24,7 +25,10 @@ from . import uicheck, inserttest, stresstest
 
 RUN_TESTS = [uicheck.check_ui,
              inserttest.insert_bin_test,
-             stresstest.stress_test_block_insert]
+             ownnode.test_tor_adder,
+             ownnode.test_own_node,
+             stresstest.stress_test_block_insert
+             ]
 
 
 class OnionrRunTestManager:
@@ -35,10 +39,11 @@ class OnionrRunTestManager:
     def run_tests(self):
         cur_time = epoch.get_epoch()
         logger.info(f"Doing runtime tests at {cur_time}")
+
         try:
             for i in RUN_TESTS:
                 last = i
                 i(self)
-                logger.info(last.__name__ + " passed")
-        except ValueError:
+                logger.info("[RUNTIME TEST] " + last.__name__ + " passed")
+        except (ValueError, AttributeError):
             logger.error(last.__name__ + ' failed')

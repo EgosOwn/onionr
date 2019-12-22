@@ -27,6 +27,7 @@ from onionrutils import localcommand, stringvalidators, basicrequests
 from communicator import onlinepeers
 import onionrcrypto
 from . import sessionmanager
+from . import mixmate
 
 def upload_blocks_from_communicator(comm_inst: OnionrCommunicatorDaemon):
     """Accepts a communicator instance and uploads blocks from its upload queue"""

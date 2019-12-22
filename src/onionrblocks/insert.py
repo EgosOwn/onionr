@@ -82,7 +82,7 @@ def insert_block(data: Union[str, bytes], header: str = 'txt',
         our_pub_key = bytesconverter.bytes_to_str(crypto.cryptoutils.get_pub_key_from_priv(our_private_key))
 
     use_subprocess = powchoice.use_subprocess(config)
-    
+
     retData = False
 
     if type(data) is None:
@@ -195,20 +195,15 @@ def insert_block(data: Union[str, bytes], header: str = 'txt',
             retData = False
         else:
             # Tell the api server through localCommand to wait for the daemon to upload this block to make statistical analysis more difficult
-            if not is_offline or localcommand.local_command('/ping', maxWait=10) == 'pong!':
-                if config.get('general.security_level', 1) == 0:
-                    localcommand.local_command('/waitforshare/' + retData, post=True, maxWait=5)
-                coredb.daemonqueue.daemon_queue_add('uploadBlock', retData)
-            else:
-                pass
+            coredb.daemonqueue.daemon_queue_add('uploadEvent', retData)
             coredb.blockmetadb.add.add_to_block_DB(retData, selfInsert=True, dataSaved=True)
 
             if expire is None:
-                coredb.blockmetadb.update_block_info(retData, 'expire', 
+                coredb.blockmetadb.update_block_info(retData, 'expire',
                                                      createTime + onionrvalues.DEFAULT_EXPIRE)
             else:
                 coredb.blockmetadb.update_block_info(retData, 'expire', expire)
-            
+
             blockmetadata.process_block_metadata(retData)
 
     if retData != False:

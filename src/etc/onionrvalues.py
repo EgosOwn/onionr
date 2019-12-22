@@ -52,6 +52,9 @@ DEFAULT_EXPIRE = 2592000
 # Metadata header section length limits, in bytes
 BLOCK_METADATA_LENGTHS = {'meta': 1000, 'sig': 200, 'signer': 200, 'time': 10, 'pow': 1000, 'encryptType': 4, 'expire': 14}
 
+# Pool Eligibility Max Age
+BLOCK_POOL_MAX_AGE = 300
+
 """Public key that signs MOTD messages shown in the web UI"""
 MOTD_SIGN_KEY = "TRH763JURNY47QPBTTQ4LLPYCYQK6Q5YA33R6GANKZK5C5DKCIGQ"
 

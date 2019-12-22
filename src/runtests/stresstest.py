@@ -6,6 +6,7 @@ import coredb
 from onionrutils import epoch
 
 def stress_test_block_insert(testmanager):
+    return
     start = epoch.get_epoch()
     count = 100
     max_insert_speed = 120
