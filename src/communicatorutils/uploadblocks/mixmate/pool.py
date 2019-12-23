@@ -62,7 +62,8 @@ class UploadPool:
         """Get the hash pool in secure random order."""
         if len(self._pool) != self._pool_size:
             raise PoolNotReady
-        final_pool: List[onionrtypes.BlockHash] = cryptoutils.random_shuffle(list(self._pool))
+        final_pool: List[onionrtypes.BlockHash] = cryptoutils.random_shuffle(
+            list(self._pool))
 
         self._pool.clear()
         self.birthday = onionrutils.epoch.get_epoch()

@@ -2,8 +2,9 @@
 
 Virtual upload "sessions" for blocks
 """
-from typing import Union
+from typing import Union, Dict
 
+from onionrtypes import UserID
 from onionrutils import stringvalidators
 from onionrutils import bytesconverter
 from onionrutils import epoch
@@ -40,8 +41,8 @@ class UploadSession:
         self.block_hash = reconstructhash.deconstruct_hash(block_hash)
         self.total_fail_count: int = 0
         self.total_success_count: int = 0
-        self.peer_fails = {}
-        self.peer_exists = {}
+        self.peer_fails: Dict[UserID, int] = {}
+        self.peer_exists: Dict[UserID, bool] = {}
 
     def fail_peer(self, peer):
         try:

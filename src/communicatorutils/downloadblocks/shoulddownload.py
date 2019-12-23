@@ -1,9 +1,11 @@
-'''
-    Onionr - Private P2P Communication
+"""Onionr - Private P2P Communication.
 
-    Check if a block should be downloaded (if we already have it or its blacklisted or not)
-'''
-'''
+Check if a block should be downloaded
+(if we already have it or its blacklisted or not)
+"""
+from coredb import blockmetadb
+from onionrblocks import onionrblacklist
+"""
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -16,22 +18,24 @@
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
-'''
-from coredb import blockmetadb
-from onionrblocks import onionrblacklist
+"""
 
-def should_download(comm_inst, block_hash):
+
+def should_download(comm_inst, block_hash) -> bool:
+    """Return bool for if a (assumed to exist) block should be downloaded."""
     blacklist = onionrblacklist.OnionrBlackList()
-    ret_data = True
-    if block_hash in blockmetadb.get_block_list(): # Dont download block we have
-        ret_data = False
+    should = True
+    if block_hash in blockmetadb.get_block_list():
+        # Don't download block we have
+        should = False
     else:
-        if blacklist.inBlacklist(block_hash): # Dont download blacklisted block
-            ret_data = False
-    if ret_data is False:
-        # Remove block from communicator queue if it shouldnt be downloaded
+        if blacklist.inBlacklist(block_hash):
+            # Don't download blacklisted block
+            should = False
+    if should is False:
+        # Remove block from communicator queue if it shouldn't be downloaded
         try:
             del comm_inst.blockQueue[block_hash]
         except KeyError:
             pass
-    return ret_data
+    return should
