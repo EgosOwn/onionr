@@ -43,6 +43,7 @@ DATABASE_LOCK_TIMEOUT = 60
 
 # Block creation anonymization requirements
 MIN_BLOCK_UPLOAD_PEER_PERCENT = 0.1
+MIN_SHARE_WAIT_DELAY_SECS = 5
 
 # Begin OnionrValues migrated values
 """Make announce take a few seconds (on average) to compute to discourage excessive node announcements"""

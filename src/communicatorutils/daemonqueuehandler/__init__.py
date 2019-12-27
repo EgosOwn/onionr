@@ -5,10 +5,12 @@ Handle daemon queue commands in the communicator
 import logger
 from onionrplugins import onionrevents as events
 from onionrutils import localcommand
+from communicatorutils.uploadblocks import mixmate
 from coredb import daemonqueue
 import filepaths
-from . import restarttor
-from communicatorutils.uploadblocks import mixmate
+
+from .. import restarttor
+
 """
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -29,11 +31,12 @@ def handle_daemon_commands(comm_inst):
     cmd = daemonqueue.daemon_queue()
     response = ''
     if cmd is not False:
-        events.event('daemon_command', data = {'cmd' : cmd})
+        events.event('daemon_command', data={'cmd': cmd})
         if cmd[0] == 'shutdown':
             comm_inst.shutdown = True
         elif cmd[0] == 'runtimeTest':
-            comm_inst.shared_state.get_by_string("OnionrRunTestManager").run_tests()
+            comm_inst.shared_state.get_by_string(
+                "OnionrRunTestManager").run_tests()
         elif cmd[0] == 'remove_from_insert_list':
             try:
                 comm_inst.generating_blocks.remove(cmd[1])
@@ -44,7 +47,7 @@ def handle_daemon_commands(comm_inst):
                 comm_inst.announce(cmd[1])
             else:
                 logger.debug("No nodes connected. Will not introduce node.")
-        elif cmd[0] == 'runCheck': # deprecated
+        elif cmd[0] == 'runCheck':  # deprecated
             logger.debug('Status check; looks good.')
             open(filepaths.run_check_file + '.runcheck', 'w+').close()
         elif cmd[0] == 'connectedPeers':
@@ -65,18 +68,21 @@ def handle_daemon_commands(comm_inst):
         elif cmd[0] == 'uploadBlock':
             comm_inst.blocksToUpload.append(cmd[1])
         elif cmd[0] == 'uploadEvent':
+            localcommand.local_command('/waitforshare/' + cmd[1], post=True,
+                                       maxWait=5)
             try:
                 mixmate.block_mixer(comm_inst.blocksToUpload, cmd[1])
             except ValueError:
-                pass
-            else:
-                localcommand.local_command('/waitforshare/' + cmd[1], post=True, maxWait=5)
+                comm_inst.blocksToUpload.append(cmd[1])
         else:
-            logger.debug('Received daemon queue command unable to be handled: %s' % (cmd[0],))
+            logger.debug(
+                'Received daemon queue cmd with no handler: %s' % (cmd[0],))
 
         if cmd[0] not in ('', None):
             if response != '':
-                localcommand.local_command('queueResponseAdd/' + cmd[4], post=True, postData={'data': response})
+                localcommand.local_command('queueResponseAdd/' + cmd[4],
+                                           post=True,
+                                           postData={'data': response})
         response = ''
 
     comm_inst.decrementThreadCount('handle_daemon_commands')

@@ -22,7 +22,7 @@ import json
 
 from onionrutils import bytesconverter, epoch
 import filepaths, onionrstorage
-from . import storagecounter
+from .. import storagecounter
 from onionrplugins import onionrevents as events
 from etc import powchoice, onionrvalues
 import config, onionrcrypto as crypto, onionrexceptions

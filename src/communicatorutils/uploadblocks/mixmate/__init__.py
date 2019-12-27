@@ -38,6 +38,14 @@ def block_mixer(upload_list: List[onionrtypes.BlockHash],
     to the said block list
     """
     bl = onionrblockapi.Block(block_to_mix)
+
+    try:
+        bl.bmetadata['dly']
+    except (KeyError, TypeError):
+        pass
+    else:
+        raise ValueError
+
     if time.time() - bl.claimedTime > onionrvalues.BLOCK_POOL_MAX_AGE:
         raise ValueError
 

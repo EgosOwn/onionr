@@ -106,7 +106,10 @@ class BlockUploadSessionManager:
             if (sess.total_success_count / onlinePeerCount) >= onionrvalues.MIN_BLOCK_UPLOAD_PEER_PERCENT:
                 sessions_to_delete.append(sess)
         for sess in sessions_to_delete:
-            self.sessions.remove(session)
+            try:
+                self.sessions.remove(session)
+            except ValueError:
+                pass
             # TODO cleanup to one round of search
             # Remove the blocks from the sessions, upload list,
             # and waitforshare list

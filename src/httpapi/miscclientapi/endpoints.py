@@ -1,9 +1,33 @@
-'''
-    Onionr - Private P2P Communication
+"""Onionr - Private P2P Communication.
 
-    Misc client API endpoints too small to need their own file and that need access to the client api inst
-'''
-'''
+Misc client API endpoints too small to need their own file
+and that need access to the client api inst
+"""
+from typing import TYPE_CHECKING
+from secrets import randbelow
+
+import os
+import subprocess
+
+from flask import Response, Blueprint, request, send_from_directory, abort
+from gevent import spawn
+from gevent import sleep
+import unpaddedbase32
+
+from httpapi import apiutils
+import logger
+import onionrcrypto
+import config
+from netcontroller import NetController
+from serializeddata import SerializedData
+from onionrutils import mnemonickeys
+from onionrutils import bytesconverter
+from etc import onionrvalues
+from utils import reconstructhash
+from onionrcommands import restartonionr
+if TYPE_CHECKING:
+    from onionrtypes import BlockHash
+"""
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -16,26 +40,14 @@
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
-'''
-import os
-import subprocess
-
-from flask import Response, Blueprint, request, send_from_directory, abort
-import unpaddedbase32
-
-from httpapi import apiutils
-import onionrcrypto, config
-from netcontroller import NetController
-from serializeddata import SerializedData
-from onionrutils import mnemonickeys
-from onionrutils import bytesconverter
-from etc import onionrvalues
-from utils import reconstructhash
-from onionrcommands import restartonionr
+"""
 
 pub_key = onionrcrypto.pub_key.replace('=', '')
 
-SCRIPT_NAME = os.path.dirname(os.path.realpath(__file__)) + f'/../../../{onionrvalues.SCRIPT_NAME}'
+SCRIPT_NAME = os.path.dirname(os.path.realpath(__file__)) + \
+              f'/../../../{onionrvalues.SCRIPT_NAME}'
+
+
 
 class PrivateEndpoints:
     def __init__(self, client_api):
@@ -84,12 +96,30 @@ class PrivateEndpoints:
 
         @private_endpoints_bp.route('/waitforshare/<name>', methods=['post'])
         def waitforshare(name):
-            '''Used to prevent the **public** api from sharing blocks we just created'''
-            if not name.isalnum(): raise ValueError('block hash needs to be alpha numeric')
+            """Prevent the **public** api from sharing blocks we just created"""
+            def _delay_wait_for_share_block_removal(block: 'BlockHash'):
+                min_w = onionrvalues.MIN_SHARE_WAIT_DELAY_SECS
+                # Delay at least min but otherwise getBlocks timer + rand 10s
+                delay_before_remove = max(
+                                          min_w,
+                                          randbelow
+                                          (config.get
+                                           (
+                                            'timers.getBlocks',
+                                            default=10) + randbelow(11)))
+                sleep(delay_before_remove)
+                try:
+                    client_api.publicAPI.hideBlocks.remove(name)
+                except ValueError:
+                    logger.warn(
+                        f'Failed to remove {name} from waitforshare')
+
+            if not name.isalnum():
+                raise ValueError('block hash needs to be alnum')
             name = reconstructhash.reconstruct_hash(name)
             if name in client_api.publicAPI.hideBlocks:
-                client_api.publicAPI.hideBlocks.remove(name)
-                return Response("removed")
+                spawn(_delay_wait_for_share_block_removal)
+                return Response("will be removed")
             else:
                 client_api.publicAPI.hideBlocks.append(name)
                 return Response("added")
