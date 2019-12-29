@@ -14,9 +14,10 @@ from .. import resettor  # cmds to reset the tor data folder/transport keypair
 from .. import resetplugins  # command to reinstall default plugins
 from .. import softreset  # command to delete onionr blocks
 from .. import restartonionr  # command to restart Onionr
-from .. import runtimetestcmd
-from .. import motdcreator
-from .. import sitecreator
+from .. import runtimetestcmd  # cmd to execute the runtime integration tests
+from .. import motdcreator  # cmd to generate new Onionr MOTDs
+from .. import sitecreator  # cmd to create multi-page sites
+from .. import togglebootstrap   # cmd to toggle bootstrap file usage
 
 import onionrexceptions
 from onionrutils import importnewblocks  # func to import new blocks
@@ -70,6 +71,8 @@ def get_arguments() -> dict:
         ('resetplugins', 'reset-plugins'): resetplugins.reset,
         ('reset-tor-node-transport',): resettor.reset_tor_key_pair,
         ('soft-reset', 'softreset'): softreset.soft_reset,
+        ('toggle-bootstrap', 'togglebootstrap'):
+        togglebootstrap.toggle_bootstrap_config,
         ('runtime-test', 'runtimetest'): runtimetestcmd.do_runtime_test,
         ('makemotd', 'make-motd'): motdcreator.motd_creator
 
