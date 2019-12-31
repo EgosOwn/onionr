@@ -1,9 +1,9 @@
-'''
+"""
     Onionr - Private P2P Communication
 
     This file handles configuration setting and getting from the HTTP API
-'''
-'''
+"""
+"""
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -16,7 +16,7 @@
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
-'''
+"""
 import json
 from flask import Blueprint, request, Response, abort
 import config, onionrutils
@@ -26,17 +26,17 @@ config_BP = Blueprint('config_BP', __name__)
 
 @config_BP.route('/config/get')
 def get_all_config():
-    '''Simply return all configuration as JSON string'''
+    """Simply return all configuration as JSON string"""
     return Response(json.dumps(config.get_config(), indent=4, sort_keys=True))
 
 @config_BP.route('/config/get/<key>')
 def get_by_key(key):
-    '''Return a config setting by key'''
+    """Return a config setting by key"""
     return Response(json.dumps(config.get(key)))
 
 @config_BP.route('/config/setall', methods=['POST'])
 def set_all_config():
-    '''Overwrite existing JSON config with new JSON string'''
+    """Overwrite existing JSON config with new JSON string"""
     try:
         new_config = request.get_json(force=True)
     except json.JSONDecodeError:
@@ -48,12 +48,12 @@ def set_all_config():
 
 @config_BP.route('/config/set/<key>', methods=['POST'])
 def set_by_key(key):
-    '''Overwrite/set only 1 config key'''
-    '''
+    """Overwrite/set only 1 config key"""
+    """
     {
         'data': data
     }
-    '''
+    """
     try:
         data = json.loads(onionrutils.OnionrUtils.bytesToStr(request.data))['data']
     except (json.JSONDecodeError, KeyError):
