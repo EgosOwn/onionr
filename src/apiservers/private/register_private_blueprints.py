@@ -2,10 +2,14 @@
 
 This file registers blueprints for the private api server
 """
+from gevent import spawn
+from gevent import sleep
+
 from httpapi import security, friendsapi, profilesapi, configapi, insertblock
 from httpapi import miscclientapi, onionrsitesapi, apiutils
 from httpapi import directconnections
 from httpapi import themeapi
+
 """
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -40,4 +44,16 @@ def register_private_blueprints(private_api, app):
     app.register_blueprint(directconnections.DirectConnectionManagement(
         private_api).direct_conn_management_bp)
     app.register_blueprint(themeapi.theme_blueprint)
+
+    def _add_events_bp():
+        while True:
+            try:
+                private_api._too_many
+                break
+            except AttributeError:
+                sleep(0.2)
+        app.register_blueprint(
+            private_api._too_many.get_by_string('DaemonEventsBP').flask_bp)
+
+    spawn(_add_events_bp)
     return app

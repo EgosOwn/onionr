@@ -21,10 +21,7 @@ import config
 """
 
 
-event_BP = Blueprint('event_BP', __name__)
-
-
-class DaemonEvents:
+class DaemonEventsBP:
     def __init__(self):
         """Create DaemonEvents instance, intended to be a singleton.
 
@@ -34,13 +31,20 @@ class DaemonEvents:
             The callables name should match the event name
         _too_many: TooManyObjects instance set by external code
         """
+        event_BP = Blueprint('event_BP', __name__)
         self.events = {}
+        self.listeners = {}
         self.flask_bp = event_BP
         event_BP = self.flask_bp
 
-        @event_BP.route('/daemon-event', methods=['POST'])
-        def daemon_event_handler() -> Response:
-            return
+        @event_BP.route('/daemon-event/<name>', methods=['POST'])
+        def daemon_event_handler(name):
+            if name in self.listeners:
+                
+
+        @event_BP.route('/daemon-event/bp-enabled')
+        def bp_enabled() -> Response:
+            return Response('true')
 
     def clean_old(self):
         """Deletes old daemon events based on their completion date."""

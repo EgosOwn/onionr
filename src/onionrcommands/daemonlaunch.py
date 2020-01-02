@@ -26,6 +26,7 @@ from utils import hastor, logoheader
 from . import version
 import serializeddata
 import runtests
+from httpapi import daemoneventsapi
 """
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -65,6 +66,8 @@ def daemon():
 
     shared_state = toomanyobjs.TooMany()
 
+    shared_state.get(daemoneventsapi.DaemonEventsBP)
+
     Thread(target=shared_state.get(apiservers.ClientAPI).start,
            daemon=True, name='client HTTP API').start()
     if not offline_mode:
@@ -76,6 +79,7 @@ def daemon():
 
     shared_state.get(runtests.OnionrRunTestManager)
     shared_state.get(serializeddata.SerializedData)
+
     shared_state.share_object()  # share the parent object to the threads
 
     apiHost = ''
