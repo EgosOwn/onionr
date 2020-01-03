@@ -17,7 +17,11 @@
     You should have received a copy of the GNU General Public License
     along with this program. If not, see <https://www.gnu.org/licenses/>.
 '''
-import urllib, requests, time
+import urllib, time
+import json
+
+import requests
+
 import logger, config, deadsimplekv
 from . import getclientapiserver
 import filepaths
@@ -46,20 +50,37 @@ def get_hostname():
         else:
             return hostname
 
-def local_command(command, data='', silent = True, post=False, postData = {}, maxWait=20):
+def local_command(command, data='', silent = True, post=False,
+                  postData = {}, maxWait=20,
+                  is_json=False
+                  ):
     '''
         Send a command to the local http API server, securely. Intended for local clients, DO NOT USE for remote peers.
     '''
     # TODO: URL encode parameters, just as an extra measure. May not be needed, but should be added regardless.
     hostname = get_hostname()
     if hostname == False: return False
+
     if data != '':
         data = '&data=' + urllib.parse.quote_plus(data)
     payload = 'http://%s/%s%s' % (hostname, command, data)
 
     try:
         if post:
-            ret_data = requests.post(payload, data=postData, headers={'token': config.get('client.webpassword'), 'Connection':'close'}, timeout=(maxWait, maxWait)).text
+            if is_json:
+                ret_data = requests.post(
+                    payload,
+                    json=postData,
+                    headers={'token': config.get('client.webpassword'),
+                             'Connection': 'close'},
+                    timeout=(maxWait, maxWait)).text
+            else:
+                ret_data = requests.post(
+                    payload,
+                    data=postData,
+                    headers={'token': config.get('client.webpassword'),
+                             'Connection': 'close'},
+                    timeout=(maxWait, maxWait)).text
         else:
             ret_data = requests.get(payload, headers={'token': config.get('client.webpassword'), 'Connection':'close'}, timeout=(maxWait, maxWait)).text
     except Exception as error:
