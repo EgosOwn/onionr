@@ -2,9 +2,12 @@
 
 Event driven interface to trigger events in communicator
 """
-import json
-from flask import Blueprint, request, Response
-import config
+from typing import Callable
+
+from flask import Blueprint, request, Response, abort
+from werkzeug.exceptions import BadRequest
+from gevent import spawn
+
 """
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -26,28 +29,28 @@ class DaemonEventsBP:
         """Create DaemonEvents instance, intended to be a singleton.
 
         Attributes:
-        events: dict of current/finished events
         listeners: callables that are called when a new event is added.
             The callables name should match the event name
         _too_many: TooManyObjects instance set by external code
         """
         event_BP = Blueprint('event_BP', __name__)
-        self.events = {}
-        self.listeners = {}
+        self.listeners = set([])
         self.flask_bp = event_BP
         event_BP = self.flask_bp
 
         @event_BP.route('/daemon-event/<name>', methods=['POST'])
         def daemon_event_handler(name):
-            if name in self.listeners:
-                
+            handler: Callable
 
-        @event_BP.route('/daemon-event/bp-enabled')
-        def bp_enabled() -> Response:
-            return Response('true')
+            try:
+                json_data = request.get_json(force=True)
+            except BadRequest:
+                json_data = {}
+            for handler in self.listeners:
+                if handler.__name__ == name:
+                    return Response(
+                        spawn(handler, **json_data).get(timeout=120))
+            abort(404)
 
-    def clean_old(self):
-        """Deletes old daemon events based on their completion date."""
-        pass
-
-
+    def register_listener(self, listener: Callable):
+        self.listeners.add(listener)

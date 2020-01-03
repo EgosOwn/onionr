@@ -20,6 +20,8 @@
 from typing import Union
 import json
 
+from gevent import spawn
+
 from onionrutils import bytesconverter, epoch
 import filepaths, onionrstorage
 from . import storagecounter
@@ -211,5 +213,10 @@ def insert_block(data: Union[str, bytes], header: str = 'txt',
             events.event('insertdeniable', {'content': plaintext, 'meta': plaintextMeta, 'hash': retData, 'peer': bytesconverter.bytes_to_str(asymPeer)}, threaded = True)
         else:
             events.event('insertblock', {'content': plaintext, 'meta': plaintextMeta, 'hash': retData, 'peer': bytesconverter.bytes_to_str(asymPeer)}, threaded = True)
-    coredb.daemonqueue.daemon_queue_add('remove_from_insert_list', data= dataNonce)
+    #coredb.daemonqueue.daemon_queue_add('remove_from_insert_list', data= dataNonce)
+    spawn(
+        localcommand.local_command,
+        '/daemon-event/remove_from_insert_queue_wrapper',
+        post=True, timeout=10
+        )
     return retData

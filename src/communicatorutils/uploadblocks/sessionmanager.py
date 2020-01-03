@@ -84,7 +84,7 @@ class BlockUploadSessionManager:
 
         comm_inst: 'OnionrCommunicatorDaemon'  # type: ignore
         comm_inst = self._too_many.get_by_string(  # pylint: disable=E1101 type: ignore
-            "OnionrCommunicatorDaemon")
+        "OnionrCommunicatorDaemon")
         sessions_to_delete = []
         if comm_inst.getUptime() < 120:
             return
@@ -106,7 +106,10 @@ class BlockUploadSessionManager:
             if (sess.total_success_count / onlinePeerCount) >= onionrvalues.MIN_BLOCK_UPLOAD_PEER_PERCENT:
                 sessions_to_delete.append(sess)
         for sess in sessions_to_delete:
-            self.sessions.remove(session)
+            try:
+                self.sessions.remove(session)
+            except ValueError:
+                pass
             # TODO cleanup to one round of search
             # Remove the blocks from the sessions, upload list,
             # and waitforshare list

@@ -26,42 +26,24 @@ from communicatorutils.uploadblocks import mixmate
 
 
 def handle_daemon_commands(comm_inst):
+    # Deprecated in favor of daemon events
     cmd = daemonqueue.daemon_queue()
     response = ''
     if cmd is not False:
-        events.event('daemon_command', data = {'cmd' : cmd})
+        events.event('daemon_command', data = {'cmd': cmd})
         if cmd[0] == 'shutdown':
             comm_inst.shutdown = True
         elif cmd[0] == 'runtimeTest':
-            comm_inst.shared_state.get_by_string("OnionrRunTestManager").run_tests()
+            comm_inst.shared_state.get_by_string(
+                "OnionrRunTestManager").run_tests()
         elif cmd[0] == 'remove_from_insert_list':
             try:
                 comm_inst.generating_blocks.remove(cmd[1])
             except ValueError:
                 pass
-        elif cmd[0] == 'announceNode':
-            if len(comm_inst.onlinePeers) > 0:
-                comm_inst.announce(cmd[1])
-            else:
-                logger.debug("No nodes connected. Will not introduce node.")
-        elif cmd[0] == 'runCheck': # deprecated
-            logger.debug('Status check; looks good.')
-            open(filepaths.run_check_file + '.runcheck', 'w+').close()
-        elif cmd[0] == 'connectedPeers':
-            response = '\n'.join(list(comm_inst.onlinePeers)).strip()
-            if response == '':
-                response = 'none'
-        elif cmd[0] == 'localCommand':
-            response = localcommand.local_command(cmd[1])
-        elif cmd[0] == 'clearOffline':
-            comm_inst.offlinePeers = []
         elif cmd[0] == 'restartTor':
             restarttor.restart(comm_inst)
             comm_inst.offlinePeers = []
-        elif cmd[0] == 'pex':
-            for i in comm_inst.timers:
-                if i.timerFunction.__name__ == 'lookupAdders':
-                    i.count = (i.frequency - 1)
         elif cmd[0] == 'uploadBlock':
             comm_inst.blocksToUpload.append(cmd[1])
         elif cmd[0] == 'uploadEvent':
@@ -70,13 +52,18 @@ def handle_daemon_commands(comm_inst):
             except ValueError:
                 pass
             else:
-                localcommand.local_command('/waitforshare/' + cmd[1], post=True, maxWait=5)
+                localcommand.local_command(
+                    '/waitforshare/' + cmd[1], post=True, maxWait=5)
         else:
-            logger.debug('Received daemon queue command unable to be handled: %s' % (cmd[0],))
+            logger.debug(
+                'Received daemon queue command unable to be handled: %s' %
+                (cmd[0],))
 
         if cmd[0] not in ('', None):
             if response != '':
-                localcommand.local_command('queueResponseAdd/' + cmd[4], post=True, postData={'data': response})
+                localcommand.local_command(
+                    'queueResponseAdd/' + cmd[4],
+                    post=True, postData={'data': response})
         response = ''
 
     comm_inst.decrementThreadCount('handle_daemon_commands')

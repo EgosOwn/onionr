@@ -36,6 +36,7 @@ from coredb import daemonqueue
 from coredb import dbfiles
 from netcontroller import NetController
 from . import bootstrappeers
+from . import daemoneventhooks
 """
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -246,6 +247,8 @@ class OnionrCommunicatorDaemon:
         if config.get('general.use_bootstrap', True):
             bootstrappeers.add_bootstrap_list_to_peer_list(
                 self, [], db_only=True)
+
+        daemoneventhooks.daemon_event_handlers(shared_state)
 
         if not config.get('onboarding.done', True):
             logger.info(
