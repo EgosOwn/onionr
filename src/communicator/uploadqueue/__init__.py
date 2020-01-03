@@ -59,5 +59,11 @@ class UploadQueue:
     def save(self):
         """Save to disk on shutdown or if called manually."""
         bl: deadsimplekv.DeadSimpleKV = self.communicator.blocksToUpload
-        self.store_obj.put('uploads', bl)
-        self.store_obj.flush()
+        if len(bl) == 0:
+            try:
+                os.remove(UPLOAD_MEMORY_FILE)
+            except FileNotFoundError:
+                pass
+        else:
+            self.store_obj.put('uploads', bl)
+            self.store_obj.flush()
