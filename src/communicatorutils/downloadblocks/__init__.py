@@ -6,6 +6,9 @@
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from communicator import OnionrCommunicatorDaemon
+
+from gevent import spawn
+
 import onionrexceptions
 import logger
 import onionrpeers
@@ -16,6 +19,7 @@ from onionrutils import blockmetadata
 from onionrutils import validatemetadata
 from coredb import blockmetadb
 from coredb import daemonqueue
+from onionrutils.localcommand import local_command
 import onionrcrypto
 import onionrstorage
 from onionrblocks import onionrblacklist
@@ -82,7 +86,7 @@ def download_blocks_from_communicator(comm_inst: "OnionrCommunicatorDaemon"):
             logger.info("Attempting to download %s from %s..." % (blockHash[:12], peerUsed))
         content = peeraction.peer_action(comm_inst, peerUsed, 'getdata/' + blockHash, max_resp_size=3000000) # block content from random peer (includes metadata)
 
-        if content != False and len(content) > 0:
+        if content is not False and len(content) > 0:
             try:
                 content = content.encode()
             except AttributeError:
@@ -98,7 +102,8 @@ def download_blocks_from_communicator(comm_inst: "OnionrCommunicatorDaemon"):
                 metas = blockmetadata.get_block_metadata_from_data(content) # returns tuple(metadata, meta), meta is also in metadata
                 metadata = metas[0]
                 try:
-                    metadata_validation_result = validatemetadata.validate_metadata(metadata, metas[2])
+                    metadata_validation_result = \
+                        validatemetadata.validate_metadata(metadata, metas[2])
                 except onionrexceptions.DataExists:
                     metadata_validation_result = False
                 if metadata_validation_result: # check if metadata is valid, and verify nonce
@@ -113,7 +118,14 @@ def download_blocks_from_communicator(comm_inst: "OnionrCommunicatorDaemon"):
                             removeFromQueue = False
                         else:
                             blockmetadb.add_to_block_DB(blockHash, dataSaved=True) # add block to meta db
-                            daemonqueue.daemon_queue_add('uploadEvent', blockHash)
+                            spawn(
+                                local_command,
+                                f'/daemon-event/upload_event',
+                                post=True,
+                                is_json=True,
+                                postData={'block': blockHash}
+                            )
+
                             blockmetadata.process_block_metadata(blockHash) # caches block metadata values to block database
                     else:
                         logger.warn('POW failed for block %s.' % (blockHash,))
@@ -134,14 +146,17 @@ def download_blocks_from_communicator(comm_inst: "OnionrCommunicatorDaemon"):
                 onionrpeers.PeerProfiles(peerUsed).addScore(-50)
                 if tempHash != 'ed55e34cb828232d6c14da0479709bfa10a0923dca2b380496e6b2ed4f7a0253':
                     # Dumb hack for 404 response from peer. Don't log it if 404 since its likely not malicious or a critical error.
-                    logger.warn('Block hash validation failed for ' + blockHash + ' got ' + tempHash)
+                    logger.warn(
+                        'Block hash validation failed for ' +
+                        blockHash + ' got ' + tempHash)
                 else:
                     removeFromQueue = False # Don't remove from queue if 404
             if removeFromQueue:
                 try:
                     del comm_inst.blockQueue[blockHash] # remove from block queue both if success or false
                     if count == LOG_SKIP_COUNT:
-                        logger.info('%s blocks remaining in queue' % [len(comm_inst.blockQueue)], terminal=True)
+                        logger.info('%s blocks remaining in queue' %
+                        [len(comm_inst.blockQueue)], terminal=True)
                         count = 0
                 except KeyError:
                     pass

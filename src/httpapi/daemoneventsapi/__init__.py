@@ -48,8 +48,7 @@ class DaemonEventsBP:
                 json_data = {}
             for handler in self.listeners:
                 if handler.__name__ == name:
-                    return Response(
-                        spawn(handler, **json_data).get(timeout=120))
+                    return Response(handler(**json_data))
             abort(404)
 
     def register_listener(self, listener: Callable):

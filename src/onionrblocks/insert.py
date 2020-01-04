@@ -197,7 +197,14 @@ def insert_block(data: Union[str, bytes], header: str = 'txt',
             retData = False
         else:
             # Tell the api server through localCommand to wait for the daemon to upload this block to make statistical analysis more difficult
-            coredb.daemonqueue.daemon_queue_add('uploadEvent', retData)
+            #coredb.daemonqueue.daemon_queue_add('uploadEvent', retData)
+            spawn(
+                localcommand.local_command,
+                f'/daemon-event/upload_event',
+                post=True,
+                is_json=True,
+                postData={'block': retData}
+                ).get(timeout=5)
             coredb.blockmetadb.add.add_to_block_DB(retData, selfInsert=True, dataSaved=True)
 
             if expire is None:
@@ -213,10 +220,10 @@ def insert_block(data: Union[str, bytes], header: str = 'txt',
             events.event('insertdeniable', {'content': plaintext, 'meta': plaintextMeta, 'hash': retData, 'peer': bytesconverter.bytes_to_str(asymPeer)}, threaded = True)
         else:
             events.event('insertblock', {'content': plaintext, 'meta': plaintextMeta, 'hash': retData, 'peer': bytesconverter.bytes_to_str(asymPeer)}, threaded = True)
-    #coredb.daemonqueue.daemon_queue_add('remove_from_insert_list', data= dataNonce)
+
     spawn(
         localcommand.local_command,
         '/daemon-event/remove_from_insert_queue_wrapper',
-        post=True, timeout=10
-        )
+        post=True
+        ).get(timeout=5)
     return retData

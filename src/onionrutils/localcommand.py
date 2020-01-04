@@ -1,9 +1,19 @@
-'''
+"""
     Onionr - Private P2P Communication
 
     send a command to the local API server
-'''
-'''
+"""
+import urllib, time
+import json
+import functools
+from typing import TYPE_CHECKING, Callable
+
+import requests
+
+import logger, config, deadsimplekv
+from . import getclientapiserver
+import filepaths
+"""
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -16,15 +26,7 @@
 
     You should have received a copy of the GNU General Public License
     along with this program. If not, see <https://www.gnu.org/licenses/>.
-'''
-import urllib, time
-import json
-
-import requests
-
-import logger, config, deadsimplekv
-from . import getclientapiserver
-import filepaths
+"""
 config.reload()
 
 cache = deadsimplekv.DeadSimpleKV(filepaths.cached_storage, refresh_seconds=1000)
@@ -54,9 +56,9 @@ def local_command(command, data='', silent = True, post=False,
                   postData = {}, maxWait=20,
                   is_json=False
                   ):
-    '''
+    """
         Send a command to the local http API server, securely. Intended for local clients, DO NOT USE for remote peers.
-    '''
+    """
     # TODO: URL encode parameters, just as an extra measure. May not be needed, but should be added regardless.
     hostname = get_hostname()
     if hostname == False: return False

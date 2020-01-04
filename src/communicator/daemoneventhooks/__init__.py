@@ -8,11 +8,14 @@ from typing import TYPE_CHECKING
 
 from gevent import sleep
 
+from communicatorutils.uploadblocks import mixmate
+
 if TYPE_CHECKING:
     from toomanyobjs import TooMany
     from communicator import OnionrCommunicatorDaemon
     from httpapi.daemoneventsapi import DaemonEventsBP
     from onionrtypes import BlockHash
+    from apiservers import PublicAPI
 """
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -37,16 +40,28 @@ def daemon_event_handlers(shared_state: 'TooMany'):
             except KeyError:
                 sleep(0.2)
     comm_inst = _get_inst('OnionrCommunicatorDaemon')
+    public_api: 'PublicAPI' = _get_inst('PublicAPI')
     events_api: 'DaemonEventsBP' = _get_inst('DaemonEventsBP')
 
     def remove_from_insert_queue_wrapper(block_hash: 'BlockHash'):
-        print(f'removed {block_hash} from upload')
         remove_from_insert_queue(comm_inst, block_hash)
+        return "removed"
 
     def print_test(text=''):
         print("It works!", text)
         return f"It works! {text}"
 
+    def upload_event(block: 'BlockHash' = ''):
+        if not block:
+            raise ValueError
+        public_api.hideBlocks.append(block)
+        try:
+            mixmate.block_mixer(comm_inst.blocksToUpload, block)
+        except ValueError:
+            pass
+        return "removed"
+
     events_api.register_listener(remove_from_insert_queue_wrapper)
     events_api.register_listener(print_test)
+    events_api.register_listener(upload_event)
 

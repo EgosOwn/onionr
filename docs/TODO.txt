@@ -13,3 +13,4 @@
 * localization support
 * add BCC support to mail
 * prevent local insertion success of duplicate block content
+* truncate last N blocks when sharing list

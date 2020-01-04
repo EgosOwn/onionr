@@ -4,6 +4,7 @@ Class to remember blocks that need to be uploaded
 and not shared on startup/shutdown
 """
 import atexit
+import os
 from typing import TYPE_CHECKING
 
 import deadsimplekv
