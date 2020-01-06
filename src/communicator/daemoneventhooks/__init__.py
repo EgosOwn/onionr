@@ -9,6 +9,7 @@ from typing import TYPE_CHECKING
 from gevent import sleep
 
 from communicatorutils.uploadblocks import mixmate
+from communicatorutils import restarttor
 
 if TYPE_CHECKING:
     from toomanyobjs import TooMany
@@ -60,6 +61,14 @@ def daemon_event_handlers(shared_state: 'TooMany'):
         except ValueError:
             pass
         return "removed"
+
+    def restart_tor():
+        restarttor.restart(comm_inst)
+        comm_inst.offlinePeers = []
+
+    def test_runtime():
+        comm_inst.shared_state.get_by_string(
+            "OnionrRunTestManager").run_tests()
 
     events_api.register_listener(remove_from_insert_queue_wrapper)
     events_api.register_listener(print_test)

@@ -1,10 +1,15 @@
-'''
+"""
     Onionr - Private P2P Communication
 
-    Determine if our node is able to use Tor based on the status of a communicator instance
+    Determine if our node is able to use Tor based
+    on the status of a communicator instance
     and the result of pinging onion http servers
-'''
-'''
+"""
+import logger
+from utils import netutils
+from onionrutils import localcommand, epoch
+from . import restarttor
+"""
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -17,14 +22,12 @@
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
-'''
-import logger
-from utils import netutils
-from onionrutils import localcommand, epoch
-from . import restarttor
+"""
+
+
 def net_check(comm_inst):
-    '''Check if we are connected to the internet
-    or not when we can't connect to any peers'''
+    """Check if we are connected to the internet
+    or not when we can't connect to any peers"""
     # for detecting if we have received incoming connections recently
     rec = False
     if len(comm_inst.onlinePeers) == 0:

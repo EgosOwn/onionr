@@ -2,7 +2,9 @@
 
 Command to tell daemon to do run time tests
 """
-from coredb import daemonqueue
+from gevent import spawn
+
+from onionrutils import localcommand
 """
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -21,7 +23,13 @@ from coredb import daemonqueue
 
 def do_runtime_test():
     """Send runtime test daemon queue command."""
-    daemonqueue.daemon_queue_add("runtimeTest")
+    spawn(
+        localcommand.local_command,
+        f'/daemon-event/test_runtime',
+        post=True,
+        is_json=True,
+        postData={}
+    ).get(10)
 
 
 do_runtime_test.onionr_help = "If Onionr is running, "  # type: ignore

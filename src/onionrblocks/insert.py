@@ -197,7 +197,6 @@ def insert_block(data: Union[str, bytes], header: str = 'txt',
             retData = False
         else:
             # Tell the api server through localCommand to wait for the daemon to upload this block to make statistical analysis more difficult
-            #coredb.daemonqueue.daemon_queue_add('uploadEvent', retData)
             spawn(
                 localcommand.local_command,
                 f'/daemon-event/upload_event',
@@ -224,6 +223,7 @@ def insert_block(data: Union[str, bytes], header: str = 'txt',
     spawn(
         localcommand.local_command,
         '/daemon-event/remove_from_insert_queue_wrapper',
-        post=True
+        post=True,
+        postData={'block_hash': retData}
         ).get(timeout=5)
     return retData

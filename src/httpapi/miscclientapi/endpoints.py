@@ -52,27 +52,6 @@ class PrivateEndpoints:
         def get_hit_count():
             return Response(str(client_api.publicAPI.hitCount))
 
-        @private_endpoints_bp.route('/queueResponseAdd/<name>', methods=['post'])
-        def queueResponseAdd(name):
-            # Responses from the daemon. TODO: change to direct var access instead of http endpoint
-            client_api.queueResponse[name] = request.form['data']
-            return Response('success')
-
-        @private_endpoints_bp.route('/queueResponse/<name>')
-        def queueResponse(name):
-            # Fetch a daemon queue response
-            resp = 'failure'
-            try:
-                resp = client_api.queueResponse[name]
-            except KeyError:
-                pass
-            else:
-                del client_api.queueResponse[name]
-            if resp == 'failure':
-                return resp, 404
-            else:
-                return resp
-
         @private_endpoints_bp.route('/ping')
         def ping():
             # Used to check if client api is working

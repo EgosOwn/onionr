@@ -3,6 +3,7 @@
 
     Accept block uploads to the public API server
 '''
+from gevent import spawn
 from gevent import threading
 
 import sys
@@ -10,7 +11,6 @@ from flask import Response
 from flask import abort
 
 from onionrutils import localcommand
-from coredb import daemonqueue
 from onionrblocks import blockimporter
 import onionrexceptions
 import logger
@@ -40,7 +40,13 @@ def accept_upload(request):
         try:
             b_hash = blockimporter.import_block_from_data(data)
             if b_hash:
-                daemonqueue.daemon_queue_add('uploadEvent', b_hash)
+                spawn(
+                    localcommand.local_command,
+                    f'/daemon-event/upload_event',
+                    post=True,
+                    is_json=True,
+                    postData={'block': b_hash}
+                    ).get(timeout=5)
                 resp = 'success'
             else:
                 resp = 'failure'
