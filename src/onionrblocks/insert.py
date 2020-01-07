@@ -224,6 +224,7 @@ def insert_block(data: Union[str, bytes], header: str = 'txt',
         localcommand.local_command,
         '/daemon-event/remove_from_insert_queue_wrapper',
         post=True,
-        postData={'block_hash': retData}
+        postData={'block_hash': retData},
+        is_json=True
         ).get(timeout=5)
     return retData
