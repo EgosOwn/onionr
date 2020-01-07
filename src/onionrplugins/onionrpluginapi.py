@@ -55,9 +55,6 @@ class PluginAPI:
     def get_data_folder(self, name, absolute = True):
         return onionrplugins.get_plugin_data_folder(name, absolute = absolute)
 
-    def daemon_event(self, event, plugin = None):
-        return # later make local command like /client/?action=makeEvent&event=eventname&module=modulename
-
 class CommandAPI:
     def __init__(self, pluginapi):
         self.pluginapi = pluginapi
