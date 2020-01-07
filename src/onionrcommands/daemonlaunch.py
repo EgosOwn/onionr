@@ -8,6 +8,7 @@ import platform
 import sqlite3
 from threading import Thread
 from gevent import time
+from gevent import spawn
 
 import toomanyobjs
 
@@ -19,7 +20,6 @@ from onionrplugins import onionrevents as events
 from netcontroller import NetController
 from onionrutils import localcommand
 import filepaths
-from coredb import daemonqueue
 from etc import onionrvalues, cleanup
 from onionrcrypto import getourkeypair
 from utils import hastor, logoheader
@@ -166,7 +166,10 @@ def kill_daemon():
     events.event('daemon_stop')
     net = NetController(config.get('client.port', 59496))
     try:
-        daemonqueue.daemon_queue_add('shutdown')
+        spawn(
+            localcommand.local_command,
+            '/shutdownclean'
+            ).get(timeout=5)
     except sqlite3.OperationalError:
         pass
 

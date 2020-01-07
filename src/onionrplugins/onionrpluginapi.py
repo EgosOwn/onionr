@@ -20,7 +20,6 @@
 
 import onionrplugins, logger
 from onionrutils import localcommand
-from coredb import daemonqueue
 
 class PluginAPI:
     def __init__(self, pluginapi):

@@ -21,7 +21,6 @@ from communicatorutils import lookupblocks
 from communicatorutils import lookupadders
 from communicatorutils import connectnewpeers
 from communicatorutils import uploadblocks
-from communicatorutils import daemonqueuehandler
 from communicatorutils import announcenode, deniableinserts
 from communicatorutils import cooldownpeer
 from communicatorutils import housekeeping
@@ -32,7 +31,6 @@ from etc import humanreadabletime
 import onionrservices
 import filepaths
 from onionrblocks import storagecounter
-from coredb import daemonqueue
 from coredb import dbfiles
 from netcontroller import NetController
 from . import bootstrappeers
@@ -120,10 +118,6 @@ class OnionrCommunicatorDaemon:
         # to avoid downloading full lists all the time
         self.dbTimestamps = {}
 
-        # Clear the daemon queue for any dead messages
-        if os.path.exists(dbfiles.daemon_queue_db):
-            daemonqueue.clear_daemon_queue()
-
         # Loads in and starts the enabled plugins
         plugins.reload()
 
@@ -182,11 +176,6 @@ class OnionrCommunicatorDaemon:
         OnionrCommunicatorTimers(
             self, uploadblocks.upload_blocks_from_communicator,
             5, my_args=[self], requires_peer=True, max_threads=1)
-
-        # Timer to process the daemon command queue
-        OnionrCommunicatorTimers(
-            self, daemonqueuehandler.handle_daemon_commands,
-            6, my_args=[self], max_threads=3)
 
         # Setup direct connections
         if config.get('general.socket_servers', False):

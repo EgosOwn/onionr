@@ -18,7 +18,6 @@ from communicator import onlinepeers
 from onionrutils import blockmetadata
 from onionrutils import validatemetadata
 from coredb import blockmetadb
-from coredb import daemonqueue
 from onionrutils.localcommand import local_command
 import onionrcrypto
 import onionrstorage

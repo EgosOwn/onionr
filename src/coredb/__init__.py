@@ -1,1 +1,1 @@
-from . import keydb, blockmetadb, daemonqueue
+from . import keydb, blockmetadb

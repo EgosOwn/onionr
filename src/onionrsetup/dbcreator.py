@@ -150,18 +150,6 @@ def createForwardKeyDB():
     conn.close()
     return
 
-def createDaemonDB():
-    '''
-        Create the daemon queue database
-    '''
-    if os.path.exists(dbfiles.daemon_queue_db):
-        raise FileExistsError("Daemon queue db already exists")
-    conn = sqlite3.connect(dbfiles.daemon_queue_db, timeout=10)
-    c = conn.cursor()
-    # Create table
-    c.execute('''CREATE TABLE commands (id integer primary key autoincrement, command text, data text, date text, responseID text)''')
-    conn.commit()
-    conn.close()
 
 def create_blacklist_db():
     if os.path.exists(dbfiles.blacklist_db):
@@ -180,4 +168,6 @@ def create_blacklist_db():
     conn.close()
 
 
-create_funcs = [createAddressDB, createPeerDB, createBlockDB, createBlockDataDB, createForwardKeyDB, createDaemonDB, create_blacklist_db]
+create_funcs = [createAddressDB, createPeerDB,
+                createBlockDB, createBlockDataDB,
+                createForwardKeyDB, create_blacklist_db]
