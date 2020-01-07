@@ -95,7 +95,7 @@ class Block:
                 # Check for replay attacks
                 try:
                     if epoch.get_epoch() - blockmetadb.get_block_date(self.hash) > 60:
-                        if not cryptoutils.replay_validator(self.bmetadata['rply']): raise onionrexceptions.ReplayAttack 
+                        if not cryptoutils.replay_validator(self.bmetadata['rply']): raise onionrexceptions.ReplayAttack
                 except (AssertionError, KeyError, TypeError, onionrexceptions.ReplayAttack) as e:
                     if not self.bypassReplayCheck:
                         # Zero out variables to prevent reading of replays
@@ -187,7 +187,7 @@ class Block:
                 self.date = datetime.datetime.fromtimestamp(self.getDate())
 
             self.valid = True
-            
+
             if self.autoDecrypt:
                 self.decrypt()
 
@@ -462,61 +462,6 @@ class Block:
         return self
 
     # static functions
-
-    def getBlocks(type = None, signer = None, signed = None, reverse = False, limit = None):
-        '''
-            Returns a list of Block objects based on supplied filters
-
-            Inputs:
-            - type (str): filters by block type
-            - signer (str/list): filters by signer (one in the list has to be a signer)
-            - signed (bool): filters out by whether or not the block is signed
-            - reverse (bool): reverses the list if True
-
-            Outputs:
-            - (list): a list of Block objects that match the input
-        '''
-
-        try:
-
-            relevant_blocks = list()
-            blocks = (blockmetadb.get_block_list() if type is None else blockmetadb.get_blocks_by_type(type))
-
-            for block in blocks:
-                if Block.exists(block):
-                    block = Block(block)
-
-                    relevant = True
-
-                    if (not signed is None) and (block.isSigned() != bool(signed)):
-                        relevant = False
-                    if not signer is None:
-                        if isinstance(signer, (str,)):
-                            signer = [signer]
-                        if isinstance(signer, (bytes,)):
-                            signer = [signer.decode()]
-
-                        isSigner = False
-                        for key in signer:
-                            if block.isSigner(key):
-                                isSigner = True
-                                break
-
-                        if not isSigner:
-                            relevant = False
-
-                    if relevant and (limit is None or len(relevant_Blocks) <= int(limit)):
-                        relevant_blocks.append(block)
-
-            if bool(reverse):
-                relevant_blocks.reverse()
-
-            return relevant_blocks
-        except Exception as e:
-            logger.debug('Failed to get blocks.', error = e)
-
-        return list()
-
     def exists(bHash):
         '''
             Checks if a block is saved to file or not
@@ -536,7 +481,7 @@ class Block:
 
         if isinstance(bHash, Block):
             bHash = bHash.getHash()
-        
+
         ret = isinstance(onionrstorage.getData(bHash), type(None))
 
         return not ret

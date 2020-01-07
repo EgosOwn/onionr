@@ -19,7 +19,6 @@
 '''
 import os
 from . import identifyhome
-from onionrsetup import dbcreator
 import filepaths
 home = identifyhome.identify_home()
 
@@ -30,6 +29,8 @@ def create_dirs():
     for path in gen_dirs:
         if not os.path.exists(path):
             os.mkdir(path)
+
+    from onionrsetup import dbcreator
 
     for db in dbcreator.create_funcs:
         try:
