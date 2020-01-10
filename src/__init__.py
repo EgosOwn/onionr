@@ -58,6 +58,7 @@ createdirs.create_dirs()
 import bigbrother # noqa
 from onionrcommands import parser # noqa
 from onionrplugins import onionrevents as events # noqa
+from onionrblocks.deleteplaintext import delete_plaintext_no_blacklist  # noqa
 
 setup.setup_config()
 
@@ -68,6 +69,9 @@ if config.get('advanced.security_auditing', True):
         bigbrother.enable_ministries()
     except onionrexceptions.PythonVersion:
         pass
+
+if not config.get('general.store_plaintext_blocks', True):
+    delete_plaintext_no_blacklist()
 
 setup.setup_default_plugins()
 

@@ -48,10 +48,6 @@ def get(key, default = None, save = False):
 
 def set(key, value = None, savefile = False):
     """Sets the key in configuration to `value`"""
-    from . import observers
-    config_set_observers = {
-        'general.store_plaintext_blocks': [observers.delete_plaintext]
-    }
 
     global _config
 
@@ -65,11 +61,6 @@ def set(key, value = None, savefile = False):
         if (not item in data) or (not type(data[item]) == dict):
             data[item] = dict()
         data = data[item]
-        try:
-            for observer in config_set_observers[whole_key]:
-                observer(value)
-        except KeyError:
-            pass
 
     if value is None:
         del data[last]
