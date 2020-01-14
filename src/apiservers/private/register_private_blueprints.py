@@ -9,6 +9,7 @@ from httpapi import security, friendsapi, profilesapi, configapi, insertblock
 from httpapi import miscclientapi, onionrsitesapi, apiutils
 from httpapi import directconnections
 from httpapi import themeapi
+from httpapi.sse.private import private_sse_blueprint
 
 """
     This program is free software: you can redistribute it and/or modify
@@ -44,6 +45,7 @@ def register_private_blueprints(private_api, app):
     app.register_blueprint(directconnections.DirectConnectionManagement(
         private_api).direct_conn_management_bp)
     app.register_blueprint(themeapi.theme_blueprint)
+    app.register_blueprint(private_sse_blueprint)
 
     def _add_events_bp():
         while True:

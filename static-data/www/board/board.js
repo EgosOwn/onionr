@@ -129,7 +129,7 @@ function getBlocks(){
     var ch = document.getElementById('feedIDInput').value
     if (lastLoadedBoard !== ch){
         requested = []
-    
+
         toggleLoadingMessage()
         loadedAny = false
 
@@ -184,7 +184,6 @@ function loadMessage(blockHash, blockList, count, channel){
             }
         }
         setTimeout(function(){appendMessages(data, blockHash, before, channel)}, delay)
-        //appendMessages(data, blockHash, before)
     })
 }
 
@@ -208,7 +207,7 @@ newPostForm.onsubmit = function(){
           "token": webpass
         }
     })
-    .then((resp) => resp.text()) // Transform the data into json
+    .then((resp) => resp.text()) // Transform the data into text
     .then(function(data) {
         newPostForm.style.display = 'block'
         if (data == 'failure due to duplicate insert'){

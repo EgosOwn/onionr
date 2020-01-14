@@ -10,6 +10,7 @@ from filepaths import onboarding_mark_file
 from onionrtypes import JSONSerializable
 from onionrtypes import OnboardingConfig
 import config
+from flask import g
 """
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -37,23 +38,23 @@ def set_config_from_onboarding(config_settings: OnboardingConfig):
 
     get = _get_val_or_none
 
-    if get(config_settings, 'stateTarget') or not get(config_settings, 
+    if get(config_settings, 'stateTarget') or not get(config_settings,
                                                       'networkContribution'):
         config.set('general.security_level', 1)
 
     config.set('ui.theme', 'light')
     if get(config_settings, 'useDark'):
         config.set('ui.theme', 'dark')
-    
+
     if not get(config_settings,
                'useCircles') or config.get('general.security_level') > 0:
         config.set('plugins.disabled',
-                   config.get('plugins.disabled').append('flow'))
+                   config.get('plugins.disabled', []).append('flow'))
 
     if not get(config_settings, 'useMail'):
         config.set('plugins.disabled',
-                   config.get('plugins.disabled').append('pms'))
-    
+                   config.get('plugins.disabled', []).append('pms'))
+
     config.set('general.store_plaintext_blocks',
                get(config_settings, 'plainContrib'))
 
