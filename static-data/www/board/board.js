@@ -164,6 +164,9 @@ function getBlocks(){
 }
 
 function loadMessage(blockHash, blockList, count, channel){
+    if (blockHash == '0000000000000000000000000000000000000000000000000000000000000000'){
+        return
+    }
     fetch('/getblockdata/' + blockHash, {
         method: 'GET',
         headers: {
