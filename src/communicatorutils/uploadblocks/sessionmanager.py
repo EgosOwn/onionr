@@ -122,4 +122,4 @@ class BlockUploadSessionManager:
                 comm_inst.blocksToUpload.remove(sess.block_hash)
             except ValueError:
                 pass
-            localcommand.local_command(f'waitforshare/{session.block_hash}')
+            localcommand.local_command(f'waitforshare/{sess.block_hash}')
