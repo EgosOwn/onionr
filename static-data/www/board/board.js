@@ -171,22 +171,40 @@ function loadMessage(blockHash, blockList, count, channel){
         method: 'GET',
         headers: {
           "token": webpass
-    }})
-    .then((resp) => resp.json())
-    .then(function(data) {
-        let before = blockList[count - 1]
-        let delay = 2000
-        if (typeof before == "undefined"){
-            before = null
-        } else {
-            let existing = document.getElementsByClassName('cMsgBox')
-            for (x = 0; x < existing.length; x++){
-                if (existing[x].getAttribute('data-bl') === before){
-                    delay = 0
+    }}).then(function(response) {
+        if (!response.ok) {
+            let on404 = function() {
+            if (response.status == 404){
+                fetch('/flow/removefromcache/' + channel + '/' + blockHash, {
+                    method: 'POST',
+                    headers: {
+                        "content-type": "application/json",
+                        "token": webpass
+                    }
+                })
+            }
+            else{
+                console.log(error)
+            }
+            }()
+            return
+        }
+        response.json().then(function(data){
+            let before = blockList[count - 1]
+            let delay = 2000
+            if (typeof before == "undefined"){
+                before = null
+            } else {
+                let existing = document.getElementsByClassName('cMsgBox')
+                for (x = 0; x < existing.length; x++){
+                    if (existing[x].getAttribute('data-bl') === before){
+                        delay = 0
+                    }
                 }
             }
-        }
-        setTimeout(function(){appendMessages(data, blockHash, before, channel)}, delay)
+            setTimeout(function(){appendMessages(data, blockHash, before, channel)}, delay)
+        })
+        return response;
     })
 }
 
@@ -226,3 +244,5 @@ newPostForm.onsubmit = function(){
     })
     return false
 }
+
+

@@ -1,9 +1,15 @@
-'''
-    Onionr - Private P2P Communication
+"""Onionr - Private P2P Communication.
 
-    This file primarily serves to allow specific fetching of flow board messages
-'''
-'''
+This file primarily serves to allow specific fetching of flow board messages
+"""
+import json
+import os
+
+from flask import Response, Blueprint
+from deadsimplekv import DeadSimpleKV
+
+from utils import identifyhome
+"""
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -16,13 +22,8 @@
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
-'''
-import json
-import os
+"""
 
-from flask import Response, request, redirect, Blueprint, abort
-from utils import identifyhome
-import deadsimplekv as simplekv
 flask_blueprint = Blueprint('flow', __name__)
 
 with open(os.path.dirname(os.path.realpath(__file__)) + '/info.json', 'r') as info_file:
@@ -31,7 +32,9 @@ with open(os.path.dirname(os.path.realpath(__file__)) + '/info.json', 'r') as in
 
 @flask_blueprint.route('/flow/getpostsbyboard/<board>')
 def get_post_by_board(board):
-    board_cache = simplekv.DeadSimpleKV(identifyhome.identify_home() + '/board-index.cache.json', flush_on_exit=False)
+    board_cache = DeadSimpleKV(
+        identifyhome.identify_home() + '/board-index.cache.json',
+        flush_on_exit=False)
     board_cache.refresh()
     posts = board_cache.get(board)
     if posts is None:
@@ -44,7 +47,9 @@ def get_post_by_board(board):
 def get_post_by_board_with_offset(board, offset):
     offset = int(offset)
     OFFSET_COUNT = 10
-    board_cache = simplekv.DeadSimpleKV(identifyhome.identify_home() + '/board-index.cache.json', flush_on_exit=False)
+    board_cache = DeadSimpleKV(
+        identifyhome.identify_home() + '/board-index.cache.json',
+        flush_on_exit=False)
     board_cache.refresh()
     posts = board_cache.get(board)
     if posts is None:
@@ -57,3 +62,17 @@ def get_post_by_board_with_offset(board, offset):
 @flask_blueprint.route('/flow/version')
 def get_version():
     return Response(version)
+
+@flask_blueprint.route('/flow/removefromcache/<board>/<name>', methods=['POST'])
+def remove_from_cache(board, name):
+    board_cache = DeadSimpleKV(identifyhome.identify_home() +
+                               '/board-index.cache.json',
+                               flush_on_exit=False)
+    board_cache.refresh()
+    posts = board_cache.get(board)
+    try:
+        posts.remove(name)
+    except ValueError:
+        pass
+    board_cache.put(board, posts)
+    return Response('success')
