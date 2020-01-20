@@ -46,6 +46,7 @@ def soft_reset():
     shutil.rmtree(path)
     _ignore_not_found_delete(dbfiles.block_meta_db)
     _ignore_not_found_delete(filepaths.upload_list)
+    _ignore_not_found_delete(filepaths.usage_file)
     onionrevents.event('softreset')
     logger.info("Soft reset Onionr", terminal=True)
 
