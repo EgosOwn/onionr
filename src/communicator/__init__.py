@@ -213,7 +213,7 @@ class OnionrCommunicatorDaemon:
                 self,
                 announcenode.announce_node,
                 3600, my_args=[self], requires_peer=True, max_threads=1)
-            announceTimer.count = (announceTimer.frequency - 120)
+            announceTimer.count = (announceTimer.frequency - 60)
         else:
             logger.debug('Will not announce node.')
 
@@ -233,7 +233,7 @@ class OnionrCommunicatorDaemon:
 
         shared_state.add(self)
 
-        if config.get('general.use_bootstrap', True):
+        if config.get('general.use_bootstrap_list', True):
             bootstrappeers.add_bootstrap_list_to_peer_list(
                 self, [], db_only=True)
 

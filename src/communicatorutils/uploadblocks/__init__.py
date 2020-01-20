@@ -95,8 +95,8 @@ def upload_blocks_from_communicator(comm_inst: 'OnionrCommunicatorDaemon'):
                         session.fail_peer(peer)
                         comm_inst.getPeerProfileInstance(peer).addScore(-5)
                         logger.warn(
-                            f'Failed to upload {bl[:8]}, reason: {resp[:15]}',
-                            terminal=True)
+                           f'Failed to upload {bl[:8]}, reason: {resp}',
+                           terminal=True)
                 else:
                     session.fail()
         session_manager.clean_session()

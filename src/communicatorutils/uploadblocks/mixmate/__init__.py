@@ -1,6 +1,6 @@
 """Onionr - Private P2P Communication.
 
-Delay block uploads, optionally mixing them together
+Perform block mixing
 """
 import time
 from typing import List
@@ -41,12 +41,5 @@ def block_mixer(upload_list: List[onionrtypes.BlockHash],
 
     if time.time() - bl.claimedTime > onionrvalues.BLOCK_POOL_MAX_AGE:
         raise ValueError
-
-    try:
-        # add the new block to pool
-        upload_pool.add_to_pool(block_to_mix)
-    except PoolFullException:
-        # If the pool is full, move into upload queue
-        upload_list.extend(upload_pool.get_pool())
-        # then finally begin new pool with new block
-        upload_pool.add_to_pool(block_to_mix)
+    if block_to_mix:
+        upload_list.append(block_to_mix)
