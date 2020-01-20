@@ -71,7 +71,13 @@ if (sec_description_str !== 'normal'){
 function getStats(){
     stats = JSON.parse(httpGet('getstats', webpass))
     uptimeDisplay.innerText = seconds2time(stats['uptime'])
-    connectedDisplay.innerText = stats['connectedNodes']
+    connectedNodes = stats['connectedNodes'].split('\n')
+    connectedDisplay.innerText = ''
+    for (x = 0; x < connectedNodes.length; x++){
+        if (! connectedDisplay.innerText.includes(connectedNodes[x])){
+            connectedDisplay.innerText += '🧅 ' + connectedNodes[x] + '\n'
+        }
+    }
     storedBlockDisplay.innerText = stats['blockCount']
     queuedBlockDisplay.innerText = stats['blockQueueCount']
     securityLevel.innerText = sec_description_str

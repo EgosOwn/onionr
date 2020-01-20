@@ -120,7 +120,6 @@ function appendMessages(msg, blockHash, beforeHash, channel) {
             }
 
         }
-
     }
 }
 
@@ -228,7 +227,7 @@ newPostForm.onsubmit = function(){
           "token": webpass
         }
     })
-    .then((resp) => resp.text()) // Transform the data into text
+    .then((resp) => resp.text())
     .then(function(data) {
         newPostForm.style.display = 'block'
         if (data == 'failure due to duplicate insert'){

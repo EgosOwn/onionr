@@ -52,56 +52,26 @@ def announce_node(daemon):
             except onionrexceptions.OnlinePeerNeeded:
                 peer = ""
 
-        for _ in range(1):
-            try:
-                ourID = gettransports.get()[0]
-                if not peer:
-                    raise onionrexceptions.OnlinePeerNeeded
-            except (IndexError, onionrexceptions.OnlinePeerNeeded):
-                break
-
+        try:
+            ourID = gettransports.get()[0]
+            if not peer:
+                raise onionrexceptions.OnlinePeerNeeded
+        except (IndexError, onionrexceptions.OnlinePeerNeeded):
+            pass
+        else:
             url = 'http://' + peer + '/announce'
             data = {'node': ourID}
 
-            combinedNodes = ourID + peer
-            if ourID != 1:
-                existingRand = bytesconverter.bytes_to_str(
-                    keydb.transportinfo.get_address_info(peer, 'powValue'))
-                # Reset existingRand if it no longer meets the minimum POW
-                if isinstance(existingRand, type(None)) or \
-                    not existingRand.endswith(
-                        '0' * onionrvalues.ANNOUNCE_POW):
-                    existingRand = ''
+            logger.info('Announcing node to ' + url)
+            if basicrequests.do_post_request(
+                    url,
+                    data,
+                    port=daemon.shared_state.get(NetController).socksPort)\
+                    == 'Success':
+                logger.info('Successfully introduced node to ' + peer,
+                            terminal=True)
+                ret_data = True
+                keydb.transportinfo.set_address_info(peer, 'introduced', 1)
 
-            if peer in daemon.announceCache:
-                data['random'] = daemon.announceCache[peer]
-            elif len(existingRand) > 0:
-                data['random'] = existingRand
-            else:
-                daemon.announceProgress[peer] = True
-                proof = onionrproofs.DataPOW(
-                    combinedNodes, minDifficulty=onionrvalues.ANNOUNCE_POW)
-                del daemon.announceProgress[peer]
-                try:
-                    data['random'] = base64.b64encode(proof.waitForResult()[1])
-                except TypeError:
-                    # Happens when we failed to produce a proof
-                    logger.error(f"Failed to produce a pow for {peer} annce")
-                    announce_fail = True
-                else:
-                    daemon.announceCache[peer] = data['random']
-            if not announce_fail:
-                logger.info('Announcing node to ' + url)
-                if basicrequests.do_post_request(
-                        url,
-                        data,
-                        port=daemon.shared_state.get(NetController).socksPort)\
-                        == 'Success':
-                    logger.info('Successfully introduced node to ' + peer,
-                                terminal=True)
-                    ret_data = True
-                    keydb.transportinfo.set_address_info(peer, 'introduced', 1)
-                    keydb.transportinfo.set_address_info(peer, 'powValue',
-                                                         data['random'])
     daemon.decrementThreadCount('announce_node')
     return ret_data

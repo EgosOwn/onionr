@@ -44,6 +44,10 @@ DATABASE_LOCK_TIMEOUT = 60
 # Block creation anonymization requirements
 MIN_BLOCK_UPLOAD_PEER_PERCENT = 0.1
 
+WSGI_SERVER_REQUEST_TIMEOUT_SECS = 120
+
+MAX_NEW_PEER_QUEUE = 1000
+
 # Begin OnionrValues migrated values
 """Make announce take a few seconds (on average) to compute to discourage excessive node announcements"""
 ANNOUNCE_POW = 6
