@@ -46,7 +46,7 @@ def accept_upload(request):
                     post=True,
                     is_json=True,
                     postData={'block': b_hash}
-                    ).get(timeout=5)
+                    ).get(timeout=10)
                 resp = 'success'
             else:
                 resp = 'failure'

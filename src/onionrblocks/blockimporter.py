@@ -6,6 +6,7 @@
 from onionrexceptions import BlacklistedBlock
 from onionrexceptions import DiskAllocationReached
 from onionrexceptions import InvalidProof
+from onionrexceptions import InvalidMetadata
 import logger
 from onionrutils import validatemetadata
 from onionrutils import blockmetadata
@@ -58,11 +59,14 @@ def import_block_from_data(content):
                 blockHash = onionrstorage.set_data(content)
             except DiskAllocationReached:
                 logger.warn('Failed to save block due to full disk allocation')
+                raise
             else:
                 blockmetadb.add_to_block_DB(blockHash, dataSaved=True)
                 # caches block metadata values to block database
                 blockmetadata.process_block_metadata(blockHash)
-                ret_data = True
+                ret_data = blockHash
         else:
             raise InvalidProof
+    else:
+        raise InvalidMetadata
     return ret_data
