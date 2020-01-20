@@ -15,6 +15,7 @@ import logger
 import onionrproofs
 import onionrcrypto as crypto
 from onionrutils import bytesconverter
+from .blocknoncestart import BLOCK_NONCE_START_INT
 
 """
     This program is free software: you can redistribute it and/or modify
@@ -108,7 +109,7 @@ class SubprocessPOW:
 
     def do_pow(self, pipe):
         """find partial hash colision generating nonce for a block"""
-        nonce = -10000000
+        nonce = BLOCK_NONCE_START_INT
         data = self.data
         metadata = self.metadata
         puzzle = self.puzzle
