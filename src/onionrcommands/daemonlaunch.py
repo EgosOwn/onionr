@@ -13,6 +13,7 @@ from gevent import spawn
 import toomanyobjs
 
 import config
+from statistics.transports.tor import TorStats
 import apiservers
 import logger
 import communicator
@@ -104,6 +105,8 @@ def daemon():
     net = NetController(config.get('client.public.port', 59497),
                         apiServerIP=apiHost)
     shared_state.add(net)
+
+    shared_state.get(TorStats)
 
     if not offline_mode:
         logger.info('Tor is starting...', terminal=True)

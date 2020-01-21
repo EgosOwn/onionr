@@ -53,7 +53,14 @@ def block_exec(event, info):
                         'multiprocessing/popen_fork.py',
                         'multiprocessing/util.py',
                         'multiprocessing/connection.py',
-                        'onionrutils/escapeansi.py'
+                        'onionrutils/escapeansi.py',
+                        'stem/connection.py',
+                        'stem/response/add_onion.py',
+                        'stem/response/authchallenge.py',
+                        'stem/response/getinfo.py',
+                        'stem/response/getconf.py',
+                        'stem/response/mapaddress.py',
+                        'stem/response/protocolinfo.py'
                        ]
     home = identifyhome.identify_home()
 

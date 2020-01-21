@@ -126,7 +126,6 @@ class NetController:
 
         multiprocessing.Process(target=watchdog.watchdog,
                                 args=[os.getpid(), tor.pid]).start()
-
         return True
 
     def killTor(self):
@@ -157,7 +156,7 @@ class NetController:
             pass
         except FileNotFoundError:
             pass
-        
+
         try:
             time.sleep(TOR_KILL_WAIT)
         except KeyboardInterrupt:

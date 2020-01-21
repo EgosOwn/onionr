@@ -79,7 +79,9 @@
                         <div class="field">
                             <div class="field has-addons">
                                 <p class="control">
-                                    <a class="button is-static">Identity</a>
+                                    <a class="button is-static">
+                                        <i class="fas fa-fingerprint"></i>
+                                    </a>
                                 </p>
                                 <p class="control is-expanded">
                                     <input id="myPub" class="input myPub" type="text" readonly>
@@ -120,6 +122,11 @@
                 <!--Onionr Card-->
                 <div class="card">
                     <header class="card-header">
+                        <span class="card-header-icon">
+                            <span class="icon">
+                                <i class="fas fa-link"></i>
+                            </span>
+                        </span>
                         <p class="card-header-title">
                             Onionr Sites
                         </p>
@@ -130,10 +137,10 @@
                                 <label class="label">Open Site</label>
                                 <div class="field has-addons">
                                     <p class="control is-expanded">
-                                        <input class="input" type="text" id='siteViewer' placeholder="Site Hash">
+                                        <input class="input" type="text" id='siteViewer' placeholder="Site ID">
                                     </p>
                                     <p class="control">
-                                        <a id='openSite' class="button is-info">Open Onionr Site</a>
+                                        <a id='openSite' class="button is-info">Open</a>
                                     </p>
                                 </div>
                             </div>
@@ -142,6 +149,11 @@
                 </div>
                 <div class="card motdCard">
                     <header class="card-header">
+                        <span class="card-header-icon">
+                            <span class="icon">
+                                <i class="fas fa-newspaper"></i>
+                            </span>
+                        </span>
                         <p class="card-header-title" title="message of the day">
                             Onionr MOTD
                         </p>
@@ -152,13 +164,34 @@
                         </div>
                     </div>
                 </div>
+                <br>
+                <div class="card transportCard">
+                    <header class="card-header">
+                        <span class="card-header-icon">
+                            <span class="icon">
+                                <img src="/shared/images/privacy.png" alt="">
+                            </span>
+                        </span>
+                        <p class="card-header-title">
+                            Networking Statistics
+                        </p>
+                    </header>
+                    <div class="card-content">
+                        <div class="content transportInfo">
+                        </div>
+                    </div>
+                </div>
             </div>
             <div class="column">
-                <!--Statistics Card-->
                 <div class="card">
                     <header class="card-header">
+                        <span class="card-header-icon">
+                            <span class="icon">
+                                <i class="fas fa-tachometer-alt"></i>
+                            </span>
+                        </span>
                         <p class="card-header-title">
-                            Statistics
+                            Dashboard
                         </p>
                     </header>
                     <div class="card-content">
@@ -175,12 +208,29 @@
                                     Uptime: <span id="uptime"></span>
                                 </div>
                             </div>
-                            <h6>Session Connections</h6>
                             <div class="columns">
                                 <div class="column">
-                                    <a class="button is-info" id="torToggle">Tor Info</a>
+                                    <div class="field has-addons">
+                                        <p class="control">
+                                          <button class="button is-info">
+                                            <span class="icon is-small">
+                                              <i class="fas fa-cubes"></i>
+                                            </span>
+                                            <span>Blocks</span>
+                                          </button>
+                                        </p>
+                                        <p class="control">
+                                          <button class="button is-info">
+                                            <span class="icon is-small">
+                                              <i class="fas fa-book-open"></i>
+                                            </span>
+                                            <span>Help Book</span>
+                                          </button>
+                                        </p>
+                                      </div>
                                 </div>
                             </div>
+                            <h6>Session Connections</h6>
                             <div class="columns">
                                 <div class="column">
                                     ️ Last Received: <span id="lastIncoming">None since start</span>
@@ -210,7 +260,7 @@
                         </div>
                     </div>
 
-                    <a class="button is-white" id="configToggle">Edit Configuration</a>
+                    <a class="button is-white" id="configToggle">Configuration</a>
 
             <div id="configContent">
                 <div class="content">
