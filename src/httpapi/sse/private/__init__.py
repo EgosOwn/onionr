@@ -4,6 +4,7 @@ SSE API for node client access
 """
 from flask import g, Blueprint
 from gevent import sleep
+#from time import sleep
 
 from statistics.transports.tor import TorStats
 from .. import wrapper
@@ -38,9 +39,8 @@ def stream_hello():
 @private_sse_blueprint.route('/torcircuits')
 def stream_tor_circuits():
     tor_stats = g.too_many.get(TorStats)
-    def stream():
+    def circuit_stat_stream():
         while True:
-            yield tor_stats.get_json()
-
-            sleep(3)
-    return SSEWrapper.handle_sse_request(stream)
+            yield "data: " + tor_stats.get_json() + "\n\n"
+            sleep(10)
+    return SSEWrapper.handle_sse_request(circuit_stat_stream)

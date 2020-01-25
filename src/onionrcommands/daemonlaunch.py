@@ -25,7 +25,7 @@ from etc import onionrvalues, cleanup
 from onionrcrypto import getourkeypair
 from utils import hastor, logoheader
 from . import version
-import serializeddata
+from statistics import serializeddata
 import runtests
 from httpapi import daemoneventsapi
 """
