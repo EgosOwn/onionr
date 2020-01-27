@@ -1,10 +1,9 @@
-"""
-    Onionr - Private P2P Communication
+"""Onionr - Private P2P Communication.
 
-    This file contains both the OnionrCommunicate class for
-    communcating with peers and code to operate as a daemon,
-    getting commands from the command queue database
-    (see core.Core.daemonQueue)
+This file contains both the OnionrCommunicate class for
+communcating with peers and code to operate as a daemon,
+getting commands from the command queue database
+(see core.Core.daemonQueue)
 """
 import os
 import time
@@ -136,7 +135,6 @@ class OnionrCommunicatorDaemon:
         peerPoolTimer = OnionrCommunicatorTimers(
             self, onlinepeers.get_online_peers, 60, max_threads=1,
             my_args=[self])
-        OnionrCommunicatorTimers(self, self.runCheck, 2, max_threads=1)
 
         # Timers to periodically lookup new blocks and download them
         lookup_blocks_timer = OnionrCommunicatorTimers(
@@ -269,7 +267,6 @@ class OnionrCommunicatorDaemon:
             # Stop onionr direct connection services
             for server in self.service_greenlets:
                 server.stop()
-        localcommand.local_command('shutdown')  # shutdown the api
         try:
             time.sleep(0.5)
         except KeyboardInterrupt:
@@ -325,20 +322,7 @@ class OnionrCommunicatorDaemon:
                      humanreadabletime.human_readable_time(self.getUptime()))
         self.decrementThreadCount('heartbeat')
 
-    def runCheck(self):
-        """Show message if run file exists"""
-        if run_file_exists(self):
-            logger.debug('Status check; looks good.')
-
-        self.decrementThreadCount('runCheck')
-
 
 def startCommunicator(shared_state):
     OnionrCommunicatorDaemon(shared_state)
 
-
-def run_file_exists(daemon):
-    if os.path.isfile(filepaths.run_check_file):
-        os.remove(filepaths.run_check_file)
-        return True
-    return False
