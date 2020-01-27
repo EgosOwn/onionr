@@ -13,7 +13,8 @@ from gevent import spawn
 import toomanyobjs
 
 import config
-from statistics.transports.tor import TorStats
+import onionrstatistics
+from onionrstatistics import serializeddata
 import apiservers
 import logger
 import communicator
@@ -25,7 +26,6 @@ from etc import onionrvalues, cleanup
 from onionrcrypto import getourkeypair
 from utils import hastor, logoheader
 from . import version
-from statistics import serializeddata
 import runtests
 from httpapi import daemoneventsapi
 """
@@ -106,7 +106,7 @@ def daemon():
                         apiServerIP=apiHost)
     shared_state.add(net)
 
-    shared_state.get(TorStats)
+    shared_state.get(onionrstatistics.tor.TorStats)
 
     if not offline_mode:
         logger.info('Tor is starting...', terminal=True)

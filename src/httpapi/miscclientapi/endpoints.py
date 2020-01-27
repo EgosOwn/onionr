@@ -26,7 +26,7 @@ import unpaddedbase32
 from httpapi import apiutils
 import onionrcrypto, config
 from netcontroller import NetController
-from statistics.serializeddata import SerializedData
+from onionrstatistics.serializeddata import SerializedData
 from onionrutils import mnemonickeys
 from onionrutils import bytesconverter
 from etc import onionrvalues

@@ -4,9 +4,8 @@ SSE API for node client access
 """
 from flask import g, Blueprint
 from gevent import sleep
-#from time import sleep
 
-from statistics.transports.tor import TorStats
+from onionrstatistics.transports.tor import TorStats
 from .. import wrapper
 """
     This program is free software: you can redistribute it and/or modify
