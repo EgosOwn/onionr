@@ -8,7 +8,7 @@ stem==1.8.0
 deadsimplekv==0.2.0
 unpaddedbase32==0.2.0
 streamedrequests==1.0.0
-jinja2==2.10.3
+jinja2==2.11.0
 toomanyobjs==1.1.0
 niceware==0.2.1
 psutil==5.6.7
