@@ -1,9 +1,23 @@
-'''
-    Onionr - Private P2P Communication
+"""Onionr - Private P2P Communication.
 
-    Misc client API endpoints too small to need their own file and that need access to the client api inst
-'''
-'''
+Misc client API endpoints too small to need their own file and that need access to the client api inst
+"""
+import os
+import subprocess
+
+from flask import Response, Blueprint, request, send_from_directory, abort
+import unpaddedbase32
+
+from httpapi import apiutils
+import onionrcrypto
+import config
+from netcontroller import NetController
+from onionrstatistics.serializeddata import SerializedData
+from onionrutils import mnemonickeys
+from onionrutils import bytesconverter
+from etc import onionrvalues
+from utils import reconstructhash
+"""
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -16,26 +30,12 @@
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
-'''
-import os
-import subprocess
-
-from flask import Response, Blueprint, request, send_from_directory, abort
-import unpaddedbase32
-
-from httpapi import apiutils
-import onionrcrypto, config
-from netcontroller import NetController
-from onionrstatistics.serializeddata import SerializedData
-from onionrutils import mnemonickeys
-from onionrutils import bytesconverter
-from etc import onionrvalues
-from utils import reconstructhash
-from onionrcommands import restartonionr
+"""
 
 pub_key = onionrcrypto.pub_key.replace('=', '')
 
-SCRIPT_NAME = os.path.dirname(os.path.realpath(__file__)) + f'/../../../{onionrvalues.SCRIPT_NAME}'
+SCRIPT_NAME = os.path.dirname(os.path.realpath(__file__)) + \
+              f'/../../../{onionrvalues.SCRIPT_NAME}'
 
 class PrivateEndpoints:
     def __init__(self, client_api):
@@ -62,9 +62,13 @@ class PrivateEndpoints:
             return Response(str(client_api.publicAPI.lastRequest))
 
         @private_endpoints_bp.route('/waitforshare/<name>', methods=['post'])
-        def waitforshare(name):
-            '''Used to prevent the **public** api from sharing blocks we just created'''
-            if not name.isalnum(): raise ValueError('block hash needs to be alpha numeric')
+        def wait_for_share(name):
+            """Prevent the **public** api from sharing blocks.
+
+            Used for blocks we created usually
+            """
+            if not name.isalnum():
+                raise ValueError('block hash needs to be alpha numeric')
             name = reconstructhash.reconstruct_hash(name)
             if name in client_api.publicAPI.hideBlocks:
                 client_api.publicAPI.hideBlocks.remove(name)
@@ -87,12 +91,13 @@ class PrivateEndpoints:
             return Response('\n'.join(client_api.publicAPI.hideBlocks))
 
         @private_endpoints_bp.route('/getstats')
-        def getStats():
-            # returns node stats
+        def get_stats():
+            """Return serialized node statistics."""
             while True:
                 try:
-                    return Response(client_api._too_many.get(SerializedData).get_stats())
-                except AttributeError as e:
+                    return Response(client_api._too_many.get(
+                        SerializedData).get_stats())
+                except AttributeError:
                     pass
 
         @private_endpoints_bp.route('/getuptime')
