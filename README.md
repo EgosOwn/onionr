@@ -64,7 +64,15 @@ Not yet usable:
 
 * Instant messaging
 
+
 **Onionr API and functionality is subject to non-backwards compatible change during pre-alpha development**
+
+
+## Watch the talk from BSidesPDX 2019
+
+<a href="https://invidio.us/watch?v=mrULtmSkKxg">
+<img src="docs/talk.png" alt="improving anonymous networking talk link" width="600">
+</a>
 
 # Screenshots
 
@@ -166,6 +174,6 @@ Tor is a trademark for the Tor Project. We do not own it.
 
 ## Onionr Logo
 
-The Onionr logo was created by [Anhar Ismail](https://github.com/anharismail) under the [Creative Commons Attribution 4.0 International License](https://creativecommons.org/licenses/by/4.0/). 
+The Onionr logo was created by [Anhar Ismail](https://github.com/anharismail) under the [Creative Commons Attribution 4.0 International License](https://creativecommons.org/licenses/by/4.0/).
 
 If you modify and redistribute our code ("forking"), please use a different logo and project name to avoid confusion. Please do not use the project name or logo in a way that makes it seem like we endorse you without our permission.
