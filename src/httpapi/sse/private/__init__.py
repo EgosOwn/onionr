@@ -4,6 +4,7 @@ SSE API for node client access
 """
 from flask import g, Blueprint
 from gevent import sleep
+import gevent
 
 from onionrstatistics.transports.tor import TorStats
 from .. import wrapper
@@ -25,6 +26,7 @@ from .. import wrapper
 private_sse_blueprint = Blueprint('privatesse', __name__)
 SSEWrapper = wrapper.SSEWrapper()
 
+gevent.hub.Hub.NOT_ERROR = (gevent.GreenletExit, SystemExit, Exception)
 
 @private_sse_blueprint.route('/hello')
 def stream_hello():
