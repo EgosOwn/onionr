@@ -1,9 +1,15 @@
-'''
-    Onionr - Private P2P Communication
+"""Onionr - Private P2P Communication.
 
-    This file handles maintenence of a blacklist database, for blocks and peers
-'''
-'''
+Handle maintenence of a blacklist database, for blocks and peers
+"""
+import sqlite3
+import os
+
+from onionrplugins.onionrevents import event
+import onionrcrypto
+from onionrutils import epoch, bytesconverter
+from coredb import dbfiles
+"""
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -16,11 +22,8 @@
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
-'''
-import sqlite3, os
-import logger, onionrcrypto
-from onionrutils import epoch, bytesconverter
-from coredb import dbfiles
+"""
+
 
 class OnionrBlackList:
     def __init__(self):
@@ -57,7 +60,7 @@ class OnionrBlackList:
         return
 
     def deleteExpired(self, dataType=0):
-        '''Delete expired entries'''
+        """Delete expired entries"""
         deleteList = []
         curTime = epoch.get_epoch()
 
@@ -78,7 +81,7 @@ class OnionrBlackList:
         return
 
     def clearDB(self):
-        self._dbExecute('''DELETE FROM blacklist;''')
+        self._dbExecute("""DELETE FROM blacklist;""")
 
     def getList(self):
         data = self._dbExecute('SELECT * FROM blacklist')
@@ -88,11 +91,11 @@ class OnionrBlackList:
         return myList
 
     def addToDB(self, data, dataType=0, expire=0):
-        '''Add to the blacklist. Intended to be block hash, block data, peers, or transport addresses
+        """Add to the blacklist. Intended to be block hash, block data, peers, or transport addresses
         0=block
         1=peer
         2=pubkey
-        '''
+        """
 
         # we hash the data so we can remove data entirely from our node's disk
         hashed = bytesconverter.bytes_to_str(onionrcrypto.hashers.sha3_hash(data))
