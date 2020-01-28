@@ -30,9 +30,11 @@
 
 Onionr ("Onion Relay") is a decentralized/distributed peer-to-peer communication network, designed to be anonymous and resistant to (meta)data analysis, spam, and corruption.
 
-Onionr stores data in independent packages referred to as 'blocks'. The blocks are distributed to all interested nodes. Blocks and user IDs cannot be easily proven to have been created by a particular user. Even if there is enough evidence to believe that a specific user created a block, nodes still operate behind Tor or I2P and as such cannot be trivially unmasked. The anonymity is achieved by a stateless network with no given indication of what node a block came from or even the user ID.
+Onionr stores data in independent packages referred to as 'blocks'. The blocks are distributed to all interested nodes. Blocks and user IDs cannot be easily proven to have been created by a particular user. Even if there is enough evidence to believe that a specific user created a block, nodes still operate behind Tor or I2P and as such cannot be trivially unmasked. Anonymity is achieved by a stateless network, with no given indication of what node a block originates from. Through message mixing and key privacy, it is intended to be nigh impossible to discover the identity of a message creator or recipient.
 
-Through long-term traffic analysis, a well funded adversary may discover the most probable node(s) to be creating a set of related blocks, however doing so would only lead them to a node behind Tor or I2P. As the first node that a block appears on is almost always not the creator of the block, there is plausible deniability regarding the true creator of the block.
+Via long-term traffic analysis, a well funded adversary may discover the most probable node(s) to be creating a set of related blocks, however doing so would only lead them to a node behind Tor or I2P. As the first node that a block appears on is almost always not the creator of the block, there is plausible deniability regarding the true creator of the block.
+
+Onionr gives the individual the ability to speak freely, without fear of surveillance and censorship.
 
 Users are identified by ed25519/curve25519 public keys, which can be used to sign blocks or send encrypted data.
 
