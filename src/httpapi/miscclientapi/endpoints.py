@@ -6,6 +6,8 @@ import os
 import subprocess
 
 from flask import Response, Blueprint, request, send_from_directory, abort
+from gevent import spawn
+from gevent import sleep
 import unpaddedbase32
 
 from httpapi import apiutils
@@ -71,8 +73,8 @@ class PrivateEndpoints:
                 raise ValueError('block hash needs to be alpha numeric')
             name = reconstructhash.reconstruct_hash(name)
             if name in client_api.publicAPI.hideBlocks:
-                client_api.publicAPI.hideBlocks.remove(name)
-                return Response("removed")
+                spawn(_delay_wait_for_share_block_removal)
+                return Response("will be removed")
             else:
                 client_api.publicAPI.hideBlocks.append(name)
                 return Response("added")

@@ -15,7 +15,6 @@ import onionrcrypto
 from communicator import onlinepeers
 if TYPE_CHECKING:
     from communicator import OnionrCommunicatorDaemon
-
 """
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
