@@ -195,9 +195,9 @@ toomanyobjs==1.1.0 \
 unpaddedbase32==0.2.0 \
     --hash=sha256:4aacee75f8fd6c8cf129842ecba45ca59c11bfb13dae19d86f32b48fa3715403 \
     --hash=sha256:b7b780c31d27d55e66abf6c221216a35690ee8892c2daacff7f2528e229bd9c3
-urllib3==1.25.7 \
-    --hash=sha256:a8a318824cc77d1fd4b2bec2ded92646630d7fe8619497b142c84a9e6f5a7293 \
-    --hash=sha256:f3c5fd51747d450d4dcf6f923c81f78f811aab8205fda64b0aba34a4e48b0745
+urllib3==1.25.8 \
+    --hash=sha256:2f3db8b19923a873b3e5256dc9c2dedfa883e33d87c690d9c7913e1f40673cdc \
+    --hash=sha256:87716c2d2a7121198ebcb7ce7cccf6ce5e9ba539041cfbaeecfb641dc0bf6acc
 werkzeug==0.15.5 \
     --hash=sha256:87ae4e5b5366da2347eb3116c0e6c681a0e939a33b2805e2c0cbd282664932c4 \
     --hash=sha256:a13b74dd3c45f758d4ebdb224be8f1ab8ef58b3c0ffc1783a8c7d9f4f50227e6 \
