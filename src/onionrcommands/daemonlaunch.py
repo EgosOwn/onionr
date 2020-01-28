@@ -84,13 +84,14 @@ def daemon():
     shared_state.share_object()  # share the parent object to the threads
 
     apiHost = ''
-    while apiHost == '':
-        try:
-            with open(filepaths.public_API_host_file, 'r') as hostFile:
-                apiHost = hostFile.read()
-        except FileNotFoundError:
-            pass
-        time.sleep(0.5)
+    if not offline_mode:
+        while apiHost == '':
+            try:
+                with open(filepaths.public_API_host_file, 'r') as hostFile:
+                    apiHost = hostFile.read()
+            except FileNotFoundError:
+                pass
+            time.sleep(0.5)
 
     logger.raw('', terminal=True)
     # print nice header thing :)
