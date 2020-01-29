@@ -1,9 +1,13 @@
-'''
+"""
     Onionr - Private P2P Communication
 
     This file handles the sentbox for the mail plugin
-'''
-'''
+"""
+import sqlite3
+import os
+from onionrutils import epoch
+from utils import identifyhome, reconstructhash
+"""
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -16,17 +20,16 @@
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
-'''
-import sqlite3, os
-from onionrutils import epoch
-from utils import identifyhome, reconstructhash
+"""
+
+
 class SentBox:
     def __init__(self):
         self.dbLocation = identifyhome.identify_home() + '/sentbox.db'
         if not os.path.exists(self.dbLocation):
             self.createDB()
         return
-    
+
     def connect(self):
         self.conn = sqlite3.connect(self.dbLocation)
         self.cursor = self.conn.cursor()
@@ -37,14 +40,14 @@ class SentBox:
     def createDB(self):
         conn = sqlite3.connect(self.dbLocation)
         cursor = conn.cursor()
-        cursor.execute('''CREATE TABLE sent(
+        cursor.execute("""CREATE TABLE sent(
             hash id not null,
             peer text not null,
             message text not null,
             subject text not null,
             date int not null
             );
-        ''')
+        """)
         conn.commit()
         conn.close()
         return

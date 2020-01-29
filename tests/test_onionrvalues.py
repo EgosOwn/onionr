@@ -9,14 +9,11 @@ print("Test directory:", TEST_DIR)
 os.environ["ONIONR_HOME"] = TEST_DIR
 
 from utils import identifyhome, createdirs
-from onionrsetup import setup_config
-createdirs.create_dirs()
-setup_config()
+from etc import onionrvalues
 
-class TestTemplate(unittest.TestCase):
-    def test_true(self):
-        self.assertTrue(True)
-
+class TestOnionrValues(unittest.TestCase):
+    def test_default_expire(self):
+        self.assertEqual(onionrvalues.DEFAULT_EXPIRE, 2592000)
 
 
 unittest.main()
