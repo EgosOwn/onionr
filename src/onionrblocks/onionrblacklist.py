@@ -1,6 +1,6 @@
 """Onionr - Private P2P Communication.
 
-Handle maintenence of a blacklist database, for blocks and peers
+Handle maintenance of a blacklist database, for blocks and peers
 """
 import sqlite3
 import os
@@ -99,6 +99,9 @@ class OnionrBlackList:
 
         # we hash the data so we can remove data entirely from our node's disk
         hashed = bytesconverter.bytes_to_str(onionrcrypto.hashers.sha3_hash(data))
+
+        event('blacklist_add', data={'data': data, 'hash': hashed})
+
         if len(hashed) > 64:
             raise Exception("Hashed data is too large")
 

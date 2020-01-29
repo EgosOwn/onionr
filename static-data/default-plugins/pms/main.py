@@ -34,6 +34,8 @@ PLUGIN_VERSION = '0.0.1'
 
 sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
 import sentboxdb, mailapi, loadinbox # import after path insert
+from onblacklist import on_blacklist_add
+
 flask_blueprint = mailapi.flask_blueprint
 security_whitelist = ['staticfiles.mail', 'staticfiles.mailindex']
 
