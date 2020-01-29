@@ -40,7 +40,7 @@ If you want to update your site later you must remember the passphrase.''',
 
         passphrase = getpass.getpass(
             'Please enter a site passphrase of at least ' +
-            onionrvalues.PASSWORD_LENGTH + ' characters.')
+            str(onionrvalues.PASSWORD_LENGTH) + ' characters.')
 
         confirm = getpass.getpass('Confirm passphrase:')
         if passphrase != confirm:

@@ -45,9 +45,11 @@ def block_exec(event, info):
     """Prevent arbitrary code execution in eval/exec and log it."""
     # because libraries have stupid amounts of compile/exec/eval,
     # We have to use a whitelist where it can be tolerated
+    # Generally better than nothing, not a silver bullet
     whitelisted_code = [
                         'netrc.py',
                         'shlex.py',
+                        'gzip.py',
                         '<werkzeug routing>',
                         'werkzeug/test.py',
                         'multiprocessing/popen_fork.py',
