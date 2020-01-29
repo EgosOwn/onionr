@@ -17,7 +17,7 @@
 |                                      |                            |                            |
 | -----------                          | -----------                | -----------                |
 | [Install](#install-and-run-on-linux) | [Features](#main-features) | [Screenshots](#screenshots)|
-| [Docs](#documentation)/[web copy](https://beardog108.github.io/onionr/)               | [Get involved](#help-out)  | [Onionr.net](https://onionr.net/)/[.onion](http://onionr.onionkvc5ibm37bmxwr56bdxcdnb6w3wm4bdghh5qo6f6za7gn7styid.onion/)                  |
+| [Docs](#documentation)/[web copy](https://beardog108.github.io/onionr/)               | [Get involved](#help-out)  | [Onionr.net](https://onionr.net/)/[.onion](http://onionrbak72t5zhbzuey2fdkpczlvhowgcpqc6uoyrd3uxztzxwz5cyd.onion/)                  |
 
 
 <hr>
