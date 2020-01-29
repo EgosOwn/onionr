@@ -1,4 +1,8 @@
-var torSource = new EventSourcePolyfill("/torcircuits")
+var torSource = new EventSourcePolyfill('/torcircuits', {
+    headers: {
+        "token": webpass
+    }
+  })
 var displays = document.getElementsByClassName('torInfo')
 
 for (x = 0; x < displays.length; x++){

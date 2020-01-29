@@ -51,13 +51,13 @@ class ClientAPISecurity:
                 return
             if request.path.startswith('/site/'): return
 
-            # try:
-            #     if not hmac.compare_digest(request.headers['token'], client_api.clientToken):
-            #         if not hmac.compare_digest(request.form['token'], client_api.clientToken):
-            #             abort(403)
-            # except KeyError:
-            #     if not hmac.compare_digest(request.form['token'], client_api.clientToken):
-            #         abort(403)
+            try:
+                if not hmac.compare_digest(request.headers['token'], client_api.clientToken):
+                    if not hmac.compare_digest(request.form['token'], client_api.clientToken):
+                        abort(403)
+            except KeyError:
+                if not hmac.compare_digest(request.form['token'], client_api.clientToken):
+                    abort(403)
 
         @client_api_security_bp.after_app_request
         def after_req(resp):
