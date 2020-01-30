@@ -7,7 +7,6 @@ if TYPE_CHECKING:
     from session import UploadSession
 
 from onionrutils import bytesconverter
-from onionrutils import localcommand
 from etc import onionrvalues
 from utils import reconstructhash
 
@@ -122,4 +121,3 @@ class BlockUploadSessionManager:
                 comm_inst.blocksToUpload.remove(sess.block_hash)
             except ValueError:
                 pass
-            localcommand.local_command(f'waitforshare/{sess.block_hash}')

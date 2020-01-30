@@ -3,6 +3,9 @@
 Upload blocks in the upload queue to peers from the communicator
 """
 from typing import TYPE_CHECKING
+from time import sleep
+from threading import Thread
+
 from . import sessionmanager
 
 from onionrtypes import UserID
@@ -45,6 +48,14 @@ def upload_blocks_from_communicator(comm_inst: 'OnionrCommunicatorDaemon'):
     comm_inst.blocksToUpload = onionrcrypto.cryptoutils.random_shuffle(
         comm_inst.blocksToUpload)
 
+    def remove_from_hidden(bl):
+        sleep(60)
+        try:
+            comm_inst.shared_state.get_by_string(
+                'PublicAPI').hideBlocks.remove(bl)
+        except ValueError:
+            pass
+
     if len(comm_inst.blocksToUpload) != 0:
         for bl in comm_inst.blocksToUpload:
             if not stringvalidators.validate_hash(bl):
@@ -84,6 +95,8 @@ def upload_blocks_from_communicator(comm_inst: 'OnionrCommunicatorDaemon'):
                     content_type='application/octet-stream')
                 if resp is not False:
                     if resp == 'success':
+                        Thread(target=remove_from_hidden,
+                               args=[bl], daemon=True).start()
                         session.success()
                         session.peer_exists[peer] = True
                     elif resp == 'exists':
@@ -102,6 +115,10 @@ def upload_blocks_from_communicator(comm_inst: 'OnionrCommunicatorDaemon'):
     for x in finishedUploads:
         try:
             comm_inst.blocksToUpload.remove(x)
+
+            comm_inst.shared_state.get_by_string(
+                'PublicAPI').hideBlocks.remove(x)
+
         except ValueError:
             pass
     comm_inst.decrementThreadCount(TIMER_NAME)
