@@ -37,7 +37,6 @@ def show_stats():
         # define stats messages here
         totalBlocks = len(blockmetadb.get_block_list())
         home = identifyhome.identify_home()
-        signedBlocks = len(onionrblockapi.Block.getBlocks(signed=True))
         totalBanned = len(onionrblacklist.OnionrBlackList().getList())
 
         messages = {
@@ -64,9 +63,7 @@ def show_stats():
             str(len(config.get('plugins.enabled', list()))) + ' / ' +
             str(len(os.listdir(home + 'plugins/'))),
             'Stored Blocks': str(totalBlocks),
-            'Deleted Blocks': str(totalBanned),
-            'Percent Blocks Signed':
-            str(round(100 * signedBlocks / max(totalBlocks, 1), 2)) + '%'
+            'Deleted Blocks': str(totalBanned)
         }
 
         # color configuration
