@@ -2,6 +2,8 @@
 
 Hooks to handle daemon events
 """
+from threading import Thread
+
 from .removefrominsertqueue import remove_from_insert_queue
 
 from typing import TYPE_CHECKING
@@ -67,10 +69,11 @@ def daemon_event_handlers(shared_state: 'TooMany'):
         comm_inst.offlinePeers = []
 
     def test_runtime():
-        comm_inst.shared_state.get_by_string(
-            "OnionrRunTestManager").run_tests()
+        Thread(target=comm_inst.shared_state.get_by_string(
+            "OnionrRunTestManager").run_tests).start()
 
     events_api.register_listener(remove_from_insert_queue_wrapper)
     events_api.register_listener(print_test)
     events_api.register_listener(upload_event)
+    events_api.register_listener(test_runtime)
 

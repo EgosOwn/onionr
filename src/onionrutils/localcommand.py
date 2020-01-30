@@ -66,6 +66,8 @@ def local_command(command, data='', silent = True, post=False,
     if data != '':
         data = '&data=' + urllib.parse.quote_plus(data)
     payload = 'http://%s/%s%s' % (hostname, command, data)
+    if not config.get('client.webpassword'):
+        config.reload()
 
     try:
         if post:
@@ -89,5 +91,4 @@ def local_command(command, data='', silent = True, post=False,
         if not silent:
             logger.error('Failed to make local request (command: %s):%s' % (command, error), terminal=True)
         ret_data = False
-
     return ret_data

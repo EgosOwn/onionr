@@ -134,7 +134,6 @@ def daemon():
     events.event('daemon_start')
     communicator.startCommunicator(shared_state)
 
-    localcommand.local_command('shutdown')
 
     if not offline_mode:
         net.killTor()

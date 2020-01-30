@@ -25,11 +25,12 @@ def do_runtime_test():
     """Send runtime test daemon queue command."""
     spawn(
         localcommand.local_command,
-        f'/daemon-event/test_runtime',
+        f'daemon-event/test_runtime',
         post=True,
         is_json=True,
-        postData={}
-    ).get(10)
+        postData={},
+        maxWait=300
+    ).get(300)
 
 
 do_runtime_test.onionr_help = "If Onionr is running, "  # type: ignore

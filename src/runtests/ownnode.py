@@ -29,10 +29,9 @@ def test_own_node(test_manager):
     if config.get('general.security_level', 0) > 0:
         return
     own_tor_address = gettransports.get()[0]
-    print(socks_port)
     if 'this is an onionr node' \
-            not in basicrequests.do_get_request(own_tor_address,
-                                                port=socks_port).lower():
+            not in basicrequests.do_get_request('http://' + own_tor_address,
+                                                port=socks_port, ignoreAPI=True).lower():
         logger.warn('Own node not reachable in test')
         raise ValueError
 
@@ -47,7 +46,6 @@ def test_tor_adder(test_manager):
         raise ValueError('No Tor node address created yet')
 
     if hs not in gettransports.get():
-        print(hs in gettransports.get(), 'meme')
         logger.error('gettransports Tor not same as file: %s %s' %
                      (hs, gettransports.get()))
         raise ValueError('gettransports Tor not same as file')

@@ -1,13 +1,15 @@
-"""
-    Onionr - Private P2P Communication
+"""Onionr - Private P2P Communication.
 
-    Test Onionr as it is running
+Test Onionr as it is running
 """
+import os
+
 import logger
 from onionrutils import epoch
 
 from . import uicheck, inserttest, stresstest
 from . import ownnode
+from .webpasstest import webpass_test
 """
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -27,8 +29,11 @@ RUN_TESTS = [uicheck.check_ui,
              inserttest.insert_bin_test,
              ownnode.test_tor_adder,
              ownnode.test_own_node,
-             stresstest.stress_test_block_insert
+             stresstest.stress_test_block_insert,
+             webpass_test
              ]
+
+SUCCESS_FILE = os.path.dirname(os.path.realpath(__file__)) + '/../../tests/runtime-result.txt'
 
 
 class OnionrRunTestManager:
@@ -41,9 +46,20 @@ class OnionrRunTestManager:
         logger.info(f"Doing runtime tests at {cur_time}")
 
         try:
+            os.remove(SUCCESS_FILE)
+        except FileNotFoundError:
+            pass
+
+        try:
             for i in RUN_TESTS:
                 last = i
                 i(self)
                 logger.info("[RUNTIME TEST] " + last.__name__ + " passed")
         except (ValueError, AttributeError):
             logger.error(last.__name__ + ' failed')
+        else:
+            ep = str(epoch.get_epoch())
+            logger.info(f'All runtime tests passed at {ep}')
+            with open(SUCCESS_FILE, 'w') as f:
+                f.write(ep)
+
