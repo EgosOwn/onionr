@@ -31,7 +31,7 @@ def recommend(print_default: bool = True):
         for word in key:
             if SequenceMatcher(None, tried, word).ratio() >= 0.75:
                 logger.warn(f'{print_message} "{tried}", '
-                            + 'did you mean "{word}"?',
+                            + f'did you mean "{word}"?',
                             terminal=True)
                 return
     if print_default:

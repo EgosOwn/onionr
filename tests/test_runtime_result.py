@@ -22,5 +22,4 @@ class TestRuntimeFile(unittest.TestCase):
             self.assertLess(math.floor(time.time()) - int(result_file.read()), 1800)
 
 
-
 unittest.main()
