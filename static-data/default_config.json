@@ -54,7 +54,10 @@
         "v3onions": true,
         "use_bridge": false,
         "bridge_ip": "",
-        "bridge_fingerprint": ""
+        "bridge_fingerprint": "",
+        "existing_control_port": 0,
+        "existing_control_password": "",
+        "temp_transport": false
     },
 
     "allocations": {
