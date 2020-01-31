@@ -25,9 +25,11 @@ import filepaths
 from etc import onionrvalues, cleanup
 from onionrcrypto import getourkeypair
 from utils import hastor, logoheader
-from . import version
 import runtests
 from httpapi import daemoneventsapi
+from .. import version
+from .getapihost import get_api_host_until_available
+from .bettersleep import better_sleep
 """
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -85,13 +87,7 @@ def daemon():
 
     apiHost = ''
     if not offline_mode:
-        while apiHost == '':
-            try:
-                with open(filepaths.public_API_host_file, 'r') as hostFile:
-                    apiHost = hostFile.read()
-            except FileNotFoundError:
-                pass
-            time.sleep(0.5)
+        apiHost = get_api_host_until_available()
 
     logger.raw('', terminal=True)
     # print nice header thing :)
@@ -110,6 +106,7 @@ def daemon():
     shared_state.get(onionrstatistics.tor.TorStats)
 
     if not offline_mode:
+        
         logger.info('Tor is starting...', terminal=True)
         if not net.startTor():
             localcommand.local_command('shutdown')
@@ -125,26 +122,17 @@ def daemon():
                 (logger.colors.underline +
                  getourkeypair.get_keypair()[0][:52]))
 
-    try:
-        time.sleep(1)
-    except KeyboardInterrupt:
-        pass
+    better_sleep(1)
 
     events.event('init', threaded=False)
     events.event('daemon_start')
     communicator.startCommunicator(shared_state)
 
-
     if not offline_mode:
         net.killTor()
 
-    try:
-        # Time to allow threads to finish,
-        # if not any "daemon" threads will be slaughtered
-        # http://docs.python.org/library/threading.html#threading.Thread.daemon
-        time.sleep(5)
-    except KeyboardInterrupt:
-        pass
+    better_sleep(5)
+
     cleanup.delete_run_files()
 
 
