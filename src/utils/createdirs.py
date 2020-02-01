@@ -22,10 +22,14 @@ from . import identifyhome
 import filepaths
 home = identifyhome.identify_home()
 
+
 def create_dirs():
-    """Creates onionr data-related directories in order of the hardcoded list below,
+    """Create onionr data-related directories in
+    order of the hardcoded list below,
     then trigger creation of DBs"""
-    gen_dirs = [home, filepaths.block_data_location, filepaths.contacts_location, filepaths.export_location]
+    gen_dirs = [home, filepaths.block_data_location,
+                filepaths.contacts_location, filepaths.export_location,
+                filepaths.tor_hs_loc]
     for path in gen_dirs:
         if not os.path.exists(path):
             os.mkdir(path)

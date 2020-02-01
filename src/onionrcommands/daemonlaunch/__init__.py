@@ -20,6 +20,7 @@ import logger
 import communicator
 from onionrplugins import onionrevents as events
 from netcontroller import NetController
+from netcontroller import get_open_port
 from onionrutils import localcommand
 import filepaths
 from etc import onionrvalues, cleanup
@@ -29,7 +30,8 @@ import runtests
 from httpapi import daemoneventsapi
 from .. import version
 from .getapihost import get_api_host_until_available
-from .bettersleep import better_sleep
+from utils.bettersleep import better_sleep
+from netcontroller.torcontrol.onionservicecreator import create_onion_service
 """
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -105,14 +107,23 @@ def daemon():
 
     shared_state.get(onionrstatistics.tor.TorStats)
 
+    security_level = config.get('general.security_level', 1)
+    use_existing_tor = config.get('tor.use_existing_tor', False)
+
     if not offline_mode:
-        
-        logger.info('Tor is starting...', terminal=True)
-        if not net.startTor():
-            localcommand.local_command('shutdown')
-            cleanup.delete_run_files()
-            sys.exit(1)
-        if len(net.myID) > 0 and config.get('general.security_level', 1) == 0:
+
+        if use_existing_tor:
+            net.socksPort = config.get('tor.existing_socks_port')
+            net.myID = create_onion_service(port=get_open_port())
+            with open(filepaths.tor_hs_address_file, 'w') as tor_file:
+                tor_file.write(net.myID)
+        else:
+            logger.info('Tor is starting...', terminal=True)
+            if not net.startTor():
+                localcommand.local_command('shutdown')
+                cleanup.delete_run_files()
+                sys.exit(1)
+        if len(net.myID) > 0 and security_level == 0:
             logger.debug('Started .onion service: %s' %
                          (logger.colors.underline + net.myID))
         else:
@@ -128,7 +139,7 @@ def daemon():
     events.event('daemon_start')
     communicator.startCommunicator(shared_state)
 
-    if not offline_mode:
+    if not offline_mode and not use_existing_tor:
         net.killTor()
 
     better_sleep(5)

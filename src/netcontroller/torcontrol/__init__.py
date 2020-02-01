@@ -12,7 +12,6 @@ import multiprocessing
 import platform  # For windows sigkill workaround
 
 from onionrtypes import BooleanSuccessState
-import config
 import logger
 from .. import getopenport
 from .. import watchdog
@@ -36,7 +35,6 @@ from utils import identifyhome
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-config.reload()
 TOR_KILL_WAIT = 3
 addbridges = addbridges.add_bridges
 

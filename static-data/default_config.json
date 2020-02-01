@@ -55,9 +55,10 @@
         "use_bridge": false,
         "bridge_ip": "",
         "bridge_fingerprint": "",
+        "use_existing_tor": false,
         "existing_control_port": 0,
         "existing_control_password": "",
-        "temp_transport": false
+        "existing_socks_port": 0
     },
 
     "allocations": {
