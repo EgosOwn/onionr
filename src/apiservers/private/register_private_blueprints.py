@@ -2,6 +2,7 @@
 
 This file registers blueprints for the private api server
 """
+from threading import Thread
 from gevent import spawn
 from gevent import sleep
 
@@ -57,5 +58,6 @@ def register_private_blueprints(private_api, app):
         app.register_blueprint(
             private_api._too_many.get_by_string('DaemonEventsBP').flask_bp)
 
-    spawn(_add_events_bp)
+    Thread(target=_add_events_bp).start()
+
     return app
