@@ -114,7 +114,10 @@ def daemon():
 
         if use_existing_tor:
             net.socksPort = config.get('tor.existing_socks_port')
-            net.myID = create_onion_service(port=get_open_port())
+            net.myID = create_onion_service(
+                port=net.apiServerIP + ':' + str(net.hsPort))[0]
+            if not net.myID.endswith('.onion'):
+                net.myID += '.onion'
             with open(filepaths.tor_hs_address_file, 'w') as tor_file:
                 tor_file.write(net.myID)
         else:
@@ -141,6 +144,11 @@ def daemon():
 
     if not offline_mode and not use_existing_tor:
         net.killTor()
+    else:
+        try:
+            os.remove(filepaths.tor_hs_address_file)
+        except FileNotFoundError:
+            pass
 
     better_sleep(5)
 
