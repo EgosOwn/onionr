@@ -9,6 +9,7 @@ import sqlite3
 from threading import Thread
 from gevent import time
 from gevent import spawn
+from stem.connection import IncorrectPassword
 
 import toomanyobjs
 
@@ -114,8 +115,15 @@ def daemon():
 
         if use_existing_tor:
             net.socksPort = config.get('tor.existing_socks_port')
-            net.myID = create_onion_service(
-                port=net.apiServerIP + ':' + str(net.hsPort))[0]
+            try:
+                net.myID = create_onion_service(
+                    port=net.apiServerIP + ':' + str(net.hsPort))[0]
+            except IncorrectPassword:
+                logger.error('Invalid Tor control password', terminal=True)
+                localcommand.local_command('shutdown')
+                cleanup.delete_run_files()
+                sys.exit(1)
+
             if not net.myID.endswith('.onion'):
                 net.myID += '.onion'
             with open(filepaths.tor_hs_address_file, 'w') as tor_file:
