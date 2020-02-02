@@ -13,6 +13,7 @@ import platform  # For windows sigkill workaround
 
 from onionrtypes import BooleanSuccessState
 import logger
+import filepaths
 from .. import getopenport
 from .. import watchdog
 from . import customtorrc

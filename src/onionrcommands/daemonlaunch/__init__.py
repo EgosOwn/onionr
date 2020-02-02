@@ -114,6 +114,10 @@ def daemon():
     if not offline_mode:
 
         if use_existing_tor:
+            try:
+                os.mkdir(filepaths.tor_hs_loc)
+            except FileExistsError:
+                pass
             net.socksPort = config.get('tor.existing_socks_port')
             try:
                 net.myID = create_onion_service(
