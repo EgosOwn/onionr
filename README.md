@@ -123,7 +123,7 @@ The following applies to Ubuntu Bionic. Other distros may have different package
 
 Email: beardog [ at ] mailbox.org
 
-Onionr Mail: particularizing-zabaione-defuze-iodizer-saucepan-patientest-sell-waken-chifforobe-embonpoint-aquanaut-chambermaid-barky-fumer-jolt-biotic
+Onionr Mail: `particularizing-zabaione-defuze-iodizer-saucepan-patientest-sell-waken-chifforobe-embonpoint-aquanaut-chambermaid-barky-fumer-jolt-biotic`
 
 # Help out
 

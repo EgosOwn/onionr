@@ -1,0 +1,41 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+      {
+        "label": "Make new test",
+        "type": "shell",
+        "command": "cp tests/test_template.py tests/new-test.py",
+        "group": "test",
+        "presentation": {
+          "reveal": "always",
+          "panel": "new"
+        }
+      },
+      {
+        "label": "Run tests",
+        "type": "shell",
+        "command": "source venv/bin/activate; make test",
+        "group": "test",
+        "presentation": {
+          "reveal": "always",
+          "panel": "new"
+        }
+      },
+      {
+        "label": "Enable dev config",
+        "type": "process",
+        "command": "scripts/enable-dev-config.py",
+        "group": "dev",
+        "problemMatcher": []
+      },
+      {
+        "label": "Disable dev config",
+        "type": "process",
+        "command": "scripts/disable-dev-config.py",
+        "group": "dev",
+        "problemMatcher": []
+      }
+    ]
+  }

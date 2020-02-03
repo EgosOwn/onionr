@@ -13,7 +13,10 @@ src/data/*
 src/data-backup/*
 run.sh
 src/.onionr-lock
-.vscode/*
+
+.vscode/tags
+.vscode/settings.json
+
 venv/*
 src/fs*
 src/tmp/*
