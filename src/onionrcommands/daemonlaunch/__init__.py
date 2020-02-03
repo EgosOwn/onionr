@@ -7,11 +7,12 @@ import sys
 import platform
 import sqlite3
 from threading import Thread
+
 from gevent import time
 from gevent import spawn
 from stem.connection import IncorrectPassword
-
 import toomanyobjs
+import filenuke
 
 import config
 import onionrstatistics
@@ -165,6 +166,8 @@ def daemon():
     better_sleep(5)
 
     cleanup.delete_run_files()
+    if config.get('general.security_level', 1) >= 2:
+        filenuke.nuke.clean_tree(identifyhome.identify_home())
 
 
 def _ignore_sigint(sig, frame):  # pylint: disable=W0612,W0613

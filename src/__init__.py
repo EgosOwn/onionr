@@ -63,7 +63,6 @@ from onionrblocks.deleteplaintext import delete_plaintext_no_blacklist  # noqa
 setup.setup_config()
 
 import config # noqa
-import filenuke
 from utils import identifyhome
 
 if config.get('advanced.security_auditing', True):
@@ -88,8 +87,6 @@ if ran_as_script:
 
     # Wipe Onionr data directory if security level calls for it
     config.reload()
-    if config.get('general.security_level', 1) >= 2:
-        filenuke.nuke.clean_tree(identifyhome.identify_home())
 
     # Cleanup standard out/err because Python refuses to do it itsself
     try:
