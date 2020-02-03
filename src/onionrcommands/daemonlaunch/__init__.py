@@ -24,6 +24,7 @@ from onionrplugins import onionrevents as events
 from netcontroller import NetController
 from netcontroller import get_open_port
 from onionrutils import localcommand
+from utils import identifyhome
 import filepaths
 from etc import onionrvalues, cleanup
 from onionrcrypto import getourkeypair
