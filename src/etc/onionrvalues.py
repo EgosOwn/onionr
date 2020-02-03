@@ -53,7 +53,7 @@ MAX_NEW_PEER_QUEUE = 1000
 """Make announce take a few seconds (on average) to compute to discourage excessive node announcements"""
 ANNOUNCE_POW = 6
 """30 days is plenty of time for someone to decide to renew a block"""
-DEFAULT_EXPIRE = 300
+DEFAULT_EXPIRE = 2592000
 # Metadata header section length limits, in bytes
 BLOCK_METADATA_LENGTHS = {'meta': 1000, 'sig': 200, 'signer': 200, 'time': 10, 'pow': 1000, 'encryptType': 4, 'expire': 14}
 

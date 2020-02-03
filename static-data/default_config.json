@@ -35,7 +35,7 @@
         "verbosity": "default"
     },
     "onboarding": {
-        "done": true
+        "done": false
     },
     "peers": {
         "max_connect": 1000,
@@ -43,8 +43,8 @@
         "minimum_score": -100
     },
     "plugins": {
-        "disabled": {},
-        "enabled": {}
+        "disabled": [],
+        "enabled": []
     },
     "timers": {
         "getBlocks": 10,

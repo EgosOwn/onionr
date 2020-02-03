@@ -61,7 +61,6 @@
                 </div>
             </div>
         </div>
-        </div>
     </section>
 
     <br>
@@ -78,49 +77,54 @@
         </div>
     </div>
 
-    <div class="onboarding">
-        <noscript><h1>Unfortunately, this requires JavaScript. Don't worry, all scripts are open source and locally loaded.</h1></noscript>
-        <p>Welcome. There are just a few questions for you to answer before you get started.</p>
-        <br>
-        <form method='post' id="onboardingForm">
-            <div class="field">
-                <div>
-                    I am concerned about the following targeting me...
-                </div>
-                <i class="icon fas fa-eye"></i> <input type="checkbox" name="state" checked> <label for="state">Government (mass surveillance)</label>
+    <div class="columns">
+        <div class="column">
+            <div class="onboarding">
+                <noscript><h1>Unfortunately, this requires JavaScript. Don't worry, all scripts are open source and locally loaded.</h1></noscript>
+                <p>Welcome. There are just a few questions for you to answer before you get started.</p>
                 <br>
-                <i class="icon fas fa-university"></i> <input type="checkbox" name="stateTarget"> <label for="stateTarget">Government (direct target)</label>
-                <br>
-                <i class="icon fas fa-binoculars"></i> <input type="checkbox" name="local"> <label for="local">Nearby threat</label>
-            </div>
-            <div class="field">
-                <div>
-                    I want to contribute to Onionr by...
-                </div>
-                <i class="icon fas fa-network-wired"></i> <input checked type="checkbox" name="networkContribution"> <label for="networkContribution">Participating in data storage & sharing</label>
-                <br>
-                <i class="icon fas fa-book-open"></i> <input checked type="checkbox" name="networkContributionPlain"> <label for="networkContributionPlain">Storing plaintext data</label>
-                <br>
-                <i class="icon fas fa-dollar-sign"></i> <input type="checkbox" name="donate"> <label for="donate">Donating the price of a coffee to fund development</label>
-            </div>
-            <div class="field">
-                <div>
-                    I want to...
-                </div>
-                <i class="icon fas fa-user"></i> <input type="checkbox" name="useDeterministic"> <label for="useDeterministic">Use a seed to re(generate) a user ID</label>
-                <br>
-                <i class="icon fas fa-envelope"></i> <input type="checkbox" name="useMail" checked> <label for="useMail">Use OnionrMail</label>
-                <br>
-                <i class="icon fas fa-comments"></i> <input type="checkbox" name="useCircles" checked> <label for="useMail">Use Circles (message board system)</label>
-                <br>
-                <i class="icon fas fa-palette"></i> <input type="checkbox" name="useDarkTheme" checked> <label for="useDark">Use Dark Theme</label>
+                <form method='post' id="onboardingForm">
+                    <div class="field">
+                        <div>
+                            I am concerned about the following targeting me...
+                        </div>
+                        <i class="icon fas fa-eye"></i> <input type="checkbox" name="state" checked> <label for="state">Government (mass surveillance)</label>
+                        <br>
+                        <i class="icon fas fa-university"></i> <input type="checkbox" name="stateTarget"> <label for="stateTarget">Government (direct target)</label>
+                        <br>
+                        <i class="icon fas fa-binoculars"></i> <input type="checkbox" name="local"> <label for="local">Nearby threat</label>
+                    </div>
+                    <div class="field">
+                        <div>
+                            I want to contribute to Onionr by...
+                        </div>
+                        <i class="icon fas fa-network-wired"></i> <input checked type="checkbox" name="networkContribution"> <label for="networkContribution">Participating in data storage & sharing</label>
+                        <br>
+                        <i class="icon fas fa-book-open"></i> <input checked type="checkbox" name="networkContributionPlain"> <label for="networkContributionPlain">Storing plaintext data</label>
+                        <br>
+                        <i class="icon fas fa-dollar-sign"></i> <input type="checkbox" name="donate"> <label for="donate">Donating the price of a coffee to fund development</label>
+                    </div>
+                    <div class="field">
+                        <div>
+                            I want to...
+                        </div>
+                        <!--<i class="icon fas fa-user"></i> <input type="checkbox" name="useDeterministic"> <label for="useDeterministic">Use a seed to re(generate) a user ID</label>
+                        <br>
+                        -->
+                        <i class="icon fas fa-envelope"></i> <input type="checkbox" name="useMail" checked> <label for="useMail">Use OnionrMail</label>
+                        <br>
+                        <i class="icon fas fa-comments"></i> <input type="checkbox" name="useCircles" checked> <label for="useMail">Use Circles (message board system)</label>
+                        <br>
+                        <i class="icon fas fa-palette"></i> <input type="checkbox" name="useDarkTheme" checked> <label for="useDark">Use Dark Theme</label>
 
-                <br>
+                        <br>
+                    </div>
+                    <br>
+                    <input type="submit" value="Get Started" class="button is-primary">
+                    <br><br>
+                </form>
             </div>
-            <br>
-            <input type="submit" value="Get Started" class="button is-primary">
-            <br><br>
-        </form>
+        </div>
     </div>
 
 </body>

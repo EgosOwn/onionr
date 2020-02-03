@@ -38,22 +38,26 @@ def set_config_from_onboarding(config_settings: OnboardingConfig):
 
     get = _get_val_or_none
 
+    config.reload()
+
     if get(config_settings, 'stateTarget') or not get(config_settings,
-                                                      'networkContribution'):
+                                                      'networkContrib'):
         config.set('general.security_level', 1)
 
     config.set('ui.theme', 'light')
     if get(config_settings, 'useDark'):
         config.set('ui.theme', 'dark')
 
-    if not get(config_settings,
-               'useCircles') or config.get('general.security_level') > 0:
-        config.set('plugins.disabled',
-                   config.get('plugins.disabled', []).append('flow'))
+    disabled = config.get('plugins.disabled', [])
 
-    if not get(config_settings, 'useMail'):
-        config.set('plugins.disabled',
-                   config.get('plugins.disabled', []).append('pms'))
+    if not get(config_settings, 'circles') or \
+            config.get('general.security_level') > 0:
+        disabled.append('flow')
+
+    if not get(config_settings, 'mail'):
+        disabled.append('pms')
+
+    config.set('plugins.disabled', disabled)
 
     config.set('general.store_plaintext_blocks',
                get(config_settings, 'plainContrib'))
