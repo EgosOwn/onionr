@@ -24,7 +24,6 @@ subject = document.getElementById('draftSubject')
 friendPicker = document.getElementById('friendSelect')
 
 function sendMail(toData, message, subject){
-    //postData = {"postData": '{"to": "' + to + '", "message": "' + message + '"}'} // galaxy brain
     postData = {'message': message, 'to': toData, 'type': 'pm', 'encrypt': true, 'meta': JSON.stringify({'subject': subject})}
     postData = JSON.stringify(postData)
     sendForm.style.display = 'none'
@@ -35,13 +34,15 @@ function sendMail(toData, message, subject){
           "content-type": "application/json",
           "token": webpass
         }})
-    .then((resp) => resp.text()) // Transform the data into json
+    .then((resp) => resp.text()) // Transform the data into text
     .then(function(data) {
         sendForm.style.display = 'block'
         PNotify.success({
             text: 'Queued for sending!'
         })
         to.value = subject.value = messageContent.value = ""
+        friendPicker.value = ""
+        subject.value = ""
       })
 }
 

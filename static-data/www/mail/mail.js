@@ -91,12 +91,12 @@ function openThread(bHash, sender, date, sigBool, pubkey, subjectLine){
         messageDisplay.innerText = resp
         var sigEl = document.getElementById('sigValid')
         var sigMsg = 'signature'
-    
+
         // show add unknown contact button if peer is unknown
         if (sender !== myPub && sigBool){
             addUnknownContact.style.display = 'inline'
         }
-    
+
         if (sigBool){
             sigMsg = 'Good ' + sigMsg
             sigEl.classList.remove('danger')
@@ -233,7 +233,7 @@ function loadInboxEntries(bHash){
         else{
             subjectLine.innerText = '(' + metadata['subject'] + ')'
         }
-        //entry.innerHTML = 'sender ' + resp['meta']['signer'] + ' - ' + resp['meta']['time'] 
+        //entry.innerHTML = 'sender ' + resp['meta']['signer'] + ' - ' + resp['meta']['time']
         threadPart.appendChild(entry)
         entry.appendChild(deleteBtn)
         entry.appendChild(bHashDisplay)
@@ -254,7 +254,7 @@ function loadInboxEntries(bHash){
             entry.parentNode.removeChild(entry);
             deleteMessage(entry.getAttribute('data-hash'))
         }
-        
+
       }.bind(bHash))
 }
 
@@ -264,7 +264,6 @@ function getInbox(){
     }
     var els = document.getElementsByClassName('threadEntry')
     var showed = false
-    var requested = ''
     for(var i = 0; i < pms.length; i++) {
         var add = true
         if (pms[i].trim().length == 0){
@@ -365,7 +364,7 @@ fetch('/mail/getinbox', {
     }})
 .then((resp) => resp.text())
 .then(function(data) {
-    pms = data.split(',').reverse()
+    pms = data.split(',')
     if (pms.length > 0){
         noInbox.style.display = 'none'
     }
