@@ -7,6 +7,9 @@
 <p align="center">
     Privacy Respecting Communication Network 📡
 </p>
+<p align="center">
+    Anonymous social platform, mail, file sharing.
+</p>
 
 <img src='https://img.shields.io/github/license/beardog108/onionr'> <img src='https://gitlab.com/beardog/Onionr/badges/master/build.svg'> <img src='https://img.shields.io/badge/docker%20%F0%9F%90%8B-supported-success'> <img src='https://img.shields.io/badge/python%20version%20%F0%9F%90%8D-3.7+-blue'> <img src='https://img.shields.io/github/commit-activity/m/beardog108/onionr'>
 
@@ -40,7 +43,7 @@ Users are identified by ed25519/curve25519 public keys, which can be used to sig
 
 Onionr can be used for mail, as a social network, instant messenger, file sharing software, or for encrypted group discussion.
 
-The whitepaper (subject to change prior to alpha release) is available [here](docs/whitepaper.md).
+The whitepaper is available [here](docs/whitepaper.md).
 
 ![Tor stinks slide image](docs/tor-stinks-02.png)
 
@@ -66,8 +69,6 @@ Not yet usable:
 
 * Instant messaging
 
-
-**Onionr API and functionality is subject to non-backwards compatible change during pre-alpha development**
 
 
 ## Watch the talk from BSidesPDX 2019
@@ -158,7 +159,7 @@ Note: probably not tax deductible
 
 # Security
 
-Onionr is pre-alpha. This means it is unstable, probably insecure, and experimental.
+Onionr is alpha software. This means it is unstable, probably insecure, and experimental.
 
 No matter how good Onionr and other software gets, there will always be ways for clever or well-funded adversaries to break your security.
 

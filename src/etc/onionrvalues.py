@@ -1,8 +1,11 @@
-"""
-    Onionr - Private P2P Communication
+"""Onionr - Private P2P Communication.
 
-    This file defines values and requirements used by Onionr
+This file defines values and requirements used by Onionr
 """
+import platform
+import os
+
+import filepaths
 """
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -17,11 +20,6 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-import platform
-import os
-
-import filepaths
-
 DENIABLE_PEER_ADDRESS = "OVPCZLOXD6DC5JHX4EQ3PSOGAZ3T24F75HQLIUZSDSMYPEOXCPFA"
 PASSWORD_LENGTH = 25
 ONIONR_TAGLINE = 'Private P2P Communication - GPLv3 - https://Onionr.net'
