@@ -1,7 +1,6 @@
-"""
-    Onionr - Private P2P Communication
+"""Onionr - Private P2P Communication.
 
-    Setup config from onboarding choices
+Setup config from onboarding choices
 """
 from pathlib import Path
 from typing import Union
@@ -10,7 +9,6 @@ from filepaths import onboarding_mark_file
 from onionrtypes import JSONSerializable
 from onionrtypes import OnboardingConfig
 import config
-from flask import g
 """
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -35,7 +33,6 @@ def _get_val_or_none(json: dict, key: str) -> Union[None, JSONSerializable]:
 
 
 def set_config_from_onboarding(config_settings: OnboardingConfig):
-
     get = _get_val_or_none
 
     config.reload()
