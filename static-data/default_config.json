@@ -7,16 +7,16 @@
     },
     "general": {
         "announce_node": true,
-        "dev_mode": false,
+        "dev_mode": true,
         "display_header": false,
         "general.random_bind_ip": false,
         "hide_created_blocks": true,
-        "insert_deniable_blocks": true,
+        "insert_deniable_blocks": false,
         "max_block_age": 2678400,
         "minimum_block_pow": 4,
         "minimum_send_pow": 4,
         "public_key": "",
-        "random_bind_ip": true,
+        "random_bind_ip": false,
         "security_level": 0,
         "show_notifications": true,
         "socket_servers": false,
@@ -35,7 +35,7 @@
         "verbosity": "default"
     },
     "onboarding": {
-        "done": false
+        "done": true
     },
     "peers": {
         "max_connect": 1000,
@@ -53,11 +53,11 @@
     "tor": {
         "bridge_fingerprint": "",
         "bridge_ip": "",
-        "existing_control_password": "",
-        "existing_control_port": 0,
-        "existing_socks_port": 0,
+        "existing_control_password": "testt",
+        "existing_control_port": 1338,
+        "existing_socks_port": 1337,
         "use_bridge": false,
-        "use_existing_tor": false,
+        "use_existing_tor": true,
         "v3onions": true
     },
     "transports": {

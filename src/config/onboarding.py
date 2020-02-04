@@ -44,6 +44,9 @@ def set_config_from_onboarding(config_settings: OnboardingConfig):
                                                       'networkContrib'):
         config.set('general.security_level', 1)
 
+    if get(config_settings, 'localThreat'):
+        config.set('general.security_level', 3)
+
     config.set('ui.theme', 'light')
     if get(config_settings, 'useDark'):
         config.set('ui.theme', 'dark')

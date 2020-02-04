@@ -50,8 +50,7 @@ WSGI_SERVER_REQUEST_TIMEOUT_SECS = 120
 MAX_NEW_PEER_QUEUE = 1000
 
 # Begin OnionrValues migrated values
-"""Make announce take a few seconds (on average) to compute to discourage excessive node announcements"""
-ANNOUNCE_POW = 6
+
 """30 days is plenty of time for someone to decide to renew a block"""
 DEFAULT_EXPIRE = 2592000
 # Metadata header section length limits, in bytes

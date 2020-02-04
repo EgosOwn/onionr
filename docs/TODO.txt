@@ -1,8 +1,9 @@
 * add GUI config editor
 * add multi-device forward secrecy
+
 * document anonymity & security theory
 * document usage
-* add offline mode
+
 * encrypt local data and keys
 * ensure accessibility for Onionr web UI
 * make forward secrecy compatible with multiple devices
