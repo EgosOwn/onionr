@@ -1,9 +1,17 @@
-'''
-    Onionr - Private P2P Communication
+"""Onionr - Private P2P Communication.
 
-    Desktop notification wrapper
-'''
-'''
+Desktop notification wrapper
+"""
+try:
+    import simplenotifications as simplenotify
+except ImportError:
+    notifications_enabled = False
+else:
+    notifications_enabled = True
+
+import config
+
+"""
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -16,19 +24,14 @@
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
-'''
-try:
-    import simplenotifications as simplenotify
-except ImportError:
+"""
+
+if not config.get('general.show_notifications', True):
     notifications_enabled = False
-else:
-    notifications_enabled = True
 
-import config
-
-if not config.get('general.show_notifications', True): notifications_enabled = False
 
 def notify(title: str = "Onionr", message: str = ""):
-    """cross platform method to show a notification"""
-    if not notifications_enabled: return
+    """Cross platform method to show a notification."""
+    if not notifications_enabled:
+        return
     simplenotify.notify(title, message)
