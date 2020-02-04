@@ -18,6 +18,8 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 import os
+import stat
+
 from . import identifyhome
 import filepaths
 home = identifyhome.identify_home()
@@ -32,6 +34,8 @@ def create_dirs():
     for path in gen_dirs:
         if not os.path.exists(path):
             os.mkdir(path)
+
+    os.chmod(home, stat.S_IRWXU)
 
     from onionrsetup import dbcreator
 
