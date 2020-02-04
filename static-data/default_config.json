@@ -1,4 +1,7 @@
 {
+    "advanced": {
+        "security_auditing": true
+    },
     "allocations": {
         "blockCache": 5000000,
         "blockCacheTotal": 50000000,
@@ -9,7 +12,6 @@
         "announce_node": true,
         "dev_mode": false,
         "display_header": false,
-        "general.random_bind_ip": false,
         "hide_created_blocks": true,
         "insert_deniable_blocks": true,
         "max_block_age": 2678400,

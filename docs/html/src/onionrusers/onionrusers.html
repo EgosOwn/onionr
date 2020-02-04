@@ -1,0 +1,798 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.7.4" />
+<title>src.onionrusers.onionrusers API documentation</title>
+<meta name="description" content="Onionr - Private P2P Communication …" />
+<link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
+<link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" rel="stylesheet">
+<style>.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{font-weight:bold}#index h4 + ul{margin-bottom:.6em}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>src.onionrusers.onionrusers</code></h1>
+</header>
+<section id="section-intro">
+<p>Onionr - Private P2P Communication</p>
+<p>Contains abstractions for interacting with users of Onionr</p>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">&#39;&#39;&#39;
+    Onionr - Private P2P Communication
+
+    Contains abstractions for interacting with users of Onionr
+&#39;&#39;&#39;
+&#39;&#39;&#39;
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see &lt;https://www.gnu.org/licenses/&gt;.
+&#39;&#39;&#39;
+import logger, onionrexceptions, json, sqlite3, time
+from onionrutils import stringvalidators, bytesconverter, epoch
+import unpaddedbase32
+import nacl.exceptions
+from coredb import keydb, dbfiles
+import onionrcrypto
+
+def deleteExpiredKeys():
+    # Fetch the keys we generated for the peer, that are still around
+    conn = sqlite3.connect(dbfiles.forward_keys_db, timeout=10)
+    c = conn.cursor()
+
+    curTime = epoch.get_epoch()
+    c.execute(&#34;DELETE from myForwardKeys where expire &lt;= ?&#34;, (curTime,))
+    conn.commit()
+    conn.execute(&#34;VACUUM&#34;)
+    conn.close()
+    return
+
+def deleteTheirExpiredKeys(pubkey):
+    conn = sqlite3.connect(dbfiles.user_id_info_db, timeout=10)
+    c = conn.cursor()
+
+    # Prepare the insert
+    command = (pubkey, epoch.get_epoch())
+
+    c.execute(&#34;DELETE from forwardKeys where peerKey = ? and expire &lt;= ?&#34;, command)
+
+    conn.commit()
+    conn.close()
+
+DEFAULT_KEY_EXPIRE = 604800
+
+class OnionrUser:
+
+    def __init__(self, publicKey, saveUser=False):
+        &#39;&#39;&#39;
+            OnionrUser is an abstraction for &#34;users&#34; of the network. 
+            
+            Takes a base32 encoded ed25519 public key, and a bool saveUser
+            saveUser determines if we should add a user to our peer database or not.
+        &#39;&#39;&#39;
+        publicKey = unpaddedbase32.repad(bytesconverter.str_to_bytes(publicKey)).decode()
+
+        self.trust = 0
+        self.publicKey = publicKey
+
+        if saveUser:
+            try:
+                keydb.addkeys.add_peer(publicKey)
+            except (AssertionError, ValueError) as e:
+                pass
+
+        self.trust = keydb.userinfo.get_user_info(self.publicKey, &#39;trust&#39;)
+        return
+
+    def setTrust(self, newTrust):
+        &#39;&#39;&#39;Set the peers trust. 0 = not trusted, 1 = friend, 2 = ultimate&#39;&#39;&#39;
+        keydb.userinfo.set_user_info(self.publicKey, &#39;trust&#39;, newTrust)
+
+    def isFriend(self):
+        if keydb.userinfo.set_peer_info(self.publicKey, &#39;trust&#39;) == 1:
+            return True
+        return False
+
+    def getName(self):
+        retData = &#39;anonymous&#39;
+        name = keydb.userinfo.get_user_info(self.publicKey, &#39;name&#39;)
+        try:
+            if len(name) &gt; 0:
+                retData = name
+        except ValueError:
+            pass
+        return retData
+
+    def encrypt(self, data):
+        encrypted = onionrcrypto.encryption.pub_key_encrypt(data, self.publicKey, encodedData=True)
+        return encrypted
+
+    def decrypt(self, data):
+        decrypted = onionrcrypto.encryption.pub_key_decrypt(data, self.publicKey, encodedData=True)
+        return decrypted
+
+    def forwardEncrypt(self, data):
+        deleteTheirExpiredKeys(self.publicKey)
+        deleteExpiredKeys()
+        retData = &#39;&#39;
+        forwardKey = self._getLatestForwardKey()
+        if stringvalidators.validate_pub_key(forwardKey[0]):
+            retData = onionrcrypto.encryption.pub_key_encrypt(data, forwardKey[0], encodedData=True)
+        else:
+            raise onionrexceptions.InvalidPubkey(&#34;No valid forward secrecy key available for this user&#34;)
+        #self.generateForwardKey()
+        return (retData, forwardKey[0], forwardKey[1])
+
+    def forwardDecrypt(self, encrypted):
+        retData = &#34;&#34;
+        for key in self.getGeneratedForwardKeys(False):
+            try:
+                retData = onionrcrypto.encryption.pub_key_decrypt(encrypted, privkey=key[1], encodedData=True)
+            except nacl.exceptions.CryptoError:
+                retData = False
+            else:
+                break
+        else:
+            raise onionrexceptions.DecryptionError(&#34;Could not decrypt forward secrecy content&#34;)
+        return retData
+
+    def _getLatestForwardKey(self):
+        # Get the latest forward secrecy key for a peer
+        key = &#34;&#34;
+        conn = sqlite3.connect(dbfiles.user_id_info_db, timeout=10)
+        c = conn.cursor()
+
+        # TODO: account for keys created at the same time (same epoch)
+        for row in c.execute(&#34;SELECT forwardKey, max(EXPIRE) FROM forwardKeys WHERE peerKey = ? ORDER BY expire DESC&#34;, (self.publicKey,)):
+            key = (row[0], row[1])
+            break
+
+        conn.commit()
+        conn.close()
+
+        return key
+
+    def _getForwardKeys(self):
+        conn = sqlite3.connect(dbfiles.user_id_info_db, timeout=10)
+        c = conn.cursor()
+        keyList = []
+
+        for row in c.execute(&#34;SELECT forwardKey, date FROM forwardKeys WHERE peerKey = ? ORDER BY expire DESC&#34;, (self.publicKey,)):
+            keyList.append((row[0], row[1]))
+
+        conn.commit()
+        conn.close()
+
+        return list(keyList)
+
+    def generateForwardKey(self, expire=DEFAULT_KEY_EXPIRE):
+
+        # Generate a forward secrecy key for the peer
+        conn = sqlite3.connect(dbfiles.forward_keys_db, timeout=10)
+        c = conn.cursor()
+        # Prepare the insert
+        time = epoch.get_epoch()
+        newKeys = onionrcrypto.generate()
+        newPub = bytesconverter.bytes_to_str(newKeys[0])
+        newPriv = bytesconverter.bytes_to_str(newKeys[1])
+
+        command = (self.publicKey, newPub, newPriv, time, expire + time)
+
+        c.execute(&#34;INSERT INTO myForwardKeys VALUES(?, ?, ?, ?, ?);&#34;, command)
+
+        conn.commit()
+        conn.close()
+        return newPub
+
+    def getGeneratedForwardKeys(self, genNew=True):
+        # Fetch the keys we generated for the peer, that are still around
+        conn = sqlite3.connect(dbfiles.forward_keys_db, timeout=10)
+        c = conn.cursor()
+        pubkey = self.publicKey
+        pubkey = bytesconverter.bytes_to_str(pubkey)
+        command = (pubkey,)
+        keyList = [] # list of tuples containing pub, private for peer
+
+        for result in c.execute(&#34;SELECT * FROM myForwardKeys WHERE peer = ?&#34;, command):
+            keyList.append((result[1], result[2]))
+
+        if len(keyList) == 0:
+            if genNew:
+                self.generateForwardKey()
+                keyList = self.getGeneratedForwardKeys()
+        return list(keyList)
+
+    def addForwardKey(self, newKey, expire=DEFAULT_KEY_EXPIRE):
+        newKey = bytesconverter.bytes_to_str(unpaddedbase32.repad(bytesconverter.str_to_bytes(newKey)))
+        if not stringvalidators.validate_pub_key(newKey):
+            # Do not add if something went wrong with the key
+            raise onionrexceptions.InvalidPubkey(newKey)
+
+        conn = sqlite3.connect(dbfiles.user_id_info_db, timeout=10)
+        c = conn.cursor()
+
+        # Get the time we&#39;re inserting the key at
+        timeInsert = epoch.get_epoch()
+
+        # Look at our current keys for duplicate key data or time
+        for entry in self._getForwardKeys():
+            if entry[0] == newKey:
+                return False
+            if entry[1] == timeInsert:
+                timeInsert += 1
+                time.sleep(1) # Sleep if our time is the same in order to prevent duplicate time records
+
+        # Add a forward secrecy key for the peer
+        # Prepare the insert
+        command = (self.publicKey, newKey, timeInsert, timeInsert + expire)
+
+        c.execute(&#34;INSERT INTO forwardKeys VALUES(?, ?, ?, ?);&#34;, command)
+
+        conn.commit()
+        conn.close()
+        return True
+    
+    @classmethod
+    def list_friends(cls):
+        friendList = []
+        for x in keydb.listkeys.list_peers(trust=1):
+            friendList.append(cls(x))
+        return list(friendList)</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="src.onionrusers.onionrusers.deleteExpiredKeys"><code class="name flex">
+<span>def <span class="ident">deleteExpiredKeys</span></span>(<span>)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def deleteExpiredKeys():
+    # Fetch the keys we generated for the peer, that are still around
+    conn = sqlite3.connect(dbfiles.forward_keys_db, timeout=10)
+    c = conn.cursor()
+
+    curTime = epoch.get_epoch()
+    c.execute(&#34;DELETE from myForwardKeys where expire &lt;= ?&#34;, (curTime,))
+    conn.commit()
+    conn.execute(&#34;VACUUM&#34;)
+    conn.close()
+    return</code></pre>
+</details>
+</dd>
+<dt id="src.onionrusers.onionrusers.deleteTheirExpiredKeys"><code class="name flex">
+<span>def <span class="ident">deleteTheirExpiredKeys</span></span>(<span>pubkey)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def deleteTheirExpiredKeys(pubkey):
+    conn = sqlite3.connect(dbfiles.user_id_info_db, timeout=10)
+    c = conn.cursor()
+
+    # Prepare the insert
+    command = (pubkey, epoch.get_epoch())
+
+    c.execute(&#34;DELETE from forwardKeys where peerKey = ? and expire &lt;= ?&#34;, command)
+
+    conn.commit()
+    conn.close()</code></pre>
+</details>
+</dd>
+</dl>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="src.onionrusers.onionrusers.OnionrUser"><code class="flex name class">
+<span>class <span class="ident">OnionrUser</span></span>
+<span>(</span><span>publicKey, saveUser=False)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>OnionrUser is an abstraction for "users" of the network. </p>
+<p>Takes a base32 encoded ed25519 public key, and a bool saveUser
+saveUser determines if we should add a user to our peer database or not.</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class OnionrUser:
+
+    def __init__(self, publicKey, saveUser=False):
+        &#39;&#39;&#39;
+            OnionrUser is an abstraction for &#34;users&#34; of the network. 
+            
+            Takes a base32 encoded ed25519 public key, and a bool saveUser
+            saveUser determines if we should add a user to our peer database or not.
+        &#39;&#39;&#39;
+        publicKey = unpaddedbase32.repad(bytesconverter.str_to_bytes(publicKey)).decode()
+
+        self.trust = 0
+        self.publicKey = publicKey
+
+        if saveUser:
+            try:
+                keydb.addkeys.add_peer(publicKey)
+            except (AssertionError, ValueError) as e:
+                pass
+
+        self.trust = keydb.userinfo.get_user_info(self.publicKey, &#39;trust&#39;)
+        return
+
+    def setTrust(self, newTrust):
+        &#39;&#39;&#39;Set the peers trust. 0 = not trusted, 1 = friend, 2 = ultimate&#39;&#39;&#39;
+        keydb.userinfo.set_user_info(self.publicKey, &#39;trust&#39;, newTrust)
+
+    def isFriend(self):
+        if keydb.userinfo.set_peer_info(self.publicKey, &#39;trust&#39;) == 1:
+            return True
+        return False
+
+    def getName(self):
+        retData = &#39;anonymous&#39;
+        name = keydb.userinfo.get_user_info(self.publicKey, &#39;name&#39;)
+        try:
+            if len(name) &gt; 0:
+                retData = name
+        except ValueError:
+            pass
+        return retData
+
+    def encrypt(self, data):
+        encrypted = onionrcrypto.encryption.pub_key_encrypt(data, self.publicKey, encodedData=True)
+        return encrypted
+
+    def decrypt(self, data):
+        decrypted = onionrcrypto.encryption.pub_key_decrypt(data, self.publicKey, encodedData=True)
+        return decrypted
+
+    def forwardEncrypt(self, data):
+        deleteTheirExpiredKeys(self.publicKey)
+        deleteExpiredKeys()
+        retData = &#39;&#39;
+        forwardKey = self._getLatestForwardKey()
+        if stringvalidators.validate_pub_key(forwardKey[0]):
+            retData = onionrcrypto.encryption.pub_key_encrypt(data, forwardKey[0], encodedData=True)
+        else:
+            raise onionrexceptions.InvalidPubkey(&#34;No valid forward secrecy key available for this user&#34;)
+        #self.generateForwardKey()
+        return (retData, forwardKey[0], forwardKey[1])
+
+    def forwardDecrypt(self, encrypted):
+        retData = &#34;&#34;
+        for key in self.getGeneratedForwardKeys(False):
+            try:
+                retData = onionrcrypto.encryption.pub_key_decrypt(encrypted, privkey=key[1], encodedData=True)
+            except nacl.exceptions.CryptoError:
+                retData = False
+            else:
+                break
+        else:
+            raise onionrexceptions.DecryptionError(&#34;Could not decrypt forward secrecy content&#34;)
+        return retData
+
+    def _getLatestForwardKey(self):
+        # Get the latest forward secrecy key for a peer
+        key = &#34;&#34;
+        conn = sqlite3.connect(dbfiles.user_id_info_db, timeout=10)
+        c = conn.cursor()
+
+        # TODO: account for keys created at the same time (same epoch)
+        for row in c.execute(&#34;SELECT forwardKey, max(EXPIRE) FROM forwardKeys WHERE peerKey = ? ORDER BY expire DESC&#34;, (self.publicKey,)):
+            key = (row[0], row[1])
+            break
+
+        conn.commit()
+        conn.close()
+
+        return key
+
+    def _getForwardKeys(self):
+        conn = sqlite3.connect(dbfiles.user_id_info_db, timeout=10)
+        c = conn.cursor()
+        keyList = []
+
+        for row in c.execute(&#34;SELECT forwardKey, date FROM forwardKeys WHERE peerKey = ? ORDER BY expire DESC&#34;, (self.publicKey,)):
+            keyList.append((row[0], row[1]))
+
+        conn.commit()
+        conn.close()
+
+        return list(keyList)
+
+    def generateForwardKey(self, expire=DEFAULT_KEY_EXPIRE):
+
+        # Generate a forward secrecy key for the peer
+        conn = sqlite3.connect(dbfiles.forward_keys_db, timeout=10)
+        c = conn.cursor()
+        # Prepare the insert
+        time = epoch.get_epoch()
+        newKeys = onionrcrypto.generate()
+        newPub = bytesconverter.bytes_to_str(newKeys[0])
+        newPriv = bytesconverter.bytes_to_str(newKeys[1])
+
+        command = (self.publicKey, newPub, newPriv, time, expire + time)
+
+        c.execute(&#34;INSERT INTO myForwardKeys VALUES(?, ?, ?, ?, ?);&#34;, command)
+
+        conn.commit()
+        conn.close()
+        return newPub
+
+    def getGeneratedForwardKeys(self, genNew=True):
+        # Fetch the keys we generated for the peer, that are still around
+        conn = sqlite3.connect(dbfiles.forward_keys_db, timeout=10)
+        c = conn.cursor()
+        pubkey = self.publicKey
+        pubkey = bytesconverter.bytes_to_str(pubkey)
+        command = (pubkey,)
+        keyList = [] # list of tuples containing pub, private for peer
+
+        for result in c.execute(&#34;SELECT * FROM myForwardKeys WHERE peer = ?&#34;, command):
+            keyList.append((result[1], result[2]))
+
+        if len(keyList) == 0:
+            if genNew:
+                self.generateForwardKey()
+                keyList = self.getGeneratedForwardKeys()
+        return list(keyList)
+
+    def addForwardKey(self, newKey, expire=DEFAULT_KEY_EXPIRE):
+        newKey = bytesconverter.bytes_to_str(unpaddedbase32.repad(bytesconverter.str_to_bytes(newKey)))
+        if not stringvalidators.validate_pub_key(newKey):
+            # Do not add if something went wrong with the key
+            raise onionrexceptions.InvalidPubkey(newKey)
+
+        conn = sqlite3.connect(dbfiles.user_id_info_db, timeout=10)
+        c = conn.cursor()
+
+        # Get the time we&#39;re inserting the key at
+        timeInsert = epoch.get_epoch()
+
+        # Look at our current keys for duplicate key data or time
+        for entry in self._getForwardKeys():
+            if entry[0] == newKey:
+                return False
+            if entry[1] == timeInsert:
+                timeInsert += 1
+                time.sleep(1) # Sleep if our time is the same in order to prevent duplicate time records
+
+        # Add a forward secrecy key for the peer
+        # Prepare the insert
+        command = (self.publicKey, newKey, timeInsert, timeInsert + expire)
+
+        c.execute(&#34;INSERT INTO forwardKeys VALUES(?, ?, ?, ?);&#34;, command)
+
+        conn.commit()
+        conn.close()
+        return True
+    
+    @classmethod
+    def list_friends(cls):
+        friendList = []
+        for x in keydb.listkeys.list_peers(trust=1):
+            friendList.append(cls(x))
+        return list(friendList)</code></pre>
+</details>
+<h3>Static methods</h3>
+<dl>
+<dt id="src.onionrusers.onionrusers.OnionrUser.list_friends"><code class="name flex">
+<span>def <span class="ident">list_friends</span></span>(<span>)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@classmethod
+def list_friends(cls):
+    friendList = []
+    for x in keydb.listkeys.list_peers(trust=1):
+        friendList.append(cls(x))
+    return list(friendList)</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="src.onionrusers.onionrusers.OnionrUser.addForwardKey"><code class="name flex">
+<span>def <span class="ident">addForwardKey</span></span>(<span>self, newKey, expire=604800)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def addForwardKey(self, newKey, expire=DEFAULT_KEY_EXPIRE):
+    newKey = bytesconverter.bytes_to_str(unpaddedbase32.repad(bytesconverter.str_to_bytes(newKey)))
+    if not stringvalidators.validate_pub_key(newKey):
+        # Do not add if something went wrong with the key
+        raise onionrexceptions.InvalidPubkey(newKey)
+
+    conn = sqlite3.connect(dbfiles.user_id_info_db, timeout=10)
+    c = conn.cursor()
+
+    # Get the time we&#39;re inserting the key at
+    timeInsert = epoch.get_epoch()
+
+    # Look at our current keys for duplicate key data or time
+    for entry in self._getForwardKeys():
+        if entry[0] == newKey:
+            return False
+        if entry[1] == timeInsert:
+            timeInsert += 1
+            time.sleep(1) # Sleep if our time is the same in order to prevent duplicate time records
+
+    # Add a forward secrecy key for the peer
+    # Prepare the insert
+    command = (self.publicKey, newKey, timeInsert, timeInsert + expire)
+
+    c.execute(&#34;INSERT INTO forwardKeys VALUES(?, ?, ?, ?);&#34;, command)
+
+    conn.commit()
+    conn.close()
+    return True</code></pre>
+</details>
+</dd>
+<dt id="src.onionrusers.onionrusers.OnionrUser.decrypt"><code class="name flex">
+<span>def <span class="ident">decrypt</span></span>(<span>self, data)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def decrypt(self, data):
+    decrypted = onionrcrypto.encryption.pub_key_decrypt(data, self.publicKey, encodedData=True)
+    return decrypted</code></pre>
+</details>
+</dd>
+<dt id="src.onionrusers.onionrusers.OnionrUser.encrypt"><code class="name flex">
+<span>def <span class="ident">encrypt</span></span>(<span>self, data)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def encrypt(self, data):
+    encrypted = onionrcrypto.encryption.pub_key_encrypt(data, self.publicKey, encodedData=True)
+    return encrypted</code></pre>
+</details>
+</dd>
+<dt id="src.onionrusers.onionrusers.OnionrUser.forwardDecrypt"><code class="name flex">
+<span>def <span class="ident">forwardDecrypt</span></span>(<span>self, encrypted)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def forwardDecrypt(self, encrypted):
+    retData = &#34;&#34;
+    for key in self.getGeneratedForwardKeys(False):
+        try:
+            retData = onionrcrypto.encryption.pub_key_decrypt(encrypted, privkey=key[1], encodedData=True)
+        except nacl.exceptions.CryptoError:
+            retData = False
+        else:
+            break
+    else:
+        raise onionrexceptions.DecryptionError(&#34;Could not decrypt forward secrecy content&#34;)
+    return retData</code></pre>
+</details>
+</dd>
+<dt id="src.onionrusers.onionrusers.OnionrUser.forwardEncrypt"><code class="name flex">
+<span>def <span class="ident">forwardEncrypt</span></span>(<span>self, data)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def forwardEncrypt(self, data):
+    deleteTheirExpiredKeys(self.publicKey)
+    deleteExpiredKeys()
+    retData = &#39;&#39;
+    forwardKey = self._getLatestForwardKey()
+    if stringvalidators.validate_pub_key(forwardKey[0]):
+        retData = onionrcrypto.encryption.pub_key_encrypt(data, forwardKey[0], encodedData=True)
+    else:
+        raise onionrexceptions.InvalidPubkey(&#34;No valid forward secrecy key available for this user&#34;)
+    #self.generateForwardKey()
+    return (retData, forwardKey[0], forwardKey[1])</code></pre>
+</details>
+</dd>
+<dt id="src.onionrusers.onionrusers.OnionrUser.generateForwardKey"><code class="name flex">
+<span>def <span class="ident">generateForwardKey</span></span>(<span>self, expire=604800)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def generateForwardKey(self, expire=DEFAULT_KEY_EXPIRE):
+
+    # Generate a forward secrecy key for the peer
+    conn = sqlite3.connect(dbfiles.forward_keys_db, timeout=10)
+    c = conn.cursor()
+    # Prepare the insert
+    time = epoch.get_epoch()
+    newKeys = onionrcrypto.generate()
+    newPub = bytesconverter.bytes_to_str(newKeys[0])
+    newPriv = bytesconverter.bytes_to_str(newKeys[1])
+
+    command = (self.publicKey, newPub, newPriv, time, expire + time)
+
+    c.execute(&#34;INSERT INTO myForwardKeys VALUES(?, ?, ?, ?, ?);&#34;, command)
+
+    conn.commit()
+    conn.close()
+    return newPub</code></pre>
+</details>
+</dd>
+<dt id="src.onionrusers.onionrusers.OnionrUser.getGeneratedForwardKeys"><code class="name flex">
+<span>def <span class="ident">getGeneratedForwardKeys</span></span>(<span>self, genNew=True)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def getGeneratedForwardKeys(self, genNew=True):
+    # Fetch the keys we generated for the peer, that are still around
+    conn = sqlite3.connect(dbfiles.forward_keys_db, timeout=10)
+    c = conn.cursor()
+    pubkey = self.publicKey
+    pubkey = bytesconverter.bytes_to_str(pubkey)
+    command = (pubkey,)
+    keyList = [] # list of tuples containing pub, private for peer
+
+    for result in c.execute(&#34;SELECT * FROM myForwardKeys WHERE peer = ?&#34;, command):
+        keyList.append((result[1], result[2]))
+
+    if len(keyList) == 0:
+        if genNew:
+            self.generateForwardKey()
+            keyList = self.getGeneratedForwardKeys()
+    return list(keyList)</code></pre>
+</details>
+</dd>
+<dt id="src.onionrusers.onionrusers.OnionrUser.getName"><code class="name flex">
+<span>def <span class="ident">getName</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def getName(self):
+    retData = &#39;anonymous&#39;
+    name = keydb.userinfo.get_user_info(self.publicKey, &#39;name&#39;)
+    try:
+        if len(name) &gt; 0:
+            retData = name
+    except ValueError:
+        pass
+    return retData</code></pre>
+</details>
+</dd>
+<dt id="src.onionrusers.onionrusers.OnionrUser.isFriend"><code class="name flex">
+<span>def <span class="ident">isFriend</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<section class="desc"></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def isFriend(self):
+    if keydb.userinfo.set_peer_info(self.publicKey, &#39;trust&#39;) == 1:
+        return True
+    return False</code></pre>
+</details>
+</dd>
+<dt id="src.onionrusers.onionrusers.OnionrUser.setTrust"><code class="name flex">
+<span>def <span class="ident">setTrust</span></span>(<span>self, newTrust)</span>
+</code></dt>
+<dd>
+<section class="desc"><p>Set the peers trust. 0 = not trusted, 1 = friend, 2 = ultimate</p></section>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def setTrust(self, newTrust):
+    &#39;&#39;&#39;Set the peers trust. 0 = not trusted, 1 = friend, 2 = ultimate&#39;&#39;&#39;
+    keydb.userinfo.set_user_info(self.publicKey, &#39;trust&#39;, newTrust)</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="src.onionrusers" href="index.html">src.onionrusers</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="src.onionrusers.onionrusers.deleteExpiredKeys" href="#src.onionrusers.onionrusers.deleteExpiredKeys">deleteExpiredKeys</a></code></li>
+<li><code><a title="src.onionrusers.onionrusers.deleteTheirExpiredKeys" href="#src.onionrusers.onionrusers.deleteTheirExpiredKeys">deleteTheirExpiredKeys</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="src.onionrusers.onionrusers.OnionrUser" href="#src.onionrusers.onionrusers.OnionrUser">OnionrUser</a></code></h4>
+<ul class="">
+<li><code><a title="src.onionrusers.onionrusers.OnionrUser.addForwardKey" href="#src.onionrusers.onionrusers.OnionrUser.addForwardKey">addForwardKey</a></code></li>
+<li><code><a title="src.onionrusers.onionrusers.OnionrUser.decrypt" href="#src.onionrusers.onionrusers.OnionrUser.decrypt">decrypt</a></code></li>
+<li><code><a title="src.onionrusers.onionrusers.OnionrUser.encrypt" href="#src.onionrusers.onionrusers.OnionrUser.encrypt">encrypt</a></code></li>
+<li><code><a title="src.onionrusers.onionrusers.OnionrUser.forwardDecrypt" href="#src.onionrusers.onionrusers.OnionrUser.forwardDecrypt">forwardDecrypt</a></code></li>
+<li><code><a title="src.onionrusers.onionrusers.OnionrUser.forwardEncrypt" href="#src.onionrusers.onionrusers.OnionrUser.forwardEncrypt">forwardEncrypt</a></code></li>
+<li><code><a title="src.onionrusers.onionrusers.OnionrUser.generateForwardKey" href="#src.onionrusers.onionrusers.OnionrUser.generateForwardKey">generateForwardKey</a></code></li>
+<li><code><a title="src.onionrusers.onionrusers.OnionrUser.getGeneratedForwardKeys" href="#src.onionrusers.onionrusers.OnionrUser.getGeneratedForwardKeys">getGeneratedForwardKeys</a></code></li>
+<li><code><a title="src.onionrusers.onionrusers.OnionrUser.getName" href="#src.onionrusers.onionrusers.OnionrUser.getName">getName</a></code></li>
+<li><code><a title="src.onionrusers.onionrusers.OnionrUser.isFriend" href="#src.onionrusers.onionrusers.OnionrUser.isFriend">isFriend</a></code></li>
+<li><code><a title="src.onionrusers.onionrusers.OnionrUser.list_friends" href="#src.onionrusers.onionrusers.OnionrUser.list_friends">list_friends</a></code></li>
+<li><code><a title="src.onionrusers.onionrusers.OnionrUser.setTrust" href="#src.onionrusers.onionrusers.OnionrUser.setTrust">setTrust</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.7.4</a>.</p>
+</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad()</script>
+</body>
+</html>
