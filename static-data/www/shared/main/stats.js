@@ -62,6 +62,12 @@ switch (httpGet('/config/get/general.security_level')){
     case "1":
         sec_description_str = 'high'
         break;
+    case "2":
+        sec_description_str = 'very high'
+        break;
+    case "3":
+        sec_description_str = 'extreme'
+        break;
 }
 
 if (sec_description_str !== 'normal'){
