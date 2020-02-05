@@ -18,6 +18,7 @@ from .. import runtimetestcmd  # cmd to execute the runtime integration tests
 from .. import motdcreator  # cmd to generate new Onionr MOTDs
 from .. import sitecreator  # cmd to create multi-page sites
 from .. import togglebootstrap   # cmd to toggle bootstrap file usage
+from ..listsites import print_site_list  # cmd to list list ids
 
 import onionrexceptions
 from onionrutils import importnewblocks  # func to import new blocks
@@ -59,6 +60,7 @@ def get_arguments() -> dict:
         ('addhtml', 'add-html'): filecommands.add_html,
         ('addsite', 'add-site',
          'update-site', 'updatesite'): sitecreator.create_multipage_site,
+         ('listsites', 'list-sites'): print_site_list,
         ('addfile', 'add-file'): filecommands.add_file,
         ('get-file', 'getfile'): filecommands.get_file,
         ('export-block', 'exportblock'): exportblocks.export_block,

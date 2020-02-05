@@ -16,5 +16,9 @@ class OnionrTests(unittest.TestCase):
         testargs = ["onionr.py", "version"]
         with patch.object(sys, 'argv', testargs):
             parser.register()
+    def test_site_list(self):
+        testargs = ["onionr.py", "list-sites"]
+        with patch.object(sys, 'argv', testargs):
+            parser.register()
 
 unittest.main()

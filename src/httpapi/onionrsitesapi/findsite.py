@@ -39,7 +39,7 @@ def find_site(user_id: str) -> Union[BlockHash, None]:
         raise onionrexceptions.InvalidPubkey
 
     found_site = None
-    sites = blockmetadb.get_blocks_by_type('zsite')
+    sites = blockmetadb.get_blocks_by_type('osite')
 
     # Find site by searching all site blocks. eww O(N) ☹️, TODO: event based
     for site in sites:
