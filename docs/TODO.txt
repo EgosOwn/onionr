@@ -4,7 +4,6 @@
 * document anonymity & security theory
 * document usage
 
-* encrypt local data and keys
 * ensure accessibility for Onionr web UI
 * make forward secrecy compatible with multiple devices
 * add way to mark key as dead
@@ -12,6 +11,10 @@
 * add edits to circles posts
 * make node "speed" setting such as when ui is open to reduce bandwidth usage
 * localization support
+
+* add mark read in mail
 * add BCC support to mail
+
+
 * prevent local insertion success of duplicate block content
 * truncate last N blocks when sharing list
