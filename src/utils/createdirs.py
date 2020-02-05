@@ -1,9 +1,13 @@
-'''
-    Onionr - Private P2P Communication
+"""Onionr - Private P2P Communication.
 
-    Create required Onionr directories
-'''
-'''
+Create required Onionr directories
+"""
+import os
+import stat
+
+from . import identifyhome
+import filepaths
+"""
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -16,12 +20,7 @@
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
-'''
-import os
-import stat
-
-from . import identifyhome
-import filepaths
+"""
 home = identifyhome.identify_home()
 
 
