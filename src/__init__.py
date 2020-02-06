@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
-"""
-    Onionr - Private P2P Communication
+"""Onionr - Private P2P Communication.
 
-    This file initializes Onionr when ran to be a daemon or with commands
+This file initializes Onionr when ran to be a daemon or with commands
 
-    Run with 'help' for usage.
+Run with 'help' for usage.
 """
 """
     This program is free software: you can redistribute it and/or modify
@@ -22,17 +21,17 @@
 """
 
 # Set the user's locale for encoding reasons
-import locale # noqa
-locale.setlocale(locale.LC_ALL, '')
+import locale  # noqa
+locale.setlocale(locale.LC_ALL, '')  # noqa
 
 ran_as_script = False
 if __name__ == "__main__": ran_as_script = True
 
 # Import standard libraries
-import sys # noqa
+import sys  # noqa
 
 try:
-    from etc import dependencycheck # noqa
+    from etc import dependencycheck  # noqa
 except ModuleNotFoundError as e:
     print('Onionr needs ' + str(e) + ' installed')
 
@@ -43,31 +42,32 @@ from filenuke import nuke  # noqa
 # Onionr imports
 
 # For different Onionr related constants such as versions
-from etc import onionrvalues # noqa
+from etc import onionrvalues  # noqa
 
-import onionrexceptions # noqa
-import onionrsetup as setup # noqa
+import onionrexceptions  # noqa
+import onionrsetup as setup  # noqa
 
 min_ver = onionrvalues.MIN_PY_VERSION
 
 # Ensure we have at least the minimum python version
 if sys.version_info[0] == 2 or sys.version_info[1] < min_ver:
-    sys.stderr.write('Error, Onionr requires Python 3.' + str(min_ver) + '\n')
+    sys.stderr.write(
+        'Error, Onionr requires Python 3.' + str(min_ver) + '\n')
     sys.exit(1)
 
 # Create Onionr data directories, must be done before most imports
 from utils import createdirs
 createdirs.create_dirs()
 
-import bigbrother # noqa
-from onionrcommands import parser # noqa
-from onionrplugins import onionrevents as events # noqa
+import bigbrother  # noqa
+from onionrcommands import parser  # noqa
+from onionrplugins import onionrevents as events  # noqa
 from onionrblocks.deleteplaintext import delete_plaintext_no_blacklist  # noqa
 
 setup.setup_config()
 
-import config # noqa
-from utils import identifyhome
+import config  # noqa
+from utils import identifyhome  # noqa
 
 if config.get('advanced.security_auditing', True):
     try:
@@ -91,7 +91,7 @@ if ran_as_script:
 
     config.reload()
 
-    #  If the setting is there, shred log file on exit
+    # If the setting is there, shred log file on exit
     if config.get('log.file.remove_on_exit', True):
         nuke.clean(config.get_config_file())
 
