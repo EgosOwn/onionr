@@ -36,6 +36,10 @@ try:
 except ModuleNotFoundError as e:
     print('Onionr needs ' + str(e) + ' installed')
 
+# Import 3rd party libraries
+
+from filenuke import nuke  # noqa
+
 # Onionr imports
 
 # For different Onionr related constants such as versions
@@ -85,8 +89,11 @@ def onionr_main():
 if ran_as_script:
     onionr_main()
 
-    # Wipe Onionr data directory if security level calls for it
     config.reload()
+
+    #  If the setting is there, shred log file on exit
+    if config.get('log.file.remove_on_exit', True):
+        nuke.clean(config.get_config_file())
 
     # Cleanup standard out/err because Python refuses to do it itsself
     try:

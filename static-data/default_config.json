@@ -32,7 +32,8 @@
             "output": true
         },
         "file": {
-            "output": true
+            "output": true,
+            "remove_on_exit": true
         },
         "verbosity": "default"
     },

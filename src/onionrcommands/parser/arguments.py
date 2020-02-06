@@ -60,7 +60,7 @@ def get_arguments() -> dict:
         ('addhtml', 'add-html'): filecommands.add_html,
         ('addsite', 'add-site',
          'update-site', 'updatesite'): sitecreator.create_multipage_site,
-         ('listsites', 'list-sites'): print_site_list,
+        ('listsites', 'list-sites'): print_site_list,
         ('addfile', 'add-file'): filecommands.add_file,
         ('get-file', 'getfile'): filecommands.get_file,
         ('export-block', 'exportblock'): exportblocks.export_block,
