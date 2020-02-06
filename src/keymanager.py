@@ -1,9 +1,11 @@
-'''
-    Onionr - Private P2P Communication
+"""Onionr - Private P2P Communication.
 
-    Load, save, and delete the user's public key pairs (does not handle peer keys)
-'''
-'''
+Load, save, and delete the user's public key pairs (does not handle peer keys)
+"""
+from onionrutils import bytesconverter
+from onionrcrypto import generate
+import filepaths
+"""
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -16,18 +18,18 @@
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
-'''
-from onionrutils import bytesconverter
-from onionrcrypto import generate
-import os
-import filepaths
+"""
+
 
 class KeyManager:
     def __init__(self):
         self.keyFile = filepaths.keys_file
 
     def addKey(self, pubKey=None, privKey=None):
-        '''Add a new key pair, either specified or none to generate a new pair automatically'''
+        """Add a new key pair.
+
+        either specified or None to generate a new pair automatically
+        """
         if type(pubKey) is type(None) and type(privKey) is type(None):
             pubKey, privKey = generate.generate_pub_key()
         pubKey = bytesconverter.bytes_to_str(pubKey)
@@ -43,7 +45,7 @@ class KeyManager:
         return (pubKey, privKey)
 
     def removeKey(self, pubKey):
-        '''Remove a key pair by pubkey'''
+        """Remove a key pair by pubkey"""
         keyList = self.getPubkeyList()
         keyData = ''
         try:
@@ -56,7 +58,7 @@ class KeyManager:
                 keyFile.write(keyData)
 
     def getPubkeyList(self):
-        '''Return a list of the user's keys'''
+        """Return a list of the user's keys"""
         keyList = []
         try:
             with open(self.keyFile, "r") as keyFile:
@@ -65,9 +67,10 @@ class KeyManager:
             keyData = ''
         keyData = keyData.split('\n')
         for pair in keyData:
-            if len(pair) > 0: keyList.append(pair.split(',')[0])
+            if len(pair) > 0:
+                keyList.append(pair.split(',')[0])
         return keyList
-    
+
     def getPrivkey(self, pubKey):
         privKey = None
         with open(self.keyFile, "r") as keyFile:
