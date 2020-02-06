@@ -4,6 +4,7 @@ Misc client API endpoints too small to need their own file and that need access 
 """
 import os
 import subprocess
+import platform
 
 from flask import Response, Blueprint, request, send_from_directory, abort
 from gevent import spawn
@@ -130,4 +131,8 @@ class PrivateEndpoints:
         @private_endpoints_bp.route('/setonboarding', methods=['POST'])
         def set_onboarding():
             return Response(config.onboarding.set_config_from_onboarding(request.get_json()))
+        
+        @private_endpoints_bp.route('/os')
+        def get_os_system():
+            return Response(platform.system().lower())
 

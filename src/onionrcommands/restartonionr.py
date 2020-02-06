@@ -36,6 +36,10 @@ SCRIPT_NAME = os.path.dirname(os.path.realpath(
 
 def restart():
     """Tell the Onionr daemon to restart."""
+    if platform.system() == 'Windows':
+        logger.warn('Cannot restart Onionr on Windows. Run stop and manually restart.', terminal=True)
+        return
+
     logger.info('Restarting Onionr', terminal=True)
 
     # On platforms where we can, fork out to prevent locking
@@ -44,8 +48,7 @@ def restart():
         if pid != 0:
             return
     except (AttributeError, OSError):
-        if platform.platform() != 'Windows':
-            logger.warn('Could not fork on restart')
+        logger.warn('Could not fork on restart')
 
     daemonlaunch.kill_daemon()
     while localcommand.local_command('ping', maxWait=8) == 'pong!':
