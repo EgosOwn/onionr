@@ -21,6 +21,7 @@ from . import gentorrc
 from . import addbridges
 from . import torbinary
 from utils import identifyhome
+from utils import box_print
 """
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -41,9 +42,7 @@ addbridges = addbridges.add_bridges
 
 
 class NetController:
-    """
-        This class handles hidden service setup on Tor
-    """
+    """Handle Tor daemon and onion service setup on Tor."""
 
     def __init__(self, hsPort, apiServerIP='127.0.0.1'):
         # set data dir
@@ -90,6 +89,12 @@ class NetController:
         # wait for tor to get to 100% bootstrap
         try:
             for line in iter(tor.stdout.readline, b''):
+                for word in ('bootstrapped', '%'):
+                    if word not in line.decode().lower():
+                        break
+                else:
+                    if '100' not in line.decode():
+                        logger.info(line.decode().strip(), terminal=True)
                 if 'bootstrapped 100' in line.decode().lower():
                     logger.info(line.decode())
                     break
@@ -110,6 +115,7 @@ class NetController:
             return False
 
         logger.info('Finished starting Tor.', terminal=True)
+        logger.info('Connecting to Onionr soon', terminal=True)
 
         self.readyState = True
 
