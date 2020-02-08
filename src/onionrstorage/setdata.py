@@ -1,13 +1,31 @@
-import sys, sqlite3
+"""Onionr - Private P2P Communication.
+
+Test Onionr as it is running
+"""
+import sys
+import sqlite3
+
 import onionrstorage, onionrexceptions, onionrcrypto as crypto
 import filepaths
 from onionrblocks import storagecounter
 from coredb import dbfiles
 from onionrutils import blockmetadata, bytesconverter
+"""
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+"""
 def set_data(data)->str:
-    '''
-        Set the data assciated with a hash
-    '''
+    """Set the data assciated with a hash."""
     storage_counter = storagecounter.StorageCounter()
     data = data
     dataSize = sys.getsizeof(data)

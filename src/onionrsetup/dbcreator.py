@@ -1,9 +1,8 @@
-'''
-    Onionr - Private P2P Communication
+"""Onionr - Private P2P Communication.
 
-    DBCreator, creates sqlite3 databases used by Onionr
-'''
-'''
+DBCreator, creates sqlite3 databases used by Onionr
+"""
+"""
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -16,7 +15,7 @@
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
-'''
+"""
 import sqlite3, os
 from coredb import dbfiles
 import filepaths

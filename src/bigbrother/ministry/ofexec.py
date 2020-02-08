@@ -72,7 +72,7 @@ def block_exec(event, info):
         if info[0].co_filename.endswith(source):
             return
 
-    if home + 'plugins/' in info[0].co_filename:
+    if 'plugins/' in info[0].co_filename:
         return
 
     logger.warn('POSSIBLE EXPLOIT DETECTED, SEE LOGS', terminal=True)

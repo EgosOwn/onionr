@@ -68,6 +68,7 @@ setup.setup_config()
 
 import config  # noqa
 from utils import identifyhome  # noqa
+import filepaths  # noqa
 
 if config.get('advanced.security_auditing', True):
     try:
@@ -93,7 +94,10 @@ if ran_as_script:
 
     # If the setting is there, shred log file on exit
     if config.get('log.file.remove_on_exit', True):
-        nuke.clean(config.get_config_file())
+        try:
+            nuke.clean(filepaths.log_file)
+        except FileNotFoundError:
+            pass
 
     # Cleanup standard out/err because Python refuses to do it itsself
     try:

@@ -23,10 +23,10 @@ import filepaths
 DENIABLE_PEER_ADDRESS = "OVPCZLOXD6DC5JHX4EQ3PSOGAZ3T24F75HQLIUZSDSMYPEOXCPFA"
 PASSWORD_LENGTH = 25
 ONIONR_TAGLINE = 'Private P2P Communication - GPLv3 - https://Onionr.net'
-ONIONR_VERSION = '2.0.0'
+ONIONR_VERSION = '3.0.0'
 ONIONR_VERSION_CODENAME = 'Genesis'
 ONIONR_VERSION_TUPLE = tuple(ONIONR_VERSION.split('.')) # (MAJOR, MINOR, VERSION)
-API_VERSION = '0' # increments of 1; only change when something fundamental about how the API works changes. This way other nodes know how to communicate without learning too much information about you.
+API_VERSION = '1' # increments of 1; only change when something fundamental about how the API works changes. This way other nodes know how to communicate without learning too much information about you.
 MIN_PY_VERSION = 7 # min version of 7 so we can take advantage of non-cyclic type hints
 DEVELOPMENT_MODE = False
 """limit type length for a block (soft enforced, ignored if invalid but block still stored)."""
@@ -47,6 +47,8 @@ MIN_SHARE_WAIT_DELAY_SECS = 5
 WSGI_SERVER_REQUEST_TIMEOUT_SECS = 120
 
 MAX_NEW_PEER_QUEUE = 1000
+
+BLOCK_EXPORT_FILE_EXT = '.dat'
 
 # Begin OnionrValues migrated values
 

@@ -9,6 +9,9 @@ import onionrstorage
 from utils import createdirs
 from onionrutils import stringvalidators
 import filepaths
+
+import os
+from coredb import blockmetadb
 """
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by

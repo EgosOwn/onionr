@@ -39,8 +39,9 @@ flask_blueprint = flowapi.flask_blueprint
 security_whitelist = ['staticfiles.boardContent', 'staticfiles.board']
 
 plugin_name = 'flow'
-PLUGIN_VERSION = '0.0.1'
+PLUGIN_VERSION = '0.1.0'
 
+EXPIRE_TIME = 43200
 
 class OnionrFlow:
     def __init__(self):
@@ -75,7 +76,7 @@ class OnionrFlow:
             else:
                 if message == "q":
                     self.flowRunning = False
-                expireTime = epoch.get_epoch() + 43200
+                expireTime = epoch.get_epoch() + EXPIRE_TIME
                 if len(message) > 0:
                     logger.info('Inserting message as block...', terminal=True)
                     onionrblocks.insert(message, header='brd',
@@ -116,6 +117,24 @@ class OnionrFlow:
 
 def on_flow_cmd(api, data=None):
     OnionrFlow().start()
+
+
+def on_flowsend_cmd(api, data=None):
+    err_msg = "Second arg is board name, third is quoted message"
+    try:
+        sys.argv[2]
+    except IndexError:
+        logger.error(err_msg, terminal=True)
+    try:
+        sys.argv[3]
+    except IndexError:
+        logger.error(err_msg, terminal=True)
+
+    bl = onionrblocks.insert(sys.argv[3], header='brd',
+            expire=(EXPIRE_TIME + epoch.get_epoch()),
+            meta={'ch': sys.argv[2]})
+    print(bl)
+
 
 
 def on_softreset(api, data=None):

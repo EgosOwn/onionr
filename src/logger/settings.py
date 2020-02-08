@@ -19,6 +19,7 @@
 '''
 import os
 from utils import identifyhome
+import filepaths
 
 data_home = os.environ.get('ONIONR_LOG_DIR', identifyhome.identify_home())
 # Use the bitwise operators to merge these settings
@@ -39,7 +40,8 @@ MAX_LOG_FILE_LINES = 10000
 
 _type = OUTPUT_TO_CONSOLE | USE_ANSI # the default settings for logging
 _level = LEVEL_DEBUG # the lowest level to log
-_outputfile = '%s/onionr.log' % (data_home,) # the file to log to
+# the file to log to
+_outputfile = filepaths.log_file
 
 def set_settings(type):
     '''

@@ -46,7 +46,9 @@
         "minimum_score": -100
     },
     "plugins": {
-        "disabled": [],
+        "disabled": [
+            "chat"
+        ],
         "enabled": []
     },
     "timers": {

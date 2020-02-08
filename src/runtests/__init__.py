@@ -11,6 +11,7 @@ from . import uicheck, inserttest, stresstest
 from . import ownnode
 from .webpasstest import webpass_test
 from .osver import test_os_ver_endpoint
+from .clearnettor import test_clearnet_tor_request
 """
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -32,7 +33,8 @@ RUN_TESTS = [uicheck.check_ui,
              ownnode.test_own_node,
              stresstest.stress_test_block_insert,
              webpass_test,
-             test_os_ver_endpoint
+             test_os_ver_endpoint,
+             test_clearnet_tor_request
              ]
 
 SUCCESS_FILE = os.path.dirname(os.path.realpath(__file__)) + '/../../tests/runtime-result.txt'

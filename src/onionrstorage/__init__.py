@@ -77,7 +77,7 @@ def store(data, blockHash=''):
             raise ValueError('Hash specified does not meet internal hash check')
     else:
         blockHash = ourHash
-    
+
     if DB_ENTRY_SIZE_LIMIT >= sys.getsizeof(data):
         _dbInsert(blockHash, data)
     else:
@@ -86,21 +86,23 @@ def store(data, blockHash=''):
 
 
 def getData(bHash):
+
     if not stringvalidators.validate_hash(bHash): raise ValueError
 
     bHash = bytesconverter.bytes_to_str(bHash)
-
+    bHash = bHash.strip()
     # First check DB for data entry by hash
     # if no entry, check disk
     # If no entry in either, raise an exception
     retData = None
     fileLocation = '%s/%s.dat' % (filepaths.block_data_location, bHash)
-    not_found_msg = "Flock data not found for: "
+    not_found_msg = "Block data not found for: "
     if os.path.exists(fileLocation):
         with open(fileLocation, 'rb') as block:
             retData = block.read()
     else:
         retData = _dbFetch(bHash)
+
         if retData is None:
             raise onionrexceptions.NoDataAvailable(not_found_msg + str(bHash))
     return retData

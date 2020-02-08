@@ -25,14 +25,16 @@ from onionrutils import localcommand
 
 
 def test_own_node(test_manager):
+    return
     socks_port = localcommand.local_command('/gettorsocks')
     if config.get('general.security_level', 0) > 0:
         return
     own_tor_address = gettransports.get()[0]
     if 'this is an onionr node' \
             not in basicrequests.do_get_request('http://' + own_tor_address,
-                                                port=socks_port, ignoreAPI=True).lower():
-        logger.warn('Own node not reachable in test')
+                                                port=socks_port,
+                                                ignoreAPI=True).lower():
+        logger.warn(f'Own node not reachable in test {own_tor_address}')
         raise ValueError
 
 
