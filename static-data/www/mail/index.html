@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="/shared/fontawesome-free-5.10.2/css/all.min.css">
     <link rel='stylesheet' href="/shared/main/PNotifyBrightTheme.css">
     <link rel="stylesheet" href="/gettheme">
+    <link rel="stylesheet" href="/shared/node_modules/bulma-switch/dist/css/bulma-switch.min.css">
     <link rel="stylesheet" href="/mail/mail.css">
     <script defer src='/shared/node_modules/pnotify/dist/iife/PNotify.js'></script>
     <script defer src='/shared/node_modules/pnotify/dist/iife/PNotifyButtons.js'></script>
@@ -128,23 +129,59 @@
             </form>
         </div>
     </div>
+
+    <div class="modal" id="settingsModal">
+        <div class="modal-background"></div>
+        <div class="modal-card">
+          <header class="modal-card-head">
+            <button class="closeSettingsModal delete" aria-label="close"></button>
+          </header>
+          <section class="modal-card-body">
+            <h1 class="title is-3 is-centered">Settings</h1>
+
+            <div class="field">
+                <input id="forwardSecrecySetting" type="checkbox"
+                class="switch is-rounded is-warning" checked>
+                <label for="forwardSecrecySetting">Default Forward Secrecy</label>
+              </div>
+          </section>
+        </div>
+      </div>
+
     <!--Start of content-->
     <div class="container">
         <div class="tabs" id="tabBtns">
             <ul>
                 <li class="is-active">
                     <a>
+                        <span class="icon">
+                            <i class="fa fa-envelope"></i>
+                        </span>
                         <span id="inboxTab">Inbox</span>
                     </a>
                 </li>
                 <li>
                     <a>
+                        <span class="icon">
+                            <i class="fa fa-paper-plane"></i>
+                        </span>
                         <span>Sent</span>
                     </a>
                 </li>
                 <li>
                     <a>
+                        <span class="icon">
+                            <i class="fa fa-pen"></i>
+                        </span>
                         <span>Compose</span>
+                    </a>
+                </li>
+                <li>
+                    <a>
+                        <span class="icon">
+                            <i class="fa fa-cog"></i>
+                        </span>
+                        <span>Settings</span>
                     </a>
                 </li>
             </ul>

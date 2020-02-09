@@ -38,3 +38,8 @@
 .messageContent{
     padding-top: 1em;
 }
+
+
+#tabBtns ul .icon {
+    pointer-events: none;
+}

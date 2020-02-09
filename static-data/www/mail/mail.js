@@ -138,6 +138,9 @@ function setActiveTab(tabName){
             overlay('sendMessage')
             document.getElementById('inboxTab').click()
             break
+        case 'settings':
+            document.getElementById('settingsModal').classList.add('is-active')
+            break
     }
 }
 
