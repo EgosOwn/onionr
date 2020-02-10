@@ -215,7 +215,8 @@ def start(override: bool = False):
         logger.fatal('Cannot start. Daemon is already running,'
                      + ' or it did not exit cleanly.\n'
                      + ' (if you are sure that there is not a daemon running,'
-                     + ' delete onionr.lock & try again).', terminal=True)
+                     + f' delete {filepaths.lock_file} & try again).',
+                     terminal=True)
     else:
         if not onionrvalues.DEVELOPMENT_MODE:
             lock_file = open(filepaths.lock_file, 'w')

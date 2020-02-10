@@ -43,3 +43,9 @@
 #tabBtns ul .icon {
     pointer-events: none;
 }
+
+
+#settingsModal .modal-card-body{
+    font-size: 150%;
+    min-height: 300px;
+}

@@ -29,7 +29,6 @@
 
 **The [GitHub repository](https://github.com/beardog108/onionr/) is a mirror, do not submit PRs or issues there.**
 
-# About
 
 Onionr ("Onion Relay") is a decentralized/distributed peer-to-peer communication network, designed to be anonymous and resistant to (meta)data analysis, spam, and corruption.
 

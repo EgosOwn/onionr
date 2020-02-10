@@ -2,25 +2,26 @@
 <html>
 
 <head>
-    <meta charset='utf-8'>
+    <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>
         Onionr Mail
     </title>
-    <link rel='shortcut icon' type='image/ico' href='/shared/images/favicon.ico'>
+    <link rel="shortcut icon" type="image/ico" href="/shared/images/favicon.ico">
     <link rel="stylesheet" href="/shared/fontawesome-free-5.10.2/css/all.min.css">
-    <link rel='stylesheet' href="/shared/main/PNotifyBrightTheme.css">
+    <link rel="stylesheet" href="/shared/main/PNotifyBrightTheme.css">
     <link rel="stylesheet" href="/gettheme">
     <link rel="stylesheet" href="/shared/node_modules/bulma-switch/dist/css/bulma-switch.min.css">
     <link rel="stylesheet" href="/mail/mail.css">
-    <script defer src='/shared/node_modules/pnotify/dist/iife/PNotify.js'></script>
-    <script defer src='/shared/node_modules/pnotify/dist/iife/PNotifyButtons.js'></script>
+    <script defer src="/shared/node_modules/pnotify/dist/iife/PNotify.js"></script>
+    <script defer src="/shared/node_modules/pnotify/dist/iife/PNotifyButtons.js"></script>
     <script defer src="/shared/main/apicheck.js"></script>
-    <script defer src='/shared/misc.js'></script>
-    <script defer src='/mail/sethumanreadable.js'></script>
-    <script defer src='/mail/mail.js'></script>
-    <script defer src='/mail/sendmail.js'></script>
-    <script defer src='/shared/navbar.js'></script>
+    <script defer src="/shared/misc.js"></script>
+    <script defer src="/mail/sethumanreadable.js"></script>
+    <script defer src="/mail/closesettings.js"></script>
+    <script defer src="/mail/mail.js"></script>
+    <script defer src="/mail/sendmail.js"></script>
+    <script defer src="/shared/navbar.js"></script>
 </head>
 
 <body>
@@ -130,19 +131,24 @@
         </div>
     </div>
 
-    <div class="modal" id="settingsModal">
+    <div id="settingsModal" class="modal">
         <div class="modal-background"></div>
         <div class="modal-card">
           <header class="modal-card-head">
             <button class="closeSettingsModal delete" aria-label="close"></button>
           </header>
           <section class="modal-card-body">
-            <h1 class="title is-3 is-centered">Settings</h1>
-
-            <div class="field">
-                <input id="forwardSecrecySetting" type="checkbox"
-                class="switch is-rounded is-warning" checked>
-                <label for="forwardSecrecySetting">Default Forward Secrecy</label>
+              <div class="columns">
+                  <div class="column">
+                      Default Forward Secrecy
+                  </div>
+                  <div class="column is-2">
+                    <div class="field">
+                        <input id="forwardSecrecySetting" type="checkbox"
+                        class="switch is-rounded is-warning" checked>
+                        <label for="forwardSecrecySetting"></label>
+                    </div>
+                  </div>
               </div>
           </section>
         </div>
