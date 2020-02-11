@@ -85,48 +85,48 @@
     </section>
 
     <br>
-    <div id='messageDisplay' class='overlay'>
-        <div class='overlayContent'>
-            <span class='closeOverlay' overlay='messageDisplay'></span>
+    <div id="messageDisplay" class="overlay">
+        <div class="overlayContent">
+            <span class="closeOverlay" overlay="messageDisplay"></span>
             <div>
-                From: <input type='text' id='fromUser' readonly> Signature: <span id='sigValid'></span> <span
-                    id='addUnknownContact'><button class='button is-primary'>Add to Contacts</button></span>
+                From: <input type="text" id="fromUser" readonly> Signature: <span id="sigValid"></span> <span
+                    id="addUnknownContact"><button class="button is-primary">Add to Contacts</button></span>
             </div>
-            <div class='break-up'>
-                Subject: <span id='subjectView'></span>
+            <div class="break-up">
+                Subject: <span id="subjectView"></span>
             </div>
             <div>
-                <button id='replyBtn' class='button is-primary break-up'>Reply</button>
+                <button id="replyBtn" class="button is-primary break-up">Reply</button>
             </div>
-            <div id='signatureValidity'></div>
-            <div id='threadDisplay' class='pre messageContent'>
+            <div id="signatureValidity"></div>
+            <div id="threadDisplay" class="pre messageContent">
             </div>
         </div>
     </div>
-    <div id='sentboxDisplay' class='overlay'>
-        <div class='overlayContent'>
-            <span class='closeOverlay' overlay='sentboxDisplay'></span>
-            To: <input id='toID' readonly type='text'>
-            <div id='sentboxDisplayText' class='pre messageContent'>
+    <div id="sentboxDisplay" class="overlay">
+        <div class="overlayContent">
+            <span class="closeOverlay" overlay="sentboxDisplay"></span>
+            To: <input id="toID" readonly type="text">
+            <div id="sentboxDisplayText" class="pre messageContent">
             </div>
         </div>
     </div>
-    <div id='sendMessage' class='overlay'>
-        <div class='overlayContent'>
+    <div id="sendMessage" class="overlay">
+        <div class="overlayContent">
             <div class="field">
-                <label><i class="fas fa-user"></i> Select friend: <select id='friendSelect'></select></label>
+                <label><i class="fas fa-user"></i> Select friend: <select id="friendSelect"></select></label>
             </div>
-            <form method='post' action='' id='sendForm' enctype="application/x-www-form-urlencoded">
-                <span class='closeOverlay' overlay='sendMessage'></span>
+            <form method="post" action="" id="sendForm" enctype="application/x-www-form-urlencoded">
+                <span class="closeOverlay" overlay="sendMessage"></span>
                 <div class="field">
-                    To: <input id='draftID' type='text' name='to' placeholder='pubkey or select above' required>
+                    To: <input id="draftID" type="text" name="to" placeholder="pubkey or select above" required>
                 </div>
-                Subject: <input name='subject' id='draftSubject' maxlength=25 type='text'
-                    placeholder='message subject'>
+                Subject: <input name="subject" id="draftSubject" maxlength=25 type="text"
+                    placeholder="message subject">
                 <div class="field">
-                    <textarea name='message' class="textarea" placeholder='type your message...' id='draftText' required></textarea>
+                    <textarea name="message" class="textarea" placeholder="type your message..." id="draftText" required></textarea>
                 </div>
-                <input type='submit' value='Send' class='button is-success successBtn'>
+                <input type="submit" value="Send" class="button is-success successBtn">
             </form>
         </div>
     </div>
@@ -149,6 +149,14 @@
                         <label for="forwardSecrecySetting"></label>
                     </div>
                   </div>
+                <div class="column">
+                    Signature
+                </div>
+                <div class="column is-2">
+                  <div class="field">
+                      <textarea id="mailSignatureSetting" class="textarea" placeholder="Signature to add to every message" rows="10"></textarea>
+                  </div>
+                </div>
               </div>
           </section>
         </div>
@@ -192,18 +200,18 @@
                 </li>
             </ul>
         </div>
-        <div class='content' id='noInbox'>No messages to show ¯\_(ツ)_/¯</div>
-        <div class='content'>
-            <div class='mailPing'>
+        <div class="content" id="noInbox">No messages to show ¯\_(ツ)_/¯</div>
+        <div class="content">
+            <div class="mailPing">
                 API server either shutdown, has disabled mail, or has experienced a bug.
             </div>
-            <div id='threads' class='threads'>
-                <div id='threadPlaceholder'>Nothing here yet 😞</div>
+            <div id="threads" class="threads">
+                <div id="threadPlaceholder">Nothing here yet 😞</div>
             </div>
         </div>
     </div>
 
-    <div id="infoOverlay" class='overlay'>
+    <div id="infoOverlay" class="overlay">
     </div>
 </body>
 
