@@ -7,8 +7,8 @@ import subprocess
 import platform
 
 from flask import Response, Blueprint, request, send_from_directory, abort
+from flask import g
 from gevent import spawn
-from gevent import sleep
 import unpaddedbase32
 
 from httpapi import apiutils
@@ -126,13 +126,17 @@ class PrivateEndpoints:
 
         @private_endpoints_bp.route('/gettorsocks')
         def get_tor_socks():
-            return Response(str(client_api._too_many.get(NetController).socksPort))
+            return Response(str(g.too_many.get(NetController).socksPort))
 
         @private_endpoints_bp.route('/setonboarding', methods=['POST'])
         def set_onboarding():
             return Response(config.onboarding.set_config_from_onboarding(request.get_json()))
-        
+
         @private_endpoints_bp.route('/os')
         def get_os_system():
             return Response(platform.system().lower())
 
+        @private_endpoints_bp.route('/torready')
+        def is_tor_ready():
+            """If Tor is starting up, the web UI is not ready to be used."""
+            return Response(str(g.too_many.get(NetController).readyState).lower())

@@ -242,8 +242,12 @@ class OnionrCommunicatorDaemon:
                 'First run detected. Run openhome to get setup.',
                 terminal=True)
 
-            while not config.get('onboarding.done', True):
-                time.sleep(5)
+            while not config.get('onboarding.done', True) and \
+                    not self.shutdown:
+                try:
+                    time.sleep(2)
+                except KeyboardInterrupt:
+                    self.shutdown = True
 
         # Main daemon loop, mainly for calling timers,
         # don't do any complex operations here to avoid locking

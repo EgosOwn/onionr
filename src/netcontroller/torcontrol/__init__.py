@@ -13,7 +13,6 @@ import platform  # For windows sigkill workaround
 
 from onionrtypes import BooleanSuccessState
 import logger
-import filepaths
 from .. import getopenport
 from .. import watchdog
 from . import customtorrc
@@ -114,11 +113,6 @@ class NetController:
             logger.fatal('Got keyboard interrupt. Onionr will exit soon.', timestamp = False, terminal=True)
             return False
 
-        logger.info('Finished starting Tor.', terminal=True)
-        logger.info('Connecting to Onionr soon', terminal=True)
-
-        self.readyState = True
-
         try:
             myID = open(self.dataDir + 'hs/hostname', 'r')
             self.myID = myID.read().replace('\n', '')
@@ -131,6 +125,10 @@ class NetController:
 
         multiprocessing.Process(target=watchdog.watchdog,
                                 args=[os.getpid(), tor.pid]).start()
+
+        logger.info('Finished starting Tor.', terminal=True)
+
+        self.readyState = True
         return True
 
     def killTor(self):

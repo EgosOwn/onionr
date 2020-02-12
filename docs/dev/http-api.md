@@ -4,7 +4,7 @@ All HTTP interfaces in the Onionr reference client use the [Flask](http://flask.
 
 ## Client & Public difference
 
-The client API server is a locked down interface intended for authenticated local communication. 
+The client API server is a locked down interface intended for authenticated local communication.
 
 The public API server is available only remotely from Tor & I2P. It is the interface in which peers use to communicate with one another.
 
@@ -73,6 +73,9 @@ Please note: endpoints that simply provide static web app files are not document
 * /insertblock
     - Methods: POST
     - Accepts JSON data for creating a new block. 'message' contains the block data, 'to' specifies the peer's public key to encrypt the data to, 'sign' is a boolean for signing the message.
+* /torready
+    - Methods: POST
+    - Returns boolean if Tor is started or not
 
 # Public API
 
