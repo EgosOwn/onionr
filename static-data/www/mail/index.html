@@ -18,9 +18,9 @@
     <script defer src="/shared/main/apicheck.js"></script>
     <script defer src="/shared/misc.js"></script>
     <script defer src="/mail/sethumanreadable.js"></script>
-    <script defer src="/mail/closesettings.js"></script>
     <script defer src="/mail/mail.js"></script>
     <script defer src="/mail/sendmail.js"></script>
+    <script defer src="/mail/closesettings.js"></script>
     <script defer src="/shared/navbar.js"></script>
 </head>
 
@@ -121,7 +121,7 @@
                 <div class="field">
                     To: <input id="draftID" type="text" name="to" placeholder="pubkey or select above" required>
                 </div>
-                Subject: <input name="subject" id="draftSubject" maxlength=25 type="text"
+                Subject: <input name="subject" id="draftSubject" maxlength="25" type="text"
                     placeholder="message subject">
                 <div class="field">
                     <textarea name="message" class="textarea" placeholder="type your message..." id="draftText" required></textarea>
@@ -135,12 +135,12 @@
         <div class="modal-background"></div>
         <div class="modal-card">
           <header class="modal-card-head">
-            <button class="closeSettingsModal delete" aria-label="close"></button>
+            <button id="closeSettingsModalButton" class="closeSettingsModal delete" aria-label="close"></button>
           </header>
           <section class="modal-card-body">
               <div class="columns">
                   <div class="column">
-                      Default Forward Secrecy
+                      Default forward secrecy
                   </div>
                   <div class="column is-2">
                     <div class="field">
@@ -149,12 +149,27 @@
                         <label for="forwardSecrecySetting"></label>
                     </div>
                   </div>
+              </div>
+              <div class="columns">
                 <div class="column">
-                    Signature
+                    Keep messages when blocks are deleted
                 </div>
                 <div class="column is-2">
                   <div class="field">
-                      <textarea id="mailSignatureSetting" class="textarea" placeholder="Signature to add to every message" rows="10"></textarea>
+                      <input id="maintainMessagesSetting" type="checkbox"
+                      class="switch is-rounded">
+                      <label for="maintainMessagesSetting"></label>
+                  </div>
+                </div>
+            </div>
+              Signature
+              <textarea id="mailSignatureSetting" class="textarea" placeholder="Signature to add to every message" rows="5"></textarea>
+              <div class="columns">
+                <div class="column">
+                </div>
+                <div class="column is-2">
+                  <div class="field">
+
                   </div>
                 </div>
               </div>

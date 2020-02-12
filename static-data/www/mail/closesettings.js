@@ -17,14 +17,12 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-var setCloseSettingsModal = function(){
-    var closeButtonElements = document.getElementsByClassName('closeSettingsModal')
-
-    for (i = 0; i < closeButtonElements; i++){
-        closeButtonElements[i].onclick = function(){
-            document.getElementById('settingsModal').classList.remove('is-active')
-        }
-    }
+document.getElementById('closeSettingsModalButton').onclick = function(){
+    document.getElementById('settingsModal').classList.remove('is-active')
+    setActiveTab('inbox')
 }
 
-setCloseSettingsModal()
+document.querySelector("#settingsModal .modal-background").onclick = function(){
+    document.getElementById('settingsModal').classList.remove('is-active')
+    setActiveTab('inbox')
+}

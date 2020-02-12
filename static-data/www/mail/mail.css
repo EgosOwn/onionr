@@ -1,11 +1,11 @@
-.threadEntry{
-    margin-bottom: 2%;
-}
 .threadEntry button{
     margin-right: 1%;
 }
 .threadEntry span, .sentboxList span{
     padding-left: 1%;
+}
+.threadEntry, .sentboxList{
+    cursor: pointer;
 }
 
 .overlayContent{
@@ -49,3 +49,9 @@
     font-size: 150%;
     min-height: 300px;
 }
+
+#settingsModal textarea{
+    resize: none;
+    margin-top: 1em;
+}
+
