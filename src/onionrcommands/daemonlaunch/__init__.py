@@ -35,6 +35,8 @@ from .. import version
 from .getapihost import get_api_host_until_available
 from utils.bettersleep import better_sleep
 from netcontroller.torcontrol.onionservicecreator import create_onion_service
+from .quotes import QUOTE
+from utils.boxprint import bordered
 """
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -97,7 +99,12 @@ def daemon():
     logger.raw('', terminal=True)
     # print nice header thing :)
     if config.get('general.display_header', True):
-        logoheader.header()
+        logoheader.header("")
+        if QUOTE[1]:
+            logger.info("\u001b[33m\033[F" + bordered(QUOTE[0] + '\n' + QUOTE[1]), terminal=True)
+        else:
+            logger.info("\u001b[33m\033[F" + bordered(QUOTE[0]), terminal=True)
+
     version.version(verbosity=5, function=logger.info)
     logger.debug('Python version %s' % platform.python_version())
 

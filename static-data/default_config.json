@@ -11,7 +11,7 @@
     "general": {
         "announce_node": true,
         "dev_mode": false,
-        "display_header": false,
+        "display_header": true,
         "hide_created_blocks": true,
         "insert_deniable_blocks": true,
         "max_block_age": 2678400,

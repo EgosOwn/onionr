@@ -14,6 +14,7 @@ conf['tor']['existing_socks_port'] = 0
 conf['general']['dev_mode'] = False
 conf['general']['insert_deniable_blocks'] = True
 conf['general']['random_bind_ip'] = True
+conf['general']['display_header'] = True
 conf['onboarding']['done'] = False
 conf['general']['minimum_block_pow'] = 5
 conf['general']['minimum_send_pow'] = 5
