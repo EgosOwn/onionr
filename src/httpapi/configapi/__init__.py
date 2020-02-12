@@ -20,6 +20,8 @@
 import json
 from flask import Blueprint, request, Response, abort
 import config, onionrutils
+
+from onionrutils.bytesconverter import bytes_to_str
 config.reload()
 
 config_BP = Blueprint('config_BP', __name__)
@@ -55,7 +57,7 @@ def set_by_key(key):
     }
     """
     try:
-        data = json.loads(onionrutils.OnionrUtils.bytesToStr(request.data))['data']
+        data = json.loads(bytes_to_str(request.data))
     except (json.JSONDecodeError, KeyError):
         abort(400)
     config.set(key, data, True)
