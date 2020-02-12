@@ -244,7 +244,10 @@ class OnionrCommunicatorDaemon:
 
             while not config.get('onboarding.done', True) and \
                     not self.shutdown:
-                time.sleep(2)
+                try:
+                    time.sleep(2)
+                except KeyboardInterrupt:
+                    self.shutdown = True
 
         # Main daemon loop, mainly for calling timers,
         # don't do any complex operations here to avoid locking
