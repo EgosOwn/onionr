@@ -1,7 +1,6 @@
-"""
-    Onionr - Private P2P Communication
+"""Onionr - Private P2P Communication.
 
-    module to get static directory and read static data files
+get static directory and read static data files
 """
 """
     This program is free software: you can redistribute it and/or modify
@@ -20,8 +19,11 @@
 
 from typing import Union
 import os
+
+
 def get_static_dir()->str:
     return os.path.dirname(os.path.realpath(__file__)) + '/../../static-data/'
+
 
 def read_static(file:str, ret_bin:bool=False)->Union[str, bytes]:
     static_file = get_static_dir() + file

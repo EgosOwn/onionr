@@ -2,6 +2,8 @@
 
 Desktop notification wrapper
 """
+from subprocess import Popen
+
 try:
     import simplenotifications as simplenotify
 except ImportError:
@@ -9,6 +11,7 @@ except ImportError:
 else:
     notifications_enabled = True
 
+from utils.readstatic import get_static_dir
 import config
 
 """
@@ -29,9 +32,18 @@ import config
 if not config.get('general.show_notifications', True):
     notifications_enabled = False
 
+notification_sound_file = get_static_dir() + "sounds/notification1.mp3"
 
 def notify(title: str = "Onionr", message: str = ""):
     """Cross platform method to show a notification."""
     if not notifications_enabled:
         return
     simplenotify.notify(title, message)
+
+
+def notification_with_sound(sound = '', **kwargs):
+    try:
+        Popen(["mpv", notification_sound_file])
+    except FileNotFoundError:
+        pass
+    notify(**kwargs)

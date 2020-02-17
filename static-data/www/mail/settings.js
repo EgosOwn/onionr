@@ -28,6 +28,7 @@ document.getElementById('forwardSecrecySetting').onchange = function(e){
         }})
     .then((resp) => resp.text())
     .then(function(data) {
+        mailSettings['forwardSecrecy'] = document.getElementById('forwardSecrecySetting').checked
         PNotify.success({
             text: 'Successfully toggled default forward secrecy'
         })

@@ -132,7 +132,7 @@ def insert_block(data: Union[str, bytes], header: str = 'txt',
 
     if encryptType == 'asym':
         meta['rply'] = createTime # Duplicate the time in encrypted messages to prevent replays
-        if not disableForward and sign and asymPeer != our_pub_key:
+        if sign and asymPeer != our_pub_key:
             try:
                 forwardEncrypted = onionrusers.OnionrUser(asymPeer).forwardEncrypt(data)
                 data = forwardEncrypted[0]
@@ -140,10 +140,9 @@ def insert_block(data: Union[str, bytes], header: str = 'txt',
                 expire = forwardEncrypted[2] # Expire time of key. no sense keeping block after that
             except onionrexceptions.InvalidPubkey:
                 pass
-                #onionrusers.OnionrUser(self, asymPeer).generateForwardKey()
-            fsKey = onionrusers.OnionrUser(asymPeer).generateForwardKey()
-            #fsKey = onionrusers.OnionrUser(self, asymPeer).getGeneratedForwardKeys().reverse()
-            meta['newFSKey'] = fsKey
+            if not disableForward:
+                fsKey = onionrusers.OnionrUser(asymPeer).generateForwardKey()
+                meta['newFSKey'] = fsKey
     jsonMeta = json.dumps(meta)
     plaintextMeta = jsonMeta
     if sign:
@@ -196,6 +195,8 @@ def insert_block(data: Union[str, bytes], header: str = 'txt',
             logger.error(allocationReachedMessage)
             retData = False
         else:
+            if disableForward:
+                logger.warn(f'{retData} asym encrypted block created w/o forward secrecy')
             # Tell the api server through localCommand to wait for the daemon to upload this block to make statistical analysis more difficult
             spawn(
                 localcommand.local_command,

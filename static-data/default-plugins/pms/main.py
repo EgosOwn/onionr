@@ -70,4 +70,4 @@ def on_processblocks(api, data=None):
         signer = signer[:5]
 
     if data['block'].decrypted:
-        notifier.notify(title="Onionr Mail - New Message", message="From: %s\n\nSubject: %s" % (signer, metadata['subject']))
+        notifier.notification_with_sound(title="Onionr Mail - New Message", message="From: %s\n\nSubject: %s" % (signer, metadata['subject']))

@@ -24,7 +24,9 @@ subject = document.getElementById('draftSubject')
 friendPicker = document.getElementById('friendSelect')
 
 function sendMail(toData, message, subject){
+
     postData = {'message': message, 'to': toData, 'type': 'pm', 'encrypt': true, 'meta': JSON.stringify({'subject': subject})}
+    postData.forward = document.getElementById('forwardSecrecySetting').checked
     postData = JSON.stringify(postData)
     sendForm.style.display = 'none'
     fetch('/insertblock', {
