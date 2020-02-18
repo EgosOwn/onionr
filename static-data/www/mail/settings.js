@@ -16,7 +16,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
-
+var notificationSetting = document.getElementById('notificationSetting')
 document.getElementById('forwardSecrecySetting').onchange = function(e){
     postData = JSON.stringify({"default_forward_secrecy": e.target.checked})
     fetch('/config/set/mail', {
@@ -33,4 +33,19 @@ document.getElementById('forwardSecrecySetting').onchange = function(e){
             text: 'Successfully toggled default forward secrecy'
         })
       })
+}
+
+
+notificationSetting.onchange = function(e){
+    let notificationSettings = document.getElementsByClassName('notificationSetting')
+    if (e.target.checked){
+        for (i = 0; i < notificationSettings.length; i++){
+            notificationSettings[i].style.display = "flex"
+        }
+    }
+    else{
+        for (i = 0; i < notificationSettings.length; i++){
+            notificationSettings[i].style.display = "none"
+        }
+    }
 }

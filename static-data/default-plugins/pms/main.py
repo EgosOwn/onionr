@@ -1,9 +1,17 @@
-'''
-    Onionr - Private P2P Communication
+"""Onionr - Private P2P Communication.
 
-    This default plugin handles private messages in an email like fashion
-'''
-'''
+Private messages in an email like fashion
+"""
+import locale
+import sys
+import os
+import json
+
+from onionrusers import contactmanager
+from utils import reconstructhash
+from onionrutils import bytesconverter
+import notifier
+"""
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -16,21 +24,12 @@
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
-'''
-
-# Imports some useful libraries
-import logger, config, threading, time, datetime
-import onionrexceptions
-from onionrusers import onionrusers, contactmanager
-from utils import reconstructhash
-from onionrutils import stringvalidators, escapeansi, bytesconverter
-import notifier
-import locale, sys, os, json
+"""
 
 locale.setlocale(locale.LC_ALL, '')
 
 plugin_name = 'pms'
-PLUGIN_VERSION = '0.0.1'
+PLUGIN_VERSION = '0.1.0'
 
 sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
 import sentboxdb, mailapi, loadinbox # import after path insert
@@ -38,6 +37,7 @@ from onblacklist import on_blacklist_add
 
 flask_blueprint = mailapi.flask_blueprint
 security_whitelist = ['staticfiles.mail', 'staticfiles.mailindex']
+
 
 def add_deleted(keyStore, b_hash):
     existing = keyStore.get('deleted_mail')
@@ -49,11 +49,13 @@ def add_deleted(keyStore, b_hash):
             return
     keyStore.put('deleted_mail', existing.append(b_hash))
 
+
 def on_insertblock(api, data={}):
     meta = json.loads(data['meta'])
     if meta['type'] == 'pm':
         sentboxTools = sentboxdb.SentBox()
         sentboxTools.addToSent(data['hash'], data['peer'], data['content'], meta['subject'])
+
 
 def on_processblocks(api, data=None):
     if data['type'] != 'pm':

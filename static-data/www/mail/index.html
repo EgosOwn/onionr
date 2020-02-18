@@ -143,17 +143,30 @@
               <div class="columns">
                   <div class="column">
                       <div>Ask senders to use forward-secrecy</div>
-                      <small>Only turn off if you use multiple devices with 1 ID or have Onionr data erasure on exit enabled.</small>
+                      <small>Turn off if using 1 ID on more than 1 device, or have Onionr data erasure on exit enabled.</small>
                   </div>
                   <div class="column is-2">
                     <div class="field">
                         <input id="forwardSecrecySetting" type="checkbox"
-                        class="switch is-rounded is-warning" checked>
+                        class="switch is-rounded is-danger" checked>
                         <label for="forwardSecrecySetting"></label>
                     </div>
                   </div>
               </div>
-              <div class="columns">
+            <div class="columns">
+                <div class="column">
+                    <div>Message padding</div>
+                    <small>Improves privacy slightly for a small performance hit.</small>
+                </div>
+                <div class="column is-2">
+                  <div class="field">
+                      <input id="messagePadding" type="checkbox"
+                      class="switch is-rounded is-warning" checked>
+                      <label for="messagePadding"></label>
+                  </div>
+                </div>
+            </div>
+            <div class="columns">
                 <div class="column">
                     Keep messages when blocks are deleted
                 </div>
@@ -165,21 +178,47 @@
                   </div>
                 </div>
             </div>
-              Signature
-              <textarea id="mailSignatureSetting" class="textarea" placeholder="Signature to add to every message" rows="5"></textarea>
-              <div class="columns">
+            <div class="columns">
                 <div class="column">
+                    Inbox notifications
+                </div>
+                <div class="column is-2">
+                    <div class="field">
+                        <input id="notificationSetting" type="checkbox"
+                        class="switch is-rounded" checked>
+                        <label for="notificationSetting"></label>
+                    </div>
+                </div>
+            </div>
+            <div class="columns notificationSetting">
+                <div class="column">
+                    Only show notifications for friends
+                </div>
+                <div class="column is-2">
+                    <div class="field">
+                        <input id="friendsOnlyNotifications" type="checkbox"
+                        class="switch is-rounded">
+                        <label for="friendsOnlyNotifications"></label>
+                    </div>
+                </div>
+            </div>
+            <div class="columns notificationSetting">
+                <div class="column">
+                    Notification sound
                 </div>
                 <div class="column is-2">
                   <div class="field">
-
+                    <input id="audibleNotificationSetting" type="checkbox"
+                    class="switch is-rounded">
+                    <label for="audibleNotificationSetting"></label>
                   </div>
                 </div>
               </div>
+              Signature
+              <textarea id="mailSignatureSetting" class="textarea" placeholder="Signature to add to every message" rows="5"></textarea>
           </section>
         </div>
       </div>
-
     <!--Start of content-->
     <div class="container">
         <div class="tabs" id="tabBtns">

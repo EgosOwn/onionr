@@ -55,3 +55,7 @@
     margin-top: 1em;
 }
 
+#settingsModal small{
+    font-size: 0.5em;
+}
+
