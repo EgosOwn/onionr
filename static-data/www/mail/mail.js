@@ -28,6 +28,22 @@ addUnknownContact = document.getElementById('addUnknownContact')
 noInbox = document.getElementById('noInbox')
 humanReadableCache = {}
 
+function stripEndZeroes(str){
+    str = str.split("")
+    let zeroCount = 0
+    for (x = str.length - 1; x != 0; x--){
+        if (str[x] == "0"){
+            zeroCount += 1
+        }
+        else{
+            break
+        }
+    }
+    str.splice(str.length - zeroCount, zeroCount)
+    str = str.join("")
+    return str
+}
+
 async function addContact(pubkey, friendName){
     fetch('/friends/add/' + pubkey, {
         method: 'POST',
@@ -89,6 +105,8 @@ function openThread(bHash, sender, date, sigBool, pubkey, subjectLine){
         document.getElementById('fromUser').value = pubkey || ''
         document.getElementById('subjectView').innerText = subjectLine
 
+        resp = stripEndZeroes(resp)
+        /*
         resp = resp.split("")
         let zeroCount = 0
         for (x = resp.length - 1; x != 0; x--){
@@ -101,6 +119,7 @@ function openThread(bHash, sender, date, sigBool, pubkey, subjectLine){
         }
         resp.splice(resp.length - zeroCount, zeroCount)
         resp = resp.join("")
+        */
 
 
         messageDisplay.innerText = resp
@@ -367,6 +386,7 @@ function getSentbox(){
 }
 
 function showSentboxWindow(to, content){
+    content = stripEndZeroes(content)
     document.getElementById('toID').value = to
     document.getElementById('sentboxDisplayText').innerText = content
     overlay('sentboxDisplay')
