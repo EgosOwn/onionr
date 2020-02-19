@@ -23,12 +23,35 @@ to = document.getElementById('draftID')
 subject = document.getElementById('draftSubject')
 friendPicker = document.getElementById('friendSelect')
 
-function sendMail(toData, message, subject){
+function utf8Length(s) {
+    var size = encodeURIComponent(s).match(/%[89ABab]/g);
+    return s.length + (size ? size.length : 0);
+  }
 
-    postData = {'message': message, 'to': toData, 'type': 'pm', 'encrypt': true, 'meta': JSON.stringify({'subject': subject})}
+function padString(string_data, round_nearest_byte_exponent = 3){
+    if (utf8Length(string_data) === 0){
+        string_data += '0'
+    }
+    let round_size = 10 ** round_nearest_byte_exponent
+    while (utf8Length(string_data) % round_size > 0){
+        string_data += '0'
+    }
+    return string_data
+}
+
+function sendMail(toData, message, subject){
+    let meta = {'subject': subject}
+
+    if (document.getElementById('messagePaddingSetting').checked){
+        message = padString(message)
+    }
+
+
+    postData = {'message': message, 'to': toData, 'type': 'pm', 'encrypt': true, 'meta': JSON.stringify(meta)}
     postData.forward = document.getElementById('forwardSecrecySetting').checked
     postData = JSON.stringify(postData)
     sendForm.style.display = 'none'
+
     fetch('/insertblock', {
         method: 'POST',
         body: postData,

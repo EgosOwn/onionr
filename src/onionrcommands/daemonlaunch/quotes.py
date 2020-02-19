@@ -18,7 +18,7 @@ QUOTES = [
     "James Bamford"),
     ("Freedom of the press is guaranteed only to those who own one",
     "A. J. Liebling"),
-    ("We kill people based on metadata",
+    ("\"Probably better than nothing\"",
     "")
 ]
 shuffle(QUOTES)

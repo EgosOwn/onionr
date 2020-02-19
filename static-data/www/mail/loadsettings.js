@@ -11,4 +11,7 @@ fetch('/config/get/mail', {
     if (mailSettings.default_forward_secrecy === false){
         document.getElementById('forwardSecrecySetting').checked = false
     }
+    if (mailSettings.use_padding === false){
+      document.getElementById('messagePaddingSetting').checked = false  
+    }
   })
