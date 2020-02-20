@@ -1,9 +1,12 @@
-'''
-    Onionr - Private P2P Communication
+"""Onionr - Private P2P Communication.
 
-    Process incoming requests to the public api server for certain attacks
-'''
-'''
+Process incoming requests to the public api server for certain attacks
+"""
+from flask import Blueprint, request, abort, g
+from onionrservices import httpheaders
+from onionrutils import epoch
+from utils import gettransports
+"""
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -16,11 +19,9 @@
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
-'''
-from flask import Blueprint, request, abort, g
-from onionrservices import httpheaders
-from onionrutils import epoch
-from utils import gettransports
+"""
+
+
 class PublicAPISecurity:
     def __init__(self, public_api):
         public_api_security_bp = Blueprint('publicapisecurity', __name__)
@@ -28,15 +29,16 @@ class PublicAPISecurity:
 
         @public_api_security_bp.before_app_request
         def validate_request():
-            '''Validate request has the correct hostname'''
-            # If high security level, deny requests to public (HS should be disabled anyway for Tor, but might not be for I2P)
+            """Validate request has the correct hostname"""
+            # If high security level, deny requests to public
+            # (HS should be disabled anyway for Tor, but might not be for I2P)
             transports = gettransports.get()
             if public_api.config.get('general.security_level', default=1) > 0:
                 abort(403)
             if request.host not in transports:
-                # Disallow connection if wrong HTTP hostname, in order to prevent DNS rebinding attacks
+                # Abort conn if wrong HTTP hostname, to prevent DNS rebinding
                 abort(403)
-            public_api.hitCount += 1 # raise hit count for valid requests
+            public_api.hitCount += 1  # raise hit count for valid requests
             try:
                 if 'onionr' in request.headers['User-Agent'].lower():
                     g.is_onionr_client = True
@@ -47,14 +49,18 @@ class PublicAPISecurity:
 
         @public_api_security_bp.after_app_request
         def send_headers(resp):
-            '''Send api, access control headers'''
+            """Send api, access control headers"""
             resp = httpheaders.set_default_onionr_http_headers(resp)
             # Network API version
             resp.headers['X-API'] = public_api.API_VERSION
             # Delete some HTTP headers for Onionr user agents
             NON_NETWORK_HEADERS = ('Content-Security-Policy', 'X-Frame-Options',
-            'X-Content-Type-Options', 'Feature-Policy', 'Clear-Site-Data', 'Referrer-Policy')
-            if g.is_onionr_client:
-                for header in NON_NETWORK_HEADERS: del resp.headers[header]
+                                   'X-Content-Type-Options', 'Feature-Policy',
+                                   'Clear-Site-Data', 'Referrer-Policy')
+            try:
+                if g.is_onionr_client:
+                    for header in NON_NETWORK_HEADERS: del resp.headers[header]
+            except AttributeError:
+                abort(403)
             public_api.lastRequest = epoch.get_rounded_epoch(roundS=5)
             return resp
