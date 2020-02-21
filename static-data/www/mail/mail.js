@@ -106,21 +106,6 @@ function openThread(bHash, sender, date, sigBool, pubkey, subjectLine){
         document.getElementById('subjectView').innerText = subjectLine
 
         resp = stripEndZeroes(resp)
-        /*
-        resp = resp.split("")
-        let zeroCount = 0
-        for (x = resp.length - 1; x != 0; x--){
-            if (resp[x] == "0"){
-                zeroCount += 1
-            }
-            else{
-                break
-            }
-        }
-        resp.splice(resp.length - zeroCount, zeroCount)
-        resp = resp.join("")
-        */
-
 
         messageDisplay.innerText = resp
         var sigEl = document.getElementById('sigValid')
