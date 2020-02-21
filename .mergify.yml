@@ -1,7 +1,6 @@
 pull_request_rules:
-  - name: Automatic close
+  - name: auto close
     conditions:
-      - "#title!=comments"
-    actions:
-      close:
-        comment: We do not accept GitHub PRs
+      - -open
+    actions: 
+        -close
