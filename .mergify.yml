@@ -1,7 +1,7 @@
 pull_request_rules:
-  - name: Automatic merge on approval
+  - name: Automatic close
     conditions:
-      - "#approved-reviews-by>=1"
+      - "#title!=comments"
     actions:
-      merge:
-        method: merge
+      close:
+        comment: We do not accept GitHub PRs
