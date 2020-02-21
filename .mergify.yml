@@ -1,6 +1,6 @@
 pull_request_rules:
-  - name: auto close
+  - name: auto del
     conditions:
-      - -open
-    actions: 
-        -close
+      -merged
+    actions:
+      close
