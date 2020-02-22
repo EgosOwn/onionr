@@ -43,7 +43,7 @@ def notify(title: str = "Onionr", message: str = ""):
     simplenotify.notify(title, message)
 
 
-def notification_with_sound(sound = '', **kwargs):
+def notification_with_sound(sound='', **kwargs):
     if not notifications_enabled:
         return
     if not sound:

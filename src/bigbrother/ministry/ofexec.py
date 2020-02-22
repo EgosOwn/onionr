@@ -55,6 +55,8 @@ def block_exec(event, info):
                         'multiprocessing/popen_fork.py',
                         'multiprocessing/util.py',
                         'multiprocessing/connection.py',
+                        'multiprocessing/queues.py',
+                        'multiprocessing/synchronize.py',
                         'onionrutils/escapeansi.py',
                         'stem/connection.py',
                         'stem/response/add_onion.py',
@@ -64,9 +66,12 @@ def block_exec(event, info):
                         'stem/response/mapaddress.py',
                         'stem/response/protocolinfo.py'
                        ]
+    whitelisted_source = []
     home = identifyhome.identify_home()
 
     code_b64 = base64.b64encode(info[0].co_code).decode()
+    if code_b64 in whitelisted_source:
+        return
 
     for source in whitelisted_code:
         if info[0].co_filename.endswith(source):

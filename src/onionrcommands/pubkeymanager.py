@@ -148,7 +148,7 @@ def add_vanity():
         else:
             b32_pub = unpaddedbase32.b32encode(vanity[0])
             tell('Found vanity address:\n' +
-                 niceware.bytes_to_passphrase(vanity[0]))
+                 '-'.join(niceware.bytes_to_passphrase(vanity[0])))
             tell('Base32 Public key: %s' % (b32_pub.decode(),))
             key_manager.addKey(b32_pub, unpaddedbase32.b32encode(vanity[1]))
     except KeyboardInterrupt:
