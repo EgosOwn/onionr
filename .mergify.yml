@@ -1,6 +1,0 @@
-pull_request_rules:
-  - name: auto del
-    conditions:
-      -merged
-    actions:
-      close
