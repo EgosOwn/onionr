@@ -143,7 +143,7 @@ def add_vanity():
         try:
             vanity = vanityonionr.find_multiprocess(words)
         except ValueError:
-            logger.warn('Vanity words must be valid english bip39',
+            logger.warn('Vanity words must be valid niceware',
                         terminal=True)
         else:
             b32_pub = unpaddedbase32.b32encode(vanity[0])

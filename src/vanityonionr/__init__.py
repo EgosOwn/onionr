@@ -43,7 +43,6 @@ def find_vanity_mnemonic(start_words: str, queue):
         check += 1
     else:
         queue.put(key_pair)
-        #print("DONE", check, key_pair)
     return key_pair
 
 def _start(start_words, obj):
@@ -79,7 +78,7 @@ def find_multiprocess(start_words: str):
     start_words = re.sub(' +', ' ', start_words)
     test_words = str(start_words)
 
-    for word in test_words.split(' '): 
+    for word in test_words.split(' '):
         for validword in wordlist:
             if word == validword:
                 break
