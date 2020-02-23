@@ -1,9 +1,20 @@
-'''
-    Onionr - Private P2P Communication
+"""Onionr - Private P2P Communication
 
-    Lookup new blocks with the communicator using a random connected peer
-'''
-'''
+Lookup new blocks with the communicator using a random connected peer
+"""
+from gevent import time
+
+import logger
+import onionrproofs
+from onionrutils import stringvalidators, epoch
+from communicator import peeraction, onlinepeers
+from coredb import blockmetadb
+from utils import reconstructhash
+from onionrblocks import onionrblacklist
+import onionrexceptions
+import config
+from etc import onionrvalues
+"""
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -16,17 +27,11 @@
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
-'''
-from gevent import time
+"""
 
-import logger, onionrproofs
-from onionrutils import stringvalidators, epoch
-from communicator import peeraction, onlinepeers
-from coredb import blockmetadb
-from utils import reconstructhash
-from onionrblocks import onionrblacklist
-import onionrexceptions
 blacklist = onionrblacklist.OnionrBlackList()
+
+
 def lookup_blocks_from_communicator(comm_inst):
     logger.info('Looking up new blocks')
     tryAmount = 2
@@ -65,9 +70,8 @@ def lookup_blocks_from_communicator(comm_inst):
         try:
             lastLookupTime = comm_inst.dbTimestamps[peer]
         except KeyError:
-            lastLookupTime = 0
-        else:
-            listLookupCommand += '?date=%s' % (lastLookupTime,)
+            lastLookupTime = epoch.get_epoch() - config.get("general.max_block_age", onionrvalues.DEFAULT_EXPIRE)
+        listLookupCommand += '?date=%s' % (lastLookupTime,)
         try:
             newBlocks = peeraction.peer_action(comm_inst, peer, listLookupCommand) # get list of new block hashes
         except Exception as error:

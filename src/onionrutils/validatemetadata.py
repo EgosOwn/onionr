@@ -37,7 +37,7 @@ def validate_metadata(metadata, block_data) -> bool:
             pass
 
     # Validate metadata dict for invalid keys to sizes that are too large
-    maxAge = min(config.get("general.max_block_age", onionrvalues.DEFAULT_EXPIRE), onionrvalues.DEFAULT_EXPIRE)
+    maxAge = config.get("general.max_block_age", onionrvalues.DEFAULT_EXPIRE)
     if type(metadata) is dict:
         for i in metadata:
             try:

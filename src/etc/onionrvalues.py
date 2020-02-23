@@ -53,7 +53,7 @@ BLOCK_EXPORT_FILE_EXT = '.dat'
 # Begin OnionrValues migrated values
 
 """30 days is plenty of time for someone to decide to renew a block"""
-DEFAULT_EXPIRE = 2592000
+DEFAULT_EXPIRE = 2678400
 # Metadata header section length limits, in bytes
 BLOCK_METADATA_LENGTHS = {'meta': 1000, 'sig': 200, 'signer': 200, 'time': 10, 'pow': 1000, 'encryptType': 4, 'expire': 14}
 
