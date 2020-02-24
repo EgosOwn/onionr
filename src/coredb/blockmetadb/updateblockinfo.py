@@ -35,14 +35,14 @@ def update_block_info(hash, key, data):
         dateClaimed  - timestamp claimed inside the block, only as trustworthy as the block author is
         expire       - expire date for a block
     '''
-    if key not in ('dateReceived', 'decrypted', 'dataType', 'dataFound', 
+    if key not in ('dateReceived', 'decrypted', 'dataType', 'dataFound',
                   'dataSaved', 'sig', 'author', 'dateClaimed', 'expire'):
         raise ValueError('Key must be in the allowed list')
 
     conn = sqlite3.connect(dbfiles.block_meta_db, timeout=onionrvalues.DATABASE_LOCK_TIMEOUT)
     c = conn.cursor()
     args = (data, hash)
-    # Unfortunately, not really possible
+    # Unfortunately, not really possible to prepare this statement
     c.execute("UPDATE hashes SET " + key + " = ? where hash = ?;", args)
     conn.commit()
     conn.close()

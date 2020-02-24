@@ -37,7 +37,7 @@ document.getElementById('forwardSecrecySetting').onchange = function(e){
 
 
 notificationSetting.onchange = function(e){
-    let notificationSettings = document.getElementsByClassName('notificationSetting')
+    var notificationSettings = document.getElementsByClassName('notificationSetting')
     if (e.target.checked){
         for (i = 0; i < notificationSettings.length; i++){
             notificationSettings[i].style.display = "flex"
@@ -48,4 +48,19 @@ notificationSetting.onchange = function(e){
             notificationSettings[i].style.display = "none"
         }
     }
+    var postData = JSON.stringify({"notificationSetting": e.target.checked})
+    fetch('/config/set/mail', {
+        method: 'POST',
+        body: postData,
+        headers: {
+          "content-type": "application/json",
+          "token": webpass
+        }})
+    .then((resp) => resp.text())
+    .then(function(data) {
+        mailSettings['notificationSetting'] = notificationSetting.checked
+        PNotify.success({
+            text: 'Successfully toggled default mail notifications'
+        })
+      })
 }

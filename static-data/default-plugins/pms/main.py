@@ -10,6 +10,7 @@ import json
 from onionrusers import contactmanager
 from utils import reconstructhash
 from onionrutils import bytesconverter
+import config
 import notifier
 """
     This program is free software: you can redistribute it and/or modify
@@ -72,4 +73,5 @@ def on_processblocks(api, data=None):
         signer = signer[:5]
 
     if data['block'].decrypted:
-        notifier.notification_with_sound(title="Onionr Mail - New Message", message="From: %s\n\nSubject: %s" % (signer, metadata['subject']))
+        if config.get('mail.notificationSetting', True):
+            notifier.notification_with_sound(title="Onionr Mail - New Message", message="From: %s\n\nSubject: %s" % (signer, metadata['subject']))
