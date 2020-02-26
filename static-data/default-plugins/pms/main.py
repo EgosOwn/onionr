@@ -59,6 +59,7 @@ def on_insertblock(api, data={}):
 
 
 def on_processblocks(api, data=None):
+    print('mail got block', data)
     if data['type'] != 'pm':
         return
     data['block'].decrypt()
@@ -72,6 +73,8 @@ def on_processblocks(api, data=None):
     else:
         signer = signer[:5]
 
+    print('detected mail', data['block'].hash)
     if data['block'].decrypted:
+        config.reload()
         if config.get('mail.notificationSetting', True):
             notifier.notification_with_sound(title="Onionr Mail - New Message", message="From: %s\n\nSubject: %s" % (signer, metadata['subject']))

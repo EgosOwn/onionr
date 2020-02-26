@@ -117,6 +117,7 @@ def download_blocks_from_communicator(comm_inst: "OnionrCommunicatorDaemon"):
                             removeFromQueue = False
                         else:
                             blockmetadb.add_to_block_DB(blockHash, dataSaved=True) # add block to meta db
+                            blockmetadata.process_block_metadata(blockHash) # caches block metadata values to block database
                             spawn(
                                 local_command,
                                 f'/daemon-event/upload_event',
@@ -124,8 +125,6 @@ def download_blocks_from_communicator(comm_inst: "OnionrCommunicatorDaemon"):
                                 is_json=True,
                                 postData={'block': blockHash}
                             )
-
-                            blockmetadata.process_block_metadata(blockHash) # caches block metadata values to block database
                     else:
                         logger.warn('POW failed for block %s.' % (blockHash,))
                 else:

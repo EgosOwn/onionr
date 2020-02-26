@@ -31,14 +31,14 @@ from onionrutils import updater
 def process_block_metadata(blockHash: str):
     '''
         Read metadata from a block and cache it to the block database
-        
+
         blockHash -> sha3_256 hex formatted hash of Onionr block
     '''
     curTime = epoch.get_rounded_epoch(roundS=60)
     myBlock = onionrblockapi.Block(blockHash)
     if myBlock.isEncrypted:
-        myBlock.decrypt()
-    if (myBlock.isEncrypted and myBlock.decrypted) or (not myBlock.isEncrypted):
+        print(myBlock.hash, myBlock.decrypt())
+    if myBlock.decrypted or not myBlock.isEncrypted:
         blockType = myBlock.getMetadata('type') # we would use myBlock.getType() here, but it is bugged with encrypted blocks
 
         signer = bytesconverter.bytes_to_str(myBlock.signer)
@@ -49,7 +49,7 @@ def process_block_metadata(blockHash: str):
                     onionrusers.OnionrUser(signer).addForwardKey(myBlock.getMetadata('newFSKey'))
                 except onionrexceptions.InvalidPubkey:
                     logger.warn('%s has invalid forward secrecy key to add: %s' % (signer, myBlock.getMetadata('newFSKey')))
-            
+
         try:
             if len(blockType) <= onionrvalues.MAX_BLOCK_TYPE_LENGTH:
                 blockmetadb.update_block_info(blockHash, 'dataType', blockType)

@@ -19,7 +19,7 @@
         "minimum_send_pow": 4,
         "public_key": "",
         "random_bind_ip": false,
-        "security_level": 0,
+        "security_level": 1,
         "show_notifications": true,
         "socket_servers": false,
         "store_plaintext_blocks": true,
