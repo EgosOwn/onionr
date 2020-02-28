@@ -78,7 +78,7 @@ def enable(name, start_event = True):
             else:
                 enabled_plugins.append(name)
                 config.set('plugins.enabled', enabled_plugins, savefile=True)
-                
+
                 if start_event is True:
                     start(name)
                 return True
@@ -174,7 +174,7 @@ def import_module_from_file(full_path_to_module):
     module_name, module_ext = os.path.splitext(module_file)
 
     module_name = module_dir # Module name must be unique otherwise it will get written in other imports
-    
+
     # Get module "spec" from filename
     spec = importlib.util.spec_from_file_location(module_name,full_path_to_module)
 
@@ -215,6 +215,7 @@ def get_enabled_plugins():
     '''
 
     check()
+    config.reload()
 
     return list(config.get('plugins.enabled', list()))
 

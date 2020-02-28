@@ -4,6 +4,7 @@ Identify a data directory for Onionr
 """
 import os
 import platform
+import uuid
 """
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -26,6 +27,7 @@ def identify_home() -> str:
     Take env into account with sane OS defaults
     """
     path = os.environ.get('ONIONR_HOME', None)
+
 
     if path is not None and not os.getcwd().endswith('src') \
             and 'test' not in path:
