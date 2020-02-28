@@ -13,7 +13,7 @@ from etc import onionrvalues
 
 class TestOnionrValues(unittest.TestCase):
     def test_default_expire(self):
-        self.assertEqual(onionrvalues.DEFAULT_EXPIRE, 2592000)
+        self.assertEqual(onionrvalues.DEFAULT_EXPIRE, 2678400)
 
 
 unittest.main()
