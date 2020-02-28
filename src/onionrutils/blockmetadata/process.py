@@ -27,6 +27,7 @@ from onionrplugins import onionrevents
 import onionrexceptions
 from onionrusers import onionrusers
 from onionrutils import updater
+from gevent import sleep
 
 def process_block_metadata(blockHash: str):
     '''
@@ -37,8 +38,8 @@ def process_block_metadata(blockHash: str):
     curTime = epoch.get_rounded_epoch(roundS=60)
     myBlock = onionrblockapi.Block(blockHash)
     if myBlock.isEncrypted:
-        print(myBlock.hash, myBlock.decrypt())
-    if myBlock.decrypted or not myBlock.isEncrypted:
+        myBlock.decrypt()
+    if (myBlock.isEncrypted and myBlock.decrypted) or (not myBlock.isEncrypted):
         blockType = myBlock.getMetadata('type') # we would use myBlock.getType() here, but it is bugged with encrypted blocks
 
         signer = bytesconverter.bytes_to_str(myBlock.signer)

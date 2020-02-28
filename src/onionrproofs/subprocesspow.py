@@ -10,6 +10,7 @@ from multiprocessing import Pipe, Process
 import threading
 import time
 import json
+import secrets
 
 import logger
 import onionrproofs
@@ -109,7 +110,7 @@ class SubprocessPOW:
 
     def do_pow(self, pipe):
         """find partial hash colision generating nonce for a block"""
-        nonce = BLOCK_NONCE_START_INT
+        nonce = -secrets.randbelow(10**10)
         data = self.data
         metadata = self.metadata
         puzzle = self.puzzle

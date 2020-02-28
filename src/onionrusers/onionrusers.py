@@ -23,6 +23,7 @@ import unpaddedbase32
 import nacl.exceptions
 from coredb import keydb, dbfiles
 import onionrcrypto
+from onionrcrypto import getourkeypair
 
 def deleteExpiredKeys():
     # Fetch the keys we generated for the peer, that are still around
@@ -54,8 +55,8 @@ class OnionrUser:
 
     def __init__(self, publicKey, saveUser=False):
         '''
-            OnionrUser is an abstraction for "users" of the network. 
-            
+            OnionrUser is an abstraction for "users" of the network.
+
             Takes a base32 encoded ed25519 public key, and a bool saveUser
             saveUser determines if we should add a user to our peer database or not.
         '''
@@ -64,7 +65,7 @@ class OnionrUser:
         self.trust = 0
         self.publicKey = publicKey
 
-        if saveUser:
+        if saveUser and not publicKey == getourkeypair.get_keypair():
             try:
                 keydb.addkeys.add_peer(publicKey)
             except (AssertionError, ValueError) as e:
@@ -220,7 +221,7 @@ class OnionrUser:
         conn.commit()
         conn.close()
         return True
-    
+
     @classmethod
     def list_friends(cls):
         friendList = []

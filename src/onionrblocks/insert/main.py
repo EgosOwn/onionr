@@ -36,7 +36,6 @@ from onionrproofs import subprocesspow
 import logger
 from onionrtypes import UserIDSecretKey
 
-
 def _check_upload_queue():
     """Returns the current upload queue len
     raises OverflowError if max, false if api not running
