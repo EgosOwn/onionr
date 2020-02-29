@@ -23,7 +23,7 @@ restartBtn = document.getElementById('restartNode')
 shutdownBtn.onclick = function(){
     if (! nowebpass){
         if (confirm("Really shutdown Onionr?")){
-            httpGet('shutdownclean')
+            httpGet('/shutdownclean')
             overlay('shutdownNotice')
         }
     }

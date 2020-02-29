@@ -12,12 +12,14 @@ from subprocess import Popen
 import subprocess
 from time import sleep
 
-from helium import start_firefox, click, Text
+from helium import start_firefox, click, Text, Config
 
 
 from onionrcommands.openwebinterface import get_url
 from onionrutils import escapeansi
 BROWSER_HEADLESS = os.getenv('ONIONR_TEST_HEADLESS')
+
+Config.implicit_wait_secs = 30
 
 def start_onionr():
     testargs = ["onionr.py", "start"]
@@ -35,6 +37,7 @@ class OnionrTests(unittest.TestCase):
         if Text('Get Started').exists():
             click('Get Started')
         click('Circles')
+        sleep(5)
         if not Text('Circle Name').exists():
             Popen(['./onionr.sh', 'stop']).wait()
             web_driver.quit()
