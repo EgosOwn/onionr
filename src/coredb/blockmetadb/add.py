@@ -1,9 +1,15 @@
-'''
-    Onionr - Private P2P Communication
+"""Onionr - Private P2P Communication.
 
-    Add an entry to the block metadata database
-'''
-'''
+Add an entry to the block metadata database
+"""
+import os
+import sqlite3
+import secrets
+from onionrutils import epoch, blockmetadata
+from etc import onionrvalues
+from .. import dbfiles
+from onionrexceptions import BlockMetaEntryExists
+"""
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -16,20 +22,18 @@
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
-'''
-import os, sqlite3, secrets
-from onionrutils import epoch, blockmetadata
-from etc import onionrvalues
-from .. import dbfiles
+"""
+
+
 def add_to_block_DB(newHash, selfInsert=False, dataSaved=False):
-    '''
+    """
         Add a hash value to the block db
 
         Should be in hex format!
-    '''
+    """
 
     if blockmetadata.has_block(newHash):
-        return
+        raise
     conn = sqlite3.connect(dbfiles.block_meta_db, timeout=onionrvalues.DATABASE_LOCK_TIMEOUT)
     c = conn.cursor()
     currentTime = epoch.get_epoch() + secrets.randbelow(301)

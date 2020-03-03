@@ -18,6 +18,7 @@ conf['general']['display_header'] = True
 conf['onboarding']['done'] = False
 conf['general']['minimum_block_pow'] = 5
 conf['general']['minimum_send_pow'] = 5
+conf['general']['max_block_age'] = 2678400
 conf['log']['file']['remove_on_exit'] = True
 
 json.dump(conf, open('static-data/default_config.json', 'w'), sort_keys=True, indent=4)

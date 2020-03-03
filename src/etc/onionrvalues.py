@@ -42,7 +42,6 @@ DATABASE_LOCK_TIMEOUT = 60
 
 # Block creation anonymization requirements
 MIN_BLOCK_UPLOAD_PEER_PERCENT = 0.1
-MIN_SHARE_WAIT_DELAY_SECS = 5
 
 WSGI_SERVER_REQUEST_TIMEOUT_SECS = 120
 
@@ -55,7 +54,8 @@ BLOCK_EXPORT_FILE_EXT = '.dat'
 """30 days is plenty of time for someone to decide to renew a block"""
 DEFAULT_EXPIRE = 2678400
 # Metadata header section length limits, in bytes
-BLOCK_METADATA_LENGTHS = {'meta': 1000, 'sig': 200, 'signer': 200, 'time': 10, 'pow': 1000, 'encryptType': 4, 'expire': 14}
+BLOCK_METADATA_LENGTHS = {'meta': 1000, 'sig': 200, 'signer': 200, 'time': 10,
+                          'pow': 1000, 'encryptType': 4, 'expire': 14}
 
 # Pool Eligibility Max Age
 BLOCK_POOL_MAX_AGE = 300

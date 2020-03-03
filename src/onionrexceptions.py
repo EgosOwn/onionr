@@ -54,7 +54,7 @@ class ReplayAttack(Exception):
 class InvalidUpdate(Exception):
     pass
 
-class DifficultyTooLarge(Exception):
+class BlockMetaEntryExists(Exception):
     pass
 
 class InvalidMetadata(Exception):

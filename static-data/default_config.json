@@ -3,8 +3,6 @@
         "security_auditing": true
     },
     "allocations": {
-        "blockCache": 5000000,
-        "blockCacheTotal": 50000000,
         "disk": 100000000,
         "net_total": 1000000000
     },

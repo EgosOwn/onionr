@@ -44,11 +44,14 @@ def clean_old_blocks(comm_inst):
         logger.info('Deleted block: %s' % (bHash,))
 
     while comm_inst.storage_counter.is_full():
-        oldest = blockmetadb.get_block_list()[0]
+        try:
+            oldest = blockmetadb.get_block_list()[0]
+        except IndexError:
+            break
         blacklist.addToDB(oldest)
         removeblock.remove_block(oldest)
         onionrstorage.deleteBlock(oldest)
-        __remove_from_upload.remove(comm_inst, oldest)
+        __remove_from_upload(comm_inst, oldest)
         logger.info('Deleted block: %s' % (oldest,))
 
     comm_inst.decrementThreadCount('clean_old_blocks')

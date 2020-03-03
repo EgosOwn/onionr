@@ -15,5 +15,10 @@ class TestOnionrValues(unittest.TestCase):
     def test_default_expire(self):
         self.assertEqual(onionrvalues.DEFAULT_EXPIRE, 2678400)
 
+    def test_block_clock_skew(self):
+        self.assertEqual(onionrvalues.MAX_BLOCK_CLOCK_SKEW, 120)
+
+    def test_block_export_ext(self):
+        self.assertEqual(onionrvalues.BLOCK_EXPORT_FILE_EXT, '.dat')
 
 unittest.main()

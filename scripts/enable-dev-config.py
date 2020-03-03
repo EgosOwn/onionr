@@ -6,6 +6,8 @@ import json
 
 conf = json.load(open('static-data/default_config.json', 'r'))
 
+block_pow = int(input("Block POW level:"))
+
 if input("Reuse Tor? y/n:").lower() == 'y':
     conf['tor']['use_existing_tor'] = True
     conf['tor']['existing_control_port'] = int(input("Enter existing control port:"))
@@ -16,8 +18,8 @@ conf['general']['dev_mode'] = True
 conf['general']['insert_deniable_blocks'] = False
 conf['general']['random_bind_ip'] = False
 conf['onboarding']['done'] = True
-conf['general']['minimum_block_pow'] = 4
-conf['general']['minimum_send_pow'] = 4
+conf['general']['minimum_block_pow'] = block_pow
+conf['general']['minimum_send_pow'] = block_pow
 conf['log']['file']['remove_on_exit'] = False
 
 json.dump(conf, open('static-data/default_config.json', 'w'), sort_keys=True, indent=4)

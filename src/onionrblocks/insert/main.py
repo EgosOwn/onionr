@@ -62,6 +62,8 @@ def insert_block(data: Union[str, bytes], header: str = 'txt',
     """
         Inserts a block into the network
         encryptType must be specified to encrypt a block
+        if expire is less than date, assumes seconds into future.
+            if not assume exact epoch
     """
     our_private_key = crypto.priv_key
     our_pub_key = crypto.pub_key
@@ -180,6 +182,9 @@ def insert_block(data: Union[str, bytes], header: str = 'txt',
     # ensure expire is integer and of sane length
     if type(expire) is not type(None):
         if not len(str(int(expire))) < 20: raise ValueError('expire must be valid int less than 20 digits in length')
+        # if expire is less than date, assume seconds into future
+        if expire < epoch.get_epoch():
+            expire = epoch.get_epoch() + expire
         metadata['expire'] = expire
 
     # send block data (and metadata) to POW module to get tokenized block data
@@ -207,8 +212,14 @@ def insert_block(data: Union[str, bytes], header: str = 'txt',
             coredb.blockmetadb.add.add_to_block_DB(retData, selfInsert=True, dataSaved=True)
 
             if expire is None:
-                coredb.blockmetadb.update_block_info(retData, 'expire',
-                                                     createTime + onionrvalues.DEFAULT_EXPIRE)
+                coredb.blockmetadb.update_block_info(
+                    retData, 'expire',
+                    createTime +
+                    min(
+                        onionrvalues.DEFAULT_EXPIRE,
+                        config.get(
+                            'general.max_block_age',
+                            onionrvalues.DEFAULT_EXPIRE)))
             else:
                 coredb.blockmetadb.update_block_info(retData, 'expire', expire)
 
