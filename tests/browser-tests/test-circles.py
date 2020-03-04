@@ -1,10 +1,10 @@
-from unittest.mock import patch
 import sys, os
 sys.path.append(".")
 sys.path.append("src/")
 import unittest, uuid
 TEST_DIR = 'testdata/-%s-%s' % (uuid.uuid4(), os.path.basename(__file__)) + '/'
 os.environ["ONIONR_HOME"] = TEST_DIR
+from unittest.mock import patch
 
 from utils import createdirs
 
@@ -34,8 +34,9 @@ class OnionrTests(unittest.TestCase):
             sleep(1)
         url = 'http' + escapeansi.escape_ANSI(Popen(['./onionr.sh', 'url'], stdout=subprocess.PIPE).communicate()[0].decode().split('http')[1])
         web_driver = start_firefox(url=url, headless=BROWSER_HEADLESS)
-        if Text('Get Started').exists():
+        if not Text('Circles').exists():
             click('Get Started')
+        sleep(2)
         click('Circles')
         sleep(5)
         if not Text('Circle Name').exists():
@@ -44,7 +45,5 @@ class OnionrTests(unittest.TestCase):
             raise ValueError
         Popen(['./onionr.sh', 'stop']).wait()
         web_driver.quit()
-
-
 
 unittest.main()

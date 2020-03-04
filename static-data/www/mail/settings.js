@@ -17,6 +17,8 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 var notificationSetting = document.getElementById('notificationSetting')
+var sigSetting = document.getElementById('mailSignatureSetting')
+
 document.getElementById('forwardSecrecySetting').onchange = function(e){
     postData = JSON.stringify({"default_forward_secrecy": e.target.checked})
     fetch('/config/set/mail', {
@@ -56,11 +58,27 @@ notificationSetting.onchange = function(e){
           "content-type": "application/json",
           "token": webpass
         }})
-    .then((resp) => resp.text())
     .then(function(data) {
         mailSettings['notificationSetting'] = notificationSetting.checked
         PNotify.success({
             text: 'Successfully toggled default mail notifications'
+        })
+      })
+}
+
+sigSetting.onchange = function(){
+    var postData = JSON.stringify({"signature": sigSetting.value})
+    fetch('/config/set/mail', {
+        method: 'POST',
+        body: postData,
+        headers: {
+          "content-type": "application/json",
+          "token": webpass
+        }})
+    .then(function(data) {
+        mailSettings['signature'] = sigSetting.value
+        PNotify.success({
+            text: 'Set mail signature'
         })
       })
 }
