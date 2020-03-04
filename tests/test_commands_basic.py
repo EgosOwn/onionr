@@ -11,10 +11,6 @@ from onionrcommands import parser
 import onionrsetup as setup
 from netcontroller.torcontrol import customtorrc
 class OnionrTests(unittest.TestCase):
-    def test_no_command(self):
-        testargs = ["onionr.py"]
-        with patch.object(sys, 'argv', testargs):
-            parser.register()
     def test_version_command(self):
         testargs = ["onionr.py", "version"]
         with patch.object(sys, 'argv', testargs):

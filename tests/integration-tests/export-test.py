@@ -25,7 +25,10 @@ class OnionrTests(unittest.TestCase):
     def test_export(self):
         testargs = ["onionr.py", "flowsend", "tests", "hello"]
         with patch.object(sys, 'argv', testargs):
-            parser.register()
+            try:
+                parser.register()
+            except SystemExit:
+                pass
         bl = blockmetadb.get_block_list()[0]
         testargs = ["onionr.py", "export-block", bl]
         with patch.object(sys, 'argv', testargs):

@@ -33,7 +33,7 @@ def add_to_block_DB(newHash, selfInsert=False, dataSaved=False):
     """
 
     if blockmetadata.has_block(newHash):
-        raise
+        raise BlockMetaEntryExists
     conn = sqlite3.connect(dbfiles.block_meta_db, timeout=onionrvalues.DATABASE_LOCK_TIMEOUT)
     c = conn.cursor()
     currentTime = epoch.get_epoch() + secrets.randbelow(301)

@@ -1,9 +1,17 @@
-'''
-    Onionr - Private P2P Communication
+"""Onionr - Private P2P Communication.
 
-    Cleanup old Onionr blocks and forward secrecy keys using the communicator. Ran from a timer usually
-'''
-'''
+Cleanup old Onionr blocks and forward secrecy keys using the communicator.
+Ran from a communicator timer usually
+"""
+import sqlite3
+import logger
+from onionrusers import onionrusers
+from onionrutils import epoch
+from coredb import blockmetadb, dbfiles
+import onionrstorage
+from onionrstorage import removeblock
+from onionrblocks import onionrblacklist
+"""
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -16,15 +24,8 @@
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
-'''
-import sqlite3
-import logger
-from onionrusers import onionrusers
-from onionrutils import epoch
-from coredb import blockmetadb, dbfiles
-import onionrstorage
-from onionrstorage import removeblock
-from onionrblocks import onionrblacklist
+"""
+
 
 def __remove_from_upload(comm_inst, block_hash: str):
     try:
@@ -32,8 +33,9 @@ def __remove_from_upload(comm_inst, block_hash: str):
     except ValueError:
         pass
 
+
 def clean_old_blocks(comm_inst):
-    '''Delete old blocks if our disk allocation is full/near full, and also expired blocks'''
+    """Delete expired blocks + old blocks if disk allocation is near full"""
     blacklist = onionrblacklist.OnionrBlackList()
     # Delete expired blocks
     for bHash in blockmetadb.expiredblocks.get_expired_blocks():
@@ -56,8 +58,9 @@ def clean_old_blocks(comm_inst):
 
     comm_inst.decrementThreadCount('clean_old_blocks')
 
+
 def clean_keys(comm_inst):
-    '''Delete expired forward secrecy keys'''
+    """Delete expired forward secrecy keys"""
     conn = sqlite3.connect(dbfiles.user_id_info_db, timeout=10)
     c = conn.cursor()
     time = epoch.get_epoch()

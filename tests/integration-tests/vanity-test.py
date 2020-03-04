@@ -25,7 +25,10 @@ class OnionrTests(unittest.TestCase):
     def test_vanity(self):
         testargs = ["onionr.py"]
         with patch.object(sys, 'argv', testargs):
-            parser.register()
+            try:
+                parser.register()
+            except SystemExit:
+                pass
         testargs = ["onionr.py", "add-vanity", "jolt"]
         with patch.object(sys, 'argv', testargs):
             parser.register()

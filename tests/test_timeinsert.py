@@ -1,10 +1,19 @@
 #!/usr/bin/env python3
-import unittest, sys
+import sys, os
 sys.path.append(".")
 sys.path.append("src/")
-
+import unittest, uuid
+TEST_DIR = 'testdata/%s-%s' % (uuid.uuid4(), os.path.basename(__file__)) + '/'
+print("Test directory:", TEST_DIR)
+os.environ["ONIONR_HOME"] = TEST_DIR
 from onionrblocks import time_insert
 from onionrblocks import onionrblockapi
+from onionrsetup import setup_config, setup_default_plugins
+from utils import createdirs
+
+createdirs.create_dirs()
+setup_config()
+setup_default_plugins()
 
 class TestTimeInsert(unittest.TestCase):
     def test_time_insert_none(self):

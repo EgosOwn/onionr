@@ -5,6 +5,12 @@ This module loads in the Onionr arguments and their help messages
 import sys
 import os
 
+try:
+    if sys.argv[1] not in ('start', 'details', 'show-details'):
+        os.chdir(os.environ['ORIG_ONIONR_RUN_DIR'])
+except (KeyError, IndexError) as _:
+    pass
+
 import logger
 import onionrexceptions
 import onionrplugins
@@ -74,19 +80,14 @@ def register():
     try:
         cmd = sys.argv[1]
     except IndexError:
-        logger.debug("Detected Onionr run with no commands specified")
-        return
+        logger.info('Run with --help to see available commands', terminal=True)
+        sys.exit(10)
 
     is_help_cmd = False
     if cmd.replace('--', '').lower() == 'help':
         is_help_cmd = True
 
     try:
-        try:
-            if cmd not in ('start', 'details', 'show-details'):
-                os.chdir(os.environ['ORIG_ONIONR_RUN_DIR'])
-        except KeyError:
-            pass
         try:
             arguments.get_func(cmd)()
         except KeyboardInterrupt:
