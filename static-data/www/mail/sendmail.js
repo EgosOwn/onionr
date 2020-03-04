@@ -46,6 +46,10 @@ function sendMail(toData, message, subject){
         message = padString(message)
     }
 
+    if (document.getElementById('mailSignatureSetting').value !== false){
+        message += "\n"
+        message += document.getElementById('mailSignatureSetting').value
+    }
 
     postData = {'message': message, 'to': toData, 'type': 'pm', 'encrypt': true, 'meta': JSON.stringify(meta)}
     postData.forward = document.getElementById('forwardSecrecySetting').checked

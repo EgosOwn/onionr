@@ -17,4 +17,7 @@ fetch('/config/get/mail', {
     if (mailSettings.notificationSetting === false){
       document.getElementById('notificationSetting').checked = false
     }
+    if (mailSettings.signature !== false){
+      document.getElementById('mailSignatureSetting').value = mailSettings.signature
+    }
   })
