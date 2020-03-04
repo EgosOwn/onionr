@@ -3,7 +3,9 @@ test:
   script:
   - apt-get update -qy
   - apt-get install -y tor
+  - apt-get install -y firefox-esr
   - pip3 install --require-hashes -r requirements.txt
+  - pip3 install --require-hashes -r requirements-dev.txt
   - pip3 install --require-hashes -r requirements-notifications.txt
   - python3 --version
   - make test
