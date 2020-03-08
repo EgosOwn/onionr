@@ -21,7 +21,6 @@ from . import identifyhome
 import filepaths
 def get_hostname():
     try:
-        print(identifyhome.identify_home())
         with open(identifyhome.identify_home() + '/hs/hostname', 'r') as hostname:
             return hostname.read().strip()
     except FileNotFoundError:

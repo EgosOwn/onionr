@@ -23,6 +23,7 @@ import communicator
 from onionrplugins import onionrevents as events
 from netcontroller import NetController
 from netcontroller import get_open_port
+from netcontroller import clean_ephemeral_services
 from onionrutils import localcommand
 from utils import identifyhome
 import filepaths
@@ -162,6 +163,8 @@ def daemon():
     events.event('init', threaded=False)
     events.event('daemon_start')
     communicator.startCommunicator(shared_state)
+
+    clean_ephemeral_services()
 
     if not offline_mode and not use_existing_tor:
         net.killTor()

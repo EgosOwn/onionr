@@ -1,10 +1,13 @@
 """Onionr - Private P2P Communication.
 
-Create an ephemeral onion service
+Remove ephemeral services
 """
-from .torcontroller import get_controller
+from filenuke.nuke import clean
 
+from onionrutils.stringvalidators import validate_transport
 from filepaths import ephemeral_services_file
+
+from netcontroller.torcontrol.torcontroller import get_controller
 """
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -21,15 +24,17 @@ from filepaths import ephemeral_services_file
 """
 
 
-def create_onion_service(port=80, record_to_service_removal_file=True):
-    controller = get_controller()
-    hs = controller.create_ephemeral_hidden_service(
-        {80: port},
-        key_type = 'NEW',
-        key_content = 'ED25519-V3',
-        await_publication=True,
-        detached=True)
-    if record_to_service_removal_file:
-        with open(ephemeral_services_file, 'a') as service_file:
-            service_file.write(hs.service_id + '\n')
-    return (hs.service_id, hs.private_key)
+def clean_ephemeral_services():
+    """Remove transport's ephemeral services from respective controllers"""
+    try:
+        with open(ephemeral_services_file, 'r') as services:
+            services = services.readlines()
+            with get_controller() as torcontroller:
+                for hs in services:
+                    hs += '.onion'
+                    if validate_transport(hs):
+                        torcontroller.remove_ephemeral_hidden_service(hs)
+    except FileNotFoundError:
+        pass
+    else:
+        clean(ephemeral_services_file)

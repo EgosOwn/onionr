@@ -47,4 +47,23 @@ class OnionrTests(unittest.TestCase):
         Popen(['./onionr.sh', 'stop']).wait()
         web_driver.quit()
 
+    def test_mail(self):
+        Popen(['./onionr.sh', 'start'])
+        while b'http' not in Popen(['./onionr.sh', 'url'], stdout=subprocess.PIPE).communicate()[0]:
+            sleep(1)
+
+        url = 'http' + escapeansi.escape_ANSI(Popen(['./onionr.sh', 'url'], stdout=subprocess.PIPE).communicate()[0].decode().split('http')[1])
+        web_driver = start_firefox(url=url, headless=BROWSER_HEADLESS)
+        if not Text('Mail').exists():
+            click('Get Started')
+        sleep(2)
+        click('Mail')
+        sleep(5)
+        if not Text('Mail').exists():
+            Popen(['./onionr.sh', 'stop']).wait()
+            web_driver.quit()
+            raise ValueError
+        Popen(['./onionr.sh', 'stop']).wait()
+        web_driver.quit()
+
 unittest.main()

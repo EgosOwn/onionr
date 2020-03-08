@@ -124,6 +124,7 @@ def show_details():
         active user ID in mnemonic form
     """
     details = {
+        'Data directory': identifyhome.identify_home(),
         'Node Address': gethostname.get_hostname(),
         'Public Key': onionrcrypto.pub_key.replace('=', ''),
         'Human-readable Public Key': mnemonickeys.get_human_readable_ID()
