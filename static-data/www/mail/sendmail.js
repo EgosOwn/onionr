@@ -67,7 +67,9 @@ function sendMail(toData, message, subject){
     .then(function(data) {
         sendForm.style.display = 'block'
         PNotify.success({
-            text: 'Queued for sending!'
+            text: 'Queued for sending!',
+            delay: 3500,
+            mouseReset: false
         })
         to.value = subject.value = messageContent.value = ""
         friendPicker.value = ""
