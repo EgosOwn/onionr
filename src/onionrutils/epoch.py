@@ -1,9 +1,10 @@
-'''
-    Onionr - Private P2P Communication
+"""Onionr - Private P2P Communication.
 
-    Get floored epoch, or rounded epoch
-'''
-'''
+Get floored epoch, or rounded epoch
+"""
+import time
+import math
+"""
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -16,15 +17,15 @@
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
-'''
-import math, time
-def get_rounded_epoch(roundS=60):
-    '''
-        Returns the epoch, rounded down to given seconds (Default 60)
-    '''
+"""
+
+
+def get_rounded_epoch(roundS=60) -> int:
+    """Return the epoch, rounded down to given seconds (Default 60)."""
     epoch = get_epoch()
     return epoch - (epoch % roundS)
 
-def get_epoch():
-    '''returns epoch'''
+
+def get_epoch() -> int:
+    """return epoch"""
     return math.floor(time.time())
