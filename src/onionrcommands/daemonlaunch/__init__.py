@@ -8,7 +8,6 @@ import platform
 import sqlite3
 from threading import Thread
 
-from gevent import time
 from gevent import spawn
 from stem.connection import IncorrectPassword
 import toomanyobjs
@@ -22,7 +21,6 @@ import logger
 import communicator
 from onionrplugins import onionrevents as events
 from netcontroller import NetController
-from netcontroller import get_open_port
 from netcontroller import clean_ephemeral_services
 from onionrutils import localcommand
 from utils import identifyhome
