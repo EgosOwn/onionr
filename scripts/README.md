@@ -4,3 +4,4 @@ passphrase-generator.py: very simple utility to generate and print a strong pass
 enable-dev-config.py/disable-dev-config.py: enable/disable dev default config setup
 block-spammer.py: attack tool for spamming blocks
 announce-attack.py: flood a node with false nodes
+run-unit-test-by-name: runs a unit test (no browser, runtime or intgegration test) by name

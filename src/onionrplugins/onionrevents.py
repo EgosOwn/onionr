@@ -42,7 +42,7 @@ def __event_caller(event_name, data = {}):
             plugins.disable(plugin, stop_event = False)
         except Exception as e:
             logger.warn('Event "%s" failed for plugin "%s".' % (event_name, plugin), terminal=True)
-            logger.debug(str(e), terminal=True)
+            logger.debug((event_name + ' - ' + plugin + ' - ' + str(e)), terminal=True)
 
 def event(event_name, data = {}, threaded = True):
     '''

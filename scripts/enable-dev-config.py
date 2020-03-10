@@ -4,6 +4,8 @@
 
 import json
 
+input("enter to continue")  # hack to avoid vscode term input
+
 conf = json.load(open('static-data/default_config.json', 'r'))
 
 block_pow = int(input("Block POW level:"))

@@ -1,8 +1,10 @@
-"""
-    Onionr - Private P2P Communication
+"""Onionr - Private P2P Communication.
 
-    cleanup files
+cleanup run files
 """
+import os
+
+import filepaths
 """
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -17,7 +19,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-import os, filepaths
+
 
 def _safe_remove(path):
     try:
@@ -25,8 +27,13 @@ def _safe_remove(path):
     except FileNotFoundError:
         pass
 
+
 def delete_run_files():
-     _safe_remove(filepaths.public_API_host_file)
-     _safe_remove(filepaths.private_API_host_file)
-     _safe_remove(filepaths.daemon_mark_file)
-     _safe_remove(filepaths.lock_file)
+    """Delete run files, do not error if not found.
+
+    Test: test_cleanup.py
+    """
+    _safe_remove(filepaths.public_API_host_file)
+    _safe_remove(filepaths.private_API_host_file)
+    _safe_remove(filepaths.daemon_mark_file)
+    _safe_remove(filepaths.lock_file)

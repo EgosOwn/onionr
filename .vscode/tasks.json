@@ -24,6 +24,16 @@
         }
       },
       {
+        "label": "Run test by name",
+        "type": "shell",
+        "command": "source venv/bin/activate; scripts/run-unit-test-by-name.py",
+        "group": "test",
+        "presentation": {
+          "reveal": "always",
+          "panel": "new"
+        }
+      },
+      {
         "label": "Enable dev config",
         "type": "process",
         "command": "scripts/enable-dev-config.py",
