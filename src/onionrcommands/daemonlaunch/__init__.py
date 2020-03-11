@@ -36,6 +36,7 @@ from utils.bettersleep import better_sleep
 from netcontroller.torcontrol.onionservicecreator import create_onion_service
 from .quotes import QUOTE
 from utils.boxprint import bordered
+from lan import LANManager
 """
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -162,6 +163,7 @@ def daemon():
 
     events.event('init', threaded=False)
     events.event('daemon_start')
+    LANManager(shared_state).start()
     communicator.startCommunicator(shared_state)
 
     clean_ephemeral_services()
