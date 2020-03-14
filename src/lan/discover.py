@@ -4,6 +4,10 @@ Discover and publish private-network
 """
 import socket
 import struct
+from typing import TYPE_CHECKING
+from typing import List
+from ipaddress import ip_address
+from socket import SHUT_RDWR
 
 from .getip import lan_ips
 from utils.bettersleep import better_sleep
@@ -27,7 +31,10 @@ IS_ALL_GROUPS = True
 ANNOUNCE_LOOP_SLEEP = 30
 
 
-def learn_services():
+
+def learn_services(lan_service_list: List):
+    """Take a list to infintely add lan service info to."""
+
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     if IS_ALL_GROUPS:
@@ -41,11 +48,26 @@ def learn_services():
     sock.setsockopt(socket.IPPROTO_IP, socket.IP_ADD_MEMBERSHIP, mreq)
 
     while True:
-        rec_data = sock.recv(1024)
-        print('reced_data', rec_data)
+        service_ips = sock.recv(200).decode('utf-8')
+        if 'onionr' not in service_ips:
+            continue
+        service_ips = service_ips.replace('onionr-', '').split('-')
+        port = 0
+        for service in service_ips:
+            try:
+                ip_address(service)
+            except ValueError:
+                service_ips.remove(service)
+                continue
+        # remove our own ips
+        service_ips = set(lan_ips) ^ set(service_ips)
+        # remove known ips and add to external list
+        lan_service_list = set(service_ips) ^ set(lan_service_list)
 
-    sock.shutdown()
+
+    sock.shutdown(SHUT_RDWR)
     sock.close()
+    # no return intended, list modified by reference
 
 
 def advertise_service():
@@ -61,5 +83,5 @@ def advertise_service():
     while True:
         sock.sendto(f"onionr-{ips}".encode('utf-8'), (MCAST_GRP, MCAST_PORT))
         better_sleep(ANNOUNCE_LOOP_SLEEP)
-    sock.shutdown()
+    sock.shutdown(SHUT_RDWR)
     sock.close()

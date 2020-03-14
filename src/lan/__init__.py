@@ -31,8 +31,11 @@ class LANManager:
 
     def __init__(self, too_many: "TooMany"):
         self.too_many = too_many
+        self.peers: "exploded IP Address string" = set()
+
 
     def start(self):
         Thread(target=learn_services, daemon=True).start()
         Thread(target=advertise_service, daemon=True).start()
+        Thread(tra)
 
