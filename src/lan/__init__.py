@@ -35,7 +35,7 @@ class LANManager:
 
 
     def start(self):
-        Thread(target=learn_services, daemon=True).start()
+        Thread(target=learn_services, args=[[]], daemon=True).start()
         Thread(target=advertise_service, daemon=True).start()
-        Thread(tra)
+        #Thread(tra)
 
