@@ -164,8 +164,10 @@ def daemon():
 
     events.event('init', threaded=False)
     events.event('daemon_start')
-    Thread(target=LANServer(shared_state).start_server, daemon=True).start()
-    LANManager(shared_state).start()
+    if config.get('transports.lan', True):
+        Thread(target=LANServer(shared_state).start_server,
+               daemon=True).start()
+        LANManager(shared_state).start()
     communicator.startCommunicator(shared_state)
 
     clean_ephemeral_services()

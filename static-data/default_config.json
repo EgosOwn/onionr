@@ -65,7 +65,8 @@
     },
     "transports": {
         "manual_disk": true,
-        "tor": true
+        "tor": true,
+        "lan": true
     },
     "ui": {
         "theme": "dark"
