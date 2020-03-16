@@ -13,3 +13,4 @@ toomanyobjs==1.1.0
 niceware==0.2.1
 psutil==5.7.0
 filenuke==0.0.0
+ifaddr==0.1.6
