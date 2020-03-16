@@ -7,7 +7,6 @@ from threading import Thread
 if TYPE_CHECKING:
     from toomanyobjs import TooMany
 
-from . import server
 from .client import Client
 from .discover import learn_services, advertise_service
 """
@@ -31,11 +30,10 @@ class LANManager:
 
     def __init__(self, too_many: "TooMany"):
         self.too_many = too_many
-        self.peers: "exploded IP Address string" = set()
+        self.peers: "exploded IP Address string" = []
 
 
     def start(self):
-        Thread(target=learn_services, args=[[]], daemon=True).start()
+        Thread(target=learn_services, args=[self.peers], daemon=True).start()
         Thread(target=advertise_service, daemon=True).start()
-        #Thread(tra)
 

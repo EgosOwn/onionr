@@ -17,3 +17,10 @@ for adapter in get_adapters():
         else:
             lan_ips.append(ip.exploded)
 
+for ip in lan_ips:
+    if '192.168' in ip:
+        best_ip = ip
+        break
+else:
+    best_ip = lan_ips[0]
+

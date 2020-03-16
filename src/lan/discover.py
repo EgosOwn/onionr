@@ -70,13 +70,16 @@ def learn_services(lan_service_list: List):
     # no return intended, list modified by reference
 
 
-def advertise_service():
+def advertise_service(specific_ips=None):
     # regarding socket.IP_MULTICAST_TTL
     # ---------------------------------
     # for all packets sent, after three hops on the network the packet will not
     # be re-sent/broadcast (see https://www.tldp.org/HOWTO/Multicast-HOWTO-6.html)
     MULTICAST_TTL = 3
-    ips = '-'.join(lan_ips)
+    if specific_ips is None:
+        ips = '-'.join(lan_ips)
+    else:
+        ips = '-'.join(specific_ips)
 
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
     sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, MULTICAST_TTL)

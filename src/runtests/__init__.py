@@ -13,6 +13,7 @@ from .webpasstest import webpass_test
 from .osver import test_os_ver_endpoint
 from .clearnettor import test_clearnet_tor_request
 from .housekeeping import test_inserted_housekeeping
+from .lanservertest import test_lan_server
 """
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -36,7 +37,8 @@ RUN_TESTS = [uicheck.check_ui,
              webpass_test,
              test_os_ver_endpoint,
              test_clearnet_tor_request,
-             test_inserted_housekeeping
+             test_inserted_housekeeping,
+             test_lan_server
              ]
 
 SUCCESS_FILE = os.path.dirname(os.path.realpath(__file__)) + '/../../tests/runtime-result.txt'
@@ -59,13 +61,19 @@ class OnionrRunTestManager:
         try:
             for i in RUN_TESTS:
                 last = i
+                logger.info("[RUNTIME TEST] " + last.__name__ + " started",
+                            terminal=True)
                 i(self)
-                logger.info("[RUNTIME TEST] " + last.__name__ + " passed")
+                logger.info("[RUNTIME TEST] " + last.__name__ + " passed",
+                            terminal=True)
         except (ValueError, AttributeError):
-            logger.error(last.__name__ + ' failed')
+            logger.error(last.__name__ + ' failed assertions', terminal=True)
+        except Exception as e:
+            logger.error(last.__name__ + ' failed with non-asserting exception')
+            logger.error(str(e))
         else:
             ep = str(epoch.get_epoch())
-            logger.info(f'All runtime tests passed at {ep}')
+            logger.info(f'All runtime tests passed at {ep}', terminal=True)
             with open(SUCCESS_FILE, 'w') as f:
                 f.write(ep)
 

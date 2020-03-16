@@ -37,6 +37,7 @@ from netcontroller.torcontrol.onionservicecreator import create_onion_service
 from .quotes import QUOTE
 from utils.boxprint import bordered
 from lan import LANManager
+from lan.server import LANServer
 """
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -123,37 +124,37 @@ def daemon():
     use_existing_tor = config.get('tor.use_existing_tor', False)
 
     if not offline_mode:
+        if config.get('transports.tor', True):
+            if use_existing_tor:
+                try:
+                    os.mkdir(filepaths.tor_hs_loc)
+                except FileExistsError:
+                    pass
+                net.socksPort = config.get('tor.existing_socks_port')
+                try:
+                    net.myID = create_onion_service(
+                        port=net.apiServerIP + ':' + str(net.hsPort))[0]
+                except IncorrectPassword:
+                    logger.error('Invalid Tor control password', terminal=True)
+                    localcommand.local_command('shutdown')
+                    cleanup.delete_run_files()
+                    sys.exit(1)
 
-        if use_existing_tor:
-            try:
-                os.mkdir(filepaths.tor_hs_loc)
-            except FileExistsError:
-                pass
-            net.socksPort = config.get('tor.existing_socks_port')
-            try:
-                net.myID = create_onion_service(
-                    port=net.apiServerIP + ':' + str(net.hsPort))[0]
-            except IncorrectPassword:
-                logger.error('Invalid Tor control password', terminal=True)
-                localcommand.local_command('shutdown')
-                cleanup.delete_run_files()
-                sys.exit(1)
-
-            if not net.myID.endswith('.onion'):
-                net.myID += '.onion'
-            with open(filepaths.tor_hs_address_file, 'w') as tor_file:
-                tor_file.write(net.myID)
-        else:
-            logger.info('Tor is starting...', terminal=True)
-            if not net.startTor():
-                localcommand.local_command('shutdown')
-                cleanup.delete_run_files()
-                sys.exit(1)
-        if len(net.myID) > 0 and security_level == 0:
-            logger.debug('Started .onion service: %s' %
-                         (logger.colors.underline + net.myID))
-        else:
-            logger.debug('.onion service disabled')
+                if not net.myID.endswith('.onion'):
+                    net.myID += '.onion'
+                with open(filepaths.tor_hs_address_file, 'w') as tor_file:
+                    tor_file.write(net.myID)
+            else:
+                logger.info('Tor is starting...', terminal=True)
+                if not net.startTor():
+                    localcommand.local_command('shutdown')
+                    cleanup.delete_run_files()
+                    sys.exit(1)
+            if len(net.myID) > 0 and security_level == 0:
+                logger.debug('Started .onion service: %s' %
+                            (logger.colors.underline + net.myID))
+            else:
+                logger.debug('.onion service disabled')
 
     logger.info('Using public key: %s' %
                 (logger.colors.underline +
@@ -163,6 +164,7 @@ def daemon():
 
     events.event('init', threaded=False)
     events.event('daemon_start')
+    Thread(target=LANServer(shared_state).start_server, daemon=True).start()
     LANManager(shared_state).start()
     communicator.startCommunicator(shared_state)
 
