@@ -25,7 +25,8 @@ from onionrutils import localcommand
 
 
 def test_own_node(test_manager):
-    return
+    if config.get('general.security_level', 0) > 0 or not config.get('transports.tor', True):
+        return
     socks_port = localcommand.local_command('/gettorsocks')
     if config.get('general.security_level', 0) > 0:
         return
@@ -39,7 +40,7 @@ def test_own_node(test_manager):
 
 
 def test_tor_adder(test_manager):
-    if config.get('general.security_level', 0) > 0:
+    if config.get('general.security_level', 0) > 0 or not config.get('transports.tor', True):
         return
     with open(identifyhome.identify_home() + 'hs/hostname', 'r') as hs:
         hs = hs.read().strip()
