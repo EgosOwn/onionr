@@ -5,10 +5,8 @@ launch the api servers and communicator
 import os
 import sys
 import platform
-import sqlite3
 from threading import Thread
 
-from gevent import spawn
 from stem.connection import IncorrectPassword
 import toomanyobjs
 import filenuke
@@ -35,6 +33,7 @@ from .getapihost import get_api_host_until_available
 from utils.bettersleep import better_sleep
 from netcontroller.torcontrol.onionservicecreator import create_onion_service
 from .quotes import QUOTE
+from .killdaemon import kill_daemon  # noqa
 from utils.boxprint import bordered
 from lan import LANManager
 from lan.server import LANServer
@@ -61,6 +60,8 @@ def _proper_shutdown():
 
 def daemon():
     """Start the Onionr communication daemon."""
+    # Determine if Onionr is in offline mode.
+    # When offline, Onionr can only use LAN and disk transport
     offline_mode = config.get('general.offline_mode', False)
 
     if not hastor.has_tor():
@@ -190,36 +191,6 @@ def daemon():
 def _ignore_sigint(sig, frame):  # pylint: disable=W0612,W0613
     """Space intentionally left blank."""
     return
-
-
-def kill_daemon():
-    """Shutdown the Onionr daemon (communicator)."""
-    logger.warn('Stopping the running daemon...', timestamp=False,
-                terminal=True)
-
-    # On platforms where we can, fork out to prevent locking
-    try:
-        pid = os.fork()
-        if pid != 0:
-            return
-    except (AttributeError, OSError):
-        pass
-
-    events.event('daemon_stop')
-    net = NetController(config.get('client.port', 59496))
-    try:
-        spawn(
-            localcommand.local_command,
-            '/shutdownclean'
-            ).get(timeout=5)
-    except sqlite3.OperationalError:
-        pass
-
-    net.killTor()
-
-
-kill_daemon.onionr_help = "Gracefully stops the "  # type: ignore
-kill_daemon.onionr_help += "Onionr API servers"  # type: ignore
 
 
 def start(override: bool = False):
