@@ -9,7 +9,7 @@ print("Test directory:", TEST_DIR)
 os.environ["ONIONR_HOME"] = TEST_DIR
 import unittest
 
-from lan.getip import lan_ips
+from lan.getip import lan_ips, best_ip
 
 class TestGetLanIps(unittest.TestCase):
     def test_get_lan_ips(self):
@@ -18,6 +18,12 @@ class TestGetLanIps(unittest.TestCase):
             ip = ipaddress.IPv4Address(ip)
             if not ip.is_private or ip.is_multicast or ip.is_reserved:
                 raise ValueError
+
+    def test_best_lan_ip(self):
+        ip = best_ip
+        ip = ipaddress.IPv4Address(ip)
+        if not ip.is_private or ip.is_multicast or ip.is_reserved:
+            raise ValueError
 
 
 unittest.main()
