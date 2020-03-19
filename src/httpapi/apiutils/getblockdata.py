@@ -5,7 +5,7 @@ import onionrexceptions
 class GetBlockData:
     def __init__(self, client_api_inst=None):
         return
-    
+
     def get_block_data(self, bHash, decrypt=False, raw=False, headerOnly=False):
         if not stringvalidators.validate_hash(bHash): raise onionrexceptions.InvalidHexHash("block hash not valid hash format")
         bl = onionrblockapi.Block(bHash)
@@ -26,7 +26,7 @@ class GetBlockData:
                 validSig = False
                 signer = bytesconverter.bytes_to_str(bl.signer)
                 if bl.isSigned() and stringvalidators.validate_pub_key(signer) and bl.isSigner(signer):
-                    validSig = True                    
+                    validSig = True
                 bl.bheader['validSig'] = validSig
                 bl.bheader['meta'] = ''
                 retData = {'meta': bl.bheader, 'metadata': bl.bmetadata}

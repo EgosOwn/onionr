@@ -43,7 +43,7 @@ def get_block_data(publicAPI, data):
     if stringvalidators.validate_hash(data):
         if not config.get('general.hide_created_blocks', True) or data not in publicAPI.hideBlocks:
             if data in blockmetadb.get_block_list():
-                block = apiutils.GetBlockData().get_block_data(data, raw=True)
+                block = apiutils.GetBlockData().get_block_data(data, raw=True, decrypt=False)
                 try:
                     block = block.encode() # Encode in case data is binary
                 except AttributeError:
