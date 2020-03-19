@@ -15,11 +15,15 @@ conf['general']['dev_mode'] = False
 conf['general']['insert_deniable_blocks'] = True
 conf['general']['random_bind_ip'] = True
 conf['general']['display_header'] = True
+conf['general']['security_level'] = 0
 conf['onboarding']['done'] = False
 conf['general']['minimum_block_pow'] = 5
 conf['general']['minimum_send_pow'] = 5
 conf['general']['max_block_age'] = 2678400
 conf['log']['file']['remove_on_exit'] = True
+conf['transports']['lan'] = True
+conf['transports']['tor'] = True
+conf['transports']['manual_disk'] = True
 
 json.dump(conf, open('static-data/default_config.json', 'w'), sort_keys=True, indent=4)
 
