@@ -64,9 +64,9 @@
         "v3onions": true
     },
     "transports": {
+        "lan": true,
         "manual_disk": true,
-        "tor": true,
-        "lan": true
+        "tor": true
     },
     "ui": {
         "theme": "dark"
