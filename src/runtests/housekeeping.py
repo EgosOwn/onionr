@@ -16,7 +16,7 @@ def test_inserted_housekeeping(testmanager):
     if bl in get_block_list():
         while count < wait_seconds:
             if bl in get_block_list():
-                sleep(1)
+                sleep(0.8)
                 count += 1
             else:
                 return
