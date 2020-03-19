@@ -7,11 +7,13 @@ from flask import Flask
 from flask import Response
 from gevent import sleep
 
+from onionrblocks.onionrblockapi import Block
 from httpapi.fdsafehandler import FDSafeHandler
 from netcontroller import get_open_port
 import config
 from coredb.blockmetadb import get_block_list
 from lan.getip import lan_ips, best_ip
+from onionrutils import stringvalidators
 """
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -40,7 +42,13 @@ class LANServer:
 
         @app.route('/blist/<time>')
         def get_block_list_for_lan(time):
-            return Response(get_block_list(dateRec=time).split('\n'))
+            return Response('\n'.join(get_block_list(dateRec=time)))
+
+        @app.route('/get/<block>')
+        def get_block_data(block):
+            if not stringvalidators.validate_hash(block):
+                raise ValueError
+            return Response(Block(block).raw, mimetype='application/octet-stream')
 
         @app.route("/ping")
         def ping():
