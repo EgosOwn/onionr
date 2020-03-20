@@ -25,7 +25,7 @@ fetch('/getHumanReadable', {
     headers: {
       "token": webpass
     }})
-.then((resp) => resp.text()) 
+.then((resp) => resp.text())
 .then(function(resp) {
     myPub = resp
 })
@@ -46,7 +46,7 @@ function post_to_url(path, params) {
     }
 
     document.body.appendChild(form)
-    form.submit() 
+    form.submit()
 }
 
 if (typeof webpass == "undefined"){
@@ -87,7 +87,7 @@ var passLinks = document.getElementsByClassName("idLink")
  for(var i = 0; i < passLinks.length; i++) {
     passLinks[i].href += '#' + webpass
  }
- 
+
 var refreshLinks = document.getElementsByClassName("refresh")
 
 for(var i = 0; i < refreshLinks.length; i++) {
@@ -133,7 +133,7 @@ if (typeof myPubCopy != "undefined"){
               })
         }
         console.log("copied pubkey to clipboard")
-    } 
+    }
 }
 
 /* For Config toggle on homepage */

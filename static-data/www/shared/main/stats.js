@@ -55,50 +55,79 @@ function seconds2time (seconds) {
     return time
 }
 
-switch (httpGet('/config/get/general.security_level')){
-    case "0":
-        sec_description_str = 'normal'
-        break;
-    case "1":
-        sec_description_str = 'high'
-        break;
-    case "2":
-        sec_description_str = 'very high'
-        break;
-    case "3":
-        sec_description_str = 'extreme'
-        break;
+
+fetch('/config/get/general.security_level', {
+    headers: {
+        "token": webpass
+    }})
+    .then((resp) => resp.text()) // Transform the data into text
+    .then(function(resp) {
+        switch(resp){
+                case "0":
+                    sec_description_str = 'normal'
+                    break;
+                case "1":
+                    sec_description_str = 'high'
+                    break;
+                case "2":
+                    sec_description_str = 'very high'
+                    break;
+                case "3":
+                    sec_description_str = 'extreme'
+                    break;
+            }
+            if (sec_description_str !== 'normal'){
+                showSecStatNotice()
+            }
+        })
+
+var getStats = function(){
+    fetch('/getstats', {
+        headers: {
+            "token": webpass
+        }})
+        .then((resp) => resp.json())
+        .then(function(stats) {
+            uptimeDisplay.innerText = seconds2time(stats['uptime'])
+            connectedNodes = stats['connectedNodes'].split('\n')
+            connectedDisplay.innerText = ''
+            for (x = 0; x < connectedNodes.length; x++){
+                if (! connectedDisplay.innerText.includes(connectedNodes[x])){
+                    connectedDisplay.innerText += '🧅 ' + connectedNodes[x] + '\n'
+                }
+            }
+            storedBlockDisplay.innerText = stats['blockCount']
+            queuedBlockDisplay.innerText = stats['blockQueueCount']
+            document.getElementById('threads').innerText = stats['threads']
+            securityLevel.innerText = sec_description_str
+            fetch('/hitcount', {
+                headers: {
+                    "token": webpass
+                }})
+                .then((resp) => resp.text())
+                .then(function(totalRec) {
+                    totalRec.innerText = totalRec
+                })
+            fetch('/lastconnect', {
+                headers: {
+                    "token": webpass
+                }})
+                .then((resp) => resp.text())
+                .then(function(conn) {
+                    var lastConnect = conn
+                    if (lastConnect > 0){
+                        var humanDate = new Date(0)
+                        humanDate.setUTCSeconds(conn)
+                        humanDate = humanDate.toString()
+                        lastConnect = humanDate.substring(0, humanDate.indexOf('('));
+                    }
+                    else{
+                        lastConnect = 'None since start'
+                    }
+                    lastIncoming.innerText = lastConnect
+                })
+        })
 }
 
-if (sec_description_str !== 'normal'){
-    showSecStatNotice()
-}
-
-function getStats(){
-    stats = JSON.parse(httpGet('getstats', webpass))
-    uptimeDisplay.innerText = seconds2time(stats['uptime'])
-    connectedNodes = stats['connectedNodes'].split('\n')
-    connectedDisplay.innerText = ''
-    for (x = 0; x < connectedNodes.length; x++){
-        if (! connectedDisplay.innerText.includes(connectedNodes[x])){
-            connectedDisplay.innerText += '🧅 ' + connectedNodes[x] + '\n'
-        }
-    }
-    storedBlockDisplay.innerText = stats['blockCount']
-    queuedBlockDisplay.innerText = stats['blockQueueCount']
-    securityLevel.innerText = sec_description_str
-    totalRec.innerText = httpGet('/hitcount')
-    var lastConnect = httpGet('/lastconnect')
-    if (lastConnect > 0){
-        var humanDate = new Date(0)
-        humanDate.setUTCSeconds(httpGet('/lastconnect'))
-        humanDate = humanDate.toString()
-        lastConnect = humanDate.substring(0, humanDate.indexOf('('));
-    }
-    else{
-        lastConnect = 'None since start'
-    }
-    lastIncoming.innerText = lastConnect
-}
 getStats()
 setInterval(function(){getStats()}, 10000)
