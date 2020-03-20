@@ -5,15 +5,16 @@ LAN transport server thread
 from gevent.pywsgi import WSGIServer
 from flask import Flask
 from flask import Response
-from gevent import sleep
+from flask import request
 
 from onionrblocks.onionrblockapi import Block
 from httpapi.fdsafehandler import FDSafeHandler
 from netcontroller import get_open_port
 import config
 from coredb.blockmetadb import get_block_list
-from lan.getip import lan_ips, best_ip
+from lan.getip import best_ip
 from onionrutils import stringvalidators
+from httpapi.miscpublicapi.upload import accept_upload
 """
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -48,11 +49,16 @@ class LANServer:
         def get_block_data(block):
             if not stringvalidators.validate_hash(block):
                 raise ValueError
-            return Response(Block(block).raw, mimetype='application/octet-stream')
+            return Response(
+                Block(block).raw, mimetype='application/octet-stream')
 
         @app.route("/ping")
         def ping():
             return Response("pong!")
+
+        @app.route('/upload', methods=['POST'])
+        def upload_endpoint():
+            return accept_upload(request)
 
     def start_server(self):
         self.server = WSGIServer((self.host, get_open_port()),
