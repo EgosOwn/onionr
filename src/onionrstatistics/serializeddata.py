@@ -52,4 +52,5 @@ class SerializedData:
         stats['blockCount'] = len(blockmetadb.get_block_list())
         stats['blockQueueCount'] = len(comm_inst.blockQueue)
         stats['threads'] = proc.num_threads()
+        stats['ramPercent'] = proc.memory_percent()
         return json.dumps(stats)

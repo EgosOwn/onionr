@@ -99,6 +99,7 @@ var getStats = function(){
             storedBlockDisplay.innerText = stats['blockCount']
             queuedBlockDisplay.innerText = stats['blockQueueCount']
             document.getElementById('threads').innerText = stats['threads']
+            document.getElementById('ramPercent').innerText = (stats['ramPercent']).toFixed(2) + '%'
             securityLevel.innerText = sec_description_str
             fetch('/hitcount', {
                 headers: {
