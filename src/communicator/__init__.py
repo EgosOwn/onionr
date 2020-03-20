@@ -152,11 +152,11 @@ class OnionrCommunicatorDaemon:
         # Timer to reset the longest offline peer
         # so contact can be attempted again
         OnionrCommunicatorTimers(
-            self, onlinepeers.clear_offline_peer, 58, my_args=[self])
+            self, onlinepeers.clear_offline_peer, 58, my_args=[self], max_threads=1)
 
         # Timer to cleanup old blocks
         blockCleanupTimer = OnionrCommunicatorTimers(
-            self, housekeeping.clean_old_blocks, 20, my_args=[self])
+            self, housekeeping.clean_old_blocks, 20, my_args=[self], max_threads=1)
 
         # Timer to discover new peers
         OnionrCommunicatorTimers(
