@@ -3,7 +3,7 @@
         "security_auditing": true
     },
     "allocations": {
-        "disk": 100000000,
+        "disk": 1073741824,
         "net_total": 1000000000
     },
     "general": {

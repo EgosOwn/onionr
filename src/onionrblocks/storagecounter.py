@@ -27,7 +27,7 @@ class StorageCounter:
     def is_full(self)->bool:
         """Returns if the allocated disk space is full (this is Onionr config, not true FS capacity)"""
         ret_data = False
-        if config.get('allocations.disk', 2000000000) <= (self.get_amount() + 1000):
+        if config.get('allocations.disk', 1073741824) <= (self.get_amount() + 1000):
             ret_data = True
         return ret_data
 
@@ -46,7 +46,7 @@ class StorageCounter:
         except ValueError:
             pass # Possibly happens when the file is empty
         return ret_data
-    
+
     def get_percent(self)->int:
         """Return percent (decimal/float) of disk space we're using"""
         amount = self.get_amount()
