@@ -2,13 +2,10 @@
 
 Ensure that clearnet cannot be reached
 """
-from threading import Thread
-
 from onionrutils.basicrequests import do_get_request
 from onionrutils import localcommand
 import logger
 import config
-
 """
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -30,7 +27,7 @@ def test_clearnet_tor_request(testmanager):
 
     Does not run if Tor is being reused
     """
-    
+
     config.reload()
     leak_result = ""
 

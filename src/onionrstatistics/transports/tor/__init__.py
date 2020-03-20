@@ -3,7 +3,6 @@
 
 """
 import json
-from gevent import sleep
 
 from stem import CircStatus
 
@@ -29,6 +28,7 @@ class TorStats:
     def __init__(self):
         self.circuits = {}
         self.json_data = ""
+        self.controller = None
 
     def get_json(self):
         """Refresh circuits then serialize them into form:
@@ -36,6 +36,8 @@ class TorStats:
         "nodes": list of tuples containing fingerprint and nickname strings"
         "purpose": https://stem.torproject.org/api/control.html#stem.CircPurpose
         """
+        if self.controller is None:
+            self.controller = get_controller()
         self.get_circuits()
         json_serialized = {}
         for circuit in self.circuits.keys():
@@ -52,7 +54,7 @@ class TorStats:
     def get_circuits(self):
         """Update the circuit dictionary"""
         circuits = {}
-        for circ in list(sorted(get_controller().get_circuits())):
+        for circ in list(sorted(self.controller.get_circuits())):
             if circ.status != CircStatus.BUILT:
                 continue
             circuits[circ.id] = (circ.path, circ.purpose)

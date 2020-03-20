@@ -62,10 +62,10 @@ class OnionrRunTestManager:
             for i in RUN_TESTS:
                 last = i
                 logger.info("[RUNTIME TEST] " + last.__name__ + " started",
-                            terminal=True)
+                            terminal=True, timestamp=True)
                 i(self)
                 logger.info("[RUNTIME TEST] " + last.__name__ + " passed",
-                            terminal=True)
+                            terminal=True, timestamp=True)
         except (ValueError, AttributeError):
             logger.error(last.__name__ + ' failed assertions', terminal=True)
         except Exception as e:

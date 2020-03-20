@@ -50,6 +50,7 @@ def event(event_name, data = {}, threaded = True):
     '''
 
     if threaded:
+        print('threaded event', event_name)
         thread = Thread(target = __event_caller, args = (event_name, data))
         thread.start()
         return thread

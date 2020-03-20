@@ -26,15 +26,16 @@ import onionrexceptions, logger
 
 from typing import TYPE_CHECKING
 from typing import Callable, NewType, Iterable
+from psutil import Process
 if TYPE_CHECKING:
     from communicator import OnionrCommunicatorDaemon
 
 CallFreqSeconds = NewType('CallFreqSeconds', int)
 
 class OnionrCommunicatorTimers:
-    def __init__(self, daemon_inst: OnionrCommunicatorDaemon, 
-                timer_function: Callable, frequency: CallFreqSeconds, 
-                make_thread:bool=True, thread_amount:int=1, max_threads:int=5, 
+    def __init__(self, daemon_inst: OnionrCommunicatorDaemon,
+                timer_function: Callable, frequency: CallFreqSeconds,
+                make_thread:bool=True, thread_amount:int=1, max_threads:int=5,
                 requires_peer:bool=False, my_args:Iterable=[]):
         self.timer_function = timer_function
         self.frequency = frequency
@@ -70,7 +71,7 @@ class OnionrCommunicatorTimers:
                             logger.debug('%s is currently using the maximum number of threads, not starting another.' % self.timer_function.__name__)
                         else:
                             self.daemon_inst.threadCounts[self.timer_function.__name__] += 1
-                            newThread = threading.Thread(target=self.timer_function, args=self.args, daemon=True, 
+                            newThread = threading.Thread(target=self.timer_function, args=self.args, daemon=True,
                                                         name=self.timer_function.__name__ + ' - ' + str(uuid.uuid4()))
                             newThread.start()
                 else:

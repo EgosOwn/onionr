@@ -10,11 +10,15 @@ def test_lan_server(testmanager):
         try:
             if requests.get(f"http://{best_ip}:{i}/ping").text == 'pong!':
                 bl = insert('test data')
-                if bl not in requests.get(f"http://{best_ip}:{i}/blist/0").text:
+                bl2 = insert('test data2')
+                l = requests.get(f"http://{best_ip}:{i}/blist/0").text
+                if bl not in l or bl2 not in l:
                     raise ValueError
                 if onionrblockapi.Block(bl).raw != requests.get(f"http://{best_ip}:{i}/get/{bl}").content:
                     raise ValueError
+                
                 break
+
         except requests.exceptions.ConnectionError:
             pass
     else:

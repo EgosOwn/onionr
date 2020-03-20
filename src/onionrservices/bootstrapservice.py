@@ -41,7 +41,7 @@ def bootstrap_client_service(peer, comm_inst=None, bootstrap_timeout=300):
     '''
     if not stringvalidators.validate_pub_key(peer):
         raise ValueError('Peer must be valid base32 ed25519 public key')
-    
+
     connection_pool = None
 
     # here we use a lambda for the timeout thread to set to true
@@ -60,7 +60,7 @@ def bootstrap_client_service(peer, comm_inst=None, bootstrap_timeout=300):
     else:
         comm_inst.service_greenlets.append(http_server)
         connection_pool = comm_inst.shared_state.get(pool.ServicePool)
-    
+
     bootstrap_address = ''
     shutdown = False
     bs_id = str(uuid.uuid4())
@@ -93,9 +93,9 @@ def bootstrap_client_service(peer, comm_inst=None, bootstrap_timeout=300):
         controller.authenticate(config.get('tor.controlpassword'))
         # Create the v3 onion service
         response = controller.create_ephemeral_hidden_service({80: bootstrap_port}, key_type = 'NEW', key_content = 'ED25519-V3', await_publication = True)
-        onionrblocks.insert(response.service_id, header='con', sign=True, encryptType='asym', 
+        onionrblocks.insert(response.service_id, header='con', sign=True, encryptType='asym',
         asymPeer=peer, disableForward=True, expire=(epoch.get_epoch() + bootstrap_timeout))
-        
+
         threading.Thread(target=__bootstrap_timeout, args=[http_server, bootstrap_timeout, timed_out], daemon=True).start()
 
         # Run the bootstrap server
