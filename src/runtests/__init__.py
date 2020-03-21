@@ -6,6 +6,7 @@ import os
 
 import logger
 from onionrutils import epoch
+from onionrcrypto.cryptoutils.randomshuffle import random_shuffle
 
 from . import uicheck, inserttest, stresstest
 from . import ownnode
@@ -50,6 +51,7 @@ class OnionrRunTestManager:
         self.run_date: int = 0
 
     def run_tests(self):
+        tests = random_shuffle(RUN_TESTS)
         cur_time = epoch.get_epoch()
         logger.info(f"Doing runtime tests at {cur_time}")
 
@@ -58,13 +60,18 @@ class OnionrRunTestManager:
         except FileNotFoundError:
             pass
 
+        done_count: int = 0
+        total_to_do: int = len(tests)
+
         try:
-            for i in RUN_TESTS:
+            for i in tests:
                 last = i
                 logger.info("[RUNTIME TEST] " + last.__name__ + " started",
                             terminal=True, timestamp=True)
                 i(self)
-                logger.info("[RUNTIME TEST] " + last.__name__ + " passed",
+                done_count += 1
+                logger.info("[RUNTIME TEST] " + last.__name__ +
+                            f" passed {done_count}/{total_to_do}",
                             terminal=True, timestamp=True)
         except (ValueError, AttributeError):
             logger.error(last.__name__ + ' failed assertions', terminal=True)
