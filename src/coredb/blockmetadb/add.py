@@ -36,7 +36,7 @@ def add_to_block_DB(newHash, selfInsert=False, dataSaved=False):
         raise BlockMetaEntryExists
     conn = sqlite3.connect(dbfiles.block_meta_db, timeout=onionrvalues.DATABASE_LOCK_TIMEOUT)
     c = conn.cursor()
-    currentTime = epoch.get_epoch() + secrets.randbelow(301)
+    currentTime = epoch.get_epoch() + secrets.randbelow(61)
     if selfInsert or dataSaved:
         selfInsert = 1
     else:
