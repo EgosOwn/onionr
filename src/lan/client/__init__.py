@@ -22,11 +22,11 @@ from utils.bettersleep import better_sleep
 
 
 class Client:
-    def __init__(self, peer_list: List):
-        self.peers = peer_list
+    def __init__(self):
+        self.peers = []
         return
 
     def start(self):
         while True:
-            print(1, self.peers)
+            print(1, self.peers, type(self.peers))
             better_sleep(1)

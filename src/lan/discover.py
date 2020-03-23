@@ -32,7 +32,7 @@ ANNOUNCE_LOOP_SLEEP = 30
 
 
 
-def learn_services(lan_service_list: List):
+def learn_services(lan_client):
     """Take a list to infintely add lan service info to."""
 
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
@@ -54,18 +54,15 @@ def learn_services(lan_service_list: List):
         service_ips = service_ips.replace('onionr-', '').split('-')
         port = 0
         for service in service_ips:
-            print(service)
             try:
                 ip_address(service)
                 if not ip_address(service).is_private: raise ValueError
+                if service in lan_ips: raise ValueError
+                if service in lan_client.peers: raise ValueError
             except ValueError:
                 service_ips.remove(service)
-                continue
-        # remove our own ips
-        service_ips = set(lan_ips) ^ set(service_ips)
-        # remove known ips and add to external list
-        lan_service_list = list(set(service_ips) ^ set(lan_service_list))
-        print('discover', list(lan_service_list))
+        p = list(lan_client.peers)
+        lan_client.peers = list(set(service_ips + p))
 
 
 def advertise_service(specific_ips=None):

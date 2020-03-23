@@ -29,7 +29,7 @@ for interface in net_if_addrs().keys():
         # Don't see benefit in ipv6, so just check for v4 addresses
         if address[0] == AF_INET:
             # Mark the address for use in LAN if it is a private address
-            if IPv4Address(address[1]).is_private:
+            if IPv4Address(address[1]).is_private and not IPv4Address(address[1]).is_loopback:
                 lan_ips.append(address[1])
 
 # These are more likely to be actual local subnets rather than VPNs
