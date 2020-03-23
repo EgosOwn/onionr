@@ -25,7 +25,7 @@ from utils.bettersleep import better_sleep
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-MCAST_GRP = '224.13.3.7'
+MCAST_GRP = '224.0.0.112'
 MCAST_PORT = 1337
 IS_ALL_GROUPS = True
 ANNOUNCE_LOOP_SLEEP = 30
@@ -54,20 +54,18 @@ def learn_services(lan_service_list: List):
         service_ips = service_ips.replace('onionr-', '').split('-')
         port = 0
         for service in service_ips:
+            print(service)
             try:
                 ip_address(service)
+                if not ip_address(service).is_private: raise ValueError
             except ValueError:
                 service_ips.remove(service)
                 continue
         # remove our own ips
         service_ips = set(lan_ips) ^ set(service_ips)
         # remove known ips and add to external list
-        lan_service_list = set(service_ips) ^ set(lan_service_list)
-
-
-    sock.shutdown(SHUT_RDWR)
-    sock.close()
-    # no return intended, list modified by reference
+        lan_service_list = list(set(service_ips) ^ set(lan_service_list))
+        print('discover', list(lan_service_list))
 
 
 def advertise_service(specific_ips=None):
@@ -84,7 +82,6 @@ def advertise_service(specific_ips=None):
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
     sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, MULTICAST_TTL)
     while True:
-        sock.sendto(f"onionr-{ips}".encode('utf-8'), (MCAST_GRP, MCAST_PORT))
+        sock.sendto(f"onionr-{ips}", (MCAST_GRP, MCAST_PORT))
         better_sleep(ANNOUNCE_LOOP_SLEEP)
-    sock.shutdown(SHUT_RDWR)
-    sock.close()
+
