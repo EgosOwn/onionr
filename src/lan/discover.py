@@ -82,6 +82,6 @@ def advertise_service(specific_ips=None):
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
     sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, MULTICAST_TTL)
     while True:
-        sock.sendto(f"onionr-{ips}", (MCAST_GRP, MCAST_PORT))
+        sock.sendto(f"onionr-{ips}".encode('utf-8'), (MCAST_GRP, MCAST_PORT))
         better_sleep(ANNOUNCE_LOOP_SLEEP)
 
