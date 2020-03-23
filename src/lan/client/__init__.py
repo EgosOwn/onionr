@@ -2,6 +2,9 @@
 
 LAN transport client thread
 """
+from typing import List
+
+from utils.bettersleep import better_sleep
 """
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -19,5 +22,11 @@ LAN transport client thread
 
 
 class Client:
-    def __init__(self):
+    def __init__(self, peer_list: List):
+        self.peers = peer_list
         return
+
+    def start(self):
+        while True:
+            print(1, self.peers)
+            better_sleep(1)

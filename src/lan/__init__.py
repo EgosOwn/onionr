@@ -36,4 +36,5 @@ class LANManager:
     def start(self):
         Thread(target=learn_services, args=[self.peers], daemon=True).start()
         Thread(target=advertise_service, daemon=True).start()
+        Thread(target=self.too_many.get(Client, (self.peers,)).start, daemon=True).start()
 
