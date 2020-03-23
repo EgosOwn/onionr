@@ -82,7 +82,7 @@ fetch('/config/get/general.security_level', {
         })
 
 var getStats = function(){
-    if (document.hidden()){
+    if (document.hidden){
         console.debug('skipping stats since no window focus')
         return
     }
