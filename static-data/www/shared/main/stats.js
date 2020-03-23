@@ -82,6 +82,10 @@ fetch('/config/get/general.security_level', {
         })
 
 var getStats = function(){
+    if (document.hidden()){
+        console.debug('skipping stats since no window focus')
+        return
+    }
     fetch('/getstats', {
         headers: {
             "token": webpass
