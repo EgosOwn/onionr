@@ -6,7 +6,7 @@ else
     echo "This system does not have /dev/shm. Cannot use this script."
     exit 9;
 fi
-ONIONR_HOME=$(mktemp -p /dev/shm/ -d -t onionr-XXXXXXXXXXX)
+ONIONR_HOME="$(mktemp -p /dev/shm/ -d -t onionr-XXXXXXXXXXX)"
 export ONIONR_HOME
 echo "Onionr has been launched with a temporary home directory using /dev/shm. Note that the OS may still write to swap if applicable."
 echo "Future Onionr commands will use your set or default Onionr home directory, unless you set it to $ONIONR_HOME"
