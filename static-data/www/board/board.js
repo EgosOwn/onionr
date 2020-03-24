@@ -147,19 +147,26 @@ function getBlocks(){
 
     }
 
-    var feedText =  httpGet('/flow/getpostsbyboard/' + ch) // TODO switch to fetch
-    var blockList = feedText.split(',')
+    fetch('/flow/getpostsbyboard/' + ch, {
+        method: 'GET',
+        headers: {
+          "token": webpass
+    }})
+    .then((resp) => resp.text())
+    .then(function(feedText) {
+        var blockList = feedText.split(',')
 
-    for (i = 0; i < blockList.length; i++){
-        blockList[i] = "0".repeat(64 - blockList[i].length) + blockList[i] // pad hash with zeroes
+        for (i = 0; i < blockList.length; i++){
+            blockList[i] = "0".repeat(64 - blockList[i].length) + blockList[i] // pad hash with zeroes
 
-        if (! requested.includes(blockList[i])){
-            if (blockList[i].length == 0) continue
-            else requested.push(blockList[i])
-            loadMessage(blockList[i], blockList, i, ch);
+            if (! requested.includes(blockList[i])){
+                if (blockList[i].length == 0) continue
+                else requested.push(blockList[i])
+                loadMessage(blockList[i], blockList, i, ch);
+            }
         }
-    }
-    sortEntries()
+        sortEntries()
+    })
 }
 
 function loadMessage(blockHash, blockList, count, channel){
