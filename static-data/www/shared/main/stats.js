@@ -104,6 +104,8 @@ var getStats = function(){
             queuedBlockDisplay.innerText = stats['blockQueueCount']
             document.getElementById('threads').innerText = stats['threads']
             document.getElementById('ramPercent').innerText = (stats['ramPercent']).toFixed(2) + '%'
+            document.getElementById('fileDescriptors').innerText = stats['fd']
+            document.getElementById('diskUsage').innerText = stats['diskUsage']
             securityLevel.innerText = sec_description_str
             fetch('/hitcount', {
                 headers: {

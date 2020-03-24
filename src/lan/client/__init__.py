@@ -28,5 +28,5 @@ class Client:
 
     def start(self):
         while True:
-            print(1, self.peers, type(self.peers))
+            #print(1, self.peers, type(self.peers))
             better_sleep(1)

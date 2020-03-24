@@ -5,9 +5,11 @@ Serialize various node information
 import json
 from gevent import sleep
 
-from psutil import Process
+from psutil import Process, WINDOWS
 
 from coredb import blockmetadb
+from utils.sizeutils import size, human_size
+from utils.identifyhome import identify_home
 import communicator
 """
     This program is free software: you can redistribute it and/or modify
@@ -40,6 +42,11 @@ class SerializedData:
         """Return statistics about our node"""
         stats = {}
         proc = Process()
+
+        def get_open_files():
+            if WINDOWS: return proc.num_handles()
+            return proc.num_fds()
+
         try:
             self._too_many
         except AttributeError:
@@ -53,4 +60,6 @@ class SerializedData:
         stats['blockQueueCount'] = len(comm_inst.blockQueue)
         stats['threads'] = proc.num_threads()
         stats['ramPercent'] = proc.memory_percent()
+        stats['fd'] = get_open_files()
+        stats['diskUsage'] = human_size(size(identify_home()))
         return json.dumps(stats)
