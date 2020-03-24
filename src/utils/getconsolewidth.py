@@ -1,9 +1,9 @@
-'''
-    Onionr - Private P2P Communication
+"""Onionr - Private P2P Communication.
 
-    Get the width of the terminal screen
-'''
-'''
+Get the width of the terminal screen
+"""
+import os
+"""
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -16,12 +16,11 @@
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
-'''
-import os
-def get_console_width():
-    '''
-        Returns an integer, the width of the terminal/cmd window
-    '''
+"""
+
+
+def get_console_width() -> int:
+    """Return the width of the terminal/cmd window."""
 
     columns = 80
 
