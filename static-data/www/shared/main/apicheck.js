@@ -38,6 +38,7 @@ return await fetch('/ping', {
 }
 
 let pingCheck = async function(){
+    if (document.hidden){return}
     result = await doPing()
 
 }
