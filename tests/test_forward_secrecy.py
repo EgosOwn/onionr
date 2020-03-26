@@ -37,7 +37,7 @@ class OnionrForwardSecrecyTests(unittest.TestCase):
             encrypted = friendUser.forwardEncrypt(message)
 
             decrypted = crypto.encryption.pub_key_decrypt(encrypted[0], privkey=fakeForwardPair[1], encodedData=True)
-            self.assertEqual(decrypted, message.encode())
+            self.assertEqual(decrypted, message)
 
     def test_forward_encrypt(self):
 
