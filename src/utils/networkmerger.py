@@ -32,8 +32,6 @@ def mergeAdders(newAdderList):
         for adder in newAdderList.split(','):
             adder = adder.strip()
             if not adder in keydb.listkeys.list_adders(randomOrder = False) and not adder in gettransports.get() and not blacklist.inBlacklist(adder):
-                if not config.get('tor.v3onions', True) and len(adder) == 62:
-                    continue
                 if keydb.addkeys.add_address(adder):
                     # Check if we have the maximum amount of allowed stored peers
                     if config.get('peers.max_stored_peers') > len(keydb.listkeys.list_adders()):

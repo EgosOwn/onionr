@@ -48,7 +48,7 @@ def connect_new_peer_to_communicator(comm_inst, peer='', useBootstrap=False):
                 tryingNew.append(x)
         for i in tryingNew:
             comm_inst.newPeers.remove(i)
-    
+
     if len(peerList) == 0 or useBootstrap:
         # Avoid duplicating bootstrap addresses in peerList
         if config.get('general.use_bootstrap_list', True):
@@ -57,8 +57,6 @@ def connect_new_peer_to_communicator(comm_inst, peer='', useBootstrap=False):
     for address in peerList:
         address = address.strip()
 
-        if not config.get('tor.v3onions') and len(address) == 62:
-            continue
         # Don't connect to our own address
         if address in transports:
             continue

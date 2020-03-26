@@ -17,13 +17,11 @@ def generate_torrc(net_controller, api_server_ip):
         Generate a torrc file for our tor instance
     """
     socks_port = net_controller.socksPort
-    hs_ver = '# v2 onions'
     hs_port = net_controller.hsPort
     home_dir = identifyhome.identify_home()
     tor_config_location = home_dir + '/torrc'
 
-    if config.get('tor.v3onions'):
-        hs_ver = 'HiddenServiceVersion 3'
+    hs_ver = 'HiddenServiceVersion 3'
 
     """
     Set the Tor control password.
