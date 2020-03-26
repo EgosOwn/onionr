@@ -23,3 +23,26 @@ noscript{
     font-size: 2em;
     color: yellow;
 }
+
+p{
+    font-size: 1.3em;
+}
+
+.formBtn{
+    margin-top: 1em;
+}
+.steps-content{
+    min-height: 200px;
+}
+
+.step-content .box{
+    padding: 2em;
+}
+
+.step-content .box span{
+    text-decoration: underline;
+}
+
+.steps-content input[type='checkbox'] {
+    margin-right: 10px;
+}

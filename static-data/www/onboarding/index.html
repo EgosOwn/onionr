@@ -2,29 +2,34 @@
 <html>
 
 <head>
-    <meta charset='utf-8'>
+    <meta charset="utf-8">
     <!--Mobile responsive-->
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>
         Onionr
     </title>
-    <link rel='shortcut icon' type='image/ico' href='/shared/images/favicon.ico'>
+    <link rel="shortcut icon" type="image/ico" href="/shared/images/favicon.ico">
     <link rel="stylesheet" href="/private/main.css">
     <link rel="stylesheet" href="/shared/fontawesome-free-5.10.2/css/all.min.css">
     <link rel="stylesheet" href="/gettheme">
+    <link rel="stylesheet" href="/shared/bulma-steps.min.css">
+    <link rel="stylesheet" href="/shared/bulma-tooltip.min.css">
     <link rel="stylesheet" href="donate-modal.css">
     <link rel="stylesheet" href="onboarding.css">
-    <script defer src='/shared/loadabout.js'></script>
-    <script defer src='/shared/misc.js'></script>
-    <script defer src='/private/js/console.js'></script>
-    <script defer src='donate.js'></script>
-    <script defer src='onboarding.js'></script>
+
+    <script defer src="/shared/loadabout.js"></script>
+    <script defer src="/shared/misc.js"></script>
+    <script defer src="/private/js/console.js"></script>
+    <script defer src="donate.js"></script>
+    <script defer src="onboarding.js"></script>
     <script defer src="/shared/panel.js"></script>
+    <script defer src="/shared/bulma-steps.min.js"></script>
+    <script defer src="consentskip.js"></script>
     <script>alert("Content security policy appears to not be working. Your browser security is weak!")</script>
 </head>
 
 <body>
-    <div id="shutdownNotice" class='overlay'>
+    <div id="shutdownNotice" class="overlay">
         <div>
             <p>Your node will shutdown. Thank you for using Onionr.</p>
             <p>If you are using random bind IPs (default in non dev mode), Onionr will have a different URL next time.
@@ -38,9 +43,9 @@
             <div class="container">
                 <div class="columns">
                     <div class="column">
-                        <h1 class="title">
-                            Onionr
-                        </h1>
+                      <div class="image is-128x128">
+                        <img src="/shared/images/onionr-text.png">
+                      </div>
                         <h2 class="subtitle">
                             Private Decentralized Communication
                         </h2>
@@ -48,7 +53,7 @@
                     <div class="column is-7">
                         <div class="field is-grouped is-pulled-right">
                             <p class="control">
-                                <a class="button is-danger is-outlined" id='shutdownNode'>
+                                <a class="button is-danger is-outlined" id="shutdownNode">
                                     Shutdown
                                 </a>
                             </p>
@@ -73,53 +78,200 @@
         </div>
     </div>
 
-    <div class="columns">
-        <div class="column">
-            <div class="onboarding">
-                <noscript><h1>Unfortunately, this requires JavaScript. Don't worry, all scripts are open source and locally loaded.</h1></noscript>
-                <p>Welcome. There are just a few questions for you to answer before you get started.</p>
-                <br>
-                <form method='post' id="onboardingForm">
-                    <div class="field">
-                        <div>
-                            I am concerned about the following targeting me...
-                        </div>
-                        <i class="icon fas fa-eye"></i> <input type="checkbox" name="state" checked> <label for="state">Government (mass surveillance)</label>
-                        <br>
-                        <i class="icon fas fa-university"></i> <input type="checkbox" name="stateTarget"> <label for="stateTarget">Government (direct target)</label>
-                        <br>
-                        <i class="icon fas fa-binoculars"></i> <input type="checkbox" name="local"> <label for="local">Nearby threat</label>
+    <div class="container">
+        <div class="onboarding">
+            <noscript><h1>Unfortunately, this requires JavaScript. Don't worry, all scripts are open source and locally loaded.</h1></noscript>
+            <form method="post" id="onboardingForm">
+                <div class="columns">
+                    <div class="column">
+                        <div class="steps" id="stepsDemo">
+                            <div class="step-item is-active">
+                              <div class="step-marker">1</div>
+                              <div class="step-details">
+                                <p class="step-title">Welcome</p>
+                              </div>
+                            </div>
+                            <div class="step-item">
+                              <div class="step-marker">2</div>
+                              <div class="step-details">
+                                <p class="step-title">Security</p>
+                              </div>
+                            </div>
+                            <div class="step-item">
+                              <div class="step-marker">3</div>
+                              <div class="step-details">
+                                <p class="step-title">Plugins</p>
+                              </div>
+                            </div>
+                            <div class="step-item">
+                              <div class="step-marker">4</div>
+                              <div class="step-details">
+                                <p class="step-title">Options</p>
+                              </div>
+                            </div>
+                            <div class="step-item">
+                              <div class="step-marker">5</div>
+                              <div class="step-details">
+                                <p class="step-title">Consent</p>
+                              </div>
+                            </div>
+                            <div class="steps-content">
+                              <div class="step-content has-text-justified is-active">
+                                <div class="box">
+                                  <p>The default settings are intended to be safe for most users.</p>
+                                  <p>Use the button below to skip to the end.</p>
+                                  <nav class="level">
+                                    <div class="level-left">
+                                      <div class="level-item">
+                                        <button class="button is-primary formBtn skipToConsent">Use default setup</button>
+                                      </div>
+                                    </div>
+                                    <div class="level-right">
+                                      <div class="level-item has-text-danger">
+                                        <small class="is-danger">Those targeted by powerful actors (governments, organized crime,
+                                          <span data-tooltip="advanced persistent threats">APTs</span>) should press next instead.</small>
+                                      </div>
+                                    </div>
+                                  </nav>
+                                </div>
+                              </div>
+                              <div class="step-content has-text-justified">
+                                <div class="box">
+                                <p>Configure Onionr according to one's <a href="https://ssd.eff.org/en/module/your-security-plan" target="_blank" rel="noopener">threat model</a></p>
+                                <p>I am concerned about the following:</p>
+                                <div class="columns">
+                                    <div class="column is-4">
+                                      <div class="box">
+                                        <nav class="level">
+                                          <div class="level-left">
+                                            <div class="level-item"><i class="icon fas fa-eye"></i> <input type="checkbox" name="state" checked></div>
+                                            <label for="state">Mass surveillance</label>
+                                          </div>
+                                          <div class="level-right">
+                                          </div>
+                                        </nav>
+                                      </div>
+                                    </div>
+                                    <div class="column is-4">
+                                      <div class="box">
+                                        <nav class="level">
+                                          <div class="level-left">
+                                            <div class="level-item">
+                                            <i class="icon fas fa-university"></i> <input type="checkbox" name="stateTarget">
+                                            </div>
+                                            <label for="stateTarget">State actor (direct target)</label>
+                                          </div>
+                                        </nav>
+                                      </div>
+                                    </div>
+                                    <div class="column is-4">
+                                      <div class="box">
+                                        <i class="icon fas fa-binoculars"></i> <input type="checkbox" name="local"> <label for="local">Nearby threat</label>
+                                      </div>
+                                    </div>
+                                </div>
+                                </div>
+                              </div>
+                              <div class="step-content has-text-justified">
+                                <div class="box">
+                                <div class="columns">
+                                    <div class="column is-4">
+                                      <div class="box">
+                                        <nav class="level">
+                                          <div class="level-left">
+                                            <i class="icon fas fa-envelope"></i> <input type="checkbox" name="useMail" checked> <label for="useMail">Use OnionrMail</label>
+                                          </div>
+                                          <div class="level-right">
+                                          </div>
+                                        </nav>
+                                      </div>
+                                    </div>
+                                    <div class="column is-4">
+                                      <div class="box">
+                                        <nav class="level">
+                                          <div class="level-left">
+                                            <i class="icon fas fa-comments"></i> <input type="checkbox" name="useCircles" checked> <label for="useMail">Use Circles (message board system)</label>
+                                          </div>
+                                          <div class="level-right">
+                                          </div>
+                                        </nav>
+                                      </div>
+                                    </div>
+                                </div>
+                                </div>
+                              </div>
+                              <div class="step-content has-text-justified">
+                                <div class="box">
+                                    <div class="columns">
+                                        <div class="column is-4">
+                                          <div class="box">
+                                            <nav class="level">
+                                              <div class="level-left">
+                                                <i class="icon fas fa-palette"></i> <input type="checkbox" name="useDarkTheme" checked> <label for="useDark">Use Dark Theme</label>
+                                              </div>
+                                              <div class="level-right">
+                                              </div>
+                                            </nav>
+                                          </div>
+                                        </div>
+                                        <div class="column is-4">
+                                          <div class="box">
+                                            <nav class="level">
+                                              <div class="level-left">
+                                                <div class="level-item">
+                                                  <i class="icon fas fa-dollar-sign"></i> <input type="checkbox" name="donate"> <label for="donate">Donating the price of a coffee to fund development</label>
+                                                </div>
+                                              </div>
+                                            </nav>
+                                          </div>
+                                        </div>
+                                    </div>
+                                  </div>
+                              </div>
+                              <div class="step-content has-text-justified">
+                                <div class="box">
+                                  <div class="columns">
+                                      <div class="column is-4">
+                                        <div class="box">
+                                          <nav class="level">
+                                            <div class="level-left">
+                                              <div class="level-item">
+                                                <i class="icon fas fa-book-open"></i> <input checked type="checkbox" name="networkContributionPlain"> <label for="networkContributionPlain">Storing plaintext data</label>
+                                              </div>
+                                            </div>
+                                            <div class="level-right">
+                                            </div>
+                                          </nav>
+                                        </div>
+                                      </div>
+                                      <div class="column is-4">
+                                        <div class="box">
+                                          <nav class="level">
+                                            <div class="level-left">
+                                              <div class="level-item">
+                                                <i class="icon fas fa-network-wired"></i> <input checked type="checkbox" name="networkContribution"> <label for="networkContribution">Participating in data storage & sharing</label>
+                                              </div>
+                                            </div>
+                                          </nav>
+                                        </div>
+                                      </div>
+                                  </div>
+                                  <input type="submit" class="button is-primary" value="Complete Setup">
+                                </div>
+                              </div>
+                            </div>
+                            <div class="steps-actions">
+                              <div class="steps-action">
+                                <a data-nav="previous" class="button is-light">Previous</a>
+                              </div>
+                              <div class="steps-action">
+                                <a data-nav="next" class="button is-light">Next</a>
+                              </div>
+                            </div>
+                          </div>
                     </div>
-                    <div class="field">
-                        <div>
-                            I want to contribute to Onionr by...
-                        </div>
-                        <i class="icon fas fa-network-wired"></i> <input checked type="checkbox" name="networkContribution"> <label for="networkContribution">Participating in data storage & sharing</label>
-                        <br>
-                        <i class="icon fas fa-book-open"></i> <input checked type="checkbox" name="networkContributionPlain"> <label for="networkContributionPlain">Storing plaintext data</label>
-                        <br>
-                        <i class="icon fas fa-dollar-sign"></i> <input type="checkbox" name="donate"> <label for="donate">Donating the price of a coffee to fund development</label>
-                    </div>
-                    <div class="field">
-                        <div>
-                            I want to...
-                        </div>
-                        <!--<i class="icon fas fa-user"></i> <input type="checkbox" name="useDeterministic"> <label for="useDeterministic">Use a seed to re(generate) a user ID</label>
-                        <br>
-                        -->
-                        <i class="icon fas fa-envelope"></i> <input type="checkbox" name="useMail" checked> <label for="useMail">Use OnionrMail</label>
-                        <br>
-                        <i class="icon fas fa-comments"></i> <input type="checkbox" name="useCircles" checked> <label for="useMail">Use Circles (message board system)</label>
-                        <br>
-                        <i class="icon fas fa-palette"></i> <input type="checkbox" name="useDarkTheme" checked> <label for="useDark">Use Dark Theme</label>
-
-                        <br>
-                    </div>
-                    <br>
-                    <input type="submit" value="Get Started" class="button is-primary">
-                    <br><br>
-                </form>
-            </div>
+                </div>
+            </form>
         </div>
     </div>
 

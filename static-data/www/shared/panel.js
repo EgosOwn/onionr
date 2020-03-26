@@ -29,28 +29,30 @@ shutdownBtn.onclick = function(){
     }
 }
 
-restartBtn.onclick = function(){
-    if (! nowebpass){
-        if (confirm("Really restart Onionr?")){
-            fetch('/restartclean', {
-                headers: {
-                "token": webpass
-            }})
-            PNotify.notice('Node is restarting')
+if (document.location.pathname != "/onboarding/"){
+
+    restartBtn.onclick = function(){
+        if (! nowebpass){
+            if (confirm("Really restart Onionr?")){
+                fetch('/restartclean', {
+                    headers: {
+                    "token": webpass
+                }})
+                PNotify.notice('Node is restarting')
+            }
         }
     }
+
+    fetch('/config/get/onboarding.done', {
+        method: 'GET',
+        headers: {
+            "content-type": "application/json",
+            "token": webpass
+        }})
+    .then((resp) => resp.text()) // Transform the data into text
+    .then(function(data) {
+        if (data === 'false'){
+            window.location.href = window.location.pathname = "/onboarding/" + window.location.hash
+        }
+        })
 }
-
-
-fetch('/config/get/onboarding.done', {
-    method: 'GET',
-    headers: {
-        "content-type": "application/json",
-        "token": webpass
-    }})
-.then((resp) => resp.text()) // Transform the data into text
-.then(function(data) {
-    if (data === 'false'){
-        window.location.href = window.location.pathname = "/onboarding/" + window.location.hash
-    }
-    })
