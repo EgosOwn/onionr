@@ -3,13 +3,13 @@
         "security_auditing": true
     },
     "allocations": {
-        "disk": 1073741824,
-        "net_total": 1000000000
+        "disk": 1073741824
     },
     "general": {
         "announce_node": true,
         "dev_mode": false,
         "display_header": true,
+        "ephemeral_tunnels": false,
         "hide_created_blocks": true,
         "insert_deniable_blocks": true,
         "max_block_age": 2678400,
@@ -19,7 +19,6 @@
         "random_bind_ip": true,
         "security_level": 0,
         "show_notifications": true,
-        "socket_servers": false,
         "store_plaintext_blocks": true,
         "use_bootstrap_list": true,
         "use_subprocess_pow_if_possible": true
@@ -40,7 +39,7 @@
     },
     "peers": {
         "max_connect": 1000,
-        "max_stored_peers": 5000,
+        "max_stored_peers": 10000000,
         "minimum_score": -100
     },
     "plugins": {
@@ -60,8 +59,7 @@
         "existing_control_port": 0,
         "existing_socks_port": 0,
         "use_bridge": false,
-        "use_existing_tor": false,
-        "v3onions": true
+        "use_existing_tor": false
     },
     "transports": {
         "lan": true,
