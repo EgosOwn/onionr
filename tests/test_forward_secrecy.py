@@ -20,9 +20,27 @@ class OnionrForwardSecrecyTests(unittest.TestCase):
     '''
         Tests both the onionrusers class and the contactmanager (which inherits it)
     '''
+    def test_forward_encrypt_bin(self):
+
+        friend = crypto.generate()
+
+        friendUser = onionrusers.OnionrUser(friend[0], saveUser=True)
+
+        for x in range(5):
+            message = os.urandom(32)
+            forwardKey = friendUser.generateForwardKey()
+
+            fakeForwardPair = crypto.generate()
+
+            self.assertTrue(friendUser.addForwardKey(fakeForwardPair[0]))
+
+            encrypted = friendUser.forwardEncrypt(message)
+
+            decrypted = crypto.encryption.pub_key_decrypt(encrypted[0], privkey=fakeForwardPair[1], encodedData=True)
+            self.assertEqual(decrypted, message.encode())
 
     def test_forward_encrypt(self):
-        
+
         friend = crypto.generate()
 
         friendUser = onionrusers.OnionrUser(friend[0], saveUser=True)
