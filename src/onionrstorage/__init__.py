@@ -1,8 +1,8 @@
-'''
-    Onionr - Private P2P Communication
+"""Onionr - Private P2P Communication.
 
-    This file handles block storage, providing an abstraction for storing blocks between file system and database
-'''
+Handle block storage, providing an abstraction for
+storing blocks between file system and database
+"""
 import sys
 import sqlite3
 import os
@@ -10,12 +10,10 @@ from onionrutils import bytesconverter
 from onionrutils import stringvalidators
 from coredb import dbfiles
 import filepaths
-import onionrcrypto
 import onionrexceptions
-from onionrsetup import dbcreator
 from onionrcrypto import hashers
 from . import setdata
-'''
+"""
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -28,7 +26,7 @@ from . import setdata
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
-'''
+"""
 
 
 DB_ENTRY_SIZE_LIMIT = 10000  # Will be a config option

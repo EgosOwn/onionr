@@ -2,8 +2,11 @@
 
 remove onionr block from meta db
 """
-import sys, sqlite3
-import onionrexceptions, onionrstorage
+import sys
+import sqlite3
+
+import onionrexceptions
+import onionrstorage
 from onionrutils import stringvalidators
 from coredb import dbfiles
 from onionrblocks import storagecounter
@@ -24,12 +27,10 @@ from onionrblocks import storagecounter
 
 
 def remove_block(block):
-    """
-        remove a block from this node (does not automatically blacklist)
+    """remove a block from this node (does not automatically blacklist).
 
-        **You may want blacklist.addToDB(blockHash)
+    **You may want blacklist.addToDB(blockHash)
     """
-
     if stringvalidators.validate_hash(block):
         conn = sqlite3.connect(dbfiles.block_meta_db, timeout=30)
         c = conn.cursor()
