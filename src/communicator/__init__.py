@@ -176,7 +176,7 @@ class OnionrCommunicatorDaemon:
             5, my_args=[self], requires_peer=True, max_threads=1)
 
         # Setup direct connections
-        if config.get('general.socket_servers', False):
+        if config.get('general.ephemeral_tunnels', False):
             self.services = onionrservices.OnionrServices()
             self.active_services = []
             self.service_greenlets = []
