@@ -3,7 +3,6 @@
 This file registers blueprints for the private api server
 """
 from threading import Thread
-from gevent import spawn
 from gevent import sleep
 
 from httpapi import security, friendsapi, profilesapi, configapi, insertblock
