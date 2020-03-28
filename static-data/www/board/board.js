@@ -35,7 +35,7 @@ let toggleLoadingMessage = function(){
     }
 }
 
-fetch('/flow/version', {
+fetch('/circles/version', {
     method: 'GET',
     headers: {
       "token": webpass
@@ -147,7 +147,7 @@ function getBlocks(){
 
     }
 
-    fetch('/flow/getpostsbyboard/' + ch, {
+    fetch('/circles/getpostsbyboard/' + ch, {
         method: 'GET',
         headers: {
           "token": webpass
@@ -181,7 +181,7 @@ function loadMessage(blockHash, blockList, count, channel){
         if (!response.ok) {
             let on404 = function() {
             if (response.status == 404){
-                fetch('/flow/removefromcache/' + channel + '/' + blockHash, {
+                fetch('/circles/removefromcache/' + channel + '/' + blockHash, {
                     method: 'POST',
                     headers: {
                         "content-type": "application/json",

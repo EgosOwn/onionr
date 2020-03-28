@@ -38,7 +38,7 @@ import flowapi  # noqa
 flask_blueprint = flowapi.flask_blueprint
 security_whitelist = ['staticfiles.boardContent', 'staticfiles.board']
 
-plugin_name = 'flow'
+plugin_name = 'circles'
 PLUGIN_VERSION = '0.1.0'
 
 EXPIRE_TIME = 43200
@@ -67,7 +67,7 @@ class OnionrFlow:
             if self.channel == "":
                 self.channel = "global"
             try:
-                message = logger.readline('\nInsert message into flow:').strip().replace(
+                message = logger.readline(f'\nInsert message into {plugin_name}:').strip().replace(
                     '\n', '\\n').replace('\r', '\\r')
             except EOFError:
                 pass
@@ -84,7 +84,7 @@ class OnionrFlow:
                                         meta = {
                                         'ch': self.channel})
 
-        logger.info("Flow is exiting, goodbye", terminal=True)
+        logger.info(f"{plugin_name} is exiting, goodbye", terminal=True)
         return
 
     def showOutput(self):
@@ -115,11 +115,11 @@ class OnionrFlow:
             self.flowRunning = False
 
 
-def on_flow_cmd(api, data=None):
+def on_circles_cmd(api, data=None):
     OnionrFlow().start()
 
 
-def on_flowsend_cmd(api, data=None):
+def on_circlesend_cmd(api, data=None):
     err_msg = "Second arg is board name, third is quoted message"
     try:
         sys.argv[2]

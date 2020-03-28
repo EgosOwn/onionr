@@ -1,6 +1,6 @@
 """Onionr - Private P2P Communication.
 
-This file primarily serves to allow specific fetching of flow board messages
+This file primarily serves to allow specific fetching of circles board messages
 """
 import json
 import os
@@ -24,16 +24,23 @@ from utils import identifyhome
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-flask_blueprint = Blueprint('flow', __name__)
+flask_blueprint = Blueprint('circles', __name__)
 
 with open(os.path.dirname(os.path.realpath(__file__)) + '/info.json', 'r') as info_file:
     data = info_file.read().strip()
     version = json.loads(data, strict=False)['version']
 
-@flask_blueprint.route('/flow/getpostsbyboard/<board>')
+BOARD_CACHE_FILE = identifyhome.identify_home() + '/board-index.cache.json',
+
+read_only_cache = DeadSimpleKV(
+    BOARD_CACHE_FILE,
+    flush_on_exit=False,
+    refresh_seconds=30)
+
+@flask_blueprint.route('/circles/getpostsbyboard/<board>')
 def get_post_by_board(board):
     board_cache = DeadSimpleKV(
-        identifyhome.identify_home() + '/board-index.cache.json',
+        BOARD_CACHE_FILE,
         flush_on_exit=False)
     board_cache.refresh()
     posts = board_cache.get(board)
@@ -43,12 +50,12 @@ def get_post_by_board(board):
         posts = ','.join(posts)
     return Response(posts)
 
-@flask_blueprint.route('/flow/getpostsbyboard/<board>/<offset>')
+@flask_blueprint.route('/circles/getpostsbyboard/<board>/<offset>')
 def get_post_by_board_with_offset(board, offset):
     offset = int(offset)
     OFFSET_COUNT = 10
     board_cache = DeadSimpleKV(
-        identifyhome.identify_home() + '/board-index.cache.json',
+        BOARD_CACHE_FILE,
         flush_on_exit=False)
     board_cache.refresh()
     posts = board_cache.get(board)
@@ -59,14 +66,13 @@ def get_post_by_board_with_offset(board, offset):
         posts = ','.join(posts[offset:offset + OFFSET_COUNT])
     return Response(posts)
 
-@flask_blueprint.route('/flow/version')
+@flask_blueprint.route('/circles/version')
 def get_version():
     return Response(version)
 
-@flask_blueprint.route('/flow/removefromcache/<board>/<name>', methods=['POST'])
+@flask_blueprint.route('/circles/removefromcache/<board>/<name>', methods=['POST'])
 def remove_from_cache(board, name):
-    board_cache = DeadSimpleKV(identifyhome.identify_home() +
-                               '/board-index.cache.json',
+    board_cache = DeadSimpleKV(BOARD_CACHE_FILE,
                                flush_on_exit=False)
     board_cache.refresh()
     posts = board_cache.get(board)
@@ -76,3 +82,8 @@ def remove_from_cache(board, name):
         pass
     board_cache.put(board, posts)
     return Response('success')
+
+#@flask_blueprint.route('/circles/getpopular/<count>')
+#def get_popular(count):
+    #boards = read_only_cache.get
+
