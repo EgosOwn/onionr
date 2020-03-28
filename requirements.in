@@ -5,7 +5,7 @@ gevent==1.4.0
 Flask==1.1.1
 PySocks==1.7.1
 stem==1.8.0
-deadsimplekv==0.3.0
+deadsimplekv==0.3.1
 unpaddedbase32==0.2.0
 streamedrequests==1.0.0
 jinja2==2.11.1

@@ -46,9 +46,9 @@ click==7.0 \
     --hash=sha256:2335065e6395b9e67ca716de5f7526736bfa6ceead690adf616d925bdc622b13 \
     --hash=sha256:5b94b49521f6456670fdb30cd82a4eca9412788a93fa6dd6df72c94d5a8ff2d7 \
     # via flask
-deadsimplekv==0.3.0 \
-    --hash=sha256:66a96e648f1306433628d1b7e2cc2d828d9aa488ad95f2b641a15cd5f89814fa \
-    --hash=sha256:ac9cf72f8a8e26933d572b7fb607cee84604aab5d9f3a4fd6bf6046818c5d4fc \
+deadsimplekv==0.3.1 \
+    --hash=sha256:85aaacba793178018210728d104c95ddec7755b419b41621310e109fc24cff46 \
+    --hash=sha256:a61e3f783f5698543d1011ec0ce72b252e950ca2af15e565b43ccc7886213311 \
     # via -r requirements.in
 filenuke==0.0.0 \
     --hash=sha256:147011c0125121469cae0a8a7f4df399f470e54aa29a08f2d2c099bf0118dcee \
