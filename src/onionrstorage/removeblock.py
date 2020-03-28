@@ -27,8 +27,9 @@ from onionrblocks import storagecounter
 
 
 def remove_block(block):
-    """remove a block from this node (does not automatically blacklist).
+    """Remove a block from this node.
 
+    (does not automatically blacklist).
     **You may want blacklist.addToDB(blockHash)
     """
     if stringvalidators.validate_hash(block):
