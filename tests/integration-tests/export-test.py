@@ -23,7 +23,7 @@ from filepaths import export_location
 
 class OnionrTests(unittest.TestCase):
     def test_export(self):
-        testargs = ["onionr.py", "flowsend", "tests", "hello"]
+        testargs = ["onionr.py", "circlesend", "tests", "hello"]
         with patch.object(sys, 'argv', testargs):
             try:
                 parser.register()
