@@ -8,25 +8,26 @@
     <title>
         Circles
     </title>
-    <link rel='shortcut icon' type='image/ico' href='/shared/images/favicon.ico'>
-    <link rel='stylesheet' href='/shared/main/PNotifyBrightTheme.css'>
+    <link rel="shortcut icon" type="image/ico" href="/shared/images/favicon.ico">
+    <link rel="stylesheet" href="/shared/main/PNotifyBrightTheme.css">
     <link rel="stylesheet" href="/shared/fontawesome-free-5.10.2/css/all.min.css">
     <link rel="stylesheet" href="/gettheme">
     <link rel="stylesheet" href="theme.css">
     <script defer src="/shared/base32.js"></script>
     <script defer src="/shared/identicon.js"></script>
-    <script defer src='/shared/node_modules/pnotify/dist/iife/PNotify.js'></script>
-    <script defer src='/shared/node_modules/pnotify/dist/iife/PNotifyButtons.js'></script>
+    <script defer src="/shared/node_modules/pnotify/dist/iife/PNotify.js"></script>
+    <script defer src="/shared/node_modules/pnotify/dist/iife/PNotifyButtons.js"></script>
     <script defer src="/shared/useridenticons.js"></script>
-    <script defer src='/shared/misc.js'></script>
-    <script defer src='/shared/navbar.js'></script>
+    <script defer src="/shared/misc.js"></script>
+    <script defer src="/shared/navbar.js"></script>
     <script defer src="/shared/main/apicheck.js"></script>
     <script defer src="detect-plaintext-storage.js"></script>
-    <script defer src='sethumanreadable.js'></script>
+    <script defer src="sethumanreadable.js"></script>
     <script defer src="default-circle-picker.js"></script>
     <script defer src="sort-posts.js"></script>
-    <script defer src='board.js'></script>
-    <script defer src='autorefresh.js'></script>
+    <script defer src="board.js"></script>
+    <script defer src="autorefresh.js"></script>
+    <script defer src="popular.js"></script>
 </head>
 
 <body>
@@ -114,22 +115,43 @@
                                         <a class="button is-static">Circle Name</a>
                                     </p>
                                     <p class="control is-expanded">
-                                        <input id='feedIDInput' class="input" placeholder="Board name" value="global">
+                                        <input id="feedIDInput" class="input" placeholder="Board name" value="global">
                                     </p>
                                     <p class="control">
-                                        <a class="button is-success" id='refreshFeed'>Refresh Feed</a>
+                                        <a class="button is-success" id="refreshFeed">Refresh Feed</a>
                                     </p>
                                 </div>
-                                <label for="recommendedBoards">Main Circles:</label>
-                                <select id="recommendedBoards">
-                                    <option value="global">Global</option>
-                                    <option value="onionr">Onionr</option>
-                                    <option value="games">Games</option>
-                                    <option value="politics">Politics</option>
-                                    <option value="tech">Tech</option>
-                                    <option value="random">Random</option>
-                                    <option value="privacy">Privacy</option>
-                                </select>
+                                <div class="field">
+                                    <div class="columns">
+                                        <div class="column is-2">
+                                            <div class="control">
+                                                <label for="recommendedBoards" class="label">Default Circles:</label>
+                                                <div class="select">
+                                                    <select id="recommendedBoards">
+                                                        <option value=""></option>
+                                                        <option value="global">Global</option>
+                                                        <option value="onionr">Onionr</option>
+                                                        <option value="games">Games</option>
+                                                        <option value="politics">Politics</option>
+                                                        <option value="tech">Tech</option>
+                                                        <option value="random">Random</option>
+                                                        <option value="privacy">Privacy</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="column is-2">
+                                            <div class="control">
+                                                <label for="popularBoards" class="label">Popular Circles:</label>
+                                                <div class="select">
+                                                    <select id="popularBoards">
+                                                        <option value="">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                                 <p class="control">
                                     <br>
                                         Note: All posts in Circles are publicly accessible.

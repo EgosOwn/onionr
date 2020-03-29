@@ -251,4 +251,10 @@ newPostForm.onsubmit = function(){
     return false
 }
 
+resetCirclePickers = function(){
+    document.getElementById('recommendedBoards').value = ""
+    document.getElementById('popularBoards').value = ""
+}
+
+document.getElementById('feedIDInput').onchange = resetCirclePickers
 
