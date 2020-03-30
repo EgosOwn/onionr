@@ -115,7 +115,7 @@ itsdangerous==1.1.0 \
 jinja2==2.11.1 \
     --hash=sha256:93187ffbc7808079673ef52771baa950426fd664d3aad1d0fa3e95644360e250 \
     --hash=sha256:b0eaf100007721b5c16c1fc1eecb87409464edc10469ddc9a22a27a99123be49 \
-    # via -r requirements.in, flask
+    # via flask
 markupsafe==1.1.1 \
     --hash=sha256:00bc623926325b26bb9605ae9eae8a215691f33cae5df11ca5424f06f2d1f473 \
     --hash=sha256:09027a7803a62ca78792ad89403b1b7a73a01c8cb65909cd876f7fcebd79b161 \
@@ -154,6 +154,9 @@ niceware==0.2.1 \
     --hash=sha256:0f8b192f2a1e800e068474f6e208be9c7e2857664b33a96f4045340de4e5c69c \
     --hash=sha256:cf2dc0e1567d36d067c61b32fed0f1b9c4534ed511f9eeead4ba548d03b5c9eb \
     # via -r requirements.in
+pathtools==0.1.2 \
+    --hash=sha256:7c35c5421a39bb82e58018febd90e3b6e5db34c5443aaaf742b3f33d4655f1c0 \
+    # via watchdog
 psutil==5.7.0 \
     --hash=sha256:1413f4158eb50e110777c4f15d7c759521703bd6beb58926f1d562da40180058 \
     --hash=sha256:298af2f14b635c3c7118fd9183843f4e73e681bb6f01e12284d4d70d48a60953 \
@@ -221,6 +224,9 @@ urllib3==1.25.8 \
     --hash=sha256:2f3db8b19923a873b3e5256dc9c2dedfa883e33d87c690d9c7913e1f40673cdc \
     --hash=sha256:87716c2d2a7121198ebcb7ce7cccf6ce5e9ba539041cfbaeecfb641dc0bf6acc \
     # via -r requirements.in, requests
+watchdog==0.10.2 \
+    --hash=sha256:c560efb643faed5ef28784b2245cf8874f939569717a4a12826a173ac644456b \
+    # via -r requirements.in
 werkzeug==0.15.5 \
     --hash=sha256:87ae4e5b5366da2347eb3116c0e6c681a0e939a33b2805e2c0cbd282664932c4 \
     --hash=sha256:a13b74dd3c45f758d4ebdb224be8f1ab8ef58b3c0ffc1783a8c7d9f4f50227e6 \

@@ -37,6 +37,7 @@ from .killdaemon import kill_daemon  # noqa
 from utils.boxprint import bordered
 from lan import LANManager
 from lan.server import LANServer
+from sneakernet import sneakernet_import_thread
 """
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -169,6 +170,8 @@ def daemon():
         Thread(target=LANServer(shared_state).start_server,
                daemon=True).start()
         LANManager(shared_state).start()
+    if config.get('transports.sneakernet', True):
+        Thread(target=sneakernet_import_thread, daemon=True).start()
     communicator.startCommunicator(shared_state)
 
     clean_ephemeral_services()

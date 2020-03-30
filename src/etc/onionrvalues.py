@@ -47,7 +47,7 @@ WSGI_SERVER_REQUEST_TIMEOUT_SECS = 120
 
 MAX_NEW_PEER_QUEUE = 1000
 
-BLOCK_EXPORT_FILE_EXT = '.dat'
+BLOCK_EXPORT_FILE_EXT = '.onionr'
 
 # Begin OnionrValues migrated values
 

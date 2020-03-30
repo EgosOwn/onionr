@@ -19,6 +19,6 @@ class TestOnionrValues(unittest.TestCase):
         self.assertEqual(onionrvalues.MAX_BLOCK_CLOCK_SKEW, 120)
 
     def test_block_export_ext(self):
-        self.assertEqual(onionrvalues.BLOCK_EXPORT_FILE_EXT, '.dat')
+        self.assertEqual(onionrvalues.BLOCK_EXPORT_FILE_EXT, '.onionr')
 
 unittest.main()

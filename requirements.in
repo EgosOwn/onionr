@@ -8,9 +8,9 @@ stem==1.8.0
 deadsimplekv==0.3.1
 unpaddedbase32==0.2.0
 streamedrequests==1.0.0
-jinja2==2.11.1
 toomanyobjs==1.1.0
 niceware==0.2.1
 psutil==5.7.0
 filenuke==0.0.0
 mimcvdf==1.0.0
+watchdog==0.10.2

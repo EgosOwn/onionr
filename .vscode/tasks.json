@@ -46,6 +46,13 @@
         "command": "scripts/disable-dev-config.py",
         "group": "dev",
         "problemMatcher": []
+      },
+      {
+        "label": "Format default config",
+        "type": "process",
+        "command": "scripts/pretty-default-config.py",
+        "group": "dev",
+        "problemMatcher": []
       }
     ]
   }

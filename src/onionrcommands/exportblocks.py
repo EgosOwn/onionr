@@ -8,6 +8,7 @@ import logger
 import onionrstorage
 from utils import createdirs
 from onionrutils import stringvalidators
+from etc.onionrvalues import BLOCK_EXPORT_FILE_EXT
 import filepaths
 
 import os
@@ -31,23 +32,26 @@ from coredb import blockmetadb
 def _do_export(b_hash):
     createdirs.create_dirs()
     data = onionrstorage.getData(b_hash)
-    with open('%s/%s.dat' % (filepaths.export_location,
-                             b_hash), 'wb') as export:
+    with open('%s/%s%s' % (filepaths.export_location,
+                             b_hash, BLOCK_EXPORT_FILE_EXT), 'wb') as export:
         export.write(data)
         logger.info('Block exported as file', terminal=True)
 
 
-def export_block():
+def export_block(*args):
     """Export block based on hash from stdin or argv."""
-    try:
-        if not stringvalidators.validate_hash(sys.argv[2]):
-            raise ValueError
-    except (IndexError, ValueError):
-        logger.error('No valid block hash specified.', terminal=True)
-        sys.exit(1)
+    if args:
+        b_hash = args[0]
     else:
-        b_hash = sys.argv[2]
-        _do_export(b_hash)
+        try:
+            if not stringvalidators.validate_hash(sys.argv[2]):
+                raise ValueError
+        except (IndexError, ValueError):
+            logger.error('No valid block hash specified.', terminal=True)
+            sys.exit(1)
+        else:
+            b_hash = sys.argv[2]
+    _do_export(b_hash)
 
 
 export_block.onionr_help = "<block hash>: Export block to "  # type: ignore

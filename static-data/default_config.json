@@ -63,7 +63,7 @@
     },
     "transports": {
         "lan": true,
-        "manual_disk": true,
+        "sneakernet": true,
         "tor": true
     },
     "ui": {

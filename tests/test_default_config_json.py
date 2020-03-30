@@ -58,7 +58,7 @@ class OnionrConfig(unittest.TestCase):
             self.assertEqual(conf['tor']['use_bridge'], False)
             self.assertEqual(conf['tor']['use_existing_tor'], False)
             self.assertEqual(conf['transports']['lan'], True)
-            self.assertEqual(conf['transports']['manual_disk'], True)
+            self.assertEqual(conf['transports']['sneakernet'], True)
             self.assertEqual(conf['transports']['tor'], True)
             self.assertEqual(conf['ui']['theme'], 'dark')
 unittest.main()

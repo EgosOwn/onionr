@@ -23,7 +23,7 @@ conf['general']['max_block_age'] = 2678400
 conf['log']['file']['remove_on_exit'] = True
 conf['transports']['lan'] = True
 conf['transports']['tor'] = True
-conf['transports']['manual_disk'] = True
+conf['transports']['sneakernet'] = True
 
 json.dump(conf, open('static-data/default_config.json', 'w'), sort_keys=True, indent=4)
 
