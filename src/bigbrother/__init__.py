@@ -40,6 +40,8 @@ def sys_hook_entrypoint(event, info):
         ministry.ofexec.block_exec(event, info)
     elif event == 'system':
         ministry.ofexec.block_system(info)
+    elif event == 'open':
+        ministry.ofdisk.detect_disk_access(info)
 
 
 def enable_ministries(disable_hooks: Iterable = None):
