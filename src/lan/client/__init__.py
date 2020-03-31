@@ -41,5 +41,5 @@ class Client:
 
 
 
-            better_sleep(self.pull_delay)
+            better_sleep(self.poll_delay)
 

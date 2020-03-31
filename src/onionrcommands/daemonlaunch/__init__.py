@@ -38,6 +38,7 @@ from utils.boxprint import bordered
 from lan import LANManager
 from lan.server import LANServer
 from sneakernet import sneakernet_import_thread
+from onionrstatistics.devreporting import statistics_reporter
 """
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -172,6 +173,8 @@ def daemon():
         LANManager(shared_state).start()
     if config.get('transports.sneakernet', True):
         Thread(target=sneakernet_import_thread, daemon=True).start()
+
+    Thread(target=statistics_reporter, args=[shared_state], daemon=True).start()
     communicator.startCommunicator(shared_state)
 
     clean_ephemeral_services()

@@ -24,6 +24,8 @@ conf['log']['file']['remove_on_exit'] = True
 conf['transports']['lan'] = True
 conf['transports']['tor'] = True
 conf['transports']['sneakernet'] = True
+conf['statistics']['i_dont_want_privacy'] = False
+conf['statistics']['server'] = ''
 
 json.dump(conf, open('static-data/default_config.json', 'w'), sort_keys=True, indent=4)
 
