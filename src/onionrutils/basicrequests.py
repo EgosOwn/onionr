@@ -1,8 +1,14 @@
-'''
-    Onionr - Private P2P Communication
+'''Onionr - Private P2P Communication.
 
     Do HTTP GET or POST requests through a proxy
 '''
+from ipaddress import IPv4Address
+from urllib.parse import urlparse
+
+import requests, streamedrequests
+import logger, onionrexceptions
+from etc import onionrvalues
+from . import localcommand
 '''
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -17,20 +23,22 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
-import requests, streamedrequests
-import logger, onionrexceptions
-from etc import onionrvalues
-from . import localcommand
+
+
 def do_post_request(url, data={}, port=0, proxyType='tor', max_size=10000, content_type: str = ''):
-    '''
-    Do a POST request through a local tor or i2p instance
-    '''
+    '''Do a POST request through a local tor or i2p instance.'''
     if proxyType == 'tor':
         if port == 0:
             port = localcommand.local_command('/gettorsocks')
         proxies = {'http': 'socks4a://127.0.0.1:' + str(port), 'https': 'socks4a://127.0.0.1:' + str(port)}
     elif proxyType == 'i2p':
         proxies = {'http': 'http://127.0.0.1:4444'}
+    elif proxyType == 'lan':
+        address = urlparse(url).hostname
+        if IPv4Address(address).is_private and not IPv4Address(address).is_loopback:
+            proxies = {}
+        else:
+            return
     else:
         return
     headers = {'User-Agent': 'PyOnionr', 'Connection':'close'}
@@ -48,6 +56,7 @@ def do_post_request(url, data={}, port=0, proxyType='tor', max_size=10000, conte
         retData = False
     return retData
 
+
 def do_get_request(url, port=0, proxyType='tor', ignoreAPI=False, returnHeaders=False, max_size=5242880):
     '''
     Do a get request through a local tor or i2p instance
@@ -56,10 +65,16 @@ def do_get_request(url, port=0, proxyType='tor', ignoreAPI=False, returnHeaders=
     retData = False
     if proxyType == 'tor':
         if port == 0:
-            raise onionrexceptions.MissingPort('Socks port required for Tor HTTP get request')
+            port = localcommand.local_command('/gettorsocks')
         proxies = {'http': 'socks4a://127.0.0.1:' + str(port), 'https': 'socks4a://127.0.0.1:' + str(port)}
     elif proxyType == 'i2p':
         proxies = {'http': 'http://127.0.0.1:4444'}
+    elif proxyType == 'lan':
+        address = urlparse(url).hostname
+        if IPv4Address(address).is_private and not IPv4Address(address).is_loopback:
+            proxies = {}
+        else:
+            return
     else:
         return
     headers = {'User-Agent': 'PyOnionr', 'Connection':'close'}

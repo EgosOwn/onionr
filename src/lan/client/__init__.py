@@ -4,7 +4,9 @@ LAN transport client thread
 """
 from typing import List
 
+from onionrcrypto.cryptoutils.randomshuffle import random_shuffle
 from utils.bettersleep import better_sleep
+from onionrutils.basicrequests import do_post_request, do_get_request
 """
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -24,9 +26,20 @@ from utils.bettersleep import better_sleep
 class Client:
     def __init__(self):
         self.peers = []
-        return
+        self.lookup_time = {}
+        self.poll_delay = 10
+
+    def get_lookup_time(self, peer):
+        try:
+            return self.lookup_time[peer]
+        except KeyError:
+            return 0
 
     def start(self):
         while True:
-            #print(1, self.peers, type(self.peers))
-            better_sleep(1)
+            self.peers = random_shuffle(self.peers)
+
+
+
+            better_sleep(self.pull_delay)
+
