@@ -46,9 +46,11 @@ class _Importer(FileSystemEventHandler):
 
 
 def sneakernet_import_thread():
+    """Add block data dir & confed paths to fs observer to watch for new bls"""
     observer = Observer()
     for path in watch_paths:
         observer.schedule(_Importer(), path, recursive=True)
     observer.start()
     while observer.isAlive():
+        # call import func with timeout
         observer.join(60)
