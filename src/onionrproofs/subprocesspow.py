@@ -1,22 +1,20 @@
 #!/usr/bin/env python3
-"""
-    Onionr - Private P2P Communication
+"""Onionr - Private P2P Communication.
 
-    Multiprocess proof of work
+Multiprocess proof of work
 """
 
 import os
 from multiprocessing import Pipe, Process
 import threading
 import time
-import json
-import secrets
+import onionrproofs
+
+import ujson as json
 
 import logger
-import onionrproofs
 import onionrcrypto as crypto
 from onionrutils import bytesconverter
-from .blocknoncestart import BLOCK_NONCE_START_INT
 
 """
     This program is free software: you can redistribute it and/or modify
@@ -110,11 +108,12 @@ class SubprocessPOW:
 
     def do_pow(self, pipe):
         """find partial hash colision generating nonce for a block"""
-        nonce = -secrets.randbelow(10**10)
+        nonce = 0
         data = self.data
         metadata = self.metadata
         puzzle = self.puzzle
         difficulty = self.difficulty
+
         while True:
             # Break if shutdown received
             if pipe.poll() and pipe.recv() == 'shutdown':
