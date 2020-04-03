@@ -2,8 +2,7 @@
 
 
 """
-import json
-
+import ujson as json
 from stem import CircStatus
 
 from netcontroller.torcontrol.torcontroller import get_controller

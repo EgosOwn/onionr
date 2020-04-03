@@ -2,7 +2,7 @@
 
 Create blocks with the client api server
 """
-import json
+import ujson as json
 import threading
 
 from flask import Blueprint, Response, request, g

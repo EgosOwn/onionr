@@ -18,7 +18,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 from typing import Union
-import json
+import ujson as json
 
 from gevent import spawn
 

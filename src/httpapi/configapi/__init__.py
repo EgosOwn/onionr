@@ -17,8 +17,9 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-import json
+import ujson as json
 from flask import Blueprint, request, Response, abort
+
 import config, onionrutils
 
 from onionrutils.bytesconverter import bytes_to_str

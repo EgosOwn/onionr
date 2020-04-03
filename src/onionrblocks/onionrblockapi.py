@@ -1,9 +1,26 @@
-'''
-    Onionr - P2P Anonymous Storage Network
+"""Onionr - P2P Anonymous Storage Network.
 
-    This file contains the OnionrBlocks class which is a class for working with Onionr blocks
-'''
-'''
+OnionrBlocks class for abstraction of blocks
+"""
+import binascii
+import os
+import datetime
+import onionrstorage
+
+import unpaddedbase32
+import ujson as json
+import nacl.exceptions
+
+import logger
+import onionrexceptions
+from onionrusers import onionrusers
+from onionrutils import stringvalidators, epoch
+from coredb import blockmetadb
+from onionrutils import bytesconverter
+from onionrstorage import removeblock
+import onionrblocks
+from onionrcrypto import encryption, cryptoutils as cryptoutils, signing
+"""
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -16,18 +33,9 @@
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
-'''
-import unpaddedbase32
-import binascii
-import logger, config, onionrexceptions, nacl.exceptions
-import json, os, sys, datetime, base64, onionrstorage
-from onionrusers import onionrusers
-from onionrutils import stringvalidators, epoch
-from coredb import blockmetadb
-from onionrutils import bytesconverter
-from onionrstorage import removeblock
-import onionrblocks
-from onionrcrypto import encryption, cryptoutils as cryptoutils, signing
+"""
+
+
 class Block:
     blockCacheOrder = list() # NEVER write your own code that writes to this!
     blockCache = dict() # should never be accessed directly, look at Block.getCache()
@@ -62,9 +70,9 @@ class Block:
         self.update()
 
     def decrypt(self, encodedData = True):
-        '''
+        """
             Decrypt a block, loading decrypted data into their vars
-        '''
+        """
 
         if self.decrypted:
             return True
@@ -126,9 +134,9 @@ class Block:
         return retData
 
     def verifySig(self):
-        '''
+        """
             Verify if a block's signature is signed by its claimed signer
-        '''
+        """
         if self.signer is None:
             return False
         if signing.ed_verify(data=self.signedData, key=self.signer, sig=self.signature, encodedData=True):
@@ -138,7 +146,7 @@ class Block:
         return self.validSig
 
     def update(self, data = None, file = None):
-        '''
+        """
             Loads data from a block in to the current object.
 
             Inputs:
@@ -151,7 +159,7 @@ class Block:
 
             Outputs:
             - (bool): indicates whether or not the operation was successful
-        '''
+        """
         try:
             # import from string
             blockdata = data
@@ -205,12 +213,12 @@ class Block:
         return False
 
     def delete(self):
-        '''
+        """
             Deletes the block's file and records, if they exist
 
             Outputs:
             - (bool): whether or not the operation was successful
-        '''
+        """
 
         if self.exists():
             try:
@@ -224,7 +232,7 @@ class Block:
         return False
 
     def save(self, sign = False, recreate = True):
-        '''
+        """
             Saves a block to file and imports it into Onionr
 
             Inputs:
@@ -233,7 +241,7 @@ class Block:
 
             Outputs:
             - (bool): whether or not the operation was successful
-        '''
+        """
 
         try:
             if self.isValid() is True:
@@ -253,45 +261,45 @@ class Block:
     # getters
 
     def getExpire(self):
-        '''
+        """
             Returns the expire time for a block
 
             Outputs:
             - (int): the expire time for a block, or None
-        '''
+        """
         return self.expire
 
     def getHash(self):
-        '''
+        """
             Returns the hash of the block if saved to file
 
             Outputs:
             - (str): the hash of the block, or None
-        '''
+        """
 
         return self.hash
 
     def getType(self):
-        '''
+        """
             Returns the type of the block
 
             Outputs:
             - (str): the type of the block
-        '''
+        """
         return self.btype
 
     def getRaw(self):
-        '''
+        """
             Returns the raw contents of the block, if saved to file
 
             Outputs:
             - (bytes): the raw contents of the block, or None
-        '''
+        """
 
         return self.raw
 
     def getHeader(self, key = None, default = None):
-        '''
+        """
             Returns the header information
 
             Inputs:
@@ -299,7 +307,7 @@ class Block:
 
             Outputs:
             - (dict/str): either the whole header as a dict, or one value
-        '''
+        """
 
         if not key is None:
             if key in self.getHeader():
@@ -308,7 +316,7 @@ class Block:
         return self.bheader
 
     def getMetadata(self, key = None, default = None):
-        '''
+        """
             Returns the metadata information
 
             Inputs:
@@ -316,7 +324,7 @@ class Block:
 
             Outputs:
             - (dict/str): either the whole metadata as a dict, or one value
-        '''
+        """
 
         if not key is None:
             if key in self.getMetadata():
@@ -325,77 +333,77 @@ class Block:
         return self.bmetadata
 
     def getContent(self):
-        '''
+        """
             Returns the contents of the block
 
             Outputs:
             - (str): the contents of the block
-        '''
+        """
 
         return self.bcontent
 
     def getDate(self):
-        '''
+        """
             Returns the date that the block was received, if loaded from file
 
             Outputs:
             - (datetime): the date that the block was received
-        '''
+        """
 
         return self.date
 
     def getBlockFile(self):
-        '''
+        """
             Returns the location of the block file if it is saved
 
             Outputs:
             - (str): the location of the block file, or None
-        '''
+        """
 
         return self.blockFile
 
     def isValid(self):
-        '''
+        """
             Checks if the block is valid
 
             Outputs:
             - (bool): whether or not the block is valid
-        '''
+        """
 
         return self.valid
 
     def isSigned(self):
-        '''
+        """
             Checks if the block was signed
 
             Outputs:
             - (bool): whether or not the block is signed
-        '''
+        """
 
         return self.signed
 
     def getSignature(self):
-        '''
+        """
             Returns the base64-encoded signature
 
             Outputs:
             - (str): the signature, or None
-        '''
+        """
 
         return self.signature
 
     def getSignedData(self):
-        '''
+        """
             Returns the data that was signed
 
             Outputs:
             - (str): the data that was signed, or None
-        '''
+        """
 
         return self.signedData
 
     def isSigner(self, signer, encodedData = True):
-        '''
+        """
             Checks if the block was signed by the signer inputted
 
             Inputs:
@@ -404,7 +412,7 @@ class Block:
 
             Outputs:
             - (bool): whether or not the signer of the block is the signer inputted
-        '''
+        """
         signer = unpaddedbase32.repad(bytesconverter.str_to_bytes(signer))
         try:
             if (not self.isSigned()) or (not stringvalidators.validate_pub_key(signer)):
@@ -417,7 +425,7 @@ class Block:
     # setters
 
     def setType(self, btype):
-        '''
+        """
             Sets the type of the block
 
             Inputs:
@@ -425,13 +433,13 @@ class Block:
 
             Outputs:
             - (Block): the Block instance
-        '''
+        """
 
         self.btype = btype
         return self
 
     def setMetadata(self, key, val):
-        '''
+        """
             Sets a custom metadata value
 
             Metadata should not store block-specific data structures.
@@ -442,13 +450,13 @@ class Block:
 
             Outputs:
             - (Block): the Block instance
-        '''
+        """
 
         self.bmetadata[key] = val
         return self
 
     def setContent(self, bcontent):
-        '''
+        """
             Sets the contents of the block
 
             Inputs:
@@ -456,14 +464,14 @@ class Block:
 
             Outputs:
             - (Block): the Block instance
-        '''
+        """
 
         self.bcontent = str(bcontent)
         return self
 
     # static functions
     def exists(bHash):
-        '''
+        """
             Checks if a block is saved to file or not
 
             Inputs:
@@ -473,7 +481,7 @@ class Block:
 
             Outputs:
             - (bool): whether or not the block file exists
-        '''
+        """
 
         # no input data? scrap it.
         if bHash is None:

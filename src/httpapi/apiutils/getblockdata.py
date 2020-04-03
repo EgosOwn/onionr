@@ -1,4 +1,5 @@
-import json
+import ujson as json
+
 from onionrblocks import onionrblockapi
 from onionrutils import bytesconverter, stringvalidators
 import onionrexceptions

@@ -2,7 +2,10 @@
 
 This file deals with configuration management.
 """
-import os, json, logger
+import os
+
+import ujson as json
+import logger
 import filepaths
 
 from . import onboarding
