@@ -1,9 +1,11 @@
-'''
-    Onionr - Private P2P Communication
+"""Onionr - Private P2P Communication.
 
     Return a useful tuple of (metadata (header), meta, and data) by accepting raw block data
-'''
-'''
+"""
+import ujson as json
+
+from onionrutils import bytesconverter
+"""
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -16,17 +18,15 @@
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
-'''
+"""
 
-import json
 
-from onionrutils import bytesconverter
 def get_block_metadata_from_data(block_data):
-    '''
-        accepts block contents as string, returns a tuple of 
-        metadata, meta (meta being internal metadata, which will be 
+    """
+        accepts block contents as string, returns a tuple of
+        metadata, meta (meta being internal metadata, which will be
         returned as an encrypted base64 string if it is encrypted, dict if not).
-    '''
+    """
     meta = {}
     metadata = {}
     data = block_data
