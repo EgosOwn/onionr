@@ -1,10 +1,9 @@
-"""
-    Onionr - Private P2P Communication
+"""Onionr - Private P2P Communication.
 
-    send a command to the local API server
+send a command to the local API server
 """
-import urllib, time
-import json
+import urllib
+import time
 import functools
 from typing import TYPE_CHECKING, Callable
 
@@ -29,7 +28,10 @@ import filepaths
 """
 config.reload()
 
-cache = deadsimplekv.DeadSimpleKV(filepaths.cached_storage, refresh_seconds=1000)
+cache = deadsimplekv.DeadSimpleKV(filepaths.cached_storage,
+                                  refresh_seconds=1000)
+
+
 def get_hostname():
     hostname = ''
     waited = 0
@@ -51,6 +53,7 @@ def get_hostname():
                 return False
         else:
             return hostname
+
 
 def local_command(command, data='', silent = True, post=False,
                   postData = {}, maxWait=20,
