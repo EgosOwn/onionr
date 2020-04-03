@@ -1,9 +1,22 @@
-'''
-    Onionr - Private P2P Communication
+"""Onionr - Private P2P Communication.
 
-    HTTP endpoints for mail plugin.
-'''
-'''
+HTTP endpoints for mail plugin
+"""
+import sys
+import os
+
+import ujson as json
+from flask import Response, request, redirect, Blueprint, abort
+import deadsimplekv as simplekv
+
+from onionrusers import contactmanager
+from onionrutils import stringvalidators
+from utils import reconstructhash, identifyhome
+
+sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
+import loadinbox
+import sentboxdb
+"""
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -16,17 +29,7 @@
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
-'''
-import sys, os, json
-from flask import Response, request, redirect, Blueprint, abort
-from onionrusers import contactmanager
-from onionrutils import stringvalidators
-from utils import reconstructhash, identifyhome
-import filepaths
-import deadsimplekv as simplekv
-sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
-import loadinbox, sentboxdb
-
+"""
 flask_blueprint = Blueprint('mail', __name__)
 kv = simplekv.DeadSimpleKV(identifyhome.identify_home() + '/mailcache.dat')
 

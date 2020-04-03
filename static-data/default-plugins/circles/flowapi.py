@@ -3,8 +3,9 @@
 This file primarily serves to allow specific fetching of circles board messages
 """
 import operator
-import json
 import os
+
+import ujson as json
 
 from flask import Response, Blueprint
 from deadsimplekv import DeadSimpleKV

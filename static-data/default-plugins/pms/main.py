@@ -5,7 +5,8 @@ Private messages in an email like fashion
 import locale
 import sys
 import os
-import json
+
+import ujson as json
 
 from onionrusers import contactmanager
 from utils import reconstructhash

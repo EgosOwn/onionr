@@ -19,7 +19,10 @@
 '''
 
 # Imports some useful libraries
-import logger, config, threading, time, datetime, sys, json
+import logger, config, threading, time, datetime, sys
+
+import ujson as json
+
 from onionrutils import stringvalidators, bytesconverter
 from onionrcrypto import encryption, keypair, signing, getourkeypair
 import onionrexceptions, onionrusers
