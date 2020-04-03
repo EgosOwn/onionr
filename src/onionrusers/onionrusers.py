@@ -1,9 +1,20 @@
-'''
-    Onionr - Private P2P Communication
+"""Onionr - Private P2P Communication.
 
-    Contains abstractions for interacting with users of Onionr
-'''
-'''
+Contains abstractions for interacting with users of Onionr
+"""
+import sqlite3
+import time
+
+import onionrexceptions
+from onionrutils import stringvalidators, bytesconverter, epoch
+
+import unpaddedbase32
+import nacl.exceptions
+
+from coredb import keydb, dbfiles
+import onionrcrypto
+from onionrcrypto import getourkeypair
+"""
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -16,14 +27,8 @@
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
-'''
-import logger, onionrexceptions, json, sqlite3, time
-from onionrutils import stringvalidators, bytesconverter, epoch
-import unpaddedbase32
-import nacl.exceptions
-from coredb import keydb, dbfiles
-import onionrcrypto
-from onionrcrypto import getourkeypair
+"""
+
 
 def deleteExpiredKeys():
     # Fetch the keys we generated for the peer, that are still around
@@ -37,6 +42,7 @@ def deleteExpiredKeys():
     conn.close()
     return
 
+
 def deleteTheirExpiredKeys(pubkey):
     conn = sqlite3.connect(dbfiles.user_id_info_db, timeout=10)
     c = conn.cursor()
@@ -49,17 +55,19 @@ def deleteTheirExpiredKeys(pubkey):
     conn.commit()
     conn.close()
 
+
 DEFAULT_KEY_EXPIRE = 604800
+
 
 class OnionrUser:
 
     def __init__(self, publicKey, saveUser=False):
-        '''
+        """
             OnionrUser is an abstraction for "users" of the network.
 
             Takes a base32 encoded ed25519 public key, and a bool saveUser
             saveUser determines if we should add a user to our peer database or not.
-        '''
+        """
         publicKey = unpaddedbase32.repad(bytesconverter.str_to_bytes(publicKey)).decode()
 
         self.trust = 0
@@ -75,7 +83,7 @@ class OnionrUser:
         return
 
     def setTrust(self, newTrust):
-        '''Set the peers trust. 0 = not trusted, 1 = friend, 2 = ultimate'''
+        """Set the peers trust. 0 = not trusted, 1 = friend, 2 = ultimate"""
         keydb.userinfo.set_user_info(self.publicKey, 'trust', newTrust)
 
     def isFriend(self):
