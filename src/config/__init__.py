@@ -3,6 +3,7 @@
 This file deals with configuration management.
 """
 import os
+from json import JSONDecodeError
 
 import ujson as json
 import logger
@@ -105,7 +106,7 @@ def save():
     try:
         with open(get_config_file(), 'w', encoding="utf8") as configfile:
             json.dump(get_config(), configfile, indent=2)
-    except json.JSONDecodeError:
+    except JSONDecodeError:
         logger.warn('Failed to write to configuration file.')
 
 
@@ -115,7 +116,7 @@ def reload():
     try:
         with open(get_config_file(), 'r', encoding="utf8") as configfile:
             set_config(json.loads(configfile.read()))
-    except (FileNotFoundError, json.JSONDecodeError) as e:
+    except (FileNotFoundError, JSONDecodeError) as e:
         pass
         #logger.debug('Failed to parse configuration file.')
 

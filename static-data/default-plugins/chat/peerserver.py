@@ -4,6 +4,7 @@ HTTP endpoints for communicating with peers
 """
 import sys
 import os
+from json import JSONDecodeError
 
 import deadsimplekv as simplekv
 import ujson as json
@@ -50,7 +51,7 @@ def sendto():
     """Endpoint peers send chat messages to"""
     try:
         msg = request.get_json(force=True)
-    except json.JSONDecodeError:
+    except JSONDecodeError:
         msg = ''
     else:
         msg = json.dumps(msg)

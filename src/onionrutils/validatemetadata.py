@@ -2,6 +2,7 @@
 
 validate new block's metadata
 """
+from json import JSONDecodeError
 import ujson as json
 
 import logger, onionrexceptions
@@ -34,7 +35,7 @@ def validate_metadata(metadata, block_data) -> bool:
     if type(metadata) is str:
         try:
             metadata = json.loads(metadata)
-        except json.JSONDecodeError:
+        except JSONDecodeError:
             pass
 
     # Validate metadata dict for invalid keys to sizes that are too large

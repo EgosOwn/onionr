@@ -4,12 +4,14 @@ send a command to the local API server
 """
 import urllib
 import time
-import functools
 from typing import TYPE_CHECKING, Callable
 
 import requests
+import deadsimplekv
 
-import logger, config, deadsimplekv
+import logger
+import config
+
 from . import getclientapiserver
 import filepaths
 """

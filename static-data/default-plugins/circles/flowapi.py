@@ -32,7 +32,7 @@ with open(
     os.path.dirname(
         os.path.realpath(__file__)) + '/info.json', 'r') as info_file:
     data = info_file.read().strip()
-    version = json.loads(data, strict=False)['version']
+    version = json.loads(data)['version']
 
 BOARD_CACHE_FILE = identifyhome.identify_home() + '/board-index.cache.json'
 
