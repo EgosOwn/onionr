@@ -8,6 +8,12 @@ TEST_DIR = 'testdata/%s-%s' % (uuid.uuid4(), os.path.basename(__file__)) + '/'
 print("Test directory:", TEST_DIR)
 os.environ["ONIONR_HOME"] = TEST_DIR
 import unittest
+from utils import identifyhome, createdirs
+from onionrsetup import setup_config
+
+createdirs.create_dirs()
+setup_config()
+
 
 from lan.getip import lan_ips, best_ip
 
