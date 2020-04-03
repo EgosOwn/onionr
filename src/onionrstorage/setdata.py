@@ -28,7 +28,7 @@ from onionrutils import blockmetadata, bytesconverter
 """
 
 
-def set_data(data) -> str:
+def set_data(data, mimc_hash) -> str:
     """Set the data assciated with a hash."""
     storage_counter = storagecounter.StorageCounter()
     data = data
@@ -41,20 +41,20 @@ def set_data(data) -> str:
     if not type(data) is bytes:
         data = data.encode()
 
-    dataHash = crypto.hashers.sha3_hash(data)
+    mimc_hash = crypto.hashers.sha3_hash(data)
 
-    if type(dataHash) is bytes:
-        dataHash = dataHash.decode()
+    if type(mimc_hash) is bytes:
+        mimc_hash = mimc_hash.decode()
     try:
-        onionrstorage.getData(dataHash)
+        onionrstorage.getData(mimc_hash)
     except onionrexceptions.NoDataAvailable:
         if storage_counter.add_bytes(dataSize) is not False:
-            onionrstorage.store(data, blockHash=dataHash)
+            onionrstorage.store(data, blockHash=mimc_hash)
             conn = sqlite3.connect(dbfiles.block_meta_db, timeout=30)
             c = conn.cursor()
             c.execute(
                 "UPDATE hashes SET dataSaved=1 WHERE hash = ?;",
-                (dataHash,))
+                (mimc_hash,))
             conn.commit()
             conn.close()
             with open(filepaths.data_nonce_file, 'a') as nonceFile:
@@ -63,6 +63,6 @@ def set_data(data) -> str:
             raise onionrexceptions.DiskAllocationReached
     else:
         raise onionrexceptions.DataExists(
-                "Data is already set for " + dataHash)
+                "Data is already set for " + mimc_hash)
 
-    return dataHash
+    return mimc_hash

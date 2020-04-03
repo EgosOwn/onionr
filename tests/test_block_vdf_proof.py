@@ -21,14 +21,14 @@ class TestVdf(unittest.TestCase):
         res = vdf.create(b'test')
         int(res, 16)
         if len(res) == 0: raise ValueError
-        self.assertEqual(vdf.multiproces_create(b'test'), res)
+        self.assertEqual(vdf.multiprocess_create(b'test'), res)
     def test_speed(self):
         t = time()
         vdf.create(b'test')
         self.assertTrue(time() - t <= 10)
         # test 2 kb
         t = time()
-        vdf.create(b't'*10000)
+        vdf.create(b't'*2000)
         self.assertTrue(time() - t >= 10)
         #timeit(lambda: vdf.create(b'test'))
 

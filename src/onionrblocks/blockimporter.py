@@ -13,6 +13,8 @@ from onionrutils import blockmetadata
 from coredb import blockmetadb
 import onionrstorage
 import onionrcrypto as crypto
+from onionrcrypto.hashers import sha3_hash
+from onionrproofs.vdf import verify
 from . import onionrblacklist
 
 '''
@@ -52,7 +54,7 @@ def import_block_from_data(content):
     # check if metadata is valid
     if validatemetadata.validate_metadata(metadata, metas[2]):
         # check if POW is enough/correct
-        if crypto.cryptoutils.verify_POW(content):
+        if verify(content, sha3_hash(content)):
             logger.info(f'Imported block passed proof, saving: {data_hash}.',
                         terminal=True)
             try:

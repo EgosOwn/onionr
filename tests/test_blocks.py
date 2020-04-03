@@ -3,6 +3,7 @@ import sys, os
 sys.path.append(".")
 sys.path.append("src/")
 import unittest, uuid, hashlib
+import secrets
 
 TEST_DIR = 'testdata/%s-%s' % (uuid.uuid4(), os.path.basename(__file__)) + '/'
 print("Test directory:", TEST_DIR)
@@ -14,6 +15,8 @@ from utils import createdirs
 from onionrutils import bytesconverter
 import onionrcrypto
 from onionrblocks import onionrblockapi
+from onionrproofs.vdf import verify
+from onionrcrypto.hashers import sha3_hash
 
 def setup_test():
     TEST_DIR = 'testdata/%s-%s' % (uuid.uuid4(), os.path.basename(__file__)) + '/'
@@ -24,9 +27,8 @@ def setup_test():
 class OnionrBlockTests(unittest.TestCase):
     def test_plaintext_insert(self):
         setup_test()
-        message = 'hello world'
+        message = 'hello world' + secrets.token_hex(5)
         bl = onionrblocks.insert(message)
-        self.assertTrue(bl.startswith('0'))
         self.assertIn(bytesconverter.str_to_bytes(message), onionrstorage.getData(bl))
 
     def test_encrypted_insert(self):

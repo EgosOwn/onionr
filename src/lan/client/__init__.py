@@ -23,11 +23,16 @@ from onionrutils.basicrequests import do_post_request, do_get_request
 """
 
 
+class ConnectedError(Exception): pass
+
+
+
 class Client:
     def __init__(self):
         self.peers = []
         self.lookup_time = {}
         self.poll_delay = 10
+        self.active_threads: set = set([])
 
     def get_lookup_time(self, peer):
         try:
@@ -35,9 +40,21 @@ class Client:
         except KeyError:
             return 0
 
+    def peer_thread(self, peer):
+        def do_peer_sync(): return
+        if peer in self.active_threads:
+            raise ConnectedError
+        self.active_threads.add(peer)
+        do_peer_sync()
+        self.active_threads.remove(peer)
+
     def start(self):
         while True:
-            self.peers = random_shuffle(self.peers)
+            peers = random_shuffle(list(set(self.peers) ^ self.active_threads))
+            try:
+                self.peer_thread(peers[0])
+            except IndexError:
+                pass
 
 
 

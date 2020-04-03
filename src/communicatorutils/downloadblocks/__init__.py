@@ -20,10 +20,12 @@ from onionrutils import validatemetadata
 from coredb import blockmetadb
 from onionrutils.localcommand import local_command
 import onionrcrypto
+from onionrcrypto.hashers import sha3_hash
 import onionrstorage
 from onionrblocks import onionrblacklist
 from onionrblocks import storagecounter
 from . import shoulddownload
+from onionrproofs.vdf import verify
 """
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -96,6 +98,7 @@ def download_blocks_from_communicator(comm_inst: "OnionrCommunicatorDaemon"):
                 realHash = realHash.decode() # bytes on some versions for some reason
             except AttributeError:
                 pass
+
             if realHash == blockHash:
                 #content = content.decode() # decode here because sha3Hash needs bytes above
                 metas = blockmetadata.get_block_metadata_from_data(content) # returns tuple(metadata, meta), meta is also in metadata
@@ -106,7 +109,7 @@ def download_blocks_from_communicator(comm_inst: "OnionrCommunicatorDaemon"):
                 except onionrexceptions.DataExists:
                     metadata_validation_result = False
                 if metadata_validation_result: # check if metadata is valid, and verify nonce
-                    if onionrcrypto.cryptoutils.verify_POW(content): # check if POW is enough/correct
+                    if verify(content, blockHash): # check if POW is enough/correct
                         logger.info('Attempting to save block %s...' % blockHash[:12])
                         try:
                             onionrstorage.set_data(content)

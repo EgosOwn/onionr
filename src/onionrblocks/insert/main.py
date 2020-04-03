@@ -31,8 +31,8 @@ import config, onionrcrypto as crypto, onionrexceptions
 from onionrusers import onionrusers
 from onionrutils import localcommand, blockmetadata, stringvalidators
 import coredb
-import onionrproofs
-from onionrproofs import subprocesspow
+from onionrproofs.vdf import multiprocess_create
+
 import logger
 from onionrtypes import UserIDSecretKey
 
@@ -187,14 +187,11 @@ def insert_block(data: Union[str, bytes], header: str = 'txt',
             expire = epoch.get_epoch() + expire
         metadata['expire'] = expire
 
-    # send block data (and metadata) to POW module to get tokenized block data
-    if use_subprocess:
-        payload = subprocesspow.SubprocessPOW(data, metadata).start()
-    else:
-        payload = onionrproofs.POW(metadata, data).waitForResult()
-    if payload != False:
+    data = json.dumps(metadata).encode() + b'\n' + data
+    mimc_hash = multiprocess_create(data)
+    if mimc_hash != False:
         try:
-            retData = onionrstorage.set_data(payload)
+            retData = onionrstorage.set_data(data, mimc_hash)
         except onionrexceptions.DiskAllocationReached:
             logger.error(allocationReachedMessage)
             retData = False

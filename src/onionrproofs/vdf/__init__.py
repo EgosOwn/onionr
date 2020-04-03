@@ -29,7 +29,7 @@ def create(data: bytes) -> str:
     return vdf_create(data, rounds)
 
 
-def multiproces_create(data: bytes) -> str:
+def multiprocess_create(data: bytes) -> str:
     parent_conn, child_conn = Pipe()
     def __do_create(conn, data):
         conn.send(create(data))
