@@ -2,10 +2,10 @@
 
 Serialize various node information
 """
-import json
 from gevent import sleep
 
 from psutil import Process, WINDOWS
+import ujson as json
 
 from coredb import blockmetadb
 from utils.sizeutils import size, human_size
