@@ -128,6 +128,7 @@ function openThread(bHash, sender, date, sigBool, pubkey, subjectLine){
         sigEl.innerText = sigMsg
         overlay('messageDisplay')
         replyBtn.onclick = function(){
+            document.getElementById('messageDisplay').style.visibility = 'hidden'
             openReply(bHash, messageDisplay.innerText, subjectLine)
         }
         addUnknownContact.onclick = function(){
@@ -144,6 +145,7 @@ function setActiveTab(tabName){
     threadPart.innerHTML = ""
     noInbox.style.display = 'none'
     window.inboxActive = false
+    document.getElementById('sendMessage').classList.add('is-hidden')
     switch(tabName){
         case 'inbox':
             window.inboxActive = true
@@ -154,8 +156,7 @@ function setActiveTab(tabName){
             getSentbox()
             break
         case 'compose':
-            overlay('sendMessage')
-            document.getElementById('inboxTab').click()
+            document.getElementById('sendMessage').classList.remove('is-hidden')
             break
         case 'settings':
             document.getElementById('settingsModal').classList.add('is-active')
@@ -419,7 +420,6 @@ fetch('/friends/list', {
 .then(function(resp) {
     var friendSelectParent = document.getElementById('friendSelect')
     var keys = [];
-    var friend
     for(var k in resp) keys.push(k);
 
     friendSelectParent.appendChild(document.createElement('option'))
