@@ -442,3 +442,9 @@ setInterval(function(){mailPing()}, 10000)
 mailPing()
 window.inboxInterval = setInterval(function(){refreshPms(true)}, 3000)
 refreshPms(true)
+
+document.addEventListener("visibilitychange", function() {
+    if (document.visibilityState === 'visible') {
+        refreshPms()
+    }
+  })

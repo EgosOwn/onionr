@@ -12,7 +12,6 @@
 * make node "speed" setting such as when ui is open to reduce bandwidth usage
 * localization support
 
-* add mark read in mail
 * add BCC support to mail
 
 

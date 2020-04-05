@@ -136,5 +136,11 @@ var getStats = function(){
         })
 }
 
+document.addEventListener("visibilitychange", function() {
+    if (document.visibilityState === 'visible') {
+      getStats()
+    }
+  })
+
 getStats()
-setInterval(function(){getStats()}, 10000)
+setInterval(function(){getStats()}, 1000)

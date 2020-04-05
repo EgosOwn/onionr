@@ -76,4 +76,7 @@ def on_processblocks(api, data=None):
     if data['block'].decrypted:
         config.reload()
         if config.get('mail.notificationSetting', True):
+            if not config.get('mail.strangersNotification', True):
+                if not user.isFriend():
+                    return
             notifier.notification_with_sound(title="Onionr Mail - New Message", message="From: %s\n\nSubject: %s" % (signer, metadata['subject']))
