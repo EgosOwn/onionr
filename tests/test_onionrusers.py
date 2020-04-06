@@ -19,11 +19,10 @@ class OnionrUserTests(unittest.TestCase):
     '''
         Tests both the onionrusers class and the contactmanager (which inherits it)
     '''
-    
+
     def test_users(self):
         keypair = crypto.generate()
         onionrusers.OnionrUser(keypair[0])
-        return
 
     def test_contact_init_no_save(self):
         contact = crypto.generate()[0]
@@ -34,7 +33,7 @@ class OnionrUserTests(unittest.TestCase):
         contact = crypto.generate()[0]
         contact = contactmanager.ContactManager(contact, saveUser=True)
         self.assertTrue(contact.publicKey in keydb.listkeys.list_peers())
-    
+
     def test_contact_set_info(self):
         contact = crypto.generate()[0]
         contact = contactmanager.ContactManager(contact, saveUser=True)
@@ -44,10 +43,10 @@ class OnionrUserTests(unittest.TestCase):
 
         with open(fileLocation, 'r') as data:
             data = data.read()
-        
+
         data = json.loads(data)
         self.assertEqual(data['alias'], 'bob')
-    
+
     def test_contact_get_info(self):
         contact = crypto.generate()[0]
         contact = contactmanager.ContactManager(contact, saveUser=True)
@@ -55,18 +54,25 @@ class OnionrUserTests(unittest.TestCase):
 
         with open(fileLocation, 'w') as contactFile:
             contactFile.write('{"alias": "bob"}')
-        
+
         self.assertEqual(contact.get_info('alias', forceReload=True), 'bob')
         self.assertEqual(contact.get_info('fail', forceReload=True), None)
         self.assertEqual(contact.get_info('fail'), None)
-    
+
+    def test_is_friend(self):
+        contact = crypto.generate()[0]
+        contact = onionrusers.OnionrUser(contact, saveUser=True)
+        self.assertFalse(contact.isFriend())
+        contact.setTrust(1)
+        self.assertTrue(contact.isFriend())
+
     def test_encrypt(self):
         contactPair = crypto.generate()
         contact = contactmanager.ContactManager(contactPair[0], saveUser=True)
         encrypted = contact.encrypt('test')
         decrypted = crypto.encryption.pub_key_decrypt(encrypted, privkey=contactPair[1], encodedData=True).decode()
         self.assertEqual('test', decrypted)
-    
+
     def test_delete_contact(self):
         contact = crypto.generate()[0]
         contact = contactmanager.ContactManager(contact, saveUser=True)

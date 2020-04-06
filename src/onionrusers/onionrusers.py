@@ -87,7 +87,7 @@ class OnionrUser:
         keydb.userinfo.set_user_info(self.publicKey, 'trust', newTrust)
 
     def isFriend(self):
-        if keydb.userinfo.set_peer_info(self.publicKey, 'trust') == 1:
+        if keydb.userinfo.get_user_info(self.publicKey, 'trust') == 1:
             return True
         return False
 
