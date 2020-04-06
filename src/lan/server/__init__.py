@@ -6,6 +6,7 @@ from gevent.pywsgi import WSGIServer
 from flask import Flask
 from flask import Response
 from flask import request
+from flask import abort
 
 from onionrblocks.onionrblockapi import Block
 from httpapi.fdsafehandler import FDSafeHandler
@@ -15,6 +16,7 @@ from coredb.blockmetadb import get_block_list
 from lan.getip import best_ip
 from onionrutils import stringvalidators
 from httpapi.miscpublicapi.upload import accept_upload
+import logger
 """
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -41,6 +43,13 @@ class LANServer:
             self.host = best_ip
         self.port = None
 
+        @app.before_request
+        def dns_rebinding_prevention():
+            if request.host != f'{self.host}:{self.port}':
+                logger.warn('Potential DNS rebinding attack on LAN server:')
+                logger.warn(f'Hostname {request.host} was used instead of {self.host}:{self.port}')
+                abort(403)
+
         @app.route('/blist/<time>')
         def get_block_list_for_lan(time):
             return Response('\n'.join(get_block_list(dateRec=time)))
@@ -54,7 +63,7 @@ class LANServer:
 
         @app.route("/ping")
         def ping():
-            return Response("pong!")
+            return Response("onionr!")
 
         @app.route('/upload', methods=['POST'])
         def upload_endpoint():
@@ -65,5 +74,5 @@ class LANServer:
                                  self.app, log=None,
                                  handler_class=FDSafeHandler)
         self.port = self.server.server_port
+        logger.info(f'Serving to LAN on {self.host}:{self.port}', terminal=True)
         self.server.serve_forever()
-

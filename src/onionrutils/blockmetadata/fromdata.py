@@ -2,6 +2,7 @@
 
     Return a useful tuple of (metadata (header), meta, and data) by accepting raw block data
 """
+from json import JSONDecodeError
 import ujson as json
 
 from onionrutils import bytesconverter
@@ -37,7 +38,7 @@ def get_block_metadata_from_data(block_data):
 
     try:
         metadata = json.loads(bytesconverter.bytes_to_str(block_data[:block_data.find(b'\n')]))
-    except json.decoder.JSONDecodeError:
+    except JSONDecodeError:
         pass
     else:
         data = block_data[block_data.find(b'\n'):]
