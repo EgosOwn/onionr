@@ -17,7 +17,13 @@ fetch('/config/get/mail', {
     if (mailSettings.notificationSetting === false){
       document.getElementById('notificationSetting').checked = false
     }
+    if (mailSettings.notificationSound === false){
+      document.getElementById('notificationSound').checked = false
+    }
     if (typeof mailSettings.signature != undefined && mailSettings.signature != null && mailSettings.signature != ""){
       document.getElementById('mailSignatureSetting').value = mailSettings.signature
+    }
+    if (mailSettings.strangersNotification == false){
+      document.getElementById('strangersNotification').checked = false
     }
   })

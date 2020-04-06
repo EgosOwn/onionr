@@ -62,6 +62,7 @@ def on_insertblock(api, data={}):
 def on_processblocks(api, data=None):
     if data['type'] != 'pm':
         return
+    notification_func = notifier.notify
     data['block'].decrypt()
     metadata = data['block'].bmetadata
 
@@ -73,10 +74,14 @@ def on_processblocks(api, data=None):
     else:
         signer = signer[:5]
 
+
     if data['block'].decrypted:
         config.reload()
+
+        if config.get('mail.notificationSound', True):
+            notification_func = notifier.notification_with_sound
         if config.get('mail.notificationSetting', True):
             if not config.get('mail.strangersNotification', True):
                 if not user.isFriend():
                     return
-            notifier.notification_with_sound(title="Onionr Mail - New Message", message="From: %s\n\nSubject: %s" % (signer, metadata['subject']))
+            notification_func(title="Onionr Mail - New Message", message="From: %s\n\nSubject: %s" % (signer, metadata['subject']))
