@@ -7,7 +7,7 @@ PySocks==1.7.1
 stem==1.8.0
 deadsimplekv==0.3.1
 unpaddedbase32==0.2.0
-streamedrequests==1.0.0
+streamedrequests==1.0.3
 toomanyobjs==1.1.0
 niceware==0.2.1
 psutil==5.7.0
