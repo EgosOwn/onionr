@@ -210,8 +210,9 @@ six==1.12.0 \
 stem==1.8.0 \
     --hash=sha256:a0b48ea6224e95f22aa34c0bc3415f0eb4667ddeae3dfb5e32a6920c185568c2 \
     # via -r requirements.in
-streamedrequests==1.0.0 \
-    --hash=sha256:1d9d07394804a6e1fd66bde74a804e71cab98e6920053865574a459f1cf7d3b7 \
+streamedrequests==1.0.3 \
+    --hash=sha256:4388ffc0ee94dda719dafc4324b8ddd108cb2231ec59871de79e2592bf4eef0a \
+    --hash=sha256:ee68417a1522e75c35b1b2d5f3b6f7e76a3a1a6c0ef5e0c573d08307910079d8 \
     # via -r requirements.in
 toomanyobjs==1.1.0 \
     --hash=sha256:99e27468f9dad19127be9e2fb086b42acd69aed9ad7e63cef74d6e4389be0534 \
