@@ -52,7 +52,7 @@ def learn_services(lan_client):
         if 'onionr' not in service_ips:
             continue
         service_ips = service_ips.replace('onionr-', '').split('-')
-        print(service_ips)
+
         port = 0
         for service in service_ips:
             try:

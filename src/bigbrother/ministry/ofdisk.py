@@ -9,7 +9,6 @@ def detect_disk_access(info):
 
     whitelist = [identify_home(), 'onionr/src/', '/site-packages/', '/usr/lib64/']
 
-
     for item in whitelist:
         if item in info[0]:
             return

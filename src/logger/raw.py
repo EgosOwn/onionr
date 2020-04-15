@@ -1,9 +1,11 @@
-'''
-    Onionr - Private P2P Communication
+"""Onionr - Private P2P Communication.
 
-    Output raw data to file or terminal
-'''
-'''
+Output raw data to file or terminal
+"""
+import sys
+import os
+from . import settings, colors
+"""
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -16,14 +18,14 @@
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
-'''
-import sys, os
-from . import settings, colors
+"""
 colors = colors.Colors
+
+
 def raw(data, fd = sys.stdout, terminal = False):
-    '''
+    """
         Outputs raw data to console without formatting
-    '''
+    """
 
     if terminal and (settings.get_settings() & settings.OUTPUT_TO_CONSOLE):
         try:
@@ -33,8 +35,14 @@ def raw(data, fd = sys.stdout, terminal = False):
     if settings.get_settings() & settings.OUTPUT_TO_FILE:
         fdata = ''
         try:
-            with open(settings._outputfile, 'r') as file:
-                fdata = file.read()
+            for _ in range(5):
+                try:
+                    with open(settings._outputfile, 'r') as file:
+                        fdata = file.read()
+                except UnicodeDecodeError:
+                    pass
+                else:
+                    break
         except FileNotFoundError:
             pass
         fdata = fdata + '\n' + data
