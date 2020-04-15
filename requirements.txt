@@ -205,6 +205,7 @@ stem==1.8.0 \
     # via -r requirements.in
 streamedrequests==1.0.0 \
     --hash=sha256:1d9d07394804a6e1fd66bde74a804e71cab98e6920053865574a459f1cf7d3b7 \
+    --hash=sha256:c7c22fa89898619fb4ccba0c60df1ad5e581bc707794ee146d8ef72ab3216a50 \
     # via -r requirements.in
 toomanyobjs==1.1.0 \
     --hash=sha256:99e27468f9dad19127be9e2fb086b42acd69aed9ad7e63cef74d6e4389be0534 \
