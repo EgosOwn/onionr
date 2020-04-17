@@ -53,8 +53,8 @@ markupsafe==1.1.1 \
     --hash=sha256:e249096428b3ae81b08327a63a485ad0878de3fb939049038579ac0ef61e17e7 \
     --hash=sha256:e8313f01ba26fbbe36c7be1966a7b7424942f670f38e666995b88d012765b9be \
     # via mako
-pdoc3==0.7.5 \
-    --hash=sha256:ebca75b7fcf23f3b4320abe23339834d3f08c28517718e9d29e555fc38eeb33c \
+pdoc3==0.8.1 \
+    --hash=sha256:d7b56e67b5e049d53dcde94245a28040b640b2e06c344fc58ab2bdf2d91dc00f \
     # via -r requirements-dev.in
 pip-tools==4.5.1 \
     --hash=sha256:693f30e451875796b1b25203247f0b4cf48a4c4a5ab7341f4f33ffd498cdcc98 \
@@ -68,9 +68,9 @@ six==1.14.0 \
     --hash=sha256:236bdbdce46e6e6a3d61a337c0f8b763ca1e8717c03b369e87a7ec7ce1319c0a \
     --hash=sha256:8f3cd2e254d8f793e7f3d6d9df77b92252b52637291d0f0da013c76ea2724b6c \
     # via pip-tools
-urllib3==1.25.8 \
-    --hash=sha256:2f3db8b19923a873b3e5256dc9c2dedfa883e33d87c690d9c7913e1f40673cdc \
-    --hash=sha256:87716c2d2a7121198ebcb7ce7cccf6ce5e9ba539041cfbaeecfb641dc0bf6acc \
+urllib3==1.25.9 \
+    --hash=sha256:3018294ebefce6572a474f0604c2021e33b3fd8006ecd11d62107a5d2a963527 \
+    --hash=sha256:88206b0eb87e6d677d424843ac5209e3fb9d0190d0ee169599165ec25e9d9115 \
     # via selenium
 
 # WARNING: The following packages were not pinned, but pip requires them to be
