@@ -8,8 +8,8 @@ click==7.0 \
     --hash=sha256:2335065e6395b9e67ca716de5f7526736bfa6ceead690adf616d925bdc622b13 \
     --hash=sha256:5b94b49521f6456670fdb30cd82a4eca9412788a93fa6dd6df72c94d5a8ff2d7 \
     # via pip-tools
-helium==3.0.2 \
-    --hash=sha256:0413dffb50a5e8e6c05bb3fc6bc458992a72d310b2132451968caee93b022048 \
+helium==3.0.4 \
+    --hash=sha256:035edb4207906fde42f64d47e28dca934327f00fc23c808b45090c2266123998 \
     # via -r requirements-dev.in
 mako==1.1.1 \
     --hash=sha256:2984a6733e1d472796ceef37ad48c26f4a984bb18119bb2dbc37a44d8f6e75a4 \
@@ -56,9 +56,9 @@ markupsafe==1.1.1 \
 pdoc3==0.8.1 \
     --hash=sha256:d7b56e67b5e049d53dcde94245a28040b640b2e06c344fc58ab2bdf2d91dc00f \
     # via -r requirements-dev.in
-pip-tools==5.0.0 \
-    --hash=sha256:2045d0414e9db71c036443efa229ff1b76dfe47a3cb022d6154a1c9e207f0867 \
-    --hash=sha256:4fdc317a331de8affe481509d7efea7e72fc5cca6c9f6cacbe778617680961fe \
+pip-tools==5.1.2 \
+    --hash=sha256:111ec415d3776498c8c1a8596ae9651160d17ea93303a70f25aa1f8de3d1a47b \
+    --hash=sha256:a524452490f9dc888f55bef73846db2aa27041aaa72e232913d75ea732f6acc9 \
     # via -r requirements-dev.in
 selenium==3.141.0 \
     --hash=sha256:2d7131d7bc5a5b99a2d9b04aaf2612c411b03b8ca1b1ee8d3de5845a9be2cb3c \
