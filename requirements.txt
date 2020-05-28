@@ -58,8 +58,8 @@ flask==1.1.2 \
     --hash=sha256:4efa1ae2d7c9865af48986de8aeb8504bf32c7f3d6fdc9353d34b21f4b127060 \
     --hash=sha256:8a4fdd8936eba2512e9c85df320a37e694c93945b33ef33c89946a340a238557 \
     # via -r requirements.in
-gevent==20.5.1 \
-    --hash=sha256:13ed2fa4a074c26fd60744a0757bf65004950554dfd9efd7c9deee1c241279af \
+gevent==20.5.2 \
+    --hash=sha256:2756de36f56b33c46f6cc7146a74ba65afcd1471922c95b6771ce87b279d689c \
     # via -r requirements.in
 greenlet==0.4.15 \
     --hash=sha256:000546ad01e6389e98626c1367be58efa613fa82a1be98b0c6fc24b563acc6d0 \
