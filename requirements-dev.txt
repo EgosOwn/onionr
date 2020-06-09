@@ -56,9 +56,9 @@ markupsafe==1.1.1 \
 pdoc3==0.8.1 \
     --hash=sha256:d7b56e67b5e049d53dcde94245a28040b640b2e06c344fc58ab2bdf2d91dc00f \
     # via -r requirements-dev.in
-pip-tools==5.2.0 \
-    --hash=sha256:be6190405e4206526607aa4813bd6d7a949e4fdc180d0db4f3221f3778846cf7 \
-    --hash=sha256:edb4ed852d7283d33b9dfe7b59fe9786de716727cbef2326f2a1b03eb9a16ad6 \
+pip-tools==5.2.1 \
+    --hash=sha256:1690bef5f0f714160c3aedacb03520e2359a78f7f9fa17e574cf8659cf2ef614 \
+    --hash=sha256:5b4b6e7b6e66357685c73e856296b4792b2d159ff6074729e250e291834bfd9d \
     # via -r requirements-dev.in
 selenium==3.141.0 \
     --hash=sha256:2d7131d7bc5a5b99a2d9b04aaf2612c411b03b8ca1b1ee8d3de5845a9be2cb3c \
