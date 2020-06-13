@@ -1,8 +1,21 @@
-"""
-    Onionr - Private P2P Communication
+"""Onionr - Private P2P Communication.
 
-    view and interact with onionr sites
+view and interact with onionr sites
 """
+import base64
+import binascii
+import mimetypes
+
+import unpaddedbase32
+
+from flask import Blueprint, Response, request, abort
+
+from onionrblocks import onionrblockapi
+import onionrexceptions
+from onionrutils import stringvalidators
+from utils import safezip
+from onionrutils import mnemonickeys
+from . import sitefiles
 """
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -17,19 +30,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-import base64
-import binascii
-import mimetypes
 
-import unpaddedbase32
-
-from flask import Blueprint, Response, request, abort
-
-from onionrblocks import onionrblockapi
-import onionrexceptions
-from onionrutils import stringvalidators
-from onionrutils import mnemonickeys
-from . import sitefiles
 
 site_api = Blueprint('siteapi', __name__)
 

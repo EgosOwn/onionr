@@ -3,6 +3,7 @@
 Command to create Onionr mutli-page sites
 """
 import sys
+import os
 import getpass
 
 from httpapi import onionrsitesapi
@@ -27,8 +28,11 @@ from etc import onionrvalues
 def create_multipage_site():
     """Command to create mutlipage sites with specified dir and password."""
     error_encountered = False
+    orig_dir = os.getcwd()
     try:
         directory = sys.argv[2]
+        os.chdir(directory)
+        directory = '.'
     except IndexError:
         directory = '.'
     try:
@@ -51,7 +55,7 @@ If you want to update your site later you must remember the passphrase.''',
         error_encountered = True
         logger.error(
             f'Passphrase must be at least {onionrvalues.PASSWORD_LENGTH}' +
-            'characters.', terminal=True)
+            ' characters.', terminal=True)
 
     if error_encountered:
         sys.exit(1)
@@ -61,6 +65,7 @@ If you want to update your site later you must remember the passphrase.''',
     results = (results[0].replace('=', ''), results[1])
     logger.info(f'Site address {results[0]}', terminal=True)
     logger.info(f'Block for this version {results[1]}', terminal=True)
+    os.chdir(orig_dir)
 
 
 create_multipage_site.onionr_help = "[directory path "  # type: ignore
