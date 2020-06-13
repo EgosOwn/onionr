@@ -13,7 +13,6 @@ from flask import Blueprint, Response, request, abort
 from onionrblocks import onionrblockapi
 import onionrexceptions
 from onionrutils import stringvalidators
-from utils import safezip
 from onionrutils import mnemonickeys
 from . import sitefiles
 """
