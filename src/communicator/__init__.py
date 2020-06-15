@@ -26,6 +26,7 @@ from communicatorutils import housekeeping
 from communicatorutils import netcheck
 from onionrutils import localcommand
 from onionrutils import epoch
+from onionrcommands.openwebinterface import get_url
 from etc import humanreadabletime
 import onionrservices
 import filepaths
@@ -241,6 +242,8 @@ class OnionrCommunicatorDaemon:
             logger.info(
                 'First run detected. Run openhome to get setup.',
                 terminal=True)
+            get_url()
+            
 
             while not config.get('onboarding.done', True) and \
                     not self.shutdown:

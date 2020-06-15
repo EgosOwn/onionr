@@ -42,7 +42,8 @@ def net_check(comm_inst):
             if not comm_inst.shutdown:
                 if not comm_inst.config.get('general.offline_mode', False):
                     logger.warn('Network check failed, are you connected to ' +
-                                'the Internet, and is Tor working?',
+                                'the Internet, and is Tor working? ' + 
+                                'This is usually temporary, but bugs and censorship can cause this to persist, in which case you should report it to beardog [at] mailbox.org',
                                 terminal=True)
                     restarttor.restart(comm_inst)
                     comm_inst.offlinePeers = []
