@@ -166,8 +166,9 @@ def daemon():
     security_level = config.get('general.security_level', 1)
     use_existing_tor = config.get('tor.use_existing_tor', False)
 
-    if offline_mode:
-        _setup_online_mode(offline_mode, use_existing_tor, net, security_level)
+    if not offline_mode:
+        # we need to setup tor for use
+        _setup_online_mode(use_existing_tor, net, security_level)
     
     
     _show_info_messages()
