@@ -37,9 +37,12 @@ def _lan_work(peer: LANIP):
                 break
             if identified_port.port != 0:
                 break
-            if requests.get(f'http://{peer}:{i}/ping') == 'pong!':
-                identified_port.port = i
-                break
+            try:
+                if requests.get(f'http://{peer}:{i}/ping') == 'onionr!':
+                    identified_port.port = i
+                    break
+            except requests.exceptions.ConnectionError:
+                pass
     
     Thread(target=find_port, args=[1024, 32767], daemon=True).start()
     Thread(target=find_port, args=[32767, 65535], daemon=True).start()
