@@ -2,17 +2,14 @@
 
 LAN transport client thread
 """
-from typing import List
+import requests
 
-import watchdog
-from requests.exceptions import ConnectionError
+from typing import Set
 
-from onionrcrypto.cryptoutils.randomshuffle import random_shuffle
+from onionrtypes import LANIP
 from utils.bettersleep import better_sleep
-from onionrutils.basicrequests import do_post_request, do_get_request
+
 from threading import Thread
-from onionrblocks import BlockList
-from onionrblocks.blockimporter import import_block_from_data
 """
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -28,53 +25,29 @@ from onionrblocks.blockimporter import import_block_from_data
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-
-class Client:
-    def __init__(self):
-        self.peers = []
-        self.lookup_time = {}
-        self.poll_delay = 10
+connected_lan_peers: Set[LANIP] = set([])
 
 
-    def get_lookup_time(self, peer):
-        try:
-            return self.lookup_time[peer]
-        except KeyError:
-            return 0
+def _lan_work(peer: LANIP):
+    identified_port = lambda: None
+    identified_port.port = 0
+    def find_port(start=1024, max=0):
+        for i in range(start, 65535):
+            if i > max and max > 0:
+                break
+            if identified_port.port != 0:
+                break
+            if requests.get(f'http://{peer}/:{i}/ping') == 'pong!':
+                identified_port.port = i
+                break
+    
+    Thread(target=find_port, args=[1024, 32767], daemon=True).start()
+    Thread(target=find_port, args=[32767, 65535], daemon=True).start()
+    while identified_port.port == 0:
+        better_sleep(1)
+    print(LANIP, identified_port.port)
 
-    def peer_work(self, peer):
-        port = 1024
 
-        self.peers.append(peer)
-        for port in range(port, 65535):
-            print(port)
-            try:
-                if do_get_request(f'http://{peer}:{port}/ping', proxyType='lan', ignoreAPI=True, connect_timeout=0.3) == 'onionr!':
-                    port = port
-                    print(f'{peer}:{port} found')
-                    break
-            except (AttributeError, ConnectionError):
-                pass
-        else:
-            self.peers.remove(peer)
-            return
-        self.peers.append(peer)
-
-        while True:
-            block_list = self._too_many.get(BlockList).get()
-            last_time = self.get_lookup_time(peer)
-            new_blocks = set('\n'.join(do_get_request(f'http://{peer}:{port}/blist/{last_time}', proxyType='lan', ignoreAPI=True))) ^ set(block_list)
-
-            for bl in new_blocks:
-                import_block_from_data(
-                    do_get_request(
-                        f'http://{peer}:{port}/get/{bl}', proxyType='lan', ignoreAPI=True))
-            better_sleep(10)
-        self.peers.remove(peer)
-
-    def connect_peer(self, peer):
-        if peer in self.peers:
-            return
-        print(f'connecting to {peer}')
-        Thread(target=self.peer_work, args=[peer], daemon=True).start()
-
+def connect_peer(peer: LANIP):
+    Thread(target=_lan_work, args=[peer], daemon=True).start()
+    connected_lan_peers.add(peer)

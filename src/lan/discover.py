@@ -11,6 +11,7 @@ from socket import SHUT_RDWR
 
 from .getip import lan_ips, best_ip
 from utils.bettersleep import better_sleep
+from . import client
 """
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -32,7 +33,7 @@ ANNOUNCE_LOOP_SLEEP = 30
 
 
 
-def learn_services(lan_client):
+def learn_services():
     """Take a list to infintely add lan service info to."""
 
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
@@ -62,7 +63,7 @@ def learn_services(lan_client):
             except ValueError:
                 pass
             else:
-                lan_client.connect_peer(service)
+                client.connect_peer(service)
 
 
 def advertise_service(specific_ips=None):
