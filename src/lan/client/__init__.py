@@ -38,7 +38,8 @@ def _lan_work(peer: LANIP):
             if identified_port.port != 0:
                 break
             try:
-                if requests.get(f'http://{peer}:{i}/ping') == 'onionr!':
+                if requests.get(f'http://{peer}:{i}/ping', timeout=1) == 'onionr!':
+                    print("Found", peer, i)
                     identified_port.port = i
                     break
             except requests.exceptions.ConnectionError:
