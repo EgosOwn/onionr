@@ -70,7 +70,7 @@ class LANServer:
             return accept_upload(request)
 
     def start_server(self):
-        self.server = WSGIServer((self.host, get_open_port()),
+        self.server = WSGIServer((self.host, 1337),
                                  self.app, log=None,
                                  handler_class=FDSafeHandler)
         self.port = self.server.server_port

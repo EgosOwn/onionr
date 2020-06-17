@@ -45,11 +45,12 @@ def _lan_work(peer: LANIP):
             except requests.exceptions.ConnectionError:
                 pass
     
-    Thread(target=find_port, args=[1024, 32767], daemon=True).start()
-    Thread(target=find_port, args=[32767, 65535], daemon=True).start()
-    while identified_port.port == 0:
-        better_sleep(1)
-    print(LANIP, identified_port.port)
+    #Thread(target=find_port, args=[1024, 32767], daemon=True).start()
+    #Thread(target=find_port, args=[32767, 65535], daemon=True).start()
+    #while identified_port.port == 0:
+    #    better_sleep(1)
+    i = 1337
+    print(requests.get(f'http://{peer}:{i}/ping'))
 
 
 def connect_peer(peer: LANIP):
