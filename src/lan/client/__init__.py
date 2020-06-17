@@ -37,7 +37,7 @@ def _lan_work(peer: LANIP):
                 break
             if identified_port.port != 0:
                 break
-            if requests.get(f'http://{peer}/:{i}/ping') == 'pong!':
+            if requests.get(f'http://{peer}:{i}/ping') == 'pong!':
                 identified_port.port = i
                 break
     
