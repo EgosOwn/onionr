@@ -10,7 +10,7 @@ import logger
 
 def test_lan_server(testmanager):
     start_time = get_epoch()
-    for i in range(1024, 65536):
+    for i in range(1337, 1340):
         try:
             if requests.get(f"http://{best_ip}:{i}/ping").text == 'onionr!':
                 bl = insert('test data')

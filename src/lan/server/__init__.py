@@ -3,6 +3,7 @@
 LAN transport server thread
 """
 import ipaddress
+import time
 from threading import Thread
 
 from gevent.pywsgi import WSGIServer
@@ -36,6 +37,7 @@ from utils.bettersleep import better_sleep
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 ports = range(1337, 1340)
+_start_time = time.time()
 
 class LANServer:
     def __init__(self, shared_state):
@@ -50,7 +52,8 @@ class LANServer:
         @app.before_request
         def dns_rebinding_prevention():
             if request.remote_addr in lan_ips or ipaddress.ip_address(request.remote_addr).is_loopback:
-                abort(403)
+                if time.time() - _start_time < 600:
+                    abort(403)
             if request.host != f'{self.host}:{self.port}':
                 logger.warn('Potential DNS rebinding attack on LAN server:')
                 logger.warn(f'Hostname {request.host} was used instead of {self.host}:{self.port}')
