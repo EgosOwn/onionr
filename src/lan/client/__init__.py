@@ -8,6 +8,10 @@ from typing import Set
 
 from onionrtypes import LANIP
 from utils.bettersleep import better_sleep
+import logger
+from coredb.blockmetadb import get_block_list
+from onionrblocks.blockimporter import import_block_from_data
+from ..server import ports
 
 from threading import Thread
 """
@@ -29,30 +33,35 @@ connected_lan_peers: Set[LANIP] = set([])
 
 
 def _lan_work(peer: LANIP):
-    identified_port = lambda: None
-    identified_port.port = 0
-    def find_port(start=1024, max=0):
-        for i in range(start, 65535):
-            if i > max and max > 0:
+    def _sync_peer(url):
+        our_blocks = get_block_list()
+        blocks = requests.get(url + 'blist/0').text.splitlines()
+        for block in blocks:
+            if block not in our_blocks:
+                import_block_from_data(requests.get(url + f'get/{block}', stream=True).raw.read(6000000))
+        
+
+    for port in ports:
+        try:
+            root = f'http://{peer}:{port}/'
+            if requests.get(f'{root}ping').text != 'onionr!':
+                connected_lan_peers.remove(peer)
+            else:
+                logger.info(f'[LAN] Connected to {peer}:{port}', terminal=True)
+                while True:
+                    try:
+                        _sync_peer(root)
+                    except requests.exceptions.ConnectionError:
+                        break
                 break
-            if identified_port.port != 0:
-                break
-            try:
-                if requests.get(f'http://{peer}:{i}/ping', timeout=1) == 'onionr!':
-                    print("Found", peer, i)
-                    identified_port.port = i
-                    break
-            except requests.exceptions.ConnectionError:
-                pass
-    
-    #Thread(target=find_port, args=[1024, 32767], daemon=True).start()
-    #Thread(target=find_port, args=[32767, 65535], daemon=True).start()
-    #while identified_port.port == 0:
-    #    better_sleep(1)
-    i = 1337
-    print(requests.get(f'http://{peer}:{i}/ping'))
+        except requests.exceptions.ConnectionError:
+            pass
+    else:
+        connected_lan_peers.remove(peer)
 
 
 def connect_peer(peer: LANIP):
-    Thread(target=_lan_work, args=[peer], daemon=True).start()
-    connected_lan_peers.add(peer)
+    if peer not in connected_lan_peers:
+        connected_lan_peers.add(peer)
+        Thread(target=_lan_work, args=[peer], daemon=True).start()
+
