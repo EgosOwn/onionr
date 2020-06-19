@@ -28,7 +28,7 @@ def test_lan_server(testmanager):
                 if (bl in l and bl2 in l and bl3 in l) or len(l) == 0:
                     logger.error('Failed to get appopriate time' + '-'.join(l), terminal=True)
                     raise ValueError
-                if onionrblockapi.Block(bl).raw != requests.get(f"http://{best_ip}:{i}/get/{bl}").content:
+                if onionrblockapi.Block(bl).raw != requests.get(f"http://{best_ip}:{i}/get/{bl}", stream=True).raw.read(6000000):
                     raise ValueError
 
                 break
