@@ -15,10 +15,12 @@
     <script defer src="/shared/node_modules/pnotify/dist/iife/PNotify.js"></script>
     <script defer src="/shared/node_modules/pnotify/dist/iife/PNotifyButtons.js"></script>
     <script defer src="/shared/eventsource.js"></script>
+    <script defer src="/shared/main/particles.js"></script>
     <script defer src="/shared/loadabout.js"></script>
     <script defer src="/shared/misc.js"></script>
     <script defer src="/shared/getos.js"></script>
     <script defer src="/shared/main/stats.js"></script>
+    <script defer src="/shared/main/recent.js"></script>
     <script defer src="/shared/main/torstats.js"></script>
     <script defer src="/shared/panel.js"></script>
     <script defer src="/shared/configeditor.js"></script>
@@ -118,8 +120,9 @@
 
     <br>
 
+
     <!--Start of content-->
-    <div class="container">
+    <div class="container mainCont">
         <div class="columns">
             <div class="column">
                 <!--Onionr Card-->
@@ -262,6 +265,18 @@
                                     Blocks to download: <span id="blockQueue"></span>
                                 </div>
                             </div>
+                            <div class="columns">
+                                <div class="column">
+                                    <p class="buttons">
+                                        <button class="button is-small">
+                                          <span class="icon is-small">
+                                            <i class="fas fa-stream"></i>
+                                          </span>
+                                          <span>Recent blocks</span>
+                                        </button>
+                                    </p>
+                                </div>
+                            </div>
                             <h4>Process</h4>
                             <div class="columns">
                                 <div class="column">
@@ -300,6 +315,8 @@
         </div>
     </div>
     </div>
+    </div>
+    <div id="particles-js"></div>
     <br>
     <div class="modal aboutModal">
         <div class="modal-background"></div>
@@ -311,7 +328,18 @@
             Loading... <i class="fas fa-spinner fa-spin"></i>
           </section>
         </div>
-      </div>
+    </div>
+    <div class="modal recentModal">
+        <div class="modal-background"></div>
+        <div class="modal-card">
+          <header class="modal-card-head">
+            <button class="closeRecentModal delete" aria-label="close"></button>
+          </header>
+          <section class="modal-card-body recentBody">
+            Loading... <i class="fas fa-spinner fa-spin"></i>
+          </section>
+        </div>
+    </div>
 </body>
 
 </html>

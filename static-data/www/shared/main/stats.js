@@ -144,3 +144,9 @@ document.addEventListener("visibilitychange", function() {
 
 getStats()
 setInterval(function(){getStats()}, 1000)
+
+
+/* particlesJS.load(@dom-id, @path-json, @callback (optional)); */
+particlesJS.load('particles-js', '/shared/main/particles.json', function() {
+    console.log('callback - particles.js config loaded');
+  });
