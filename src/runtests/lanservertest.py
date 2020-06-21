@@ -20,15 +20,16 @@ def test_lan_server(testmanager):
                 bl3 = insert('test data3')
                 l = requests.get(f"http://{best_ip}:{i}/blist/0").text.split('\n')
                 if bl not in l or bl2 not in l or bl3 not in l:
-                    logger.error('blocks not in blist ' + '-'.join(l), terminal=True)
+                    logger.error('blocks not in blist ' + '-'.join(l))
                     raise ValueError
                 time = blockmetadb.get_block_date(bl3) - 1
                 l = requests.get(f"http://{best_ip}:{i}/blist/{time}").text.split('\n')
 
                 if (bl in l and bl2 in l and bl3 in l) or len(l) == 0:
-                    logger.error('Failed to get appopriate time' + '-'.join(l), terminal=True)
+                    logger.error('Failed to get appopriate time' + '-'.join(l))
                     raise ValueError
                 if onionrblockapi.Block(bl).raw != requests.get(f"http://{best_ip}:{i}/get/{bl}", stream=True).raw.read(6000000):
+                    logger.error('Block doesn\'t match')
                     raise ValueError
 
                 break

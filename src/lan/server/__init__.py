@@ -52,7 +52,7 @@ class LANServer:
         @app.before_request
         def dns_rebinding_prevention():
             if request.remote_addr in lan_ips or ipaddress.ip_address(request.remote_addr).is_loopback:
-                if time.time() - _start_time < 600:
+                if time.time() - _start_time > 600:
                     abort(403)
             if request.host != f'{self.host}:{self.port}':
                 logger.warn('Potential DNS rebinding attack on LAN server:')
