@@ -1,8 +1,8 @@
-"""
-    Onionr - Private P2P Communication
+"""Onionr - Private P2P Communication.
 
-    Load web UI client endpoints into the whitelist from plugins
+Load web UI client endpoints into the whitelist from plugins
 """
+import onionrplugins
 """
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -17,7 +17,8 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-import onionrplugins
+
+
 def load_plugin_security_whitelist_endpoints(whitelist: list):
     """Accept a list reference of whitelist endpoints from security/client.py and
     append plugin's specified endpoints to them by attribute"""
