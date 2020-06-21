@@ -30,6 +30,7 @@
     <script defer src="/private/js/motd.js"></script>
     <script defer src="/shared/navbar.js"></script>
     <script defer src="/private/js/windows.js"></script>
+    <script defer src="/shared/main/loadTransport.js"></script>
     <script>alert("Content security policy appears to not be working. Your browser security is weak!")</script>
 </head>
 
@@ -250,22 +251,21 @@
                                 </div>
                             </div>
 
-                            <details>
-                                <summary>Transport addresses</summary>
-                                <div class="field has-addons torTransportField">
-                                    <p class="control">
-                                        <a class="button is-static">
-                                            <i class="fas fa-adjust"></i>
-                                        </a>
-                                    </p>
-                                    <p class="control is-expanded">
-                                        <input id="myTor" class="input myTor" type="text" readonly>
-                                    </p>
-                                    <p class="control">
-                                        <a id="myTorCopy" class="button is-primary"><i class="fas fa-copy"></i></a>
-                                    </p>
-                                </div>
-                            </details>
+                            <h4>Transports</h4>
+
+                            <div class="field has-addons torTransportField">
+                                <p class="control">
+                                    <a class="button is-static">
+                                        <i class="fas fa-adjust"></i>
+                                    </a>
+                                </p>
+                                <p class="control is-expanded">
+                                    <input class="input myTor" type="text" readonly>
+                                </p>
+                                <p class="control">
+                                    <a class="button is-primary myTorCopy"><i class="fas fa-copy"></i></a>
+                                </p>
+                            </div>
 
                             <i class="fas fa-link"></i>
                             Outgoing Connections:
