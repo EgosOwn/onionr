@@ -57,9 +57,14 @@ def stream_tor_circuits():
 def stream_recent_blocks():
     def _compile_json(b_list):
         js = {}
+        block_obj = None
         for block in b_list:
-            js[block] = Block(block).btype
-        return ujson.dumps(js, reject_bytes=True)
+            block_obj = Block(block)
+            if block_obj.isEncrypted:
+                js[block] = 'encrypted'
+            else:
+                js[block] = Block(block).btype
+        return ujson.dumps({"blocks": js}, reject_bytes=True)
 
     def _stream_recent():
         last_time = Path(block_meta_db).stat().st_ctime

@@ -146,7 +146,19 @@ getStats()
 setInterval(function(){getStats()}, 1000)
 
 
-/* particlesJS.load(@dom-id, @path-json, @callback (optional)); */
-particlesJS.load('particles-js', '/shared/main/particles.json', function() {
-    console.log('callback - particles.js config loaded');
-  });
+
+fetch('/config/get/ui.animated_background', {
+    headers: {
+        "token": webpass
+    }})
+    .then((resp) => resp.text()) // Transform the data into text
+    .then(function(resp) {
+        if (resp == "false"){
+            return
+        }
+        /* particlesJS.load(@dom-id, @path-json, @callback (optional)); */
+        particlesJS.load('particles-js', '/shared/main/particles.json', function() {
+            console.debug('callback - particles.js config loaded')
+        })
+    }
+    )

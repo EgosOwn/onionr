@@ -1539,3 +1539,15 @@ var pJS = function(tag_id, params){
     xhr.send();
   
   };
+  let toggleAnimation = function () {
+   if (document.hidden) {
+    cancelRequestAnimFrame(pJSDom[0].pJS.fn.checkAnimFrame);
+    cancelRequestAnimFrame(pJSDom[0].pJS.fn.drawAnimFrame);
+    pJSDom[0].pJS.fn.particlesEmpty();
+    pJSDom[0].pJS.fn.canvasClear();
+    return;
+   }
+   pJSDom[0].pJS.fn.vendors.start();
+  }
+
+  document.addEventListener("visibilitychange", toggleAnimation, false);

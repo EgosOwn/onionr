@@ -81,25 +81,6 @@
                         </h2>
                     </div>
                     <div class="column is-7">
-                        <div class="field">
-                            <div class="field has-addons">
-                                <p class="control">
-                                    <a class="button is-static">
-                                        <i class="fas fa-fingerprint"></i>
-                                    </a>
-                                </p>
-                                <p class="control is-expanded">
-                                    <input id="myPub" class="input myPub" type="text" readonly>
-                                </p>
-                                <p class="control">
-                                    <a id="myPubCopy" class="button is-primary">
-                                        <span class="icon">
-                                            <i class="fas fa-copy"></i>
-                                        </span>
-                                    </a>
-                                </p>
-                            </div>
-                        </div>
                         <div class="field is-grouped is-grouped-centered">
                             <p class="control">
                                 <a class="button is-danger is-outlined" id="shutdownNode">
@@ -204,6 +185,26 @@
                         <div class="content">
                             <div class="columns">
                                 <div class="column">
+                                    <div class="field">
+                                        <div class="field has-addons">
+                                            <p class="control">
+                                                <a class="button is-static">
+                                                    <i class="fas fa-fingerprint"></i>
+                                                </a>
+                                            </p>
+                                            <p class="control is-expanded">
+                                                <input id="myPub" class="input myPub" type="text" readonly>
+                                            </p>
+                                            <p class="control">
+                                                <a id="myPubCopy" class="button is-primary"><i class="fas fa-copy"></i></a>
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+ 
+                            </div>
+                            <div class="columns">
+                                <div class="column">
                                     <span class="icon">
                                         <i class="fas fa-lock"></i>
                                     </span>
@@ -248,6 +249,24 @@
                                      Total Requests: <span id="totalRec">None since start</span>
                                 </div>
                             </div>
+
+                            <details>
+                                <summary>Transport addresses</summary>
+                                <div class="field has-addons torTransportField">
+                                    <p class="control">
+                                        <a class="button is-static">
+                                            <i class="fas fa-adjust"></i>
+                                        </a>
+                                    </p>
+                                    <p class="control is-expanded">
+                                        <input id="myTor" class="input myTor" type="text" readonly>
+                                    </p>
+                                    <p class="control">
+                                        <a id="myTorCopy" class="button is-primary"><i class="fas fa-copy"></i></a>
+                                    </p>
+                                </div>
+                            </details>
+
                             <i class="fas fa-link"></i>
                             Outgoing Connections:
                             <div class="control">
@@ -268,7 +287,7 @@
                             <div class="columns">
                                 <div class="column">
                                     <p class="buttons">
-                                        <button class="button is-small">
+                                        <button class="button is-small recentBlocksBtn">
                                           <span class="icon is-small">
                                             <i class="fas fa-stream"></i>
                                           </span>
@@ -281,7 +300,7 @@
                             <div class="columns">
                                 <div class="column">
                                     <i class="fas fa-microchip"></i>
-                                    Current CPU threads: <span id="threads"></span>
+                                    Current threads: <span id="threads"></span>
                                 </div>
                                 <div class="column">
                                     <i class="fas fa-memory"></i>
@@ -336,7 +355,8 @@
             <button class="closeRecentModal delete" aria-label="close"></button>
           </header>
           <section class="modal-card-body recentBody">
-            Loading... <i class="fas fa-spinner fa-spin"></i>
+                Keep this open to see new blocks!
+              <pre class="recentBlockList"></pre>
           </section>
         </div>
     </div>

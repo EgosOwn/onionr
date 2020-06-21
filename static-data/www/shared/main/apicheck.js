@@ -18,6 +18,9 @@
 */
 apiOnline = true
 async function doPing(){
+    if (document.hidden){
+        return
+    }
     out = setTimeout(function(){
         if (apiOnline){
         PNotify.notice('Connection lost with API server')

@@ -71,6 +71,7 @@
         "tor": true
     },
     "ui": {
+        "animated_background": true,
         "theme": "dark"
     }
 }

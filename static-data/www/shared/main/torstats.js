@@ -5,7 +5,7 @@ fetch('/config/get/transports.tor', {
     .then((resp) => resp.text()) // Transform the data into text
     .then(function(resp) {
         var displays = document.getElementsByClassName('torInfo')
-        if (resp == true){
+        if (resp == "true"){
             var torSource = new EventSourcePolyfill('/torcircuits', {
                 headers: {
                     "token": webpass
