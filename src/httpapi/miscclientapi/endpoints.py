@@ -20,6 +20,7 @@ from onionrutils import mnemonickeys
 from onionrutils import bytesconverter
 from etc import onionrvalues
 from utils import reconstructhash
+from utils.gettransports import get as get_tor
 """
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -140,3 +141,8 @@ class PrivateEndpoints:
         def is_tor_ready():
             """If Tor is starting up, the web UI is not ready to be used."""
             return Response(str(g.too_many.get(NetController).readyState).lower())
+        
+        @private_endpoints_bp.route('/gettoraddress')
+        def get_tor_address():
+            """Return public Tor v3 Onion address for this node"""
+            return Response(get_tor()[0])
