@@ -5,6 +5,13 @@ This file initializes Onionr when ran to be a daemon or with commands
 
 Run with 'help' for usage.
 """
+import sys
+try:
+    import sqlite3
+except ModuleNotFoundError:
+    sys.stderr.write(
+        'Error, Onionr requires Sqlite3-enabled Python.\n')
+    sys.exit(1)
 """
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -28,7 +35,6 @@ ran_as_script = False
 if __name__ == "__main__": ran_as_script = True
 
 # Import standard libraries
-import sys  # noqa
 
 try:
     from etc import dependencycheck  # noqa
