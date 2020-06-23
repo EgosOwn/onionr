@@ -22,12 +22,17 @@
 import logger, config, threading, time, datetime, sys
 
 import ujson as json
+from nacl.exceptions import TypeError as NaclTypeError
 
 from onionrutils import stringvalidators, bytesconverter
 from onionrcrypto import encryption, keypair, signing, getourkeypair
 import onionrexceptions, onionrusers
+
 import locale
 locale.setlocale(locale.LC_ALL, '')
+
+import binascii
+
 plugin_name = 'encrypt'
 
 class PlainEncryption:
@@ -110,7 +115,12 @@ class PlainEncryption:
         return
 
 def on_decrypt_cmd(api, data=None):
-    PlainEncryption(api).decrypt()
+    try:
+        PlainEncryption(api).decrypt()
+    except binascii.Error:
+        logger.error("Invalid ciphertext padding", terminal=True)
+    except NaclTypeError:
+        logger.error("Ciphertext too short.", terminal=True)
 
 def on_encrypt_cmd(api, data=None):
     PlainEncryption(api).encrypt()
