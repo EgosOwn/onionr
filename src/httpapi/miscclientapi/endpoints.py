@@ -145,4 +145,6 @@ class PrivateEndpoints:
         @private_endpoints_bp.route('/gettoraddress')
         def get_tor_address():
             """Return public Tor v3 Onion address for this node"""
+            if not config.get('general.security_level', 0):
+                abort(404)
             return Response(get_tor()[0])
