@@ -13,5 +13,5 @@ niceware==0.2.1
 psutil==5.7.0
 filenuke==0.0.0
 mimcvdf==1.1.0
-watchdog==0.10.2
+watchdog==0.10.3
 ujson==3.0.0
