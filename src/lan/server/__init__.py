@@ -83,6 +83,9 @@ class LANServer:
             better_sleep(1)
             if self.server.started and port == self.server.server_port:
                 logger.info(f'Serving to LAN on {self.host}:{self.port}', terminal=True)
+        if self.host == "":
+            logger.info("Not binding to LAN due to no private network configured.", terminal=True)
+            return
         for i in ports:
             self.server = WSGIServer((self.host, i),
                                     self.app, log=None,
