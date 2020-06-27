@@ -38,7 +38,6 @@ fetch('/config/get/transports.tor', {
             torSource.onmessage = function(e){
                 let data = JSON.parse(e.data)
                 let i = 0
-                let displaying = true
                 for (x = 0; x < displays.length; x++){
                    let circuitCount = Object.keys(data).length
                    let node = Object.keys(data)[0]
