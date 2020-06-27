@@ -49,7 +49,8 @@ def restart():
             return
     except (AttributeError, OSError):
         logger.warn('Could not fork on restart')
-
+    with open(filepaths.restarting_indicator, 'w') as f:
+        f.write('t')
     daemonlaunch.kill_daemon()
     while localcommand.local_command('ping', maxWait=8) == 'pong!':
         time.sleep(0.3)

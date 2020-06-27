@@ -214,6 +214,13 @@ def start(override: bool = False):
     Error exit if there is and its not overridden
     """
     if os.path.exists(filepaths.lock_file) and not override:
+        if os.path.exists(filepaths.restarting_indicator):
+            try:
+                os.remove(filepaths.restarting_indicator)
+            except FileNotFoundError:
+                pass
+            else:
+                return
         logger.fatal('Cannot start. Daemon is already running,'
                      + ' or it did not exit cleanly.\n'
                      + ' (if you are sure that there is not a daemon running,'
