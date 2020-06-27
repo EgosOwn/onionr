@@ -31,7 +31,7 @@ def verify_POW(blockContent):
         # logger.debug('Validated block pow')
         retData = True
     else:
-        logger.debug("Invalid token, bad proof")
+        logger.debug(f"Invalid token, bad proof for {blockHash} {puzzle}")
         raise onionrexceptions.InvalidProof('Proof for %s needs to be %s' % (blockHash, puzzle))
 
     return retData
