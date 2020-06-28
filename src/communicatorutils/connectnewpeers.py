@@ -1,9 +1,14 @@
-'''
-    Onionr - Private P2P Communication
+"""Onionr - Private P2P Communication.
 
-    Connect a new peer to our communicator instance. Does so randomly if no peer is specified
-'''
-'''
+Connect a new peer to our communicator instance. Does so randomly if no peer is specified
+"""
+import time, sys, secrets
+import onionrexceptions, logger, onionrpeers
+from utils import networkmerger, gettransports
+from onionrutils import stringvalidators, epoch
+from communicator import peeraction, bootstrappeers
+from coredb import keydb
+"""
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -16,13 +21,9 @@
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
-'''
-import time, sys, secrets
-import onionrexceptions, logger, onionrpeers
-from utils import networkmerger, gettransports
-from onionrutils import stringvalidators, epoch
-from communicator import peeraction, bootstrappeers
-from coredb import keydb
+"""
+
+
 def connect_new_peer_to_communicator(comm_inst, peer='', useBootstrap=False):
     config = comm_inst.config
     retData = False
