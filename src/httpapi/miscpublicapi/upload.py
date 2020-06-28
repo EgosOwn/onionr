@@ -50,7 +50,7 @@ def accept_upload(request):
                 resp = 'success'
             else:
                 resp = 'failure'
-                logger.warn('Error encountered importing uploaded block')
+                logger.warn(f'Error encountered importing uploaded block {b_hash}')
         except onionrexceptions.BlacklistedBlock:
             logger.debug('uploaded block is blacklisted')
             resp = 'failure'
@@ -62,6 +62,7 @@ def accept_upload(request):
         abort(400)
     elif resp == 'proof':
         resp = Response(resp, 400)
+        logger.warn(f'Error encountered importing uploaded block, invalid proof {b_hash}')
     else:
         resp = Response(resp)
     return resp
