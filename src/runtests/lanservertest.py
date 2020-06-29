@@ -12,6 +12,12 @@ def test_lan_server(testmanager):
     start_time = get_epoch()
     for i in range(1337, 1340):
         try:
+            if not best_ip or not best_ip.startswith(('192.168')):
+                logger.warn(
+                    "lanservertest not running, not in standard 192.168 lan " +
+                    "run this test on a lan before release",
+                    terminal=True)
+                return
             if requests.get(f"http://{best_ip}:{i}/ping").text == 'onionr!':
                 bl = insert('test data')
                 sleep(10)
