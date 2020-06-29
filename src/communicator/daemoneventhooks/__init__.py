@@ -57,8 +57,6 @@ def daemon_event_handlers(shared_state: 'TooMany'):
     def upload_event(block: 'BlockHash' = ''):
         if not block:
             raise ValueError
-        if not comm_inst.onlinePeers:
-            return
         public_api.hideBlocks.append(block)
         try:
             mixmate.block_mixer(comm_inst.blocksToUpload, block)
