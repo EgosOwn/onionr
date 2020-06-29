@@ -7,7 +7,7 @@ QUOTES = [
     ("Hack the Planet",
     ""),
     ("Study after study has show that human behavior changes when we know we’re being watched.\nUnder observation, we act less free, which means we effectively *are* less free.",
-    "Edward Snodwen"),
+    "Edward Snowdwen"),
     ("A revolution without dancing is a revolution not worth having",
     "V for Vendetta"),
     ("There can be no justice so long as laws are absolute. Even life itself is an exercise in exceptions",
