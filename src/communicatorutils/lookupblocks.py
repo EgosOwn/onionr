@@ -105,6 +105,8 @@ def lookup_blocks_from_communicator(comm_inst):
                                     # add blocks to download queue
                                     comm_inst.blockQueue[i] = [peer]
                                     new_block_count += 1
+                                    comm_inst.dbTimestamps[peer] = \
+                                        epoch.get_rounded_epoch(roundS=60)
                         else:
                             if peer not in comm_inst.blockQueue[i]:
                                 if len(comm_inst.blockQueue[i]) < 10:
