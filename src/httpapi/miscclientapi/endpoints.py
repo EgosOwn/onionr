@@ -8,7 +8,6 @@ import platform
 
 from flask import Response, Blueprint, request, send_from_directory, abort
 from flask import g
-from gevent import spawn
 import unpaddedbase32
 
 from httpapi import apiutils
@@ -40,6 +39,7 @@ pub_key = onionrcrypto.pub_key.replace('=', '')
 
 SCRIPT_NAME = os.path.dirname(os.path.realpath(__file__)) + \
               f'/../../../{onionrvalues.SCRIPT_NAME}'
+
 
 class PrivateEndpoints:
     def __init__(self, client_api):
@@ -75,7 +75,7 @@ class PrivateEndpoints:
                 raise ValueError('block hash needs to be alpha numeric')
             name = reconstructhash.reconstruct_hash(name)
             if name in client_api.publicAPI.hideBlocks:
-                spawn(_delay_wait_for_share_block_removal)
+                #spawn(_delay_wait_for_share_block_removal)
                 return Response("will be removed")
             else:
                 client_api.publicAPI.hideBlocks.append(name)
