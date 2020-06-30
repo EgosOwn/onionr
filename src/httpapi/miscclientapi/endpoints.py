@@ -75,7 +75,6 @@ class PrivateEndpoints:
                 raise ValueError('block hash needs to be alpha numeric')
             name = reconstructhash.reconstruct_hash(name)
             if name in client_api.publicAPI.hideBlocks:
-                #spawn(_delay_wait_for_share_block_removal)
                 return Response("will be removed")
             else:
                 client_api.publicAPI.hideBlocks.append(name)
@@ -141,7 +140,7 @@ class PrivateEndpoints:
         def is_tor_ready():
             """If Tor is starting up, the web UI is not ready to be used."""
             return Response(str(g.too_many.get(NetController).readyState).lower())
-        
+
         @private_endpoints_bp.route('/gettoraddress')
         def get_tor_address():
             """Return public Tor v3 Onion address for this node"""

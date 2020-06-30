@@ -1,21 +1,21 @@
-'''
-    Onionr - Private P2P Communication
+"""Onionr - Private P2P Communication.
 
-    Accept block uploads to the public API server
-'''
+Accept block uploads to the public API server
+"""
+import sys
+
 from gevent import spawn
 from gevent import threading
-
-import sys
 from flask import Response
 from flask import abort
+from flask import g
 
 from onionrutils import localcommand
 from onionrblocks import blockimporter
 import onionrexceptions
 import logger
 
-'''
+"""
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -28,7 +28,7 @@ import logger
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
-'''
+"""
 
 
 def accept_upload(request):
@@ -40,17 +40,19 @@ def accept_upload(request):
         try:
             b_hash = blockimporter.import_block_from_data(data)
             if b_hash:
-                spawn(
-                    localcommand.local_command,
-                    f'/daemon-event/upload_event',
-                    post=True,
-                    is_json=True,
-                    postData={'block': b_hash}
-                    ).get(timeout=10)
+                if g.too_many.get_by_string("OnionrCommunicatorDaemon").onlinePeers:
+                    spawn(
+                        localcommand.local_command,
+                        f'/daemon-event/upload_event',
+                        post=True,
+                        is_json=True,
+                        postData={'block': b_hash}
+                        ).get(timeout=10)
                 resp = 'success'
             else:
                 resp = 'failure'
-                logger.warn(f'Error encountered importing uploaded block {b_hash}')
+                logger.warn(
+                    f'Error encountered importing uploaded block {b_hash}')
         except onionrexceptions.BlacklistedBlock:
             logger.debug('uploaded block is blacklisted')
             resp = 'failure'
@@ -62,7 +64,8 @@ def accept_upload(request):
         abort(400)
     elif resp == 'proof':
         resp = Response(resp, 400)
-        logger.warn(f'Error encountered importing uploaded block, invalid proof {b_hash}')
+        logger.warn(
+            f'Error importing uploaded block, invalid proof {b_hash}')
     else:
         resp = Response(resp)
     return resp
