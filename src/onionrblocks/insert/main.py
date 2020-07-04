@@ -1,8 +1,28 @@
-"""
-    Onionr - Private P2P Communication
+"""Onionr - Private P2P Communication.
 
-    Create and insert Onionr blocks
+Create and insert Onionr blocks
 """
+from typing import Union
+import ujson as json
+
+from gevent import spawn
+
+from onionrutils import bytesconverter, epoch
+import filepaths
+import onionrstorage
+from .. import storagecounter
+from onionrplugins import onionrevents as events
+from etc import powchoice, onionrvalues
+import config
+import onionrcrypto as crypto
+import onionrexceptions
+from onionrusers import onionrusers
+from onionrutils import localcommand, blockmetadata, stringvalidators
+import coredb
+import onionrproofs
+from onionrproofs import subprocesspow
+import logger
+from onionrtypes import UserIDSecretKey
 """
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -17,24 +37,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-from typing import Union
-import ujson as json
 
-from gevent import spawn
-
-from onionrutils import bytesconverter, epoch
-import filepaths, onionrstorage
-from .. import storagecounter
-from onionrplugins import onionrevents as events
-from etc import powchoice, onionrvalues
-import config, onionrcrypto as crypto, onionrexceptions
-from onionrusers import onionrusers
-from onionrutils import localcommand, blockmetadata, stringvalidators
-import coredb
-import onionrproofs
-from onionrproofs import subprocesspow
-import logger
-from onionrtypes import UserIDSecretKey
 
 def _check_upload_queue():
     """Returns the current upload queue len
@@ -60,15 +63,14 @@ def insert_block(data: Union[str, bytes], header: str = 'txt',
                  expire: Union[int, None] = None, disableForward: bool = False,
                  signing_key: UserIDSecretKey = '') -> Union[str, bool]:
     """
-        Inserts a block into the network
+        Create and insert a block into the network.
+
         encryptType must be specified to encrypt a block
         if expire is less than date, assumes seconds into future.
             if not assume exact epoch
     """
     our_private_key = crypto.priv_key
     our_pub_key = crypto.pub_key
-
-    is_offline = True
 
     storage_counter = storagecounter.StorageCounter()
 
@@ -77,12 +79,11 @@ def insert_block(data: Union[str, bytes], header: str = 'txt',
         logger.error(allocationReachedMessage)
         raise onionrexceptions.DiskAllocationReached
 
-    if not _check_upload_queue() is False: is_offline = False
-
     if signing_key != '':
         # if it was specified to use an alternative private key
         our_private_key = signing_key
-        our_pub_key = bytesconverter.bytes_to_str(crypto.cryptoutils.get_pub_key_from_priv(our_private_key))
+        our_pub_key = bytesconverter.bytes_to_str(
+            crypto.cryptoutils.get_pub_key_from_priv(our_private_key))
 
     use_subprocess = powchoice.use_subprocess(config)
 
@@ -113,7 +114,8 @@ def insert_block(data: Union[str, bytes], header: str = 'txt',
     signer = ''
     metadata = {}
 
-    # metadata is full block metadata, meta is internal, user specified metadata
+    # metadata is full block metadata
+    # meta is internal, user specified metadata
 
     # only use header if not set in provided meta
 
@@ -122,9 +124,13 @@ def insert_block(data: Union[str, bytes], header: str = 'txt',
     if encryptType in ('asym', 'sym'):
         metadata['encryptType'] = encryptType
     else:
-        if not config.get('general.store_plaintext_blocks', True): raise onionrexceptions.InvalidMetadata("Plaintext blocks are disabled, yet a plaintext block was being inserted")
-        if not encryptType in ('', None):
-            raise onionrexceptions.InvalidMetadata('encryptType must be asym or sym, or blank')
+        if not config.get('general.store_plaintext_blocks', True):
+            raise onionrexceptions.InvalidMetadata(
+                "Plaintext blocks are disabled, " +
+                "yet a plaintext block was being inserted")
+        if encryptType not in ('', None):
+            raise onionrexceptions.InvalidMetadata(
+                'encryptType must be asym or sym, or blank')
 
     try:
         data = data.encode()
@@ -132,13 +138,16 @@ def insert_block(data: Union[str, bytes], header: str = 'txt',
         pass
 
     if encryptType == 'asym':
-        meta['rply'] = createTime # Duplicate the time in encrypted messages to prevent replays
+        # Duplicate the time in encrypted messages to help prevent replays
+        meta['rply'] = createTime
         if sign and asymPeer != our_pub_key:
             try:
-                forwardEncrypted = onionrusers.OnionrUser(asymPeer).forwardEncrypt(data)
+                forwardEncrypted = onionrusers.OnionrUser(
+                    asymPeer).forwardEncrypt(data)
                 data = forwardEncrypted[0]
                 meta['forwardEnc'] = True
-                expire = forwardEncrypted[2] # Expire time of key. no sense keeping block after that
+                # Expire time of key. no sense keeping block after that
+                expire = forwardEncrypted[2]
             except onionrexceptions.InvalidPubkey:
                 pass
             if not disableForward:
@@ -147,11 +156,13 @@ def insert_block(data: Union[str, bytes], header: str = 'txt',
     jsonMeta = json.dumps(meta)
     plaintextMeta = jsonMeta
     if sign:
-        signature = crypto.signing.ed_sign(jsonMeta.encode() + data, key=our_private_key, encodeResult=True)
+        signature = crypto.signing.ed_sign(
+            jsonMeta.encode() + data, key=our_private_key, encodeResult=True)
         signer = our_pub_key
 
     if len(jsonMeta) > 1000:
-        raise onionrexceptions.InvalidMetadata('meta in json encoded form must not exceed 1000 bytes')
+        raise onionrexceptions.InvalidMetadata(
+            'meta in json encoded form must not exceed 1000 bytes')
 
     # encrypt block metadata/sig/content
     if encryptType == 'sym':
@@ -160,17 +171,22 @@ def insert_block(data: Union[str, bytes], header: str = 'txt',
         if stringvalidators.validate_pub_key(asymPeer):
             # Encrypt block data with forward secrecy key first, but not meta
             jsonMeta = json.dumps(meta)
-            jsonMeta = crypto.encryption.pub_key_encrypt(jsonMeta, asymPeer, encodedData=True).decode()
-            data = crypto.encryption.pub_key_encrypt(data, asymPeer, encodedData=False)#.decode()
-            signature = crypto.encryption.pub_key_encrypt(signature, asymPeer, encodedData=True).decode()
-            signer = crypto.encryption.pub_key_encrypt(signer, asymPeer, encodedData=True).decode()
+            jsonMeta = crypto.encryption.pub_key_encrypt(
+                jsonMeta, asymPeer, encodedData=True).decode()
+            data = crypto.encryption.pub_key_encrypt(
+                data, asymPeer, encodedData=False)
+            signature = crypto.encryption.pub_key_encrypt(
+                signature, asymPeer, encodedData=True).decode()
+            signer = crypto.encryption.pub_key_encrypt(
+                signer, asymPeer, encodedData=True).decode()
             try:
                 onionrusers.OnionrUser(asymPeer, saveUser=True)
             except ValueError:
                 # if peer is already known
                 pass
         else:
-            raise onionrexceptions.InvalidPubkey(asymPeer + ' is not a valid base32 encoded ed25519 key')
+            raise onionrexceptions.InvalidPubkey(
+                asymPeer + ' is not a valid base32 encoded ed25519 key')
 
     # compile metadata
     metadata['meta'] = jsonMeta
@@ -180,8 +196,10 @@ def insert_block(data: Union[str, bytes], header: str = 'txt',
     metadata['time'] = createTime
 
     # ensure expire is integer and of sane length
-    if type(expire) is not type(None):
-        if not len(str(int(expire))) < 20: raise ValueError('expire must be valid int less than 20 digits in length')
+    if type(expire) is not type(None):  # noqa
+        if not len(str(int(expire))) < 20:
+            raise ValueError(
+                'expire must be valid int less than 20 digits in length')
         # if expire is less than date, assume seconds into future
         if expire < epoch.get_epoch():
             expire = epoch.get_epoch() + expire
@@ -192,7 +210,7 @@ def insert_block(data: Union[str, bytes], header: str = 'txt',
         payload = subprocesspow.SubprocessPOW(data, metadata).start()
     else:
         payload = onionrproofs.POW(metadata, data).waitForResult()
-    if payload != False:
+    if payload != False:  # noqa
         try:
             retData = onionrstorage.set_data(payload)
         except onionrexceptions.DiskAllocationReached:
@@ -200,16 +218,21 @@ def insert_block(data: Union[str, bytes], header: str = 'txt',
             retData = False
         else:
             if disableForward:
-                logger.warn(f'{retData} asym encrypted block created w/o forward secrecy')
-            # Tell the api server through localCommand to wait for the daemon to upload this block to make statistical analysis more difficult
+                logger.warn(
+                    f'{retData} asym encrypted block created w/o ephemerality')
+            """
+            Tell the api server through localCommand to wait for the daemon to
+            upload this block to make statistical analysis more difficult
+            """
             spawn(
                 localcommand.local_command,
-                f'/daemon-event/upload_event',
+                '/daemon-event/upload_event',
                 post=True,
                 is_json=True,
                 postData={'block': retData}
                 ).get(timeout=5)
-            coredb.blockmetadb.add.add_to_block_DB(retData, selfInsert=True, dataSaved=True)
+            coredb.blockmetadb.add.add_to_block_DB(
+                retData, selfInsert=True, dataSaved=True)
 
             if expire is None:
                 coredb.blockmetadb.update_block_info(
@@ -225,11 +248,19 @@ def insert_block(data: Union[str, bytes], header: str = 'txt',
 
             blockmetadata.process_block_metadata(retData)
 
-    if retData != False:
+    if retData != False:  # noqa
         if plaintextPeer == onionrvalues.DENIABLE_PEER_ADDRESS:
-            events.event('insertdeniable', {'content': plaintext, 'meta': plaintextMeta, 'hash': retData, 'peer': bytesconverter.bytes_to_str(asymPeer)}, threaded = True)
+            events.event('insertdeniable',
+                         {'content': plaintext, 'meta': plaintextMeta,
+                          'hash': retData,
+                          'peer': bytesconverter.bytes_to_str(asymPeer)},
+                         threaded=True)
         else:
-            events.event('insertblock', {'content': plaintext, 'meta': plaintextMeta, 'hash': retData, 'peer': bytesconverter.bytes_to_str(asymPeer)}, threaded = True)
+            events.event('insertblock',
+                         {'content': plaintext, 'meta': plaintextMeta,
+                          'hash': retData,
+                          'peer': bytesconverter.bytes_to_str(asymPeer)},
+                         threaded=True)
 
     spawn(
         localcommand.local_command,
