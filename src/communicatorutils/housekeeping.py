@@ -4,6 +4,7 @@ Cleanup old Onionr blocks and forward secrecy keys using the communicator.
 Ran from a communicator timer usually
 """
 import sqlite3
+
 import logger
 from onionrusers import onionrusers
 from onionrutils import epoch
@@ -67,7 +68,8 @@ def clean_keys(comm_inst):
     time = epoch.get_epoch()
     deleteKeys = []
 
-    for entry in c.execute("SELECT * FROM forwardKeys WHERE expire <= ?", (time,)):
+    for entry in c.execute(
+            "SELECT * FROM forwardKeys WHERE expire <= ?", (time,)):
         logger.debug('Forward key: %s' % entry[1])
         deleteKeys.append(entry[1])
 

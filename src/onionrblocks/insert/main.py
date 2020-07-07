@@ -40,7 +40,9 @@ from onionrtypes import UserIDSecretKey
 
 
 def _check_upload_queue():
-    """Returns the current upload queue len
+    """
+    Return the current upload queue len.
+
     raises OverflowError if max, false if api not running
     """
     max_upload_queue: int = 5000
@@ -63,11 +65,11 @@ def insert_block(data: Union[str, bytes], header: str = 'txt',
                  expire: Union[int, None] = None, disableForward: bool = False,
                  signing_key: UserIDSecretKey = '') -> Union[str, bool]:
     """
-        Create and insert a block into the network.
+    Create and insert a block into the network.
 
-        encryptType must be specified to encrypt a block
-        if expire is less than date, assumes seconds into future.
-            if not assume exact epoch
+    encryptType must be specified to encrypt a block
+    if expire is less than date, assumes seconds into future.
+        if not assume exact epoch
     """
     our_private_key = crypto.priv_key
     our_pub_key = crypto.pub_key

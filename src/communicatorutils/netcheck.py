@@ -1,9 +1,9 @@
 """
-    Onionr - Private P2P Communication
+Onionr - Private P2P Communication.
 
-    Determine if our node is able to use Tor based
-    on the status of a communicator instance
-    and the result of pinging onion http servers
+Determine if our node is able to use Tor based
+on the status of a communicator instance
+and the result of pinging onion http servers
 """
 import logger
 from utils import netutils
@@ -26,8 +26,10 @@ from . import restarttor
 
 
 def net_check(comm_inst):
-    """Check if we are connected to the internet
-    or not when we can't connect to any peers"""
+    """Check if we are connected to the internet.
+
+    or not when we can't connect to any peers
+    """
     # for detecting if we have received incoming connections recently
     rec = False
     if len(comm_inst.onlinePeers) == 0:
@@ -42,8 +44,8 @@ def net_check(comm_inst):
             if not comm_inst.shutdown:
                 if not comm_inst.config.get('general.offline_mode', False):
                     logger.warn('Network check failed, are you connected to ' +
-                                'the Internet, and is Tor working? ' + 
-                                'This is usually temporary, but bugs and censorship can cause this to persist, in which case you should report it to beardog [at] mailbox.org',
+                                'the Internet, and is Tor working? ' +
+                                'This is usually temporary, but bugs and censorship can cause this to persist, in which case you should report it to beardog [at] mailbox.org',  # noqa
                                 terminal=True)
                     restarttor.restart(comm_inst)
                     comm_inst.offlinePeers = []
