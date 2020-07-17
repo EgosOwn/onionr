@@ -46,7 +46,7 @@ def accept_upload(request):
                         f'/daemon-event/upload_event',
                         post=True,
                         is_json=True,
-                        postData={'block': b_hash}
+                        post_data={'block': b_hash}
                         ).get(timeout=10)
                 resp = 'success'
             else:

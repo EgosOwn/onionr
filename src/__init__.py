@@ -39,7 +39,8 @@ if __name__ == "__main__": ran_as_script = True
 try:
     from etc import dependencycheck  # noqa
 except ModuleNotFoundError as e:
-    print('Onionr needs ' + str(e) + ' installed')
+    print('Missing requirement: ' + str(e) + ' installed')
+    sys.exit(1)
 
 # Import 3rd party libraries
 

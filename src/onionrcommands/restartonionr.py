@@ -52,7 +52,7 @@ def restart():
     with open(filepaths.restarting_indicator, 'w') as f:
         f.write('t')
     daemonlaunch.kill_daemon()
-    while localcommand.local_command('ping', maxWait=8) == 'pong!':
+    while localcommand.local_command('ping', max_wait=8) == 'pong!':
         time.sleep(0.3)
     time.sleep(15)
     while (os.path.exists(filepaths.private_API_host_file) or

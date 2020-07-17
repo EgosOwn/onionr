@@ -28,8 +28,8 @@ def do_runtime_test():
         f'daemon-event/test_runtime',
         post=True,
         is_json=True,
-        postData={},
-        maxWait=300
+        post_data={},
+        max_wait=300
     ).get(300)
 
 

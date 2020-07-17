@@ -123,7 +123,7 @@ def download_blocks_from_communicator(comm_inst: "OnionrCommunicatorDaemon"):
                                 f'/daemon-event/upload_event',
                                 post=True,
                                 is_json=True,
-                                postData={'block': blockHash}
+                                post_data={'block': blockHash}
                             )
                     else:
                         logger.warn('POW failed for block %s.' % (blockHash,))

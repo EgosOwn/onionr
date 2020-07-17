@@ -4,7 +4,6 @@ send a command to the local API server
 """
 import urllib
 import time
-from typing import TYPE_CHECKING, Callable
 
 import requests
 import deadsimplekv
@@ -37,7 +36,7 @@ cache = deadsimplekv.DeadSimpleKV(filepaths.cached_storage,
 def get_hostname():
     hostname = ''
     waited = 0
-    maxWait = 3
+    max_wait = 3
     while True:
         if cache.get('client_api') is None:
             try:
@@ -51,22 +50,22 @@ def get_hostname():
             hostname = cache.get('hostname')
         if hostname == '' or hostname is None:
             time.sleep(1)
-            if waited == maxWait:
+            if waited == max_wait:
                 return False
         else:
             return hostname
 
 
-def local_command(command, data='', silent = True, post=False,
-                  postData = {}, maxWait=20,
+def local_command(command, data='', silent=True, post=False,
+                  post_data={}, max_wait=20,
                   is_json=False
                   ):
-    """
-        Send a command to the local http API server, securely. Intended for local clients, DO NOT USE for remote peers.
-    """
-    # TODO: URL encode parameters, just as an extra measure. May not be needed, but should be added regardless.
+    """Send a command to the local http API server, securely.
+    Intended for local clients, DO NOT USE for remote peers."""
     hostname = get_hostname()
-    if hostname == False: return False
+    # if the api host cannot be reached, return False
+    if not hostname:
+        return False
 
     if data != '':
         data = '&data=' + urllib.parse.quote_plus(data)
@@ -79,21 +78,26 @@ def local_command(command, data='', silent = True, post=False,
             if is_json:
                 ret_data = requests.post(
                     payload,
-                    json=postData,
+                    json=post_data,
                     headers={'token': config.get('client.webpassword'),
                              'Connection': 'close'},
-                    timeout=(maxWait, maxWait)).text
+                    timeout=(max_wait, max_wait)).text
             else:
                 ret_data = requests.post(
                     payload,
-                    data=postData,
+                    data=post_data,
                     headers={'token': config.get('client.webpassword'),
                              'Connection': 'close'},
-                    timeout=(maxWait, maxWait)).text
+                    timeout=(max_wait, max_wait)).text
         else:
-            ret_data = requests.get(payload, headers={'token': config.get('client.webpassword'), 'Connection':'close'}, timeout=(maxWait, maxWait)).text
+            ret_data = requests.get(payload,
+                                    headers={'token':
+                                             config.get('client.webpassword'),
+                                             'Connection': 'close'},
+                                    timeout=(max_wait, max_wait)).text
     except Exception as error:
         if not silent:
-            logger.error('Failed to make local request (command: %s):%s' % (command, error), terminal=True)
+            logger.error('Failed to make local request (command: %s):%s' %
+                         (command, error), terminal=True)
         ret_data = False
     return ret_data

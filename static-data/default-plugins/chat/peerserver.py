@@ -55,10 +55,11 @@ def sendto():
         msg = ''
     else:
         msg = json.dumps(msg)
-        localcommand.local_command('/chat/addrec/%s' % (g.peer,), post=True, postData=msg)
+        localcommand.local_command('/chat/addrec/%s' % (g.peer,), post=True, post_data=msg)
     return Response('success')
 
 @direct_blueprint.route('/chat/poll')
 def poll_chat():
     """Endpoints peers get new messages from"""
     return Response(localcommand.local_command('/chat/gets/%s' % (g.peer,)))
+    

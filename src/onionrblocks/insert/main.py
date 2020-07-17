@@ -46,7 +46,7 @@ def _check_upload_queue():
     raises OverflowError if max, false if api not running
     """
     max_upload_queue: int = 5000
-    queue = localcommand.local_command('/gethidden', maxWait=10)
+    queue = localcommand.local_command('/gethidden', max_wait=10)
     up_queue = False
 
     try:
@@ -231,7 +231,7 @@ def insert_block(data: Union[str, bytes], header: str = 'txt',
                 '/daemon-event/upload_event',
                 post=True,
                 is_json=True,
-                postData={'block': retData}
+                post_data={'block': retData}
                 ).get(timeout=5)
             coredb.blockmetadb.add.add_to_block_DB(
                 retData, selfInsert=True, dataSaved=True)
@@ -268,7 +268,7 @@ def insert_block(data: Union[str, bytes], header: str = 'txt',
         localcommand.local_command,
         '/daemon-event/remove_from_insert_queue_wrapper',
         post=True,
-        postData={'block_hash': retData},
+        post_data={'block_hash': retData},
         is_json=True
         ).get(timeout=5)
     return retData

@@ -30,5 +30,5 @@ def rebuild():
         f'/daemon-event/restart_tor',
         post=True,
         is_json=True,
-        postData={}
+        post_data={}
     ).get(10)
