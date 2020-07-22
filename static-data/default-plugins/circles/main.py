@@ -106,7 +106,7 @@ class OnionrFlow:
                     content = block.getContent()
                     # Escape new lines, remove trailing whitespace, and escape ansi sequences
                     content = escapeansi.escape_ANSI(content.replace(
-                        '\n', '\\n').replace('\r', '\\r').strip())
+                        b'\n', b'\\n').replace(b'\r', b'\\r').strip().decode('utf-8'))
                     logger.info(block.getDate().strftime(
                         "%m/%d %H:%M") + ' - ' + logger.colors.reset + content, prompt=False, terminal=True)
                     self.alreadyOutputed.append(b_hash)

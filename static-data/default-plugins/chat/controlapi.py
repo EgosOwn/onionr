@@ -1,9 +1,14 @@
-'''
-    Onionr - Private P2P Communication
+"""Onionr - Private P2P Communication.
 
-    HTTP endpoints for controlling IMs
-'''
-'''
+HTTP endpoints for controlling IMs
+"""
+import ujson as json
+
+from flask import Response, request, redirect, Blueprint, send_from_directory
+import deadsimplekv as simplekv
+
+import filepaths
+"""
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -16,11 +21,7 @@
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
-'''
-import json
-from flask import Response, request, redirect, Blueprint, send_from_directory
-import deadsimplekv as simplekv
-import filepaths
+"""
 flask_blueprint = Blueprint('chat_control', __name__)
 key_store = simplekv.DeadSimpleKV(filepaths.cached_storage, refresh_seconds=5)
 @flask_blueprint.route('/chatapi/ping')

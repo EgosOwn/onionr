@@ -27,6 +27,7 @@ conf['onboarding']['done'] = True
 conf['general']['minimum_block_pow'] = block_pow
 conf['general']['minimum_send_pow'] = block_pow
 conf['log']['file']['remove_on_exit'] = False
+conf['ui']['animated_background'] = False
 if input('Stat reporting? y/n') == 'y':
     conf['statistics']['i_dont_want_privacy'] = True
     conf['statistics']['server'] = input('Statistics server')

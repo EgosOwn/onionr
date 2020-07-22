@@ -55,6 +55,10 @@ def get_online_peers(comm_inst: 'OnionrCommunicatorDaemon'):
         if len(comm_inst.onlinePeers) == 0:
             logger.debug('Couldn\'t connect to any peers.' +
                          f' Last node seen {last_seen}  ago.')
+            try:
+                get_online_peers(comm_inst)
+            except RecursionError:
+                pass
         else:
             comm_inst.lastNodeSeen = time.time()
     comm_inst.decrementThreadCount('get_online_peers')

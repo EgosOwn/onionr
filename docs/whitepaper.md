@@ -4,13 +4,15 @@
 
 <p align="center">Anonymous, Decentralized, Distributed Network</p>
 
+June 2020
+
 # Introduction
 
 We believe that the ability to communicate freely with others is crucial for maintaining societal and personal liberty. The internet has provided humanity with the ability to spread information globally, but there are many persons and organizations who try to stifle the flow of information, sometimes with success.
 
-Internet censorship comes in many forms, state censorship, corporate consolidation of media, threats of violence, network exploitation (e.g. denial of service attacks) and other threats.
+Internet censorship comes in many forms, state censorship, threats of violence, network exploitation (e.g. denial of service attacks) and others.
 
-We hold that in order to protect individual privacy, users must have the ability to communicate anonymously and with decentralization. 
+We hold that in order to protect individual privacy, users must have the ability to communicate anonymously and with decentralization.
 
 We believe that in order to prevent censorship and loss of information, these measures must be in place:
 
@@ -58,11 +60,13 @@ To mitigate maliciously slow or unreliable nodes, Onionr builds a profile on nod
 
 ## Block Format
 
-Onionr blocks are very simple. They are structured in two main parts: a metadata section and a data section, with a line feed delimiting where metadata ends and data begins. 
+Onionr blocks are very simple. They are structured in two main parts: a metadata section and a data section, with a line feed delimiting where metadata ends and data begins.
 
 Metadata defines what kind of data is in a block, signature data, encryption settings, and other arbitrary information.
 
 Optionally, a random token can be inserted into the metadata for use in Proof of Work.
+
+The proof of work function should be a Verifiable Delay Function (VDF). We have chosen MiMC for it's simplicity.
 
 ### Block Encryption
 
@@ -84,9 +88,7 @@ Blocks are stored indefinitely until the allocated space is filled, at which poi
 
 ## Block Timestamping
 
-Onionr can provide evidence of when a block was inserted by requesting other users to sign a hash of the current time with the block data hash: sha3_256(time + sha3_256(block data)).
-
-This can be done either by the creator of the block prior to generation, or by any node after insertion.
+Onionr blocks are by default not accepted if their timestamp is set too far in the past, or is in the future.
 
 In addition, randomness beacons such as the one operated by [NIST](https://beacon.nist.gov/home), [Chile](https://beacon.clcert.cl/), or the hash of the latest blocks in a cryptocurrency network could be used to affirm that a block was at least not *created* before a given time.
 
@@ -98,7 +100,7 @@ The benefits of such a system are increased privacy, and the ability to anonymou
 
 # Threat Model
 
-The goal of Onionr is to provide a method of distributing information in a manner in which the difficulty of discovering the identity of those sending and receiving the information is greatly increased. In this section we detail what information we want to protect and who we're protecting it from. 
+The goal of Onionr is to provide a method of distributing information in a manner in which the difficulty of discovering the identity of those sending and receiving the information is greatly increased. In this section we detail what information we want to protect and who we're protecting it from.
 
 In this threat model, "protected" means available in plaintext only to those which it was intended, and regardless non-malleable
 
@@ -132,7 +134,7 @@ Onionr does not protect the following:
 
 ## Assumptions
 
-We assume that Tor onion services (v3) and I2P services cannot be trivially deanonymized, and that the underlying cryptographic primitives we employ cannot be broken in any manner faster than brute force unless a quantum computer is used. 
+We assume that Tor onion services (v3) and I2P services cannot be trivially deanonymized, and that the underlying cryptographic primitives we employ cannot be broken in any manner faster than brute force unless a quantum computer is used.
 
 Once quantum safe algorithms are more mature and have decent high level libraries, they will be deployed.
 

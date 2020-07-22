@@ -1,9 +1,19 @@
-'''
-    Onionr - Private P2P Communication
+"""Onionr - Private P2P Communication.
 
-    HTTP endpoints for communicating with peers
-'''
-'''
+HTTP endpoints for communicating with peers
+"""
+import sys
+import os
+from json import JSONDecodeError
+
+import deadsimplekv as simplekv
+import ujson as json
+from flask import Response, request, redirect, Blueprint, abort, g
+
+from utils import identifyhome
+from onionrutils import localcommand
+import filepaths
+"""
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -16,12 +26,7 @@
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
-'''
-import sys, os, json
-from utils import identifyhome
-from onionrutils import localcommand
-import deadsimplekv as simplekv, filepaths
-from flask import Response, request, redirect, Blueprint, abort, g
+"""
 sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
 direct_blueprint = Blueprint('chat', __name__)
 
@@ -46,14 +51,15 @@ def sendto():
     """Endpoint peers send chat messages to"""
     try:
         msg = request.get_json(force=True)
-    except json.JSONDecodeError:
+    except JSONDecodeError:
         msg = ''
     else:
         msg = json.dumps(msg)
-        localcommand.local_command('/chat/addrec/%s' % (g.peer,), post=True, postData=msg)
+        localcommand.local_command('/chat/addrec/%s' % (g.peer,), post=True, post_data=msg)
     return Response('success')
 
 @direct_blueprint.route('/chat/poll')
 def poll_chat():
     """Endpoints peers get new messages from"""
     return Response(localcommand.local_command('/chat/gets/%s' % (g.peer,)))
+    

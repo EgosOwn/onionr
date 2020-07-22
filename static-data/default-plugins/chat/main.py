@@ -19,7 +19,7 @@
 '''
 
 # Imports some useful libraries
-import locale, sys, os, threading, json
+import locale, sys, os, threading, ujson as json
 locale.setlocale(locale.LC_ALL, '')
 import onionrservices, logger, config
 from onionrservices import bootstrapservice

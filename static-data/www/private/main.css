@@ -33,3 +33,31 @@
 .torStats{
     color: red;
 }
+
+/* ---- reset ---- */
+
+
+  canvas {
+    display: block;
+    vertical-align: bottom;
+  }
+  
+  /* ---- particles.js container ---- */
+  
+  #particles-js {
+    position:absolute;
+    width:100%;
+    height:100%;
+    top:0;
+    z-index:-1;
+  }
+  
+  .mainCont{
+      z-index: 2;
+      position: fixed;
+      
+  }
+
+  .torTransportField {
+      margin-top: 2em;
+  }

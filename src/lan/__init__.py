@@ -7,7 +7,6 @@ from threading import Thread
 if TYPE_CHECKING:
     from toomanyobjs import TooMany
 
-from .client import Client
 from .discover import learn_services, advertise_service
 """
     This program is free software: you can redistribute it and/or modify
@@ -34,7 +33,6 @@ class LANManager:
 
 
     def start(self):
-        Thread(target=learn_services, args=[self.too_many.get(Client)], daemon=True).start()
+        Thread(target=learn_services, daemon=True).start()
         Thread(target=advertise_service, daemon=True).start()
-        Thread(target=self.too_many.get(Client, (self.peers,)).start, daemon=True).start()
 

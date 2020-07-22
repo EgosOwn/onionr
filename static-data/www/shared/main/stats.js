@@ -136,5 +136,29 @@ var getStats = function(){
         })
 }
 
+document.addEventListener("visibilitychange", function() {
+    if (document.visibilityState === 'visible') {
+      getStats()
+    }
+  })
+
 getStats()
-setInterval(function(){getStats()}, 10000)
+setInterval(function(){getStats()}, 1000)
+
+
+
+fetch('/config/get/ui.animated_background', {
+    headers: {
+        "token": webpass
+    }})
+    .then((resp) => resp.text()) // Transform the data into text
+    .then(function(resp) {
+        if (resp == "false"){
+            return
+        }
+        /* particlesJS.load(@dom-id, @path-json, @callback (optional)); */
+        particlesJS.load('particles-js', '/shared/main/particles.json', function() {
+            console.debug('callback - particles.js config loaded')
+        })
+    }
+    )

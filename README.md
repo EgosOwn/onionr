@@ -11,9 +11,7 @@
     Anonymous social platform, mail, file sharing.
 </p>
 
-<img src='https://img.shields.io/github/license/beardog108/onionr'> <img src='https://gitlab.com/beardog/Onionr/badges/master/build.svg'> <img src='https://img.shields.io/badge/docker%20%F0%9F%90%8B-supported-success'> <img src='https://img.shields.io/badge/python%20version%20%F0%9F%90%8D-3.7+-blue'> <img src='https://img.shields.io/github/commit-activity/m/beardog108/onionr'>
-
-<img src='https://onionr.net/block-count.svg' alt='current stored block count'>
+<img src='https://img.shields.io/github/license/beardog108/onionr'> <img src='https://gitlab.com/beardog/Onionr/badges/master/build.svg'> <img src='https://img.shields.io/badge/python%20version%20%F0%9F%90%8D-3.7+-blue'> <img src='https://img.shields.io/github/commit-activity/m/beardog108/onionr'>
 
 <a href='https://www.reddit.com/r/onionr'><img src = 'https://img.shields.io/reddit/subreddit-subscribers/onionr?style=social'></a> <a href='https://twitter.com/onionrnet'><img src='https://img.shields.io/twitter/follow/onionrnet?style=social'></a>
 
@@ -25,16 +23,16 @@
 
 <hr>
 
-**The main repository for this software is at https://GitLab.com/beardog/Onionr/**
+**The main repository for this software is at https://git.VoidNet.tech/kev/onionr/**
 
-**The [GitHub repository](https://github.com/beardog108/onionr/) is a mirror, do not submit PRs or issues there.**
+Mirrors: [Github](https://github.com/beardog108/onionr), [Gitlab](https://gitlab.com/beardog/onionr)
 
 
 Onionr ("Onion Relay") is a decentralized/distributed peer-to-peer communication network, designed to be anonymous and resistant to (meta)data analysis, spam, and corruption.
 
-Onionr stores data in independent packages referred to as 'blocks'. The blocks are distributed to all interested nodes. Blocks and user IDs cannot be easily proven to have been created by a particular user. Even if there is enough evidence to believe that a specific user created a block, nodes still operate behind Tor or I2P and as such cannot be trivially unmasked. Anonymity is achieved by a stateless network, with no given indication of what node a block originates from. Through message mixing and key privacy, it is intended to be nigh impossible to discover the identity of a message creator or recipient.
+Onionr stores data in independent packages referred to as 'blocks'. The blocks are distributed to all interested nodes. Blocks and user IDs cannot be easily proven to have been created by a particular user. Even if there is enough evidence to believe that a specific user created a block, nodes still operate behind Tor and as such cannot be trivially unmasked. Anonymity is achieved by a stateless network, with no given indication of what node a block originates from. Through message mixing and key privacy, it is intended to be nigh impossible to discover the identity of a message creator or recipient.
 
-Via long-term traffic analysis, a well funded adversary may discover the most probable node(s) to be creating a set of related blocks, however doing so would only lead them to a node behind Tor or I2P. As the first node that a block appears on is almost always not the creator of the block, there is plausible deniability regarding the true creator of the block.
+Via long-term traffic analysis, a well funded adversary may discover the most probable node(s) to be creating a set of related blocks, however doing so would only lead them to a node behind Tor. As the first node that a block appears on is almost always not the creator of the block, there is plausible deniability regarding the true creator of the block.
 
 Onionr gives the individual the ability to speak freely, without fear of surveillance and censorship.
 
@@ -139,7 +137,7 @@ Everyone is welcome to contribute. Help is wanted for the following:
 * UI/UX design
 * Running stable nodes
 * Security review/audit
-* Automatic I2P setup
+* I2P support
 
 ## Contribute money:
 

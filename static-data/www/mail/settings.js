@@ -17,6 +17,8 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 var notificationSetting = document.getElementById('notificationSetting')
+var friendOnlyNotification = document.getElementById('strangersNotification')
+var notificationSound = document.getElementById('notificationSound')
 var sigSetting = document.getElementById('mailSignatureSetting')
 
 document.getElementById('forwardSecrecySetting').onchange = function(e){
@@ -33,6 +35,40 @@ document.getElementById('forwardSecrecySetting').onchange = function(e){
         mailSettings['forwardSecrecy'] = document.getElementById('forwardSecrecySetting').checked
         PNotify.success({
             text: 'Successfully toggled default forward secrecy'
+        })
+      })
+}
+
+notificationSound.onchange = function(e){
+    var postData = JSON.stringify({"notificationSound": e.target.checked})
+    fetch('/config/set/mail', {
+        method: 'POST',
+        body: postData,
+        headers: {
+          "content-type": "application/json",
+          "token": webpass
+        }})
+    .then(function(data) {
+        mailSettings['notificationSound'] = notificationSound.checked
+        PNotify.success({
+            text: 'Successfully notification sound'
+        })
+      })
+}
+
+friendOnlyNotification.onchange = function(e){
+    var postData = JSON.stringify({"strangersNotification": e.target.checked})
+    fetch('/config/set/mail', {
+        method: 'POST',
+        body: postData,
+        headers: {
+          "content-type": "application/json",
+          "token": webpass
+        }})
+    .then(function(data) {
+        mailSettings['strangersNotification'] = friendOnlyNotification.checked
+        PNotify.success({
+            text: 'Successfully toggled notifications from strangers'
         })
       })
 }

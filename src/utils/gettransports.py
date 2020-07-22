@@ -21,11 +21,28 @@ import filepaths
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-files = [filepaths.tor_hs_address_file]
+files = []
 
+
+class _GetTor:
+    def __init__(self):
+        self.tor_hs = None
+
+    def get(self):
+        if self.tor_hs is None:
+            try:
+                with open(filepaths.tor_hs_address_file, 'r') as transport_file:
+                    self.tor_hs = transport_file.read().strip()
+                if not self.tor_hs:
+                    self.tor_hs = None
+            except FileNotFoundError:
+                pass
+        return self.tor_hs
+
+_tor_getter = _GetTor()
 
 def get():
-    transports = []
+    transports = [_tor_getter.get()]
     for file in files:
         try:
             with open(file, 'r') as transport_file:

@@ -3,6 +3,8 @@ from typing import NewType
 UserID = NewType('UserID', str)
 UserIDSecretKey = NewType('UserIDSecretKey', str)
 
+LANIP = NewType('LANIP', 'str')
+
 DeterministicKeyPassphrase = NewType('DeterministicKeyPassphrase', str)
 
 BlockHash = NewType('BlockHash', str)

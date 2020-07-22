@@ -1,8 +1,14 @@
-"""
-    Onionr - Private P2P Communication
+"""Onionr - Private P2P Communication.
 
-    validate new block's metadata
+validate new block's metadata
 """
+from json import JSONDecodeError
+import ujson as json
+
+import logger, onionrexceptions
+from etc import onionrvalues
+from . import stringvalidators, epoch, bytesconverter
+import config, filepaths, onionrcrypto
 """
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -17,11 +23,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-import json
-import logger, onionrexceptions
-from etc import onionrvalues
-from . import stringvalidators, epoch, bytesconverter
-import config, filepaths, onionrcrypto
+
 
 def validate_metadata(metadata, block_data) -> bool:
     """Validate metadata meets onionr spec (does not validate proof value computation), take in either dictionary or json string"""
@@ -33,7 +35,7 @@ def validate_metadata(metadata, block_data) -> bool:
     if type(metadata) is str:
         try:
             metadata = json.loads(metadata)
-        except json.JSONDecodeError:
+        except JSONDecodeError:
             pass
 
     # Validate metadata dict for invalid keys to sizes that are too large

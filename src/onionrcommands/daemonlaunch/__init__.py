@@ -25,16 +25,15 @@ from utils import identifyhome
 import filepaths
 from etc import onionrvalues, cleanup
 from onionrcrypto import getourkeypair
-from utils import hastor, logoheader
+from utils import hastor
 import runtests
 from httpapi import daemoneventsapi
 from .. import version
 from .getapihost import get_api_host_until_available
 from utils.bettersleep import better_sleep
 from netcontroller.torcontrol.onionservicecreator import create_onion_service
-from .quotes import QUOTE
 from .killdaemon import kill_daemon  # noqa
-from utils.boxprint import bordered
+from .showlogo import show_logo
 from lan import LANManager
 from lan.server import LANServer
 from sneakernet import sneakernet_import_thread
@@ -60,8 +59,60 @@ def _proper_shutdown():
     sys.exit(1)
 
 
+def _show_info_messages():
+    version.version(verbosity=5, function=logger.info)
+    logger.debug('Python version %s' % platform.python_version())
+
+    if onionrvalues.DEVELOPMENT_MODE:
+        logger.warn('Development mode enabled', timestamp=False, terminal=True)
+
+    logger.info('Using public key: %s' %
+                (logger.colors.underline +
+                 getourkeypair.get_keypair()[0][:52]))
+
+def _setup_online_mode(use_existing_tor: bool, 
+                   net: NetController,
+                   security_level: int):
+    if config.get('transports.tor', True):
+        # If we are using tor, check if we are using an existing tor instance
+        # if we are, we need to create an onion service on it and set attrs on our NetController
+        # if not, we need to tell netcontroller to start one
+        if use_existing_tor:
+            try:
+                os.mkdir(filepaths.tor_hs_loc)
+            except FileExistsError:
+                pass
+            net.socksPort = config.get('tor.existing_socks_port')
+            try:
+                net.myID = create_onion_service(
+                    port=net.apiServerIP + ':' + str(net.hsPort))[0]
+            except IncorrectPassword:
+                # Exit if we cannot connect to the existing Tor instance
+                logger.error('Invalid Tor control password', terminal=True)
+                localcommand.local_command('shutdown')
+                cleanup.delete_run_files()
+                sys.exit(1)
+
+            if not net.myID.endswith('.onion'):
+                net.myID += '.onion'
+            with open(filepaths.tor_hs_address_file, 'w') as tor_file:
+                tor_file.write(net.myID)
+        else:
+            logger.info('Tor is starting...', terminal=True)
+            if not net.startTor():
+                # Exit if we cannot start Tor.
+                localcommand.local_command('shutdown')
+                cleanup.delete_run_files()
+                sys.exit(1)
+        if len(net.myID) > 0 and security_level == 0:
+            logger.debug('Started .onion service: %s' %
+                        (logger.colors.underline + net.myID))
+        else:
+            logger.debug('.onion service disabled')
+
+
 def daemon():
-    """Start the Onionr communication daemon."""
+    """Start Onionr's primary threads for communicator, API server, node, and LAN."""
     # Determine if Onionr is in offline mode.
     # When offline, Onionr can only use LAN and disk transport
     offline_mode = config.get('general.offline_mode', False)
@@ -90,32 +141,21 @@ def daemon():
 
     # Init run time tester
     # (ensures Onionr is running right, for testing purposes)
-
+    # Run time tests are not normally run
     shared_state.get(runtests.OnionrRunTestManager)
+
+    # Create singleton 
     shared_state.get(serializeddata.SerializedData)
 
     shared_state.share_object()  # share the parent object to the threads
 
+    show_logo()
+
+    # since we randomize loopback API server hostname to protect against attacks,
+    # we have to wait for it to become set
     apiHost = ''
     if not offline_mode:
         apiHost = get_api_host_until_available()
-
-    logger.raw('', terminal=True)
-    # print nice header thing :)
-    if config.get('general.display_header', True):
-        logoheader.header("")
-        if QUOTE[1]:
-            logger.info(
-                "\u001b[33m\033[F" + bordered(QUOTE[0] + '\n -' + QUOTE[1]),
-                terminal=True)
-        else:
-            logger.info("\u001b[33m\033[F" + bordered(QUOTE[0]), terminal=True)
-
-    version.version(verbosity=5, function=logger.info)
-    logger.debug('Python version %s' % platform.python_version())
-
-    if onionrvalues.DEVELOPMENT_MODE:
-        logger.warn('Development mode enabled', timestamp=False, terminal=True)
 
     net = NetController(config.get('client.public.port', 59497),
                         apiServerIP=apiHost)
@@ -127,43 +167,11 @@ def daemon():
     use_existing_tor = config.get('tor.use_existing_tor', False)
 
     if not offline_mode:
-        if config.get('transports.tor', True):
-            if use_existing_tor:
-                try:
-                    os.mkdir(filepaths.tor_hs_loc)
-                except FileExistsError:
-                    pass
-                net.socksPort = config.get('tor.existing_socks_port')
-                try:
-                    net.myID = create_onion_service(
-                        port=net.apiServerIP + ':' + str(net.hsPort))[0]
-                except IncorrectPassword:
-                    logger.error('Invalid Tor control password', terminal=True)
-                    localcommand.local_command('shutdown')
-                    cleanup.delete_run_files()
-                    sys.exit(1)
-
-                if not net.myID.endswith('.onion'):
-                    net.myID += '.onion'
-                with open(filepaths.tor_hs_address_file, 'w') as tor_file:
-                    tor_file.write(net.myID)
-            else:
-                logger.info('Tor is starting...', terminal=True)
-                if not net.startTor():
-                    localcommand.local_command('shutdown')
-                    cleanup.delete_run_files()
-                    sys.exit(1)
-            if len(net.myID) > 0 and security_level == 0:
-                logger.debug('Started .onion service: %s' %
-                            (logger.colors.underline + net.myID))
-            else:
-                logger.debug('.onion service disabled')
-
-    logger.info('Using public key: %s' %
-                (logger.colors.underline +
-                 getourkeypair.get_keypair()[0][:52]))
-
-    better_sleep(1)
+        # we need to setup tor for use
+        _setup_online_mode(use_existing_tor, net, security_level)
+    
+    
+    _show_info_messages()
 
     events.event('init', threaded=False)
     events.event('daemon_start')
@@ -175,6 +183,7 @@ def daemon():
         Thread(target=sneakernet_import_thread, daemon=True).start()
 
     Thread(target=statistics_reporter, args=[shared_state], daemon=True).start()
+
     communicator.startCommunicator(shared_state)
 
     clean_ephemeral_services()
@@ -190,7 +199,7 @@ def daemon():
     better_sleep(5)
 
     cleanup.delete_run_files()
-    if config.get('general.security_level', 1) >= 2:
+    if security_level >= 2:
         filenuke.nuke.clean_tree(identifyhome.identify_home())
 
 
@@ -205,6 +214,13 @@ def start(override: bool = False):
     Error exit if there is and its not overridden
     """
     if os.path.exists(filepaths.lock_file) and not override:
+        if os.path.exists(filepaths.restarting_indicator):
+            try:
+                os.remove(filepaths.restarting_indicator)
+            except FileNotFoundError:
+                pass
+            else:
+                return
         logger.fatal('Cannot start. Daemon is already running,'
                      + ' or it did not exit cleanly.\n'
                      + ' (if you are sure that there is not a daemon running,'

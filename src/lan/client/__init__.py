@@ -2,11 +2,18 @@
 
 LAN transport client thread
 """
-from typing import List
+import requests
 
-from onionrcrypto.cryptoutils.randomshuffle import random_shuffle
+from typing import Set
+
+from onionrtypes import LANIP
 from utils.bettersleep import better_sleep
-from onionrutils.basicrequests import do_post_request, do_get_request
+import logger
+from coredb.blockmetadb import get_block_list
+from onionrblocks.blockimporter import import_block_from_data
+from ..server import ports
+
+from threading import Thread
 """
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -22,41 +29,39 @@ from onionrutils.basicrequests import do_post_request, do_get_request
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-
-class ConnectedError(Exception): pass
-
+connected_lan_peers: Set[LANIP] = set([])
 
 
-class Client:
-    def __init__(self):
-        self.peers = []
-        self.lookup_time = {}
-        self.poll_delay = 10
-        self.active_threads: set = set([])
+def _lan_work(peer: LANIP):
+    def _sync_peer(url):
+        our_blocks = get_block_list()
+        blocks = requests.get(url + 'blist/0').text.splitlines()
+        for block in blocks:
+            if block not in our_blocks:
+                import_block_from_data(requests.get(url + f'get/{block}', stream=True).raw.read(6000000))
 
-    def get_lookup_time(self, peer):
+
+    for port in ports:
         try:
-            return self.lookup_time[peer]
-        except KeyError:
-            return 0
-
-    def peer_thread(self, peer):
-        def do_peer_sync(): return
-        if peer in self.active_threads:
-            raise ConnectedError
-        self.active_threads.add(peer)
-        do_peer_sync()
-        self.active_threads.remove(peer)
-
-    def start(self):
-        while True:
-            peers = random_shuffle(list(set(self.peers) ^ self.active_threads))
-            try:
-                self.peer_thread(peers[0])
-            except IndexError:
-                pass
+            root = f'http://{peer}:{port}/'
+            if requests.get(f'{root}ping').text != 'onionr!':
+                connected_lan_peers.remove(peer)
+            else:
+                logger.info(f'[LAN] Connected to {peer}:{port}', terminal=True)
+                while True:
+                    try:
+                        _sync_peer(root)
+                    except requests.exceptions.ConnectionError:
+                        break
+                break
+        except requests.exceptions.ConnectionError:
+            pass
+    else:
+        connected_lan_peers.remove(peer)
 
 
-
-            better_sleep(self.poll_delay)
+def connect_peer(peer: LANIP):
+    if peer not in connected_lan_peers:
+        connected_lan_peers.add(peer)
+        Thread(target=_lan_work, args=[peer], daemon=True).start()
 

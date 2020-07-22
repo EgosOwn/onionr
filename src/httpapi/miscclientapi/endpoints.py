@@ -8,7 +8,6 @@ import platform
 
 from flask import Response, Blueprint, request, send_from_directory, abort
 from flask import g
-from gevent import spawn
 import unpaddedbase32
 
 from httpapi import apiutils
@@ -20,6 +19,7 @@ from onionrutils import mnemonickeys
 from onionrutils import bytesconverter
 from etc import onionrvalues
 from utils import reconstructhash
+from utils.gettransports import get as get_tor
 """
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -39,6 +39,7 @@ pub_key = onionrcrypto.pub_key.replace('=', '')
 
 SCRIPT_NAME = os.path.dirname(os.path.realpath(__file__)) + \
               f'/../../../{onionrvalues.SCRIPT_NAME}'
+
 
 class PrivateEndpoints:
     def __init__(self, client_api):
@@ -74,7 +75,6 @@ class PrivateEndpoints:
                 raise ValueError('block hash needs to be alpha numeric')
             name = reconstructhash.reconstruct_hash(name)
             if name in client_api.publicAPI.hideBlocks:
-                spawn(_delay_wait_for_share_block_removal)
                 return Response("will be removed")
             else:
                 client_api.publicAPI.hideBlocks.append(name)
@@ -140,3 +140,10 @@ class PrivateEndpoints:
         def is_tor_ready():
             """If Tor is starting up, the web UI is not ready to be used."""
             return Response(str(g.too_many.get(NetController).readyState).lower())
+
+        @private_endpoints_bp.route('/gettoraddress')
+        def get_tor_address():
+            """Return public Tor v3 Onion address for this node"""
+            if not config.get('general.security_level', 0) == 0:
+                abort(404)
+            return Response(get_tor()[0])

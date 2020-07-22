@@ -35,3 +35,10 @@ var refreshInterval = setInterval(autoRefresh, 3000)
 setupInterval()
 
 checkbox.onchange = function(){setupInterval}
+
+
+document.addEventListener("visibilitychange", function() {
+    if (document.visibilityState === 'visible') {
+      autoRefresh()
+    }
+  })

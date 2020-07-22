@@ -40,7 +40,7 @@ class TestLanLearn(unittest.TestCase):
             sock.close()
         test_list = [test_ip]
 
-        Thread(target=learn_services, args=[test_list], daemon=True).start()
+        Thread(target=learn_services, daemon=True).start()
         bettersleep.better_sleep(3)
         multicast()
         self.assertIn(test_ip, test_list)

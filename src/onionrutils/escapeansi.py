@@ -1,4 +1,6 @@
 import re
+
+
 def escape_ANSI(line):
     '''
         Remove ANSI escape codes from a string with regex

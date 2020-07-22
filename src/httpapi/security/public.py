@@ -32,9 +32,12 @@ class PublicAPISecurity:
             """Validate request has the correct hostname"""
             # If high security level, deny requests to public
             # (HS should be disabled anyway for Tor, but might not be for I2P)
+
+            g.is_onionr_client = False
             transports = gettransports.get()
             if public_api.config.get('general.security_level', default=1) > 0:
                 abort(403)
+
             if request.host not in transports:
                 # Abort conn if wrong HTTP hostname, to prevent DNS rebinding
                 abort(403)
@@ -46,6 +49,11 @@ class PublicAPISecurity:
                     g.is_onionr_client = False
             except KeyError:
                 g.is_onionr_client = False
+            # Add shared objects
+            try:
+                g.too_many = public_api._too_many
+            except KeyError:
+                g.too_many = None
 
         @public_api_security_bp.after_app_request
         def send_headers(resp):
@@ -57,10 +65,12 @@ class PublicAPISecurity:
             NON_NETWORK_HEADERS = ('Content-Security-Policy', 'X-Frame-Options',
                                    'X-Content-Type-Options', 'Feature-Policy',
                                    'Clear-Site-Data', 'Referrer-Policy')
+
             try:
                 if g.is_onionr_client:
                     for header in NON_NETWORK_HEADERS: del resp.headers[header]
             except AttributeError:
                 abort(403)
+
             public_api.lastRequest = epoch.get_rounded_epoch(roundS=5)
             return resp

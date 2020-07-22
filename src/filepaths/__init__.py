@@ -36,3 +36,5 @@ onboarding_mark_file = home + 'onboarding-completed'
 log_file = home + 'onionr.log'
 
 ephemeral_services_file = home + 'ephemeral-services.list'
+
+restarting_indicator = home + "is-restarting"

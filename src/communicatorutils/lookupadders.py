@@ -1,9 +1,14 @@
-'''
-    Onionr - Private P2P Communication
+"""
+Onionr - Private P2P Communication.
 
-    Lookup new peer transport addresses using the communicator
-'''
-'''
+Lookup new peer transport addresses using the communicator
+"""
+import logger
+from onionrutils import stringvalidators
+from communicator import peeraction, onlinepeers
+from utils import gettransports
+import onionrexceptions
+"""
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -16,12 +21,9 @@
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
-'''
-import logger
-from onionrutils import stringvalidators
-from communicator import peeraction, onlinepeers
-from utils import gettransports
-import onionrexceptions
+"""
+
+
 def lookup_new_peer_transports_with_communicator(comm_inst):
     logger.info('Looking up new addresses...')
     tryAmount = 1
@@ -47,7 +49,8 @@ def lookup_new_peer_transports_with_communicator(comm_inst):
         invalid = []
         for x in newPeers:
             x = x.strip()
-            if not stringvalidators.validate_transport(x) or x in comm_inst.newPeers or x in transports:
+            if not stringvalidators.validate_transport(x) \
+                    or x in comm_inst.newPeers or x in transports:
                 # avoid adding if its our address
                 invalid.append(x)
         for x in invalid:
@@ -56,4 +59,5 @@ def lookup_new_peer_transports_with_communicator(comm_inst):
             except ValueError:
                 pass
         comm_inst.newPeers.extend(newPeers)
-    comm_inst.decrementThreadCount('lookup_new_peer_transports_with_communicator')
+    comm_inst.decrementThreadCount(
+        'lookup_new_peer_transports_with_communicator')

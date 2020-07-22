@@ -113,25 +113,6 @@
             </div>
         </div>
     </div>
-    <div id="sendMessage" class="overlay">
-        <div class="overlayContent">
-            <div class="field">
-                <label><i class="fas fa-user"></i> Select friend: <select id="friendSelect"></select></label>
-            </div>
-            <form method="post" action="" id="sendForm" enctype="application/x-www-form-urlencoded">
-                <span class="closeOverlay" overlay="sendMessage"></span>
-                <div class="field">
-                    To: <input id="draftID" type="text" name="to" placeholder="pubkey or select above" required>
-                </div>
-                Subject: <input name="subject" id="draftSubject" maxlength="25" type="text"
-                    placeholder="message subject">
-                <div class="field">
-                    <textarea name="message" class="textarea" placeholder="type your message..." id="draftText" required></textarea>
-                </div>
-                <input type="submit" value="Send" class="button is-success successBtn">
-            </form>
-        </div>
-    </div>
 
     <div id="settingsModal" class="modal">
         <div class="modal-background"></div>
@@ -180,13 +161,13 @@
             </div>
             <div class="columns notificationSetting">
                 <div class="column">
-                    Only show notifications for friends
+                    Notifications for stranger's messages
                 </div>
                 <div class="column is-2">
                     <div class="field">
-                        <input id="friendsOnlyNotifications" type="checkbox"
-                        class="switch is-rounded">
-                        <label for="friendsOnlyNotifications"></label>
+                        <input id="strangersNotification" type="checkbox"
+                        class="switch is-rounded" checked>
+                        <label for="strangersNotification"></label>
                     </div>
                 </div>
             </div>
@@ -196,9 +177,9 @@
                 </div>
                 <div class="column is-2">
                   <div class="field">
-                    <input id="audibleNotificationSetting" type="checkbox"
-                    class="switch is-rounded">
-                    <label for="audibleNotificationSetting"></label>
+                    <input id="notificationSound" type="checkbox"
+                    class="switch is-rounded" checked>
+                    <label for="notificationSound"></label>
                   </div>
                 </div>
               </div>
@@ -255,7 +236,24 @@
             </div>
         </div>
     </div>
-
+    <div id="sendMessage">
+        <div class="container">
+            <div class="field">
+                <label><i class="fas fa-user"></i> Select friend: <select id="friendSelect"></select></label>
+            </div>
+            <form method="post" action="" id="sendForm" enctype="application/x-www-form-urlencoded">
+                <div class="field">
+                    To: <input id="draftID" type="text" name="to" placeholder="pubkey or select above" required>
+                </div>
+                Subject: <input name="subject" id="draftSubject" maxlength="25" type="text"
+                    placeholder="message subject">
+                <div class="field">
+                    <textarea name="message" class="textarea" placeholder="type your message..." id="draftText" required></textarea>
+                </div>
+                <input type="submit" value="Send" class="button is-primary successBtn">
+            </form>
+        </div>
+    </div>
     <div id="infoOverlay" class="overlay">
     </div>
 </body>

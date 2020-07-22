@@ -15,10 +15,12 @@
     <script defer src="/shared/node_modules/pnotify/dist/iife/PNotify.js"></script>
     <script defer src="/shared/node_modules/pnotify/dist/iife/PNotifyButtons.js"></script>
     <script defer src="/shared/eventsource.js"></script>
+    <script defer src="/shared/main/particles.js"></script>
     <script defer src="/shared/loadabout.js"></script>
     <script defer src="/shared/misc.js"></script>
     <script defer src="/shared/getos.js"></script>
     <script defer src="/shared/main/stats.js"></script>
+    <script defer src="/shared/main/recent.js"></script>
     <script defer src="/shared/main/torstats.js"></script>
     <script defer src="/shared/panel.js"></script>
     <script defer src="/shared/configeditor.js"></script>
@@ -28,6 +30,7 @@
     <script defer src="/private/js/motd.js"></script>
     <script defer src="/shared/navbar.js"></script>
     <script defer src="/private/js/windows.js"></script>
+    <script defer src="/shared/main/loadTransport.js"></script>
     <script>alert("Content security policy appears to not be working. Your browser security is weak!")</script>
 </head>
 
@@ -79,25 +82,6 @@
                         </h2>
                     </div>
                     <div class="column is-7">
-                        <div class="field">
-                            <div class="field has-addons">
-                                <p class="control">
-                                    <a class="button is-static">
-                                        <i class="fas fa-fingerprint"></i>
-                                    </a>
-                                </p>
-                                <p class="control is-expanded">
-                                    <input id="myPub" class="input myPub" type="text" readonly>
-                                </p>
-                                <p class="control">
-                                    <a id="myPubCopy" class="button is-primary">
-                                        <span class="icon">
-                                            <i class="fas fa-copy"></i>
-                                        </span>
-                                    </a>
-                                </p>
-                            </div>
-                        </div>
                         <div class="field is-grouped is-grouped-centered">
                             <p class="control">
                                 <a class="button is-danger is-outlined" id="shutdownNode">
@@ -118,8 +102,9 @@
 
     <br>
 
+
     <!--Start of content-->
-    <div class="container">
+    <div class="container mainCont">
         <div class="columns">
             <div class="column">
                 <!--Onionr Card-->
@@ -201,6 +186,26 @@
                         <div class="content">
                             <div class="columns">
                                 <div class="column">
+                                    <div class="field">
+                                        <div class="field has-addons">
+                                            <p class="control">
+                                                <a class="button is-static">
+                                                    <i class="fas fa-fingerprint"></i>
+                                                </a>
+                                            </p>
+                                            <p class="control is-expanded">
+                                                <input id="myPub" class="input myPub" type="text" readonly>
+                                            </p>
+                                            <p class="control">
+                                                <a id="myPubCopy" class="button is-primary"><i class="fas fa-copy"></i></a>
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+ 
+                            </div>
+                            <div class="columns">
+                                <div class="column">
                                     <span class="icon">
                                         <i class="fas fa-lock"></i>
                                     </span>
@@ -245,6 +250,21 @@
                                      Total Requests: <span id="totalRec">None since start</span>
                                 </div>
                             </div>
+
+                            <div class="field has-addons torTransportField">
+                                <p class="control">
+                                    <a class="button is-static">
+                                        <i class="fas fa-adjust"></i>
+                                    </a>
+                                </p>
+                                <p class="control is-expanded">
+                                    <input class="input myTor" type="text" readonly>
+                                </p>
+                                <p class="control">
+                                    <a class="button is-primary myTorCopy"><i class="fas fa-copy"></i></a>
+                                </p>
+                            </div>
+
                             <i class="fas fa-link"></i>
                             Outgoing Connections:
                             <div class="control">
@@ -254,19 +274,31 @@
                             <h4>Blocks</h4>
                             <div class="columns">
                                 <div class="column">
-                                    <i class="fas fa-database"></i>
-                                    Stored Blocks: <span id="storedBlocks"></span>
+                                    <i class="fas fa-hdd"></i>
+                                    Stored blocks: <span id="storedBlocks"></span>
                                 </div>
                                 <div class="column">
                                     <i class="fas fa-mail-bulk"></i>
-                                    Blocks in queue: <span id="blockQueue"></span>
+                                    Blocks to download: <span id="blockQueue"></span>
+                                </div>
+                            </div>
+                            <div class="columns">
+                                <div class="column">
+                                    <p class="buttons">
+                                        <button class="button is-small recentBlocksBtn">
+                                          <span class="icon is-small">
+                                            <i class="fas fa-stream"></i>
+                                          </span>
+                                          <span>Recent blocks</span>
+                                        </button>
+                                    </p>
                                 </div>
                             </div>
                             <h4>Process</h4>
                             <div class="columns">
                                 <div class="column">
                                     <i class="fas fa-microchip"></i>
-                                    Current CPU threads: <span id="threads"></span>
+                                    Current threads: <span id="threads"></span>
                                 </div>
                                 <div class="column">
                                     <i class="fas fa-memory"></i>
@@ -300,6 +332,8 @@
         </div>
     </div>
     </div>
+    </div>
+    <div id="particles-js"></div>
     <br>
     <div class="modal aboutModal">
         <div class="modal-background"></div>
@@ -311,7 +345,19 @@
             Loading... <i class="fas fa-spinner fa-spin"></i>
           </section>
         </div>
-      </div>
+    </div>
+    <div class="modal recentModal">
+        <div class="modal-background"></div>
+        <div class="modal-card">
+          <header class="modal-card-head">
+            <button class="closeRecentModal delete" aria-label="close"></button>
+          </header>
+          <section class="modal-card-body recentBody">
+                Keep this open to see new blocks as they come in (or are created)!
+              <pre class="recentBlockList"></pre>
+          </section>
+        </div>
+    </div>
 </body>
 
 </html>

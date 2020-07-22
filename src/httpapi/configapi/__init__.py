@@ -17,8 +17,10 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-import json
+from json import JSONDecodeError
+import ujson as json
 from flask import Blueprint, request, Response, abort
+
 import config, onionrutils
 
 from onionrutils.bytesconverter import bytes_to_str
@@ -41,7 +43,7 @@ def set_all_config():
     """Overwrite existing JSON config with new JSON string"""
     try:
         new_config = request.get_json(force=True)
-    except json.JSONDecodeError:
+    except JSONDecodeError:
         abort(400)
     else:
         config.set_config(new_config)
@@ -58,7 +60,7 @@ def set_by_key(key):
     """
     try:
         data = json.loads(bytes_to_str(request.data))
-    except (json.JSONDecodeError, KeyError):
+    except (JSONDecodeError, KeyError):
         abort(400)
     config.set(key, data, True)
     return Response('success')

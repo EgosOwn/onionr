@@ -1,14 +1,11 @@
 """
-    Onionr - Private P2P Communication.
+Onionr - Private P2P Communication.
 
 Use a communicator instance to announce
 our transport address to connected nodes
 """
-import base64
-import onionrproofs
 import logger
-from etc import onionrvalues
-from onionrutils import basicrequests, bytesconverter
+from onionrutils import basicrequests
 from utils import gettransports
 from netcontroller import NetController
 from communicator import onlinepeers
@@ -33,7 +30,6 @@ import onionrexceptions
 def announce_node(daemon):
     """Announce our node to our peers."""
     ret_data = False
-    announce_fail = False
 
     # Do not let announceCache get too large
     if len(daemon.announceCache) >= 10000:

@@ -57,7 +57,7 @@ def do_post_request(url, data={}, port=0, proxyType='tor', max_size=10000, conte
     return retData
 
 
-def do_get_request(url, port=0, proxyType='tor', ignoreAPI=False, returnHeaders=False, max_size=5242880):
+def do_get_request(url, port=0, proxyType='tor', ignoreAPI=False, returnHeaders=False, max_size=5242880, connect_timeout=15):
     '''
     Do a get request through a local tor or i2p instance
     '''
@@ -72,7 +72,7 @@ def do_get_request(url, port=0, proxyType='tor', ignoreAPI=False, returnHeaders=
     elif proxyType == 'lan':
         address = urlparse(url).hostname
         if IPv4Address(address).is_private and not IPv4Address(address).is_loopback:
-            proxies = {}
+            proxies = None
         else:
             return
     else:
@@ -80,8 +80,9 @@ def do_get_request(url, port=0, proxyType='tor', ignoreAPI=False, returnHeaders=
     headers = {'User-Agent': 'PyOnionr', 'Connection':'close'}
     response_headers = dict()
     try:
-        proxies = {'http': 'socks4a://127.0.0.1:' + str(port), 'https': 'socks4a://127.0.0.1:' + str(port)}
-        r = streamedrequests.get(url, request_headers=headers, allow_redirects=False, proxy=proxies, connect_timeout=15, stream_timeout=120, max_size=max_size)
+        if not proxies is None:
+            proxies = {'http': 'socks4a://127.0.0.1:' + str(port), 'https': 'socks4a://127.0.0.1:' + str(port)}
+        r = streamedrequests.get(url, request_headers=headers, allow_redirects=False, proxy=proxies, connect_timeout=connect_timeout, stream_timeout=120, max_size=max_size)
         # Check server is using same API version as us
         if not ignoreAPI:
             try:

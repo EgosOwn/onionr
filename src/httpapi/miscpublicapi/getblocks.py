@@ -1,9 +1,16 @@
-'''
-    Onionr - Private P2P Communication
+"""Onionr - Private P2P Communication.
 
-    Public endpoints to get block data and lists
-'''
-'''
+Public endpoints to get block data and lists
+"""
+from flask import Response, abort
+
+import config
+from onionrutils import bytesconverter, stringvalidators
+from coredb import blockmetadb
+from utils import reconstructhash
+from onionrblocks import BlockList
+from .. import apiutils
+"""
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -16,13 +23,9 @@
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
-'''
-from flask import Response, abort
-import config
-from onionrutils import bytesconverter, stringvalidators
-from coredb import blockmetadb
-from utils import reconstructhash
-from .. import apiutils
+"""
+
+
 def get_public_block_list(publicAPI, request):
     # Provide a list of our blocks, with a date offset
     dateAdjust = request.args.get('date')
@@ -37,15 +40,16 @@ def get_public_block_list(publicAPI, request):
         share_list += '%s\n' % (reconstructhash.deconstruct_hash(b),)
     return Response(share_list)
 
+
 def get_block_data(publicAPI, data):
-    '''data is the block hash in hex'''
+    """data is the block hash in hex"""
     resp = ''
     if stringvalidators.validate_hash(data):
         if not config.get('general.hide_created_blocks', True) or data not in publicAPI.hideBlocks:
-            if data in blockmetadb.get_block_list():
+            if data in publicAPI._too_many.get(BlockList).get():
                 block = apiutils.GetBlockData().get_block_data(data, raw=True, decrypt=False)
                 try:
-                    block = block.encode() # Encode in case data is binary
+                    block = block.encode('utf-8') # Encode in case data is binary
                 except AttributeError:
                     if len(block) == 0:
                         abort(404)

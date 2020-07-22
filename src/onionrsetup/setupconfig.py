@@ -1,9 +1,19 @@
-'''
-    Onionr - Private P2P Communication
+"""Onionr - Private P2P Communication.
 
-    Initialize Onionr configuration
-'''
-'''
+Initialize Onionr configuration
+"""
+import os
+import base64
+
+import ujson as json
+
+import config
+import logger
+import netcontroller
+from etc import onionrvalues
+from logger.settings import *
+from utils import readstatic
+"""
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -16,15 +26,10 @@
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
-'''
-import os, json, base64
-import config, logger, netcontroller
-from etc import onionrvalues
-from logger.settings import *
-from utils import readstatic
+"""
+
 
 def setup_config():
-    
     if not os.path.exists(config._configfile):
         # this is the default config, it will be overwritten if a config file already exists. Else, it saves it
         conf_data = readstatic.read_static('default_config.json', ret_bin=False)

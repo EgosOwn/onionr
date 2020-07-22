@@ -9,8 +9,9 @@ from typing import List
 from ipaddress import ip_address
 from socket import SHUT_RDWR
 
-from .getip import lan_ips
+from .getip import lan_ips, best_ip
 from utils.bettersleep import better_sleep
+from . import client
 """
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -32,7 +33,7 @@ ANNOUNCE_LOOP_SLEEP = 30
 
 
 
-def learn_services(lan_client):
+def learn_services():
     """Take a list to infintely add lan service info to."""
 
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
@@ -52,17 +53,17 @@ def learn_services(lan_client):
         if 'onionr' not in service_ips:
             continue
         service_ips = service_ips.replace('onionr-', '').split('-')
+
         port = 0
         for service in service_ips:
             try:
                 ip_address(service)
                 if not ip_address(service).is_private: raise ValueError
                 if service in lan_ips: raise ValueError
-                if service in lan_client.peers: raise ValueError
             except ValueError:
-                service_ips.remove(service)
-        p = list(lan_client.peers)
-        lan_client.peers = list(set(service_ips + p))
+                pass
+            else:
+                client.connect_peer(service)
 
 
 def advertise_service(specific_ips=None):
@@ -71,10 +72,8 @@ def advertise_service(specific_ips=None):
     # for all packets sent, after three hops on the network the packet will not
     # be re-sent/broadcast (see https://www.tldp.org/HOWTO/Multicast-HOWTO-6.html)
     MULTICAST_TTL = 3
-    if specific_ips is None:
-        ips = '-'.join(lan_ips)
-    else:
-        ips = '-'.join(specific_ips)
+
+    ips = best_ip
 
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
     sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, MULTICAST_TTL)

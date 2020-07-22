@@ -1,9 +1,12 @@
-'''
-    Onionr - Private P2P Communication
+"""Onionr - Private P2P Communication.
 
-    Process incoming requests to the client api server to validate they are legitimate
-'''
-'''
+Process incoming requests to the client api server to validate they are legitimate
+"""
+import hmac
+from flask import Blueprint, request, abort, g
+from onionrservices import httpheaders
+from . import pluginwhitelist
+"""
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -16,11 +19,7 @@
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
-'''
-import hmac
-from flask import Blueprint, request, abort, g
-from onionrservices import httpheaders
-from . import pluginwhitelist
+"""
 
 # Be extremely mindful of this. These are endpoints available without a password
 whitelist_endpoints = ['www', 'staticfiles.homedata', 'staticfiles.sharedContent',
@@ -36,7 +35,7 @@ class ClientAPISecurity:
 
         @client_api_security_bp.before_app_request
         def validate_request():
-            '''Validate request has set password and is the correct hostname'''
+            """Validate request has set password and is the correct hostname"""
             # For the purpose of preventing DNS rebinding attacks
             if request.host != '%s:%s' % (client_api.host, client_api.bindPort):
                 abort(403)
@@ -66,5 +65,5 @@ class ClientAPISecurity:
             if request.endpoint in ('siteapi.site', 'siteapi.siteFile'):
                 resp.headers['Content-Security-Policy'] = "default-src 'none'; style-src 'self' data: 'unsafe-inline'; img-src 'self' data:; media-src 'self' data:"
             else:
-                resp.headers['Content-Security-Policy'] = "default-src 'none'; script-src 'self'; object-src 'none'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; media-src 'none'; frame-src 'none'; font-src 'self'; connect-src 'self'"
+                resp.headers['Content-Security-Policy'] = "default-src 'none'; script-src 'self'; object-src 'none'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; media-src 'self'; frame-src 'none'; font-src 'self'; connect-src 'self'"
             return resp

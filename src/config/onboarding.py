@@ -43,6 +43,7 @@ def set_config_from_onboarding(config_settings: OnboardingConfig):
 
     if get(config_settings, 'localThreat'):
         config.set('general.security_level', 3)
+        config.set('transports.lan', False)
 
     config.set('ui.theme', 'light')
     if get(config_settings, 'useDark'):

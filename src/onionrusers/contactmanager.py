@@ -1,9 +1,19 @@
-'''
-    Onionr - Private P2P Communication
+"""Onionr - Private P2P Communication.
 
-    Sets more abstract information related to a peer. Can be thought of as traditional 'contact' system
-'''
-'''
+Set more abstract information related to a peer.
+Can be thought of as traditional 'contact' system
+"""
+import os
+
+import ujson as json
+import unpaddedbase32
+
+import onionrexceptions
+from onionrusers import onionrusers
+from onionrutils import bytesconverter, epoch
+from utils import identifyhome
+from onionrutils import mnemonickeys
+"""
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -16,16 +26,9 @@
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
-'''
-import os, json
-import unpaddedbase32
-import niceware
+"""
 
-import onionrexceptions
-from onionrusers import onionrusers
-from onionrutils import bytesconverter, epoch
-from utils import identifyhome
-from onionrutils import mnemonickeys
+
 class ContactManager(onionrusers.OnionrUser):
     def __init__(self, publicKey, saveUser=False, recordExpireSeconds=5):
         try:
@@ -43,10 +46,10 @@ class ContactManager(onionrusers.OnionrUser):
         self.recordExpire = recordExpireSeconds
         self.data = self._loadData()
         self.deleted = False
-        
+
         if not os.path.exists(self.dataDir):
             os.mkdir(self.dataDir)
-    
+
     def _writeData(self):
         data = json.dumps(self.data)
         with open(self.dataFile, 'w') as dataFile:
@@ -68,7 +71,7 @@ class ContactManager(onionrusers.OnionrUser):
         if autoWrite:
             self._writeData()
         return
-    
+
     def get_info(self, key, forceReload=False):
         if self.deleted:
             raise onionrexceptions.ContactDeleted
