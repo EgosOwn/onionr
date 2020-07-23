@@ -12,14 +12,13 @@ import filepaths
 import onionrstorage
 from .. import storagecounter
 from onionrplugins import onionrevents as events
-from etc import powchoice, onionrvalues
+from etc import onionrvalues
 import config
 import onionrcrypto as crypto
 import onionrexceptions
 from onionrusers import onionrusers
 from onionrutils import localcommand, blockmetadata, stringvalidators
 import coredb
-import onionrproofs
 from onionrproofs import subprocesspow
 import logger
 from onionrtypes import UserIDSecretKey
@@ -86,8 +85,6 @@ def insert_block(data: Union[str, bytes], header: str = 'txt',
         our_private_key = signing_key
         our_pub_key = bytesconverter.bytes_to_str(
             crypto.cryptoutils.get_pub_key_from_priv(our_private_key))
-
-    use_subprocess = powchoice.use_subprocess(config)
 
     retData = False
 
@@ -208,10 +205,7 @@ def insert_block(data: Union[str, bytes], header: str = 'txt',
         metadata['expire'] = expire
 
     # send block data (and metadata) to POW module to get tokenized block data
-    if use_subprocess:
-        payload = subprocesspow.SubprocessPOW(data, metadata).start()
-    else:
-        payload = onionrproofs.POW(metadata, data).waitForResult()
+    payload = subprocesspow.SubprocessPOW(data, metadata).start()
     if payload != False:  # noqa
         try:
             retData = onionrstorage.set_data(payload)
