@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 * Made storagecounter use a watchdog (inotify) instead of excessive file reads
 * Bumped urllib3 to 1.25.10
+* Removed use of communicator's storagecounter to reduce coupling
 
 ## [5.0.0] - 2020-07-23
 

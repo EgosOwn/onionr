@@ -12,7 +12,7 @@ from gevent import spawn
 import onionrexceptions
 import logger
 import onionrpeers
-import communicator
+
 from communicator import peeraction
 from communicator import onlinepeers
 from onionrutils import blockmetadata
@@ -39,11 +39,12 @@ from . import shoulddownload
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
+storage_counter = storagecounter.StorageCounter()
+
 
 def download_blocks_from_communicator(comm_inst: "OnionrCommunicatorDaemon"):
     """Use communicator instance to download blocks in the comms's queue"""
     blacklist = onionrblacklist.OnionrBlackList()
-    storage_counter = storagecounter.StorageCounter()
     LOG_SKIP_COUNT = 50 # for how many iterations we skip logging the counter
     count: int = 0
     metadata_validation_result: bool = False
@@ -51,7 +52,6 @@ def download_blocks_from_communicator(comm_inst: "OnionrCommunicatorDaemon"):
     for blockHash in list(comm_inst.blockQueue):
         count += 1
 
-        triedQueuePeers = [] # List of peers we've tried for a block
         try:
             blockPeers = list(comm_inst.blockQueue[blockHash])
         except KeyError:

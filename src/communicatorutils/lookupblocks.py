@@ -14,6 +14,7 @@ from onionrblocks import onionrblacklist
 import onionrexceptions
 import config
 from etc import onionrvalues
+from onionrblocks.storagecounter import StorageCounter
 """
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -30,6 +31,7 @@ from etc import onionrvalues
 """
 
 blacklist = onionrblacklist.OnionrBlackList()
+storage_counter = StorageCounter()
 
 
 def lookup_blocks_from_communicator(comm_inst):
@@ -51,7 +53,7 @@ def lookup_blocks_from_communicator(comm_inst):
         if not comm_inst.isOnline:
             break
         # check if disk allocation is used
-        if comm_inst.storage_counter.is_full():
+        if storage_counter.is_full():
             logger.debug(
                 'Not looking up new blocks due to maximum amount of disk used')
             break

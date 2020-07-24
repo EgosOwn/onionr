@@ -12,6 +12,7 @@ from coredb import blockmetadb, dbfiles
 import onionrstorage
 from onionrstorage import removeblock
 from onionrblocks import onionrblacklist
+from onionrblocks.storagecounter import StorageCounter
 """
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -26,6 +27,8 @@ from onionrblocks import onionrblacklist
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
+
+storage_counter = StorageCounter()
 
 
 def __remove_from_upload(comm_inst, block_hash: str):
@@ -46,7 +49,7 @@ def clean_old_blocks(comm_inst):
         __remove_from_upload(comm_inst, bHash)
         logger.info('Deleted block: %s' % (bHash,))
 
-    while comm_inst.storage_counter.is_full():
+    while storage_counter.is_full():
         try:
             oldest = blockmetadb.get_block_list()[0]
         except IndexError:

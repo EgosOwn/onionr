@@ -3,9 +3,7 @@
 This file contains both the OnionrCommunicate class for
 communcating with peers and code to operate as a daemon,
 getting commands from the command queue database
-(see core.Core.daemonQueue)
 """
-import os
 import time
 
 import config
@@ -24,14 +22,10 @@ from communicatorutils import announcenode, deniableinserts
 from communicatorutils import cooldownpeer
 from communicatorutils import housekeeping
 from communicatorutils import netcheck
-from onionrutils import localcommand
 from onionrutils import epoch
 from onionrcommands.openwebinterface import get_url
 from etc import humanreadabletime
 import onionrservices
-import filepaths
-from onionrblocks import storagecounter
-from coredb import dbfiles
 from netcontroller import NetController
 from . import bootstrappeers
 from . import daemoneventhooks
@@ -62,7 +56,6 @@ class OnionrCommunicatorDaemon:
 
         # configure logger and stuff
         self.config = config
-        self.storage_counter = storagecounter.StorageCounter()
         self.isOnline = True  # Assume we're connected to the internet
         self.shared_state = shared_state  # TooManyObjects module
 
@@ -153,11 +146,13 @@ class OnionrCommunicatorDaemon:
         # Timer to reset the longest offline peer
         # so contact can be attempted again
         OnionrCommunicatorTimers(
-            self, onlinepeers.clear_offline_peer, 58, my_args=[self], max_threads=1)
+            self, onlinepeers.clear_offline_peer, 58, my_args=[self],
+            max_threads=1)
 
         # Timer to cleanup old blocks
         blockCleanupTimer = OnionrCommunicatorTimers(
-            self, housekeeping.clean_old_blocks, 20, my_args=[self], max_threads=1)
+            self, housekeeping.clean_old_blocks, 20, my_args=[self],
+            max_threads=1)
 
         # Timer to discover new peers
         OnionrCommunicatorTimers(
@@ -243,7 +238,6 @@ class OnionrCommunicatorDaemon:
                 'First run detected. Run openhome to get setup.',
                 terminal=True)
             get_url()
-            
 
             while not config.get('onboarding.done', True) and \
                     not self.shutdown:
