@@ -2,6 +2,7 @@ import sys, os
 sys.path.append(".")
 sys.path.append("src/")
 import unittest, uuid
+from time import sleep
 
 TEST_DIR = 'testdata/%s-%s' % (uuid.uuid4(), os.path.basename(__file__)) + '/'
 os.environ["ONIONR_HOME"] = TEST_DIR
@@ -29,7 +30,7 @@ class TestStorageCounter(unittest.TestCase):
 
         self.assertIsNotNone(config.get('allocations.disk'))
         self.assertGreaterEqual(config.get('allocations.disk'), 1000000)
-    
+
     def test_insert_too_much(self):
         _test_setup()
         config.set('allocations.disk', 1000)
@@ -38,11 +39,13 @@ class TestStorageCounter(unittest.TestCase):
     def test_count(self):
         _test_setup()
         counter = storagecounter.StorageCounter()
-        start_value = counter.get_amount()
+        start_value = counter.amount
         b_hash = onionrblocks.insert("test")
-        self.assertGreater(counter.get_amount(), start_value)
+        sleep(0.1)
+        self.assertGreater(counter.amount, start_value)
         onionrstorage.removeblock.remove_block(b_hash)
-        self.assertEqual(counter.get_amount(), start_value)
-    
+        sleep(0.1)
+        self.assertEqual(counter.amount, start_value)
+
 
 unittest.main()
