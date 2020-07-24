@@ -6,6 +6,7 @@
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from communicator import OnionrCommunicatorDaemon
+    from deadsimplekv import DeadSimpleKV
 
 from gevent import spawn
 
@@ -45,15 +46,16 @@ storage_counter = storagecounter.StorageCounter()
 def download_blocks_from_communicator(comm_inst: "OnionrCommunicatorDaemon"):
     """Use communicator instance to download blocks in the comms's queue"""
     blacklist = onionrblacklist.OnionrBlackList()
+    kv: "DeadSimpleKV" = comm_inst.shared_state.get_by_string("DeadSimpleKV")
     LOG_SKIP_COUNT = 50 # for how many iterations we skip logging the counter
     count: int = 0
     metadata_validation_result: bool = False
     # Iterate the block queue in the communicator
-    for blockHash in list(comm_inst.blockQueue):
+    for blockHash in list(kv.get('blockQueue')):
         count += 1
 
         try:
-            blockPeers = list(comm_inst.blockQueue[blockHash])
+            blockPeers = list(kv.get('blockQueue')[blockHash])
         except KeyError:
             blockPeers = []
         removeFromQueue = True
@@ -61,7 +63,8 @@ def download_blocks_from_communicator(comm_inst: "OnionrCommunicatorDaemon"):
         if not shoulddownload.should_download(comm_inst, blockHash):
             continue
 
-        if comm_inst.shutdown or not comm_inst.isOnline or storage_counter.is_full():
+        if comm_inst.shutdown or not comm_inst.isOnline or \
+                storage_counter.is_full():
             # Exit loop if shutting down or offline, or disk allocation reached
             break
         # Do not download blocks being downloaded
@@ -82,8 +85,12 @@ def download_blocks_from_communicator(comm_inst: "OnionrCommunicatorDaemon"):
             peerUsed = blockPeers.pop(0)
 
         if not comm_inst.shutdown and peerUsed.strip() != '':
-            logger.info("Attempting to download %s from %s..." % (blockHash[:12], peerUsed))
-        content = peeraction.peer_action(comm_inst, peerUsed, 'getdata/' + blockHash, max_resp_size=3000000) # block content from random peer (includes metadata)
+            logger.info(
+                f"Attempting to download %s from {peerUsed}..." % (blockHash[:12],))
+        content = peeraction.peer_action(
+            comm_inst, peerUsed,
+            'getdata/' + blockHash,
+            max_resp_size=3000000)  # block content from random peer
 
         if content is not False and len(content) > 0:
             try:
@@ -151,10 +158,10 @@ def download_blocks_from_communicator(comm_inst: "OnionrCommunicatorDaemon"):
                     removeFromQueue = False # Don't remove from queue if 404
             if removeFromQueue:
                 try:
-                    del comm_inst.blockQueue[blockHash] # remove from block queue both if success or false
+                    del kv.get('blockQueue')[blockHash] # remove from block queue both if success or false
                     if count == LOG_SKIP_COUNT:
                         logger.info('%s blocks remaining in queue' %
-                        [len(comm_inst.blockQueue)], terminal=True)
+                        [len(kv.get('blockQueue'))], terminal=True)
                         count = 0
                 except KeyError:
                     pass

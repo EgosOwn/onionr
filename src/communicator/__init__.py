@@ -59,6 +59,9 @@ class OnionrCommunicatorDaemon:
         self.isOnline = True  # Assume we're connected to the internet
         self.shared_state = shared_state  # TooManyObjects module
 
+        # populate kv values
+        self.shared_state.get_by_string('DeadSimpleKV').put('blockQueue', {})
+
         if config.get('general.offline_mode', False):
             self.isOnline = False
 
@@ -97,11 +100,7 @@ class OnionrCommunicatorDaemon:
         # set true when shutdown command received
         self.shutdown = False
 
-        # list of new blocks to download
-        # added to when new block lists are fetched from peers
-        self.blockQueue = {}
-
-        # list of blocks currently downloading, avoid s
+        # list of blocks currently downloading
         self.currentDownloading = []
 
         # timestamp when the last online node was seen

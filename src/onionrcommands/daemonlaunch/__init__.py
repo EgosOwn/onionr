@@ -10,6 +10,7 @@ from threading import Thread
 from stem.connection import IncorrectPassword
 import toomanyobjs
 import filenuke
+from deadsimplekv import DeadSimpleKV
 
 import config
 import onionrstatistics
@@ -70,7 +71,7 @@ def _show_info_messages():
                 (logger.colors.underline +
                  getourkeypair.get_keypair()[0][:52]))
 
-def _setup_online_mode(use_existing_tor: bool, 
+def _setup_online_mode(use_existing_tor: bool,
                    net: NetController,
                    security_level: int):
     if config.get('transports.tor', True):
@@ -131,6 +132,9 @@ def daemon():
 
     shared_state = toomanyobjs.TooMany()
 
+    # Add DeadSimpleKV for quasi-global variables (ephemeral key-value)
+    shared_state.get(DeadSimpleKV)
+
     shared_state.get(daemoneventsapi.DaemonEventsBP)
 
     Thread(target=shared_state.get(apiservers.ClientAPI).start,
@@ -144,7 +148,7 @@ def daemon():
     # Run time tests are not normally run
     shared_state.get(runtests.OnionrRunTestManager)
 
-    # Create singleton 
+    # Create singleton
     shared_state.get(serializeddata.SerializedData)
 
     shared_state.share_object()  # share the parent object to the threads
@@ -169,8 +173,7 @@ def daemon():
     if not offline_mode:
         # we need to setup tor for use
         _setup_online_mode(use_existing_tor, net, security_level)
-    
-    
+
     _show_info_messages()
 
     events.event('init', threaded=False)

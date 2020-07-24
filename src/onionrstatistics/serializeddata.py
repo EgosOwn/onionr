@@ -52,12 +52,13 @@ class SerializedData:
         except AttributeError:
             sleep(1)
         comm_inst = self._too_many.get(communicator.OnionrCommunicatorDaemon, args=(self._too_many,))
+        kv: "DeadSimpleKV" = comm_inst.shared_state.get_by_string("DeadSimpleKV")
         connected = []
         [connected.append(x) for x in comm_inst.onlinePeers if x not in connected]
         stats['uptime'] = comm_inst.getUptime()
         stats['connectedNodes'] = '\n'.join(connected)
         stats['blockCount'] = len(blockmetadb.get_block_list())
-        stats['blockQueueCount'] = len(comm_inst.blockQueue)
+        stats['blockQueueCount'] = len(kv.get('blockQueue'))
         stats['threads'] = proc.num_threads()
         stats['ramPercent'] = proc.memory_percent()
         stats['fd'] = get_open_files()

@@ -45,10 +45,11 @@ def lookup_blocks_from_communicator(comm_inst):
     maxBacklog = 1560
     lastLookupTime = 0  # Last time we looked up a particular peer's list
     new_block_count = 0
+    kv: "DeadSimpleKV" = comm_inst.shared_state.get_by_string("DeadSimpleKV")
     for i in range(tryAmount):
         # Defined here to reset it each time, time offset is added later
         listLookupCommand = 'getblocklist'
-        if len(comm_inst.blockQueue) >= maxBacklog:
+        if len(kv.get('blockQueue')) >= maxBacklog:
             break
         if not comm_inst.isOnline:
             break
@@ -100,19 +101,19 @@ def lookup_blocks_from_communicator(comm_inst):
 
                     # if block does not exist on disk + is not already in queue
                     if i not in existingBlocks:
-                        if i not in comm_inst.blockQueue:
+                        if i not in kv.get('blockQueue'):
                             if onionrproofs.hashMeetsDifficulty(i) and \
                                  not blacklist.inBlacklist(i):
-                                if len(comm_inst.blockQueue) <= 1000000:
+                                if len(kv.get('blockQueue')) <= 1000000:
                                     # add blocks to download queue
-                                    comm_inst.blockQueue[i] = [peer]
+                                    kv.get('blockQueue')[i] = [peer]
                                     new_block_count += 1
                                     comm_inst.dbTimestamps[peer] = \
                                         epoch.get_rounded_epoch(roundS=60)
                         else:
-                            if peer not in comm_inst.blockQueue[i]:
-                                if len(comm_inst.blockQueue[i]) < 10:
-                                    comm_inst.blockQueue[i].append(peer)
+                            if peer not in kv.get('blockQueue')[i]:
+                                if len(kv.get('blockQueue')[i]) < 10:
+                                    kv.get('blockQueue')[i].append(peer)
     if new_block_count > 0:
         block_string = ""
         if new_block_count > 1:

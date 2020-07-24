@@ -25,6 +25,7 @@ def should_download(comm_inst, block_hash) -> bool:
     """Return bool for if a (assumed to exist) block should be downloaded."""
     blacklist = onionrblacklist.OnionrBlackList()
     should = True
+    kv: "DeadSimpleKV" = comm_inst.shared_state.get_by_string("DeadSimpleKV")
     if block_hash in blockmetadb.get_block_list():
         # Don't download block we have
         should = False
@@ -35,7 +36,7 @@ def should_download(comm_inst, block_hash) -> bool:
     if should is False:
         # Remove block from communicator queue if it shouldn't be downloaded
         try:
-            del comm_inst.blockQueue[block_hash]
+            del kv.get('blockQueue')[block_hash]
         except KeyError:
             pass
     return should
