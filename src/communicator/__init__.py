@@ -64,6 +64,8 @@ class OnionrCommunicatorDaemon:
         self.kv.put('blockQueue', {})
         self.kv.put('shutdown', False)
         self.kv.put('onlinePeers', [])
+        self.kv.put('currentDownloading', [])
+        self.kv.put('announceCache', {})
 
         if config.get('general.offline_mode', False):
             self.isOnline = False
@@ -92,15 +94,11 @@ class OnionrCommunicatorDaemon:
         # Peers merged to us. Don't add to db until we know they're reachable
         self.newPeers = []
         self.announceProgress = {}
-        self.announceCache = {}
 
         self.generating_blocks = []
 
         # amount of threads running by name, used to prevent too many
         self.threadCounts = {}
-
-        # list of blocks currently downloading
-        self.currentDownloading = []
 
         # timestamp when the last online node was seen
         self.lastNodeSeen = None

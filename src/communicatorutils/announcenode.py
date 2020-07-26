@@ -33,13 +33,13 @@ def announce_node(daemon):
     kv: "DeadSimpleKV" = daemon.shared_state.get_by_string("DeadSimpleKV")
 
     # Do not let announceCache get too large
-    if len(daemon.announceCache) >= 10000:
-        daemon.announceCache.popitem()
+    if len(kv.get('announceCache')) >= 10000:
+        kv.get('announceCache').popitem()
 
     if daemon.config.get('general.security_level', 0) == 0:
         # Announce to random online peers
         for i in kv.get('onlinePeers'):
-            if i not in daemon.announceCache and\
+            if i not in kv.get('announceCache') and\
                     i not in daemon.announceProgress:
                 peer = i
                 break

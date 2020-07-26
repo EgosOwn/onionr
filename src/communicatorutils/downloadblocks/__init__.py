@@ -47,7 +47,7 @@ def download_blocks_from_communicator(comm_inst: "OnionrCommunicatorDaemon"):
     """Use communicator instance to download blocks in the comms's queue"""
     blacklist = onionrblacklist.OnionrBlackList()
     kv: "DeadSimpleKV" = comm_inst.shared_state.get_by_string("DeadSimpleKV")
-    LOG_SKIP_COUNT = 50 # for how many iterations we skip logging the counter
+    LOG_SKIP_COUNT = 50  # for how many iterations we skip logging the counter
     count: int = 0
     metadata_validation_result: bool = False
     # Iterate the block queue in the communicator
@@ -68,13 +68,14 @@ def download_blocks_from_communicator(comm_inst: "OnionrCommunicatorDaemon"):
             # Exit loop if shutting down or offline, or disk allocation reached
             break
         # Do not download blocks being downloaded
-        if blockHash in comm_inst.currentDownloading:
+        if blockHash in kv.get('currentDownloading'):
             continue
 
-        if len(comm_inst.onlinePeers) == 0:
+        if len(kv.get('onlinePeers')) == 0:
             break
 
-        comm_inst.currentDownloading.append(blockHash) # So we can avoid concurrent downloading in other threads of same block
+        # So we can avoid concurrent downloading in other threads of same block
+        kv.get('currentDownloading').append(blockHash)
         if len(blockPeers) == 0:
             try:
                 peerUsed = onlinepeers.pick_online_peer(comm_inst)
@@ -165,5 +166,5 @@ def download_blocks_from_communicator(comm_inst: "OnionrCommunicatorDaemon"):
                         count = 0
                 except KeyError:
                     pass
-        comm_inst.currentDownloading.remove(blockHash)
+        kv.get('currentDownloading').remove(blockHash)
     comm_inst.decrementThreadCount('getBlocks')
