@@ -54,7 +54,7 @@ class SerializedData:
         comm_inst = self._too_many.get(communicator.OnionrCommunicatorDaemon, args=(self._too_many,))
         kv: "DeadSimpleKV" = comm_inst.shared_state.get_by_string("DeadSimpleKV")
         connected = []
-        [connected.append(x) for x in comm_inst.onlinePeers if x not in connected]
+        [connected.append(x) for x in kv.get('onlinePeers') if x not in connected]
         stats['uptime'] = comm_inst.getUptime()
         stats['connectedNodes'] = '\n'.join(connected)
         stats['blockCount'] = len(blockmetadb.get_block_list())

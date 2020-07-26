@@ -66,7 +66,7 @@ def lookup_blocks_from_communicator(comm_inst):
             continue
         # if we've already tried all the online peers this time around, stop
         if peer in triedPeers:
-            if len(comm_inst.onlinePeers) == len(triedPeers):
+            if len(kv.get('onlinePeers')) == len(triedPeers):
                 break
             else:
                 continue

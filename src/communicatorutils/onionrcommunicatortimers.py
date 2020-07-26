@@ -66,7 +66,7 @@ class OnionrCommunicatorTimers:
         if self.count == self.frequency and not self.kv.get('shutdown'):
             try:
                 if self.requires_peer and \
-                        len(self.daemon_inst.onlinePeers) == 0:
+                        len(self.kv.get('onlinePeers')) == 0:
                     raise onionrexceptions.OnlinePeerNeeded
             except onionrexceptions.OnlinePeerNeeded:
                 return

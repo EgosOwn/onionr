@@ -17,6 +17,7 @@ from onionrutils import stringvalidators, basicrequests
 import onionrcrypto
 from communicator import onlinepeers
 if TYPE_CHECKING:
+    from deadsimplekv import DeadSimpleKV
     from communicator import OnionrCommunicatorDaemon
 """
     This program is free software: you can redistribute it and/or modify
@@ -38,6 +39,7 @@ def upload_blocks_from_communicator(comm_inst: 'OnionrCommunicatorDaemon'):
     """Accept a communicator instance + upload blocks from its upload queue."""
     """when inserting a block, we try to upload
      it to a few peers to add some deniability & increase functionality"""
+    kv: "DeadSimpleKV" = comm_inst.shared_state.get_by_string("DeadSimpleKV")
     TIMER_NAME = "upload_blocks_from_communicator"
 
     session_manager: sessionmanager.BlockUploadSessionManager
@@ -63,7 +65,7 @@ def upload_blocks_from_communicator(comm_inst: 'OnionrCommunicatorDaemon'):
                 comm_inst.decrementThreadCount(TIMER_NAME)
                 return
             session = session_manager.add_session(bl)
-            for _ in range(min(len(comm_inst.onlinePeers), 6)):
+            for _ in range(min(len(kv.get('onlinePeers')), 6)):
                 try:
                     peer = onlinepeers.pick_online_peer(comm_inst)
                 except onionrexceptions.OnlinePeerNeeded:

@@ -2,6 +2,10 @@
 
 remove an online peer from the pool in a communicator instance
 """
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from deadsimplekv import DeadSimpleKV
 """
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -20,6 +24,7 @@ remove an online peer from the pool in a communicator instance
 
 def remove_online_peer(comm_inst, peer):
     """Remove an online peer."""
+    kv: "DeadSimpleKV" = comm_inst.shared_state.get_by_string("DeadSimpleKV")
     try:
         del comm_inst.connectTimes[peer]
     except KeyError:
@@ -29,6 +34,6 @@ def remove_online_peer(comm_inst, peer):
     except KeyError:
         pass
     try:
-        comm_inst.onlinePeers.remove(peer)
+        kv.get('onlinePeers').remove(peer)
     except ValueError:
         pass

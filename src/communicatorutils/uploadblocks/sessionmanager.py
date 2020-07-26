@@ -4,6 +4,7 @@ Manager for upload 'sessions'
 """
 from typing import List, Union, TYPE_CHECKING
 if TYPE_CHECKING:
+    from deadsimplekv import DeadSimpleKV
     from session import UploadSession
 
 from onionrutils import bytesconverter
@@ -84,10 +85,12 @@ class BlockUploadSessionManager:
         comm_inst: 'OnionrCommunicatorDaemon'  # type: ignore
         comm_inst = self._too_many.get_by_string(  # pylint: disable=E1101 type: ignore
         "OnionrCommunicatorDaemon")
+        kv: "DeadSimpleKV" = comm_inst.shared_state.get_by_string(
+            "DeadSimpleKV")
         sessions_to_delete = []
         if comm_inst.getUptime() < 120:
             return
-        onlinePeerCount = len(comm_inst.onlinePeers)
+        onlinePeerCount = len(kv.get('onlinePeers'))
 
         # If we have no online peers right now,
         if onlinePeerCount == 0:

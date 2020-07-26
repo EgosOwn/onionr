@@ -9,6 +9,11 @@ import logger
 from utils import netutils
 from onionrutils import localcommand, epoch
 from . import restarttor
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from deadsimplekv import DeadSimpleKV
 """
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -33,7 +38,7 @@ def net_check(comm_inst):
     # for detecting if we have received incoming connections recently
     rec = False
     kv: "DeadSimpleKV" = comm_inst.shared_state.get_by_string("DeadSimpleKV")
-    if len(comm_inst.onlinePeers) == 0:
+    if len(kv.get('onlinePeers')) == 0:
         try:
             if (epoch.get_epoch() - int(localcommand.local_command
                                         ('/lastconnect'))) <= 60:

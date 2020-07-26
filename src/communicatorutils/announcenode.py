@@ -30,6 +30,7 @@ import onionrexceptions
 def announce_node(daemon):
     """Announce our node to our peers."""
     ret_data = False
+    kv: "DeadSimpleKV" = daemon.shared_state.get_by_string("DeadSimpleKV")
 
     # Do not let announceCache get too large
     if len(daemon.announceCache) >= 10000:
@@ -37,7 +38,7 @@ def announce_node(daemon):
 
     if daemon.config.get('general.security_level', 0) == 0:
         # Announce to random online peers
-        for i in daemon.onlinePeers:
+        for i in kv.get('onlinePeers'):
             if i not in daemon.announceCache and\
                     i not in daemon.announceProgress:
                 peer = i

@@ -28,13 +28,15 @@ from onionrutils import epoch
 def statistics_reporter(shared_state):
     server = config.get('statistics.server', '')
     if not config.get('statistics.i_dont_want_privacy', False) or \
-        not server: return
+            not server:
+        return
 
     def compile_data():
         return {
             'time': epoch.get_epoch(),
             'adders': get_transports(),
-            'peers': shared_state.get_by_string('OnionrCommunicatorDaemon').onlinePeers
+            'peers': shared_state.get_by_string(
+                'DeadSimpleKV').get('onlinePeers')
             }
 
     while True:

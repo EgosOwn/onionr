@@ -75,7 +75,7 @@ def connect_new_peer_to_communicator(comm_inst, peer='', useBootstrap=False):
         if its already been tried/connected, or if its cooled down
         """
         if len(address) == 0 or address in tried \
-            or address in comm_inst.onlinePeers \
+            or address in kv.get('onlinePeers') \
                 or address in comm_inst.cooldownPeer:
             continue
         if kv.get('shutdown'):
@@ -87,9 +87,9 @@ def connect_new_peer_to_communicator(comm_inst, peer='', useBootstrap=False):
             if address not in mainPeerList:
                 # Add a peer to our list if it isn't already since it connected
                 networkmerger.mergeAdders(address)
-            if address not in comm_inst.onlinePeers:
+            if address not in kv.get('onlinePeers'):
                 logger.info('Connected to ' + address, terminal=True)
-                comm_inst.onlinePeers.append(address)
+                kv.get('onlinePeers').append(address)
                 comm_inst.connectTimes[address] = epoch.get_epoch()
             retData = address
 

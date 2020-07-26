@@ -2,8 +2,13 @@
 
 Select random online peer in a communicator instance and have them "cool down"
 """
+from typing import TYPE_CHECKING
+
 from onionrutils import epoch
 from communicator import onlinepeers
+
+if TYPE_CHECKING:
+    from deadsimplekv import DeadSimpleKV
 """
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -22,8 +27,9 @@ from communicator import onlinepeers
 
 def cooldown_peer(comm_inst):
     """Randomly add an online peer to cooldown, so we can connect a new one."""
+    kv: "DeadSimpleKV" = comm_inst.shared_state.get_by_string("DeadSimpleKV")
     config = comm_inst.config
-    online_peer_amount = len(comm_inst.onlinePeers)
+    online_peer_amount = len(kv.get('onlinePeers'))
     minTime = 300
     cooldown_time = 600
     to_cool = ''

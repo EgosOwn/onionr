@@ -60,8 +60,10 @@ class OnionrCommunicatorDaemon:
         self.shared_state = shared_state  # TooManyObjects module
 
         # populate kv values
-        self.shared_state.get_by_string('DeadSimpleKV').put('blockQueue', {})
-        self.shared_state.get_by_string('DeadSimpleKV').put('shutdown', False)
+        self.kv = self.shared_state.get_by_string('DeadSimpleKV')
+        self.kv.put('blockQueue', {})
+        self.kv.put('shutdown', False)
+        self.kv.put('onlinePeers', [])
 
         if config.get('general.offline_mode', False):
             self.isOnline = False
@@ -82,7 +84,6 @@ class OnionrCommunicatorDaemon:
         self.delay = 1
 
         # lists of connected peers and peers we know we can't reach currently
-        self.onlinePeers = []
         self.offlinePeers = []
         self.cooldownPeer = {}
         self.connectTimes = {}

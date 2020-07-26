@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING
 from etc import humanreadabletime
 import logger
 if TYPE_CHECKING:
+    from deadsimplekv import DeadSimpleKV
     from communicator import OnionrCommunicatorDaemon
 """
     This program is free software: you can redistribute it and/or modify
@@ -26,7 +27,7 @@ if TYPE_CHECKING:
 
 
 def get_online_peers(comm_inst: 'OnionrCommunicatorDaemon'):
-    """Manage the comm_inst.onlinePeers attribute list.
+    """Manage the kv.get('onlinePeers') attribute list.
 
     Connect to more peers if we have none connected
     """
@@ -37,7 +38,7 @@ def get_online_peers(comm_inst: 'OnionrCommunicatorDaemon'):
         return
     logger.debug('Refreshing peer pool...')
     max_peers = int(config.get('peers.max_connect', 10))
-    needed = max_peers - len(comm_inst.onlinePeers)
+    needed = max_peers - len(kv.get('onlinePeers'))
 
     last_seen = 'never'
     if not isinstance(comm_inst.lastNodeSeen, type(None)):
@@ -45,7 +46,7 @@ def get_online_peers(comm_inst: 'OnionrCommunicatorDaemon'):
             comm_inst.lastNodeSeen)
 
     for _ in range(needed):
-        if len(comm_inst.onlinePeers) == 0:
+        if len(kv.get('onlinePeers')) == 0:
             comm_inst.connectNewPeer(useBootstrap=True)
         else:
             comm_inst.connectNewPeer()
@@ -53,7 +54,7 @@ def get_online_peers(comm_inst: 'OnionrCommunicatorDaemon'):
         if kv.get('shutdown'):
             break
     else:
-        if len(comm_inst.onlinePeers) == 0:
+        if len(kv.get('onlinePeers')) == 0:
             logger.debug('Couldn\'t connect to any peers.' +
                          f' Last node seen {last_seen}  ago.')
             try:

@@ -40,7 +40,7 @@ def accept_upload(request):
         try:
             b_hash = blockimporter.import_block_from_data(data)
             if b_hash:
-                if g.too_many.get_by_string("OnionrCommunicatorDaemon").onlinePeers:
+                if g.too_many.get_by_string("DeadSimpleKV").get('onlinePeers'):
                     spawn(
                         localcommand.local_command,
                         f'/daemon-event/upload_event',

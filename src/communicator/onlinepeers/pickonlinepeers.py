@@ -4,8 +4,12 @@ Onionr - Private P2P Communication.
 pick online peers in a communicator instance
 """
 import secrets
+from typing import TYPE_CHECKING
 
 import onionrexceptions
+
+if TYPE_CHECKING:
+    from deadsimplekv import DeadSimpleKV
 """
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -24,18 +28,19 @@ import onionrexceptions
 
 def pick_online_peer(comm_inst):
     """Randomly picks peer from pool without bias (using secrets module)."""
+    kv: "DeadSimpleKV" = comm_inst.shared_state.get_by_string("DeadSimpleKV")
     ret_data = ''
-    peer_length = len(comm_inst.onlinePeers)
+    peer_length = len(kv.get('onlinePeers'))
     if peer_length <= 0:
         raise onionrexceptions.OnlinePeerNeeded
 
     while True:
-        peer_length = len(comm_inst.onlinePeers)
+        peer_length = len(kv.get('onlinePeers'))
 
         try:
             # Get a random online peer, securely.
             # May get stuck in loop if network is lost
-            ret_data = comm_inst.onlinePeers[secrets.randbelow(peer_length)]
+            ret_data = kv.get('onlinePeers')[secrets.randbelow(peer_length)]
         except IndexError:
             pass
         else:
