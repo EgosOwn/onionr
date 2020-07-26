@@ -63,7 +63,7 @@ def download_blocks_from_communicator(comm_inst: "OnionrCommunicatorDaemon"):
         if not shoulddownload.should_download(comm_inst, blockHash):
             continue
 
-        if comm_inst.shutdown or not comm_inst.isOnline or \
+        if kv.get('shutdown') or not comm_inst.isOnline or \
                 storage_counter.is_full():
             # Exit loop if shutting down or offline, or disk allocation reached
             break
@@ -84,7 +84,7 @@ def download_blocks_from_communicator(comm_inst: "OnionrCommunicatorDaemon"):
             blockPeers = onionrcrypto.cryptoutils.random_shuffle(blockPeers)
             peerUsed = blockPeers.pop(0)
 
-        if not comm_inst.shutdown and peerUsed.strip() != '':
+        if not kv.get('shutdown') and peerUsed.strip() != '':
             logger.info(
                 f"Attempting to download %s from {peerUsed}..." % (blockHash[:12],))
         content = peeraction.peer_action(

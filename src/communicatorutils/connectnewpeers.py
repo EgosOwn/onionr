@@ -33,6 +33,7 @@ def connect_new_peer_to_communicator(comm_inst, peer='', useBootstrap=False):
     config = comm_inst.config
     retData = False
     tried = comm_inst.offlinePeers
+    kv: "DeadSimpleKV" = comm_inst.shared_state.get_by_string("DeadSimpleKV")
     transports = gettransports.get()
     if peer != '':
         if stringvalidators.validate_transport(peer):
@@ -77,7 +78,7 @@ def connect_new_peer_to_communicator(comm_inst, peer='', useBootstrap=False):
             or address in comm_inst.onlinePeers \
                 or address in comm_inst.cooldownPeer:
             continue
-        if comm_inst.shutdown:
+        if kv.get('shutdown'):
             return
         # Ping a peer,
         ret = peeraction.peer_action(comm_inst, address, 'ping')

@@ -13,6 +13,7 @@ import logger
 from typing import TYPE_CHECKING
 from typing import Callable, NewType, Iterable
 if TYPE_CHECKING:
+    from deadsimplekv import DeadSimpleKV
     from communicator import OnionrCommunicatorDaemon
 """
     This program is free software: you can redistribute it and/or modify
@@ -47,6 +48,8 @@ class OnionrCommunicatorTimers:
         self.daemon_inst = daemon_inst
         self.max_threads = max_threads
         self.args = my_args
+        self.kv: "DeadSimpleKV" = daemon_inst.shared_state.get_by_string(
+            "DeadSimpleKV")
 
         self.daemon_inst.timers.append(self)
         self.count = 0
@@ -60,7 +63,7 @@ class OnionrCommunicatorTimers:
             self.daemon_inst.threadCounts[self.timer_function.__name__] = 0
 
         # execute timer's func, if we are not missing *required* online peer
-        if self.count == self.frequency and not self.daemon_inst.shutdown:
+        if self.count == self.frequency and not self.kv.get('shutdown'):
             try:
                 if self.requires_peer and \
                         len(self.daemon_inst.onlinePeers) == 0:

@@ -1,13 +1,9 @@
-"""
-    Onionr - Private P2P Communication
+"""Onionr - Private P2P Communication.
 
-    Shutdown the node either hard or cleanly
+Shutdown the node either hard or cleanly
 """
 from flask import Blueprint, Response
 from flask import g
-from onionrblocks import onionrblockapi
-import onionrexceptions
-from onionrutils import stringvalidators
 """
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -25,6 +21,7 @@ from onionrutils import stringvalidators
 
 shutdown_bp = Blueprint('shutdown', __name__)
 
+
 def shutdown(client_api_inst):
     try:
         client_api_inst.publicAPI.httpServer.stop()
@@ -33,8 +30,9 @@ def shutdown(client_api_inst):
         pass
     return Response("bye")
 
+
 @shutdown_bp.route('/shutdownclean')
 def shutdown_clean():
     # good for calling from other clients
-    g.too_many.get_by_string("OnionrCommunicatorDaemon").shutdown = True
+    g.too_many.get_by_string("DeadSimpleKV").put('shutdown', True)
     return Response("bye")

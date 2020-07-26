@@ -31,6 +31,7 @@ def get_online_peers(comm_inst: 'OnionrCommunicatorDaemon'):
     Connect to more peers if we have none connected
     """
     config = comm_inst.config
+    kv: "DeadSimpleKV" = comm_inst.shared_state.get_by_string("DeadSimpleKV")
     if config.get('general.offline_mode', False):
         comm_inst.decrementThreadCount('get_online_peers')
         return
@@ -49,7 +50,7 @@ def get_online_peers(comm_inst: 'OnionrCommunicatorDaemon'):
         else:
             comm_inst.connectNewPeer()
 
-        if comm_inst.shutdown:
+        if kv.get('shutdown'):
             break
     else:
         if len(comm_inst.onlinePeers) == 0:

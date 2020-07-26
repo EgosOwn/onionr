@@ -27,6 +27,7 @@ def peer_action(comm_inst, peer, action,
                 returnHeaders=False, max_resp_size=5242880):
     """Perform a get request to a peer."""
     penalty_score = -10
+    kv: "DeadSimpleKV" = comm_inst.shared_state.get_by_string("DeadSimpleKV")
     if len(peer) == 0:
         return False
     url = 'http://%s/%s' % (peer, action)
@@ -47,7 +48,7 @@ def peer_action(comm_inst, peer, action,
             onlinepeers.remove_online_peer(comm_inst, peer)
             keydb.transportinfo.set_address_info(
                 peer, 'lastConnectAttempt', epoch.get_epoch())
-            if action != 'ping' and not comm_inst.shutdown:
+            if action != 'ping' and not kv.get('shutdown'):
                 logger.warn(f'Lost connection to {peer}', terminal=True)
                 # Will only add a new peer to pool if needed
                 onlinepeers.get_online_peers(comm_inst)

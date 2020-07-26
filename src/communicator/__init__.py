@@ -61,6 +61,7 @@ class OnionrCommunicatorDaemon:
 
         # populate kv values
         self.shared_state.get_by_string('DeadSimpleKV').put('blockQueue', {})
+        self.shared_state.get_by_string('DeadSimpleKV').put('shutdown', False)
 
         if config.get('general.offline_mode', False):
             self.isOnline = False
@@ -96,9 +97,6 @@ class OnionrCommunicatorDaemon:
 
         # amount of threads running by name, used to prevent too many
         self.threadCounts = {}
-
-        # set true when shutdown command received
-        self.shutdown = False
 
         # list of blocks currently downloading
         self.currentDownloading = []
@@ -239,23 +237,28 @@ class OnionrCommunicatorDaemon:
             get_url()
 
             while not config.get('onboarding.done', True) and \
-                    not self.shutdown:
+                    not self.shared_state.get_by_string(
+                        'DeadSimpleKV').get('shutdown'):
                 try:
                     time.sleep(2)
                 except KeyboardInterrupt:
-                    self.shutdown = True
+                    self.shared_state.get_by_string(
+                        'DeadSimpleKV').put('shutdown', True)
 
         # Main daemon loop, mainly for calling timers,
         # don't do any complex operations here to avoid locking
         try:
-            while not self.shutdown:
+            while not self.shared_state.get_by_string(
+                    'DeadSimpleKV').get('shutdown'):
                 for i in self.timers:
-                    if self.shutdown:
+                    if self.shared_state.get_by_string(
+                            'DeadSimpleKV').get('shutdown'):
                         break
                     i.processTimer()
                 time.sleep(self.delay)
         except KeyboardInterrupt:
-            self.shutdown = True
+            self.shared_state.get_by_string(
+                    'DeadSimpleKV').put('shutdown', True)
 
         logger.info(
             'Goodbye. (Onionr is cleaning up, and will exit)', terminal=True)
