@@ -50,7 +50,7 @@ def handle_announce(request):
         if stringvalidators.validate_transport(newNode) and \
                 newNode not in announce_queue_list:
             g.shared_state.get(
-                OnionrCommunicatorDaemon).newPeers.append(newNode)
+                deadsimplekv.DeadSimpleKV).get('newPeers').append(newNode)
             announce_queue.put('new_peers',
                                announce_queue_list.append(newNode))
             announce_queue.flush()

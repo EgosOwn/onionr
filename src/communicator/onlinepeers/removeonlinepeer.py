@@ -30,7 +30,7 @@ def remove_online_peer(comm_inst, peer):
     except KeyError:
         pass
     try:
-        del comm_inst.dbTimestamps[peer]
+        del kv.get('dbTimestamps')[peer]
     except KeyError:
         pass
     try:

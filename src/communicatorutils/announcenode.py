@@ -4,6 +4,8 @@ Onionr - Private P2P Communication.
 Use a communicator instance to announce
 our transport address to connected nodes
 """
+from typing import TYPE_CHECKING
+
 import logger
 from onionrutils import basicrequests
 from utils import gettransports
@@ -11,6 +13,9 @@ from netcontroller import NetController
 from communicator import onlinepeers
 from coredb import keydb
 import onionrexceptions
+
+if TYPE_CHECKING:
+    from deadsimplekv import DeadSimpleKV
 """
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by

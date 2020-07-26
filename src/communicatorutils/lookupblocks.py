@@ -76,7 +76,7 @@ def lookup_blocks_from_communicator(comm_inst):
         # to only fetch blocks since then.
         # Saved in memory only for privacy reasons
         try:
-            lastLookupTime = comm_inst.dbTimestamps[peer]
+            lastLookupTime = kv.get('dbTimestamps')[peer]
         except KeyError:
             lastLookupTime = epoch.get_epoch() - \
                 config.get("general.max_block_age",
@@ -108,7 +108,7 @@ def lookup_blocks_from_communicator(comm_inst):
                                     # add blocks to download queue
                                     kv.get('blockQueue')[i] = [peer]
                                     new_block_count += 1
-                                    comm_inst.dbTimestamps[peer] = \
+                                    kv.get('dbTimestamps')[peer] = \
                                         epoch.get_rounded_epoch(roundS=60)
                         else:
                             if peer not in kv.get('blockQueue')[i]:

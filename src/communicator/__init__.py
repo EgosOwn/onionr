@@ -66,6 +66,8 @@ class OnionrCommunicatorDaemon:
         self.kv.put('onlinePeers', [])
         self.kv.put('currentDownloading', [])
         self.kv.put('announceCache', {})
+        self.kv.put('newPeers', [])
+        self.kv.put('dbTimestamps', {})
 
         if config.get('general.offline_mode', False):
             self.isOnline = False
@@ -91,8 +93,7 @@ class OnionrCommunicatorDaemon:
         self.connectTimes = {}
         # list of peer's profiles (onionrpeers.PeerProfile instances)
         self.peerProfiles = []
-        # Peers merged to us. Don't add to db until we know they're reachable
-        self.newPeers = []
+
         self.announceProgress = {}
 
         self.generating_blocks = []
@@ -102,10 +103,6 @@ class OnionrCommunicatorDaemon:
 
         # timestamp when the last online node was seen
         self.lastNodeSeen = None
-
-        # Dict of time stamps for peer's block list lookup times,
-        # to avoid downloading full lists all the time
-        self.dbTimestamps = {}
 
         # Loads in and starts the enabled plugins
         plugins.reload()

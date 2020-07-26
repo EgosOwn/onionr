@@ -53,12 +53,12 @@ def connect_new_peer_to_communicator(comm_inst, peer='', useBootstrap=False):
     """
     if len(peerList) < 8 or secrets.randbelow(4) == 3:
         tryingNew = []
-        for x in comm_inst.newPeers:
+        for x in kv.get('newPeers'):
             if x not in peerList:
                 peerList.append(x)
                 tryingNew.append(x)
         for i in tryingNew:
-            comm_inst.newPeers.remove(i)
+            kv.get('newPeers').remove(i)
 
     if len(peerList) == 0 or useBootstrap:
         # Avoid duplicating bootstrap addresses in peerList

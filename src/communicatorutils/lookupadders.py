@@ -1,13 +1,17 @@
-"""
-Onionr - Private P2P Communication.
+"""Onionr - Private P2P Communication.
 
 Lookup new peer transport addresses using the communicator
 """
+from typing import TYPE_CHECKING
 import logger
 from onionrutils import stringvalidators
 from communicator import peeraction, onlinepeers
 from utils import gettransports
 import onionrexceptions
+
+
+if TYPE_CHECKING:
+    from deadsimplekv import DeadSimpleKV
 """
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -29,6 +33,7 @@ def lookup_new_peer_transports_with_communicator(comm_inst):
     tryAmount = 1
     newPeers = []
     transports = gettransports.get()
+    kv: "DeadSimpleKV" = comm_inst.shared_state.get_by_string("DeadSimpleKV")
 
     for i in range(tryAmount):
         # Download new peer address list from random online peers
@@ -50,7 +55,7 @@ def lookup_new_peer_transports_with_communicator(comm_inst):
         for x in newPeers:
             x = x.strip()
             if not stringvalidators.validate_transport(x) \
-                    or x in comm_inst.newPeers or x in transports:
+                    or x in kv.get('newPeers') or x in transports:
                 # avoid adding if its our address
                 invalid.append(x)
         for x in invalid:
@@ -58,6 +63,6 @@ def lookup_new_peer_transports_with_communicator(comm_inst):
                 newPeers.remove(x)
             except ValueError:
                 pass
-        comm_inst.newPeers.extend(newPeers)
+        kv.get('newPeers').extend(newPeers)
     comm_inst.decrementThreadCount(
         'lookup_new_peer_transports_with_communicator')
