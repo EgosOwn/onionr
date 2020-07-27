@@ -35,18 +35,17 @@ def client_api_insert_block():
     insert_data: JSONSerializable = request.get_json(force=True)
     message = insert_data['message']
     message_hash = bytesconverter.bytes_to_str(hashers.sha3_hash(message))
+    kv: 'DeadSimpleKV' = g.too_many.get_by_string('DeadSimpleKV')
 
     # Detect if message (block body) is not specified
     if type(message) is None:
         return 'failure due to unspecified message', 400
 
     # Detect if block with same message is already being inserted
-    if message_hash in g.too_many.get_by_string(
-            "OnionrCommunicatorDaemon").generating_blocks:
+    if message_hash in kv.get('generating_blocks'):
         return 'failure due to duplicate insert', 400
     else:
-        g.too_many.get_by_string(
-            "OnionrCommunicatorDaemon").generating_blocks.append(message_hash)
+        kv.get('generating_blocks').append(message_hash)
 
     encrypt_type = ''
     sign = True

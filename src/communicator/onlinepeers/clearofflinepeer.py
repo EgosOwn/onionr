@@ -25,8 +25,9 @@ if TYPE_CHECKING:
 
 def clear_offline_peer(comm_inst: 'OnionrCommunicatorDaemon'):
     """Remove the longest offline peer to retry later."""
+    kv: "DeadSimpleKV" = comm_inst.shared_state.get_by_string("DeadSimpleKV")
     try:
-        removed = comm_inst..pop(0)
+        removed = kv.get('offlinePeers').pop(0)
     except IndexError:
         pass
     else:

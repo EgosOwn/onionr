@@ -71,6 +71,7 @@ class OnionrCommunicatorDaemon:
         self.kv.put('dbTimestamps', {})
         self.kv.put('blocksToUpload', [])
         self.kv.put('cooldownPeer', {})
+        self.kv.put('generating_blocks', [])
 
         if config.get('general.offline_mode', False):
             self.isOnline = False
@@ -92,10 +93,6 @@ class OnionrCommunicatorDaemon:
         self.connectTimes = {}
         # list of peer's profiles (onionrpeers.PeerProfile instances)
         self.peerProfiles = []
-
-        self.announceProgress = {}
-
-        self.generating_blocks = []
 
         # amount of threads running by name, used to prevent too many
         self.threadCounts = {}

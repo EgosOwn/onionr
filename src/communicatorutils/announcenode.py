@@ -44,8 +44,7 @@ def announce_node(daemon):
     if daemon.config.get('general.security_level', 0) == 0:
         # Announce to random online peers
         for i in kv.get('onlinePeers'):
-            if i not in kv.get('announceCache') and\
-                    i not in daemon.announceProgress:
+            if i not in kv.get('announceCache'):
                 peer = i
                 break
         else:

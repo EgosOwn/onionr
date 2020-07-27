@@ -4,6 +4,7 @@ Remove block hash from daemon's upload list.
 """
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
+    from deadsimplekv import DeadSimpleKV
     from communicator import OnionrCommunicatorDaemon
     from onionrtypes import BlockHash
 """
@@ -25,7 +26,8 @@ if TYPE_CHECKING:
 def remove_from_insert_queue(comm_inst: "OnionrCommunicatorDaemon",
                              b_hash: "BlockHash"):
     """Remove block hash from daemon's upload list."""
+    kv: "DeadSimpleKV" = comm_inst.shared_state.get_by_string("DeadSimpleKV")
     try:
-        comm_inst.generating_blocks.remove(b_hash)
+        kv.get('generating_blocks').remove(b_hash)
     except ValueError:
         pass
