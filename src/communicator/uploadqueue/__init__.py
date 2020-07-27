@@ -13,6 +13,7 @@ import filepaths
 from onionrutils import localcommand
 if TYPE_CHECKING:
     from communicator import OnionrCommunicatorDaemon
+    from deadsimplekv import DeadSimpleKV
 """
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -47,19 +48,20 @@ class UploadQueue:
         self.communicator = communicator
         cache: deadsimplekv.DeadSimpleKV = deadsimplekv.DeadSimpleKV(
             UPLOAD_MEMORY_FILE)
+        self.kv: "DeadSimpleKV" = communicator.shared_state.get_by_string("DeadSimpleKV")
         self.store_obj = cache
         cache = cache.get('uploads')
         if cache is None:
             cache = []
 
         _add_to_hidden_blocks(cache)
-        self.communicator.blocksToUpload.extend(cache)
+        self.kv.get('blocksToUpload').extend(cache)
 
         atexit.register(self.save)
 
     def save(self):
         """Save to disk on shutdown or if called manually."""
-        bl: deadsimplekv.DeadSimpleKV = self.communicator.blocksToUpload
+        bl: deadsimplekv.DeadSimpleKV = self.kv.get('blocksToUpload')
         if len(bl) == 0:
             try:
                 os.remove(UPLOAD_MEMORY_FILE)

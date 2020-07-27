@@ -47,8 +47,8 @@ def upload_blocks_from_communicator(comm_inst: 'OnionrCommunicatorDaemon'):
         sessionmanager.BlockUploadSessionManager)
     tried_peers: UserID = []
     finishedUploads = []
-    comm_inst.blocksToUpload = onionrcrypto.cryptoutils.random_shuffle(
-        comm_inst.blocksToUpload)
+    kv.put('blocksToUpload', onionrcrypto.cryptoutils.random_shuffle(
+        kv.get('blocksToUpload')))
 
     def remove_from_hidden(bl):
         sleep(60)
@@ -58,8 +58,8 @@ def upload_blocks_from_communicator(comm_inst: 'OnionrCommunicatorDaemon'):
         except ValueError:
             pass
 
-    if len(comm_inst.blocksToUpload) != 0:
-        for bl in comm_inst.blocksToUpload:
+    if len(kv.get('blocksToUpload')) != 0:
+        for bl in kv.get('blocksToUpload'):
             if not stringvalidators.validate_hash(bl):
                 logger.warn('Requested to upload invalid block', terminal=True)
                 comm_inst.decrementThreadCount(TIMER_NAME)
@@ -116,7 +116,7 @@ def upload_blocks_from_communicator(comm_inst: 'OnionrCommunicatorDaemon'):
         session_manager.clean_session()
     for x in finishedUploads:
         try:
-            comm_inst.blocksToUpload.remove(x)
+            kv.get('blocksToUpload').remove(x)
 
             comm_inst.shared_state.get_by_string(
                 'PublicAPI').hideBlocks.remove(x)

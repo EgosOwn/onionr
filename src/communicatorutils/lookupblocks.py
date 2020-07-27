@@ -2,7 +2,12 @@
 
 Lookup new blocks with the communicator using a random connected peer
 """
+from typing import TYPE_CHECKING
+
 from gevent import time
+
+if TYPE_CHECKING:
+    from deadsimplekv import DeadSimpleKV
 
 import logger
 import onionrproofs

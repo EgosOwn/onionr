@@ -4,6 +4,10 @@ Cleanup old Onionr blocks and forward secrecy keys using the communicator.
 Ran from a communicator timer usually
 """
 import sqlite3
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from deadsimplekv import DeadSimpleKV
 
 import logger
 from onionrusers import onionrusers
@@ -32,8 +36,9 @@ storage_counter = StorageCounter()
 
 
 def __remove_from_upload(comm_inst, block_hash: str):
+    kv: "DeadSimpleKV" = comm_inst.shared_state.get_by_string("DeadSimpleKV")
     try:
-        comm_inst.blocksToUpload.remove(block_hash)
+        kv.get('blocksToUpload').remove(block_hash)
     except ValueError:
         pass
 

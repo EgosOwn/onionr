@@ -68,6 +68,7 @@ class OnionrCommunicatorDaemon:
         self.kv.put('announceCache', {})
         self.kv.put('newPeers', [])
         self.kv.put('dbTimestamps', {})
+        self.kv.put('blocksToUpload', [])
 
         if config.get('general.offline_mode', False):
             self.isOnline = False
@@ -78,8 +79,6 @@ class OnionrCommunicatorDaemon:
         # initialize core with Tor socks port being 3rd argument
         self.proxyPort = shared_state.get(NetController).socksPort
 
-        # Upload information, list of blocks to upload
-        self.blocksToUpload = []
         self.upload_session_manager = self.shared_state.get(
             uploadblocks.sessionmanager.BlockUploadSessionManager)
         self.shared_state.share_object()

@@ -121,11 +121,10 @@ class Block:
                     try:
                         self.bcontent = onionrusers.OnionrUser(self.signer).forwardDecrypt(self.bcontent)
                     except (onionrexceptions.DecryptionError, nacl.exceptions.CryptoError) as e:
-                        #logger.error(str(e))
+                        logger.error(str(e))
                         pass
             except nacl.exceptions.CryptoError:
-                pass
-                #logger.debug('Could not decrypt block. Either invalid key or corrupted data')
+                logger.debug('Could not decrypt block. Either invalid key or corrupted data')
             except onionrexceptions.ReplayAttack:
                 logger.warn('%s is possibly a replay attack' % (self.hash,))
             else:

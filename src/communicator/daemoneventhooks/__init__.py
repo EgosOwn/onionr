@@ -15,6 +15,7 @@ from communicatorutils import restarttor
 
 if TYPE_CHECKING:
     from toomanyobjs import TooMany
+    from deadsimplekv import DeadSimpleKV
     from communicator import OnionrCommunicatorDaemon
     from httpapi.daemoneventsapi import DaemonEventsBP
     from onionrtypes import BlockHash
@@ -45,6 +46,7 @@ def daemon_event_handlers(shared_state: 'TooMany'):
     comm_inst = _get_inst('OnionrCommunicatorDaemon')
     public_api: 'PublicAPI' = _get_inst('PublicAPI')
     events_api: 'DaemonEventsBP' = _get_inst('DaemonEventsBP')
+    kv: 'DeadSimpleKV' = _get_inst('DeadSimpleKV')
 
     def remove_from_insert_queue_wrapper(block_hash: 'BlockHash'):
         remove_from_insert_queue(comm_inst, block_hash)
@@ -59,7 +61,7 @@ def daemon_event_handlers(shared_state: 'TooMany'):
             raise ValueError
         public_api.hideBlocks.append(block)
         try:
-            mixmate.block_mixer(comm_inst.blocksToUpload, block)
+            mixmate.block_mixer(kv.get('blocksToUpload'), block)
         except ValueError:
             pass
         return "removed"

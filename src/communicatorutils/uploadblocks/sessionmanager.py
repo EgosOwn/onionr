@@ -116,11 +116,11 @@ class BlockUploadSessionManager:
             # Remove the blocks from the sessions, upload list,
             # and waitforshare list
             try:
-                comm_inst.blocksToUpload.remove(
+                kv.get('blocksToUpload').remove(
                     reconstructhash.reconstruct_hash(sess.block_hash))
             except ValueError:
                 pass
             try:
-                comm_inst.blocksToUpload.remove(sess.block_hash)
+                kv.get('blocksToUpload').remove(sess.block_hash)
             except ValueError:
                 pass
