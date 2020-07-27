@@ -32,8 +32,8 @@ from coredb import keydb
 def connect_new_peer_to_communicator(comm_inst, peer='', useBootstrap=False):
     config = comm_inst.config
     retData = False
-    tried = comm_inst.offlinePeers
     kv: "DeadSimpleKV" = comm_inst.shared_state.get_by_string("DeadSimpleKV")
+    tried = kv.get('offlinePeers')
     transports = gettransports.get()
     if peer != '':
         if stringvalidators.validate_transport(peer):

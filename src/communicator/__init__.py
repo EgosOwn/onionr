@@ -64,6 +64,7 @@ class OnionrCommunicatorDaemon:
         self.kv.put('blockQueue', {})
         self.kv.put('shutdown', False)
         self.kv.put('onlinePeers', [])
+        self.kv.put('offlinePeers', [])
         self.kv.put('currentDownloading', [])
         self.kv.put('announceCache', {})
         self.kv.put('newPeers', [])
@@ -87,7 +88,6 @@ class OnionrCommunicatorDaemon:
         self.delay = 1
 
         # lists of connected peers and peers we know we can't reach currently
-        self.offlinePeers = []
         self.cooldownPeer = {}
         self.connectTimes = {}
         # list of peer's profiles (onionrpeers.PeerProfile instances)

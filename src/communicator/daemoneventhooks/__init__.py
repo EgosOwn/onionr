@@ -68,7 +68,7 @@ def daemon_event_handlers(shared_state: 'TooMany'):
 
     def restart_tor():
         restarttor.restart(comm_inst)
-        comm_inst.offlinePeers = []
+        kv.put('offlinePeers', [])
 
     def test_runtime():
         Thread(target=comm_inst.shared_state.get_by_string(

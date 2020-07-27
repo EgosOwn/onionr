@@ -2,6 +2,11 @@
 
 add bootstrap peers to the communicator peer list
 """
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from deadsimplekv import DeadSimpleKV
+
 from utils import readstatic, gettransports
 from coredb import keydb
 """
@@ -24,8 +29,9 @@ bootstrap_peers = readstatic.read_static('bootstrap-nodes.txt').split(',')
 
 def add_bootstrap_list_to_peer_list(comm_inst, peerList, db_only=False):
     """Add the bootstrap list to the peer list (no duplicates)."""
+    kv: "DeadSimpleKV" = comm_inst.shared_state.get_by_string("DeadSimpleKV")
     for i in bootstrap_peers:
-        if i not in peerList and i not in comm_inst.offlinePeers \
+        if i not in peerList and i not in kv.get('offlinePeers') \
                 and i not in gettransports.get() and len(str(i).strip()) > 0:
             if not db_only:
                 peerList.append(i)

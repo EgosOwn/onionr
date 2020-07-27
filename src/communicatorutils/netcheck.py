@@ -54,7 +54,7 @@ def net_check(comm_inst):
                                 'This is usually temporary, but bugs and censorship can cause this to persist, in which case you should report it to beardog [at] mailbox.org',  # noqa
                                 terminal=True)
                     restarttor.restart(comm_inst)
-                    comm_inst.offlinePeers = []
+                    kv.put('offlinePeers', [])
             comm_inst.isOnline = False
         else:
             comm_inst.isOnline = True
