@@ -70,6 +70,7 @@ class OnionrCommunicatorDaemon:
         self.kv.put('newPeers', [])
         self.kv.put('dbTimestamps', {})
         self.kv.put('blocksToUpload', [])
+        self.kv.put('cooldownPeer', {})
 
         if config.get('general.offline_mode', False):
             self.isOnline = False
@@ -88,7 +89,6 @@ class OnionrCommunicatorDaemon:
         self.delay = 1
 
         # lists of connected peers and peers we know we can't reach currently
-        self.cooldownPeer = {}
         self.connectTimes = {}
         # list of peer's profiles (onionrpeers.PeerProfile instances)
         self.peerProfiles = []

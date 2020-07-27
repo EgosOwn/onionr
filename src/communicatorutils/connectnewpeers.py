@@ -76,7 +76,7 @@ def connect_new_peer_to_communicator(comm_inst, peer='', useBootstrap=False):
         """
         if len(address) == 0 or address in tried \
             or address in kv.get('onlinePeers') \
-                or address in comm_inst.cooldownPeer:
+                or address in kv.get('cooldownPeer'):
             continue
         if kv.get('shutdown'):
             return

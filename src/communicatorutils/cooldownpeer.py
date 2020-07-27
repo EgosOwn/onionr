@@ -36,10 +36,10 @@ def cooldown_peer(comm_inst):
     tempConnectTimes = dict(comm_inst.connectTimes)
 
     # Remove peers from cooldown that have been there long enough
-    tempCooldown = dict(comm_inst.cooldownPeer)
+    tempCooldown = dict(kv.get('cooldownPeer'))
     for peer in tempCooldown:
         if (epoch.get_epoch() - tempCooldown[peer]) >= cooldown_time:
-            del comm_inst.cooldownPeer[peer]
+            del kv.get('cooldownPeer')[peer]
 
     # Cool down a peer, if we have max connections alive for long enough
     if online_peer_amount >= config.get('peers.max_connect', 10, save=True):
@@ -56,6 +56,6 @@ def cooldown_peer(comm_inst):
                 break
         else:
             onlinepeers.remove_online_peer(comm_inst, to_cool)
-            comm_inst.cooldownPeer[to_cool] = epoch.get_epoch()
+            kv.get('cooldownPeer')[to_cool] = epoch.get_epoch()
 
     comm_inst.decrementThreadCount('cooldown_peer')
