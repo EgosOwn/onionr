@@ -57,7 +57,6 @@ class OnionrCommunicatorDaemon:
 
         # configure logger and stuff
         self.config = config
-        self.isOnline = True  # Assume we're connected to the internet
         self.shared_state = shared_state  # TooManyObjects module
 
         # populate kv values
@@ -77,9 +76,10 @@ class OnionrCommunicatorDaemon:
         self.kv.put('generating_blocks', [])
         self.kv.put('lastNodeSeen', None)
         self.kv.put('startTime', epoch.get_epoch())
+        self.kv.put('isOnline', True)
 
         if config.get('general.offline_mode', False):
-            self.isOnline = False
+            self.kv.put('isOnline', False)
 
         # list of timer instances
         self.timers = []

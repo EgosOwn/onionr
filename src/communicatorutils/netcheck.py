@@ -42,7 +42,7 @@ def net_check(comm_inst):
         try:
             if (epoch.get_epoch() - int(localcommand.local_command
                                         ('/lastconnect'))) <= 60:
-                comm_inst.isOnline = True
+                kv.put('isOnline', True)
                 rec = True
         except ValueError:
             pass
@@ -55,7 +55,7 @@ def net_check(comm_inst):
                                 terminal=True)
                     restarttor.restart(comm_inst)
                     kv.put('offlinePeers', [])
-            comm_inst.isOnline = False
+            kv.put('isOnline', False)
         else:
-            comm_inst.isOnline = True
+            kv.put('isOnline', True)
     comm_inst.decrementThreadCount('net_check')

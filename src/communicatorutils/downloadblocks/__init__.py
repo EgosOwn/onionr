@@ -63,7 +63,7 @@ def download_blocks_from_communicator(comm_inst: "OnionrCommunicatorDaemon"):
         if not shoulddownload.should_download(comm_inst, blockHash):
             continue
 
-        if kv.get('shutdown') or not comm_inst.isOnline or \
+        if kv.get('shutdown') or not kv.get('isOnline') or \
                 storage_counter.is_full():
             # Exit loop if shutting down or offline, or disk allocation reached
             break

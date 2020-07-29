@@ -56,7 +56,7 @@ def lookup_blocks_from_communicator(comm_inst):
         listLookupCommand = 'getblocklist'
         if len(kv.get('blockQueue')) >= maxBacklog:
             break
-        if not comm_inst.isOnline:
+        if not kv.get('isOnline'):
             break
         # check if disk allocation is used
         if storage_counter.is_full():
