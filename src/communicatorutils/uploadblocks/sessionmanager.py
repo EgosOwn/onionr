@@ -88,7 +88,7 @@ class BlockUploadSessionManager:
         kv: "DeadSimpleKV" = comm_inst.shared_state.get_by_string(
             "DeadSimpleKV")
         sessions_to_delete = []
-        if comm_inst.getUptime() < 120:
+        if kv.get('startTime') < 120:
             return
         onlinePeerCount = len(kv.get('onlinePeers'))
 
@@ -105,7 +105,8 @@ class BlockUploadSessionManager:
             # Clean sessions if they have uploaded to enough online peers
             if sess.total_success_count <= 0:
                 continue
-            if (sess.total_success_count / onlinePeerCount) >= onionrvalues.MIN_BLOCK_UPLOAD_PEER_PERCENT:
+            if (sess.total_success_count / onlinePeerCount) >= \
+                    onionrvalues.MIN_BLOCK_UPLOAD_PEER_PERCENT:
                 sessions_to_delete.append(sess)
         for sess in sessions_to_delete:
             try:

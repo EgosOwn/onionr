@@ -10,7 +10,8 @@ import config
 import logger
 import onionrpeers
 import onionrplugins as plugins
-from . import onlinepeers, uploadqueue
+from . import onlinepeers
+from . import uploadqueue
 from communicatorutils import servicecreator
 from communicatorutils import onionrcommunicatortimers
 from communicatorutils import downloadblocks
@@ -65,6 +66,8 @@ class OnionrCommunicatorDaemon:
         self.kv.put('shutdown', False)
         self.kv.put('onlinePeers', [])
         self.kv.put('offlinePeers', [])
+        self.kv.put('peerProfiles', [])
+        self.kv.put('connectTimes', {})
         self.kv.put('currentDownloading', [])
         self.kv.put('announceCache', {})
         self.kv.put('newPeers', [])
@@ -72,6 +75,8 @@ class OnionrCommunicatorDaemon:
         self.kv.put('blocksToUpload', [])
         self.kv.put('cooldownPeer', {})
         self.kv.put('generating_blocks', [])
+        self.kv.put('lastNodeSeen', None)
+        self.kv.put('startTime', epoch.get_epoch())
 
         if config.get('general.offline_mode', False):
             self.isOnline = False
@@ -89,22 +94,11 @@ class OnionrCommunicatorDaemon:
         # loop time.sleep delay in seconds
         self.delay = 1
 
-        # lists of connected peers and peers we know we can't reach currently
-        self.connectTimes = {}
-        # list of peer's profiles (onionrpeers.PeerProfile instances)
-        self.peerProfiles = []
-
         # amount of threads running by name, used to prevent too many
         self.threadCounts = {}
 
-        # timestamp when the last online node was seen
-        self.lastNodeSeen = None
-
         # Loads in and starts the enabled plugins
         plugins.reload()
-
-        # time app started running for info/statistics purposes
-        self.startTime = epoch.get_epoch()
 
         # extends our upload list and saves our list when Onionr exits
         uploadqueue.UploadQueue(self)
@@ -296,7 +290,7 @@ class OnionrCommunicatorDaemon:
 
     def getPeerProfileInstance(self, peer):
         """Gets a peer profile instance from the list of profiles"""
-        for i in self.peerProfiles:
+        for i in self.kv.get('peerProfiles'):
             # if the peer's profile is already loaded, return that
             if i.address == peer:
                 retData = i
@@ -305,19 +299,16 @@ class OnionrCommunicatorDaemon:
             # if the peer's profile is not loaded, return a new one.
             # connectNewPeer also adds it to the list on connect
             retData = onionrpeers.PeerProfiles(peer)
-            self.peerProfiles.append(retData)
+            self.kv.get('peerProfiles').append(retData)
         return retData
-
-    def getUptime(self):
-        return epoch.get_epoch() - self.startTime
 
     def heartbeat(self):
         """Show a heartbeat debug message."""
         logger.debug('Heartbeat. Node running for %s.' %
-                     humanreadabletime.human_readable_time(self.getUptime()))
+                     humanreadabletime.human_readable_time(
+                         self.kv.get('startTime')))
         self.decrementThreadCount('heartbeat')
 
 
 def startCommunicator(shared_state):
     OnionrCommunicatorDaemon(shared_state)
-

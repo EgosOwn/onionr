@@ -33,7 +33,7 @@ def cooldown_peer(comm_inst):
     minTime = 300
     cooldown_time = 600
     to_cool = ''
-    tempConnectTimes = dict(comm_inst.connectTimes)
+    tempConnectTimes = dict(kv.get('connectTimes'))
 
     # Remove peers from cooldown that have been there long enough
     tempCooldown = dict(kv.get('cooldownPeer'))

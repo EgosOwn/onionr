@@ -2,6 +2,8 @@
 
 Serialize various node information
 """
+from typing import TYPE_CHECKING
+
 from gevent import sleep
 
 from psutil import Process, WINDOWS
@@ -11,6 +13,9 @@ from coredb import blockmetadb
 from utils.sizeutils import size, human_size
 from utils.identifyhome import identify_home
 import communicator
+
+if TYPE_CHECKING:
+    from deadsimplekv import DeadSimpleKV
 """
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -44,18 +49,21 @@ class SerializedData:
         proc = Process()
 
         def get_open_files():
-            if WINDOWS: return proc.num_handles()
+            if WINDOWS:
+                return proc.num_handles()
             return proc.num_fds()
 
         try:
             self._too_many
         except AttributeError:
             sleep(1)
-        comm_inst = self._too_many.get(communicator.OnionrCommunicatorDaemon, args=(self._too_many,))
+        comm_inst = self._too_many.get(communicator.OnionrCommunicatorDaemon,
+                                       args=(self._too_many,))
         kv: "DeadSimpleKV" = comm_inst.shared_state.get_by_string("DeadSimpleKV")
         connected = []
-        [connected.append(x) for x in kv.get('onlinePeers') if x not in connected]
-        stats['uptime'] = comm_inst.getUptime()
+        [connected.append(x)
+            for x in kv.get('onlinePeers') if x not in connected]
+        stats['uptime'] = kv.get('getUptime')
         stats['connectedNodes'] = '\n'.join(connected)
         stats['blockCount'] = len(blockmetadb.get_block_list())
         stats['blockQueueCount'] = len(kv.get('blockQueue'))

@@ -90,15 +90,15 @@ def connect_new_peer_to_communicator(comm_inst, peer='', useBootstrap=False):
             if address not in kv.get('onlinePeers'):
                 logger.info('Connected to ' + address, terminal=True)
                 kv.get('onlinePeers').append(address)
-                comm_inst.connectTimes[address] = epoch.get_epoch()
+                kv.get('connectTimes')[address] = epoch.get_epoch()
             retData = address
 
             # add peer to profile list if they're not in it
-            for profile in comm_inst.peerProfiles:
+            for profile in kv.get('peerProfiles'):
                 if profile.address == address:
                     break
             else:
-                comm_inst.peerProfiles.append(
+                kv.get('peerProfiles').append(
                     onionrpeers.PeerProfiles(address))
             break
         else:

@@ -26,7 +26,7 @@ def remove_online_peer(comm_inst, peer):
     """Remove an online peer."""
     kv: "DeadSimpleKV" = comm_inst.shared_state.get_by_string("DeadSimpleKV")
     try:
-        del comm_inst.connectTimes[peer]
+        del kv.get('connectTimes')[peer]
     except KeyError:
         pass
     try:

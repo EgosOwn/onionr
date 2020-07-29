@@ -5,7 +5,7 @@ get online peers in a communicator instance
 import time
 from typing import TYPE_CHECKING
 
-from etc import humanreadabletime
+from etc.humanreadabletime import human_readable_time
 import logger
 if TYPE_CHECKING:
     from deadsimplekv import DeadSimpleKV
@@ -41,9 +41,8 @@ def get_online_peers(comm_inst: 'OnionrCommunicatorDaemon'):
     needed = max_peers - len(kv.get('onlinePeers'))
 
     last_seen = 'never'
-    if not isinstance(comm_inst.lastNodeSeen, type(None)):
-        last_seen = humanreadabletime.human_readable_time(
-            comm_inst.lastNodeSeen)
+    if not isinstance(kv.get('lastNodeSeen'), type(None)):
+        last_seen = human_readable_time(kv.get('lastNodeSeen'))
 
     for _ in range(needed):
         if len(kv.get('onlinePeers')) == 0:
@@ -62,5 +61,5 @@ def get_online_peers(comm_inst: 'OnionrCommunicatorDaemon'):
             except RecursionError:
                 pass
         else:
-            comm_inst.lastNodeSeen = time.time()
+            kv.put('lastNodeSeen', time.time())
     comm_inst.decrementThreadCount('get_online_peers')
