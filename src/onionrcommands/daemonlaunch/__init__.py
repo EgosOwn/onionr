@@ -39,6 +39,7 @@ from lan import LANManager
 from lan.server import LANServer
 from sneakernet import sneakernet_import_thread
 from onionrstatistics.devreporting import statistics_reporter
+from setupkvvars import setup_kv
 """
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -134,6 +135,9 @@ def daemon():
 
     # Add DeadSimpleKV for quasi-global variables (ephemeral key-value)
     shared_state.get(DeadSimpleKV)
+
+    # Initialize the quasi-global variables
+    setup_kv(shared_state.get(DeadSimpleKV))
 
     shared_state.get(daemoneventsapi.DaemonEventsBP)
 

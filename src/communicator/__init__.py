@@ -23,9 +23,8 @@ from communicatorutils import announcenode, deniableinserts
 from communicatorutils import cooldownpeer
 from communicatorutils import housekeeping
 from communicatorutils import netcheck
-from onionrutils import epoch
+from onionrthreads import add_onionr_thread
 from onionrcommands.openwebinterface import get_url
-from etc import humanreadabletime
 import onionrservices
 from netcontroller import NetController
 from . import bootstrappeers
@@ -61,22 +60,6 @@ class OnionrCommunicatorDaemon:
 
         # populate kv values
         self.kv = self.shared_state.get_by_string('DeadSimpleKV')
-        self.kv.put('blockQueue', {})
-        self.kv.put('shutdown', False)
-        self.kv.put('onlinePeers', [])
-        self.kv.put('offlinePeers', [])
-        self.kv.put('peerProfiles', [])
-        self.kv.put('connectTimes', {})
-        self.kv.put('currentDownloading', [])
-        self.kv.put('announceCache', {})
-        self.kv.put('newPeers', [])
-        self.kv.put('dbTimestamps', {})
-        self.kv.put('blocksToUpload', [])
-        self.kv.put('cooldownPeer', {})
-        self.kv.put('generating_blocks', [])
-        self.kv.put('lastNodeSeen', None)
-        self.kv.put('startTime', epoch.get_epoch())
-        self.kv.put('isOnline', True)
 
         if config.get('general.offline_mode', False):
             self.kv.put('isOnline', False)
@@ -103,8 +86,6 @@ class OnionrCommunicatorDaemon:
         # extends our upload list and saves our list when Onionr exits
         uploadqueue.UploadQueue(self)
 
-        if developmentMode:
-            OnionrCommunicatorTimers(self, self.heartbeat, 30)
 
         # Set timers, function reference, seconds
         # requires_peer True means the timer function won't fire if we
@@ -301,13 +282,6 @@ class OnionrCommunicatorDaemon:
             retData = onionrpeers.PeerProfiles(peer)
             self.kv.get('peerProfiles').append(retData)
         return retData
-
-    def heartbeat(self):
-        """Show a heartbeat debug message."""
-        logger.debug('Heartbeat. Node running for %s.' %
-                     humanreadabletime.human_readable_time(
-                         self.kv.get('startTime')))
-        self.decrementThreadCount('heartbeat')
 
 
 def startCommunicator(shared_state):
