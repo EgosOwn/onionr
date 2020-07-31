@@ -28,12 +28,12 @@ if TYPE_CHECKING:
 """
 
 
-def lookup_new_peer_transports_with_communicator(comm_inst):
+def lookup_new_peer_transports_with_communicator(shared_state):
     logger.info('Looking up new addresses...')
     tryAmount = 1
     newPeers = []
     transports = gettransports.get()
-    kv: "DeadSimpleKV" = comm_inst.shared_state.get_by_string("DeadSimpleKV")
+    kv: "DeadSimpleKV" = shared_state.get_by_string("DeadSimpleKV")
 
     for i in range(tryAmount):
         # Download new peer address list from random online peers
@@ -41,7 +41,7 @@ def lookup_new_peer_transports_with_communicator(comm_inst):
             # Don't get new peers if we have too many queued up
             break
         try:
-            peer = onlinepeers.pick_online_peer(comm_inst)
+            peer = onlinepeers.pick_online_peer()
             newAdders = peeraction.peer_action(comm_inst, peer, action='pex')
         except onionrexceptions.OnlinePeerNeeded:
             continue

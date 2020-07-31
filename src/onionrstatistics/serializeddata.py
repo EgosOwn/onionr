@@ -12,7 +12,7 @@ import ujson as json
 from coredb import blockmetadb
 from utils.sizeutils import size, human_size
 from utils.identifyhome import identify_home
-import communicator
+from onionrutils.epoch import get_epoch
 
 if TYPE_CHECKING:
     from deadsimplekv import DeadSimpleKV
@@ -57,13 +57,11 @@ class SerializedData:
             self._too_many
         except AttributeError:
             sleep(1)
-        comm_inst = self._too_many.get(communicator.OnionrCommunicatorDaemon,
-                                       args=(self._too_many,))
-        kv: "DeadSimpleKV" = comm_inst.shared_state.get_by_string("DeadSimpleKV")
+        kv: "DeadSimpleKV" = self._too_many.get_by_string("DeadSimpleKV")
         connected = []
         [connected.append(x)
             for x in kv.get('onlinePeers') if x not in connected]
-        stats['uptime'] = kv.get('getUptime')
+        stats['uptime'] = get_epoch() - kv.get('startTime')
         stats['connectedNodes'] = '\n'.join(connected)
         stats['blockCount'] = len(blockmetadb.get_block_list())
         stats['blockQueueCount'] = len(kv.get('blockQueue'))

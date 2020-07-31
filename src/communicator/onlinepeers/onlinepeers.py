@@ -5,11 +5,12 @@ get online peers in a communicator instance
 import time
 from typing import TYPE_CHECKING
 
+import config
 from etc.humanreadabletime import human_readable_time
+from communicatorutils.connectnewpeers import connect_new_peer_to_communicator
 import logger
 if TYPE_CHECKING:
     from deadsimplekv import DeadSimpleKV
-    from communicator import OnionrCommunicatorDaemon
 """
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -26,17 +27,15 @@ if TYPE_CHECKING:
 """
 
 
-def get_online_peers(comm_inst: 'OnionrCommunicatorDaemon'):
+def get_online_peers(shared_state):
     """Manage the kv.get('onlinePeers') attribute list.
 
     Connect to more peers if we have none connected
     """
-    config = comm_inst.config
-    kv: "DeadSimpleKV" = comm_inst.shared_state.get_by_string("DeadSimpleKV")
+    kv: "DeadSimpleKV" = shared_state.get_by_string("DeadSimpleKV")
     if config.get('general.offline_mode', False):
-        comm_inst.decrementThreadCount('get_online_peers')
         return
-    logger.debug('Refreshing peer pool...')
+    logger.info('Refreshing peer pool...')
     max_peers = int(config.get('peers.max_connect', 10))
     needed = max_peers - len(kv.get('onlinePeers'))
 
@@ -46,9 +45,9 @@ def get_online_peers(comm_inst: 'OnionrCommunicatorDaemon'):
 
     for _ in range(needed):
         if len(kv.get('onlinePeers')) == 0:
-            comm_inst.connectNewPeer(useBootstrap=True)
+            connect_new_peer_to_communicator(shared_state, useBootstrap=True)
         else:
-            comm_inst.connectNewPeer()
+            connect_new_peer_to_communicator(shared_state)
 
         if kv.get('shutdown'):
             break
@@ -57,9 +56,8 @@ def get_online_peers(comm_inst: 'OnionrCommunicatorDaemon'):
             logger.debug('Couldn\'t connect to any peers.' +
                          f' Last node seen {last_seen}  ago.')
             try:
-                get_online_peers(comm_inst)
+                get_online_peers(kv)
             except RecursionError:
                 pass
         else:
             kv.put('lastNodeSeen', time.time())
-    comm_inst.decrementThreadCount('get_online_peers')

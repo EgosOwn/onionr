@@ -14,7 +14,5 @@ def detect_disk_access(info):
             return
 
     if identify_home() not in info[0]:
-        if 'proc' in info[0]:
-            logger.warn(f'[DISK MINISTRY] {info} - probably built in Onionr stats')
-        else:
+        if 'proc' not in info[0]:  # if it is, it is onionr stats
             logger.warn(f'[DISK MINISTRY] {info}')

@@ -40,6 +40,7 @@ from lan.server import LANServer
 from sneakernet import sneakernet_import_thread
 from onionrstatistics.devreporting import statistics_reporter
 from setupkvvars import setup_kv
+from .spawndaemonthreads import spawn_client_threads
 """
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -139,6 +140,7 @@ def daemon():
     # Initialize the quasi-global variables
     setup_kv(shared_state.get(DeadSimpleKV))
 
+    spawn_client_threads(shared_state)
     shared_state.get(daemoneventsapi.DaemonEventsBP)
 
     Thread(target=shared_state.get(apiservers.ClientAPI).start,

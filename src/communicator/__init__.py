@@ -86,14 +86,6 @@ class OnionrCommunicatorDaemon:
         # extends our upload list and saves our list when Onionr exits
         uploadqueue.UploadQueue(self)
 
-
-        # Set timers, function reference, seconds
-        # requires_peer True means the timer function won't fire if we
-        # have no connected peers
-        peerPoolTimer = OnionrCommunicatorTimers(
-            self, onlinepeers.get_online_peers, 60, max_threads=1,
-            my_args=[self])
-
         # Timers to periodically lookup new blocks and download them
         lookup_blocks_timer = OnionrCommunicatorTimers(
             self,
@@ -184,7 +176,6 @@ class OnionrCommunicatorDaemon:
             self, housekeeping.clean_keys, 15, my_args=[self], max_threads=1)
 
         # Adjust initial timer triggers
-        peerPoolTimer.count = (peerPoolTimer.frequency - 1)
         cleanupTimer.count = (cleanupTimer.frequency - 60)
         blockCleanupTimer.count = (blockCleanupTimer.frequency - 2)
         lookup_blocks_timer = (lookup_blocks_timer.frequency - 2)
@@ -193,7 +184,7 @@ class OnionrCommunicatorDaemon:
 
         if config.get('general.use_bootstrap_list', True):
             bootstrappeers.add_bootstrap_list_to_peer_list(
-                self, [], db_only=True)
+                self.kv, [], db_only=True)
 
         daemoneventhooks.daemon_event_handlers(shared_state)
 
@@ -256,11 +247,6 @@ class OnionrCommunicatorDaemon:
                 self.threadCounts[threadName] -= 1
         except KeyError:
             pass
-
-    def connectNewPeer(self, peer='', useBootstrap=False):
-        """Adds a new random online peer to self.onlinePeers"""
-        connectnewpeers.connect_new_peer_to_communicator(
-            self, peer, useBootstrap)
 
     def peerCleanup(self):
         """This just calls onionrpeers.cleanupPeers.

@@ -2,11 +2,15 @@
 
 This file implements logic for performing requests to Onionr peers
 """
+from typing import TYPE_CHECKING
+
 import streamedrequests
 import logger
 from onionrutils import epoch, basicrequests
 from coredb import keydb
 from . import onlinepeers
+from onionrtypes import OnionAddressString
+from onionrpeers.peerprofiles import PeerProfiles
 """
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -23,17 +27,27 @@ from . import onlinepeers
 """
 
 
-def peer_action(comm_inst, peer, action,
+def get_peer_profile(kv, address: OnionAddressString) -> 'PeerProfiles':
+    profile_inst_list = kv.get('peerProfiles')
+    for profile in profile_inst_list:
+        if profile.address == address:
+            return profile
+    p = PeerProfiles(address)
+    return p
+
+
+
+def peer_action(shared_state, peer, action,
                 returnHeaders=False, max_resp_size=5242880):
     """Perform a get request to a peer."""
     penalty_score = -10
-    kv: "DeadSimpleKV" = comm_inst.shared_state.get_by_string("DeadSimpleKV")
+    kv: "DeadSimpleKV" = shared_state.get_by_string("DeadSimpleKV")
     if len(peer) == 0:
         return False
     url = 'http://%s/%s' % (peer, action)
 
     try:
-        ret_data = basicrequests.do_get_request(url, port=comm_inst.proxyPort,
+        ret_data = basicrequests.do_get_request(url, port=kv.get('proxyPort'),
                                                 max_size=max_resp_size)
     except streamedrequests.exceptions.ResponseLimitReached:
         logger.warn(
@@ -44,14 +58,14 @@ def peer_action(comm_inst, peer, action,
     # if request failed, (error), mark peer offline
     if ret_data is False:
         try:
-            comm_inst.getPeerProfileInstance(peer).addScore(penalty_score)
-            onlinepeers.remove_online_peer(comm_inst, peer)
+            get_peer_profile(kv, peer).addScore(penalty_score)
+            onlinepeers.remove_online_peer(kv, peer)
             keydb.transportinfo.set_address_info(
                 peer, 'lastConnectAttempt', epoch.get_epoch())
             if action != 'ping' and not kv.get('shutdown'):
                 logger.warn(f'Lost connection to {peer}', terminal=True)
                 # Will only add a new peer to pool if needed
-                onlinepeers.get_online_peers(comm_inst)
+                onlinepeers.get_online_peers(kv)
         except ValueError:
             pass
     else:

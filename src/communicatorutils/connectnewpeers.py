@@ -13,6 +13,7 @@ from utils import networkmerger, gettransports
 from onionrutils import stringvalidators, epoch
 from communicator import peeraction, bootstrappeers
 from coredb import keydb
+import config
 """
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -29,10 +30,9 @@ from coredb import keydb
 """
 
 
-def connect_new_peer_to_communicator(comm_inst, peer='', useBootstrap=False):
-    config = comm_inst.config
+def connect_new_peer_to_communicator(shared_state, peer='', useBootstrap=False):
     retData = False
-    kv: "DeadSimpleKV" = comm_inst.shared_state.get_by_string("DeadSimpleKV")
+    kv: "DeadSimpleKV" = shared_state.get_by_string("DeadSimpleKV")
     tried = kv.get('offlinePeers')
     transports = gettransports.get()
     if peer != '':
@@ -63,7 +63,7 @@ def connect_new_peer_to_communicator(comm_inst, peer='', useBootstrap=False):
     if len(peerList) == 0 or useBootstrap:
         # Avoid duplicating bootstrap addresses in peerList
         if config.get('general.use_bootstrap_list', True):
-            bootstrappeers.add_bootstrap_list_to_peer_list(comm_inst, peerList)
+            bootstrappeers.add_bootstrap_list_to_peer_list(kv, peerList)
 
     for address in peerList:
         address = address.strip()
@@ -81,7 +81,7 @@ def connect_new_peer_to_communicator(comm_inst, peer='', useBootstrap=False):
         if kv.get('shutdown'):
             return
         # Ping a peer,
-        ret = peeraction.peer_action(comm_inst, address, 'ping')
+        ret = peeraction.peer_action(shared_state, address, 'ping')
         if ret == 'pong!':
             time.sleep(0.1)
             if address not in mainPeerList:
