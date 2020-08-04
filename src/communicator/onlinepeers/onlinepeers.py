@@ -56,7 +56,7 @@ def get_online_peers(shared_state):
             logger.debug('Couldn\'t connect to any peers.' +
                          f' Last node seen {last_seen}  ago.')
             try:
-                get_online_peers(kv)
+                get_online_peers(shared_state)
             except RecursionError:
                 pass
         else:
