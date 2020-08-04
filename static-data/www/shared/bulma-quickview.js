@@ -27,9 +27,9 @@ SOFTWARE.
 	else if(typeof define === 'function' && define.amd)
 		define([], factory);
 	else if(typeof exports === 'object')
-		exports["bulmaSteps"] = factory();
+		exports["bulmaQuickview"] = factory();
 	else
-		root["bulmaSteps"] = factory();
+		root["bulmaQuickview"] = factory();
 })(typeof self !== 'undefined' ? self : this, function() {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
@@ -117,18 +117,18 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 
 
 
-var onStepsPrevious = Symbol('onStepsPrevious');
-var onStepsNext = Symbol('onStepsNext');
+var onQuickviewShowClick = Symbol('onQuickviewShowClick');
+var onQuickviewDismissClick = Symbol('onQuickviewDismissClick');
 
-var bulmaSteps = function (_EventEmitter) {
-  _inherits(bulmaSteps, _EventEmitter);
+var bulmaQuickview = function (_EventEmitter) {
+  _inherits(bulmaQuickview, _EventEmitter);
 
-  function bulmaSteps(selector) {
+  function bulmaQuickview(selector) {
     var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 
-    _classCallCheck(this, bulmaSteps);
+    _classCallCheck(this, bulmaQuickview);
 
-    var _this = _possibleConstructorReturn(this, (bulmaSteps.__proto__ || Object.getPrototypeOf(bulmaSteps)).call(this));
+    var _this = _possibleConstructorReturn(this, (bulmaQuickview.__proto__ || Object.getPrototypeOf(bulmaQuickview)).call(this));
 
     _this.element = typeof selector === 'string' ? document.querySelector(selector) : selector;
     // An invalid selector or non-DOM node has been provided.
@@ -140,8 +140,8 @@ var bulmaSteps = function (_EventEmitter) {
     /// Set default options and merge with instance defined
     _this.options = _extends({}, __WEBPACK_IMPORTED_MODULE_1__defaultOptions__["a" /* default */], options);
 
-    _this[onStepsPrevious] = _this[onStepsPrevious].bind(_this);
-    _this[onStepsNext] = _this[onStepsNext].bind(_this);
+    _this[onQuickviewShowClick] = _this[onQuickviewShowClick].bind(_this);
+    _this[onQuickviewDismissClick] = _this[onQuickviewDismissClick].bind(_this);
 
     _this.init();
     return _this;
@@ -154,7 +154,7 @@ var bulmaSteps = function (_EventEmitter) {
    */
 
 
-  _createClass(bulmaSteps, [{
+  _createClass(bulmaQuickview, [{
     key: 'init',
 
 
@@ -164,25 +164,15 @@ var bulmaSteps = function (_EventEmitter) {
      * @return {void}
      */
     value: function init() {
-      this._id = 'bulmaSteps' + new Date().getTime() + Math.floor(Math.random() * Math.floor(9999));
-
-      this.steps = this.element.querySelectorAll(this.options.selector);
-      this.contents = this.element.querySelectorAll(this.options.selector_content);
-      this.previous_btn = this.element.querySelector(this.options.previous_selector);
-      this.next_btn = this.element.querySelector(this.options.next_selector);
-
-      [].forEach.call(this.steps, function (step, index) {
-        step.setAttribute('data-step-id', index);
-      });
-
-      if (this.steps && this.steps.length) {
-        this.activate_step(0);
-        this.updateActions(this.steps[0]);
-      }
+      this.quickview = document.getElementById(this.element.dataset['target']);
+      this.dismissElements = document.querySelectorAll('[data-dismiss="quickview"]');
 
       this._bindEvents();
 
-      this.emit('bulmasteps:ready', this.element.value);
+      this.emit('quickview:ready', {
+        element: this.element,
+        quickview: this.quickview
+      });
     }
 
     /**
@@ -196,199 +186,40 @@ var bulmaSteps = function (_EventEmitter) {
     value: function _bindEvents() {
       var _this2 = this;
 
-      if (this.previous_btn != null) {
-        this._clickEvents.forEach(function (event) {
-          _this2.previous_btn.addEventListener(event, _this2[onStepsPrevious], false);
-        });
-      }
+      this._clickEvents.forEach(function (event) {
+        _this2.element.addEventListener(event, _this2[onQuickviewShowClick], false);
+      });
 
-      if (this.next_btn != null) {
-        this._clickEvents.forEach(function (event) {
-          _this2.next_btn.addEventListener(event, _this2[onStepsNext], false);
+      [].forEach.call(this.dismissElements, function (dismissElement) {
+        _this2._clickEvents.forEach(function (event) {
+          dismissElement.addEventListener(event, _this2[onQuickviewDismissClick], false);
         });
-      }
-
-      if (this.options.stepClickable) {
-        [].forEach.call(this.steps, function (step, index) {
-          _this2._clickEvents.forEach(function (event) {
-            while (index > _this2.current_id) {
-              _this2[onStepsNext](event);
-            }
-            while (index < _this2.current_id) {
-              _this2[onStepsPrevious](event);
-            }
-          });
-        });
-      }
+      });
     }
   }, {
-    key: onStepsPrevious,
+    key: onQuickviewShowClick,
     value: function value(e) {
-      e.preventDefault();
+      this.quickview.classList.add('is-active');
 
-      if (!e.target.getAttribute('disabled')) {
-        this.previous_step();
-      }
+      this.emit('quickview:show', {
+        element: this.element,
+        quickview: this.quickview
+      });
     }
   }, {
-    key: onStepsNext,
+    key: onQuickviewDismissClick,
     value: function value(e) {
-      e.preventDefault();
+      this.quickview.classList.remove('is-active');
 
-      if (!e.target.getAttribute('disabled')) {
-        this.next_step();
-      }
-    }
-  }, {
-    key: 'get_current_step_id',
-    value: function get_current_step_id() {
-      for (var i = 0; i < this.steps.length; i++) {
-        var step = this.steps[i];
-
-        if (step.classList.contains(this.options.active_class)) {
-          return parseInt(step.getAttribute('data-step-id'));
-        }
-      }
-
-      return null;
-    }
-  }, {
-    key: 'updateActions',
-    value: function updateActions(step) {
-      var stepId = parseInt(step.getAttribute('data-step-id'));
-      if (stepId == 0) {
-        if (this.previous_btn != null) {
-          this.previous_btn.setAttribute('disabled', 'disabled');
-        }
-        if (this.next_btn != null) {
-          this.next_btn.removeAttribute('disabled', 'disabled');
-        }
-      } else if (stepId == this.steps.length - 1) {
-        if (this.previous_btn != null) {
-          this.previous_btn.removeAttribute('disabled', 'disabled');
-        }
-        if (this.next_btn != null) {
-          this.next_btn.setAttribute('disabled', 'disabled');
-        }
-      } else {
-        if (this.previous_btn != null) {
-          this.previous_btn.removeAttribute('disabled', 'disabled');
-        }
-        if (this.next_btn != null) {
-          this.next_btn.removeAttribute('disabled', 'disabled');
-        }
-      }
-    }
-  }, {
-    key: 'next_step',
-    value: function next_step() {
-      var current_id = this.get_current_step_id();
-
-      if (current_id == null) {
-        return;
-      }
-
-      var next_id = current_id + 1,
-          errors = [];
-
-      if (typeof this.options.beforeNext != 'undefined' && this.options.beforeNext != null && this.options.beforeNext) {
-        errors = this.options.beforeNext(current_id);
-      }
-      this.emit('bulmasteps:before:next', current_id);
-
-      if (typeof errors == 'undefined') {
-        errors = [];
-      }
-
-      if (errors.length > 0) {
-        this.emit('bulmasteps:errors', errors);
-        for (var i = 0; i < errors.length; i++) {
-          if (typeof this.options.onError != 'undefined' && this.options.onError != null && this.options.onError) {
-            this.options.onError(errors[i]);
-          }
-        }
-
-        return;
-      }
-
-      if (next_id >= this.steps.length) {
-        if (typeof this.options.onFinish != 'undefined' && this.options.onFinish != null && this.options.onFinish) {
-          this.options.onFinish(current_id);
-        }
-        this.emit('bulmasteps:finish', current_id);
-        this.deactivate_step(current_id);
-      } else {
-        this.complete_step(current_id);
-        this.activate_step(next_id);
-      }
-    }
-  }, {
-    key: 'previous_step',
-    value: function previous_step() {
-      var current_id = this.get_current_step_id();
-      if (current_id == null) {
-        return;
-      }
-
-      this.uncomplete_step(current_id - 1);
-      this.activate_step(current_id - 1);
-    }
-
-    /**
-     * Activate a single step,
-     * will deactivate all other steps.
-     */
-
-  }, {
-    key: 'activate_step',
-    value: function activate_step(step_id) {
-      this.updateActions(this.steps[step_id]);
-
-      for (var i = 0; i < this.steps.length; i++) {
-        var _step = this.steps[i];
-
-        if (_step == this.steps[step_id]) {
-          continue;
-        }
-
-        this.deactivate_step(i);
-      }
-
-      this.steps[step_id].classList.add(this.options.active_class);
-      if (typeof this.contents[step_id] !== 'undefined') {
-        this.contents[step_id].classList.add(this.options.active_class);
-      }
-
-      if (typeof this.options.onShow != 'undefined' && this.options.onShow != null && this.options.onShow) {
-        this.options.onShow(step_id);
-      }
-
-      this.emit('bulmasteps:step:show', step_id);
-    }
-  }, {
-    key: 'complete_step',
-    value: function complete_step(step_id) {
-      this.steps[step_id].classList.add(this.options.completed_class);
-      this.emit('bulmasteps:step:completed', step_id);
-    }
-  }, {
-    key: 'uncomplete_step',
-    value: function uncomplete_step(step_id) {
-      this.steps[step_id].classList.remove(this.options.completed_class);
-      this.emit('bulmasteps:step:uncompleted', step_id);
-    }
-  }, {
-    key: 'deactivate_step',
-    value: function deactivate_step(step_id) {
-      this.steps[step_id].classList.remove(this.options.active_class);
-      if (typeof this.contents[step_id] !== 'undefined') {
-        this.contents[step_id].classList.remove(this.options.active_class);
-      }
+      this.emit('quickview:hide', {
+        element: this.element,
+        quickview: this.quickview
+      });
     }
   }], [{
     key: 'attach',
     value: function attach() {
-      var selector = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '.steps';
+      var selector = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : '[data-show="quickview"]';
       var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
 
       var instances = new Array();
@@ -396,17 +227,17 @@ var bulmaSteps = function (_EventEmitter) {
       var elements = document.querySelectorAll(selector);
       [].forEach.call(elements, function (element) {
         setTimeout(function () {
-          instances.push(new bulmaSteps(element, options));
+          instances.push(new bulmaQuickview(element, options));
         }, 100);
       });
       return instances;
     }
   }]);
 
-  return bulmaSteps;
+  return bulmaQuickview;
 }(__WEBPACK_IMPORTED_MODULE_0__events__["a" /* default */]);
 
-/* harmony default export */ __webpack_exports__["default"] = (bulmaSteps);
+/* harmony default export */ __webpack_exports__["default"] = (bulmaQuickview);
 
 /***/ }),
 /* 1 */
@@ -596,23 +427,10 @@ var EventEmitter = function () {
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-var defaultOptions = {
-    'selector': '.step-item',
-    'selector_content': '.step-content',
-    'previous_selector': '[data-nav="previous"]',
-    'next_selector': '[data-nav="next"]',
-    'active_class': 'is-active',
-    'completed_class': 'is-completed',
-    'stepClickable': false,
-    'beforeNext': null,
-    'onShow': null,
-    'onFinish': null,
-    'onError': null
-};
+var defaultOptions = {};
 
 /* harmony default export */ __webpack_exports__["a"] = (defaultOptions);
 
 /***/ })
 /******/ ])["default"];
 });
-bulmaSteps.attach();
