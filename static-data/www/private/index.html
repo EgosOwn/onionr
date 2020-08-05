@@ -11,9 +11,12 @@
     <link rel="stylesheet" href="/private/main.css">
     <link rel="stylesheet" href="/shared/fontawesome-free-5.10.2/css/all.min.css">
     <link rel="stylesheet" href="/shared/main/PNotifyBrightTheme.css">
+    <link rel="stylesheet" href="/shared/bulma-quickview.min.css">
     <link rel="stylesheet" href="/gettheme">
+    <link rel="stylesheet" href="/shared/sidebar/sidebar.css">
     <script defer src="/shared/node_modules/pnotify/dist/iife/PNotify.js"></script>
     <script defer src="/shared/node_modules/pnotify/dist/iife/PNotifyButtons.js"></script>
+    <script defer src="/shared/bulma-quickview.js"></script>
     <script defer src="/shared/eventsource.js"></script>
     <script defer src="/shared/main/particles.js"></script>
     <script defer src="/shared/loadabout.js"></script>
@@ -30,6 +33,7 @@
     <script defer src="/private/js/motd.js"></script>
     <script defer src="/shared/navbar.js"></script>
     <script defer src="/private/js/windows.js"></script>
+    <script defer src="/shared/sidebar/sidebar.js"></script>
     <script defer src="/shared/main/loadTransport.js"></script>
     <script>alert("Content security policy appears to not be working. Your browser security is weak!")</script>
 </head>
@@ -41,7 +45,7 @@
             <p>If you are using random bind IPs (default in non dev mode), Onionr will have a different URL next time.</p>
         </div>
     </div>
-
+    <span id="sidebarContainer"></span>
     <nav class="navbar is-dark" role="navigation" aria-label="main navigation">
         <div class="navbar-brand">
             <a class="navbar-item idLink" href="/">
@@ -202,7 +206,7 @@
                                         </div>
                                     </div>
                                 </div>
- 
+
                             </div>
                             <div class="columns">
                                 <div class="column">
