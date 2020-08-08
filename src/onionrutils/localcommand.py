@@ -67,7 +67,7 @@ def local_command(command, data='', silent=True, post=False,
     if not hostname:
         return False
 
-    if data != '':
+    if data:
         data = '&data=' + urllib.parse.quote_plus(data)
     payload = 'http://%s/%s%s' % (hostname, command, data)
     if not config.get('client.webpassword'):
