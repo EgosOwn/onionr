@@ -92,8 +92,8 @@ Encrypted, metadata-masking mail application. One of the first distributed mail 
 
 More docs coming soon.
 
-* [Block specification](docs/specs/block-spec.md)
-* [HTTP API](docs/http-api.md)
+* [Block specification](docs/dev/specs/block-spec.md)
+* [HTTP API](docs/dev/http-api.md)
 
 # Install and Run on Linux
 
