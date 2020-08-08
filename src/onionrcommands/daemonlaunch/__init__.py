@@ -140,7 +140,6 @@ def daemon():
     # Initialize the quasi-global variables
     setup_kv(shared_state.get(DeadSimpleKV))
 
-    spawn_client_threads(shared_state)
     shared_state.get(daemoneventsapi.DaemonEventsBP)
 
     Thread(target=shared_state.get(apiservers.ClientAPI).start,
@@ -192,6 +191,10 @@ def daemon():
         Thread(target=sneakernet_import_thread, daemon=True).start()
 
     Thread(target=statistics_reporter, args=[shared_state], daemon=True).start()
+
+    shared_state.get(DeadSimpleKV).put(
+        'proxyPort', net.socksPort)
+    spawn_client_threads(shared_state)
 
     communicator.startCommunicator(shared_state)
 

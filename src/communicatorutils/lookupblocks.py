@@ -65,7 +65,7 @@ def lookup_blocks_from_communicator(comm_inst):
             break
         try:
             # select random online peer
-            peer = onlinepeers.pick_online_peer(comm_inst)
+            peer = onlinepeers.pick_online_peer(kv)
         except onionrexceptions.OnlinePeerNeeded:
             time.sleep(1)
             continue

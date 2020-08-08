@@ -11,6 +11,7 @@ from coredb import keydb
 from . import onlinepeers
 from onionrtypes import OnionAddressString
 from onionrpeers.peerprofiles import PeerProfiles
+from etc.waitforsetvar import wait_for_set_var
 """
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -33,8 +34,8 @@ def get_peer_profile(kv, address: OnionAddressString) -> 'PeerProfiles':
         if profile.address == address:
             return profile
     p = PeerProfiles(address)
+    profile_inst_list.append(p)
     return p
-
 
 
 def peer_action(shared_state, peer, action,

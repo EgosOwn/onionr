@@ -49,7 +49,7 @@ def announce_node(daemon):
                 break
         else:
             try:
-                peer = onlinepeers.pick_online_peer(daemon)
+                peer = onlinepeers.pick_online_peer(kv)
             except onionrexceptions.OnlinePeerNeeded:
                 peer = ""
 

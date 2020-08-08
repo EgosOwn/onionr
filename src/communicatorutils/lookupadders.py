@@ -41,8 +41,8 @@ def lookup_new_peer_transports_with_communicator(shared_state):
             # Don't get new peers if we have too many queued up
             break
         try:
-            peer = onlinepeers.pick_online_peer()
-            newAdders = peeraction.peer_action(comm_inst, peer, action='pex')
+            peer = onlinepeers.pick_online_peer(kv)
+            newAdders = peeraction.peer_action(shared_state, peer, action='pex')
         except onionrexceptions.OnlinePeerNeeded:
             continue
         try:
@@ -64,5 +64,3 @@ def lookup_new_peer_transports_with_communicator(shared_state):
             except ValueError:
                 pass
         kv.get('newPeers').extend(newPeers)
-    comm_inst.decrementThreadCount(
-        'lookup_new_peer_transports_with_communicator')

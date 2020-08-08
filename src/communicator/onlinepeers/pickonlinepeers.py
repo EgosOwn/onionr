@@ -26,9 +26,8 @@ if TYPE_CHECKING:
 """
 
 
-def pick_online_peer(comm_inst):
+def pick_online_peer(kv: 'DeadSimpleKV'):
     """Randomly picks peer from pool without bias (using secrets module)."""
-    kv: "DeadSimpleKV" = comm_inst.shared_state.get_by_string("DeadSimpleKV")
     ret_data = ''
     peer_length = len(kv.get('onlinePeers'))
     if peer_length <= 0:

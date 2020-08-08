@@ -78,7 +78,7 @@ def download_blocks_from_communicator(comm_inst: "OnionrCommunicatorDaemon"):
         kv.get('currentDownloading').append(blockHash)
         if len(blockPeers) == 0:
             try:
-                peerUsed = onlinepeers.pick_online_peer(comm_inst)
+                peerUsed = onlinepeers.pick_online_peer(kv)
             except onionrexceptions.OnlinePeerNeeded:
                 continue
         else:

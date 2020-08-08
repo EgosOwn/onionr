@@ -113,7 +113,7 @@ class OnionrCommunicatorDaemon:
         # Timer to discover new peers
         OnionrCommunicatorTimers(
             self, lookupadders.lookup_new_peer_transports_with_communicator,
-            60, requires_peer=True, my_args=[self], max_threads=2)
+            60, requires_peer=True, my_args=[shared_state], max_threads=2)
 
         # Timer for adjusting which peers
         # we actively communicate to at any given time,

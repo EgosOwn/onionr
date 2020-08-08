@@ -67,7 +67,7 @@ def upload_blocks_from_communicator(comm_inst: 'OnionrCommunicatorDaemon'):
             session = session_manager.add_session(bl)
             for _ in range(min(len(kv.get('onlinePeers')), 6)):
                 try:
-                    peer = onlinepeers.pick_online_peer(comm_inst)
+                    peer = onlinepeers.pick_online_peer(kv)
                 except onionrexceptions.OnlinePeerNeeded:
                     continue
                 try:
