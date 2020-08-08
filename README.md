@@ -97,7 +97,9 @@ More docs coming soon.
 
 # Install and Run on Linux
 
-The following applies to Ubuntu Bionic. Other distros may have different package or command names.
+The following applies to Ubuntu Bionic. Other distributions may have different package or command names.
+
+Master may be unstable, you should use the latest release tag. (checkout via git: `$ git checkout release-latest`)
 
 `$ sudo apt install python3-pip python3-dev tor`
 
