@@ -69,7 +69,7 @@ def peer_action(shared_state, peer, action,
         except ValueError:
             pass
     else:
-        peer_profile = comm_inst.getPeerProfileInstance(peer)
+        peer_profile = get_peer_profile(kv, peer)
         peer_profile.update_connect_time()
         peer_profile.addScore(1)
     # If returnHeaders, returns tuple of data, headers.
