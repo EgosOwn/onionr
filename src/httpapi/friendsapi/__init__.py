@@ -23,6 +23,7 @@ from coredb import keydb
 """
 friends = Blueprint('friends', __name__)
 
+
 @friends.route('/friends/list')
 def list_friends():
     pubkey_list = {}
@@ -31,28 +32,44 @@ def list_friends():
         pubkey_list[friend.publicKey] = {'name': friend.get_info('name')}
     return json.dumps(pubkey_list)
 
+
 @friends.route('/friends/add/<pubkey>', methods=['POST'])
 def add_friend(pubkey):
     contactmanager.ContactManager(pubkey, saveUser=True).setTrust(1)
-    return redirect(request.referrer + '#' + request.form['token'])
+    try:
+        return redirect(request.referrer + '#' + request.form['token'])
+    except TypeError:
+        return Response(
+            "Added, but referrer not set, cannot return to friends page")
+
 
 @friends.route('/friends/remove/<pubkey>', methods=['POST'])
 def remove_friend(pubkey):
     contactmanager.ContactManager(pubkey).setTrust(0)
     contactmanager.ContactManager(pubkey).delete_contact()
     keydb.removekeys.remove_user(pubkey)
-    return redirect(request.referrer + '#' + request.form['token'])
+    try:
+        return redirect(request.referrer + '#' + request.form['token'])
+    except TypeError:
+        return Response(
+            "Friend removed, but referrer not set, cannot return to page")
+
 
 @friends.route('/friends/setinfo/<pubkey>/<key>', methods=['POST'])
 def set_info(pubkey, key):
     data = request.form['data']
     contactmanager.ContactManager(pubkey).set_info(key, data)
-    return redirect(request.referrer + '#' + request.form['token'])
+    try:
+        return redirect(request.referrer + '#' + request.form['token'])
+    except TypeError:
+        return Response(
+            "Info set, but referrer not set, cannot return to friends page")
+
 
 @friends.route('/friends/getinfo/<pubkey>/<key>')
 def get_info(pubkey, key):
-    retData = contactmanager.ContactManager(pubkey).get_info(key)
-    if retData is None:
+    ret_data = contactmanager.ContactManager(pubkey).get_info(key)
+    if ret_data is None:
         abort(404)
     else:
-        return retData
+        return ret_data
