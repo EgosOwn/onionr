@@ -1,7 +1,6 @@
-"""
-    Onionr - Private P2P Communication
+"""Onionr - Private P2P Communication.
 
-    Add bridge info to torrc configuration string
+Add bridge info to torrc configuration string
 """
 import config
 import logger
@@ -22,7 +21,7 @@ import logger
 
 
 def add_bridges(torrc: str) -> str:
-    """Configure tor to use a bridge using Onionr config keys"""
+    """Configure tor to use a bridge using Onionr config keys."""
     if config.get('tor.use_bridge', False) is True:
         bridge = config.get('tor.bridge_ip', None)
         if bridge is not None:

@@ -1,7 +1,6 @@
-"""
-    Onionr - Private P2P Communication
+"""Onionr - Private P2P Communication.
 
-    Load or set custom torrc
+Load or set custom torrc
 """
 from utils import identifyhome
 """

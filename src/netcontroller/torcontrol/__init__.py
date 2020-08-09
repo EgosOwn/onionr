@@ -1,10 +1,8 @@
-"""
-    Onionr - Private P2P Communication
+"""Onionr - Private P2P Communication.
 
-    Netcontroller library, used to control/work with Tor and send requests through them
+Netcontroller library, used to control/work with Tor and send requests through
 """
 import os
-import base64
 import subprocess
 import signal
 import time
@@ -20,7 +18,6 @@ from . import gentorrc
 from . import addbridges
 from . import torbinary
 from utils import identifyhome
-from utils import box_print
 """
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by

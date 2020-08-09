@@ -25,8 +25,8 @@ def create_onion_service(port=80, record_to_service_removal_file=True):
     controller = get_controller()
     hs = controller.create_ephemeral_hidden_service(
         {80: port},
-        key_type = 'NEW',
-        key_content = 'ED25519-V3',
+        key_type='NEW',
+        key_content='ED25519-V3',
         await_publication=True,
         detached=True)
     if record_to_service_removal_file:

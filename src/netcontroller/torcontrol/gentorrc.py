@@ -1,3 +1,7 @@
+"""Onionr - Private P2P Communication.
+
+Generate a generate a torrc file for our Onionr instance
+"""
 import base64
 import os
 import subprocess
@@ -8,14 +12,26 @@ from . import addbridges
 from . import torbinary
 from utils import identifyhome
 import config
+"""
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+"""
 
 add_bridges = addbridges.add_bridges
 
 
 def generate_torrc(net_controller, api_server_ip):
-    """
-        Generate a torrc file for our tor instance
-    """
+    """Generate a torrc file for our tor instance."""
     socks_port = net_controller.socksPort
     hs_port = net_controller.hsPort
     home_dir = identifyhome.identify_home()
@@ -27,7 +43,7 @@ def generate_torrc(net_controller, api_server_ip):
     Set the Tor control password.
     Meant to make it harder to manipulate our Tor instance
     """
-    plaintext = base64.b64encode(os.urandom(50)).decode()
+    plaintext = base64.b85encode(os.urandom(50)).decode()
     config.set('tor.controlpassword', plaintext, savefile=True)
     config.set('tor.socksport', socks_port, savefile=True)
 

@@ -2,8 +2,6 @@
 
 Send Tor restart command
 """
-import time
-
 from gevent import spawn
 
 from onionrutils import localcommand

@@ -1,7 +1,6 @@
-"""
-    Onionr - Private P2P Communication
+"""Onionr - Private P2P Communication.
 
-    get the tor binary path
+get the tor binary path
 """
 import os
 from shutil import which
