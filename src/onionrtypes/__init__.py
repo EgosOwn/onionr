@@ -3,7 +3,8 @@ from typing import NewType
 UserID = NewType('UserID', str)
 UserIDSecretKey = NewType('UserIDSecretKey', str)
 
-LANIP = NewType('LANIP', 'str')
+LANIP = NewType('LANIP', str)
+LoopBackIP = NewType('LoopBackIP', str)
 
 DeterministicKeyPassphrase = NewType('DeterministicKeyPassphrase', str)
 

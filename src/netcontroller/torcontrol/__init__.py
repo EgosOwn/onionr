@@ -7,7 +7,6 @@ import subprocess
 import signal
 import time
 import multiprocessing
-import platform  # For windows sigkill workaround
 
 from onionrtypes import BooleanSuccessState
 import logger
@@ -129,28 +128,26 @@ class NetController:
         return True
 
     def killTor(self):
-        """
-            Properly kill tor based on pid saved to file
-        """
-
+        """Properly kill tor based on pid saved to file."""
         try:
-            pid = open(self.dataDir + 'torPid.txt', 'r')
-            pidN = pid.read()
-            pid.close()
+            with open(self.dataDir + 'torPid.txt', 'r') as torPid:
+                pidN = torPid.read()
         except FileNotFoundError:
             return
 
         try:
-            int(pidN)
-        except ValueError:
-            return
-
-        try:
             try:
+                # Extra int()
                 os.kill(int(pidN), signal.SIGTERM)
             except PermissionError:
                 # seems to happen on win 10
                 pass
+            except ValueError:
+                # Happens if int() check is not valid
+                logger.error("torPid.txt contained invalid integer. " +
+                            "This indicates corruption " +
+                            "and should not be bypassed for security reasons")
+                return
             os.remove(self.dataDir + 'torPid.txt')
         except ProcessLookupError:
             pass
@@ -162,10 +159,6 @@ class NetController:
         except KeyboardInterrupt:
             pass
 
-        if 'windows' == platform.system().lower():
-            os.system(f'taskkill /PID {pidN} /F')
-            time.sleep(0.5)
-            return
         try:
             os.kill(int(pidN), signal.SIGKILL)
         except (ProcessLookupError, PermissionError):

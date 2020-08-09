@@ -5,6 +5,7 @@ Generate a generate a torrc file for our Onionr instance
 import base64
 import os
 import subprocess
+from typing import TYPE_CHECKING
 
 from .. import getopenport
 from . import customtorrc
@@ -12,6 +13,10 @@ from . import addbridges
 from . import torbinary
 from utils import identifyhome
 import config
+
+if TYPE_CHECKING:
+    from netcontroller import NetController
+    from onionrtypes import LoopBackIP
 """
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -30,7 +35,8 @@ import config
 add_bridges = addbridges.add_bridges
 
 
-def generate_torrc(net_controller, api_server_ip):
+def generate_torrc(net_controller: 'NetController',
+                   api_server_ip: 'LoopBackIP'):
     """Generate a torrc file for our tor instance."""
     socks_port = net_controller.socksPort
     hs_port = net_controller.hsPort
@@ -43,13 +49,14 @@ def generate_torrc(net_controller, api_server_ip):
     Set the Tor control password.
     Meant to make it harder to manipulate our Tor instance
     """
-    plaintext = base64.b85encode(os.urandom(50)).decode()
+    plaintext = base64.b85encode(
+        os.urandom(50)).decode()
     config.set('tor.controlpassword', plaintext, savefile=True)
     config.set('tor.socksport', socks_port, savefile=True)
 
-    controlPort = getopenport.get_open_port()
+    control_port = getopenport.get_open_port()
 
-    config.set('tor.controlPort', controlPort, savefile=True)
+    config.set('tor.controlPort', control_port, savefile=True)
 
     hashedPassword = subprocess.Popen([torbinary.tor_binary(),
                                       '--hash-password',
@@ -66,7 +73,7 @@ DataDirectory """ + home_dir + """tordata/
 CookieAuthentication 1
 KeepalivePeriod 40
 CircuitsAvailableTimeout 86400
-ControlPort """ + str(controlPort) + """
+ControlPort """ + str(control_port) + """
 HashedControlPassword """ + str(password) + """
     """
     if config.get('general.security_level', 1) == 0:
