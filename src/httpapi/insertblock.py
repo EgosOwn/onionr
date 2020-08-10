@@ -4,8 +4,13 @@ Create blocks with the client api server
 """
 import ujson as json
 import threading
+from typing import TYPE_CHECKING
 
 from flask import Blueprint, Response, request, g
+
+if TYPE_CHECKING:
+    from deadsimplekv import DeadSimpleKV
+    
 import onionrblocks
 from onionrcrypto import hashers
 from onionrutils import bytesconverter
@@ -31,7 +36,6 @@ ib = Blueprint('insertblock', __name__)
 
 @ib.route('/insertblock', methods=['POST'])
 def client_api_insert_block():
-    encrypt: bool = False
     insert_data: JSONSerializable = request.get_json(force=True)
     message = insert_data['message']
     message_hash = bytesconverter.bytes_to_str(hashers.sha3_hash(message))

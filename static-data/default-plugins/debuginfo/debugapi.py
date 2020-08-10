@@ -25,14 +25,20 @@ flask_blueprint = Blueprint('debugAPI', __name__)
 
 
 @flask_blueprint.route('/debug/dump_shared_state')
-def get_shared_state():
+def get_shared_state() -> Response:
+    """Return somewhat human-readable dump of shared toomanyobjects."""
     resp = ""
     for i in g.too_many.objects.keys:
-        resp += i + dir(g.too_many.objects.keys[i])
+        resp += i + dir(g.too_many.objects.keys[i]) + "\n"
     return Response(resp)
 
 
 @flask_blueprint.route('/debug/dump_shared_vars')
-def get_shared_vars():
+def get_shared_vars() -> Response:
+    """Return somewhat human-readable dump of pseudo globals (DeadSimpleKV)."""
     kv: DeadSimpleKV = g.too_many.get(DeadSimpleKV)
-    return Response(dir(kv._data))
+    resp = ""
+    for i in kv.keys:
+        resp += i + dir(g.too_many.objects.keys[i]) + "\n"
+    return Response(resp)
+

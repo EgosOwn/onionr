@@ -50,7 +50,8 @@ class PrivateEndpoints:
         def wwwPublic(path):
             if not config.get("www.private.run", True):
                 abort(403)
-            return send_from_directory(config.get('www.private.path', 'static-data/www/private/'), path)
+            return send_from_directory(config.get('www.private.path',
+                                       'static-data/www/private/'), path)
 
         @private_endpoints_bp.route('/hitcount')
         def get_hit_count():
@@ -62,7 +63,7 @@ class PrivateEndpoints:
             return Response("pong!")
 
         @private_endpoints_bp.route('/lastconnect')
-        def lastConnect():
+        def last_connect():
             return Response(str(client_api.publicAPI.lastRequest))
 
         @private_endpoints_bp.route('/waitforshare/<name>', methods=['post'])
@@ -104,25 +105,26 @@ class PrivateEndpoints:
                     pass
 
         @private_endpoints_bp.route('/getuptime')
-        def showUptime():
+        def show_uptime():
             return Response(str(client_api.getUptime()))
 
         @private_endpoints_bp.route('/getActivePubkey')
-        def getActivePubkey():
+        def get_active_pubkey():
             return Response(pub_key)
 
         @private_endpoints_bp.route('/getHumanReadable')
-        def getHumanReadableDefault():
+        def get_human_readable_default():
             return Response(mnemonickeys.get_human_readable_ID())
 
         @private_endpoints_bp.route('/getHumanReadable/<name>')
-        def getHumanReadable(name):
+        def get_human_readable(name):
             name = unpaddedbase32.repad(bytesconverter.str_to_bytes(name))
             return Response(mnemonickeys.get_human_readable_ID(name))
 
         @private_endpoints_bp.route('/getBase32FromHumanReadable/<words>')
         def get_base32_from_human_readable(words):
-            return Response(bytesconverter.bytes_to_str(mnemonickeys.get_base32(words)))
+            return Response(
+                bytesconverter.bytes_to_str(mnemonickeys.get_base32(words)))
 
         @private_endpoints_bp.route('/gettorsocks')
         def get_tor_socks():
@@ -130,7 +132,8 @@ class PrivateEndpoints:
 
         @private_endpoints_bp.route('/setonboarding', methods=['POST'])
         def set_onboarding():
-            return Response(config.onboarding.set_config_from_onboarding(request.get_json()))
+            return Response(
+                config.onboarding.set_config_from_onboarding(request.get_json()))
 
         @private_endpoints_bp.route('/os')
         def get_os_system():
@@ -139,7 +142,8 @@ class PrivateEndpoints:
         @private_endpoints_bp.route('/torready')
         def is_tor_ready():
             """If Tor is starting up, the web UI is not ready to be used."""
-            return Response(str(g.too_many.get(NetController).readyState).lower())
+            return Response(
+                str(g.too_many.get(NetController).readyState).lower())
 
         @private_endpoints_bp.route('/gettoraddress')
         def get_tor_address():
@@ -147,3 +151,12 @@ class PrivateEndpoints:
             if not config.get('general.security_level', 0) == 0:
                 abort(404)
             return Response(get_tor()[0])
+
+        @private_endpoints_bp.route('/getgeneratingblocks')
+        def get_generating_blocks() -> Response:
+            return Response(
+                ','.join(
+                    g.too_many.get_by_string('DeadSimpleKV').get(
+                        'generating_blocks'
+                    ))
+            )

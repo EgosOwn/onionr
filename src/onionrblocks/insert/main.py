@@ -262,7 +262,8 @@ def insert_block(data: Union[str, bytes], header: str = 'txt',
         localcommand.local_command,
         '/daemon-event/remove_from_insert_queue_wrapper',
         post=True,
-        post_data={'block_hash': retData},
+        post_data={'block_hash':
+                  bytesconverter.bytes_to_str(crypto.hashers.sha3_hash(data))},
         is_json=True
         ).get(timeout=5)
     return retData
