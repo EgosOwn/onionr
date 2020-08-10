@@ -7,8 +7,12 @@ from gevent import sleep
 from coredb import blockmetadb
 from onionrutils.epoch import get_epoch
 import logger
+from etc import onionrvalues
 
 def test_lan_server(testmanager):
+    if onionrvalues.IS_QUBES:
+        logger.warn("Cannot test LAN on QubesOS", terminal=True)
+        return
     start_time = get_epoch()
     for i in range(1337, 1340):
         try:
