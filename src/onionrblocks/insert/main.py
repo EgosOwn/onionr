@@ -101,8 +101,8 @@ def insert_block(data: Union[str, bytes], header: str = 'txt',
     except FileNotFoundError:
         pass
     # record nonce
-    with open(filepaths.data_nonce_file, 'a') as nonceFile:
-        nonceFile.write(dataNonce + '\n')
+    with open(filepaths.data_nonce_file, 'a') as nonce_file:
+        nonce_file.write(dataNonce + '\n')
 
     plaintext = data
     plaintextMeta = {}
@@ -263,7 +263,8 @@ def insert_block(data: Union[str, bytes], header: str = 'txt',
         '/daemon-event/remove_from_insert_queue_wrapper',
         post=True,
         post_data={'block_hash':
-                  bytesconverter.bytes_to_str(crypto.hashers.sha3_hash(data))},
+                   bytesconverter.bytes_to_str(
+                       crypto.hashers.sha3_hash(data))},
         is_json=True
         ).get(timeout=5)
     return retData

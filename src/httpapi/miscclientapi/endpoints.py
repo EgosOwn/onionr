@@ -160,3 +160,11 @@ class PrivateEndpoints:
                         'generating_blocks'
                     ))
             )
+
+        @private_endpoints_bp.route('/getblockstoupload')
+        def get_blocks_to_upload() -> Response:
+            return Response(
+                ','.join(
+                    g.too_many.get_by_string('DeadSimpleKV').get('blocksToUpload')
+                )
+            )

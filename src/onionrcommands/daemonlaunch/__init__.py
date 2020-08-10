@@ -184,13 +184,17 @@ def daemon():
     events.event('init', threaded=False)
     events.event('daemon_start')
     if config.get('transports.lan', True):
-        Thread(target=LANServer(shared_state).start_server,
-               daemon=True).start()
-        LANManager(shared_state).start()
+        if not onionrvalues.IS_QUBES:
+            Thread(target=LANServer(shared_state).start_server,
+                   daemon=True).start()
+            LANManager(shared_state).start()
+        else:
+            logger.warn('LAN not supported on Qubes', terminal=True)
     if config.get('transports.sneakernet', True):
         Thread(target=sneakernet_import_thread, daemon=True).start()
 
-    Thread(target=statistics_reporter, args=[shared_state], daemon=True).start()
+    Thread(target=statistics_reporter,
+           args=[shared_state], daemon=True).start()
 
     shared_state.get(DeadSimpleKV).put(
         'proxyPort', net.socksPort)

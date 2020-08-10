@@ -29,6 +29,7 @@ ONIONR_VERSION_TUPLE = tuple(ONIONR_VERSION.split('.')) # (MAJOR, MINOR, VERSION
 API_VERSION = '1' # increments of 1; only change when something fundamental about how the API works changes. This way other nodes know how to communicate without learning too much information about you.
 MIN_PY_VERSION = 7 # min version of 7 so we can take advantage of non-cyclic type hints
 DEVELOPMENT_MODE = False
+IS_QUBES = False
 """limit type length for a block (soft enforced, ignored if invalid but block still stored)."""
 MAX_BLOCK_TYPE_LENGTH = 15
 """limit clock timestamp for new blocks to be skewed in the future in seconds,
@@ -74,3 +75,5 @@ else:
         SCRIPT_NAME = 'start-daemon.sh'
     else:
         SCRIPT_NAME = 'onionr.sh'
+if 'qubes' in platform.release().lower():
+    IS_QUBES = True

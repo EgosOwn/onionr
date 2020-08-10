@@ -78,4 +78,3 @@ def daemon_event_handlers(shared_state: 'TooMany'):
     events_api.register_listener(print_test)
     events_api.register_listener(upload_event)
     events_api.register_listener(test_runtime)
-

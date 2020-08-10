@@ -48,7 +48,8 @@ class UploadQueue:
         self.communicator = communicator
         cache: deadsimplekv.DeadSimpleKV = deadsimplekv.DeadSimpleKV(
             UPLOAD_MEMORY_FILE)
-        self.kv: "DeadSimpleKV" = communicator.shared_state.get_by_string("DeadSimpleKV")
+        self.kv: "DeadSimpleKV" = \
+            communicator.shared_state.get_by_string("DeadSimpleKV")
         self.store_obj = cache
         cache = cache.get('uploads')
         if cache is None:
