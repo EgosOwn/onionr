@@ -27,6 +27,8 @@ bootstrap_peers = readstatic.read_static('bootstrap-nodes.txt').split(',')
 def add_bootstrap_list_to_peer_list(kv, peerList, db_only=False):
     """Add the bootstrap list to the peer list (no duplicates)."""
     for i in bootstrap_peers:
+        # Add bootstrap peers to peerList (does not save them)
+        # Don't add them if they're already added or in the offline list
         if i not in peerList and i not in kv.get('offlinePeers') \
                 and i not in gettransports.get() and len(str(i).strip()) > 0:
             if not db_only:
