@@ -67,13 +67,10 @@ MOTD_SIGN_KEY = "TRH763JURNY47QPBTTQ4LLPYCYQK6Q5YA33R6GANKZK5C5DKCIGQ"
 """Public key that signs update notifications."""
 UPDATE_SIGN_KEY = "TRH763JURNY47QPBTTQ4LLPYCYQK6Q5YA33R6GANKZK5C5DKCIGQ"
 
-pf = platform.system()
-if pf == 'Windows':
-    SCRIPT_NAME = 'run-windows.bat'
+
+if os.path.exists(filepaths.daemon_mark_file):
+    SCRIPT_NAME = 'start-daemon.sh'
 else:
-    if os.path.exists(filepaths.daemon_mark_file):
-        SCRIPT_NAME = 'start-daemon.sh'
-    else:
-        SCRIPT_NAME = 'onionr.sh'
+    SCRIPT_NAME = 'onionr.sh'
 if 'qubes' in platform.release().lower():
     IS_QUBES = True

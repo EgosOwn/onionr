@@ -26,19 +26,9 @@ from onionrexceptions import ArbitraryCodeExec
 
 def block_system(cmd):
     """Prevent os.system except for whitelisted commands+contexts."""
-    allowed = 'taskkill /PID '
-    is_ok = False
-    if platform.system() == 'Windows':
-        if cmd.startswith(allowed):
-            for c in cmd.split(allowed)[1]:
-                if not c.isalnum() or c not in ('/', 'F', ' '):
-                    break
-            else:
-                is_ok = True
-    if not is_ok:
-        logger.warn('POSSIBLE EXPLOIT DETECTED, SEE LOGS', terminal=True)
-        logger.warn(f'POSSIBLE EXPLOIT: shell command not in whitelist: {cmd}')
-        raise ArbitraryCodeExec('os.system command not in whitelist')
+    logger.warn('POSSIBLE EXPLOIT DETECTED, SEE LOGS', terminal=True)
+    logger.warn(f'POSSIBLE EXPLOIT: shell command not in whitelist: {cmd}')
+    raise ArbitraryCodeExec('os.system command not in whitelist')
 
 
 def block_exec(event, info):

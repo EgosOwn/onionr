@@ -1,6 +1,6 @@
 # Onionr Installation
 
-The following steps work broadly speaking for Windows, Mac, and Linux.
+The following steps work broadly speaking for WSL, Mac, and Linux.
 
 1. Verify python3.7+ is installed: if not, see https://www.python.org/downloads/
 

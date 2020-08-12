@@ -33,8 +33,6 @@ def identify_home() -> str:
         system = platform.system()
         if system == 'Linux':
             path = os.path.expanduser('~') + '/.local/share/onionr/'
-        elif system == 'Windows':
-            path = os.path.expanduser('~') + '\\AppData\\Local\\onionr\\'
         elif system == 'Darwin':
             path = os.path.expanduser('~' +
                                       '/Library/Application Support/onionr/')

@@ -5,7 +5,6 @@ Command to restart Onionr
 import time
 import os
 import subprocess  # nosec
-import platform
 
 from etc import onionrvalues
 from etc import cleanup
@@ -36,10 +35,6 @@ SCRIPT_NAME = os.path.dirname(os.path.realpath(
 
 def restart():
     """Tell the Onionr daemon to restart."""
-    if platform.system() == 'Windows':
-        logger.warn('Cannot restart Onionr on Windows. Run stop and manually restart.', terminal=True)
-        return
-
     logger.info('Restarting Onionr', terminal=True)
 
     # On platforms where we can, fork out to prevent locking

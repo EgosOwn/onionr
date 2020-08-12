@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 
 from gevent import sleep
 
-from psutil import Process, WINDOWS
+from psutil import Process
 import ujson as json
 
 from coredb import blockmetadb
@@ -49,8 +49,6 @@ class SerializedData:
         proc = Process()
 
         def get_open_files():
-            if WINDOWS:
-                return proc.num_handles()
             return proc.num_fds()
 
         try:
