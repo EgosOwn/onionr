@@ -29,7 +29,7 @@ def add_bridges(torrc: str) -> str:
             # allow blank fingerprint purposefully
             fingerprint = config.get('tor.bridge_fingerprint', '')
             torrc += '\nUseBridges 1\nBridge %s %s\n' % (bridge, fingerprint)
-        else:
+        if not bridge:
             logger.error('Bridge was enabled but not specified in config, ' +
                          'this probably won\'t work', terminal=True)
 

@@ -40,3 +40,5 @@ src/data/*.log
 onionr-*.pkg.tar.gz
 pkg/
 spawnnodes.py
+
+static-data/tor-node-list.dat
