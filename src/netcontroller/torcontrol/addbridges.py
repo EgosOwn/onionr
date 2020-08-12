@@ -22,6 +22,7 @@ import logger
 
 def add_bridges(torrc: str) -> str:
     """Configure tor to use a bridge using Onionr config keys."""
+    config.reload()
     if config.get('tor.use_bridge', False) is True:
         bridge = config.get('tor.bridge_ip', None)
         if bridge is not None:
@@ -29,6 +30,7 @@ def add_bridges(torrc: str) -> str:
             fingerprint = config.get('tor.bridge_fingerprint', '')
             torrc += '\nUseBridges 1\nBridge %s %s\n' % (bridge, fingerprint)
         else:
-            logger.warn('bridge was enabled but not specified in config')
+            logger.error('Bridge was enabled but not specified in config, ' +
+                         'this probably won\'t work', terminal=True)
 
     return torrc
