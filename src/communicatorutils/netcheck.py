@@ -46,7 +46,7 @@ def net_check(comm_inst):
                 rec = True
         except ValueError:
             pass
-        if not rec and not netutils.checkNetwork(torPort=comm_inst.proxyPort):
+        if not rec and not netutils.check_network(torPort=comm_inst.proxyPort):
             if not kv.get('shutdown'):
                 if not comm_inst.config.get('general.offline_mode', False):
                     logger.warn('Network check failed, are you connected to ' +

@@ -1,9 +1,11 @@
-'''
-    Onionr - P2P Microblogging Platform & Social network
+"""Onionr - Private P2P Communication.
 
-    OnionrUtils offers various useful functions to Onionr networking.
-'''
-'''
+NetUtils offers various useful functions to Onionr networking.
+"""
+from onionrutils import basicrequests
+from .readstatic import read_static
+from onionrcrypto.cryptoutils import random_shuffle
+"""
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -16,21 +18,22 @@
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
-'''
-from onionrutils import basicrequests
-from . import readstatic
-from onionrcrypto import cryptoutils
-def checkNetwork(torPort=0):
-    '''Check if we are connected to the internet (through Tor)'''
-    retData = False
-    connectURLs = []
-    try:
-        connectURLs = cryptoutils.random_shuffle(readstatic.read_static('connect-check.txt').split(','))
+"""
 
-        for url in connectURLs:
-            if basicrequests.do_get_request(url, port=torPort, ignoreAPI=True) != False:
-                retData = True
+
+def check_network(torPort=0) -> bool:
+    """Check if we are connected to the internet (through Tor)."""
+    success = False
+    connect_urls = []
+    try:
+        connect_urls = random_shuffle(
+            read_static('connect-check.txt').split(','))
+
+        for url in connect_urls:
+            if basicrequests.do_get_request(
+                    url, port=torPort, ignoreAPI=True) is not False:
+                success = True
                 break
     except FileNotFoundError:
         pass
-    return retData
+    return success
