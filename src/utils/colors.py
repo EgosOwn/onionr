@@ -1,9 +1,9 @@
-'''
-    Onionr - Private P2P Communication
+"""Onionr - Private P2P Communication.
 
-    class to access ANSI control codes
-'''
-'''
+class to access ANSI control codes
+"""
+import re
+"""
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -16,12 +16,11 @@
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
-'''
-import re
+"""
+
+
 class Colors:
-    '''
-        This class allows you to set the color if ANSI codes are supported
-    '''
+    """ANSI color code collection."""
     reset='\033[0m'
     bold='\033[01m'
     disable='\033[02m'
@@ -58,3 +57,4 @@ class Colors:
     @staticmethod
     def filter(data):
         return re.compile(r'\x1B\[[0-?]*[ -/]*[@-~]').sub('', str(data))
+        

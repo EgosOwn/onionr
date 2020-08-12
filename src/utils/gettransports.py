@@ -31,7 +31,8 @@ class _GetTor:
     def get(self):
         if self.tor_hs is None:
             try:
-                with open(filepaths.tor_hs_address_file, 'r') as transport_file:
+                with open(filepaths.tor_hs_address_file, 'r') as \
+                     transport_file:
                     self.tor_hs = transport_file.read().strip()
                 if not self.tor_hs:
                     self.tor_hs = None
@@ -39,7 +40,9 @@ class _GetTor:
                 pass
         return self.tor_hs
 
+
 _tor_getter = _GetTor()
+
 
 def get():
     transports = [_tor_getter.get()]
