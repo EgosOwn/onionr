@@ -10,6 +10,7 @@ import onionrstorage
 from onionrutils import stringvalidators
 from coredb import dbfiles
 from onionrblocks import storagecounter
+from etc.onionrvalues import DATABASE_LOCK_TIMEOUT
 """
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -33,7 +34,8 @@ def remove_block(block):
     **You may want blacklist.addToDB(blockHash)
     """
     if stringvalidators.validate_hash(block):
-        conn = sqlite3.connect(dbfiles.block_meta_db, timeout=30)
+        conn = sqlite3.connect(
+            dbfiles.block_meta_db, timeout=DATABASE_LOCK_TIMEOUT)
         c = conn.cursor()
         t = (block,)
         c.execute('Delete from hashes where hash=?;', t)

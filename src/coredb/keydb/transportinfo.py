@@ -1,9 +1,11 @@
-'''
-    Onionr - Private P2P Communication
+"""Onionr - Private P2P Communication.
 
-    get or set transport address meta information
-'''
-'''
+get or set transport address meta information
+"""
+import sqlite3
+from .. import dbfiles
+from etc import onionrvalues
+"""
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -16,28 +18,27 @@
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
-'''
-import sqlite3
-from .. import dbfiles
-from etc import onionrvalues
+"""
+
 
 def get_address_info(address, info):
-    '''
-        Get info about an address from its database entry
+    """
+    Get info about an address from its database entry
 
-        address text, 0
-        type int, 1
-        knownPeer text, 2
-        speed int, 3
-        success int, 4
-        powValue    5
-        failure int 6
-        lastConnect 7
-        trust       8
-        introduced  9
-    '''
+    address text, 0
+    type int, 1
+    knownPeer text, 2
+    speed int, 3
+    success int, 4
+    powValue    5
+    failure int 6
+    lastConnect 7
+    trust       8
+    introduced  9
+    """
 
-    conn = sqlite3.connect(dbfiles.address_info_db, timeout=onionrvalues.DATABASE_LOCK_TIMEOUT)
+    conn = sqlite3.connect(
+        dbfiles.address_info_db, timeout=onionrvalues.DATABASE_LOCK_TIMEOUT)
     c = conn.cursor()
 
     command = (address,)
@@ -57,12 +58,12 @@ def get_address_info(address, info):
 
     return retVal
 
-def set_address_info(address, key, data):
-    '''
-        Update an address for a key
-    '''
 
-    conn = sqlite3.connect(dbfiles.address_info_db, timeout=onionrvalues.DATABASE_LOCK_TIMEOUT)
+def set_address_info(address, key, data):
+    """Update an address for a key."""
+
+    conn = sqlite3.connect(
+        dbfiles.address_info_db, timeout=onionrvalues.DATABASE_LOCK_TIMEOUT)
     c = conn.cursor()
 
     command = (data, address)

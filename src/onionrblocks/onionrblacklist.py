@@ -9,6 +9,7 @@ from onionrplugins.onionrevents import event
 import onionrcrypto
 from onionrutils import epoch, bytesconverter
 from coredb import dbfiles
+from etc.onionrvalues import DATABASE_LOCK_TIMEOUT
 """
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -48,8 +49,8 @@ class OnionrBlackList:
 
         return retData
 
-    def _dbExecute(self, toExec, params = ()):
-        conn = sqlite3.connect(self.blacklistDB)
+    def _dbExecute(self, toExec, params=()):
+        conn = sqlite3.connect(self.blacklistDB, timeout=DATABASE_LOCK_TIMEOUT)
         c = conn.cursor()
         retData = c.execute(toExec, params)
         conn.commit()

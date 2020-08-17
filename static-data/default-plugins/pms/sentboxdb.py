@@ -31,7 +31,7 @@ class SentBox:
         return
 
     def connect(self):
-        self.conn = sqlite3.connect(self.dbLocation)
+        self.conn = sqlite3.connect(self.dbLocation, timeout=30)
         self.cursor = self.conn.cursor()
 
     def close(self):

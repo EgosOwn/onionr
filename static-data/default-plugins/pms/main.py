@@ -31,7 +31,7 @@ import notifier
 locale.setlocale(locale.LC_ALL, '')
 
 plugin_name = 'pms'
-PLUGIN_VERSION = '0.1.0'
+PLUGIN_VERSION = '0.1.1'
 
 sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
 import sentboxdb, mailapi, loadinbox # import after path insert

@@ -1,9 +1,12 @@
-'''
-    Onionr - Private P2P Communication
+"""Onionr - Private P2P Communication.
 
-    Get a list of expired blocks still stored
-'''
-'''
+Get a list of expired blocks still stored
+"""
+import sqlite3
+from onionrutils import epoch
+from .. import dbfiles
+from etc import onionrvalues
+"""
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -16,15 +19,13 @@
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
-'''
-import sqlite3
-from onionrutils import epoch
-from .. import dbfiles
-from etc import onionrvalues
+"""
+
 
 def get_expired_blocks():
-    '''Returns a list of expired blocks'''
-    conn = sqlite3.connect(dbfiles.block_meta_db, timeout=onionrvalues.DATABASE_LOCK_TIMEOUT)
+    """Return a list of expired blocks"""
+    conn = sqlite3.connect(
+        dbfiles.block_meta_db, timeout=onionrvalues.DATABASE_LOCK_TIMEOUT)
     c = conn.cursor()
     date = int(epoch.get_epoch())
 

@@ -27,7 +27,8 @@ def has_block(hash: str) -> bool:
     '''
         Check for new block in the block meta db
     '''
-    conn = sqlite3.connect(dbfiles.block_meta_db, timeout=onionrvalues.DATABASE_LOCK_TIMEOUT)
+    conn = sqlite3.connect(dbfiles.block_meta_db,
+        timeout=onionrvalues.DATABASE_LOCK_TIMEOUT)
     c = conn.cursor()
     if not stringvalidators.validate_hash(hash):
         raise onionrexceptions.InvalidHexHash("Invalid hash")

@@ -17,6 +17,7 @@ import onionrstorage
 from onionrstorage import removeblock
 from onionrblocks import onionrblacklist
 from onionrblocks.storagecounter import StorageCounter
+from etc.onionrvalues import DATABASE_LOCK_TIMEOUT
 """
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -71,7 +72,8 @@ def clean_old_blocks(comm_inst):
 
 def clean_keys(comm_inst):
     """Delete expired forward secrecy keys"""
-    conn = sqlite3.connect(dbfiles.user_id_info_db, timeout=10)
+    conn = sqlite3.connect(dbfiles.user_id_info_db,
+                           timeout=DATABASE_LOCK_TIMEOUT)
     c = conn.cursor()
     time = epoch.get_epoch()
     deleteKeys = []

@@ -1,7 +1,6 @@
-"""
-    Onionr - Private P2P Communication
+"""Onionr - Private P2P Communication.
 
-    This module works with information relating to blocks stored on the node
+Work with information relating to blocks stored on the node
 """
 import sqlite3
 
@@ -27,18 +26,18 @@ update_block_info = updateblockinfo.update_block_info
 add_to_block_DB = add.add_to_block_DB
 
 
-def get_block_list(dateRec = None, unsaved = False):
-    """
-        Get list of our blocks
-    """
-    if dateRec == None:
-        dateRec = 0
+def get_block_list(date_rec=None, unsaved=False):
+    """Get list of our blocks."""
+    if date_rec is None:
+        date_rec = 0
 
-    conn = sqlite3.connect(dbfiles.block_meta_db, timeout=onionrvalues.DATABASE_LOCK_TIMEOUT)
+    conn = sqlite3.connect(
+        dbfiles.block_meta_db, timeout=onionrvalues.DATABASE_LOCK_TIMEOUT)
     c = conn.cursor()
 
-    execute = 'SELECT hash FROM hashes WHERE dateReceived >= ? ORDER BY dateReceived ASC;'
-    args = (dateRec,)
+    execute = 'SELECT hash FROM hashes WHERE dateReceived' + \
+        ' >= ? ORDER BY dateReceived ASC;'
+    args = (date_rec,)
     rows = list()
     for row in c.execute(execute, args):
         for i in row:
@@ -48,11 +47,9 @@ def get_block_list(dateRec = None, unsaved = False):
 
 
 def get_block_date(blockHash):
-    """
-        Returns the date a block was received
-    """
-
-    conn = sqlite3.connect(dbfiles.block_meta_db, timeout=onionrvalues.DATABASE_LOCK_TIMEOUT)
+    """Return the date a block was received."""
+    conn = sqlite3.connect(
+        dbfiles.block_meta_db, timeout=onionrvalues.DATABASE_LOCK_TIMEOUT)
     c = conn.cursor()
 
     execute = 'SELECT dateReceived FROM hashes WHERE hash=?;'
@@ -65,11 +62,10 @@ def get_block_date(blockHash):
 
 
 def get_blocks_by_type(blockType, orderDate=True):
-    """
-        Returns a list of blocks by the type
-    """
+    """Return a list of blocks by the type."""
 
-    conn = sqlite3.connect(dbfiles.block_meta_db, timeout=onionrvalues.DATABASE_LOCK_TIMEOUT)
+    conn = sqlite3.connect(
+        dbfiles.block_meta_db, timeout=onionrvalues.DATABASE_LOCK_TIMEOUT)
     c = conn.cursor()
 
     if orderDate:

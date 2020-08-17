@@ -9,10 +9,11 @@ import os
 from onionrutils import bytesconverter
 from onionrutils import stringvalidators
 from coredb import dbfiles
-import filepaths
+from filepaths import block_data_location
 import onionrexceptions
 from onionrcrypto import hashers
 from . import setdata
+from etc.onionrvalues import DATABASE_LOCK_TIMEOUT
 """
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -34,73 +35,80 @@ DB_ENTRY_SIZE_LIMIT = 10000  # Will be a config option
 set_data = setdata.set_data
 
 
-def _dbInsert(blockHash, data):
-    conn = sqlite3.connect(dbfiles.block_data_db, timeout=10)
+def _dbInsert(block_hash, data):
+    conn = sqlite3.connect(dbfiles.block_data_db,
+                           timeout=DATABASE_LOCK_TIMEOUT)
     c = conn.cursor()
-    data = (blockHash, data)
+    data = (block_hash, data)
     c.execute('INSERT INTO blockData (hash, data) VALUES(?, ?);', data)
     conn.commit()
     conn.close()
 
 
-def _dbFetch(blockHash):
-    conn = sqlite3.connect(dbfiles.block_data_db, timeout=10)
+def _dbFetch(block_hash):
+    conn = sqlite3.connect(dbfiles.block_data_db,
+                           timeout=DATABASE_LOCK_TIMEOUT)
     c = conn.cursor()
-    for i in c.execute('SELECT data from blockData where hash = ?', (blockHash,)):
+    for i in c.execute(
+            'SELECT data from blockData where hash = ?', (block_hash,)):
         return i[0]
     conn.commit()
     conn.close()
     return None
 
 
-def deleteBlock(blockHash):
-    # You should call removeblock.remove_block if you automatically want to remove storage byte count
-    if os.path.exists('%s/%s.dat' % (filepaths.block_data_location, blockHash)):
-        os.remove('%s/%s.dat' % (filepaths.block_data_location, blockHash))
+def deleteBlock(block_hash):
+    # Call removeblock.remove_block to automatically want to remove storage byte count
+    if os.path.exists(f'{block_data_location}/{block_hash}.dat'):
+        os.remove(f'{block_data_location}/{block_hash}.dat')
         return True
-    conn = sqlite3.connect(dbfiles.block_data_db, timeout=10)
+    conn = sqlite3.connect(dbfiles.block_data_db,
+                           timeout=DATABASE_LOCK_TIMEOUT)
     c = conn.cursor()
-    data = (blockHash,)
+    data = (block_hash,)
     c.execute('DELETE FROM blockData where hash = ?', data)
     conn.commit()
     conn.close()
     return True
 
 
-def store(data, blockHash=''):
-    if not stringvalidators.validate_hash(blockHash): raise ValueError
+def store(data, block_hash=''):
+    if not stringvalidators.validate_hash(block_hash):
+        raise ValueError
     ourHash = hashers.sha3_hash(data)
-    if blockHash != '':
-        if not ourHash == blockHash:
+    if block_hash != '':
+        if not ourHash == block_hash:
             raise ValueError('Hash specified does not meet internal hash check')
     else:
-        blockHash = ourHash
+        block_hash = ourHash
 
     if DB_ENTRY_SIZE_LIMIT >= sys.getsizeof(data):
-        _dbInsert(blockHash, data)
+        _dbInsert(block_hash, data)
     else:
-        with open('%s/%s.dat' % (filepaths.block_data_location, blockHash), 'wb') as blockFile:
-            blockFile.write(data)
+        with open(
+                f'{block_data_location}/{block_hash}.dat', 'wb') as blck_file:
+            blck_file.write(data)
 
 
 def getData(bHash):
 
-    if not stringvalidators.validate_hash(bHash): raise ValueError
+    if not stringvalidators.validate_hash(bHash):
+        raise ValueError
 
     bHash = bytesconverter.bytes_to_str(bHash)
     bHash = bHash.strip()
     # First check DB for data entry by hash
     # if no entry, check disk
     # If no entry in either, raise an exception
-    retData = None
-    fileLocation = '%s/%s.dat' % (filepaths.block_data_location, bHash)
+    ret_data = None
+    fileLocation = '%s/%s.dat' % (block_data_location, bHash)
     not_found_msg = "Block data not found for: "
     if os.path.exists(fileLocation):
         with open(fileLocation, 'rb') as block:
-            retData = block.read()
+            ret_data = block.read()
     else:
-        retData = _dbFetch(bHash)
+        ret_data = _dbFetch(bHash)
 
-        if retData is None:
+        if ret_data is None:
             raise onionrexceptions.NoDataAvailable(not_found_msg + str(bHash))
-    return retData
+    return ret_data

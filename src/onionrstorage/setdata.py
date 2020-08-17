@@ -12,6 +12,7 @@ import filepaths
 from onionrblocks import storagecounter
 from coredb import dbfiles
 from onionrutils import blockmetadata, bytesconverter
+from etc.onionrvalues import DATABASE_LOCK_TIMEOUT
 """
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -50,7 +51,8 @@ def set_data(data) -> str:
     except onionrexceptions.NoDataAvailable:
         if storage_counter.add_bytes(dataSize) is not False:
             onionrstorage.store(data, blockHash=dataHash)
-            conn = sqlite3.connect(dbfiles.block_meta_db, timeout=30)
+            conn = sqlite3.connect(
+                dbfiles.block_meta_db, timeout=DATABASE_LOCK_TIMEOUT)
             c = conn.cursor()
             c.execute(
                 "UPDATE hashes SET dataSaved=1 WHERE hash = ?;",
