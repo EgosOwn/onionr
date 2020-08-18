@@ -50,7 +50,7 @@ def set_data(data) -> str:
         onionrstorage.getData(dataHash)
     except onionrexceptions.NoDataAvailable:
         if storage_counter.add_bytes(dataSize) is not False:
-            onionrstorage.store(data, blockHash=dataHash)
+            onionrstorage.store(data, block_hash=dataHash)
             conn = sqlite3.connect(
                 dbfiles.block_meta_db, timeout=DATABASE_LOCK_TIMEOUT)
             c = conn.cursor()
