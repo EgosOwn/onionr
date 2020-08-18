@@ -23,14 +23,15 @@ from etc import onionrvalues
 
 
 def get_expired_blocks():
-    """Return a list of expired blocks"""
+    """Return a list of expired blocks."""
     conn = sqlite3.connect(
         dbfiles.block_meta_db, timeout=onionrvalues.DATABASE_LOCK_TIMEOUT)
     c = conn.cursor()
     date = int(epoch.get_epoch())
 
     compiled = (date,)
-    execute = 'SELECT hash FROM hashes WHERE expire <= ? ORDER BY dateReceived;'
+    execute = 'SELECT hash FROM hashes WHERE ' + \
+        'expire <= ? ORDER BY dateReceived;'
 
     rows = list()
     for row in c.execute(execute, compiled):
