@@ -19,11 +19,21 @@ from etc import onionrvalues
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
+info_numbers = {
+    'address': 0,
+    'type': 1,
+    'knownPeer': 2,
+    'speed': 3,
+    'success': 4,
+    'powValue': 5,
+    'failure': 6,
+    'lastConnect': 7,
+    'trust': 8,
+    'introduced': 9}
 
 
 def get_address_info(address, info):
-    """
-    Get info about an address from its database entry
+    """Get info about an address from its database entry.
 
     address text, 0
     type int, 1
@@ -36,24 +46,23 @@ def get_address_info(address, info):
     trust       8
     introduced  9
     """
-
     conn = sqlite3.connect(
         dbfiles.address_info_db, timeout=onionrvalues.DATABASE_LOCK_TIMEOUT)
     c = conn.cursor()
 
     command = (address,)
-    infoNumbers = {'address': 0, 'type': 1, 'knownPeer': 2, 'speed': 3, 'success': 4, 'powValue': 5, 'failure': 6, 'lastConnect': 7, 'trust': 8, 'introduced': 9}
-    info = infoNumbers[info]
-    iterCount = 0
+
+    info = info_numbers[info]
+    iter_count = 0
     retVal = ''
 
     for row in c.execute('SELECT * FROM adders WHERE address=?;', command):
         for i in row:
-            if iterCount == info:
+            if iter_count == info:
                 retVal = i
                 break
             else:
-                iterCount += 1
+                iter_count += 1
     conn.close()
 
     return retVal
@@ -61,15 +70,15 @@ def get_address_info(address, info):
 
 def set_address_info(address, key, data):
     """Update an address for a key."""
-
     conn = sqlite3.connect(
         dbfiles.address_info_db, timeout=onionrvalues.DATABASE_LOCK_TIMEOUT)
     c = conn.cursor()
 
     command = (data, address)
 
-    if key not in ('address', 'type', 'knownPeer', 'speed', 'success', 'failure', 'powValue', 'lastConnect', 'lastConnectAttempt', 'trust', 'introduced'):
-        raise ValueError("Got invalid database key when setting address info, must be in whitelist")
+    if key not in info_numbers.keys():
+        raise ValueError(
+            "Got invalid database key when setting address info, must be in whitelist")
     else:
         c.execute('UPDATE adders SET ' + key + ' = ? WHERE address=?', command)
         conn.commit()
