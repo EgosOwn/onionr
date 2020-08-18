@@ -17,12 +17,17 @@ from utils import bettersleep
 from lan.discover import lan_ips, MCAST_GRP, MCAST_PORT
 from lan.discover import learn_services, advertise_service
 import socket
+import logger
 from socket import SHUT_RDWR
+from etc import onionrvalues
 lan_ips = ['']
 
 
 class TestLanLearn(unittest.TestCase):
     def test_lan_learn(self):
+        if onionrvalues.IS_QUBES:
+            logger.info('Cannot run LAN tests on Qubes')
+            return
         test_ip = '192.168.1.30'
         def multicast():
             port = 1349

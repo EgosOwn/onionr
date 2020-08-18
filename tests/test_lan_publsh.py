@@ -19,11 +19,16 @@ from lan.discover import lan_ips, MCAST_GRP, MCAST_PORT, IS_ALL_GROUPS
 from lan.discover import advertise_service
 import socket
 from socket import SHUT_RDWR
+import logger
+from etc import onionrvalues
 
 
 class TestLanLearn(unittest.TestCase):
     def test_lan_broadcast(self):
         test_ip = '192.168.1.30'
+        if onionrvalues.IS_QUBES:
+            logger.info('Cannot run LAN tests on Qubes')
+            return
         def multicast():
             sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
             sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
