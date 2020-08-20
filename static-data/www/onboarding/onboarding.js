@@ -66,3 +66,21 @@ document.getElementById('onboardingForm').onsubmit = function(e){
 
     e.preventDefault()
 }
+
+/* Fix label clicking since bulma is weird */
+
+let labelClickFix = function(labels) {
+    for (i = 0; i < labels.length; i++){
+        labels[i].onclick = function(event){
+            document.getElementsByName(event.target.getAttribute("for"))[0].checked ^= 1
+        }
+    }
+
+}
+let setupLabelFix = function(){
+    var labels = document.getElementsByTagName('label')
+    var icons = document.getElementsByTagName('i')
+    labelClickFix(labels)
+    labelClickFix(icons)
+}
+setupLabelFix()
