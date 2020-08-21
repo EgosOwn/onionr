@@ -23,7 +23,7 @@ async function doPing(){
         PNotify.notice('Connection lost with API server')
         }
         apiOnline = false
-    }, 1000)
+    }, 10000)
 return await fetch('/ping', {
     headers: {
         "token": webpass

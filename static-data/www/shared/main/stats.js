@@ -156,9 +156,19 @@ fetch('/config/get/ui.animated_background', {
         if (resp == "false"){
             return
         }
-        /* particlesJS.load(@dom-id, @path-json, @callback (optional)); */
-        particlesJS.load('particles-js', '/shared/main/particles.json', function() {
-            console.debug('callback - particles.js config loaded')
-        })
+        fetch('/config/get/ui.theme', {
+            headers: {
+                "token": webpass
+            }})
+            .then((resp) => resp.text()) // Transform the data into text
+            .then(function(resp) {
+                if (resp == '"dark"'){
+                    /* particlesJS.load(@dom-id, @path-json, @callback (optional)); */
+                    particlesJS.load('particles-js', '/shared/main/particles.json', function() {
+                        console.debug('callback - particles.js config loaded')
+                    })
+                }
+            }
+        )
     }
     )
