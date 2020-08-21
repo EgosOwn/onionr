@@ -61,7 +61,7 @@ class LANServer:
 
         @app.route('/blist/<time>')
         def get_block_list_for_lan(time):
-            return Response('\n'.join(get_block_list(dateRec=time)))
+            return Response('\n'.join(get_block_list(date_rec=time)))
 
         @app.route('/get/<block>')
         def get_block_data(block):
