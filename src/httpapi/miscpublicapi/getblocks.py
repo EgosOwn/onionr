@@ -29,7 +29,7 @@ from .. import apiutils
 def get_public_block_list(publicAPI, request):
     # Provide a list of our blocks, with a date offset
     dateAdjust = request.args.get('date')
-    bList = blockmetadb.get_block_list(dateRec=dateAdjust)
+    bList = blockmetadb.get_block_list(date_rec=dateAdjust)
     share_list = ''
     if config.get('general.hide_created_blocks', True):
         for b in publicAPI.hideBlocks:
