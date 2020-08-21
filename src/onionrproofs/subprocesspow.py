@@ -116,7 +116,10 @@ class SubprocessPOW:
 
         while True:
             # Break if shutdown received
-            if pipe.poll() and pipe.recv() == 'shutdown':
+            try:
+                if pipe.poll() and pipe.recv() == 'shutdown':
+                    break
+            except KeyboardInterrupt:
                 break
             # Load nonce into block metadata
             metadata['pow'] = nonce
