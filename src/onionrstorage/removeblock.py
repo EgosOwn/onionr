@@ -25,6 +25,7 @@ from etc.onionrvalues import DATABASE_LOCK_TIMEOUT
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
+storage_counter = storagecounter.StorageCounter()
 
 
 def remove_block(block):
@@ -42,6 +43,6 @@ def remove_block(block):
         conn.commit()
         conn.close()
         dataSize = sys.getsizeof(onionrstorage.getData(block))
-        storagecounter.StorageCounter().remove_bytes(dataSize)
+        storage_counter.remove_bytes(dataSize)
     else:
         raise onionrexceptions.InvalidHexHash

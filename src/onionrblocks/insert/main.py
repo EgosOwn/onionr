@@ -36,6 +36,7 @@ from onionrtypes import UserIDSecretKey
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
+storage_counter = storagecounter.StorageCounter()
 
 
 def _check_upload_queue():
@@ -72,8 +73,6 @@ def insert_block(data: Union[str, bytes], header: str = 'txt',
     """
     our_private_key = crypto.priv_key
     our_pub_key = crypto.pub_key
-
-    storage_counter = storagecounter.StorageCounter()
 
     allocationReachedMessage = 'Cannot insert block, disk allocation reached.'
     if storage_counter.is_full():

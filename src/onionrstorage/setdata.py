@@ -27,11 +27,11 @@ from etc.onionrvalues import DATABASE_LOCK_TIMEOUT
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
+storage_counter = storagecounter.StorageCounter()
 
 
 def set_data(data) -> str:
     """Set the data assciated with a hash."""
-    storage_counter = storagecounter.StorageCounter()
     data = data
     dataSize = sys.getsizeof(data)
     nonce_hash = crypto.hashers.sha3_hash(
