@@ -8,7 +8,8 @@ print("Please don't run this script on Onionr networks that include more than yo
 
 import sys
 import os
-os.chdir('../')
+if not os.path.exists('onionr.sh'):
+    os.chdir('../')
 sys.path.append("src/")
 import onionrblocks
 

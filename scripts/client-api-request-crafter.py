@@ -8,6 +8,19 @@ import os
 if not os.path.exists('onionr.sh'):
     os.chdir('../')
 sys.path.append("src/")
+
+import atexit
+import readline
+
+histfile = os.path.join(os.path.expanduser("~"), ".onionr_history")
+try:
+    readline.read_history_file(histfile)
+    # default history len is -1 (infinite), which may grow unruly
+    readline.set_history_length(1000)
+except FileNotFoundError:
+    pass
+
+atexit.register(readline.write_history_file, histfile)
 from onionrutils.localcommand import local_command
 from onionrutils.localcommand import get_hostname
 
@@ -16,7 +29,7 @@ try:
 except TypeError:
     print('Onionr not running')
     sys.exit(1)
-print('1. get request')
+print('1. get request (default)')
 print('2. post request')
 choice = input(">").lower().strip()
 post = False

@@ -19,6 +19,7 @@ window.addEventListener("keydown", function(event) {
         let refreshSideBar = function(){
             if (document.hidden){return}
             var existingValue = document.getElementById("insertingBlocks").innerText
+            var existingUploadValue = document.getElementById("uploadBlocks")
             fetch('/getgeneratingblocks', {
                 "method": "get",
                 headers: {
@@ -35,6 +36,23 @@ window.addEventListener("keydown", function(event) {
                         return
                     }
                     document.getElementById("insertingBlocks").innerText = resp.split(',').length - 1
+                })
+            fetch('/getblockstoupload', {
+                "method": "get",
+                headers: {
+                    "token": webpass
+                }})
+                .then((resp) => resp.text())
+                .then(function(resp) {
+                    console.debug(resp.length, existingUploadValue)
+                    if (resp.length <= 2 && existingUploadValue !== "0"){
+                        document.getElementById("uploadBlocks").innerText = "0"
+                        return
+                    }
+                    if (existingUploadValue === resp.split(',').length){
+                        return
+                    }
+                    document.getElementById("uploadBlocks").innerText = resp.split(',').length - 1
                 })
         }
         setInterval(refreshSideBar, 3000)
