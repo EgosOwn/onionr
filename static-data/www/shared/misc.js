@@ -65,18 +65,7 @@ function arrayContains(needle, arrhaystack) {
     return (arrhaystack.indexOf(needle) > -1);
 }
 
-function httpGet(theUrl) {
-    var xmlHttp = new XMLHttpRequest()
-    xmlHttp.open( "GET", theUrl, false ) // false for synchronous request
-    xmlHttp.setRequestHeader('token', webpass)
-    xmlHttp.send( null )
-    if (xmlHttp.status == 200){
-        return xmlHttp.responseText
-    }
-    else{
-        return ""
-    }
-}
+
 function overlay(overlayID) {
     el = document.getElementById(overlayID)
    el.style.visibility = (el.style.visibility == "visible") ? "hidden" : "visible"

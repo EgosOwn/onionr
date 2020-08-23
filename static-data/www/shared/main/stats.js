@@ -25,6 +25,8 @@ totalRec = document.getElementById('totalRec')
 securityLevel = document.getElementById('securityLevel')
 sec_description_str = 'unknown'
 
+statsInterval = null
+
 function showSecStatNotice(){
     var secWarnEls = document.getElementsByClassName('secRequestNotice')
     for (el = 0; el < secWarnEls.length; el++){
@@ -143,7 +145,7 @@ document.addEventListener("visibilitychange", function() {
   })
 
 getStats()
-setInterval(function(){getStats()}, 1000)
+statsInterval = setInterval(function(){getStats()}, 1000)
 
 
 
