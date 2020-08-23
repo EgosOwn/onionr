@@ -34,7 +34,7 @@ var getRecent = function(){
             if (existing.includes(key)){
                 return
             }
-            existing =  key + " - " + value + "\n" + existing
+            existing =  "\n" + key + " - " + value + "\n" + existing
         })
         document.getElementsByClassName('recentBlockList')[0].innerText = existing
         console.debug(data)

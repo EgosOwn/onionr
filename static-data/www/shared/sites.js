@@ -25,7 +25,13 @@ function checkHex(str) {
 }
 
 document.getElementById('openSite').onclick = function(){
-    var hash = document.getElementById('siteViewer').value
+    var hash = document.getElementById('siteViewer').value.trim()
+    if (hash.includes('.onion')){
+        PNotify.notice({
+            text: 'This is for Onionr sites, not Tor onion services.'
+        })
+        return
+    }
     if (hash.length == 0){ return }
     if (checkHex(hash) && hash.length >= 50 || hash.length == 52 || hash.length == 56){
         window.location.href = '/site/' + hash
