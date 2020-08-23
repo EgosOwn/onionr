@@ -40,7 +40,9 @@ class PublicAPISecurity:
 
             if request.host not in transports:
                 # Abort conn if wrong HTTP hostname, to prevent DNS rebinding
-                abort(403)
+                if not public_api.config.get(
+                        'general.allow_public_api_dns_rebinding', False):
+                    abort(403)
             public_api.hitCount += 1  # raise hit count for valid requests
             try:
                 if 'onionr' in request.headers['User-Agent'].lower():
