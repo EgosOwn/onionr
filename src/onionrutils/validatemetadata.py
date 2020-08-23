@@ -90,6 +90,7 @@ def validate_metadata(metadata, block_data) -> bool:
                     encodedMeta = bytesconverter.str_to_bytes(metadata['meta'])
                     encodedBlock = bytesconverter.str_to_bytes(block_data)
                     if not onionrcrypto.signing.ed_verify(encodedMeta + encodedBlock[1:], signer, sig):
+                        logger.warn(f'Block was signed by {signer}, but signature failed')
                         break
         else:
             # if metadata loop gets no errors, it does not break, therefore metadata is valid
