@@ -89,7 +89,7 @@ def lookup_blocks_from_communicator(comm_inst):
         listLookupCommand += '?date=%s' % (lastLookupTime,)
         try:
             newBlocks = peeraction.peer_action(
-                comm_inst,
+                comm_inst.shared_state,
                 peer, listLookupCommand)  # get list of new block hashes
         except Exception as error:
             logger.warn(

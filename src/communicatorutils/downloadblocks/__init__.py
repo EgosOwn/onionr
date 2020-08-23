@@ -89,7 +89,7 @@ def download_blocks_from_communicator(comm_inst: "OnionrCommunicatorDaemon"):
             logger.info(
                 f"Attempting to download %s from {peerUsed}..." % (blockHash[:12],))
         content = peeraction.peer_action(
-            comm_inst, peerUsed,
+            comm_inst.shared_state, peerUsed,
             'getdata/' + blockHash,
             max_resp_size=3000000)  # block content from random peer
 
