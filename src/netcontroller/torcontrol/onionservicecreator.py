@@ -2,9 +2,13 @@
 
 Create an ephemeral onion service
 """
+import stem
+
 from .torcontroller import get_controller
 
 from filepaths import ephemeral_services_file
+
+import logger
 """
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -22,7 +26,11 @@ from filepaths import ephemeral_services_file
 
 
 def create_onion_service(port=80, record_to_service_removal_file=True):
-    controller = get_controller()
+    try:
+        controller = get_controller()
+    except stem.SocketError:
+        logger.error("Could not connect to Tor control")
+        raise
     hs = controller.create_ephemeral_hidden_service(
         {80: port},
         key_type='NEW',

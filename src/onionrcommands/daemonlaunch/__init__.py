@@ -8,6 +8,7 @@ import platform
 from threading import Thread
 
 from stem.connection import IncorrectPassword
+import stem
 import toomanyobjs
 import filenuke
 from deadsimplekv import DeadSimpleKV
@@ -73,9 +74,11 @@ def _show_info_messages():
                 (logger.colors.underline +
                  getourkeypair.get_keypair()[0][:52]))
 
-def _setup_online_mode(use_existing_tor: bool,
-                   net: NetController,
-                   security_level: int):
+
+def _setup_online_mode(
+        use_existing_tor: bool,
+        net: NetController,
+        security_level: int):
     if config.get('transports.tor', True):
         # If we are using tor, check if we are using an existing tor instance
         # if we are, we need to create an onion service on it and set attrs on our NetController
@@ -89,6 +92,12 @@ def _setup_online_mode(use_existing_tor: bool,
             try:
                 net.myID = create_onion_service(
                     port=net.apiServerIP + ':' + str(net.hsPort))[0]
+            except stem.SocketError:
+                logger.error(
+                    "Could not connect to existing Tor service", terminal=True)
+                localcommand.local_command('shutdown')
+                cleanup.delete_run_files()
+                sys.exit(1)
             except IncorrectPassword:
                 # Exit if we cannot connect to the existing Tor instance
                 logger.error('Invalid Tor control password', terminal=True)
