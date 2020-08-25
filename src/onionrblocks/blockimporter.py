@@ -1,8 +1,7 @@
-'''
-    Onionr - Private P2P Communication
+"""Onionr - Private P2P Communication.
 
-    Import block data and save it
-'''
+Import block data and save it
+"""
 from onionrexceptions import BlacklistedBlock
 from onionrexceptions import DiskAllocationReached
 from onionrexceptions import InvalidProof
@@ -10,12 +9,13 @@ from onionrexceptions import InvalidMetadata
 import logger
 from onionrutils import validatemetadata
 from onionrutils import blockmetadata
+from onionrutils import bytesconverter
 from coredb import blockmetadb
 import onionrstorage
 import onionrcrypto as crypto
 from . import onionrblacklist
 
-'''
+"""
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -28,17 +28,14 @@ from . import onionrblacklist
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
-'''
+"""
 
 
 def import_block_from_data(content):
     blacklist = onionrblacklist.OnionrBlackList()
     ret_data = False
 
-    try:
-        content = content.encode()
-    except AttributeError:
-        pass
+    content = bytesconverter.str_to_bytes(content)
 
     data_hash = crypto.hashers.sha3_hash(content)
 
@@ -56,15 +53,15 @@ def import_block_from_data(content):
             logger.info(f'Imported block passed proof, saving: {data_hash}.',
                         terminal=True)
             try:
-                blockHash = onionrstorage.set_data(content)
+                block_hash = onionrstorage.set_data(content)
             except DiskAllocationReached:
                 logger.warn('Failed to save block due to full disk allocation')
                 raise
             else:
-                blockmetadb.add_to_block_DB(blockHash, dataSaved=True)
+                blockmetadb.add_to_block_DB(block_hash, dataSaved=True)
                 # caches block metadata values to block database
-                blockmetadata.process_block_metadata(blockHash)
-                ret_data = blockHash
+                blockmetadata.process_block_metadata(block_hash)
+                ret_data = block_hash
         else:
             raise InvalidProof
     else:

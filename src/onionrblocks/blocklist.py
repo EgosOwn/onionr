@@ -41,7 +41,8 @@ class BlockList:
         if auto_refresh:
             def auto_refresher():
                 observer = Observer()
-                observer.schedule(Refresher(), identify_home(), recursive=False)
+                observer.schedule(
+                    Refresher(), identify_home(), recursive=False)
                 observer.start()
                 while observer.is_alive():
                     # call import func with timeout

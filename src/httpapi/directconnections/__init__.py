@@ -1,9 +1,22 @@
-'''
-    Onionr - Private P2P Communication
+"""Onionr - Private P2P Communication.
 
-    Misc client API endpoints too small to need their own file and that need access to the client api inst
-'''
-'''
+Misc client API endpoints too small to need their own file and that need access to the client api inst
+"""
+# For the client creation thread
+import threading
+
+# For direct connection management HTTP endpoints
+from flask import Response
+# To make the direct connection management blueprint in the webUI
+from flask import Blueprint
+# Mainly to access the shared toomanyobjs object
+from flask import g
+import deadsimplekv
+
+import filepaths
+import onionrservices
+from onionrservices import pool
+"""
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -16,17 +29,8 @@
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
-'''
-import threading # For the client creation thread
+"""
 
-from flask import Response # For direct connection management HTTP endpoints
-from flask import Blueprint # To make the direct connection management blueprint in the webUI
-from flask import g # Mainly to access the shared toomanyobjs object
-import deadsimplekv
-
-import filepaths
-import onionrservices
-from onionrservices import pool
 
 def _get_communicator(g):
     while True:
@@ -35,9 +39,11 @@ def _get_communicator(g):
         except KeyError:
             pass
 
+
 class DirectConnectionManagement:
     def __init__(self, client_api):
-        direct_conn_management_bp = Blueprint('direct_conn_management', __name__)
+        direct_conn_management_bp = Blueprint(
+            'direct_conn_management', __name__)
         self.direct_conn_management_bp = direct_conn_management_bp
 
         cache = deadsimplekv.DeadSimpleKV(filepaths.cached_storage)
@@ -54,7 +60,8 @@ class DirectConnectionManagement:
         def make_new_connection(pubkey):
             communicator = _get_communicator(g)
             resp = "pending"
-            if pubkey in communicator.shared_state.get(pool.ServicePool).bootstrap_pending:
+            if pubkey in communicator.shared_state.get(
+                    pool.ServicePool).bootstrap_pending:
                 return Response(resp)
 
             if pubkey in communicator.direct_connection_clients:
@@ -63,7 +70,9 @@ class DirectConnectionManagement:
                 """Spawn a thread that will create the client and eventually add it to the
                 communicator.active_services
                 """
-                threading.Thread(target=onionrservices.OnionrServices().create_client,
-                                 args=[pubkey, communicator], daemon=True).start()
+                threading.Thread(
+                    target=onionrservices.OnionrServices().create_client,
+                    args=[pubkey, communicator], daemon=True).start()
 
             return Response(resp)
+            

@@ -35,7 +35,8 @@ class OnionrBlackList:
         return
 
     def inBlacklist(self, data):
-        hashed = bytesconverter.bytes_to_str(onionrcrypto.hashers.sha3_hash(data))
+        hashed = bytesconverter.bytes_to_str(
+            onionrcrypto.hashers.sha3_hash(data))
         retData = False
 
         if not hashed.isalnum():
@@ -43,8 +44,10 @@ class OnionrBlackList:
         if len(hashed) > 64:
             raise Exception("Hashed data is too large")
 
-        for i in self._dbExecute("SELECT * FROM blacklist WHERE hash = ?", (hashed,)):
-            retData = True # this only executes if an entry is present by that hash
+        for i in self._dbExecute(
+                "SELECT * FROM blacklist WHERE hash = ?", (hashed,)):
+            # this only executes if an entry is present by that hash
+            retData = True
             break
 
         return retData
@@ -70,7 +73,8 @@ class OnionrBlackList:
         except AttributeError:
             raise TypeError("dataType must be int")
 
-        for i in self._dbExecute('SELECT * FROM blacklist WHERE dataType = ?', (dataType,)):
+        for i in self._dbExecute(
+                'SELECT * FROM blacklist WHERE dataType = ?', (dataType,)):
             if i[1] == dataType:
                 if (curTime - i[2]) >= i[3]:
                     deleteList.append(i[0])
