@@ -19,7 +19,6 @@ conf['general']['security_level'] = 0
 conf['onboarding']['done'] = False
 conf['general']['minimum_block_pow'] = 5
 conf['general']['minimum_send_pow'] = 5
-conf['general']['max_block_age'] = 2678400
 conf['log']['file']['remove_on_exit'] = True
 conf['transports']['lan'] = True
 conf['transports']['tor'] = True

@@ -83,9 +83,7 @@ def lookup_blocks_from_communicator(comm_inst):
         try:
             lastLookupTime = kv.get('dbTimestamps')[peer]
         except KeyError:
-            lastLookupTime = epoch.get_epoch() - \
-                config.get("general.max_block_age",
-                           onionrvalues.DEFAULT_EXPIRE)
+            lastLookupTime = epoch.get_epoch() - onionrvalues.DEFAULT_EXPIRE
         listLookupCommand += '?date=%s' % (lastLookupTime,)
         try:
             newBlocks = peeraction.peer_action(

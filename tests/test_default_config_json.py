@@ -27,7 +27,6 @@ class OnionrConfig(unittest.TestCase):
             self.assertEqual(conf['general']['ephemeral_tunnels'], False)
             self.assertEqual(conf['general']['hide_created_blocks'], True)
             self.assertEqual(conf['general']['insert_deniable_blocks'], True)
-            self.assertEqual(conf['general']['max_block_age'], 2678400)
             self.assertEqual(conf['general']['minimum_block_pow'], 5)
             self.assertEqual(conf['general']['minimum_send_pow'], 5)
             self.assertEqual(conf['general']['public_key'], '')

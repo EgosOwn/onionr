@@ -114,8 +114,8 @@ var getStats = function(){
                     "token": webpass
                 }})
                 .then((resp) => resp.text())
-                .then(function(totalRec) {
-                    totalRec.innerText = totalRec
+                .then(function(resp) {
+                    totalRec.innerText = resp
                 })
             fetch('/lastconnect', {
                 headers: {

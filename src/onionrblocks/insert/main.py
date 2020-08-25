@@ -232,12 +232,7 @@ def insert_block(data: Union[str, bytes], header: str = 'txt',
             if expire is None:
                 coredb.blockmetadb.update_block_info(
                     retData, 'expire',
-                    createTime +
-                    min(
-                        onionrvalues.DEFAULT_EXPIRE,
-                        config.get(
-                            'general.max_block_age',
-                            onionrvalues.DEFAULT_EXPIRE)))
+                    createTime + onionrvalues.DEFAULT_EXPIRE)
             else:
                 coredb.blockmetadb.update_block_info(retData, 'expire', expire)
 

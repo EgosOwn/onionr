@@ -39,7 +39,7 @@ def validate_metadata(metadata, block_data) -> bool:
             pass
 
     # Validate metadata dict for invalid keys to sizes that are too large
-    maxAge = config.get("general.max_block_age", onionrvalues.DEFAULT_EXPIRE)
+    maxAge = onionrvalues.DEFAULT_EXPIRE
     if type(metadata) is dict:
         for i in metadata:
             try:
@@ -100,6 +100,7 @@ def validate_metadata(metadata, block_data) -> bool:
             try:
                 metadata['time']
             except KeyError:
+                logger.warn("Time header not set")
                 return False
 
             nonce = bytesconverter.bytes_to_str(onionrcrypto.hashers.sha3_hash(block_data))
