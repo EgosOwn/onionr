@@ -59,7 +59,8 @@ class LANAPISecurity:
                                    'Clear-Site-Data', 'Referrer-Policy')
             try:
                 if g.is_onionr_client:
-                    for header in NON_NETWORK_HEADERS: del resp.headers[header]
+                    for header in NON_NETWORK_HEADERS:
+                        del resp.headers[header]
             except AttributeError:
                 abort(403)
             lan_client.lastRequest = epoch.get_rounded_epoch(roundS=5)

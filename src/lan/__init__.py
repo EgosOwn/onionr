@@ -31,7 +31,6 @@ class LANManager:
         self.too_many = too_many
         self.peers: "exploded IP Address string" = []
 
-
     def start(self):
         Thread(target=learn_services, daemon=True).start()
         Thread(target=advertise_service, daemon=True).start()

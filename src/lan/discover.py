@@ -4,10 +4,7 @@ Discover and publish private-network
 """
 import socket
 import struct
-from typing import TYPE_CHECKING
-from typing import List
 from ipaddress import ip_address
-from socket import SHUT_RDWR
 
 from .getip import lan_ips, best_ip
 from utils.bettersleep import better_sleep
@@ -32,7 +29,6 @@ IS_ALL_GROUPS = True
 ANNOUNCE_LOOP_SLEEP = 30
 
 
-
 def learn_services():
     """Take a list to infintely add lan service info to."""
 
@@ -54,12 +50,13 @@ def learn_services():
             continue
         service_ips = service_ips.replace('onionr-', '').split('-')
 
-        port = 0
         for service in service_ips:
             try:
                 ip_address(service)
-                if not ip_address(service).is_private: raise ValueError
-                if service in lan_ips: raise ValueError
+                if not ip_address(service).is_private:
+                    raise ValueError
+                if service in lan_ips:
+                    raise ValueError
             except ValueError:
                 pass
             else:
@@ -70,7 +67,8 @@ def advertise_service(specific_ips=None):
     # regarding socket.IP_MULTICAST_TTL
     # ---------------------------------
     # for all packets sent, after three hops on the network the packet will not
-    # be re-sent/broadcast (see https://www.tldp.org/HOWTO/Multicast-HOWTO-6.html)
+    # be re-sent/broadcast
+    # (see https://www.tldp.org/HOWTO/Multicast-HOWTO-6.html)
     MULTICAST_TTL = 3
 
     ips = best_ip

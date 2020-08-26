@@ -7,7 +7,6 @@ import requests
 from typing import Set
 
 from onionrtypes import LANIP
-from utils.bettersleep import better_sleep
 import logger
 from coredb.blockmetadb import get_block_list
 from onionrblocks.blockimporter import import_block_from_data
@@ -38,8 +37,9 @@ def _lan_work(peer: LANIP):
         blocks = requests.get(url + 'blist/0').text.splitlines()
         for block in blocks:
             if block not in our_blocks:
-                import_block_from_data(requests.get(url + f'get/{block}', stream=True).raw.read(6000000))
-        
+                import_block_from_data(
+                    requests.get(
+                        url + f'get/{block}', stream=True).raw.read(6000000))
 
     for port in ports:
         try:

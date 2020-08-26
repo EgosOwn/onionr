@@ -10,7 +10,7 @@ from flask import Blueprint, Response, request, g
 
 if TYPE_CHECKING:
     from deadsimplekv import DeadSimpleKV
-    
+
 import onionrblocks
 from onionrcrypto import hashers
 from onionrutils import bytesconverter
@@ -78,7 +78,7 @@ def client_api_insert_block():
         pass
 
     try:
-        # The setting in the UI is for if forward secrecy is enabled, not disabled
+        # Setting in the mail UI is for if forward secrecy is *enabled*
         disable_forward_secrecy = not insert_data['forward']
     except KeyError:
         disable_forward_secrecy = False

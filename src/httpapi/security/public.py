@@ -64,13 +64,15 @@ class PublicAPISecurity:
             # Network API version
             resp.headers['X-API'] = public_api.API_VERSION
             # Delete some HTTP headers for Onionr user agents
-            NON_NETWORK_HEADERS = ('Content-Security-Policy', 'X-Frame-Options',
-                                   'X-Content-Type-Options', 'Feature-Policy',
-                                   'Clear-Site-Data', 'Referrer-Policy')
+            NON_NETWORK_HEADERS = (
+                'Content-Security-Policy', 'X-Frame-Options',
+                'X-Content-Type-Options', 'Feature-Policy',
+                'Clear-Site-Data', 'Referrer-Policy')
 
             try:
                 if g.is_onionr_client:
-                    for header in NON_NETWORK_HEADERS: del resp.headers[header]
+                    for header in NON_NETWORK_HEADERS:
+                        del resp.headers[header]
             except AttributeError:
                 abort(403)
 

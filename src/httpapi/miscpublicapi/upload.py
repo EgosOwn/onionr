@@ -5,7 +5,6 @@ Accept block uploads to the public API server
 import sys
 
 from gevent import spawn
-from gevent import threading
 from flask import Response
 from flask import abort
 from flask import g
@@ -43,7 +42,7 @@ def accept_upload(request):
                 if g.too_many.get_by_string("DeadSimpleKV").get('onlinePeers'):
                     spawn(
                         localcommand.local_command,
-                        f'/daemon-event/upload_event',
+                        '/daemon-event/upload_event',
                         post=True,
                         is_json=True,
                         post_data={'block': b_hash}

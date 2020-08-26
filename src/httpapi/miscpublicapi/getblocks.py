@@ -45,11 +45,14 @@ def get_block_data(publicAPI, data):
     """data is the block hash in hex"""
     resp = ''
     if stringvalidators.validate_hash(data):
-        if not config.get('general.hide_created_blocks', True) or data not in publicAPI.hideBlocks:
+        if not config.get('general.hide_created_blocks', True) \
+                or data not in publicAPI.hideBlocks:
             if data in publicAPI._too_many.get(BlockList).get():
-                block = apiutils.GetBlockData().get_block_data(data, raw=True, decrypt=False)
+                block = apiutils.GetBlockData().get_block_data(
+                    data, raw=True, decrypt=False)
                 try:
-                    block = block.encode('utf-8') # Encode in case data is binary
+                    # Encode in case data is binary
+                    block = block.encode('utf-8')
                 except AttributeError:
                     if len(block) == 0:
                         abort(404)

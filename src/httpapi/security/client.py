@@ -1,6 +1,7 @@
 """Onionr - Private P2P Communication.
 
-Process incoming requests to the client api server to validate they are legitimate
+Process incoming requests to the client api server to validate
+that they are legitimate and not DNSR/XSRF or other local adversary
 """
 import hmac
 from flask import Blueprint, request, abort, g
@@ -21,17 +22,23 @@ from . import pluginwhitelist
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-# Be extremely mindful of this. These are endpoints available without a password
-whitelist_endpoints = ['www', 'staticfiles.homedata', 'staticfiles.sharedContent',
-'staticfiles.friends', 'staticfiles.friendsindex', 'siteapi.site', 'siteapi.siteFile', 'staticfiles.onionrhome',
-'themes.getTheme', 'staticfiles.onboarding', 'staticfiles.onboardingIndex']
+# Be extremely mindful of this.
+# These are endpoints available without a password
+whitelist_endpoints = [
+    'www', 'staticfiles.homedata',
+    'staticfiles.sharedContent',
+    'staticfiles.friends', 'staticfiles.friendsindex', 'siteapi.site',
+    'siteapi.siteFile', 'staticfiles.onionrhome',
+    'themes.getTheme', 'staticfiles.onboarding', 'staticfiles.onboardingIndex']
+
 
 class ClientAPISecurity:
     def __init__(self, client_api):
         client_api_security_bp = Blueprint('clientapisecurity', __name__)
         self.client_api_security_bp = client_api_security_bp
         self.client_api = client_api
-        pluginwhitelist.load_plugin_security_whitelist_endpoints(whitelist_endpoints)
+        pluginwhitelist.load_plugin_security_whitelist_endpoints(
+            whitelist_endpoints)
 
         @client_api_security_bp.before_app_request
         def validate_request():
@@ -48,14 +55,18 @@ class ClientAPISecurity:
 
             if request.endpoint in whitelist_endpoints:
                 return
-            if request.path.startswith('/site/'): return
+            if request.path.startswith('/site/'):
+                return
 
             try:
-                if not hmac.compare_digest(request.headers['token'], client_api.clientToken):
-                    if not hmac.compare_digest(request.form['token'], client_api.clientToken):
+                if not hmac.compare_digest(
+                        request.headers['token'], client_api.clientToken):
+                    if not hmac.compare_digest(
+                            request.form['token'], client_api.clientToken):
                         abort(403)
             except KeyError:
-                if not hmac.compare_digest(request.form['token'], client_api.clientToken):
+                if not hmac.compare_digest(
+                        request.form['token'], client_api.clientToken):
                     abort(403)
 
         @client_api_security_bp.after_app_request
@@ -63,7 +74,9 @@ class ClientAPISecurity:
             # Security headers
             resp = httpheaders.set_default_onionr_http_headers(resp)
             if request.endpoint in ('siteapi.site', 'siteapi.siteFile'):
-                resp.headers['Content-Security-Policy'] = "default-src 'none'; style-src 'self' data: 'unsafe-inline'; img-src 'self' data:; media-src 'self' data:"
+                resp.headers['Content-Security-Policy'] = \
+                    "default-src 'none'; style-src 'self' data: 'unsafe-inline'; img-src 'self' data:; media-src 'self' data:"  # noqa
             else:
-                resp.headers['Content-Security-Policy'] = "default-src 'none'; script-src 'self'; object-src 'none'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; media-src 'self'; frame-src 'none'; font-src 'self'; connect-src 'self'"
+                resp.headers['Content-Security-Policy'] = \
+                    "default-src 'none'; script-src 'self'; object-src 'none'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; media-src 'self'; frame-src 'none'; font-src 'self'; connect-src 'self'"  # noqa
             return resp

@@ -39,6 +39,7 @@ from utils.bettersleep import better_sleep
 ports = range(1337, 1340)
 _start_time = time.time()
 
+
 class LANServer:
     def __init__(self, shared_state):
         app = Flask(__name__)
@@ -51,12 +52,14 @@ class LANServer:
 
         @app.before_request
         def dns_rebinding_prevention():
-            if request.remote_addr in lan_ips or ipaddress.ip_address(request.remote_addr).is_loopback:
+            if request.remote_addr in lan_ips or \
+                    ipaddress.ip_address(request.remote_addr).is_loopback:
                 if time.time() - _start_time > 600:
                     abort(403)
             if request.host != f'{self.host}:{self.port}':
                 logger.warn('Potential DNS rebinding attack on LAN server:')
-                logger.warn(f'Hostname {request.host} was used instead of {self.host}:{self.port}')
+                logger.warn(
+                    f'Hostname {request.host} was used instead of {self.host}:{self.port}')  # noqa
                 abort(403)
 
         @app.route('/blist/<time>')
@@ -82,14 +85,18 @@ class LANServer:
         def _show_lan_bind(port):
             better_sleep(1)
             if self.server.started and port == self.server.server_port:
-                logger.info(f'Serving to LAN on {self.host}:{self.port}', terminal=True)
+                logger.info(
+                    f'Serving to LAN on {self.host}:{self.port}',
+                    terminal=True)
         if self.host == "":
-            logger.info("Not binding to LAN due to no private network configured.", terminal=True)
+            logger.info(
+                "Not binding to LAN due to no private network configured.",
+                terminal=True)
             return
         for i in ports:
             self.server = WSGIServer((self.host, i),
-                                    self.app, log=None,
-                                    handler_class=FDSafeHandler)
+                                     self.app, log=None,
+                                     handler_class=FDSafeHandler)
             self.port = self.server.server_port
             try:
                 Thread(target=_show_lan_bind, args=[i], daemon=True).start()
@@ -99,5 +106,6 @@ class LANServer:
             else:
                 break
         else:
-            logger.warn("Could not bind to any LAN ports " + str(min(ports)) + "-" + str(max(ports)), terminal=True)
+            logger.warn("Could not bind to any LAN ports " +
+                        str(min(ports)) + "-" + str(max(ports)), terminal=True)
             return

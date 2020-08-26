@@ -1,5 +1,7 @@
 from gevent.pywsgi import WSGIServer, WSGIHandler
 from gevent import Timeout
+
+
 class FDSafeHandler(WSGIHandler):
     '''Our WSGI handler. Doesn't do much non-default except timeouts'''
     def handle(self):
@@ -10,5 +12,5 @@ class FDSafeHandler(WSGIHandler):
         except Timeout as ex:
             if ex is self.timeout:
                 pass
-            else: 
+            else:
                 raise

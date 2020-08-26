@@ -1,9 +1,13 @@
-'''
-    Onionr - Private P2P Communication
+"""Onionr - Private P2P Communication.
 
-    Misc public API endpoints too small to need their own file and that need access to the public api inst
-'''
-'''
+Misc public API endpoints too small to need their own file
+and that need access to the public api inst
+"""
+from flask import Response, Blueprint, request, send_from_directory, abort, g
+from . import getblocks, upload, announce
+from coredb import keydb
+import config
+"""
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -16,11 +20,9 @@
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
-'''
-from flask import Response, Blueprint, request, send_from_directory, abort, g
-from . import getblocks, upload, announce
-from coredb import keydb
-import config
+"""
+
+
 class PublicEndpoints:
     def __init__(self, public_api):
 
@@ -39,7 +41,8 @@ class PublicEndpoints:
 
         @public_endpoints_bp.route('/getblocklist')
         def get_block_list():
-            '''Get a list of blocks, optionally filtered by epoch time stamp, excluding those hidden'''
+            """Get a list of blocks, optionally filtered by epoch time stamp,
+            excluding those hidden"""
             return getblocks.get_public_block_list(public_api, request)
 
         @public_endpoints_bp.route('/getdata/<name>')
@@ -68,14 +71,15 @@ class PublicEndpoints:
 
         @public_endpoints_bp.route('/announce', methods=['post'])
         def accept_announce():
-            '''Accept announcements with pow token to prevent spam'''
+            """Accept announcements with pow token to prevent spam"""
             g.shared_state = public_api._too_many
             resp = announce.handle_announce(request)
             return resp
 
         @public_endpoints_bp.route('/upload', methods=['post'])
         def upload_endpoint():
-            '''Accept file uploads. In the future this will be done more often than on creation 
+            """Accept file uploads.
+            In the future this will be done more often than on creation
             to speed up block sync
-            '''
+            """
             return upload.accept_upload(request)

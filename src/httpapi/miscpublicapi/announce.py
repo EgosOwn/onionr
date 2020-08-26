@@ -9,7 +9,6 @@ import logger
 from etc import onionrvalues
 from onionrutils import stringvalidators, bytesconverter
 import filepaths
-from communicator import OnionrCommunicatorDaemon
 """
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
