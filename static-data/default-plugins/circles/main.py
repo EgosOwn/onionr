@@ -36,7 +36,7 @@ import flowapi  # noqa
 """
 
 flask_blueprint = flowapi.flask_blueprint
-security_whitelist = ['staticfiles.boardContent', 'staticfiles.board']
+security_whitelist = ['circles.circlesstatic', 'circles.circlesindex']
 
 plugin_name = 'circles'
 PLUGIN_VERSION = '0.1.0'

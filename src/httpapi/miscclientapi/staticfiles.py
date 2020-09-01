@@ -43,31 +43,6 @@ def onboard_files(path):
     return send_from_directory(f'{root}onboarding/', path)
 
 
-@static_files_bp.route('/chat/', endpoint='chatIndex')
-def chat_index():
-    return send_from_directory(root + 'chat/', "index.html")
-
-
-@static_files_bp.route('/chat/<path:path>', endpoint='chat')
-def load_chat(path):
-    return send_from_directory(root + 'chat/', path)
-
-
-@static_files_bp.route('/board/', endpoint='board')
-def loadBoard():
-    return send_from_directory(root + 'board/', "index.html")
-
-
-@static_files_bp.route('/mail/<path:path>', endpoint='mail')
-def loadMail(path):
-    return send_from_directory(root + 'mail/', path)
-
-
-@static_files_bp.route('/mail/', endpoint='mailindex')
-def loadMailIndex():
-    return send_from_directory(root + 'mail/', 'index.html')
-
-
 @static_files_bp.route('/friends/<path:path>', endpoint='friends')
 def loadContacts(path):
     return send_from_directory(root + 'friends/', path)
@@ -87,10 +62,6 @@ def loadContacts(path):
 def loadContacts():
     return send_from_directory(root + 'profiles/', 'index.html')
 
-
-@static_files_bp.route('/board/<path:path>', endpoint='boardContent')
-def boardContent(path):
-    return send_from_directory(root + 'board/', path)
 
 
 @static_files_bp.route('/shared/<path:path>', endpoint='sharedContent')

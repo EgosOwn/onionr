@@ -7,6 +7,7 @@ import os
 
 import ujson as json
 from flask import Response, request, redirect, Blueprint, abort
+from flask import send_from_directory
 import deadsimplekv as simplekv
 
 from onionrusers import contactmanager
@@ -32,6 +33,18 @@ import sentboxdb
 """
 flask_blueprint = Blueprint('mail', __name__)
 kv = simplekv.DeadSimpleKV(identifyhome.identify_home() + '/mailcache.dat')
+root = os.path.dirname(os.path.realpath(__file__))
+
+
+@flask_blueprint.route('/mail/<path:path>', endpoint='mailstatic')
+def load_mail(path):
+    return send_from_directory(root + '/web/', path)
+
+
+@flask_blueprint.route('/mail/', endpoint='mailindex')
+def load_mail_index():
+    return send_from_directory(root + '/web/', 'index.html')
+
 
 @flask_blueprint.route('/mail/ping')
 def mail_ping():

@@ -38,7 +38,7 @@ import sentboxdb, mailapi, loadinbox # import after path insert
 from onblacklist import on_blacklist_add
 
 flask_blueprint = mailapi.flask_blueprint
-security_whitelist = ['staticfiles.mail', 'staticfiles.mailindex']
+security_whitelist = ['mail.mailstatic', 'mail.mailindex']
 
 
 def add_deleted(keyStore, b_hash):

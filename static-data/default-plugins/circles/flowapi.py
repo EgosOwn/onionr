@@ -8,6 +8,7 @@ import os
 import ujson as json
 
 from flask import Response, Blueprint
+from flask import send_from_directory
 from deadsimplekv import DeadSimpleKV
 
 from utils import identifyhome
@@ -28,6 +29,9 @@ from utils import identifyhome
 
 flask_blueprint = Blueprint('circles', __name__)
 
+root = os.path.dirname(os.path.realpath(__file__))
+
+
 with open(
     os.path.dirname(
         os.path.realpath(__file__)) + '/info.json', 'r') as info_file:
@@ -40,6 +44,15 @@ read_only_cache = DeadSimpleKV(
     BOARD_CACHE_FILE,
     flush_on_exit=False,
     refresh_seconds=30)
+
+@flask_blueprint.route('/board/<path:path>', endpoint='circlesstatic')
+def load_mail(path):
+    return send_from_directory(root + '/web/', path)
+
+
+@flask_blueprint.route('/board/', endpoint='circlesindex')
+def load_mail_index():
+    return send_from_directory(root + '/web/', 'index.html')
 
 
 @flask_blueprint.route('/circles/getpostsbyboard/<board>')

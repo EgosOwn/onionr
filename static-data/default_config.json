@@ -8,16 +8,16 @@
     "general": {
         "allow_public_api_dns_rebinding": false,
         "announce_node": true,
-        "dev_mode": false,
+        "dev_mode": true,
         "display_header": true,
         "ephemeral_tunnels": false,
         "hide_created_blocks": true,
-        "insert_deniable_blocks": true,
+        "insert_deniable_blocks": false,
         "max_block_age": 2678400,
-        "minimum_block_pow": 5,
-        "minimum_send_pow": 5,
+        "minimum_block_pow": 1,
+        "minimum_send_pow": 1,
         "public_key": "",
-        "random_bind_ip": true,
+        "random_bind_ip": false,
         "security_level": 0,
         "show_notifications": true,
         "store_plaintext_blocks": true,
@@ -31,12 +31,12 @@
         },
         "file": {
             "output": true,
-            "remove_on_exit": true
+            "remove_on_exit": false
         },
         "verbosity": "default"
     },
     "onboarding": {
-        "done": false
+        "done": true
     },
     "peers": {
         "max_connect": 1000,
@@ -69,10 +69,10 @@
     "transports": {
         "lan": true,
         "sneakernet": true,
-        "tor": true
+        "tor": false
     },
     "ui": {
-        "animated_background": true,
+        "animated_background": false,
         "theme": "dark"
     }
 }
