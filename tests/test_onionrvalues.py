@@ -12,6 +12,9 @@ from utils import identifyhome, createdirs
 from etc import onionrvalues
 
 class TestOnionrValues(unittest.TestCase):
+    def test_api_version(self):
+        self.assertEqual(onionrvalues.API_VERSION, '1')
+
     def test_default_expire(self):
         self.assertEqual(onionrvalues.DEFAULT_EXPIRE, 2678400)
 
