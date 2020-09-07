@@ -28,10 +28,14 @@ from utils import logoheader
 
 def show_logo():
     logger.raw('', terminal=True)
+    try:
+        terminal_size = os.get_terminal_size().columns
+    except OSError:  # Generally thrown if not in terminal
+        terminal_size = 120
     # print nice header thing :)
     if config.get('general.display_header', True):
         logoheader.header("")
-        if os.get_terminal_size().columns >= 120:
+        if terminal_size >= 120:
             if QUOTE[1]:  # If there is an author to show for the quote
                 logger.info(
                     "\u001b[33m\033[F" + bordered(QUOTE[0] + '\n -' + QUOTE[1]),
