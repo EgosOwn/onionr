@@ -88,7 +88,7 @@ class OnionrFlow:
         return
 
     def showOutput(self):
-        while type(self.channel) is type(None) and self.flowRunning:
+        while isinstance(self.channel, type(None)) and self.flowRunning:
             time.sleep(1)
         try:
             while self.flowRunning:
@@ -108,7 +108,9 @@ class OnionrFlow:
                     content = escapeansi.escape_ANSI(content.replace(
                         b'\n', b'\\n').replace(b'\r', b'\\r').strip().decode('utf-8'))
                     logger.info(block.getDate().strftime(
-                        "%m/%d %H:%M") + ' - ' + logger.colors.reset + content, prompt=False, terminal=True)
+                        "%m/%d %H:%M") + ' - ' +
+                            logger.colors.reset + content,
+                            prompt=False, terminal=True)
                     self.alreadyOutputed.append(b_hash)
                 time.sleep(5)
         except KeyboardInterrupt:

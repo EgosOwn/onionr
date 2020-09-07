@@ -31,7 +31,7 @@ class PublicEndpoints:
 
         @public_endpoints_bp.route('/')
         def banner():
-            # Display a bit of information to people who visit a node address in their browser
+            # Display info to people who visit a node address in their browser
             try:
                 with open('../static-data/index.html', 'r') as html:
                     resp = Response(html.read(), mimetype='text/html')
@@ -55,7 +55,8 @@ class PublicEndpoints:
             # A way to share files directly over your .onion
             if not config.get("www.public.run", True):
                 abort(403)
-            return send_from_directory(config.get('www.public.path', 'static-data/www/public/'), path)
+            return send_from_directory(
+                config.get('www.public.path', 'static-data/www/public/'), path)
 
         @public_endpoints_bp.route('/ping')
         def ping():

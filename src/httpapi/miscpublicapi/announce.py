@@ -27,7 +27,8 @@ import filepaths
 
 def handle_announce(request):
     """accept announcement posts, validating POW
-    clientAPI should be an instance of the clientAPI server running, request is a instance of a flask request
+    clientAPI should be an instance of the clientAPI server running,
+    request is a instance of a flask request
     """
     resp = 'failure'
     newNode = ''
