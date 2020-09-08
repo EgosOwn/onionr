@@ -4,9 +4,13 @@ Process incoming requests to the client api server to validate
 that they are legitimate and not DNSR/XSRF or other local adversary
 """
 import hmac
+
 from flask import Blueprint, request, abort, g
+
 from onionrservices import httpheaders
 from . import pluginwhitelist
+import config
+import logger
 """
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -31,6 +35,11 @@ whitelist_endpoints = [
     'siteapi.siteFile', 'staticfiles.onionrhome',
     'themes.getTheme', 'staticfiles.onboarding', 'staticfiles.onboardingIndex']
 
+remote_safe_whitelist = ['www', 'staticfiles']
+
+public_remote_enabled = config.get('ui.public_remote_enabled', False)
+public_remote_hostnames = config.get('ui.public_remote_hosts', [])
+
 
 class ClientAPISecurity:
     def __init__(self, client_api):
@@ -42,10 +51,23 @@ class ClientAPISecurity:
 
         @client_api_security_bp.before_app_request
         def validate_request():
-            """Validate request has set password and is the correct hostname"""
+            """Validate request has set password & is the correct hostname."""
             # For the purpose of preventing DNS rebinding attacks
-            if request.host != '%s:%s' % (client_api.host, client_api.bindPort):
-                abort(403)
+            localhost = True
+            if request.host != '%s:%s' % \
+                    (client_api.host, client_api.bindPort):
+                localhost = False
+
+            if not localhost and public_remote_enabled:
+                if request.host not in public_remote_hostnames:
+                    logger.warn(
+                        f'{request.host} not in {public_remote_hostnames}')
+                    abort(403)
+            else:
+                if not localhost:
+                    logger.warn(
+                        f'Possible DNS rebinding attack by {request.host}')
+                    abort(403)
 
             # Add shared objects
             try:
@@ -53,9 +75,11 @@ class ClientAPISecurity:
             except KeyError:
                 g.too_many = None
 
-            if request.endpoint in whitelist_endpoints:
-                return
+            # Static files for Onionr sites
             if request.path.startswith('/site/'):
+                return
+
+            if request.endpoint in whitelist_endpoints:
                 return
 
             try:
