@@ -4,17 +4,16 @@ This module defines commands to show stats/details about the local node
 """
 import os
 import logger
-from onionrblocks import onionrblockapi
 from onionrblocks import onionrblacklist
-from onionrutils import checkcommunicator, mnemonickeys
+from onionrutils import mnemonickeys
 from utils import sizeutils, gethostname, getconsolewidth, identifyhome
 from coredb import blockmetadb, keydb
 import onionrcrypto
 import config
 from etc import onionrvalues
+from filepaths import lock_file
 
-check_communicator = checkcommunicator.is_communicator_running
-
+import psutil
 """
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -31,6 +30,15 @@ check_communicator = checkcommunicator.is_communicator_running
 """
 
 
+def _is_running():
+    script = onionrvalues.SCRIPT_NAME
+    if os.path.isfile(lock_file):
+        for process in psutil.process_iter():
+            if process.name() == script:
+                return True
+    return False
+
+
 def show_stats():
     """Print/log statistic info about our Onionr install."""
     try:
@@ -41,10 +49,12 @@ def show_stats():
 
         messages = {
             # info about local client
+
+            # This line is inaccurate if dev mode is enabled
             'Onionr Daemon Status':
-            ((logger.colors.fg.green + 'Online')
-             if check_communicator(timeout=9)
-             else logger.colors.fg.red + 'Offline'),
+            ((logger.colors.fg.green + 'Online') \
+                if _is_running() \
+                else logger.colors.fg.red + 'Offline'),
 
             # file and folder size stats
             'div1': True,  # this creates a solid line across the screen, a div

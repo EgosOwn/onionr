@@ -25,8 +25,6 @@ site_cache = home + 'onionr-sites.txt'
 tor_hs_loc = home + 'hs/'
 tor_hs_address_file = home + 'hs/hostname'
 
-run_check_file = home + '.runcheck'
-
 data_nonce_file = home + 'block-nonces.dat'
 
 keys_file = home + 'keys.txt'

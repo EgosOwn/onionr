@@ -134,11 +134,6 @@ def daemon():
         logger.error("Tor is not present in system path or Onionr directory",
                      terminal=True)
 
-    # remove runcheck if it exists
-    if os.path.isfile(filepaths.run_check_file):
-        logger.debug('Runcheck file found on daemon start, deleting.')
-        os.remove(filepaths.run_check_file)
-
     # Create shared objects
 
     shared_state = toomanyobjs.TooMany()
