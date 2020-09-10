@@ -53,8 +53,6 @@ def getDifficultyForNewBlock(data):
 
     return totalDifficulty
 
-    return retData
-
 def getHashDifficulty(h: str):
     """
         Return the amount of leading zeroes in a hex hash string (hexHash)
