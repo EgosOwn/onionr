@@ -8,6 +8,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 
+## [5.1.0] - 2020-09-07
+
+* Moved plugin web files to be in the plugin folder to reduce staticfiles blueprint coupling
+* Added basic sidebar on index page
+* Many bug fixes
+
+
 ## [5.0.1] - 2020-08-08
 
 * bumped deadsimplekv to 0.3.2
