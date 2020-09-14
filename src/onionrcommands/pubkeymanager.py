@@ -38,6 +38,7 @@ DETERMINISTIC_REQUIREMENT = onionrvalues.PASSWORD_LENGTH
 def add_ID():
     """Command to create a new user ID key pair."""
     key_manager = keymanager.KeyManager()
+    pw = ""
     try:
         sys.argv[2]  # pylint: disable=W0104
         if not sys.argv[2].lower() == 'true':
@@ -45,36 +46,8 @@ def add_ID():
     except (IndexError, ValueError):
         newID = key_manager.addKey()[0]
     else:
-        logger.warn(
-            'Deterministic keys require random and long passphrases.',
-            terminal=True)
-        logger.warn(
-            'If a good passphrase is not used, your key can be easily stolen.',
-            terminal=True)
-        logger.warn(
-            'You should use a series of hard to guess words, ' +
-            'see this for reference: https://www.xkcd.com/936/',
-            terminal=True)
-        try:
-            pass1 = getpass.getpass(
-                prompt='Enter at least %s characters: ' %
-                (DETERMINISTIC_REQUIREMENT,))
-            pass2 = getpass.getpass(prompt='Confirm entry: ')
-        except KeyboardInterrupt:
-            sys.exit(42)
-        if onionrcrypto.cryptoutils.safe_compare(pass1, pass2):
-            try:
-                logger.info(
-                    'Generating deterministic key. This can take a while.',
-                    terminal=True)
-                newID, privKey = onionrcrypto.generate_deterministic(pass1)
-            except onionrexceptions.PasswordStrengthError:
-                logger.error('Passphrase must use at least %s characters.' % (
-                    DETERMINISTIC_REQUIREMENT,), terminal=True)
-                sys.exit(1)
-        else:
-            logger.error('Passwords do not match.', terminal=True)
-            sys.exit(1)
+        pw = "-".join(niceware.generate_passphrase(32))
+        newID, privKey = onionrcrypto.generate_deterministic(pw)
         try:
             key_manager.addKey(pubKey=newID,
                                privKey=privKey)
@@ -83,8 +56,10 @@ def add_ID():
                 'That ID is already available, you can change to it ' +
                 'with the change-id command.', terminal=True)
             return
+    if pw:
+        print("Phrase to restore ID:", pw)
     logger.info('Added ID: %s' %
-                (bytesconverter.bytes_to_str(newID),), terminal=True)
+                (bytesconverter.bytes_to_str(newID.replace('=', '')),), terminal=True)
 
 
 add_ID.onionr_help = "If the first argument is true, "  # type: ignore

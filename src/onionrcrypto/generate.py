@@ -9,7 +9,7 @@ def generate_pub_key():
     return (public_key.decode(), private_key.encode(encoder=nacl.encoding.Base32Encoder()).decode())
 
 def generate_deterministic(passphrase, bypassCheck=False):
-    '''Generate a Ed25519 public key pair from a password'''
+    '''Generate a Ed25519 public key pair from a phase, not intended for human-generated key'''
     passStrength = onionrvalues.PASSWORD_LENGTH
     passphrase = bytesconverter.str_to_bytes(passphrase) # Convert to bytes if not already
     # Validate passphrase length
@@ -18,7 +18,7 @@ def generate_deterministic(passphrase, bypassCheck=False):
             raise onionrexceptions.PasswordStrengthError("Passphase must be at least %s characters" % (passStrength,))
     # KDF values
     kdf = nacl.pwhash.argon2id.kdf
-    salt = b"U81Q7llrQcdTP0Ux" # Does not need to be unique or secret, but must be 16 bytes
+    salt = b"U81Q7llrQcdTP0Ux" # Does not need to be secret, but must be 16 bytes
     ops = nacl.pwhash.argon2id.OPSLIMIT_SENSITIVE
     mem = nacl.pwhash.argon2id.MEMLIMIT_SENSITIVE
 
