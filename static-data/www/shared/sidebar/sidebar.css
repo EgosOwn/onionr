@@ -1,4 +1,9 @@
 .quickview-body{
     font-size: 1em;
-    background-color: #38292c;
+    background-color: #282f2f;
+}
+.quickview-block{
+    padding-left: 1em;
+    padding-top: 5px;
+    font-size: 1em;
 }

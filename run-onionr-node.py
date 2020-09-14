@@ -59,8 +59,8 @@ parser.add_argument(
     "--show-stats", help="Display curses output of Onionr stats",
     type=int, default=0)
 parser.add_argument(
-    "--skip-onboarding", help="Skip Onionr onboarding",
-    type=int, default=0)
+    "--onboarding", help="Use Onionr onboarding (if first load)",
+    type=int, default=1)
 parser.add_argument(
     "--security-level", help="Set Onionr security level",
     type=int, default=0)
@@ -76,6 +76,9 @@ parser.add_argument(
 parser.add_argument(
     '--private-key', help='Use existing private key',
     type=int, default=1)
+parser.add_argument(
+    '--animated-background', help='Animated background on webui index. Just for looks.',
+    type=int, default=0)
 args = parser.parse_args()
 
 p = Popen([sub_script, 'version'], stdout=DEVNULL)
@@ -88,14 +91,14 @@ from coredb import blockmetadb
 with open(config_file, 'r') as cf:
     config = ujson.loads(cf.read())
 
-if args.skip_onboarding:
+if not args.onboarding:
     config['onboarding']['done'] = True
-    print('Disabling onboarding')
 if not args.random_localhost_ip:
-    print('Disabling randomized localhost')
     config['general']['random_bind_ip'] = False
 if not args.use_tor:
     config['transports']['tor'] = False
+if not args.animated_background:
+    config['ui']['animated_background'] = False
 config['general']['display_header'] = False
 config['general']['security_level'] = args.security_level
 

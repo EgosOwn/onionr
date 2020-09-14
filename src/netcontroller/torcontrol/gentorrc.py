@@ -79,8 +79,8 @@ HashedControlPassword """ + str(password) + """
     if config.get('general.security_level', 1) == 0:
         torrc_data += """\nHiddenServiceDir """ + home_dir + """hs/
 \n""" + hs_ver + """\n
-HiddenServiceNumIntroductionPoints 6
-HiddenServiceMaxStreams 100
+HiddenServiceNumIntroductionPoints 20
+HiddenServiceMaxStreams 500
 HiddenServiceMaxStreamsCloseCircuit 1
 HiddenServicePort 80 """ + api_server_ip + """:""" + str(hs_port)
 
