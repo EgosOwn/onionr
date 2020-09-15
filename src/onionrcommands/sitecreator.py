@@ -6,6 +6,8 @@ import sys
 import os
 import getpass
 
+from niceware import generate_passphrase
+
 from httpapi import onionrsitesapi
 import logger
 from etc import onionrvalues
@@ -42,14 +44,8 @@ def create_multipage_site():
 If you want to update your site later you must remember the passphrase.''',
                     terminal=True)
 
-        passphrase = getpass.getpass(
-            'Please enter a site passphrase of at least ' +
-            str(onionrvalues.PASSWORD_LENGTH) + ' characters.')
-
-        confirm = getpass.getpass('Confirm passphrase:')
-        if passphrase != confirm:
-            logger.error('Passphrases do not match', terminal=True)
-            error_encountered = True
+        passphrase = "-".join(generate_passphrase(32))
+        print("Site restore phrase:", passphrase)
 
     if len(passphrase) < onionrvalues.PASSWORD_LENGTH:
         error_encountered = True
