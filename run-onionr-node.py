@@ -79,6 +79,9 @@ parser.add_argument(
 parser.add_argument(
     '--animated-background', help='Animated background on webui index. Just for looks.',
     type=int, default=0)
+parser.add_argument(
+    '--keep-log-on-exit', help='Onionr can keep or delete its log file on exit',
+    type=int, default=0)
 args = parser.parse_args()
 
 p = Popen([sub_script, 'version'], stdout=DEVNULL)
@@ -99,6 +102,10 @@ if not args.use_tor:
     config['transports']['tor'] = False
 if not args.animated_background:
     config['ui']['animated_background'] = False
+if args.keep_log_on_exit:
+    config['log']['file']['remove_on_exit'] = True
+else:
+    config['log']['file']['remove_on_exit'] = False
 config['general']['display_header'] = False
 config['general']['security_level'] = args.security_level
 
