@@ -24,7 +24,6 @@ import logger
 
 def toggle_bootstrap_config():
     """Toggles the bootstrap configuration."""
-    print("test")
     if config.get('general.use_bootstrap_list') is None:
         logger.error('No general.bootstrap_list setting found')
         sys.exit(3)

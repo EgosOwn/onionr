@@ -30,3 +30,6 @@ def rebuild():
         is_json=True,
         post_data={}
     ).get(10)
+
+
+rebuild.onionr_help = "If Onionr is running and is managing its own Tor daemon, restart that daemon."

@@ -53,7 +53,7 @@ def net_check(comm_inst):
                                 'the Internet, and is Tor working? ' +
                                 'This is usually temporary, but bugs and censorship can cause this to persist, in which case you should report it to beardog [at] mailbox.org',  # noqa
                                 terminal=True)
-                    restarttor.restart(comm_inst)
+                    restarttor.restart(comm_inst.shared_state)
                     kv.put('offlinePeers', [])
             kv.put('isOnline', False)
         else:

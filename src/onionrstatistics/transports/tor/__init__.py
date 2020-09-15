@@ -1,10 +1,11 @@
 """Onionr - Private P2P Communication.
 
-
+tor stats info
 """
 import ujson as json
 from stem import CircStatus
 
+import logger
 from netcontroller.torcontrol.torcontroller import get_controller
 
 """
@@ -36,6 +37,9 @@ class TorStats:
         "purpose": https://stem.torproject.org/api/control.html#stem.CircPurpose
         """
         if self.controller is None:
+            self.controller = get_controller()
+        if not self.controller.is_alive():
+            logger.info(f'{__name__} reconnecting to tor control')
             self.controller = get_controller()
         self.get_circuits()
         json_serialized = {}

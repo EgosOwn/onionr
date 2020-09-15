@@ -20,6 +20,46 @@
 shutdownBtn = document.getElementById('shutdownNode')
 restartBtn = document.getElementById('restartNode')
 
+
+let restartTorBtnControl = function(){
+    if (typeof config == "undefined" || typeof config.tor == "undefined"){
+        setTimeout(function(){restartTorBtnControl()}, 10)
+        return
+    }
+    var restartTor = document.getElementsByClassName('restartTor')[0]
+
+    if (config.tor.use_existing_tor){
+        restartTor.classList.add('is-hidden')
+        return
+    }
+
+    restartTor.onclick = function(){
+        if (restartTor.disabled){
+            console.debug("Tor still restarting (or restart_tor event failed)")
+            return
+        }
+        restartTor.disabled = true
+        PNotify.success({
+            text: 'Initializing Tor restart...'
+        })
+        fetch('/daemon-event/restart_tor', {
+            method: 'POST',
+            body: {},
+            headers: {
+            "content-type": "application/json",
+            "token": webpass
+            }})
+        .then((resp) => resp.text())
+        .then(function(data) {
+            PNotify.success({
+                text: 'Tor restarting...'
+            })
+            restartTor.disabled = false
+        })
+    }
+}
+restartTorBtnControl()
+
 shutdownBtn.onclick = function(){
     if (! nowebpass){
         if (confirm("Really shutdown Onionr?")){

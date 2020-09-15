@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="/shared/fontawesome-free-5.10.2/css/all.min.css">
     <link rel="stylesheet" href="/shared/main/PNotifyBrightTheme.css">
     <link rel="stylesheet" href="/shared/bulma-quickview.min.css">
+    <link rel="stylesheet" href="/shared/bulma-tooltip.min.css">
     <link rel="stylesheet" href="/gettheme">
     <link rel="stylesheet" href="/shared/sidebar/sidebar.css">
     <script defer src="/shared/node_modules/pnotify/dist/iife/PNotify.js"></script>
@@ -272,6 +273,12 @@
                             Outgoing Connections:
                             <div class="control">
                                 <pre id="connectedNodes">Unable to get nodes</pre>
+                            </div>
+                            <br>
+                            <div class="field">
+                                <p class="control">
+                                    <a class="button is-light restartTor" data-tooltip="Use if there have been no incoming or outgoing connections in a long time">Restart Tor</a>
+                                </p>
                             </div>
                             <br>
                             <h4>Blocks</h4>

@@ -67,14 +67,16 @@ def daemon_event_handlers(shared_state: 'TooMany'):
         return "removed"
 
     def restart_tor():
-        restarttor.restart(comm_inst)
+        restarttor.restart(shared_state)
         kv.put('offlinePeers', [])
+        kv.put('onlinePeers', [])
 
     def test_runtime():
         Thread(target=comm_inst.shared_state.get_by_string(
             "OnionrRunTestManager").run_tests).start()
 
     events_api.register_listener(remove_from_insert_queue_wrapper)
+    events_api.register_listener(restart_tor)
     events_api.register_listener(print_test)
     events_api.register_listener(upload_event)
     events_api.register_listener(test_runtime)
