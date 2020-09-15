@@ -21,6 +21,7 @@
         "security_level": 0,
         "show_notifications": true,
         "store_plaintext_blocks": true,
+        "upload_mixing": false,
         "use_bootstrap_list": true,
         "use_subprocess_pow_if_possible": true
     },

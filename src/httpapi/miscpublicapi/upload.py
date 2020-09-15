@@ -13,6 +13,7 @@ from onionrutils import localcommand
 from onionrblocks import blockimporter
 import onionrexceptions
 import logger
+import config
 
 """
     This program is free software: you can redistribute it and/or modify
@@ -39,7 +40,12 @@ def accept_upload(request):
         try:
             b_hash = blockimporter.import_block_from_data(data)
             if b_hash:
-                if g.too_many.get_by_string("DeadSimpleKV").get('onlinePeers'):
+                # Upload mixing is where a node will hide and reupload a block
+                # to act like it is also a creator
+                # This adds deniability but is very slow
+                if g.too_many.get_by_string(
+                        "DeadSimpleKV").get('onlinePeers') and \
+                        config.get('general.upload_mixing', False):
                     spawn(
                         localcommand.local_command,
                         '/daemon-event/upload_event',
