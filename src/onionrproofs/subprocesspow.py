@@ -8,13 +8,15 @@ import os
 from multiprocessing import Pipe, Process
 import threading
 import time
+import secrets
+
 import onionrproofs
 
 import ujson as json
 
 import logger
-import onionrcrypto as crypto
 from onionrutils import bytesconverter
+from onionrcrypto.hashers import sha3_hash
 
 """
     This program is free software: you can redistribute it and/or modify
@@ -111,6 +113,7 @@ class SubprocessPOW:
         nonce = 0
         data = self.data
         metadata = self.metadata
+        metadata['nonce'] = secrets.randbits(16)
         puzzle = self.puzzle
         difficulty = self.difficulty
 
@@ -127,7 +130,7 @@ class SubprocessPOW:
             payload = json.dumps(metadata).encode() + b'\n' + data
             # Check sha3_256 hash of block, compare to puzzle
             # Send payload if puzzle finished
-            token = crypto.hashers.sha3_hash(payload)
+            token = sha3_hash(payload)
             # ensure token is string
             token = bytesconverter.bytes_to_str(token)
             if puzzle == token[0:difficulty]:
