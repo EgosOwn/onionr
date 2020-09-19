@@ -10,9 +10,11 @@ from flask import Response, request, redirect, Blueprint, abort
 from flask import send_from_directory
 import deadsimplekv as simplekv
 
+from httpapi.sse.wrapper import SSEWrapper
 from onionrusers import contactmanager
 from onionrutils import stringvalidators
 from utils import reconstructhash, identifyhome
+from utils.bettersleep import better_sleep as sleep
 
 sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
 import loadinbox
@@ -35,6 +37,7 @@ flask_blueprint = Blueprint('mail', __name__)
 kv = simplekv.DeadSimpleKV(identifyhome.identify_home() + '/mailcache.dat')
 root = os.path.dirname(os.path.realpath(__file__))
 
+sse_wrapper = SSEWrapper()
 
 @flask_blueprint.route('/mail/<path:path>', endpoint='mailstatic')
 def load_mail(path):
@@ -67,6 +70,16 @@ def mail_delete(block):
 @flask_blueprint.route('/mail/getinbox')
 def list_inbox():
     return ','.join(loadinbox.load_inbox())
+
+
+@flask_blueprint.route('/mail/streaminbox')
+def stream_inbox():
+    def _stream():
+        while True:
+            yield "data: " + ','.join(loadinbox.load_inbox()) + "\n\n"
+            sleep(1)
+    return sse_wrapper.handle_sse_request(_stream)
+
 
 @flask_blueprint.route('/mail/getsentbox')
 def list_sentbox():

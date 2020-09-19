@@ -75,7 +75,7 @@ parser.add_argument(
     type=int, default=1)
 parser.add_argument(
     '--private-key', help='Use existing private key',
-    type=int, default=1)
+    type=str, default=0)
 parser.add_argument(
     '--animated-background', help='Animated background on webui index. Just for looks.',
     type=int, default=0)
@@ -86,13 +86,21 @@ args = parser.parse_args()
 
 p = Popen([sub_script, 'version'], stdout=DEVNULL)
 p.wait()
-from filepaths import config_file
+from filepaths import config_file, keys_file
 from coredb import blockmetadb
-
+import onionrcrypto
 
 
 with open(config_file, 'r') as cf:
     config = ujson.loads(cf.read())
+
+
+if args.private_key:
+    priv = args.private_key
+    pub = onionrcrypto.cryptoutils.get_pub_key_from_priv(priv)
+    with open(keys_file, "a") as f:
+        f.write(',' + pub.decode() + ',' + priv)
+    config['general']['public_key'] = pub
 
 if not args.onboarding:
     config['onboarding']['done'] = True
@@ -110,7 +118,7 @@ config['general']['display_header'] = False
 config['general']['security_level'] = args.security_level
 
 with open(config_file, 'w') as cf:
-    cf.write(ujson.dumps(config))
+    cf.write(ujson.dumps(config, reject_bytes=False))
 
 if args.open_ui:
     p = Popen([sub_script, 'start'], stdout=DEVNULL)

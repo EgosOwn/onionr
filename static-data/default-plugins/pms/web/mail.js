@@ -382,6 +382,9 @@ function refreshPms(callNext){
     if (! window.inboxActive){
         return
     }
+    if (document.hidden){
+        return
+    }
 fetch('/mail/getinbox', {
     headers: {
       "token": webpass
@@ -448,3 +451,17 @@ document.addEventListener("visibilitychange", function() {
         refreshPms()
     }
   })
+
+/*
+let mailStream = function(){
+    var streamSource = new EventSourcePolyfill('/mail/streaminbox', {
+    headers: {
+        "token": webpass
+    }
+    })
+    streamSource.onmessage = function(e){
+        console.debug(e.data)
+    }
+}
+mailStream()
+*/
