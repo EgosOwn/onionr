@@ -94,6 +94,11 @@ function appendMessages(msg, blockHash, beforeHash, channel) {
         if (typeof msg['meta']['signer'] != 'undefined' && msg['meta']['signer'].length > 0){
             div[3].textContent = msg['meta']['signer'].substr(0, 5)
             setHumanReadableIDOnPost(div[3], msg['meta']['signer'])
+            div[3].onclick = function(){
+                navigator.clipboard.writeText(div[3].title).then(function() {
+                    PNotify.notice("Copied poster identity to clipboard")
+                })
+            }
             div[3].title = msg['meta']['signer']
             userIcon(msg['meta']['signer']).then(function(data){
                 identicon[0].src = "data:image/svg+xml;base64," + data

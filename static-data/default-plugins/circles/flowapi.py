@@ -108,6 +108,7 @@ def remove_from_cache(board, name):
 
 @flask_blueprint.route('/circles/getpopular/<count>')
 def get_popular(count):
+    read_only_cache.refresh()
     boards = json.loads(read_only_cache.get_raw_json())
     for board in boards:
         boards[board] = len(boards[board])

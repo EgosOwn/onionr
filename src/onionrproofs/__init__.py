@@ -7,7 +7,7 @@ import nacl.encoding, nacl.hash, nacl.utils
 
 import config
 import logger
-from onionrblocks import onionrblockapi, storagecounter
+from onionrblocks import onionrblockapi
 from onionrutils import bytesconverter
 from onionrcrypto import hashers
 
@@ -28,16 +28,6 @@ from .blocknoncestart import BLOCK_NONCE_START_INT
 """
 config.reload()
 
-storage_counter = storagecounter.StorageCounter()
-
-def getDifficultyModifier():
-    """returns the difficulty modifier for block storage based
-    on a variety of factors, currently only disk use.
-    """
-    percentUse = storage_counter.get_percent()
-    difficultyIncrease = math.floor(4 * percentUse) # difficulty increase is a step function
-
-    return difficultyIncrease
 
 def getDifficultyForNewBlock(data):
     """
@@ -49,15 +39,17 @@ def getDifficultyForNewBlock(data):
         dataSizeInBytes = len(bytesconverter.str_to_bytes(data))
 
     minDifficulty = config.get('general.minimum_send_pow', 4)
-    totalDifficulty = max(minDifficulty, math.floor(dataSizeInBytes / 1000000.0)) + getDifficultyModifier()
+    totalDifficulty = max(minDifficulty, math.floor(dataSizeInBytes / 1000000.0))
 
     return totalDifficulty
+
 
 def getHashDifficulty(h: str):
     """
         Return the amount of leading zeroes in a hex hash string (hexHash)
     """
     return len(h) - len(h.lstrip('0'))
+
 
 def hashMeetsDifficulty(hexHash):
     """
