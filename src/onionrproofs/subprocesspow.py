@@ -113,7 +113,7 @@ class SubprocessPOW:
         nonce = 0
         data = self.data
         metadata = self.metadata
-        metadata['nonce'] = secrets.randbits(16)
+        metadata['n'] = secrets.randbits(16)
         puzzle = self.puzzle
         difficulty = self.difficulty
 

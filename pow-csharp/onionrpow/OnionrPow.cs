@@ -11,7 +11,7 @@ namespace onionrpow
         public static void compute(byte[] data, int difficulty){
             using (var shaAlg = SHA3.Net.Sha3.Sha3256())
             {
-                // Replace beginning json with nonce
+                // Replace beginning json with counter
                 int counter = 0;
                 var copy = new List<byte>();
 
@@ -25,12 +25,12 @@ namespace onionrpow
                     copy.Add(co);
                 }
                 int c = 0;
+                var copy2 = new List<byte>();
                 while (true){
                     toploop:
                     c += 1;
                     var num = Encoding.UTF8.GetBytes("{\"pow\": " + c.ToString() + ",");
-                    var copy2 = new List<byte>();
-
+                    copy2.Clear();
                     copy2.AddRange(num);
                     copy2.AddRange(copy);
                     var hash = shaAlg.ComputeHash(copy2.ToArray());
@@ -45,7 +45,9 @@ namespace onionrpow
                             break;
                         }
                     }
+                    Console.WriteLine(Encoding.UTF8.GetString(copy2.ToArray()));
                     Console.WriteLine(BitConverter.ToString(hash));
+                    Console.WriteLine(c);
                     break;
                }
             }
