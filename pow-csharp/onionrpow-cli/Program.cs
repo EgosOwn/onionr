@@ -21,7 +21,7 @@ namespace onionrpow_cli
                     //stdout.Write(buffer, 0, bytes);
                     data.AddRange(buffer);
                 }
-                onionrpow.OnionrPow.compute(data.ToArray(), 3);
+                onionrpow.OnionrPow.compute(data.ToArray(), 1);
             }
         }
     }
