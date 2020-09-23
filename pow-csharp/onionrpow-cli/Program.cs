@@ -12,6 +12,8 @@ namespace onionrpow_cli
         static void Main(string[] args)
         {
 
+            TimeSpan t = DateTime.UtcNow - new DateTime(1970, 1, 1);
+            int secondsSinceEpoch = (int)t.TotalSeconds;
             using (Stream stdin = Console.OpenStandardInput())
             {
                 var data = new List<byte>();
@@ -23,6 +25,8 @@ namespace onionrpow_cli
                 }
                 onionrpow.OnionrPow.compute(data.ToArray(), 2);
             }
+            TimeSpan t2 = DateTime.UtcNow - new DateTime(1970, 1, 1);
+            Console.WriteLine((int)t2.TotalSeconds - secondsSinceEpoch);
         }
     }
 }

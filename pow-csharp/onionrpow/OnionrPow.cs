@@ -2,6 +2,7 @@
 using System.Text;
 using System.Linq;
 using System.Collections.Generic;
+using System.Security.Cryptography;
 using Newtonsoft.Json;
 using SHA3;
 
@@ -29,6 +30,7 @@ namespace onionrpow
     {
         public static void compute(byte[] data, int difficulty){
             using (var shaAlg = SHA3.Net.Sha3.Sha3256())
+            //using (SHA256 shaAlg = SHA256.Create())
             {
                 string stringData = Encoding.UTF8.GetString(data);
                 bool found = false;
@@ -54,41 +56,66 @@ namespace onionrpow
                 block.n = new Random().Next(10000);
                 block.c = 0;
 
+                metadataJson.Clear();
+                metadataJson.AddRange(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(block)));
+                int location = Encoding.UTF8.GetString(metadataJson.ToArray()).IndexOf("\"c\":");
+
+                var metadata1 = new List<byte>();
+                var metadata2 = new List<byte>();
+                var countKey = new List<byte>();
+                countKey.AddRange(Encoding.UTF8.GetBytes("\"c\":"));
+
+                bool afterNum = false;
+                for (int i = location + 4; i < metadataJson.Count; i++){
+                    if (!afterNum && ((char) metadataJson[i]).Equals(',')){
+                        afterNum = true;
+                        continue;
+                    }
+                    if (afterNum){
+                        metadata2.Add(metadataJson[i]);
+                    }
+                }
+                for (int i = 0; i < location; i++){
+                    metadata1.Add(metadataJson[i]);
+                }
+
+                var preCompiled = new List<byte>();
+                preCompiled.AddRange(metadata1);
+                preCompiled.AddRange(countKey);
+                int powCounter = 0;
+
                 var justDataArray = justData.ToArray();
                 justData.Clear();
-                var encoded = new List<byte>();
-                int calculatedDifficulty = 0;
-
-                var nl = Encoding.UTF8.GetBytes("\n")[0];
-
+                int difficultyCounter = 0;
                 while(true){
-                    encoded.Clear();
-                    encoded.AddRange(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(block)));
-                    // TODO keep nl and dataarray in
-                    encoded.Add(nl);
-                    encoded.AddRange(justDataArray);
-                    var encodedArray = encoded.ToArray();
-
-                    calculatedDifficulty = 0;
-
-                    foreach(char c in shaAlg.ComputeHash(encodedArray)){
-                        if (c == 0){
-                            calculatedDifficulty += 1;
-                            if (calculatedDifficulty == difficulty){
-                                Console.WriteLine(counter);
-                                Console.WriteLine(Encoding.UTF8.GetString(encodedArray));
-                                Console.WriteLine(BitConverter.ToString(shaAlg.ComputeHash(encodedArray)));
-
+                    var compiled = preCompiled.ToList();
+                    compiled.AddRange(metadata1);
+                    compiled.AddRange(Encoding.UTF8.GetBytes(powCounter.ToString()));
+                    compiled.AddRange(metadata2);
+                    compiled.AddRange(justDataArray);
+                    var hash = shaAlg.ComputeHash(compiled.ToArray());
+                    foreach (byte b in hash){
+                        if (b == 0){
+                            difficultyCounter += 1;
+                            if (difficultyCounter == difficulty){
+                                Console.WriteLine(powCounter);
+                                Console.WriteLine(BitConverter.ToString(hash));
                                 goto powDone;
                             }
+                            continue;
                         }
-                        else{
-                            break;
-                        }
+                        difficultyCounter = 0;
+                        break;
                     }
-
-                    block.c += 1;
+                    //Console.WriteLine(powCounter);
+                    powCounter += 1;
                 }
+
+
+
+
+                //Console.WriteLine(location);
+                //Console.WriteLine(Encoding.UTF8.GetString(metadataJson.ToArray()));
             }
             powDone:;
         }
