@@ -17,13 +17,12 @@ namespace onionrpow
         public string meta { get; set; }
         public string sig { get; set; }
         public string signer { get; set; }
+
+        public int n;
+        public int c;
         public int time;
 
-        private List<byte> data;
-
-        public void setData(List<byte> blockData){
-            this.data = blockData;
-        }
+        //public List<byte> data { get; set; }
 
     }
     public class OnionrPow
@@ -52,9 +51,46 @@ namespace onionrpow
                     counter += 1;
                 }
                 Block block = JsonConvert.DeserializeObject<Block>(Encoding.UTF8.GetString(metadataJson.ToArray()));
-                block.setData(justData);
+                block.n = new Random().Next(10000);
+                block.c = 0;
 
+                var justDataArray = justData.ToArray();
+                justData.Clear();
+                var encoded = new List<byte>();
+                int calculatedDifficulty = 0;
+
+                var nl = Encoding.UTF8.GetBytes("\n")[0];
+
+                while(true){
+                    encoded.Clear();
+                    encoded.AddRange(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(block)));
+                    // TODO keep nl and dataarray in
+                    encoded.Add(nl);
+                    encoded.AddRange(justDataArray);
+                    var encodedArray = encoded.ToArray();
+
+                    calculatedDifficulty = 0;
+
+                    foreach(char c in shaAlg.ComputeHash(encodedArray)){
+                        if (c == 0){
+                            calculatedDifficulty += 1;
+                            if (calculatedDifficulty == difficulty){
+                                Console.WriteLine(counter);
+                                Console.WriteLine(Encoding.UTF8.GetString(encodedArray));
+                                Console.WriteLine(BitConverter.ToString(shaAlg.ComputeHash(encodedArray)));
+
+                                goto powDone;
+                            }
+                        }
+                        else{
+                            break;
+                        }
+                    }
+
+                    block.c += 1;
+                }
             }
+            powDone:;
         }
         //b'{"meta":"{\\"ch\\":\\"global\\",\\"type\\":\\"brd\\"}","sig":"pR4qmKGGCdnyNyZRlhGfF9GC7bONCsEnY04lTfiVuTHexPJypOqmxe9iyDQQqdR+PB2gwWuNqGMs5O8\\/S\\/hsCA==","signer":"UO74AP5LGQFI7EJTN6NAVINIPU2XO2KA7CAS6KSWGWAY5XIB5SUA====","time":1600542238,"pow":300182}\nxcvxcvvxcxcv'
     }

@@ -116,6 +116,7 @@ class SubprocessPOW:
         metadata['n'] = secrets.randbits(16)
         puzzle = self.puzzle
         difficulty = self.difficulty
+        start = time.time()
 
         while True:
             # Break if shutdown received
@@ -135,5 +136,6 @@ class SubprocessPOW:
             token = bytesconverter.bytes_to_str(token)
             if puzzle == token[0:difficulty]:
                 pipe.send(payload)
+                print(metadata['pow'], time.time() - start)
                 break
             nonce += 1
