@@ -125,7 +125,7 @@ class SubprocessPOW:
             except KeyboardInterrupt:
                 break
             # Load nonce into block metadata
-            metadata['pow'] = nonce
+            metadata['c'] = nonce
             # Serialize metadata, combine with block data
             payload = json.dumps(metadata).encode() + b'\n' + data
             # Check sha3_256 hash of block, compare to puzzle
