@@ -23,10 +23,10 @@ import filepaths
 DENIABLE_PEER_ADDRESS = "OVPCZLOXD6DC5JHX4EQ3PSOGAZ3T24F75HQLIUZSDSMYPEOXCPFA"
 PASSWORD_LENGTH = 25
 ONIONR_TAGLINE = 'Private P2P Communication - GPLv3 - https://Onionr.net'
-ONIONR_VERSION = '5.2.0'
+ONIONR_VERSION = '5.3.0'
 ONIONR_VERSION_CODENAME = 'Genesis'
 ONIONR_VERSION_TUPLE = tuple(ONIONR_VERSION.split('.')) # (MAJOR, MINOR, VERSION)
-API_VERSION = '3' # increments of 1; only change when something fundamental about how the API works changes. This way other nodes know how to communicate without learning too much information about you.
+API_VERSION = '4' # increments of 1; only change when something fundamental about how the API works changes. This way other nodes know how to communicate without learning too much information about you.
 MIN_PY_VERSION = 7 # min version of 7 so we can take advantage of non-cyclic type hints
 DEVELOPMENT_MODE = False
 IS_QUBES = False
@@ -56,7 +56,7 @@ BLOCK_EXPORT_FILE_EXT = '.onionr'
 DEFAULT_EXPIRE = 2678400
 # Metadata header section length limits, in bytes
 BLOCK_METADATA_LENGTHS = {'meta': 1000, 'sig': 200, 'signer': 200, 'time': 10,
-                          'pow': 1000, 'encryptType': 4, 'expire': 14}
+                          'n': 1000, 'c': 1000, 'encryptType': 4, 'expire': 14}
 
 # Pool Eligibility Max Age
 BLOCK_POOL_MAX_AGE = 300
