@@ -1,9 +1,12 @@
-'''
-    Onionr - Private P2P Communication
+"""Onionr - Private P2P Communication.
 
-    Load the user's inbox and return it as a list
-'''
-'''
+Load the user's inbox and return it as a list
+"""
+from onionrblocks import onionrblockapi
+from coredb import blockmetadb
+from utils import reconstructhash, identifyhome
+import deadsimplekv as simplekv
+"""
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -16,12 +19,9 @@
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
-'''
-from onionrblocks import onionrblockapi
-from coredb import blockmetadb
-import filepaths
-from utils import reconstructhash, identifyhome
-import deadsimplekv as simplekv
+"""
+
+
 def load_inbox():
     inbox_list = []
     deleted = simplekv.DeadSimpleKV(identifyhome.identify_home() + '/mailcache.dat').get('deleted_mail')

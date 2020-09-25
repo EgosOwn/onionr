@@ -9,6 +9,7 @@ from onionrutils import bytesconverter, stringvalidators
 from coredb import blockmetadb
 from utils import reconstructhash
 from onionrblocks import BlockList
+from onionrblocks.onionrblockapi import Block
 from .. import apiutils
 """
     This program is free software: you can redistribute it and/or modify
@@ -26,28 +27,32 @@ from .. import apiutils
 """
 
 
-def get_public_block_list(publicAPI, request):
+def get_public_block_list(public_API, request):
     # Provide a list of our blocks, with a date offset
-    dateAdjust = request.args.get('date')
-    bList = blockmetadb.get_block_list(date_rec=dateAdjust)
+    date_adjust = request.args.get('date')
+    type_filter = request.args.get('type')
+    b_list = blockmetadb.get_block_list(date_rec=date_adjust)
     share_list = ''
     if config.get('general.hide_created_blocks', True):
-        for b in publicAPI.hideBlocks:
-            if b in bList:
+        for b in public_API.hideBlocks:
+            if b in b_list:
                 # Don't share blocks we created if they haven't been *uploaded* yet, makes it harder to find who created a block
-                bList.remove(b)
-    for b in bList:
+                b_list.remove(b)
+    for b in b_list:
+        if type_filter:
+            if Block(b, decrypt=False).getType() != type_filter:
+                continue
         share_list += '%s\n' % (reconstructhash.deconstruct_hash(b),)
     return Response(share_list)
 
 
-def get_block_data(publicAPI, data):
+def get_block_data(public_API, data):
     """data is the block hash in hex"""
     resp = ''
     if stringvalidators.validate_hash(data):
         if not config.get('general.hide_created_blocks', True) \
-                or data not in publicAPI.hideBlocks:
-            if data in publicAPI._too_many.get(BlockList).get():
+                or data not in public_API.hideBlocks:
+            if data in public_API._too_many.get(BlockList).get():
                 block = apiutils.GetBlockData().get_block_data(
                     data, raw=True, decrypt=False)
                 try:
