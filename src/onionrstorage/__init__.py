@@ -13,7 +13,7 @@ from filepaths import block_data_location
 import onionrexceptions
 from onionrcrypto import hashers
 from . import setdata
-from etc.onionrvalues import DATABASE_LOCK_TIMEOUT
+from etc.onionrvalues import DATABASE_LOCK_TIMEOUT, BLOCK_EXPORT_FILE_EXT
 """
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -59,8 +59,8 @@ def _dbFetch(block_hash):
 
 def deleteBlock(block_hash):
     # Call removeblock.remove_block to automatically want to remove storage byte count
-    if os.path.exists(f'{block_data_location}/{block_hash}.dat'):
-        os.remove(f'{block_data_location}/{block_hash}.dat')
+    if os.path.exists(f'{block_data_location}/{block_hash}{BLOCK_EXPORT_FILE_EXT}'):
+        os.remove(f'{block_data_location}/{block_hash}{BLOCK_EXPORT_FILE_EXT}')
         return True
     conn = sqlite3.connect(dbfiles.block_data_db,
                            timeout=DATABASE_LOCK_TIMEOUT)
@@ -86,7 +86,7 @@ def store(data, block_hash=''):
         _dbInsert(block_hash, data)
     else:
         with open(
-                f'{block_data_location}/{block_hash}.dat', 'wb') as blck_file:
+                f'{block_data_location}/{block_hash}{BLOCK_EXPORT_FILE_EXT}', 'wb') as blck_file:
             blck_file.write(data)
 
 
@@ -101,7 +101,9 @@ def getData(bHash):
     # if no entry, check disk
     # If no entry in either, raise an exception
     ret_data = None
-    fileLocation = '%s/%s.dat' % (block_data_location, bHash)
+    fileLocation = '%s/%s%s' % (
+        block_data_location,
+        bHash, BLOCK_EXPORT_FILE_EXT)
     not_found_msg = "Block data not found for: "
     if os.path.exists(fileLocation):
         with open(fileLocation, 'rb') as block:
