@@ -46,15 +46,16 @@ def get_public_block_list(public_API, request):
     return Response(share_list)
 
 
-def get_block_data(public_API, data):
-    """data is the block hash in hex"""
+def get_block_data(public_API, b_hash):
+    """return block data by hash unless we are hiding it"""
     resp = ''
-    if stringvalidators.validate_hash(data):
+    b_hash = reconstructhash.reconstruct_hash(b_hash)
+    if stringvalidators.validate_hash(b_hash):
         if not config.get('general.hide_created_blocks', True) \
-                or data not in public_API.hideBlocks:
-            if data in public_API._too_many.get(BlockList).get():
-                block = apiutils.GetBlockData().get_block_data(
-                    data, raw=True, decrypt=False)
+                or b_hash not in public_API.hideBlocks:
+            if b_hash in public_API._too_many.get(BlockList).get():
+                block = apiutils.GetBlockData().get_block_b_hash(
+                    b_hash, raw=True, decrypt=False)
                 try:
                     # Encode in case data is binary
                     block = block.encode('utf-8')
@@ -68,3 +69,4 @@ def get_block_data(public_API, data):
         resp = ""
     # Has to be octet stream, otherwise binary data fails hash check
     return Response(resp, mimetype='application/octet-stream')
+    
