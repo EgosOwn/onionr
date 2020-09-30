@@ -63,16 +63,20 @@ class PublicAPISecurity:
             resp = httpheaders.set_default_onionr_http_headers(resp)
             # Network API version
             resp.headers['X-API'] = public_api.API_VERSION
+            resp.headers['Access-Control-Allow-Origin'] = "*"
             # Delete some HTTP headers for Onionr user agents
             NON_NETWORK_HEADERS = (
                 'Content-Security-Policy', 'X-Frame-Options',
                 'X-Content-Type-Options', 'Feature-Policy',
                 'Clear-Site-Data', 'Referrer-Policy')
 
+            # For other nodes, we don't need to waste bits on the above headers
             try:
                 if g.is_onionr_client:
                     for header in NON_NETWORK_HEADERS:
                         del resp.headers[header]
+                else:
+                    del resp.headers['X-API']
             except AttributeError:
                 abort(403)
 
