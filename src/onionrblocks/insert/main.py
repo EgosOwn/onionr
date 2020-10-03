@@ -205,7 +205,7 @@ def insert_block(data: Union[str, bytes], header: str = 'txt',
 
     # send block data (and metadata) to POW module to get tokenized block data
     payload = subprocesspow.SubprocessPOW(data, metadata).start()
-    print(payload)
+
     if payload != False:  # noqa
         try:
             retData = onionrstorage.set_data(payload)

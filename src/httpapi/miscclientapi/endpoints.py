@@ -20,6 +20,7 @@ from onionrutils import bytesconverter
 from etc import onionrvalues
 from utils import reconstructhash
 from utils.gettransports import get as get_tor
+from .addpeer import add_peer
 """
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -45,6 +46,14 @@ class PrivateEndpoints:
     def __init__(self, client_api):
         private_endpoints_bp = Blueprint('privateendpoints', __name__)
         self.private_endpoints_bp = private_endpoints_bp
+
+        @private_endpoints_bp.route('/addpeer/<name>', methods=['post'])
+        def add_peer_endpoint(name):
+            result = add_peer(name)
+            if result == "success":
+                return Response("success")
+            else:
+                return Response(result, 409)
 
         @private_endpoints_bp.route('/www/<path:path>', endpoint='www')
         def wwwPublic(path):
