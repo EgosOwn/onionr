@@ -8,7 +8,9 @@ class GetBlockData:
         return
 
     def get_block_data(self, bHash, decrypt=False, raw=False, headerOnly=False):
-        if not stringvalidators.validate_hash(bHash): raise onionrexceptions.InvalidHexHash("block hash not valid hash format")
+        if not stringvalidators.validate_hash(bHash):
+            raise onionrexceptions.InvalidHexHash(
+                "block hash not valid hash format")
         bl = onionrblockapi.Block(bHash)
         if decrypt:
             bl.decrypt()

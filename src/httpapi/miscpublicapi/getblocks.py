@@ -54,7 +54,7 @@ def get_block_data(public_API, b_hash):
         if not config.get('general.hide_created_blocks', True) \
                 or b_hash not in public_API.hideBlocks:
             if b_hash in public_API._too_many.get(BlockList).get():
-                block = apiutils.GetBlockData().get_block_b_hash(
+                block = apiutils.GetBlockData().get_block_data(
                     b_hash, raw=True, decrypt=False)
                 try:
                     # Encode in case data is binary
@@ -62,11 +62,10 @@ def get_block_data(public_API, b_hash):
                 except AttributeError:
                     if len(block) == 0:
                         abort(404)
-                block = bytesconverter.str_to_bytes(block)
+                #block = bytesconverter.str_to_bytes(block)
                 resp = block
     if len(resp) == 0:
         abort(404)
         resp = ""
     # Has to be octet stream, otherwise binary data fails hash check
     return Response(resp, mimetype='application/octet-stream')
-    

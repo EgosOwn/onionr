@@ -20,7 +20,6 @@ function sidebarAddPeerRegister(){
             }})
         .then((resp) => resp.text())
         .then(function(data) {
-            alert(data)
             if (data == "success"){
                 PNotify.success({
                     text: 'Peer added'

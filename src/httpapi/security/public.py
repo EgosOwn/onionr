@@ -64,11 +64,15 @@ class PublicAPISecurity:
             # Network API version
             resp.headers['X-API'] = public_api.API_VERSION
             resp.headers['Access-Control-Allow-Origin'] = "*"
+            resp.headers['Access-Control-Allow-Headers'] = "*"
+            resp.headers['Access-Control-Allow-Methods'] = "POST, GET, OPTIONS"
             # Delete some HTTP headers for Onionr user agents
             NON_NETWORK_HEADERS = (
                 'Content-Security-Policy', 'X-Frame-Options',
                 'X-Content-Type-Options', 'Feature-Policy',
-                'Clear-Site-Data', 'Referrer-Policy')
+                'Clear-Site-Data', 'Referrer-Policy',
+                'Access-Control-Allow-Origin', 'Access-Control-Allow-Headers',
+                'Access-Control-Allow-Methods')
 
             # For other nodes, we don't need to waste bits on the above headers
             try:

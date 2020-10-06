@@ -11,6 +11,7 @@ import config
 from filepaths import block_data_location
 from etc.onionrvalues import BLOCK_EXPORT_FILE_EXT
 from onionrblocks.blockimporter import import_block_from_data
+import onionrexceptions
 """
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -37,7 +38,10 @@ class _Importer(FileSystemEventHandler):
         if not event.src_path.endswith(BLOCK_EXPORT_FILE_EXT):
             return
         with open(event.src_path, 'rb') as block_file:
-            import_block_from_data(block_file.read())
+            try:
+                import_block_from_data(block_file.read())
+            except onionrexceptions.DataExists:
+                return
             if block_data_location in event.src_path:
                 try:
                     os.remove(event.src_path)
