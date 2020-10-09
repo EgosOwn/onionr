@@ -123,8 +123,6 @@ Master may be unstable, you should use the latest release tag. (checkout via git
 
 Email: beardog [ at ] mailbox.org
 
-Onionr Mail: `particularizing-zabaione-defuze-iodizer-saucepan-patientest-sell-waken-chifforobe-embonpoint-aquanaut-chambermaid-barky-fumer-jolt-biotic`
-
 # Help out
 
 Everyone is welcome to contribute. Help is wanted for the following:
