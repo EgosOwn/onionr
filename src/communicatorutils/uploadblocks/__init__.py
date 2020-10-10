@@ -68,6 +68,9 @@ def upload_blocks_from_communicator(comm_inst: 'OnionrCommunicatorDaemon'):
             for _ in range(min(len(kv.get('onlinePeers')), 6)):
                 try:
                     peer = onlinepeers.pick_online_peer(kv)
+                    if peer in kv.get('plaintextDisabledPeers'):
+                        logger.info(f"Cannot upload plaintext block to peer that denies it {peer}")  # noqa
+                        continue
                 except onionrexceptions.OnlinePeerNeeded:
                     continue
                 try:

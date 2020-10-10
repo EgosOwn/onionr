@@ -100,7 +100,15 @@ def connect_new_peer_to_communicator(shared_state, peer='', useBootstrap=False):
             else:
                 kv.get('peerProfiles').append(
                     onionrpeers.PeerProfiles(address))
+            try:
+                del kv.get('plaintextDisabledPeers')[address]
+            except KeyError:
+                pass
+            if peeraction.peer_action(
+                    shared_state, address, 'plaintext') == 'false':
+                kv.get('plaintextDisabledPeers')[address] = True
             break
+
         else:
             # Mark a peer as tried if they failed to respond to ping
             tried.append(address)

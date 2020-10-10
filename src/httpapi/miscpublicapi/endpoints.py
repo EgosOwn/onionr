@@ -58,6 +58,11 @@ class PublicEndpoints:
             return send_from_directory(
                 config.get('www.public.path', 'static-data/www/public/'), path)
 
+
+        @public_endpoints_bp.route('/plaintext')
+        def plaintext_enabled_endpoint():
+            return Response(str(config.get("general.store_plaintext_blocks", True)).lower())
+
         @public_endpoints_bp.route('/ping')
         def ping():
             # Endpoint to test if nodes are up
