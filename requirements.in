@@ -12,6 +12,5 @@ toomanyobjs==1.1.0
 niceware==0.2.1
 psutil==5.7.2
 filenuke==0.0.0
-mimcvdf==1.1.0
 watchdog==0.10.3
 ujson==4.0.0

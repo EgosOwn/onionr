@@ -38,15 +38,17 @@ class _Importer(FileSystemEventHandler):
         if not event.src_path.endswith(BLOCK_EXPORT_FILE_EXT):
             return
         with open(event.src_path, 'rb') as block_file:
+            block_data = block_file.read()
+        os.remove(event.src_path)
+        try:
+            import_block_from_data(block_data)
+        except onionrexceptions.DataExists:
+            return
+        if block_data_location in event.src_path:
             try:
-                import_block_from_data(block_file.read())
-            except onionrexceptions.DataExists:
-                return
-            if block_data_location in event.src_path:
-                try:
-                    os.remove(event.src_path)
-                except FileNotFoundError:
-                    pass
+                os.remove(event.src_path)
+            except FileNotFoundError:
+                pass
 
 
 def sneakernet_import_thread():

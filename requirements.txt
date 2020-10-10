@@ -137,10 +137,6 @@ markupsafe==1.1.1 \
     --hash=sha256:e249096428b3ae81b08327a63a485ad0878de3fb939049038579ac0ef61e17e7 \
     --hash=sha256:e8313f01ba26fbbe36c7be1966a7b7424942f670f38e666995b88d012765b9be \
     # via jinja2
-mimcvdf==1.1.0 \
-    --hash=sha256:97a4ccdebb58352c64c268d2e57ef8817c9fe4ac3dcc922410bfcc72033f344a \
-    --hash=sha256:ae47c79bfd6b7b76077c8ce3301a48a7c10a609d8a882e7bd785e2ef851ecd28 \
-    # via -r requirements.in
 niceware==0.2.1 \
     --hash=sha256:0f8b192f2a1e800e068474f6e208be9c7e2857664b33a96f4045340de4e5c69c \
     --hash=sha256:cf2dc0e1567d36d067c61b32fed0f1b9c4534ed511f9eeead4ba548d03b5c9eb \
