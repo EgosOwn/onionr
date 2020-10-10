@@ -66,6 +66,7 @@ class Block:
         self.signer = None
         self.validSig = False
         self.autoDecrypt = decrypt
+        self.claimedTime = None
 
         self.update()
 

@@ -104,7 +104,7 @@ def getData(bHash):
     fileLocation = '%s/%s%s' % (
         block_data_location,
         bHash, BLOCK_EXPORT_FILE_EXT)
-    not_found_msg = "Block data not found for: "
+    not_found_msg = "Block data not found for: " + str(bHash)
     if os.path.exists(fileLocation):
         with open(fileLocation, 'rb') as block:
             ret_data = block.read()
@@ -112,5 +112,5 @@ def getData(bHash):
         ret_data = _dbFetch(bHash)
 
         if ret_data is None:
-            raise onionrexceptions.NoDataAvailable(not_found_msg + str(bHash))
+            raise onionrexceptions.NoDataAvailable(not_found_msg)
     return ret_data
