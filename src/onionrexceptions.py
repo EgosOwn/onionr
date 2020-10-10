@@ -48,6 +48,9 @@ class SignatureError(Exception):
 
 # block exceptions
 
+class PlaintextNotSupported(Exception):
+    pass
+
 class ReplayAttack(Exception):
     pass
 

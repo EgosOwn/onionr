@@ -6,6 +6,7 @@ from coredb import blockmetadb
 from onionrstorage.removeblock import remove_block
 import onionrstorage
 from .onionrblockapi import Block
+import onionrexceptions
 """
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -28,7 +29,7 @@ def delete_plaintext_no_blacklist():
     block_list = blockmetadb.get_block_list()
 
     for block in block_list:
-        block = Block(hash=block)
+        block = Block(hash=block, decrypt=False)
         if not block.isEncrypted:
-            remove_block(block.hash)
-            onionrstorage.deleteBlock(block.hash)
+            remove_block(block.hash)  # delete metadata entry
+            onionrstorage.deleteBlock(block.hash)  # delete block data

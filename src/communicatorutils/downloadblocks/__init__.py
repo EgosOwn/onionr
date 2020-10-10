@@ -111,6 +111,9 @@ def download_blocks_from_communicator(comm_inst: "OnionrCommunicatorDaemon"):
                 try:
                     metadata_validation_result = \
                         validatemetadata.validate_metadata(metadata, metas[2])
+                except onionrexceptions.PlaintextNotSupported:
+                    logger.debug(f"Not saving {blockHash} due to plaintext not enabled")
+                    removeFromQueue = True
                 except onionrexceptions.DataExists:
                     metadata_validation_result = False
                 if metadata_validation_result: # check if metadata is valid, and verify nonce

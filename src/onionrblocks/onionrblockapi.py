@@ -3,7 +3,6 @@
 OnionrBlocks class for abstraction of blocks
 """
 import binascii
-import os
 import datetime
 import onionrstorage
 
@@ -17,7 +16,6 @@ from onionrusers import onionrusers
 from onionrutils import stringvalidators, epoch
 from coredb import blockmetadb
 from onionrutils import bytesconverter
-from onionrstorage import removeblock
 import onionrblocks
 from onionrcrypto import encryption, cryptoutils as cryptoutils, signing
 """

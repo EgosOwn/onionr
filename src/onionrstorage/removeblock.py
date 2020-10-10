@@ -35,7 +35,10 @@ def remove_block(block):
     **You may want blacklist.addToDB(blockHash)
     """
     if stringvalidators.validate_hash(block):
-        dataSize = sys.getsizeof(onionrstorage.getData(block))
+        try:
+            data_size = sys.getsizeof(onionrstorage.getData(block))
+        except onionrexceptions.NoDataAvailable:
+            data_size = 0
         conn = sqlite3.connect(
             dbfiles.block_meta_db, timeout=DATABASE_LOCK_TIMEOUT)
         c = conn.cursor()
@@ -43,6 +46,7 @@ def remove_block(block):
         c.execute('Delete from hashes where hash=?;', t)
         conn.commit()
         conn.close()
-        storage_counter.remove_bytes(dataSize)
+        if data_size:
+            storage_counter.remove_bytes(data_size)
     else:
         raise onionrexceptions.InvalidHexHash

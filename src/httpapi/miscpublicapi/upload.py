@@ -65,6 +65,9 @@ def accept_upload(request):
             resp = 'proof'
         except onionrexceptions.DataExists:
             resp = 'exists'
+        except onionrexceptions.PlaintextNotSupported:
+            logger.debug("attempted plaintext upload to us: {b_hash}")
+            resp = 'failure'
     if resp == 'failure':
         abort(400)
     elif resp == 'proof':
