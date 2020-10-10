@@ -202,33 +202,10 @@ class Block:
         except Exception as e:
             logger.warn('Failed to parse block %s' % self.getHash(), error = e, timestamp = False)
 
-            # if block can't be parsed, it's a waste of precious space. Throw it away.
-            if not self.delete():
-                logger.warn('Failed to delete invalid block %s.' % self.getHash(), error = e)
-            else:
-                logger.debug('Deleted invalid block %s.' % self.getHash(), timestamp = False)
 
         self.valid = False
         return False
 
-    def delete(self):
-        """
-            Deletes the block's file and records, if they exist
-
-            Outputs:
-            - (bool): whether or not the operation was successful
-        """
-
-        if self.exists():
-            try:
-                os.remove(self.getBlockFile())
-            except TypeError:
-                pass
-            b_hash = self.getHash()
-            onionrstorage.deleteBlock(b_hash)
-            removeblock.remove_block(b_hash)
-            return True
-        return False
 
     def save(self, sign = False, recreate = True):
         """

@@ -97,6 +97,12 @@ def validate_metadata(metadata, block_data) -> bool:
             # make sure we do not have another block with the same data content (prevent data duplication and replay attacks)
 
             # Make sure time is set (validity was checked above if it is)
+            if not config.get('general.store_plaintext_blocks', True):
+                try:
+                    if not metadata['encryptType']:
+                        raise onionrexceptions.DataExists
+                except KeyError:
+                    raise onionrexceptions.DataExists
             try:
                 metadata['time']
             except KeyError:
