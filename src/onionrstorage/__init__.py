@@ -12,7 +12,7 @@ from coredb import dbfiles
 from filepaths import block_data_location
 import onionrexceptions
 from onionrcrypto import hashers
-from . import setdata
+from . import setdata, removeblock
 from etc.onionrvalues import DATABASE_LOCK_TIMEOUT, BLOCK_EXPORT_FILE_EXT
 """
     This program is free software: you can redistribute it and/or modify
