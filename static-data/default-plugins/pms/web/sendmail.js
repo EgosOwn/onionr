@@ -62,7 +62,16 @@ function sendMail(toData, message, subject){
         headers: {
           "content-type": "application/json",
           "token": webpass
-        }})
+        }}).then(function(resp){
+            if (!resp.ok){
+                PNotify.error({
+                    text: 'Malformed input'
+                })
+                sendForm.style.display = 'block'
+                throw new Error("Malformed input in sendmail")
+            }
+            return resp
+        })
     .then((resp) => resp.text()) // Transform the data into text
     .then(function(data) {
         sendForm.style.display = 'block'
@@ -83,13 +92,18 @@ friendPicker.onchange = function(){
 }
 
 sendForm.onsubmit = function(){
-    if (! to.value.includes("-") && to.value.length !== 56 && to.value.length !== 52){
-        PNotify.error({
-            text: 'User ID is not valid'
-        })
+    let getInstances = function(string, word) {
+        return string.split(word).length - 1;
     }
-    else{
-        sendMail(to.value, messageContent.value, subject.value)
+
+    if(getInstances(to.value, '-') != 15){
+        if (to.value.length != 56 && to.value.length != 52){
+            PNotify.error({
+                text: 'User ID is not valid'
+            })
+            return false
+        }
     }
+    sendMail(to.value, messageContent.value, subject.value)
     return false
 }
