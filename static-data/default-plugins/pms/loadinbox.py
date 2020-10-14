@@ -21,7 +21,7 @@ import deadsimplekv as simplekv
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-
+inbox_cache = {}
 def load_inbox():
     inbox_list = []
     deleted = simplekv.DeadSimpleKV(identifyhome.identify_home() + '/mailcache.dat').get('deleted_mail')
@@ -29,8 +29,14 @@ def load_inbox():
         deleted = []
 
     for blockHash in blockmetadb.get_blocks_by_type('pm'):
+        if blockHash in deleted:
+            continue
+        if blockHash in inbox_cache:
+            inbox_list.append(blockHash)
+            continue
         block = onionrblockapi.Block(blockHash)
         block.decrypt()
-        if block.decrypted and reconstructhash.deconstruct_hash(blockHash) not in deleted:
+        if block.decrypted and reconstructhash.deconstruct_hash(blockHash):
+            inbox_cache[blockHash] = True
             inbox_list.append(blockHash)
     return inbox_list

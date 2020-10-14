@@ -183,8 +183,9 @@ def insert_block(data: Union[str, bytes], header: str = 'txt',
                 # if peer is already known
                 pass
         else:
+            logger.warn(f"{asymPeer} is not a valid key to make a block to")
             raise onionrexceptions.InvalidPubkey(
-                asymPeer + ' is not a valid base32 encoded ed25519 key')
+                'tried to make block to invalid key is not a valid base32 encoded ed25519 key')
 
     # compile metadata
     metadata['meta'] = jsonMeta

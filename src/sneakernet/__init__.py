@@ -37,8 +37,11 @@ class _Importer(FileSystemEventHandler):
     def on_created(event):
         if not event.src_path.endswith(BLOCK_EXPORT_FILE_EXT):
             return
-        with open(event.src_path, 'rb') as block_file:
-            block_data = block_file.read()
+        try:
+            with open(event.src_path, 'rb') as block_file:
+                block_data = block_file.read()
+        except FileNotFoundError:
+            return
         os.remove(event.src_path)
         try:
             import_block_from_data(block_data)
