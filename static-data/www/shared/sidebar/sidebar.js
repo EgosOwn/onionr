@@ -13,11 +13,22 @@ fetch('/shared/sidebar/sidebar.html', {
 function sidebarAddPeerRegister(){
     document.getElementById('addPeerBtn').onclick = function(){
         let newPeer = document.getElementById('addPeerInput').value
+
+        if (! newPeer.includes(".")){
+            PNotify.error({text: "Invalid peer address"})
+            return
+        }
         fetch('/addpeer/' + newPeer, {
             method: 'POST',
             headers: {
             "token": webpass
             }})
+        .then(function(resp){
+            if (! resp.ok){
+                PNotify.error({text: "Could not add peer. Is your input valid?"})
+                throw new Error("Could not add peer " + newPeer)
+            }
+        })
         .then((resp) => resp.text())
         .then(function(data) {
             if (data == "success"){

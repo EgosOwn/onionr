@@ -1,9 +1,15 @@
-'''
-    Onionr - Private P2P Communication
+"""Onionr - Private P2P Communication.
 
-    add user keys or transport addresses
-'''
-'''
+add user keys or transport addresses
+"""
+import sqlite3
+from onionrutils import stringvalidators
+from . import listkeys
+from utils import gettransports
+from .. import dbfiles
+import onionrcrypto
+from etc import onionrvalues
+"""
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -16,28 +22,17 @@
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
-'''
-import sqlite3
-from onionrplugins import onionrevents as events
-from onionrutils import stringvalidators
-from . import listkeys
-from utils import gettransports
-from .. import dbfiles
-import onionrcrypto
-from etc import onionrvalues
+"""
+
 
 def add_peer(peerID, name=''):
-    '''
-        Adds a public key to the key database (misleading function name)
-    '''
+    """Add a public key to the key database (misleading function name)."""
     if peerID in listkeys.list_peers() or peerID == onionrcrypto.pub_key:
         raise ValueError("specified id is already known")
 
     # This function simply adds a peer to the DB
     if not stringvalidators.validate_pub_key(peerID):
         return False
-
-    #events.event('pubkey_add', data = {'key': peerID}, onionr = core_inst.onionrInst)
 
     conn = sqlite3.connect(dbfiles.user_id_info_db, timeout=onionrvalues.DATABASE_LOCK_TIMEOUT)
     hashID = ""
@@ -60,9 +55,9 @@ def add_peer(peerID, name=''):
     return True
 
 def add_address(address):
-    '''
+    """
         Add an address to the address database (only tor currently)
-    '''
+    """
 
     if type(address) is None or len(address) == 0:
         return False
@@ -88,8 +83,6 @@ def add_address(address):
         c.execute('INSERT INTO adders (address, type) VALUES(?, ?);', t)
         conn.commit()
         conn.close()
-
-        #events.event('address_add', data = {'address': address}, onionr = core_inst.onionrInst)
 
         return True
     else:
