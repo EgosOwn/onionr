@@ -13,6 +13,7 @@ from onionrblocks import storagecounter
 from coredb import dbfiles
 from onionrutils import blockmetadata, bytesconverter
 from etc.onionrvalues import DATABASE_LOCK_TIMEOUT
+from onionrtypes import BlockHash
 """
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -30,7 +31,7 @@ from etc.onionrvalues import DATABASE_LOCK_TIMEOUT
 storage_counter = storagecounter.StorageCounter()
 
 
-def set_data(data) -> str:
+def set_data(data) -> BlockHash:
     """Set the data assciated with a hash."""
     data = data
     dataSize = sys.getsizeof(data)
