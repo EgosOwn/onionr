@@ -41,7 +41,7 @@ def block_mixer(upload_list: List[onionrtypes.BlockHash],
 
     try:
         if time.time() - bl.claimedTime > onionrvalues.BLOCK_POOL_MAX_AGE:
-        raise ValueError
+            raise ValueError
     except TypeError:
         pass
     if block_to_mix:
