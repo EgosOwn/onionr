@@ -6,6 +6,7 @@ from json import JSONDecodeError
 import ujson as json
 
 from onionrutils import bytesconverter
+import logger
 """
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -40,6 +41,9 @@ def get_block_metadata_from_data(block_data):
         metadata = json.loads(bytesconverter.bytes_to_str(block_data[:block_data.find(b'\n')]))
     except JSONDecodeError:
         pass
+    except ValueError:
+        logger.warn("Could not get metadata from:", terminal=True)
+        logger.warn(block_data, terminal=True)
     else:
         data = block_data[block_data.find(b'\n'):]
 

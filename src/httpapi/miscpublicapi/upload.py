@@ -35,8 +35,11 @@ def accept_upload(request):
     """Accept uploaded blocks to our public Onionr protocol API server"""
     resp = 'failure'
     data = request.get_data()
-    b_hash = ''
-    if sys.getsizeof(data) < 100000000:
+    data_size = sys.getsizeof(data)
+    print(data)
+    if data_size < 30:
+        resp = 'size'
+    elif data_size < 100000000:
         try:
             b_hash = blockimporter.import_block_from_data(data)
             if b_hash:
@@ -70,6 +73,10 @@ def accept_upload(request):
             resp = 'failure'
     if resp == 'failure':
         abort(400)
+    elif resp == 'size':
+        resp = Response(resp, 400)
+        logger.warn(
+            f'Error importing uploaded block, invalid size {b_hash}')
     elif resp == 'proof':
         resp = Response(resp, 400)
         logger.warn(

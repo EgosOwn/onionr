@@ -90,6 +90,11 @@ def upload_blocks_from_communicator(comm_inst: 'OnionrCommunicatorDaemon'):
                 url = f'http://{peer}/upload'
                 try:
                     data = block.Block(bl).getRaw()
+                    if not data:
+                        logger.warn(
+                            f"Couldn't data for block in upload list {bl}",
+                            terminal=True)
+                        raise onionrexceptions.NoDataAvailable
                 except onionrexceptions.NoDataAvailable:
                     finishedUploads.append(bl)
                     break
