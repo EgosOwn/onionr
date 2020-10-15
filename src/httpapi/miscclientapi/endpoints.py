@@ -53,7 +53,10 @@ class PrivateEndpoints:
             if result == "success":
                 return Response("success")
             else:
-                return Response(result, 409)
+                if "already" in result:
+                    return Response(result, 409)
+                else:
+                    return Response(result, 400)
 
         @private_endpoints_bp.route('/www/<path:path>', endpoint='www')
         def wwwPublic(path):
