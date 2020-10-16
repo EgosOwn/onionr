@@ -1,7 +1,7 @@
 /*
     Onionr - Private P2P Communication
 
-    This file handles the navbar layout and folding 
+    This file handles the navbar layout and folding
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -35,12 +35,12 @@ let deleteNavbar = function(){
               navbarLinks[x].style.display = 'none'
             }
         }
-        if (disabled.includes('flow')){
+        if (disabled.includes('circles')){
           if (navbarLinks[x].innerText == 'Circles'){
             navbarLinks[x].style.display = 'none'
           }
       }
-    
+
       }
   }})
 
@@ -76,25 +76,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Get all "navbar-burger" elements
     const $navbarBurgers = Array.prototype.slice.call(document.querySelectorAll('.navbar-burger'), 0)
-  
+
     // Check if there are any navbar burgers
     if ($navbarBurgers.length > 0) {
-  
+
       // Add a click event on each of them
       $navbarBurgers.forEach( el => {
         el.addEventListener('click', () => {
-  
+
           // Get the target from the "data-target" attribute
           const target = el.dataset.target;
           const $target = document.getElementById(target);
-  
+
           // Toggle the "is-active" class on both the "navbar-burger" and the "navbar-menu"
           el.classList.toggle('is-active');
           $target.classList.toggle('is-active');
-  
+
         });
       });
     }
-  
+
   });
 

@@ -20,6 +20,7 @@ from coredb.keydb.listkeys import list_adders
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
+
 def add_peer(peer):
 
     if peer in list_adders():

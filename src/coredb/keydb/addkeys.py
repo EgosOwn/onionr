@@ -54,10 +54,9 @@ def add_peer(peerID, name=''):
 
     return True
 
+
 def add_address(address):
-    """
-        Add an address to the address database (only tor currently)
-    """
+    """Add an address to the address database (only tor currently)"""
 
     if type(address) is None or len(address) == 0:
         return False
