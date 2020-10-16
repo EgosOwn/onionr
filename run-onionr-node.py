@@ -85,6 +85,21 @@ parser.add_argument(
 parser.add_argument(
     '--use-upload-mixing', help='Re-upload blocks uploaded to us. Slow but more secure',
     type=int, default=0)
+parser.add_argument(
+    '--dev-mode',
+    help='Developer mode makes restarting and testing Onionr less tedious during development',
+    type=int, default=0)
+parser.add_argument(
+    '--disable-plugin-list',
+    help='plugins to disable by name, separate with commas',
+    type=str, default='chat'
+)
+parser.add_argument(
+    '--store-plaintext',
+    help='store plaintext blocks or not. note that encrypted blocks may not really be encrypted, but we cannot detect that',
+    type=int, default=1
+)
+
 args = parser.parse_args()
 
 p = Popen([sub_script, 'version'], stdout=DEVNULL)
@@ -105,6 +120,15 @@ if args.private_key:
         f.write(',' + pub.decode() + ',' + priv)
     config['general']['public_key'] = pub
 
+config['plugins']['disabled'] = args.disable_plugin_list.split(',')
+config['general']['dev_mode'] = False
+
+config['general']['store_plaintext_blocks'] = True
+
+if not args.store_plaintext:
+    config['general']['store_plaintext_blocks'] = False
+if args.dev_mode:
+    config['general']['dev_mode'] = True
 if not args.onboarding:
     config['onboarding']['done'] = True
 if not args.random_localhost_ip:

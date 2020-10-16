@@ -27,11 +27,12 @@ function sidebarAddPeerRegister(){
             if (! resp.ok){
                 if (resp.status == 409){
                     PNotify.notice({text: "Peer already added"})
-                    return
+                    throw new Error("Could not add peer " + newPeer + " already added")
                 }
                 PNotify.error({text: "Could not add peer. Is your input valid?"})
                 throw new Error("Could not add peer " + newPeer)
             }
+            return resp
         })
         .then((resp) => resp.text())
         .then(function(data) {
