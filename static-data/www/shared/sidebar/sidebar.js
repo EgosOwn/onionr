@@ -10,6 +10,22 @@ fetch('/shared/sidebar/sidebar.html', {
     sidebarAddPeerRegister()
 })
 
+var lastLogOffset = 0
+async function showLog(){
+        fetch('/readfileoffset/onionr.log?offset=' + lastLogOffset, {
+            method: 'GET',
+            headers: {
+            "token": webpass
+            }})
+        .then((resp) => resp.json())
+        .then(function(resp){
+            lastLogOffset = resp['new_offset']
+            document.getElementById('logfileOutput').innerText += resp.data.replace(
+                /[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g, '')
+        })
+}
+
+
 function sidebarAddPeerRegister(){
     document.getElementById('addPeerBtn').onclick = function(){
         let newPeer = document.getElementById('addPeerInput').value
@@ -55,12 +71,18 @@ function sidebarAddPeerRegister(){
 }
 
 window.addEventListener("keydown", function(event) {
+    var refreshSideBarInterval = null
+    document.getElementsByClassName('closeSidebar')[0].onclick = function(){
+        clearInterval(sidebarLogInterval)
+        clearInterval(refreshSideBarInterval)
+    }
     if (event.key === "s"){
         if (document.activeElement.nodeName == "TEXTAREA" || document.activeElement.nodeName == "INPUT"){
             if (! document.activeElement.hasAttribute("readonly")){
                 return
             }
         }
+        sidebarLogInterval = setInterval(function(){showLog()}, 1000)
         let refreshSideBar = function(){
             if (document.hidden){return}
             var existingValue = document.getElementById("insertingBlocks").innerText
@@ -99,7 +121,7 @@ window.addEventListener("keydown", function(event) {
                     document.getElementById("uploadBlocks").innerText = resp.split(',').length - 1
                 })
         }
-        setInterval(refreshSideBar, 3000)
+        refreshSideBarInterval = setInterval(refreshSideBar, 3000)
 
         setTimeout(function(){document.getElementsByClassName('sidebarBtn')[0].click()}, 300)
     }
