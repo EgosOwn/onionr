@@ -9,6 +9,7 @@ from httpapi import security, friendsapi, profilesapi, configapi, insertblock
 from httpapi import miscclientapi, onionrsitesapi, apiutils
 from httpapi import directconnections
 from httpapi import themeapi
+from httpapi import fileoffsetreader
 from httpapi.sse.private import private_sse_blueprint
 
 """
@@ -46,6 +47,7 @@ def register_private_blueprints(private_api, app):
         private_api).direct_conn_management_bp)
     app.register_blueprint(themeapi.theme_blueprint)
     app.register_blueprint(private_sse_blueprint)
+    app.register_blueprint(fileoffsetreader.offset_reader_api)
 
     def _add_events_bp():
         while True:
