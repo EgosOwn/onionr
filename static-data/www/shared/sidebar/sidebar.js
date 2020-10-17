@@ -10,7 +10,12 @@ fetch('/shared/sidebar/sidebar.html', {
     sidebarAddPeerRegister()
 })
 
+var sidebarActive = false
 var lastLogOffset = 0
+
+var logActive = false
+
+
 async function showLog(){
         fetch('/readfileoffset/onionr.log?offset=' + lastLogOffset, {
             method: 'GET',
@@ -20,8 +25,12 @@ async function showLog(){
         .then((resp) => resp.json())
         .then(function(resp){
             lastLogOffset = resp['new_offset']
-            document.getElementById('logfileOutput').innerText += resp.data.replace(
+            var logfileOutputEl = document.getElementById('logfileOutput')
+            logfileOutputEl.innerText += resp.data.replace(
                 /[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g, '')
+            if (!logActive){
+                logfileOutputEl.scrollTop = logfileOutputEl.scrollHeight;
+            }
         })
 }
 
@@ -72,11 +81,20 @@ function sidebarAddPeerRegister(){
 
 window.addEventListener("keydown", function(event) {
     var refreshSideBarInterval = null
+    document.getElementById('logfileOutput').onmouseenter = function(e){
+        logActive = true
+    }
+    document.getElementById('logfileOutput').onmouseleave = function(e){
+        logActive = false
+    }
+
     document.getElementsByClassName('closeSidebar')[0].onclick = function(){
+        sidebarActive = false
         clearInterval(sidebarLogInterval)
         clearInterval(refreshSideBarInterval)
     }
     if (event.key === "s"){
+        sidebarActive = true
         if (document.activeElement.nodeName == "TEXTAREA" || document.activeElement.nodeName == "INPUT"){
             if (! document.activeElement.hasAttribute("readonly")){
                 return
