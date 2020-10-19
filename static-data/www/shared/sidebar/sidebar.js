@@ -14,6 +14,8 @@ var sidebarActive = false
 var lastLogOffset = 0
 
 var logActive = false
+var maxLogOutputSize = 1000000
+var logfileOutputEl = null
 
 
 async function showLog(){
@@ -24,13 +26,29 @@ async function showLog(){
             }})
         .then((resp) => resp.json())
         .then(function(resp){
+            let doScroll = function(){
+                if (!logActive){
+                    logfileOutputEl.scrollTop = logfileOutputEl.scrollHeight;
+                }
+            }
+            if (! resp.data){
+                doScroll()
+                return
+            }
+
             lastLogOffset = resp['new_offset']
-            var logfileOutputEl = document.getElementById('logfileOutput')
+
+            var length = (new TextEncoder().encode(logfileOutputEl.innerText)).length
+            var tempText = logfileOutputEl.innerText
+            while(length > maxLogOutputSize){
+                tempText = tempText.substring(tempText.indexOf("\n") + 1)
+                length = (new TextEncoder().encode(tempText)).length
+                logfileOutputEl.innerText = tempText
+            }
+
             logfileOutputEl.innerText += resp.data.replace(
                 /[\u001b\u009b][[()#;?]*(?:[0-9]{1,4}(?:;[0-9]{0,4})*)?[0-9A-ORZcf-nqry=><]/g, '')
-            if (!logActive){
-                logfileOutputEl.scrollTop = logfileOutputEl.scrollHeight;
-            }
+            doScroll()
         })
 }
 
@@ -94,6 +112,7 @@ window.addEventListener("keydown", function(event) {
         clearInterval(refreshSideBarInterval)
     }
     if (event.key === "s"){
+        logfileOutputEl = document.getElementById('logfileOutput')
         sidebarActive = true
         if (document.activeElement.nodeName == "TEXTAREA" || document.activeElement.nodeName == "INPUT"){
             if (! document.activeElement.hasAttribute("readonly")){
