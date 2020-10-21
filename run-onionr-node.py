@@ -56,6 +56,9 @@ def show_info(p: Process):
 parser = argparse.ArgumentParser()
 
 parser.add_argument(
+    "--use-bootstap-file", help="Use bootstrap node list file",
+    type=int, default=1)
+parser.add_argument(
     "--show-stats", help="Display curses output of Onionr stats",
     type=int, default=0)
 parser.add_argument(
@@ -124,7 +127,10 @@ config['plugins']['disabled'] = args.disable_plugin_list.split(',')
 config['general']['dev_mode'] = False
 
 config['general']['store_plaintext_blocks'] = True
+config['general']['use_bootstrap_list'] = True
 
+if not args.use_bootstrap_file:
+    config['general']['use_bootstrap_list'] = False
 if not args.store_plaintext:
     config['general']['store_plaintext_blocks'] = False
 if args.dev_mode:
