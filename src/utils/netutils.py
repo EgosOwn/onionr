@@ -2,9 +2,10 @@
 
 NetUtils offers various useful functions to Onionr networking.
 """
+from random import SystemRandom
+
 from onionrutils import basicrequests
 from .readstatic import read_static
-from onionrcrypto.cryptoutils import random_shuffle
 """
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -26,8 +27,7 @@ def check_network(torPort=0) -> bool:
     success = False
     connect_urls = []
     try:
-        connect_urls = random_shuffle(
-            read_static('connect-check.txt').split(','))
+        connect_urls = SystemRandom().shuffle(read_static('connect-check.txt').split(','))
 
         for url in connect_urls:
             if basicrequests.do_get_request(

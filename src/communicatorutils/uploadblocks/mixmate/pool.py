@@ -3,10 +3,10 @@
 Upload pool
 """
 from typing import List
+from secrets import SystemRandom
 
 import onionrutils
 import onionrtypes
-from onionrcrypto import cryptoutils
 """
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -62,7 +62,8 @@ class UploadPool:
         """Get the hash pool in secure random order."""
         if len(self._pool) != self._pool_size:
             raise PoolNotReady
-        final_pool: List[onionrtypes.BlockHash] = cryptoutils.random_shuffle(
+
+        final_pool: List[onionrtypes.BlockHash] = SystemRandom().shuffle(
             list(self._pool))
 
         self._pool.clear()

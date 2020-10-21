@@ -3,10 +3,10 @@
 Test Onionr as it is running
 """
 import os
+from secrets import SystemRandom
 
 import logger
 from onionrutils import epoch
-from onionrcrypto.cryptoutils.randomshuffle import random_shuffle
 
 from . import uicheck, inserttest, stresstest
 from . import ownnode
@@ -55,7 +55,7 @@ class OnionrRunTestManager:
         self.run_date: int = 0
 
     def run_tests(self):
-        tests = random_shuffle(RUN_TESTS)
+        tests = SystemRandom.shuffle(list(RUN_TESTS))
         cur_time = epoch.get_epoch()
         logger.info(f"Doing runtime tests at {cur_time}")
 

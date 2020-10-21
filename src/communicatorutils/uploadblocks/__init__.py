@@ -5,6 +5,7 @@ Upload blocks in the upload queue to peers from the communicator
 from typing import TYPE_CHECKING
 from time import sleep
 from threading import Thread
+from secrets import SystemRandom
 
 from . import sessionmanager
 
@@ -14,7 +15,6 @@ from communicatorutils import proxypicker
 import onionrexceptions
 from onionrblocks import onionrblockapi as block
 from onionrutils import stringvalidators, basicrequests
-import onionrcrypto
 from communicator import onlinepeers
 if TYPE_CHECKING:
     from deadsimplekv import DeadSimpleKV
@@ -47,8 +47,8 @@ def upload_blocks_from_communicator(comm_inst: 'OnionrCommunicatorDaemon'):
         sessionmanager.BlockUploadSessionManager)
     tried_peers: UserID = []
     finishedUploads = []
-    kv.put('blocksToUpload', onionrcrypto.cryptoutils.random_shuffle(
-        kv.get('blocksToUpload')))
+
+    SystemRandom().shuffle(kv.get('blocksToUpload'))
 
     def remove_from_hidden(bl):
         sleep(60)

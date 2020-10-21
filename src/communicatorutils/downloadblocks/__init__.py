@@ -1,9 +1,10 @@
-"""
-    Onionr - Private P2P Communication
+"""Onionr - Private P2P Communication.
 
-    Download blocks using the communicator instance
+Download blocks using the communicator instance.
 """
 from typing import TYPE_CHECKING
+from secrets import SystemRandom
+
 if TYPE_CHECKING:
     from communicator import OnionrCommunicatorDaemon
     from deadsimplekv import DeadSimpleKV
@@ -82,7 +83,7 @@ def download_blocks_from_communicator(comm_inst: "OnionrCommunicatorDaemon"):
             except onionrexceptions.OnlinePeerNeeded:
                 continue
         else:
-            blockPeers = onionrcrypto.cryptoutils.random_shuffle(blockPeers)
+            SystemRandom().shuffle(blockPeers)
             peerUsed = blockPeers.pop(0)
 
         if not kv.get('shutdown') and peerUsed.strip() != '':
