@@ -25,9 +25,9 @@ from .readstatic import read_static
 def check_network(torPort=0) -> bool:
     """Check if we are connected to the internet (through Tor)."""
     success = False
-    connect_urls = []
     try:
-        connect_urls = SystemRandom().shuffle(read_static('connect-check.txt').split(','))
+        connect_urls = read_static('connect-check.txt').split(',')
+        SystemRandom().shuffle(connect_urls)
 
         for url in connect_urls:
             if basicrequests.do_get_request(
