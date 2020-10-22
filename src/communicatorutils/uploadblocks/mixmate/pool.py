@@ -63,8 +63,8 @@ class UploadPool:
         if len(self._pool) != self._pool_size:
             raise PoolNotReady
 
-        final_pool: List[onionrtypes.BlockHash] = SystemRandom().shuffle(
-            list(self._pool))
+        final_pool: List[onionrtypes.BlockHash] = list(self._pool)
+        SystemRandom().shuffle(final_pool)
 
         self._pool.clear()
         self.birthday = onionrutils.epoch.get_epoch()

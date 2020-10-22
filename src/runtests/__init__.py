@@ -55,7 +55,8 @@ class OnionrRunTestManager:
         self.run_date: int = 0
 
     def run_tests(self):
-        tests = SystemRandom.shuffle(list(RUN_TESTS))
+        tests = list(RUN_TESTS)
+        SystemRandom().shuffle(tests)
         cur_time = epoch.get_epoch()
         logger.info(f"Doing runtime tests at {cur_time}")
 
