@@ -37,6 +37,10 @@ def set_config_from_onboarding(config_settings: OnboardingConfig):
 
     config.reload()
 
+    if get(config_settings, 'optimize'):
+        config.set('ui.animated_background', False)
+        config.set('general.insert_deniable_blocks', False)
+
     if get(config_settings, 'stateTarget') or not get(config_settings,
                                                       'networkContrib'):
         config.set('general.security_level', 1)
