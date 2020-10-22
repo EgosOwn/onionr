@@ -149,10 +149,12 @@ class OnionrCommunicatorDaemon:
                 180, my_args=[self], requires_peer=True, max_threads=1)
             deniableBlockTimer.count = (deniableBlockTimer.frequency - 175)
 
-        # Timer to check for connectivity,
-        # through Tor to various high-profile onion services
-        OnionrCommunicatorTimers(self, netcheck.net_check, 500,
-                                 my_args=[self], max_threads=1)
+        if config.get('transports.tor', True):
+            # Timer to check for connectivity,
+            # through Tor to various high-profile onion services
+            OnionrCommunicatorTimers(
+                self, netcheck.net_check, 500,
+                my_args=[self], max_threads=1)
 
         # Announce the public API server transport address
         # to other nodes if security level allows
