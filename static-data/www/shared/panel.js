@@ -28,8 +28,8 @@ let restartTorBtnControl = function(){
     }
     var restartTor = document.getElementsByClassName('restartTor')[0]
 
-    if (config.tor.use_existing_tor){
-        restartTor.classList.add('is-hidden')
+    if (config.tor.use_existing_tor || ! config.transports.tor){
+        restartTor.setAttribute('disabled', true)
         return
     }
 
