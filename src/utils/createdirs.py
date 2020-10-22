@@ -32,7 +32,7 @@ def create_dirs():
                 filepaths.contacts_location, filepaths.export_location]
     for path in gen_dirs:
         if not os.path.exists(path):
-            os.mkdir(path)
+            os.makedirs(path)
 
     os.chmod(home, stat.S_IRWXU)
 
