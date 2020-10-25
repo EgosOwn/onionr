@@ -8,6 +8,8 @@ LoopBackIP = NewType('LoopBackIP', str)
 
 DeterministicKeyPassphrase = NewType('DeterministicKeyPassphrase', str)
 
+Ed25519PublicKeyBytes = NewType('Ed25519PublicKeyBytes', bytes)
+
 BlockHash = NewType('BlockHash', str)
 
 OnboardingConfig = NewType('OnboardingConfig', str)

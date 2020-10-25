@@ -9,6 +9,11 @@ if not os.path.exists('onionr.sh'):
     os.chdir('../')
 sys.path.append("src/")
 
+try:
+    sys.argv[1]
+except IndexError:
+    sys.exit(1)
+
 tor_process = process.launch_tor_with_config(
     completion_percent=0,
   config = {
@@ -23,13 +28,13 @@ tor_process = process.launch_tor_with_config(
 
 with Controller.from_port('127.0.0.1', 2778) as controller:
     controller.authenticate()
-    for i in range(1024, 2000):
+    for i in range(1024, 1024 + int(sys.argv[1])):
         hs = controller.create_ephemeral_hidden_service(
             {80: i},
             key_type='NEW',
             key_content='ED25519-V3',
             await_publication=False,
             detached=True)
-        print(hs.service_id)
+        print(hs.service_id + ".onion")
 
 tor_process.kill()
