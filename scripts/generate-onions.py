@@ -36,5 +36,6 @@ with Controller.from_port('127.0.0.1', 2778) as controller:
             await_publication=False,
             detached=True)
         print(hs.service_id + ".onion")
+        controller.remove_ephemeral_hidden_service(hs.service_id)
 
 tor_process.kill()
