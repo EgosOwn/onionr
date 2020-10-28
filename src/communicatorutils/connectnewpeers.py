@@ -45,7 +45,8 @@ def connect_new_peer_to_communicator(shared_state, peer='', useBootstrap=False):
         peerList = keydb.listkeys.list_adders()
 
     mainPeerList = keydb.listkeys.list_adders()
-    peerList = onionrpeers.get_score_sorted_peer_list()
+    if not peerList:
+        peerList = onionrpeers.get_score_sorted_peer_list()
 
     """
     If we don't have enough peers connected or random chance,
