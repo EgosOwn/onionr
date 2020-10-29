@@ -130,7 +130,7 @@
                   <div class="column is-2">
                     <div class="field">
                         <input id="forwardSecrecySetting" type="checkbox"
-                        class="switch is-rounded is-danger" checked>
+                        class="switch is-rounded is-danger">
                         <label for="forwardSecrecySetting"></label>
                     </div>
                   </div>
@@ -244,7 +244,7 @@
             </div>
             <form method="post" action="" id="sendForm" enctype="application/x-www-form-urlencoded">
                 <div class="field">
-                    To: <input id="draftID" type="text" name="to" placeholder="pubkey or select above" required>
+                    To: <input id="draftID" type="text" name="to" placeholder="pubkey or select above" autocomplete="off" required>
                 </div>
                 Subject: <input name="subject" id="draftSubject" maxlength="25" type="text"
                     placeholder="message subject" autocomplete="off">

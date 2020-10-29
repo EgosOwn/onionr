@@ -36,7 +36,7 @@ def accept_upload(request):
     resp = 'failure'
     data = request.get_data()
     data_size = sys.getsizeof(data)
-    print(data)
+
     if data_size < 30:
         resp = 'size'
     elif data_size < 100000000:

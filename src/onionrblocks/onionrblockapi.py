@@ -79,10 +79,7 @@ class Block:
         # decrypt data
         if self.getHeader('encryptType') == 'asym':
             try:
-                try:
-                    self.bcontent = encryption.pub_key_decrypt(self.bcontent, encodedData=encodedData)
-                except (binascii.Error, ValueError) as e:
-                    self.bcontent = encryption.pub_key_decrypt(self.bcontent, encodedData=False)
+                self.bcontent = encryption.pub_key_decrypt(self.bcontent, encodedData=False)
 
                 bmeta = encryption.pub_key_decrypt(self.bmetadata, encodedData=encodedData)
 
@@ -93,9 +90,11 @@ class Block:
                     pass
                 self.bmetadata = json.loads(bmeta)
                 self.signature = encryption.pub_key_decrypt(self.signature, encodedData=encodedData)
+
                 self.signer = encryption.pub_key_decrypt(self.signer, encodedData=encodedData)
+
                 self.bheader['signer'] = self.signer.decode()
-                self.signedData =  json.dumps(self.bmetadata).encode() + self.bcontent
+                self.signedData = json.dumps(self.bmetadata).encode() + self.bcontent
 
                 if not self.signer is None:
                     if not self.verifySig():
@@ -124,8 +123,8 @@ class Block:
                     except (onionrexceptions.DecryptionError, nacl.exceptions.CryptoError) as e:
                         logger.error(str(e))
                         pass
-            except nacl.exceptions.CryptoError:
-                logger.debug('Could not decrypt block. Either invalid key or corrupted data')
+            except (nacl.exceptions.CryptoError,) as e:
+                logger.debug(f'Could not decrypt block. encodedData: {encodedData}. Either invalid key or corrupted data ' + str(e))
             except onionrexceptions.ReplayAttack:
                 logger.warn('%s is possibly a replay attack' % (self.hash,))
             else:
