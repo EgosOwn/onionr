@@ -72,6 +72,8 @@ def advertise_service(specific_ips=None):
     MULTICAST_TTL = 3
 
     ips = best_ip
+    if not ips:
+        return
 
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
     sock.setsockopt(socket.IPPROTO_IP, socket.IP_MULTICAST_TTL, MULTICAST_TTL)

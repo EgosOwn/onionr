@@ -6,6 +6,8 @@ from ipaddress import IPv4Address
 
 from psutil import net_if_addrs
 from socket import AF_INET
+
+import logger
 """
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -24,13 +26,18 @@ from socket import AF_INET
 lan_ips = []
 
 # https://psutil.readthedocs.io/en/latest/#psutil.net_if_addrs
-for interface in net_if_addrs().keys():
-    for address in net_if_addrs()[interface]:
-        # Don't see benefit in ipv6, so just check for v4 addresses
-        if address[0] == AF_INET:
-            # Mark the address for use in LAN if it is a private address
-            if IPv4Address(address[1]).is_private and not IPv4Address(address[1]).is_loopback:
-                lan_ips.append(address[1])
+def _get_lan_ips():
+    for interface in net_if_addrs().keys():
+        for address in net_if_addrs()[interface]:
+            # Don't see benefit in ipv6, so just check for v4 addresses
+            if address[0] == AF_INET:
+                # Mark the address for use in LAN if it is a private address
+                if IPv4Address(address[1]).is_private and not IPv4Address(address[1]).is_loopback:
+                    lan_ips.append(address[1])
+try:
+    _get_lan_ips()
+except OSError:
+    logger.warn("Could not identify LAN ips due to OSError.")
 
 # These are more likely to be actual local subnets rather than VPNs
 for ip in lan_ips:

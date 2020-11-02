@@ -5,6 +5,7 @@ launch the api servers and communicator
 import os
 import sys
 import platform
+import signal
 from threading import Thread
 
 from stem.connection import IncorrectPassword
@@ -117,14 +118,22 @@ def _setup_online_mode(
                 cleanup.delete_run_files()
                 sys.exit(1)
         if len(net.myID) > 0 and security_level == 0:
-            logger.debug('Started .onion service: %s' %
-                        (logger.colors.underline + net.myID))
+            logger.debug(
+                'Started .onion service: %s' %
+                (logger.colors.underline + net.myID))
         else:
             logger.debug('.onion service disabled')
 
 
 def daemon():
     """Start Onionr's primary threads for communicator, API server, node, and LAN."""
+
+    def _handle_sig_term(signum, frame):
+        logger.info(
+            "Received sigterm, shutting down gracefully", terminal=True)
+        localcommand.local_command('/shutdownclean')
+    signal.signal(signal.SIGTERM, _handle_sig_term)
+
     # Determine if Onionr is in offline mode.
     # When offline, Onionr can only use LAN and disk transport
     offline_mode = config.get('general.offline_mode', False)
@@ -184,7 +193,8 @@ def daemon():
         _setup_online_mode(use_existing_tor, net, security_level)
 
     _show_info_messages()
-
+    logger.info(
+        "Onionr daemon is running under " + str(os.getpid()), terminal=True)
     events.event('init', threaded=False)
     events.event('daemon_start')
     if config.get('transports.lan', True):
