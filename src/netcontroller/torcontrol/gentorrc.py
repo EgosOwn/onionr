@@ -82,7 +82,6 @@ HashedControlPassword """ + str(password) + """
 HiddenServiceNumIntroductionPoints 20
 HiddenServiceMaxStreams 500
 HiddenServiceMaxStreamsCloseCircuit 1
-DisableNetwork 1
 HiddenServicePort 80 """ + api_server_ip + """:""" + str(hs_port)
 
     torrc_data = add_bridges(torrc_data)
