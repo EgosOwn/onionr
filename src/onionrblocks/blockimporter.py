@@ -8,9 +8,9 @@ from onionrexceptions import InvalidProof
 from onionrexceptions import InvalidMetadata
 import logger
 from onionrutils import validatemetadata
-from onionrutils import blockmetadata
 from onionrutils import bytesconverter
 from coredb import blockmetadb
+from onionrblocks import blockmetadata
 import onionrstorage
 import onionrcrypto as crypto
 from . import onionrblacklist

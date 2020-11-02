@@ -1,9 +1,17 @@
-'''
-    Onionr - Private P2P Communication
+"""Onionr - Private P2P Communication.
 
-    Process block metadata with relevant actions
-'''
-'''
+Process block metadata with relevant actions
+"""
+from etc import onionrvalues
+from onionrblocks import onionrblockapi
+from onionrutils import epoch, bytesconverter
+from coredb import blockmetadb
+import logger
+from onionrplugins import onionrevents
+import onionrexceptions
+from onionrusers import onionrusers
+from onionrutils import updater
+"""
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or
@@ -16,25 +24,15 @@
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
-'''
+"""
 
-from etc import onionrvalues
-from onionrblocks import onionrblockapi
-from .. import epoch, bytesconverter
-from coredb import blockmetadb
-import logger
-from onionrplugins import onionrevents
-import onionrexceptions
-from onionrusers import onionrusers
-from onionrutils import updater
-from gevent import sleep
 
 def process_block_metadata(blockHash: str):
-    '''
-        Read metadata from a block and cache it to the block database
+    """
+    Read metadata from a block and cache it to the block database.
 
-        blockHash -> sha3_256 hex formatted hash of Onionr block
-    '''
+    blockHash -> sha3_256 hex formatted hash of Onionr block
+    """
     curTime = epoch.get_rounded_epoch(roundS=60)
     myBlock = onionrblockapi.Block(blockHash)
     if myBlock.isEncrypted:

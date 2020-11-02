@@ -2,7 +2,6 @@
 
 OnionrBlocks class for abstraction of blocks
 """
-import binascii
 import datetime
 import onionrstorage
 
@@ -206,33 +205,6 @@ class Block:
         self.valid = False
         return False
 
-
-    def save(self, sign = False, recreate = True):
-        """
-            Saves a block to file and imports it into Onionr
-
-            Inputs:
-            - sign (bool): whether or not to sign the block before saving
-            - recreate (bool): if the block already exists, whether or not to recreate the block and save under a new hash
-
-            Outputs:
-            - (bool): whether or not the operation was successful
-        """
-
-        try:
-            if self.isValid() is True:
-
-                self.hash = onionrblocks.insert(self.getRaw(), header = self.getType(), sign = sign, meta = self.getMetadata(), expire = self.getExpire())
-                if self.hash != False:
-                    self.update()
-
-                return self.getHash()
-            else:
-                logger.warn('Not writing block; it is invalid.')
-        except Exception as e:
-            logger.error('Failed to save block.', error = e, timestamp = False)
-
-        return False
 
     # getters
 

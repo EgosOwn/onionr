@@ -17,7 +17,8 @@ import config
 import onionrcrypto as crypto
 import onionrexceptions
 from onionrusers import onionrusers
-from onionrutils import localcommand, blockmetadata, stringvalidators
+from onionrutils import localcommand, stringvalidators
+from .. import blockmetadata
 import coredb
 from onionrproofs import subprocesspow
 import logger

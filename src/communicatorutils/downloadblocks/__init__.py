@@ -17,7 +17,7 @@ import onionrpeers
 
 from communicator import peeraction
 from communicator import onlinepeers
-from onionrutils import blockmetadata
+from onionrblocks import blockmetadata
 from onionrutils import validatemetadata
 from coredb import blockmetadb
 from onionrutils.localcommand import local_command

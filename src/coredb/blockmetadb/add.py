@@ -2,10 +2,10 @@
 
 Add an entry to the block metadata database
 """
-import os
 import sqlite3
 import secrets
-from onionrutils import epoch, blockmetadata
+from onionrutils import epoch
+from onionrblocks import blockmetadata
 from etc import onionrvalues
 from .. import dbfiles
 from onionrexceptions import BlockMetaEntryExists
@@ -34,7 +34,8 @@ def add_to_block_DB(newHash, selfInsert=False, dataSaved=False):
 
     if blockmetadata.has_block(newHash):
         raise BlockMetaEntryExists
-    conn = sqlite3.connect(dbfiles.block_meta_db, timeout=onionrvalues.DATABASE_LOCK_TIMEOUT)
+    conn = sqlite3.connect(
+        dbfiles.block_meta_db, timeout=onionrvalues.DATABASE_LOCK_TIMEOUT)
     c = conn.cursor()
     currentTime = epoch.get_epoch() + secrets.randbelow(61)
     if selfInsert or dataSaved:
@@ -42,6 +43,7 @@ def add_to_block_DB(newHash, selfInsert=False, dataSaved=False):
     else:
         selfInsert = 0
     data = (newHash, currentTime, '', selfInsert)
-    c.execute('INSERT INTO hashes (hash, dateReceived, dataType, dataSaved) VALUES(?, ?, ?, ?);', data)
+    c.execute(
+        'INSERT INTO hashes (hash, dateReceived, dataType, dataSaved) VALUES(?, ?, ?, ?);', data)
     conn.commit()
     conn.close()
