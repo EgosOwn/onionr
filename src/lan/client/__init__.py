@@ -10,6 +10,7 @@ from onionrtypes import LANIP
 import logger
 from coredb.blockmetadb import get_block_list
 from onionrblocks.blockimporter import import_block_from_data
+import onionrexceptions
 from ..server import ports
 
 from threading import Thread
@@ -37,9 +38,12 @@ def _lan_work(peer: LANIP):
         blocks = requests.get(url + 'blist/0').text.splitlines()
         for block in blocks:
             if block not in our_blocks:
-                import_block_from_data(
-                    requests.get(
-                        url + f'get/{block}', stream=True).raw.read(6000000))
+                try:
+                    import_block_from_data(
+                        requests.get(
+                            url + f'get/{block}', stream=True).raw.read(6000000))
+                except onionrexceptions.InvalidMetadata:
+                    logger.warn(f"Could not get {block} from lan peer")
 
     for port in ports:
         try:

@@ -86,12 +86,10 @@ class OnionrCommunicatorDaemon:
         # extends our upload list and saves our list when Onionr exits
         uploadqueue.UploadQueue(self)
 
-        # Timers to periodically lookup new blocks and download them
-        lookup_blocks_timer = OnionrCommunicatorTimers(
-            self,
+        add_onionr_thread(
             lookupblocks.lookup_blocks_from_communicator,
-            config.get('timers.lookupBlocks', 25),
-            my_args=[self], requires_peer=True, max_threads=1)
+            [self.shared_state], 25, 3)
+
 
         """The block download timer is accessed by the block lookup function
         to trigger faster download starts"""
@@ -99,11 +97,7 @@ class OnionrCommunicatorDaemon:
             self, self.getBlocks, config.get('timers.getBlocks', 10),
             requires_peer=True, max_threads=5)
 
-        # Timer to reset the longest offline peer
-        # so contact can be attempted again
-        OnionrCommunicatorTimers(
-            self, onlinepeers.clear_offline_peer, 58, my_args=[self],
-            max_threads=1)
+        add_onionr_thread(onlinepeers.clear_offline_peer, [self.kv], 58)
 
         # Timer to cleanup old blocks
         blockCleanupTimer = OnionrCommunicatorTimers(
@@ -180,7 +174,6 @@ class OnionrCommunicatorDaemon:
         # Adjust initial timer triggers
         cleanupTimer.count = (cleanupTimer.frequency - 60)
         blockCleanupTimer.count = (blockCleanupTimer.frequency - 2)
-        lookup_blocks_timer = (lookup_blocks_timer.frequency - 2)
 
         shared_state.add(self)
 

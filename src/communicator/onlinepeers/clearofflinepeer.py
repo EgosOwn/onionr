@@ -23,9 +23,8 @@ if TYPE_CHECKING:
 """
 
 
-def clear_offline_peer(comm_inst: 'OnionrCommunicatorDaemon'):
+def clear_offline_peer(kv: 'DeadSimpleKV'):
     """Remove the longest offline peer to retry later."""
-    kv: "DeadSimpleKV" = comm_inst.shared_state.get_by_string("DeadSimpleKV")
     try:
         removed = kv.get('offlinePeers').pop(0)
     except IndexError:
@@ -33,4 +32,4 @@ def clear_offline_peer(comm_inst: 'OnionrCommunicatorDaemon'):
     else:
         logger.debug('Removed ' + removed +
                      ' from offline list, will try them again.')
-    comm_inst.decrementThreadCount('clear_offline_peer')
+

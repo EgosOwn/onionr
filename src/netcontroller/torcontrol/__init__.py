@@ -145,8 +145,8 @@ class NetController:
             except ValueError:
                 # Happens if int() check is not valid
                 logger.error("torPid.txt contained invalid integer. " +
-                            "This indicates corruption " +
-                            "and should not be bypassed for security reasons")
+                             "This indicates corruption " +
+                             "and should not be bypassed for security reasons")
                 return
             os.remove(self.dataDir + 'torPid.txt')
         except ProcessLookupError:

@@ -8,6 +8,7 @@ import platform
 
 from flask import Response, Blueprint, request, send_from_directory, abort
 from flask import g
+from gevent import sleep
 import unpaddedbase32
 
 from httpapi import apiutils
@@ -138,10 +139,6 @@ class PrivateEndpoints:
             return Response(
                 bytesconverter.bytes_to_str(mnemonickeys.get_base32(words)))
 
-        @private_endpoints_bp.route('/gettorsocks')
-        def get_tor_socks():
-            return Response(str(g.too_many.get(NetController).socksPort))
-
         @private_endpoints_bp.route('/setonboarding', methods=['POST'])
         def set_onboarding():
             return Response(
@@ -151,11 +148,25 @@ class PrivateEndpoints:
         def get_os_system():
             return Response(platform.system().lower())
 
+        @private_endpoints_bp.route('/gettorsocks')
+        def get_tor_socks():
+            while True:
+                try:
+                    return Response(
+                        str(
+                            g.too_many.get_by_string(
+                                'NetController').socksPort))
+                except KeyError:
+                    sleep(0.1)
+
         @private_endpoints_bp.route('/torready')
         def is_tor_ready():
             """If Tor is starting up, the web UI is not ready to be used."""
-            return Response(
-                str(g.too_many.get(NetController).readyState).lower())
+            try:
+                return Response(
+                    str(g.too_many.get_by_string('NetController').readyState).lower())
+            except KeyError:
+                return Response("false")
 
         @private_endpoints_bp.route('/gettoraddress')
         def get_tor_address():

@@ -1,9 +1,12 @@
 from typing import Callable
 from typing import Iterable
 
+import traceback
 from threading import Thread
 
 from time import sleep
+
+import logger
 
 
 def _onionr_thread(func: Callable, args: Iterable,
@@ -11,7 +14,12 @@ def _onionr_thread(func: Callable, args: Iterable,
     if initial_sleep:
         sleep(initial_sleep)
     while True:
-        func(*args)
+        try:
+            func(*args)
+        except Exception as _:  # noqa
+            logger.warn(
+                "Onionr thread exception \n" + traceback.format_exc(),
+                terminal=True)
         sleep(sleep_secs)
 
 

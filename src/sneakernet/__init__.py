@@ -45,7 +45,9 @@ class _Importer(FileSystemEventHandler):
         os.remove(event.src_path)
         try:
             import_block_from_data(block_data)
-        except onionrexceptions.DataExists:
+        except(
+                onionrexceptions.DataExists,
+                onionrexceptions.BlockMetaEntryExists) as _:
             return
         if block_data_location in event.src_path:
             try:

@@ -39,7 +39,7 @@ blacklist = onionrblacklist.OnionrBlackList()
 storage_counter = StorageCounter()
 
 
-def lookup_blocks_from_communicator(comm_inst):
+def lookup_blocks_from_communicator(shared_state: 'TooMany'):
     logger.info('Looking up new blocks')
     tryAmount = 2
     newBlocks = ''
@@ -50,7 +50,7 @@ def lookup_blocks_from_communicator(comm_inst):
     maxBacklog = 1560
     lastLookupTime = 0  # Last time we looked up a particular peer's list
     new_block_count = 0
-    kv: "DeadSimpleKV" = comm_inst.shared_state.get_by_string("DeadSimpleKV")
+    kv: "DeadSimpleKV" = shared_state.get_by_string("DeadSimpleKV")
     for i in range(tryAmount):
         # Defined here to reset it each time, time offset is added later
         listLookupCommand = 'getblocklist'
@@ -87,7 +87,7 @@ def lookup_blocks_from_communicator(comm_inst):
         listLookupCommand += '?date=%s' % (lastLookupTime,)
         try:
             newBlocks = peeraction.peer_action(
-                comm_inst.shared_state,
+                shared_state,
                 peer, listLookupCommand)  # get list of new block hashes
         except Exception as error:
             logger.warn(
@@ -124,6 +124,3 @@ def lookup_blocks_from_communicator(comm_inst):
         logger.info(
             f'Discovered {new_block_count} new block{block_string}',
             terminal=True)
-        comm_inst.download_blocks_timer.count = \
-            int(comm_inst.download_blocks_timer.frequency * 0.99)
-    comm_inst.decrementThreadCount('lookup_blocks_from_communicator')

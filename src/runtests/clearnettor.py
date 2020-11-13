@@ -44,14 +44,14 @@ def test_clearnet_tor_request(testmanager):
 
     try:
         leak_result: str = do_get_request(
-            'https://onionr.net/404',
+            'https://example.com/notvalidpage',
             port=socks_port, ignoreAPI=True).lower()
     except AttributeError:
         leak_result = ""
     except Exception as e:
         logger.warn(str(e))
     try:
-        if 'not found' in leak_result:
+        if 'example' in leak_result:
             logger.error('Tor was able to request a clearnet site')
             raise ValueError('Tor was able to request a clearnet site')
     except TypeError:
