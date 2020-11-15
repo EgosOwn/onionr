@@ -98,19 +98,17 @@ class OnionrCommunicatorDaemon:
         add_onionr_thread(onlinepeers.clear_offline_peer, [self.kv], 58)
 
         add_onionr_thread(
-            housekeeping.clean_old_blocks, self.shared_state, 20, 1)
+            housekeeping.clean_old_blocks, [self.shared_state], 20, 1)
 
-        # Timer to discover new peers
-        OnionrCommunicatorTimers(
-            self, lookupadders.lookup_new_peer_transports_with_communicator,
-            60, requires_peer=True, my_args=[shared_state], max_threads=2)
+        # Discover new peers
+        add_onionr_thread(
+            lookupadders.lookup_new_peer_transports_with_communicator,
+            [shared_state], 60, 3)
 
         # Timer for adjusting which peers
         # we actively communicate to at any given time,
         # to avoid over-using peers
-        OnionrCommunicatorTimers(
-            self, cooldownpeer.cooldown_peer, 30,
-            my_args=[self], requires_peer=True)
+        add_onionr_thread(cooldownpeer.cooldown_peer, [self.shared_state], 30, 60)
 
         # Timer to read the upload queue and upload the entries to peers
         OnionrCommunicatorTimers(

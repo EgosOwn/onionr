@@ -45,9 +45,10 @@ class _Importer(FileSystemEventHandler):
         os.remove(event.src_path)
         try:
             import_block_from_data(block_data)
-        except(
+        except(  # noqa
                 onionrexceptions.DataExists,
-                onionrexceptions.BlockMetaEntryExists) as _:
+                onionrexceptions.BlockMetaEntryExists,
+                onionrexceptions.InvalidMetadata) as _:
             return
         if block_data_location in event.src_path:
             try:

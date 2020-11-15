@@ -64,4 +64,3 @@ def lookup_new_peer_transports_with_communicator(shared_state):
             except ValueError:
                 pass
         kv.get('newPeers').extend(newPeers)
-    shared_state.get_by_string("OnionrCommunicatorDaemon").decrementThreadCount('lookup_new_peer_transports_with_communicator')

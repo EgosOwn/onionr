@@ -25,10 +25,10 @@ if TYPE_CHECKING:
 """
 
 
-def cooldown_peer(comm_inst):
+def cooldown_peer(shared_state):
     """Randomly add an online peer to cooldown, so we can connect a new one."""
-    kv: "DeadSimpleKV" = comm_inst.shared_state.get_by_string("DeadSimpleKV")
-    config = comm_inst.config
+    kv: "DeadSimpleKV" = shared_state.get_by_string("DeadSimpleKV")
+    config = shared_state.get_by_string("OnionrCommunicatorDaemon").config
     online_peer_amount = len(kv.get('onlinePeers'))
     minTime = 300
     cooldown_time = 600
@@ -55,7 +55,6 @@ def cooldown_peer(comm_inst):
             except ValueError:
                 break
         else:
-            onlinepeers.remove_online_peer(comm_inst, to_cool)
+            onlinepeers.remove_online_peer(kv, to_cool)
             kv.get('cooldownPeer')[to_cool] = epoch.get_epoch()
 
-    comm_inst.decrementThreadCount('cooldown_peer')
