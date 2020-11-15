@@ -36,15 +36,15 @@ from etc.onionrvalues import DATABASE_LOCK_TIMEOUT
 storage_counter = StorageCounter()
 
 
-def __remove_from_upload(comm_inst, block_hash: str):
-    kv: "DeadSimpleKV" = comm_inst.shared_state.get_by_string("DeadSimpleKV")
+def __remove_from_upload(shared_state, block_hash: str):
+    kv: "DeadSimpleKV" = shared_state.get_by_string("DeadSimpleKV")
     try:
         kv.get('blocksToUpload').remove(block_hash)
     except ValueError:
         pass
 
 
-def clean_old_blocks(comm_inst):
+def clean_old_blocks(shared_state):
     """Delete expired blocks + old blocks if disk allocation is near full"""
     blacklist = onionrblacklist.OnionrBlackList()
     # Delete expired blocks
@@ -52,7 +52,7 @@ def clean_old_blocks(comm_inst):
         blacklist.addToDB(bHash)
         removeblock.remove_block(bHash)
         onionrstorage.deleteBlock(bHash)
-        __remove_from_upload(comm_inst, bHash)
+        __remove_from_upload(shared_state, bHash)
         logger.info('Deleted block: %s' % (bHash,))
 
     while storage_counter.is_full():
@@ -64,10 +64,8 @@ def clean_old_blocks(comm_inst):
             blacklist.addToDB(oldest)
             removeblock.remove_block(oldest)
             onionrstorage.deleteBlock(oldest)
-            __remove_from_upload(comm_inst, oldest)
+            __remove_from_upload(shared_state, oldest)
             logger.info('Deleted block: %s' % (oldest,))
-
-    comm_inst.decrementThreadCount('clean_old_blocks')
 
 
 def clean_keys(comm_inst):

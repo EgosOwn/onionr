@@ -3,6 +3,7 @@ from typing import Iterable
 
 import traceback
 from threading import Thread
+from uuid import uuid4
 
 from time import sleep
 
@@ -11,6 +12,7 @@ import logger
 
 def _onionr_thread(func: Callable, args: Iterable,
                    sleep_secs: int, initial_sleep):
+    thread_id = str(uuid4())
     if initial_sleep:
         sleep(initial_sleep)
     while True:
@@ -18,7 +20,8 @@ def _onionr_thread(func: Callable, args: Iterable,
             func(*args)
         except Exception as _:  # noqa
             logger.warn(
-                "Onionr thread exception \n" + traceback.format_exc(),
+                f"Onionr thread exception in {thread_id} \n" +
+                traceback.format_exc(),
                 terminal=True)
         sleep(sleep_secs)
 

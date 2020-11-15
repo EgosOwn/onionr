@@ -21,11 +21,11 @@ from onionrblocks import onionrblacklist
 """
 
 
-def should_download(comm_inst, block_hash) -> bool:
+def should_download(shared_state, block_hash) -> bool:
     """Return bool for if a (assumed to exist) block should be downloaded."""
     blacklist = onionrblacklist.OnionrBlackList()
     should = True
-    kv: "DeadSimpleKV" = comm_inst.shared_state.get_by_string("DeadSimpleKV")
+    kv: "DeadSimpleKV" = shared_state.get_by_string("DeadSimpleKV")
     if block_hash in blockmetadb.get_block_list():
         # Don't download block we have
         should = False
