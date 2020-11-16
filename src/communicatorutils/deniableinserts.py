@@ -22,7 +22,7 @@ import onionrblocks
 """
 
 
-def insert_deniable_block(comm_inst):
+def insert_deniable_block():
     """Insert a fake block to make it more difficult to track real blocks."""
     fakePeer = ''
     chance = 10
@@ -33,4 +33,3 @@ def insert_deniable_block(comm_inst):
         onionrblocks.insert(data, header='pm', encryptType='asym',
                             asymPeer=fakePeer, disableForward=True,
                             meta={'subject': 'foo'})
-    comm_inst.decrementThreadCount('insert_deniable_block')

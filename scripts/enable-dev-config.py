@@ -26,6 +26,9 @@ conf['general']['random_bind_ip'] = False
 conf['onboarding']['done'] = True
 conf['general']['minimum_block_pow'] = block_pow
 conf['general']['minimum_send_pow'] = block_pow
+conf['general']['use_bootstrap_list'] = False
+if input("Use bootstrap list? y/n").lower() == 'y':
+    conf['general']['use_bootstrap_list'] = True
 conf['log']['file']['remove_on_exit'] = False
 conf['ui']['animated_background'] = False
 if input('Stat reporting? y/n') == 'y':

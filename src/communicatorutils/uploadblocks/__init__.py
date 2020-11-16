@@ -14,7 +14,9 @@ import logger
 from communicatorutils import proxypicker
 import onionrexceptions
 from onionrblocks import onionrblockapi as block
+from onionrblocks.blockmetadata.fromdata import get_block_metadata_from_data
 from onionrutils import stringvalidators, basicrequests
+from onionrutils.validatemetadata import validate_metadata
 from communicator import onlinepeers
 if TYPE_CHECKING:
     from deadsimplekv import DeadSimpleKV
@@ -35,15 +37,14 @@ if TYPE_CHECKING:
 """
 
 
-def upload_blocks_from_communicator(comm_inst: 'OnionrCommunicatorDaemon'):
+def upload_blocks_from_communicator(shared_state: 'OnionrCommunicatorDaemon'):
     """Accept a communicator instance + upload blocks from its upload queue."""
     """when inserting a block, we try to upload
      it to a few peers to add some deniability & increase functionality"""
-    kv: "DeadSimpleKV" = comm_inst.shared_state.get_by_string("DeadSimpleKV")
-    TIMER_NAME = "upload_blocks_from_communicator"
+    kv: "DeadSimpleKV" = shared_state.get_by_string("DeadSimpleKV")
 
     session_manager: sessionmanager.BlockUploadSessionManager
-    session_manager = comm_inst.shared_state.get(
+    session_manager = shared_state.get(
         sessionmanager.BlockUploadSessionManager)
     tried_peers: UserID = []
     finishedUploads = []
@@ -53,7 +54,7 @@ def upload_blocks_from_communicator(comm_inst: 'OnionrCommunicatorDaemon'):
     def remove_from_hidden(bl):
         sleep(60)
         try:
-            comm_inst.shared_state.get_by_string(
+            shared_state.get_by_string(
                 'PublicAPI').hideBlocks.remove(bl)
         except ValueError:
             pass
@@ -62,7 +63,6 @@ def upload_blocks_from_communicator(comm_inst: 'OnionrCommunicatorDaemon'):
         for bl in kv.get('blocksToUpload'):
             if not stringvalidators.validate_hash(bl):
                 logger.warn('Requested to upload invalid block', terminal=True)
-                comm_inst.decrementThreadCount(TIMER_NAME)
                 return
             session = session_manager.add_session(bl)
             for _ in range(min(len(kv.get('onlinePeers')), 6)):
@@ -92,10 +92,22 @@ def upload_blocks_from_communicator(comm_inst: 'OnionrCommunicatorDaemon'):
                     data = block.Block(bl).getRaw()
                     if not data:
                         logger.warn(
-                            f"Couldn't data for block in upload list {bl}",
+                            f"Couldn't get data for block in upload list {bl}",
                             terminal=True)
                         raise onionrexceptions.NoDataAvailable
-                except onionrexceptions.NoDataAvailable:
+                    try:
+                        def __check_metadata():
+                            metadata = get_block_metadata_from_data(data)[0]
+                            if not validate_metadata(metadata, data):
+                                logger.warn(
+                                    f"Metadata for uploading block not valid {bl}")
+                                raise onionrexceptions.InvalidMetadata
+                        __check_metadata()
+                    except onionrexceptions.DataExists:
+                        pass
+                except(  # noqa
+                        onionrexceptions.NoDataAvailable,
+                        onionrexceptions.InvalidMetadata) as _:
                     finishedUploads.append(bl)
                     break
                 proxy_type = proxypicker.pick_proxy(peer)
@@ -116,7 +128,9 @@ def upload_blocks_from_communicator(comm_inst: 'OnionrCommunicatorDaemon'):
                     else:
                         session.fail()
                         session.fail_peer(peer)
-                        comm_inst.getPeerProfileInstance(peer).addScore(-5)
+                        shared_state.get_by_string(
+                            'OnionrCommunicatorDaemon').getPeerProfileInstance(
+                                peer).addScore(-5)
                         logger.warn(
                            f'Failed to upload {bl[:8]}, reason: {resp}',
                            terminal=True)
@@ -127,9 +141,8 @@ def upload_blocks_from_communicator(comm_inst: 'OnionrCommunicatorDaemon'):
         try:
             kv.get('blocksToUpload').remove(x)
 
-            comm_inst.shared_state.get_by_string(
+            shared_state.get_by_string(
                 'PublicAPI').hideBlocks.remove(x)
 
         except ValueError:
             pass
-    comm_inst.decrementThreadCount(TIMER_NAME)

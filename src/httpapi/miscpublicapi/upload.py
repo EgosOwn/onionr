@@ -71,6 +71,10 @@ def accept_upload(request):
         except onionrexceptions.PlaintextNotSupported:
             logger.debug("attempted plaintext upload to us: {b_hash}")
             resp = 'failure'
+        except onionrexceptions.InvalidMetadata:
+            logger.debug(
+                'uploaded block {b_hash} has invalid metadata')
+            resp = 'failure'
     if resp == 'failure':
         abort(400)
     elif resp == 'size':

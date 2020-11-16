@@ -57,6 +57,7 @@ class OnionrCommunicatorDaemon:
         # configure logger and stuff
         self.config = config
         self.shared_state = shared_state  # TooManyObjects module
+        shared_state.add(self)
 
         # populate kv values
         self.kv = self.shared_state.get_by_string('DeadSimpleKV')
@@ -98,7 +99,7 @@ class OnionrCommunicatorDaemon:
         add_onionr_thread(onlinepeers.clear_offline_peer, [self.kv], 58)
 
         add_onionr_thread(
-            housekeeping.clean_old_blocks, [self.shared_state], 20, 1)
+            housekeeping.clean_old_blocks, [self.shared_state], 10, 1)
 
         # Discover new peers
         add_onionr_thread(
@@ -108,12 +109,13 @@ class OnionrCommunicatorDaemon:
         # Timer for adjusting which peers
         # we actively communicate to at any given time,
         # to avoid over-using peers
-        add_onionr_thread(cooldownpeer.cooldown_peer, [self.shared_state], 30, 60)
+        add_onionr_thread(
+            cooldownpeer.cooldown_peer, [self.shared_state], 30, 60)
 
         # Timer to read the upload queue and upload the entries to peers
-        OnionrCommunicatorTimers(
-            self, uploadblocks.upload_blocks_from_communicator,
-            5, my_args=[self], requires_peer=True, max_threads=1)
+        add_onionr_thread(
+            uploadblocks.upload_blocks_from_communicator,
+            [self.shared_state], 5, 1)
 
         # Setup direct connections
         if config.get('general.ephemeral_tunnels', False):
@@ -132,10 +134,7 @@ class OnionrCommunicatorDaemon:
         # This timer creates deniable blocks,
         # in an attempt to further obfuscate block insertion metadata
         if config.get('general.insert_deniable_blocks', True):
-            deniableBlockTimer = OnionrCommunicatorTimers(
-                self, deniableinserts.insert_deniable_block,
-                180, my_args=[self], requires_peer=True, max_threads=1)
-            deniableBlockTimer.count = (deniableBlockTimer.frequency - 175)
+            add_onionr_thread(deniableinserts.insert_deniable_block, [], 180, 10)
 
         if config.get('transports.tor', True):
             # Timer to check for connectivity,
@@ -167,8 +166,6 @@ class OnionrCommunicatorDaemon:
 
         # Adjust initial timer triggers
         cleanupTimer.count = (cleanupTimer.frequency - 60)
-
-        shared_state.add(self)
 
         if config.get('general.use_bootstrap_list', True):
             bootstrappeers.add_bootstrap_list_to_peer_list(

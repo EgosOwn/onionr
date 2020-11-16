@@ -116,6 +116,8 @@ class PrivateEndpoints:
                         SerializedData).get_stats())
                 except AttributeError:
                     pass
+                except FileNotFoundError:
+                    pass
 
         @private_endpoints_bp.route('/getuptime')
         def show_uptime():
