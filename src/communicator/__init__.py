@@ -52,7 +52,8 @@ config.reload()
 class OnionrCommunicatorDaemon:
     def __init__(self, shared_state, developmentMode=None):
         if developmentMode is None:
-            developmentMode = config.get('general.dev_mode', False)
+            developmentMode = config.get(
+                'general.dev_mode', False)
 
         # configure logger and stuff
         self.config = config
@@ -139,9 +140,7 @@ class OnionrCommunicatorDaemon:
         if config.get('transports.tor', True):
             # Timer to check for connectivity,
             # through Tor to various high-profile onion services
-            OnionrCommunicatorTimers(
-                self, netcheck.net_check, 500,
-                my_args=[self], max_threads=1)
+            add_onionr_thread(netcheck.net_check, [shared_state], 500, 60)
 
         # Announce the public API server transport address
         # to other nodes if security level allows

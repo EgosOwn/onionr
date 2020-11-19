@@ -30,14 +30,16 @@ if TYPE_CHECKING:
 """
 
 
-def net_check(comm_inst):
+def net_check(shared_state):
     """Check if we are connected to the internet.
 
     or not when we can't connect to any peers
     """
     # for detecting if we have received incoming connections recently
     rec = False
-    kv: "DeadSimpleKV" = comm_inst.shared_state.get_by_string("DeadSimpleKV")
+    kv: "DeadSimpleKV" = shared_state.get_by_string("DeadSimpleKV")
+    proxy_port = shared_state.get_by_string("NetController").socksPort
+
     if len(kv.get('onlinePeers')) == 0:
         try:
             if (epoch.get_epoch() - int(localcommand.local_command
@@ -46,16 +48,17 @@ def net_check(comm_inst):
                 rec = True
         except ValueError:
             pass
-        if not rec and not netutils.check_network(torPort=comm_inst.proxyPort):
+        if not rec and not netutils.check_network(torPort=proxy_port):
             if not kv.get('shutdown'):
-                if not comm_inst.config.get('general.offline_mode', False):
+                if not shared_state.get_by_string(
+                    "OnionrCommunicatorDaemon").config.get(
+                        'general.offline_mode', False):
                     logger.warn('Network check failed, are you connected to ' +
                                 'the Internet, and is Tor working? ' +
                                 'This is usually temporary, but bugs and censorship can cause this to persist, in which case you should report it to beardog [at] mailbox.org',  # noqa
                                 terminal=True)
-                    restarttor.restart(comm_inst.shared_state)
+                    restarttor.restart(shared_state)
                     kv.put('offlinePeers', [])
             kv.put('isOnline', False)
         else:
             kv.put('isOnline', True)
-    comm_inst.decrementThreadCount('net_check')
