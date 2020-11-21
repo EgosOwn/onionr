@@ -68,7 +68,7 @@ def clean_old_blocks(shared_state):
             logger.info('Deleted block: %s' % (oldest,))
 
 
-def clean_keys(comm_inst):
+def clean_keys():
     """Delete expired forward secrecy keys"""
     conn = sqlite3.connect(dbfiles.user_id_info_db,
                            timeout=DATABASE_LOCK_TIMEOUT)
@@ -88,5 +88,3 @@ def clean_keys(comm_inst):
     conn.close()
 
     onionrusers.deleteExpiredKeys()
-
-    comm_inst.decrementThreadCount('clean_keys')

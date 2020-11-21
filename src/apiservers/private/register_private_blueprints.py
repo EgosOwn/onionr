@@ -7,7 +7,6 @@ from gevent import sleep
 
 from httpapi import security, friendsapi, configapi, insertblock
 from httpapi import miscclientapi, onionrsitesapi, apiutils
-from httpapi import directconnections
 from httpapi import themeapi
 from httpapi import fileoffsetreader
 from httpapi.sse.private import private_sse_blueprint
@@ -42,8 +41,6 @@ def register_private_blueprints(private_api, app):
     app.register_blueprint(onionrsitesapi.site_api)
     app.register_blueprint(apiutils.shutdown.shutdown_bp)
     app.register_blueprint(miscclientapi.staticfiles.static_files_bp)
-    app.register_blueprint(directconnections.DirectConnectionManagement(
-        private_api).direct_conn_management_bp)
     app.register_blueprint(themeapi.theme_blueprint)
     app.register_blueprint(private_sse_blueprint)
     app.register_blueprint(fileoffsetreader.offset_reader_api)

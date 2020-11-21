@@ -12,8 +12,6 @@ import onionrpeers
 import onionrplugins as plugins
 from . import onlinepeers
 from . import uploadqueue
-from communicatorutils import servicecreator
-from communicatorutils import onionrcommunicatortimers
 from communicatorutils import downloadblocks
 from communicatorutils import lookupblocks
 from communicatorutils import lookupadders
@@ -25,7 +23,6 @@ from communicatorutils import housekeeping
 from communicatorutils import netcheck
 from onionrthreads import add_onionr_thread
 from onionrcommands.openwebinterface import get_url
-import onionrservices
 from netcontroller import NetController
 from . import bootstrappeers
 from . import daemoneventhooks
@@ -43,8 +40,6 @@ from . import daemoneventhooks
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-
-OnionrCommunicatorTimers = onionrcommunicatortimers.OnionrCommunicatorTimers
 
 config.reload()
 
@@ -65,9 +60,6 @@ class OnionrCommunicatorDaemon:
 
         if config.get('general.offline_mode', False):
             self.kv.put('isOnline', False)
-
-        # list of timer instances
-        self.timers = []
 
         # initialize core with Tor socks port being 3rd argument
         self.proxyPort = shared_state.get(NetController).socksPort
@@ -118,24 +110,11 @@ class OnionrCommunicatorDaemon:
             uploadblocks.upload_blocks_from_communicator,
             [self.shared_state], 5, 1)
 
-        # Setup direct connections
-        if config.get('general.ephemeral_tunnels', False):
-            self.services = onionrservices.OnionrServices()
-            self.active_services = []
-            self.service_greenlets = []
-            OnionrCommunicatorTimers(
-                self, servicecreator.service_creator, 5,
-                max_threads=50, my_args=[self])
-        else:
-            self.services = None
-
-        # {peer_pubkey: ephemeral_address}, the address to reach them
-        self.direct_connection_clients = {}
-
         # This timer creates deniable blocks,
         # in an attempt to further obfuscate block insertion metadata
         if config.get('general.insert_deniable_blocks', True):
-            add_onionr_thread(deniableinserts.insert_deniable_block, [], 180, 10)
+            add_onionr_thread(
+                deniableinserts.insert_deniable_block, [], 180, 10)
 
         if config.get('transports.tor', True):
             # Timer to check for connectivity,
@@ -147,24 +126,14 @@ class OnionrCommunicatorDaemon:
         if config.get('general.security_level', 1) == 0 \
                 and config.get('general.announce_node', True):
             # Default to high security level incase config breaks
-            announceTimer = OnionrCommunicatorTimers(
-                self,
-                announcenode.announce_node,
-                3600, my_args=[self], requires_peer=True, max_threads=1)
-            announceTimer.count = (announceTimer.frequency - 60)
+            add_onionr_thread(
+                announcenode.announce_node, [self.shared_state], 600, 60)
         else:
             logger.debug('Will not announce node.')
 
-        # Timer to delete malfunctioning or long-dead peers
-        cleanupTimer = OnionrCommunicatorTimers(
-            self, self.peerCleanup, 300, requires_peer=True)
+        add_onionr_thread(onionrpeers.peer_cleanup, [], 300, 300)
 
-        # Timer to cleanup dead ephemeral forward secrecy keys
-        OnionrCommunicatorTimers(
-            self, housekeeping.clean_keys, 15, my_args=[self], max_threads=1)
-
-        # Adjust initial timer triggers
-        cleanupTimer.count = (cleanupTimer.frequency - 60)
+        add_onionr_thread(housekeeping.clean_keys, [], 15, 1)
 
         if config.get('general.use_bootstrap_list', True):
             bootstrappeers.add_bootstrap_list_to_peer_list(
@@ -192,11 +161,6 @@ class OnionrCommunicatorDaemon:
         try:
             while not self.shared_state.get_by_string(
                     'DeadSimpleKV').get('shutdown'):
-                for i in self.timers:
-                    if self.shared_state.get_by_string(
-                            'DeadSimpleKV').get('shutdown'):
-                        break
-                    i.processTimer()
                 time.sleep(self.delay)
         except KeyboardInterrupt:
             self.shared_state.get_by_string(
@@ -204,14 +168,7 @@ class OnionrCommunicatorDaemon:
 
         logger.info(
             'Goodbye. (Onionr is cleaning up, and will exit)', terminal=True)
-        try:
-            self.service_greenlets
-        except AttributeError:
-            pass
-        else:
-            # Stop onionr direct connection services
-            for server in self.service_greenlets:
-                server.stop()
+
         try:
             time.sleep(0.5)
         except KeyboardInterrupt:

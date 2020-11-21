@@ -3,7 +3,7 @@
 Process incoming requests to the public api server for certain attacks
 """
 from flask import Blueprint, request, abort, g
-from onionrservices import httpheaders
+from httpapi import httpheaders
 from onionrutils import epoch
 from utils import gettransports
 """

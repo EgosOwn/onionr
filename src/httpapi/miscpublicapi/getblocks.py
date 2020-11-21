@@ -60,9 +60,11 @@ def get_block_data(public_API, b_hash):
                     # Encode in case data is binary
                     block = block.encode('utf-8')
                 except AttributeError:
-                    if len(block) == 0:
+                    # 404 if no block data
+                    if not block:
                         abort(404)
-                #block = bytesconverter.str_to_bytes(block)
+                    if not len(block):
+                        abort(404)
                 resp = block
     if len(resp) == 0:
         abort(404)

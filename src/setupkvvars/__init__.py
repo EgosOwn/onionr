@@ -26,7 +26,7 @@ if TYPE_CHECKING:
 
 
 def setup_kv(shared_vars: 'DeadSimpleKV'):
-    """Init initial pseudo-variables."""
+    """Init initial pseudo-globals."""
     shared_vars.put('plaintextDisabledPeers', {})
     shared_vars.put('blockQueue', {})
     shared_vars.put('shutdown', False)

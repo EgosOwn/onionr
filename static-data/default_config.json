@@ -46,7 +46,6 @@
     },
     "plugins": {
         "disabled": [
-            "chat"
         ],
         "enabled": []
     },

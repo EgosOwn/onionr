@@ -32,16 +32,16 @@ if TYPE_CHECKING:
 """
 
 
-def announce_node(daemon):
+def announce_node(shared_state):
     """Announce our node to our peers."""
     ret_data = False
-    kv: "DeadSimpleKV" = daemon.shared_state.get_by_string("DeadSimpleKV")
-
+    kv: "DeadSimpleKV" = shared_state.get_by_string("DeadSimpleKV")
+    config = shared_state.get_by_string("OnionrCommunicatorDaemon").config
     # Do not let announceCache get too large
     if len(kv.get('announceCache')) >= 10000:
         kv.get('announceCache').popitem()
 
-    if daemon.config.get('general.security_level', 0) == 0:
+    if config.get('general.security_level', 0) == 0:
         # Announce to random online peers
         for i in kv.get('onlinePeers'):
             if i not in kv.get('announceCache'):
@@ -67,12 +67,11 @@ def announce_node(daemon):
             if basicrequests.do_post_request(
                     url,
                     data,
-                    port=daemon.shared_state.get(NetController).socksPort)\
+                    port=shared_state.get(NetController).socksPort)\
                     == 'Success':
                 logger.info('Successfully introduced node to ' + peer,
                             terminal=True)
                 ret_data = True
                 keydb.transportinfo.set_address_info(peer, 'introduced', 1)
 
-    daemon.decrementThreadCount('announce_node')
     return ret_data

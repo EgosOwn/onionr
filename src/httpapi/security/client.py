@@ -7,7 +7,7 @@ import hmac
 
 from flask import Blueprint, request, abort, g
 
-from onionrservices import httpheaders
+from httpapi import httpheaders
 from . import pluginwhitelist
 import config
 import logger
