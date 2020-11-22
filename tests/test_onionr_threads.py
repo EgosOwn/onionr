@@ -8,12 +8,16 @@ from time import sleep
 TEST_DIR = 'testdata/%s-%s' % (uuid.uuid4(), os.path.basename(__file__)) + '/'
 print("Test directory:", TEST_DIR)
 os.environ["ONIONR_HOME"] = TEST_DIR
+from utils import createdirs
+createdirs.create_dirs()
+from onionrcrypto import getourkeypair
+getourkeypair.get_keypair()
+
 from utils import networkmerger
 from coredb import keydb
 import onionrsetup as setup
-from utils import createdirs
 from onionrthreads import add_onionr_thread
-createdirs.create_dirs()
+
 setup.setup_config()
 class OnionrThreadsTests(unittest.TestCase):
 

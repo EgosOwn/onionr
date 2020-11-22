@@ -6,11 +6,13 @@ from time import sleep
 
 TEST_DIR = 'testdata/%s-%s' % (uuid.uuid4(), os.path.basename(__file__)) + '/'
 os.environ["ONIONR_HOME"] = TEST_DIR
+from utils import createdirs
+createdirs.create_dirs()
+from onionrcrypto import getourkeypair
+getourkeypair.get_keypair()
 import config
 import logger
-from utils import createdirs
 import onionrsetup as setup
-from utils import createdirs
 import onionrblocks
 import filepaths
 import onionrexceptions

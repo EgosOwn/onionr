@@ -7,6 +7,10 @@ TEST_DIR = 'testdata/%s-%s' % (uuid.uuid4(), os.path.basename(__file__)) + '/'
 print("Test directory:", TEST_DIR)
 os.environ["ONIONR_HOME"] = TEST_DIR
 import hashlib
+from utils import createdirs
+createdirs.create_dirs()
+from onionrcrypto import getourkeypair
+getourkeypair.get_keypair()
 from communicatorutils import uploadblocks
 
 def hash_generator():

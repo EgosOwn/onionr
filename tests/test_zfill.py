@@ -5,6 +5,10 @@ print("Test directory:", TEST_DIR)
 os.environ["ONIONR_HOME"] = TEST_DIR
 sys.path.append(".")
 sys.path.append("src/")
+from utils import createdirs
+createdirs.create_dirs()
+from onionrcrypto import getourkeypair
+getourkeypair.get_keypair()
 
 from utils import reconstructhash
 

@@ -6,12 +6,16 @@ import unittest, uuid, sqlite3
 TEST_DIR = 'testdata/%s-%s' % (uuid.uuid4(), os.path.basename(__file__)) + '/'
 print("Test directory:", TEST_DIR)
 os.environ["ONIONR_HOME"] = TEST_DIR
-from urllib.request import pathname2url
-from coredb import keydb
 from utils import createdirs
 createdirs.create_dirs()
+from onionrcrypto import getourkeypair
+getourkeypair.get_keypair()
+from urllib.request import pathname2url
+from coredb import keydb
+
+
 class OnionrTests(unittest.TestCase):
-    
+
     def test_address_add(self):
         testAddresses = ['facebookcorewwwi.onion', '56kmnycrvepfarolhnx6t2dvmldfeyg7jdymwgjb7jjzg47u2lqw2sad.onion', '5bvb5ncnfr4dlsfriwczpzcvo65kn7fnnlnt2ln7qvhzna2xaldq.b32.i2p']
         for address in testAddresses:
@@ -19,7 +23,7 @@ class OnionrTests(unittest.TestCase):
         dbAddresses = keydb.listkeys.list_adders()
         for address in testAddresses:
             self.assertIn(address, dbAddresses)
-        
+
         invalidAddresses = [None, '', '   ', '\t', '\n', ' test ', 24, 'fake.onion', 'fake.b32.i2p']
         for address in invalidAddresses:
             try:
@@ -28,8 +32,8 @@ class OnionrTests(unittest.TestCase):
                 pass
         dbAddresses = keydb.listkeys.list_adders()
         for address in invalidAddresses:
-            self.assertNotIn(address, dbAddresses) 
-    
+            self.assertNotIn(address, dbAddresses)
+
     def test_address_info(self):
         adder = 'nytimes3xbfgragh.onion'
         keydb.addkeys.add_address(adder)

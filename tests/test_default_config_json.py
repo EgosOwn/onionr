@@ -5,10 +5,12 @@ import unittest, uuid, json
 TEST_DIR = 'testdata/%s-%s' % (uuid.uuid4(), os.path.basename(__file__)) + '/'
 print("Test directory:", TEST_DIR)
 os.environ["ONIONR_HOME"] = TEST_DIR
-import onionrblocks
 from utils import createdirs
-from utils import readstatic
 createdirs.create_dirs()
+from onionrcrypto import getourkeypair
+getourkeypair.get_keypair()
+from utils import readstatic
+import onionrblocks
 class OnionrConfig(unittest.TestCase):
     def test_default_file(self):
         json.loads(readstatic.read_static('default_config.json'))
@@ -45,7 +47,7 @@ class OnionrConfig(unittest.TestCase):
             self.assertEqual(conf['peers']['max_connect'], 1000)
             self.assertEqual(conf['peers']['max_stored_peers'], 10000000)
             self.assertEqual(conf['peers']['minimum_score'], -100)
-            self.assertEqual(conf['plugins']['disabled'], ['chat'])
+            self.assertEqual(conf['plugins']['disabled'], [])
             self.assertEqual(conf['plugins']['enabled'], [])
             self.assertEqual(conf['timers']['getBlocks'], 10)
             self.assertEqual(conf['timers']['lookupBlocks'], 25)

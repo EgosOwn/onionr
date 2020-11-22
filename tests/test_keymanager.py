@@ -8,10 +8,12 @@ TEST_DIR = 'testdata/%s-%s' % (uuid.uuid4(), os.path.basename(__file__)) + '/'
 print("Test directory:", TEST_DIR)
 os.environ["ONIONR_HOME"] = TEST_DIR
 from utils import createdirs
+createdirs.create_dirs()
 from coredb import keydb
 import onionrsetup as setup, keymanager, filepaths
 from onionrutils import stringvalidators
-createdirs.create_dirs()
+from onionrcrypto import getourkeypair
+getourkeypair.get_keypair()
 setup.setup_config()
 pub_key = keymanager.KeyManager().getPubkeyList()[0]
 class KeyManagerTest(unittest.TestCase):
@@ -35,5 +37,5 @@ class KeyManagerTest(unittest.TestCase):
         manager.removeKey(new_key)
         with open(filepaths.keys_file, 'r') as keyfile:
             self.assertNotIn(new_key, keyfile.read())
-        
+
 unittest.main()

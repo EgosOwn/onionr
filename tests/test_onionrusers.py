@@ -7,14 +7,17 @@ import json
 TEST_DIR = 'testdata/%s-%s' % (uuid.uuid4(), os.path.basename(__file__)) + '/'
 print("Test directory:", TEST_DIR)
 os.environ["ONIONR_HOME"] = TEST_DIR
+from utils import createdirs
+createdirs.create_dirs()
+from onionrcrypto import getourkeypair
+getourkeypair.get_keypair()
 
 import onionrexceptions
 from onionrusers import onionrusers
 from onionrusers import contactmanager
 import onionrcrypto as crypto
 from coredb import keydb
-from utils import identifyhome, createdirs
-createdirs.create_dirs()
+from utils import identifyhome
 class OnionrUserTests(unittest.TestCase):
     '''
         Tests both the onionrusers class and the contactmanager (which inherits it)

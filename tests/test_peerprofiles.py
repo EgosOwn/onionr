@@ -7,13 +7,15 @@ import base64
 TEST_DIR = 'testdata/%s-%s' % (uuid.uuid4(), os.path.basename(__file__)) + '/'
 print("Test directory:", TEST_DIR)
 os.environ["ONIONR_HOME"] = TEST_DIR
+from utils import createdirs
+createdirs.create_dirs()
+from onionrcrypto import getourkeypair
+getourkeypair.get_keypair()
 from onionrpeers import peerprofiles
 import onionrexceptions
 from coredb import keydb
-from utils import createdirs
 from onionrutils import stringvalidators, epoch
 TEST_PEER = '3n5wclq4w4pfkcfmjcpqrjluctpm2tzt7etfblavf42cntv6hrerkzyb.onion'
-createdirs.create_dirs()
 
 def rand_fake_adder_generator():
     rand_bytes = os.urandom(35)
@@ -30,11 +32,11 @@ class TestPeerProfiles(unittest.TestCase):
         self.assertRaises(onionrexceptions.InvalidAddress, peerprofiles.PeerProfiles, "invalid")
     def test_valid_init(self):
         peerprofiles.PeerProfiles(test_peers.pop())
-    
+
     def test_load_score(self):
         p = peerprofiles.PeerProfiles(test_peers.pop())
         self.assertEqual(p.score, 0)
-    
+
     def test_inc_score(self):
         p = peerprofiles.PeerProfiles(test_peers.pop())
         s = 0

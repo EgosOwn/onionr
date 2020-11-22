@@ -7,11 +7,14 @@ import unittest, uuid
 TEST_DIR = 'testdata/%s-%s' % (uuid.uuid4(), os.path.basename(__file__)) + '/'
 print("Test directory:", TEST_DIR)
 os.environ["ONIONR_HOME"] = TEST_DIR
+
+from utils import createdirs
+createdirs.create_dirs()
+from onionrcrypto import getourkeypair
+getourkeypair.get_keypair()
 from utils import networkmerger
 from coredb import keydb
 import onionrsetup as setup
-from utils import createdirs
-createdirs.create_dirs()
 setup.setup_config()
 class NetworkMergerTest(unittest.TestCase):
     def test_valid_merge(self):
@@ -21,7 +24,7 @@ class NetworkMergerTest(unittest.TestCase):
         self.assertIn('mporbyyjhmz2c62shctbi3ngrslne5lpcyav6uzhxok45iblodhgjoad.onion', added)
         self.assertNotIn('inwalidkcorewwi.onion', added)
         self.assertIn('facebookcorewwwi.onion', added)
-    
+
     def test_invalid_mergeself(self):
         adders = 'facebookc0rewwi.onion,sdfsdfsdf.onion, ssdf324, null, \n'
         networkmerger.mergeAdders(adders)
