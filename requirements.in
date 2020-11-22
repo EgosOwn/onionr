@@ -1,5 +1,5 @@
 urllib3==1.25.11
-requests==2.24.0
+requests==2.25.0
 PyNaCl==1.4.0
 gevent==20.9.0
 Flask==1.1.2
@@ -12,5 +12,5 @@ toomanyobjs==1.1.0
 niceware==0.2.1
 psutil==5.7.3
 filenuke==0.0.0
-watchdog==0.10.3
+watchdog==0.10.4
 ujson==4.0.1
