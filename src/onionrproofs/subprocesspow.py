@@ -116,24 +116,26 @@ class SubprocessPOW:
         metadata['n'] = secrets.randbits(16)
         puzzle = self.puzzle
         difficulty = self.difficulty
-
-        while True:
-            # Break if shutdown received
-            try:
-                if pipe.poll() and pipe.recv() == 'shutdown':
+        try:
+            while True:
+                # Break if shutdown received
+                try:
+                    if pipe.poll() and pipe.recv() == 'shutdown':
+                        break
+                except KeyboardInterrupt:
                     break
-            except KeyboardInterrupt:
-                break
-            # Load nonce into block metadata
-            metadata['c'] = nonce
-            # Serialize metadata, combine with block data
-            payload = json.dumps(metadata).encode() + b'\n' + data
-            # Check sha3_256 hash of block, compare to puzzle
-            # Send payload if puzzle finished
-            token = sha3_hash(payload)
-            # ensure token is string
-            token = bytesconverter.bytes_to_str(token)
-            if puzzle == token[0:difficulty]:
-                pipe.send(payload)
-                break
-            nonce += 1
+                # Load nonce into block metadata
+                metadata['c'] = nonce
+                # Serialize metadata, combine with block data
+                payload = json.dumps(metadata).encode() + b'\n' + data
+                # Check sha3_256 hash of block, compare to puzzle
+                # Send payload if puzzle finished
+                token = sha3_hash(payload)
+                # ensure token is string
+                token = bytesconverter.bytes_to_str(token)
+                if puzzle == token[0:difficulty]:
+                    pipe.send(payload)
+                    break
+                nonce += 1
+        except KeyboardInterrupt:
+            pass

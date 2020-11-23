@@ -95,6 +95,11 @@ class Timeout(Exception):
 
 # file exceptions
 
+class InsecureDirectoryUsage(IOError):
+    """This occurs when a directory used by the daemon is not owned by the user.
+    This is important to stop code execution attacks"""
+    pass
+
 class DiskAllocationReached(Exception):
     pass
 

@@ -4,9 +4,12 @@ Create required Onionr directories
 """
 import os
 import stat
+from pwd import getpwuid
+from getpass import getuser
 
 from . import identifyhome
 import filepaths
+import onionrexceptions
 """
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -24,6 +27,10 @@ import filepaths
 home = identifyhome.identify_home()
 
 
+def find_owner(filename):
+    return getpwuid(os.stat(filename).st_uid).pw_name
+
+
 def create_dirs():
     """Create onionr data-related directories in
     order of the hardcoded list below,
@@ -33,6 +40,11 @@ def create_dirs():
     for path in gen_dirs:
         if not os.path.exists(path):
             os.makedirs(path)
+        else:
+            if getuser() != find_owner(path):
+                raise onionrexceptions.InsecureDirectoryUsage(
+                    "Directory " + path +
+                    " already exists and is not owned by the same user")
 
     os.chmod(home, stat.S_IRWXU)
 

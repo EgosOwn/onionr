@@ -5,5 +5,5 @@ echo "Enter to continue, ctrl-c to stop."
 read
 
 git pull origin master
-pip install -r --require-hashes requirements.txt
+pip3 install -r --require-hashes requirements.txt
 ./onionr.sh reset-plugins
