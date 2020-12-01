@@ -66,6 +66,10 @@ class PrivateEndpoints:
             return send_from_directory(config.get('www.private.path',
                                        'static-data/www/private/'), path)
 
+        @private_endpoints_bp.route('/getpid')
+        def get_pid():
+            return Response(str(os.getpid()))
+
         @private_endpoints_bp.route('/hitcount')
         def get_hit_count():
             return Response(str(client_api.publicAPI.hitCount))

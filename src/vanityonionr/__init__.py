@@ -48,7 +48,7 @@ def find_vanity_mnemonic(start_words: str, queue):
 def _start(start_words, obj):
     done = False
     q = Queue()
-    p = Process(target=find_vanity_mnemonic, args=[start_words, q])
+    p = Process(target=find_vanity_mnemonic, args=[start_words, q], daemon=True)
     p.daemon = True
     p.start()
     rec = None
@@ -68,7 +68,7 @@ def handler(start_words: str):
     obj = lambda test: None
     obj.done = False
     for x in range(multiprocessing.cpu_count()):
-        threading.Thread(target=_start, args=[start_words, obj]).start()
+        threading.Thread(target=_start, args=[start_words, obj], daemon=True).start()
     while not obj.done:
         time.sleep(1)
     return obj.result

@@ -44,6 +44,10 @@ def _lan_work(peer: LANIP):
                             url + f'get/{block}', stream=True).raw.read(6000000))
                 except onionrexceptions.InvalidMetadata:
                     logger.warn(f"Could not get {block} from lan peer")
+                except onionrexceptions.InvalidProof:
+                    logger.warn(
+                        f"Invalid proof for {block} from lan peer {peer}", terminal=True)
+                    break
 
     for port in ports:
         try:

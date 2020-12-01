@@ -94,7 +94,7 @@ class SubprocessPOW:
         parent_conn, child_conn = Pipe()
         p = Process(target=self.do_pow, args=(child_conn,), daemon=True)
         p.start()
-        p.join()
+        #p.join()
         payload = None
         try:
             while True:
@@ -105,7 +105,7 @@ class SubprocessPOW:
         except KeyboardInterrupt:
             pass
         finally:
-            parent_conn.send('shutdown')
+            p.terminate()
             self.payload = payload
 
     def do_pow(self, pipe):

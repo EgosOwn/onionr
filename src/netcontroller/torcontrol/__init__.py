@@ -120,7 +120,7 @@ class NetController:
             tor_pid_file.write(str(tor.pid))
 
         multiprocessing.Process(target=watchdog.watchdog,
-                                args=[os.getpid(), tor.pid]).start()
+                                args=[os.getpid(), tor.pid], daemon=True).start()
 
         logger.info('Finished starting Tor.', terminal=True)
 

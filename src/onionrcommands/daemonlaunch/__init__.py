@@ -129,9 +129,17 @@ def daemon():
     """Start Onionr's primary threads for communicator, API server, node, and LAN."""
 
     def _handle_sig_term(signum, frame):
-        logger.info(
-            "Received sigterm, shutting down gracefully", terminal=True)
-        localcommand.local_command('/shutdownclean')
+        pid = str(os.getpid())
+        main_pid = localcommand.local_command('/getpid')
+        #logger.info(main_pid, terminal=True)
+        if main_pid and main_pid == pid:
+            logger.info(
+            f"Received sigterm, shutting down gracefully. PID: {pid}", terminal=True)
+            localcommand.local_command('/shutdownclean')
+        else:
+            logger.info(
+                f"Recieved sigterm in child process or fork, exiting. PID: {pid}")
+            sys.exit(0)
     signal.signal(signal.SIGTERM, _handle_sig_term)
 
     # Determine if Onionr is in offline mode.
@@ -231,11 +239,6 @@ def daemon():
     cleanup.delete_run_files()
     if security_level >= 2:
         filenuke.nuke.clean_tree(identifyhome.identify_home())
-
-
-def _ignore_sigint(sig, frame):  # pylint: disable=W0612,W0613
-    """Space intentionally left blank."""
-    return
 
 
 def start(override: bool = False):
