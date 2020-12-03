@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+
+## [7.2.0] - 2020-12-03
+
+* Purge blocks not meeting current pow on startup
+* Check block POW before LAN sync
+* WSL fixes
+
 ## [7.1.0] - 2020-11-23
 
 * Check for ownership of existing dirs in createdirs, this prevents the rare edge case where a user might use a home directory in a location an attacker could write (allowing arbitrary code execution via plugins). This was already partially mitigated by the chmod of the home directory in any case, but this further fixes the issue.
