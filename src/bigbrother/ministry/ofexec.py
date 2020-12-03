@@ -54,7 +54,9 @@ def block_exec(event, info):
                         'stem/response/getinfo.py',
                         'stem/response/getconf.py',
                         'stem/response/mapaddress.py',
-                        'stem/response/protocolinfo.py'
+                        'stem/response/protocolinfo.py',
+                        'apport/__init__.py',
+                        'apport/report.py'
                        ]
     whitelisted_source = []
     home = identifyhome.identify_home()

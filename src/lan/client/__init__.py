@@ -12,6 +12,7 @@ from coredb.blockmetadb import get_block_list
 from onionrblocks.blockimporter import import_block_from_data
 import onionrexceptions
 from ..server import ports
+from onionrproofs import hashMeetsDifficulty
 
 from threading import Thread
 """
@@ -37,7 +38,7 @@ def _lan_work(peer: LANIP):
         our_blocks = get_block_list()
         blocks = requests.get(url + 'blist/0').text.splitlines()
         for block in blocks:
-            if block not in our_blocks:
+            if block not in our_blocks and hashMeetsDifficulty(block):
                 try:
                     import_block_from_data(
                         requests.get(
