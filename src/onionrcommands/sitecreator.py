@@ -55,7 +55,7 @@ If you want to update your site later you must remember the passphrase.''',
 
     if error_encountered:
         sys.exit(1)
-
+    logger.info('Generating site...', terminal=True)
     results = onionrsitesapi.sitefiles.create_site(
         passphrase, directory=directory)
     results = (results[0].replace('=', ''), results[1])
