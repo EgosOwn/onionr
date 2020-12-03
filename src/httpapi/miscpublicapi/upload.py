@@ -36,7 +36,7 @@ def accept_upload(request):
     resp = 'failure'
     data = request.get_data()
     data_size = sys.getsizeof(data)
-
+    b_hash = None
     if data_size < 30:
         resp = 'size'
     elif data_size < 100000000:
@@ -69,11 +69,11 @@ def accept_upload(request):
         except onionrexceptions.DataExists:
             resp = 'exists'
         except onionrexceptions.PlaintextNotSupported:
-            logger.debug("attempted plaintext upload to us: {b_hash}")
+            logger.debug(f"attempted plaintext upload to us: {b_hash}")
             resp = 'failure'
         except onionrexceptions.InvalidMetadata:
             logger.debug(
-                'uploaded block {b_hash} has invalid metadata')
+                f'uploaded block {b_hash} has invalid metadata')
             resp = 'failure'
     if resp == 'failure':
         abort(400)
@@ -83,8 +83,12 @@ def accept_upload(request):
             f'Error importing uploaded block, invalid size {b_hash}')
     elif resp == 'proof':
         resp = Response(resp, 400)
-        logger.warn(
-            f'Error importing uploaded block, invalid proof {b_hash}')
+        if b_hash:
+            logger.warn(
+                f'Error importing uploaded block, invalid proof {b_hash}')
+        else:
+            logger.warn(
+                'Error importing uploaded block, invalid proof')
     else:
         resp = Response(resp)
     return resp
