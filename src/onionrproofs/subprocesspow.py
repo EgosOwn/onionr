@@ -118,6 +118,7 @@ class SubprocessPOW:
         difficulty = self.difficulty
         try:
             while True:
+                #logger.info('still running', terminal=True)
                 # Break if shutdown received
                 try:
                     if pipe.poll() and pipe.recv() == 'shutdown':

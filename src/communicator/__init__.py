@@ -69,7 +69,7 @@ class OnionrCommunicatorDaemon:
         self.shared_state.share_object()
 
         # loop time.sleep delay in seconds
-        self.delay = 1
+        self.delay = 5
 
         # amount of threads running by name, used to prevent too many
         self.threadCounts = {}
@@ -168,11 +168,6 @@ class OnionrCommunicatorDaemon:
 
         logger.info(
             'Goodbye. (Onionr is cleaning up, and will exit)', terminal=True)
-
-        try:
-            time.sleep(0.5)
-        except KeyboardInterrupt:
-            pass
 
     def decrementThreadCount(self, threadName):
         """Decrement amount of a thread name if more than zero.
