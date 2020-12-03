@@ -42,6 +42,7 @@ from lan.server import LANServer
 from sneakernet import sneakernet_import_thread
 from onionrstatistics.devreporting import statistics_reporter
 from setupkvvars import setup_kv
+from communicatorutils.housekeeping import clean_blocks_not_meeting_pow
 from .spawndaemonthreads import spawn_client_threads
 """
     This program is free software: you can redistribute it and/or modify
@@ -221,6 +222,8 @@ def daemon():
     shared_state.get(DeadSimpleKV).put(
         'proxyPort', net.socksPort)
     spawn_client_threads(shared_state)
+
+    clean_blocks_not_meeting_pow(shared_state)
 
     communicator.startCommunicator(shared_state)
 

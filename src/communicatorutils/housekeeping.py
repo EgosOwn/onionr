@@ -18,6 +18,7 @@ from onionrstorage import removeblock
 from onionrblocks import onionrblacklist
 from onionrblocks.storagecounter import StorageCounter
 from etc.onionrvalues import DATABASE_LOCK_TIMEOUT
+from onionrproofs import hashMeetsDifficulty
 """
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -44,16 +45,25 @@ def __remove_from_upload(shared_state, block_hash: str):
         pass
 
 
+def __purge_block(shared_state, block_hash, add_to_blacklist = True):
+    blacklist = None
+
+    removeblock.remove_block(block_hash)
+    onionrstorage.deleteBlock(block_hash)
+    __remove_from_upload(shared_state, block_hash)
+
+    if add_to_blacklist:
+        blacklist = onionrblacklist.OnionrBlackList()
+        blacklist.addToDB(block_hash)
+
+
 def clean_old_blocks(shared_state):
     """Delete expired blocks + old blocks if disk allocation is near full"""
     blacklist = onionrblacklist.OnionrBlackList()
     # Delete expired blocks
     for bHash in blockmetadb.expiredblocks.get_expired_blocks():
-        blacklist.addToDB(bHash)
-        removeblock.remove_block(bHash)
-        onionrstorage.deleteBlock(bHash)
-        __remove_from_upload(shared_state, bHash)
-        logger.info('Deleted block: %s' % (bHash,))
+        __purge_block(shared_state, bHash, add_to_blacklist=True)
+        logger.info('Deleted expired block: %s' % (bHash,))
 
     while storage_counter.is_full():
         try:
@@ -61,11 +71,8 @@ def clean_old_blocks(shared_state):
         except IndexError:
             break
         else:
-            blacklist.addToDB(oldest)
-            removeblock.remove_block(oldest)
-            onionrstorage.deleteBlock(oldest)
-            __remove_from_upload(shared_state, oldest)
-            logger.info('Deleted block: %s' % (oldest,))
+            __purge_block(shared_state, bHash, add_to_blacklist=True)
+            logger.info('Deleted block because of full storage: %s' % (oldest,))
 
 
 def clean_keys():
@@ -88,3 +95,14 @@ def clean_keys():
     conn.close()
 
     onionrusers.deleteExpiredKeys()
+
+
+def clean_blocks_not_meeting_pow(shared_state):
+    """Clean blocks not meeting min send/rec pow. Used if config.json POW changes"""
+    block_list = blockmetadb.get_block_list()
+    for block in block_list:
+        if not hashMeetsDifficulty(block):
+            logger.warn(
+                f"Deleting block {block} because it was stored" + 
+                "with a POW level smaller than current.", terminal=True)
+            __purge_block(shared_state, block)
