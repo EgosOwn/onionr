@@ -11,12 +11,21 @@ from utils import createdirs
 createdirs.create_dirs()
 
 
-import onionrblocks
 import onionrstorage
 from onionrutils import bytesconverter
 import onionrcrypto
 from onionrblocks import onionrblockapi
 
+from onionrsetup import setup_config, setup_default_plugins
+
+setup_config()
+setup_default_plugins()
+
+import config
+config.set("general.minimum_block_pow", 2)
+config.set('general.minimum_send_pow', 2)
+config.save()
+import onionrblocks
 
 class OnionrBlockTests(unittest.TestCase):
     def test_plaintext_insert(self):

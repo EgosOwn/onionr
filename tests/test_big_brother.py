@@ -24,10 +24,6 @@ class TestBigBrother(unittest.TestCase):
             requests.get('https://example.com')
         with self.assertRaises(onionrexceptions.NetworkLeak):
             requests.get('https://1.1.1.1/')
-        try:
-            requests.get('http://192.168.1.1/')
-        except requests.exceptions.ConnectionError:
-            pass
 
 
 unittest.main()

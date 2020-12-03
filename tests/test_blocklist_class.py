@@ -9,11 +9,18 @@ os.environ["ONIONR_HOME"] = TEST_DIR
 import unittest
 
 from utils import identifyhome, createdirs, bettersleep
-from onionrsetup import setup_config
-from onionrblocks import BlockList, insert
+from onionrsetup import setup_config, setup_default_plugins
 
 createdirs.create_dirs()
 setup_config()
+setup_config()
+setup_default_plugins()
+
+import config
+config.set("general.minimum_block_pow", 2)
+config.set('general.minimum_send_pow', 2)
+config.save()
+from onionrblocks import BlockList, insert
 
 
 class TestBlockList(unittest.TestCase):

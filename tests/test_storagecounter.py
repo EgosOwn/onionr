@@ -13,9 +13,20 @@ getourkeypair.get_keypair()
 import config
 import logger
 import onionrsetup as setup
-import onionrblocks
 import filepaths
 import onionrexceptions
+
+from onionrsetup import setup_config, setup_default_plugins
+
+setup_config()
+setup_default_plugins()
+
+import config
+config.set("general.minimum_block_pow", 2)
+config.set('general.minimum_send_pow', 2)
+config.save()
+import onionrblocks
+
 from onionrblocks import storagecounter
 import onionrstorage
 

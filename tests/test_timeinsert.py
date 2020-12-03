@@ -17,6 +17,11 @@ from onionrsetup import setup_config, setup_default_plugins
 setup_config()
 setup_default_plugins()
 
+import config
+config.set("general.minimum_block_pow", 2)
+config.set('general.minimum_send_pow', 2)
+config.save()
+
 class TestTimeInsert(unittest.TestCase):
     def test_time_insert_none(self):
         bl = time_insert('test')
