@@ -1,3 +1,6 @@
 onionr/data/**/*
 onionr/data
 MY-RUN.sh
+Dockerfile
+.dockerignore
+.git
