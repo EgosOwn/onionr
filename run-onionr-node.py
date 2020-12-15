@@ -140,11 +140,10 @@ with open(config_file, 'w') as cf:
     cf.write(ujson.dumps(config, reject_bytes=False))
 
 if args.open_ui:
-    p = Popen([sub_script, 'start'], stdout=DEVNULL)
+    p = Popen([sub_script, 'start'])
     sleep(2)
-    Popen([sub_script, 'openhome'], stdout=DEVNULL)
+    Popen([sub_script, 'openhome'])
 else:
-    p = Popen([sub_script, 'start'], stdout=DEVNULL)
+    p = Popen([sub_script, 'start'])
 
-p = p.children()[0]
 p.wait()
