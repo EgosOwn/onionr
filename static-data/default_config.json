@@ -8,6 +8,7 @@
     "general": {
         "allow_public_api_dns_rebinding": false,
         "announce_node": true,
+        "bind_address": "",
         "dev_mode": false,
         "display_header": true,
         "ephemeral_tunnels": false,
