@@ -24,6 +24,7 @@ class OnionrConfig(unittest.TestCase):
             self.assertEqual(conf['allocations']['disk'], 1073741824)
             self.assertEqual(conf['allocations']['disk'], 1073741824)
             self.assertEqual(conf['general']['announce_node'], True)
+            self.assertEqual(conf['general']['bind_address'], '')
             self.assertEqual(conf['general']['dev_mode'], False)
             self.assertEqual(conf['general']['display_header'], True)
             self.assertEqual(conf['general']['ephemeral_tunnels'], False)

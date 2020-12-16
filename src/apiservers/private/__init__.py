@@ -50,13 +50,20 @@ class PrivateAPI:
 
         self.startTime = epoch.get_epoch()
         app = flask.Flask(__name__)
+        
+
         bind_port = int(config.get('client.client.port', 59496))
         self.bindPort = bind_port
 
         self.clientToken = config.get('client.webpassword')
 
-        self.host = httpapi.apiutils.setbindip.set_bind_IP(
-            private_API_host_file)
+        if config.get('general.bind_address'):
+            with open(private_API_host_file, 'w') as bindFile:
+                bindFile.write(config.get('general.bind_address'))
+            self.host = config.get('general.bind_address')
+        else:
+            self.host = httpapi.apiutils.setbindip.set_bind_IP(
+                private_API_host_file)
         logger.info('Running api on %s:%s' % (self.host, self.bindPort))
         self.httpServer = ''
 

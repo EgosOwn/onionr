@@ -56,6 +56,12 @@ def show_info(p: Process):
 parser = argparse.ArgumentParser()
 
 parser.add_argument(
+    "--bind-address", help="Address to bind to. Be very careful with non-loopback",
+    type=str, default="")
+parser.add_argument(
+    "--port", help="Port to bind to, must be available and possible",
+    type=int, default=0)
+parser.add_argument(
     "--use-bootstrap-file", help="Use bootstrap node list file",
     type=int, default=1)
 parser.add_argument(
@@ -129,6 +135,13 @@ config['general']['dev_mode'] = False
 config['general']['store_plaintext_blocks'] = True
 config['general']['use_bootstrap_list'] = True
 config['transports']['tor'] = True
+config['general']['bind_port'] = 0  # client api server port
+config['general']['bind_address'] = ''  # client api server address
+
+if args.bind_address:
+    config['general']['bind_address'] = args.bind_address
+if args.port:
+    config['client']['client']['port'] = args.port
 
 if not args.use_bootstrap_file:
     config['general']['use_bootstrap_list'] = False
