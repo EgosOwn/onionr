@@ -70,7 +70,7 @@ Not yet usable:
 
 ## Watch the talk from BSidesPDX 2019
 
-<a href="https://invidio.us/watch?v=mrULtmSkKxg">
+<a href="https://www.youtube.com/watch?v=mrULtmSkKxg">
 <img src="docs/talk.png" alt="improving anonymous networking talk link" width="600">
 </a>
 
