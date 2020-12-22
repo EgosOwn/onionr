@@ -29,6 +29,8 @@ from multiprocessing import Process, Pipe, Queue
 import re, time
 import threading
 
+import logger
+
 wordlist = niceware.WORD_LIST
 
 def find_vanity_mnemonic(start_words: str, queue):
@@ -47,10 +49,16 @@ def find_vanity_mnemonic(start_words: str, queue):
 
 def _start(start_words, obj):
     done = False
-    q = Queue()
-    p = Process(target=find_vanity_mnemonic, args=[start_words, q], daemon=True)
-    p.daemon = True
-    p.start()
+    try:
+        q = Queue()
+        p = Process(target=find_vanity_mnemonic, args=[start_words, q], daemon=True)
+        p.daemon = True
+        p.start()
+    except ImportError:
+        logger.error(
+            "Error in subprocess module when getting new POW " +
+            "pipe.\nThis is related to a problem in 3.9.x", terminal=True)
+        return
     rec = None
     while not done:
         try:

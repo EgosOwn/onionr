@@ -63,6 +63,6 @@ def sneakernet_import_thread():
     for path in watch_paths:
         observer.schedule(_Importer(), path, recursive=True)
     observer.start()
-    while observer.isAlive():
+    while observer.is_alive():
         # call import func with timeout
         observer.join(60)

@@ -91,10 +91,17 @@ class SubprocessPOW:
     def _spawn_proc(self):
         """Create a child proof of work process
         wait for data and send shutdown signal when its found"""
-        parent_conn, child_conn = Pipe()
-        p = Process(target=self.do_pow, args=(child_conn,), daemon=True)
-        p.start()
-        #p.join()
+        # The importerror started happening in 3.9.x
+        # not worth fixing because this POW will be replaced by VDF
+        try:
+            parent_conn, child_conn = Pipe()
+            p = Process(target=self.do_pow, args=(child_conn,), daemon=True)
+            p.start()
+        except ImportError:
+            logger.error(
+                "Error in subprocess module when getting new POW " +
+                "pipe.\nThis is related to a problem in 3.9.x", terminal=True)
+            return
         payload = None
         try:
             while True:

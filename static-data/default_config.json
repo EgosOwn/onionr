@@ -72,7 +72,7 @@
         "tor": true
     },
     "ui": {
-        "animated_background": false,
+        "animated_background": true,
         "public_remote_enabled": false,
         "public_remote_hosts": [],
         "theme": "dark"
