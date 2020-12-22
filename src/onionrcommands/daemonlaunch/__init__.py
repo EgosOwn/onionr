@@ -13,6 +13,7 @@ import stem
 import toomanyobjs
 import filenuke
 from deadsimplekv import DeadSimpleKV
+import psutil
 
 import config
 import onionrstatistics
@@ -257,6 +258,20 @@ def start(override: bool = False):
                 pass
             else:
                 return
+        with open(filepaths.lock_file, 'r') as lock_file:
+            try:
+                proc = psutil.Process(int(lock_file.read())).name()
+            except psutil.NoSuchProcess:
+                proc = ""
+            if not proc.startswith("python"):
+                logger.info(
+                    f"Detected stale run file, deleting {filepaths.lock_file}", terminal=True)
+                try:
+                    os.remove(filepaths.lock_file)
+                except FileNotFoundError:
+                    pass
+                start(override=True)
+                return
         logger.fatal('Cannot start. Daemon is already running,'
                      + ' or it did not exit cleanly.\n'
                      + ' (if you are sure that there is not a daemon running,'
@@ -265,7 +280,7 @@ def start(override: bool = False):
     else:
         if not onionrvalues.DEVELOPMENT_MODE:
             lock_file = open(filepaths.lock_file, 'w')
-            lock_file.write('delete at your own risk')
+            lock_file.write(str(os.getpid()))
             lock_file.close()
 
         # Start Onionr daemon
