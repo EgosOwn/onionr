@@ -17,7 +17,7 @@ daemon-true.txt
 .vscode/tags
 .vscode/settings.json
 
-venv/*
+venv*
 src/fs*
 src/tmp/*
 testdata/*
