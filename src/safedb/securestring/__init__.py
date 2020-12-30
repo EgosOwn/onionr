@@ -11,7 +11,7 @@ _rinseoff = f"{app_root}/src/rinseoff/rinseoffcli"
 
 
 
-def generate_secure_string_key_file():
+def generate_key_file():
     if os.path.exists(secure_erase_key_file):
         raise FileExistsError
 
@@ -34,7 +34,7 @@ def generate_secure_string_key_file():
 
 
 
-def secure_string_create(plaintext: Union[bytes, bytearray, str]) -> bytes:
+def protect_string(plaintext: Union[bytes, bytearray, str]) -> bytes:
     """Create a "secure" string. Dont really rely on this, and dont use for comms
 
     This is just to make forensics a little harder"""
@@ -42,7 +42,6 @@ def secure_string_create(plaintext: Union[bytes, bytearray, str]) -> bytes:
         plaintext = plaintext.encode('utf-8')
     except AttributeError:
         pass
-
 
     process = subprocess.Popen(
                            ["dotnet", "run",
@@ -56,7 +55,27 @@ def secure_string_create(plaintext: Union[bytes, bytearray, str]) -> bytes:
     if res[0] and not res[1]:
         return res[0]
     else:
-        logger.warn("Error when encrypting plaintext", terminal=True)
+        logger.warn("Error when protecting string for database", terminal=True)
+        for line in res[1].decode('utf-8').split('\n'):
+            logger.error(line, terminal=True)
+        raise subprocess.CalledProcessError
+
+
+def unprotect_string(ciphertext: Union[bytes, bytearray]) -> bytes:
+    process = subprocess.Popen(
+                           ["dotnet", "run",
+                            "--project", _rinseoff,
+                            "load", "stdin", f"{secure_erase_key_file}"],
+                           stdout=subprocess.PIPE,
+                           stderr=subprocess.PIPE,
+                           stdin=subprocess.PIPE)
+    res = process.communicate(ciphertext)
+
+    if res[0] and not res[1]:
+        return res[0]
+    else:
+        logger.warn(
+            "Error when decrypting ciphertext from database", terminal=True)
         for line in res[1].decode('utf-8').split('\n'):
             logger.error(line, terminal=True)
         raise subprocess.CalledProcessError
