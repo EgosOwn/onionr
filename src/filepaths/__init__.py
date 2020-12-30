@@ -36,3 +36,5 @@ log_file = home + 'onionr.log'
 ephemeral_services_file = home + 'ephemeral-services.list'
 
 restarting_indicator = home + "is-restarting"
+
+secure_erase_key_file = home + "erase-key"
