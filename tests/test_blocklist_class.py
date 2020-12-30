@@ -13,7 +13,6 @@ from onionrsetup import setup_config, setup_default_plugins
 
 createdirs.create_dirs()
 setup_config()
-setup_config()
 setup_default_plugins()
 
 import config
