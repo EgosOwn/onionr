@@ -41,6 +41,7 @@ Then input the data to store through stdin.
 `$ rinseoffcli load /path/to/stored/data /path/to/key`
 
 If the key is valid, the plaintext will be outputted through stdout.
+if data path is "stdin" it will be read from pipe according
 
 ## Securely erase data
 
