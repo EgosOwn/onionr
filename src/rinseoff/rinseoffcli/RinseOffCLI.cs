@@ -24,7 +24,7 @@ namespace rinseoffcli
 {
     class Program
     {
-        public static string version = "1.0.0";
+        public static string version = "2.0.0";
         enum ErrorCode : byte
         {
             // Exit error codes indexed from 1
@@ -59,9 +59,26 @@ namespace rinseoffcli
             stderrStream.WriteLine(msg);
             stderrStream.Flush();
         }
+
+        static byte[] readUntilClose(){
+            // Read binary from STDIN until close
+            var readData = new List<byte>();
+            Stream inputStream = Console.OpenStandardInput();
+            int inp;
+            while(true){
+                inp = inputStream.ReadByte();
+                if (inp != -1){
+                    readData.Add((byte) inp);
+                }
+                else{
+                    return readData.ToArray();
+                }
+            }
+        }
         static void loadData(string filepath, string keypath){
             // Load in an encrypted file and use a key file to decrypt it, then log bytes back to stdout
             byte[] plaintext = {};
+            byte[] ciphertext = {};
             byte[] readBytes(string file){
                 // Read bytes in from a file, exit with error message if not possible
                 byte[] bytesToRead = {};
@@ -83,10 +100,17 @@ namespace rinseoffcli
                 return bytesToRead;
             }
             var stdout = Console.OpenStandardOutput();
+
+            if (filepath.Equals("stdin")){
+                ciphertext = readUntilClose();
+            }
+            else{
+                ciphertext = readBytes(filepath);
+            }
             try{
                 // Decrypt a file using a key file
                 plaintext = RinseOff.decrypt_secret_bytes(
-                    readBytes(filepath),
+                    ciphertext,
                     readBytes(keypath)
                 );
             }
@@ -98,6 +122,7 @@ namespace rinseoffcli
                 stderrWrite("Could not decrypt " + filepath + " with " + keypath);
                 Environment.Exit((int)ErrorCode.InvalidKeyFile);
             }
+            ciphertext = null;
             // print the plaintext and exit
             foreach(byte b in plaintext){
                 stdout.WriteByte(b);
@@ -116,21 +141,6 @@ namespace rinseoffcli
                 stdout.Flush();
             }
 
-            byte[] readUntilClose(){
-                // Read binary from STDIN until close
-                var readData = new List<byte>();
-                Stream inputStream = Console.OpenStandardInput();
-                int inp;
-                while(true){
-                    inp = inputStream.ReadByte();
-                    if (inp != -1){
-                        readData.Add((byte) inp);
-                    }
-                    else{
-                        return readData.ToArray();
-                    }
-                }
-            }
             // Encrypt stdin with keyfile data then write out to output file
             try{
                 encryptedInput = RinseOff.encrypt_secret_bytes(readUntilClose(), File.ReadAllBytes(keypath));
