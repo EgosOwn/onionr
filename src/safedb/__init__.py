@@ -2,6 +2,8 @@ from typing import Union
 from enum import Enum, auto
 import dbm
 
+from filenuke import nuke
+
 from .securestring import generate_key_file, protect_string, unprotect_string
 
 

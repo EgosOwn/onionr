@@ -38,3 +38,5 @@ ephemeral_services_file = home + 'ephemeral-services.list'
 restarting_indicator = home + "is-restarting"
 
 secure_erase_key_file = home + "erase-key"
+
+master_db_location = home + "database/"
