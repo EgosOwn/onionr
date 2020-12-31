@@ -1,3 +1,12 @@
+"""Wrap RinseOff, a c# CLI tool for secure data erasure via a keyfile.
+
+Intended for encrypting database entries.
+
+It is quite slow since it spawns an external process,
+but an ext process is necessary to keep the key out
+of memory as much as possible
+"""
+
 import os
 from typing import Union
 
@@ -9,29 +18,13 @@ import logger
 _rinseoff = f"{app_root}/src/rinseoff/rinseoffcli"
 
 
-
-
 def generate_key_file():
     if os.path.exists(secure_erase_key_file):
-        raise FileExistsError
+        raise FileExistsError(
+            "Key file for rinseoff secure erase already exists")
 
-    process = subprocess.Popen(
-                           ["dotnet", "run",
-                            "--project", _rinseoff,
-                            "keygen", f"{secure_erase_key_file}"],
-                           stdout=subprocess.PIPE,
-                           stderr=subprocess.PIPE)
-    res = process.communicate()
-
-    if res[0]:
-        for line in res[0].decode('utf-8').split('\n'):
-            logger.info(line, terminal=True)
-    if res[1]:
-        logger.warn("Error when generating database encryption keyfile")
-        for line in res[1].decode('utf-8').split('\n'):
-            logger.error(line, terminal=True)
-        raise subprocess.CalledProcessError
-
+    with open(secure_erase_key_file, 'wb') as f:
+        f.write(os.urandom(32))
 
 
 def protect_string(plaintext: Union[bytes, bytearray, str]) -> bytes:
@@ -58,7 +51,8 @@ def protect_string(plaintext: Union[bytes, bytearray, str]) -> bytes:
         logger.warn("Error when protecting string for database", terminal=True)
         for line in res[1].decode('utf-8').split('\n'):
             logger.error(line, terminal=True)
-        raise subprocess.CalledProcessError
+        raise subprocess.CalledProcessError(
+            "Error protecting string")
 
 
 def unprotect_string(ciphertext: Union[bytes, bytearray]) -> bytes:
@@ -78,4 +72,5 @@ def unprotect_string(ciphertext: Union[bytes, bytearray]) -> bytes:
             "Error when decrypting ciphertext from database", terminal=True)
         for line in res[1].decode('utf-8').split('\n'):
             logger.error(line, terminal=True)
-        raise subprocess.CalledProcessError
+        raise subprocess.CalledProcessError(
+            "Error unprotecting string")
