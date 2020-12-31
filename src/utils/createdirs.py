@@ -36,7 +36,8 @@ def create_dirs():
     order of the hardcoded list below,
     then trigger creation of DBs"""
     gen_dirs = [home, filepaths.block_data_location,
-                filepaths.contacts_location, filepaths.export_location]
+                filepaths.contacts_location, filepaths.export_location,
+                filepaths.master_db_location]
     for path in gen_dirs:
         if not os.path.exists(path):
             os.makedirs(path)
