@@ -119,9 +119,13 @@ Master may be unstable, you should use the latest release tag. (checkout via git
 * Gracefully stop Onionr from CLI `$ ./onionr.sh stop`
 
 
-# Contact
+# Contact/Community
 
-Email: beardog [ at ] mailbox.org
+* Email: beardog [ at ] mailbox.org
+* Twitter: [@onionrnet](https://twitter.com/onionrnet)
+* Onionr Mail: decentralized-fiery-freehearted-skimmer-yodling-topstitch-divorceable-ojibwa-resettlement-infracted-lessor-noninstinctual-leaseholder-counterpoised-couture-skinful
+* Element: #onionr:amorgan.xyz
+* Discord: https://discord.gg/DVF2bEAzrt (Discord is bad for freedom and privacy, this is only provided for convienience)
 
 # Help out
 
@@ -146,11 +150,13 @@ Donating at least $3 gets you cool Onionr stickers. Get in touch if you want the
 ![sticker](docs/sticker.png)
 
 
-Bitcoin: [1onion55FXzm6h8KQw3zFw2igpHcV7LPq](bitcoin:1onion55FXzm6h8KQw3zFw2igpHcV7LPq) (Contact us for a unique address or for other coins)
+* Bitcoin: [1onion55FXzm6h8KQw3zFw2igpHcV7LPq](bitcoin:1onion55FXzm6h8KQw3zFw2igpHcV7LPq) (Contact us for a unique address or for other coins)
 
-Monero: 4B5BA24d1P3R5aWEpkGY5TP7buJJcn2aSGBVRQCHhpiahxeB4aWsu15XwmuTjC6VF62NApZeJGTS248RMVECP8aW73Uj2ax
+* Monero: 4B5BA24d1P3R5aWEpkGY5TP7buJJcn2aSGBVRQCHhpiahxeB4aWsu15XwmuTjC6VF62NApZeJGTS248RMVECP8aW73Uj2ax
 
-USD (Card/Paypal): [Ko-Fi](https://www.ko-fi.com/beardogkf)
+* USD (Card/Paypal): [Ko-Fi](https://www.ko-fi.com/beardogkf)
+
+* [Indiegogo](https://igg.me/at/onionr/x#/)
 
 Note: probably not tax deductible
 
