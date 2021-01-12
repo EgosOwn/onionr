@@ -1,0 +1,35 @@
+yum install epel-release
+yum clean all
+yum update -y
+
+yum group install "Development Tools"
+yum install centos-release-scl
+yum install wget zlib zlib-devel openssl-devel bzip2-devel libffi-devel python-gevent -y
+yum install rh-python38 rh-python38-python-devel
+scl enable rh-python38 bash
+yum update -y
+
+pip3 install --require-hashes -r requirements.txt
+chown nobody. ../
+su -l nobody -s /bin/bash
+scl enable rh-python38 bash
+./onionr.sh start
+
+Like a black hole, NSA pulls in every signal that comes near, but no electron is ever allowed to escape│
+│ -James Bamford                                                                                        │
+└───────────────────────────────────────────────────────────────────────────────────────────────────────┘
+[+] Tor is starting...
+[+] Jan 11 18:35:55.000 [notice] Bootstrapped 0%: Starting
+[+] Jan 11 18:35:56.000 [notice] Bootstrapped 10%: Finishing handshake with directory server
+[+] Jan 11 18:35:56.000 [notice] Bootstrapped 80%: Connecting to the Tor network
+[+] Jan 11 18:35:56.000 [notice] Bootstrapped 90%: Establishing a Tor circuit
+[+] Finished starting Tor.
+[+] Onionr v8.0.1 (x86_64) (API v2)
+[+] Private P2P Communication - GPLv3 - https://Onionr.net
+[+] CPython 3.8.6 on Linux-3.10.0-1062.4.1.el7.x86_64-x86_64-with-glibc2.2.5 3.10.0-1062.4.1.el7.x86_64
+[+] Onionr data dir: /root/.local/share/onionr/
+[+] Onionr daemon is running under 5186
+[+] Not binding to LAN due to no private network configured.
+[+] First run detected. Run openhome to get setup.
+
+./onionr.sh openhome
