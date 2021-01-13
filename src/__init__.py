@@ -10,7 +10,8 @@ try:
     import sqlite3
 except ModuleNotFoundError:
     sys.stderr.write(
-        'Error, Onionr requires Sqlite3-enabled Python.\n')
+        'Error, Onionr requires Sqlite3-enabled Python.\n' +
+        'https://stackoverflow.com/a/1875095\n')
     sys.exit(1)
 """
     This program is free software: you can redistribute it and/or modify
