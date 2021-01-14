@@ -9,4 +9,4 @@ Onionr:
 OS: 
 Python: 
 Tor: 
-I2P: 
+CPU:
