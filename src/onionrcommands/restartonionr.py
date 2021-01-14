@@ -2,9 +2,12 @@
 
 Command to restart Onionr
 """
+from threading import local
 import time
 import os
 import subprocess  # nosec
+
+from psutil import Process
 
 from etc import onionrvalues
 from etc import cleanup
@@ -28,14 +31,22 @@ from . import daemonlaunch
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-
+DEVNULL = subprocess.DEVNULL
 SCRIPT_NAME = os.path.dirname(os.path.realpath(
     __file__)) + f'/../../{onionrvalues.SCRIPT_NAME}'
 
 
 def restart():
     """Tell the Onionr daemon to restart."""
+
     logger.info('Restarting Onionr', terminal=True)
+
+    daemon_terminal = localcommand.local_command("getpid")
+    terminal = None
+    if daemon_terminal:
+        terminal = Process(int(daemon_terminal)).terminal()
+    else:
+        terminal = Process().terminal()
 
     # On platforms where we can, fork out to prevent locking
     try:
@@ -55,7 +66,13 @@ def restart():
         time.sleep(1)
 
     cleanup.delete_run_files()
-    subprocess.Popen([SCRIPT_NAME, 'start'])
+
+    with open(terminal, 'ab') as term:
+        subprocess.Popen(
+            [SCRIPT_NAME, 'start'],
+            stdout=term,
+            stdin=term,
+            stderr=term)
 
 
 restart.onionr_help = 'Gracefully restart Onionr'  # type: ignore

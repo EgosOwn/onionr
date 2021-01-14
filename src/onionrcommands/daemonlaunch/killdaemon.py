@@ -31,7 +31,7 @@ import config
 def kill_daemon():
     """Shutdown the Onionr daemon (communicator)."""
     config.reload()
-    logger.warn('Stopping the running daemon...', timestamp=False,
+    logger.warn('Stopping the running daemon, if one exists...', timestamp=False,
                 terminal=True)
 
     # On platforms where we can, fork out to prevent locking

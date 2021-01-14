@@ -5,6 +5,7 @@ Misc client API endpoints too small to need their own file and that need access 
 import os
 import subprocess
 import platform
+from sys import stdout as sys_stdout
 
 from flask import Response, Blueprint, request, send_from_directory, abort
 from flask import g
@@ -69,6 +70,10 @@ class PrivateEndpoints:
         @private_endpoints_bp.route('/getpid')
         def get_pid():
             return Response(str(os.getpid()))
+
+        @private_endpoints_bp.route('/isatty')
+        def get_is_atty():
+            return Response(str(sys_stdout.isatty()).lower())
 
         @private_endpoints_bp.route('/hitcount')
         def get_hit_count():

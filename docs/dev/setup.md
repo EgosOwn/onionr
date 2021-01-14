@@ -6,6 +6,8 @@ The Onionr development environment is simple. All one really needs is a supporte
 
 There are additional requirements specified in requirements-dev.txt
 
+Developers agree to the CoC and to contribute new code under GPLv3 or later. Developers should stick to PEP8 in most cases, and write unittests or integration tests where possible.
+
 ## Developer Scripts
 
 run-onionr-node.py can be used to start a node with specific parameters
