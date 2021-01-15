@@ -6,7 +6,7 @@ The Onionr development environment is simple. All one really needs is a supporte
 
 There are additional requirements specified in requirements-dev.txt
 
-Developers agree to the CoC and to contribute new code under GPLv3 or later. Developers should stick to PEP8 in most cases, and write unittests or integration tests where possible.
+**Developers agree to the [CoC](../../CODE_OF_CONDUCT.md) and to contribute new code under GPLv3 or later**. Developers should stick to PEP8 in most cases, and write unittests or integration tests where possible.
 
 ## Developer Scripts
 
@@ -30,11 +30,11 @@ Onionr in it's current form is functional, albeit buggy.
 
 ## Current major components
 
-Onionr runs via two main HTTP gevent servers serving Flask apps. 
+Onionr runs via two main HTTP gevent servers serving Flask apps.
 
 Dir: apiservers
 
-* 1 Parent app hosts all public API endpoints for the Tor transport. 
+* 1 Parent app hosts all public API endpoints for the Tor transport.
 * 1 Parent app hosts all UI-related files and endpoints. Some commands and internal modules interact with this API as well
 * The HTTP servers have strict anti-dns-rebinding and CSRF countermeasures, so there is a script to craft requests to the UI-related API in scripts/
 * Block storage is currently handled via metadata in sqlite (mostly defunct now), and block data storage in a different database. This is in blocks/ in running Onionr daemon data directory
