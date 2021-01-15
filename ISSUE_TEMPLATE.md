@@ -5,8 +5,9 @@
 # Steps to Reproduce
 
 # Version Information
-Onionr: 
-OS: 
-Python: 
-Tor: 
-I2P: 
+
+* Onionr: 
+* OS: 
+* Python: 
+* Tor: 
+* CPU:
