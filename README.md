@@ -106,7 +106,7 @@ Master may be unstable, you should use the latest release tag. (checkout via git
 * Have python3.7+, python3-pip, Tor (daemon, not browser) installed. python3-dev is recommended.
 * Clone the git repo: `$ git clone https://gitlab.com/beardog/onionr --tags`
 * cd into install direction: `$ cd onionr/`
-* Install the Python dependencies ([virtualenv strongly recommended](https://virtualenv.pypa.io/en/stable/userguide/)): `$ pip3 install --require-hashes -r requirements.txt` (on ARM64 devices like Raspberry Pi's use requirements-ARM.txt instead.)
+* Install the Python dependencies ([virtualenv strongly recommended](https://virtualenv.pypa.io/en/stable/userguide/)): `$ pip3 install --require-hashes -r requirements.txt` (on ARM64 devices like Raspberry Pi 4's use requirements-ARM.txt instead.)
 * (Optional): Install desktop notification dependencies: `$ pip3 install --require-hashes -r requirements-notifications.txt`
 
 (--require-hashes is intended to prevent exploitation via compromise of PyPi/CA certificates)
