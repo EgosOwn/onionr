@@ -45,7 +45,7 @@ def _wait_for_ui_to_be_ready():
 
 def get_url() -> str:
     """Build UI URL string and return it."""
-    geturl.get_url(config)
+    return geturl.get_url(config)
 
 
 get_url.onionr_help = "Shows the Onionr "  # type: ignore
