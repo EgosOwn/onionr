@@ -13,7 +13,7 @@
 
 <img src='https://img.shields.io/github/license/beardog108/onionr'> <img src="https://img.shields.io/github/repo-size/beardog108/onionr"> <img src='https://img.shields.io/badge/python%20version%20%F0%9F%90%8D-3.7+-blue'> <img src='https://img.shields.io/github/commit-activity/m/beardog108/onionr'>
 
-<a href='https://www.reddit.com/r/onionr'><img src = 'https://img.shields.io/reddit/subreddit-subscribers/onionr?style=social'></a> <a href='https://twitter.com/onionrnet'><img src='https://img.shields.io/twitter/follow/onionrnet?style=social'></a>
+<a href='https://www.reddit.com/r/onionr'><img src = 'https://img.shields.io/reddit/subreddit-subscribers/onionr?style=social'></a> <a href='https://twitter.com/onionrnet'><img src='https://img.shields.io/twitter/follow/onionrnet?style=social'></a> - [Discord](https://discord.gg/DVF2bEAzrt) - Matrix: #onionr:amorgan.xyz
 
 |                                      |                            |                            |
 | -----------                          | -----------                | -----------                |
@@ -67,13 +67,6 @@ Not yet usable:
 * Instant messaging
 
 
-
-## Watch the talk from BSidesPDX 2019
-
-<a href="https://www.youtube.com/watch?v=mrULtmSkKxg">
-<img src="docs/talk.png" alt="improving anonymous networking talk link" width="600">
-</a>
-
 # Screenshots
 
 <img alt='Node statistics page screenshot' src='docs/onionr-1.png' width=600>
@@ -104,9 +97,10 @@ Master may be unstable, you should use the latest release tag. (checkout via git
 `$ sudo apt install python3-pip python3-dev tor`
 
 * Have python3.7+, python3-pip, Tor (daemon, not browser) installed. python3-dev is recommended.
+* You may need build-essentials or the equivalent of your platform
 * Clone the git repo: `$ git clone https://gitlab.com/beardog/onionr --tags`
 * cd into install direction: `$ cd onionr/`
-* Install the Python dependencies ([virtualenv strongly recommended](https://virtualenv.pypa.io/en/stable/userguide/)): `$ pip3 install --require-hashes -r requirements.txt` (on ARM64 devices like Raspberry Pi's use requirements-ARM.txt instead.)
+* Install the Python dependencies ([virtualenv strongly recommended](https://virtualenv.pypa.io/en/stable/userguide/)): `$ pip3 install --require-hashes -r requirements.txt` (on ARM64 devices like Raspberry Pi 4's use requirements-ARM.txt instead.)
 * (Optional): Install desktop notification dependencies: `$ pip3 install --require-hashes -r requirements-notifications.txt`
 
 (--require-hashes is intended to prevent exploitation via compromise of PyPi/CA certificates)
@@ -124,7 +118,7 @@ Master may be unstable, you should use the latest release tag. (checkout via git
 * Email: beardog [ at ] mailbox.org
 * Twitter: [@onionrnet](https://twitter.com/onionrnet)
 * Onionr Mail: decentralized-fiery-freehearted-skimmer-yodling-topstitch-divorceable-ojibwa-resettlement-infracted-lessor-noninstinctual-leaseholder-counterpoised-couture-skinful
-* Element: #onionr:amorgan.xyz
+* Matrix: #onionr:amorgan.xyz
 * Discord: https://discord.gg/DVF2bEAzrt (Discord is bad for freedom and privacy, this is only provided for convienience)
 
 # Help out
@@ -142,6 +136,12 @@ Everyone is welcome to contribute. Help is wanted for the following:
 * Running stable nodes
 * Security review/audit
 * I2P support
+
+## Watch the talk from BSidesPDX 2019
+
+<a href="https://www.youtube.com/watch?v=mrULtmSkKxg">
+<img src="docs/talk.png" alt="improving anonymous networking talk link" width="600">
+</a>
 
 ## Contribute money:
 
