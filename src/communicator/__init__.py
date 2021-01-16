@@ -141,11 +141,11 @@ class OnionrCommunicatorDaemon:
 
         daemoneventhooks.daemon_event_handlers(shared_state)
 
+        get_url()
         if not config.get('onboarding.done', True):
             logger.info(
                 'First run detected. Run openhome to get setup.',
                 terminal=True)
-            get_url()
 
             while not config.get('onboarding.done', True) and \
                     not self.shared_state.get_by_string(

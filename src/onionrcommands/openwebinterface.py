@@ -9,6 +9,8 @@ import logger
 from onionrutils import getclientapiserver
 import config
 from onionrutils.localcommand import local_command
+
+from .daemonlaunch import geturl
 """
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -43,20 +45,7 @@ def _wait_for_ui_to_be_ready():
 
 def get_url() -> str:
     """Build UI URL string and return it."""
-    onboarding = ""
-    if not config.get('onboarding.done', False):
-        onboarding = "onboarding/"
-    try:
-        url = getclientapiserver.get_client_API_server()
-    except FileNotFoundError:
-        url = ""
-        logger.error(
-            'Onionr seems to not be running (could not get api host)',
-            terminal=True)
-    else:
-        url = 'http://%s/%s#%s' % (url, onboarding, config.get('client.webpassword'))
-        logger.info('Onionr web interface URL: ' + url, terminal=True)
-    return url
+    return geturl.get_url(config)
 
 
 get_url.onionr_help = "Shows the Onionr "  # type: ignore
