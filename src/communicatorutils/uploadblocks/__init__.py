@@ -13,8 +13,8 @@ from onionrtypes import UserID
 import logger
 from communicatorutils import proxypicker
 import onionrexceptions
-from onionrblocks import onionrblockapi as block
-from onionrblocks.blockmetadata.fromdata import get_block_metadata_from_data
+from oldblocks import onionrblockapi as block
+from oldblocks.blockmetadata.fromdata import get_block_metadata_from_data
 from onionrutils import stringvalidators, basicrequests
 from onionrutils.validatemetadata import validate_metadata
 from communicator import onlinepeers

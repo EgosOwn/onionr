@@ -2,7 +2,13 @@
 
 Store blocks and cache meta info such as block type
 """
-import safedb
+from typing import TYPE_CHECKING, Union, NewType
+
+from safedb import DBProtectionOpeningModeError
+
+if TYPE_CHECKING:
+    from kasten import Kasten
+    from safedb import SafeDB
 """
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -18,9 +24,10 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
+RawBlock = NewType('RawBlock', bytes)
 
-def store_block(block_data):
 
-    # If Onionr daemon is running, we should use the client
-    # API server to store blocks, if not we can
+def store_block(block: Kasten, safe_db: SafeDB):
+    
+    safe_db.put(block.id, block.get_packed())
 

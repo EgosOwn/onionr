@@ -5,7 +5,7 @@ Use the communicator to insert fake mail messages
 import secrets
 
 from etc import onionrvalues
-import onionrblocks
+import oldblocks
 """
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -30,6 +30,6 @@ def insert_deniable_block():
         # This assumes on the libsodium primitives to have key-privacy
         fakePeer = onionrvalues.DENIABLE_PEER_ADDRESS
         data = secrets.token_hex(secrets.randbelow(5120) + 1)
-        onionrblocks.insert(data, header='pm', encryptType='asym',
+        oldblocks.insert(data, header='pm', encryptType='asym',
                             asymPeer=fakePeer, disableForward=True,
                             meta={'subject': 'foo'})

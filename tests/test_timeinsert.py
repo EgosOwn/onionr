@@ -10,8 +10,8 @@ from utils import createdirs
 createdirs.create_dirs()
 from onionrcrypto import getourkeypair
 getourkeypair.get_keypair()
-from onionrblocks import time_insert
-from onionrblocks import onionrblockapi
+from oldblocks import time_insert
+from oldblocks import onionrblockapi
 from onionrsetup import setup_config, setup_default_plugins
 
 setup_config()

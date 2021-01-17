@@ -7,7 +7,7 @@ import nacl.encoding, nacl.hash, nacl.utils
 
 import config
 import logger
-from onionrblocks import onionrblockapi
+from oldblocks import onionrblockapi
 from onionrutils import bytesconverter
 from onionrcrypto import hashers
 

@@ -3,7 +3,7 @@
 Process block metadata with relevant actions
 """
 from etc import onionrvalues
-from onionrblocks import onionrblockapi
+from oldblocks import onionrblockapi
 from onionrutils import epoch, bytesconverter
 from coredb import blockmetadb
 import logger

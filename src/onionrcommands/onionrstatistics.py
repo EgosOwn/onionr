@@ -4,7 +4,7 @@ This module defines commands to show stats/details about the local node
 """
 import os
 import logger
-from onionrblocks import onionrblacklist
+from oldblocks import onionrblacklist
 from onionrutils import mnemonickeys
 from utils import sizeutils, gethostname, getconsolewidth, identifyhome
 from coredb import blockmetadb, keydb

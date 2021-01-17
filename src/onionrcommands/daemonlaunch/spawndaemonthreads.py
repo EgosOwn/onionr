@@ -12,6 +12,7 @@ from communicatorutils import uploadblocks
 from communicatorutils import announcenode, deniableinserts
 from communicatorutils import netcheck
 import onionrpeers
+
 import config
 
 if TYPE_CHECKING:

@@ -10,7 +10,7 @@ import logger
 from onionrutils import validatemetadata
 from onionrutils import bytesconverter
 from coredb import blockmetadb
-from onionrblocks import blockmetadata
+from oldblocks import blockmetadata
 import onionrstorage
 import onionrcrypto as crypto
 from . import onionrblacklist

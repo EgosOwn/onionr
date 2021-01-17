@@ -3,7 +3,7 @@ from flask import Response
 import unpaddedbase32
 
 from coredb import blockmetadb
-import onionrblocks
+import oldblocks
 from etc import onionrvalues
 import config
 from onionrutils import bytesconverter
@@ -18,7 +18,7 @@ def get_motd()->Response:
     newest_time = 0
     message = "No MOTD currently present."
     for x in motds:
-        bl = onionrblocks.onionrblockapi.Block(x)
+        bl = oldblocks.onionrblockapi.Block(x)
         if not bl.verifySig() or bl.signer != bytesconverter.bytes_to_str(unpaddedbase32.repad(bytesconverter.str_to_bytes(signer))): continue
         if not bl.isSigner(signer): continue
         if bl.claimedTime > newest_time:

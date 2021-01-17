@@ -10,7 +10,7 @@ createdirs.create_dirs()
 from onionrcrypto import getourkeypair
 getourkeypair.get_keypair()
 from utils import readstatic
-import onionrblocks
+import oldblocks
 class OnionrConfig(unittest.TestCase):
     def test_default_file(self):
         json.loads(readstatic.read_static('default_config.json'))

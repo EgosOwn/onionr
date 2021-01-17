@@ -22,6 +22,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
 
+class DBProtectionOpeningModeError(Exception):
+    pass
+
+
 class SafeDB:
     """Wrapper around dbm to optionally encrypt db values."""
 
@@ -31,7 +35,8 @@ class SafeDB:
         return unprotect_string(self.db_conn[key])
 
     def put(
-            self, key: [str, bytes, bytearray], value: [bytes, bytearray]):
+            self,
+            key: Union[str, bytes, bytearray], value: Union[bytes, bytearray]):
         if self.protected:
             self.db_conn[key] = protect_string(value)
         else:
@@ -47,10 +52,10 @@ class SafeDB:
         try:
             existing_protected_mode = self.db_conn['enc']
             if protected and existing_protected_mode != b'1':
-                raise ValueError(
+                raise DBProtectionOpeningModeError(
                     "Cannot open unencrypted database with protected=True")
             elif not protected and existing_protected_mode != b'0':
-                raise ValueError(
+                raise DBProtectionOpeningModeError(
                     "Cannot open encrypted database in protected=False")
         except KeyError:
             if protected:

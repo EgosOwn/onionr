@@ -11,7 +11,7 @@ from flask import Blueprint, Response, request, g
 if TYPE_CHECKING:
     from deadsimplekv import DeadSimpleKV
 
-import onionrblocks
+import oldblocks
 from onionrcrypto import hashers
 from onionrutils import bytesconverter
 from onionrutils import mnemonickeys
@@ -84,7 +84,7 @@ def client_api_insert_block():
         disable_forward_secrecy = False
 
     threading.Thread(
-        target=onionrblocks.insert, args=(message,),
+        target=oldblocks.insert, args=(message,),
         kwargs={'header': bType, 'encryptType': encrypt_type,
                 'sign': sign, 'asymPeer': to, 'meta': meta,
                 'disableForward': disable_forward_secrecy}).start()

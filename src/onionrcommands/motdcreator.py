@@ -3,7 +3,7 @@
 Command to make new network-wide MOTD message. Only network admin can do this
 The key is set in onionrvalues
 """
-import onionrblocks
+import oldblocks
 """
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -29,7 +29,7 @@ def motd_creator():
         new = input()  # nosec B323
         if new != 'quit':
             motd += new
-    bl = onionrblocks.insert(motd, header='motd', sign=True)
+    bl = oldblocks.insert(motd, header='motd', sign=True)
     print(f"inserted in {bl}")
 
 

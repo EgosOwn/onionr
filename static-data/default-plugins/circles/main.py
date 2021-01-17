@@ -11,9 +11,9 @@ from coredb import blockmetadb
 import threading
 import time
 import locale
-from onionrblocks.onionrblockapi import Block
+from oldblocks.onionrblockapi import Block
 import logger
-import onionrblocks
+import oldblocks
 from onionrutils import escapeansi, epoch, bytesconverter
 
 locale.setlocale(locale.LC_ALL, '')
@@ -79,7 +79,7 @@ class OnionrFlow:
                 expireTime = epoch.get_epoch() + EXPIRE_TIME
                 if len(message) > 0:
                     logger.info('Inserting message as block...', terminal=True)
-                    onionrblocks.insert(message, header='brd',
+                    oldblocks.insert(message, header='brd',
                                         expire=expireTime,
                                         meta = {
                                         'ch': self.channel})
@@ -132,7 +132,7 @@ def on_circlesend_cmd(api, data=None):
     except IndexError:
         logger.error(err_msg, terminal=True)
 
-    bl = onionrblocks.insert(sys.argv[3], header='brd',
+    bl = oldblocks.insert(sys.argv[3], header='brd',
             expire=(EXPIRE_TIME + epoch.get_epoch()),
             meta={'ch': sys.argv[2]})
     print(bl)

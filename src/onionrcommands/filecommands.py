@@ -6,11 +6,11 @@ and getting files from the Onionr network
 import sys
 import os
 import logger
-from onionrblocks.onionrblockapi import Block
+from oldblocks.onionrblockapi import Block
 import onionrexceptions
 from onionrutils import stringvalidators
 from etc import onionrvalues
-from onionrblocks import insert
+from oldblocks import insert
 """
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by

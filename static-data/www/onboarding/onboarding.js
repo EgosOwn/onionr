@@ -56,6 +56,7 @@ document.getElementById('onboardingForm').onsubmit = function(e){
     submitInfo.mail = getCheckValue('useMail')
     submitInfo.circles = getCheckValue('useCircles')
     submitInfo.useDark = getCheckValue('useDarkTheme')
+    submitInfo.optimize = getCheckValue('optimize')
 
     if (submitInfo.donate){
         openDonateModal(submitInfo)

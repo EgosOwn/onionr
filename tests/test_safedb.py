@@ -31,7 +31,7 @@ class TestSafeDB(unittest.TestCase):
         with dbm.open(db_path) as db:
             self.assertEqual(db['enc'], b'0')
 
-    def test_db_create_proteced(self):
+    def test_db_create_protected(self):
         _remove_db()
         db = safedb.SafeDB(db_path, protected=True)
         db.close()
@@ -46,13 +46,21 @@ class TestSafeDB(unittest.TestCase):
         db.close()
         self.assertRaises(ValueError, safedb.SafeDB, db_path, protected=False)
 
-    def test_db_open_unproteced(self):
+    def test_db_open_unprotected(self):
         _remove_db()
         with dbm.open(db_path, 'c') as db:
             db['enc'] = b'0'
         db = safedb.SafeDB(db_path, protected=False)
         db.close()
         self.assertRaises(ValueError, safedb.SafeDB, db_path, protected=True)
+
+    def test_db_put_unprotected(self):
+        _remove_db()
+        db = safedb.SafeDB(db_path, protected=False)
+        db.put("test", b"Test")
+        db.close()
+        with dbm.open(db_path, 'c') as db:
+            self.assertEqual(db['test', b"Test"])
 
 
 

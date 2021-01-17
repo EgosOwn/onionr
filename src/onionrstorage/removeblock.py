@@ -9,7 +9,7 @@ import onionrexceptions
 import onionrstorage
 from onionrutils import stringvalidators
 from coredb import dbfiles
-from onionrblocks import storagecounter
+from oldblocks import storagecounter
 from etc.onionrvalues import DATABASE_LOCK_TIMEOUT
 """
     This program is free software: you can redistribute it and/or modify

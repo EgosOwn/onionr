@@ -25,9 +25,9 @@ import config
 config.set("general.minimum_block_pow", 2)
 config.set('general.minimum_send_pow', 2)
 config.save()
-import onionrblocks
+import oldblocks
 
-from onionrblocks import storagecounter
+from oldblocks import storagecounter
 import onionrstorage
 
 def _test_setup():
@@ -47,13 +47,13 @@ class TestStorageCounter(unittest.TestCase):
     def test_insert_too_much(self):
         _test_setup()
         config.set('allocations.disk', 1000)
-        self.assertRaises(onionrexceptions.DiskAllocationReached, onionrblocks.insert, "test")
+        self.assertRaises(onionrexceptions.DiskAllocationReached, oldblocks.insert, "test")
 
     def test_count(self):
         _test_setup()
         counter = storagecounter.StorageCounter()
         start_value = counter.amount
-        b_hash = onionrblocks.insert("test")
+        b_hash = oldblocks.insert("test")
         sleep(0.1)
         self.assertGreater(counter.amount, start_value)
         onionrstorage.removeblock.remove_block(b_hash)

@@ -10,7 +10,7 @@ import onionrexceptions
 from onionrutils import mnemonickeys
 from onionrutils import stringvalidators
 from coredb import blockmetadb
-from onionrblocks.onionrblockapi import Block
+from oldblocks.onionrblockapi import Block
 from onionrtypes import BlockHash
 
 """

@@ -20,7 +20,7 @@
 import logger
 from coredb import keydb
 import config
-from onionrblocks import onionrblacklist
+from oldblocks import onionrblacklist
 from utils import gettransports
 def mergeAdders(newAdderList):
     '''

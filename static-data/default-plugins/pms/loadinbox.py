@@ -2,7 +2,7 @@
 
 Load the user's inbox and return it as a list
 """
-from onionrblocks import onionrblockapi
+from oldblocks import onionrblockapi
 from coredb import blockmetadb
 from utils import reconstructhash, identifyhome
 import deadsimplekv as simplekv

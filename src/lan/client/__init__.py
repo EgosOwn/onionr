@@ -9,7 +9,7 @@ from typing import Set
 from onionrtypes import LANIP
 import logger
 from coredb.blockmetadb import get_block_list
-from onionrblocks.blockimporter import import_block_from_data
+from oldblocks.blockimporter import import_block_from_data
 import onionrexceptions
 from ..server import ports
 from onionrproofs import hashMeetsDifficulty

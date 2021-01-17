@@ -15,11 +15,11 @@ from onionrutils import stringvalidators, epoch
 from communicator import peeraction, onlinepeers
 from coredb.blockmetadb import get_block_list
 from utils import reconstructhash
-from onionrblocks import onionrblacklist
+from oldblocks import onionrblacklist
 import onionrexceptions
 import config
 from etc import onionrvalues
-from onionrblocks.storagecounter import StorageCounter
+from oldblocks.storagecounter import StorageCounter
 """
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
