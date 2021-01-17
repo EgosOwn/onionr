@@ -40,7 +40,7 @@ class SafeDB:
     def close(self):
         self.db_conn.close()
 
-    def __init__(self, db_path: str, protected=True):
+    def __init__(self, db_path: str, protected=False):
         self.db_path = db_path
         self.db_conn = dbm.open(db_path, "c")
 

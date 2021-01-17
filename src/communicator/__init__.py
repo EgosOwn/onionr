@@ -8,19 +8,9 @@ import time
 
 import config
 import logger
-import onionrpeers
 import onionrplugins as plugins
-from . import onlinepeers
-from . import uploadqueue
-from communicatorutils import downloadblocks
-from communicatorutils import lookupblocks
-from communicatorutils import lookupadders
-from communicatorutils import connectnewpeers
 from communicatorutils import uploadblocks
-from communicatorutils import announcenode, deniableinserts
-from communicatorutils import cooldownpeer
-from communicatorutils import housekeeping
-from communicatorutils import netcheck
+from . import uploadqueue
 from onionrthreads import add_onionr_thread
 from onionrcommands.openwebinterface import get_url
 from netcontroller import NetController
@@ -80,61 +70,6 @@ class OnionrCommunicatorDaemon:
         # extends our upload list and saves our list when Onionr exits
         uploadqueue.UploadQueue(self)
 
-        add_onionr_thread(
-            lookupblocks.lookup_blocks_from_communicator,
-            [self.shared_state], 25, 3)
-
-        add_onionr_thread(
-            downloadblocks.download_blocks_from_communicator,
-            [self.shared_state],
-            config.get('timers.getBlocks', 10), 1)
-
-        add_onionr_thread(onlinepeers.clear_offline_peer, [self.kv], 58)
-
-        add_onionr_thread(
-            housekeeping.clean_old_blocks, [self.shared_state], 10, 1)
-
-        # Discover new peers
-        add_onionr_thread(
-            lookupadders.lookup_new_peer_transports_with_communicator,
-            [shared_state], 60, 3)
-
-        # Timer for adjusting which peers
-        # we actively communicate to at any given time,
-        # to avoid over-using peers
-        add_onionr_thread(
-            cooldownpeer.cooldown_peer, [self.shared_state], 30, 60)
-
-        # Timer to read the upload queue and upload the entries to peers
-        add_onionr_thread(
-            uploadblocks.upload_blocks_from_communicator,
-            [self.shared_state], 5, 1)
-
-        # This timer creates deniable blocks,
-        # in an attempt to further obfuscate block insertion metadata
-        if config.get('general.insert_deniable_blocks', True):
-            add_onionr_thread(
-                deniableinserts.insert_deniable_block, [], 180, 10)
-
-        if config.get('transports.tor', True):
-            # Timer to check for connectivity,
-            # through Tor to various high-profile onion services
-            add_onionr_thread(netcheck.net_check, [shared_state], 500, 60)
-
-        # Announce the public API server transport address
-        # to other nodes if security level allows
-        if config.get('general.security_level', 1) == 0 \
-                and config.get('general.announce_node', True):
-            # Default to high security level incase config breaks
-            add_onionr_thread(
-                announcenode.announce_node, [self.shared_state], 600, 60)
-        else:
-            logger.debug('Will not announce node.')
-
-        add_onionr_thread(onionrpeers.peer_cleanup, [], 300, 300)
-
-        add_onionr_thread(housekeeping.clean_keys, [], 15, 1)
-
         if config.get('general.use_bootstrap_list', True):
             bootstrappeers.add_bootstrap_list_to_peer_list(
                 self.kv, [], db_only=True)
@@ -168,24 +103,6 @@ class OnionrCommunicatorDaemon:
 
         logger.info(
             'Goodbye. (Onionr is cleaning up, and will exit)', terminal=True)
-
-    def decrementThreadCount(self, threadName):
-        """Decrement amount of a thread name if more than zero.
-
-        called when a function meant to be run in a thread ends
-        """
-        try:
-            if self.threadCounts[threadName] > 0:
-                self.threadCounts[threadName] -= 1
-        except KeyError:
-            pass
-
-    def peerCleanup(self):
-        """This just calls onionrpeers.cleanupPeers.
-
-        Remove dead or bad peers (offline too long, too slow)"""
-        onionrpeers.peer_cleanup()
-        self.decrementThreadCount('peerCleanup')
 
     def getPeerProfileInstance(self, peer):
         """Gets a peer profile instance from the list of profiles"""
