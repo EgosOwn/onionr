@@ -11,7 +11,7 @@ import os
 if not os.path.exists('onionr.sh'):
     os.chdir('../')
 sys.path.append("src/")
-import onionrblocks
+import oldblocks
 
 
 amount = int(input("Number of blocks:"))
@@ -24,8 +24,8 @@ else:
 
 for i in range(amount):
     if expire:
-        print(onionrblocks.insert(data=os.urandom(32), expire=expire))
+        print(oldblocks.insert(data=os.urandom(32), expire=expire))
     else:
-        print(onionrblocks.insert(data=os.urandom(32)))
+        print(oldblocks.insert(data=os.urandom(32)))
     print(i, "done")
 

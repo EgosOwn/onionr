@@ -4,7 +4,7 @@ Check if a block should be downloaded
 (if we already have it or its blacklisted or not)
 """
 from coredb import blockmetadb
-from onionrblocks import onionrblacklist
+from oldblocks import onionrblacklist
 """
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by

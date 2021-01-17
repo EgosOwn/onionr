@@ -6,7 +6,7 @@ import time
 from typing import List
 
 import onionrtypes
-from onionrblocks import onionrblockapi
+from oldblocks import onionrblockapi
 
 from .pool import UploadPool
 from .pool import PoolFullException

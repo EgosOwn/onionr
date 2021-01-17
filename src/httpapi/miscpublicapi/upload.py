@@ -10,7 +10,7 @@ from flask import abort
 from flask import g
 
 from onionrutils import localcommand
-from onionrblocks import blockimporter
+from oldblocks import blockimporter
 import onionrexceptions
 import logger
 import config

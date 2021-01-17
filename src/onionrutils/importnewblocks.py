@@ -5,7 +5,7 @@ import new blocks from disk, providing transport agnosticism
 import glob
 
 import logger
-from onionrblocks import blockmetadata
+from oldblocks import blockmetadata
 from coredb import blockmetadb
 import filepaths
 import onionrcrypto as crypto

@@ -5,8 +5,8 @@ import os
 if not os.path.exists('onionr.sh'):
     os.chdir('../')
 sys.path.append("src/")
-import onionrblocks
+import oldblocks
 
 expire = 600
-print(onionrblocks.insert(data=os.urandom(32), expire=expire))
+print(oldblocks.insert(data=os.urandom(32), expire=expire))
 

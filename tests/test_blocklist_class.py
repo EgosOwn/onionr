@@ -19,7 +19,7 @@ import config
 config.set("general.minimum_block_pow", 2)
 config.set('general.minimum_send_pow', 2)
 config.save()
-from onionrblocks import BlockList, insert
+from oldblocks import BlockList, insert
 
 
 class TestBlockList(unittest.TestCase):

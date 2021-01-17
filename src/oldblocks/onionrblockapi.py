@@ -1,6 +1,6 @@
 """Onionr - P2P Anonymous Storage Network.
 
-OnionrBlocks class for abstraction of blocks
+oldblocks class for abstraction of blocks
 """
 import datetime
 import onionrstorage
@@ -15,7 +15,7 @@ from onionrusers import onionrusers
 from onionrutils import stringvalidators, epoch
 from coredb import blockmetadb
 from onionrutils import bytesconverter
-import onionrblocks
+import oldblocks
 from onionrcrypto import encryption, cryptoutils as cryptoutils, signing
 """
     This program is free software: you can redistribute it and/or modify

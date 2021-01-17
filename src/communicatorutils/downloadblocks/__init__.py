@@ -17,14 +17,14 @@ import onionrpeers
 
 from communicator import peeraction
 from communicator import onlinepeers
-from onionrblocks import blockmetadata
+from oldblocks import blockmetadata
 from onionrutils import validatemetadata
 from coredb import blockmetadb
 from onionrutils.localcommand import local_command
 import onionrcrypto
 import onionrstorage
-from onionrblocks import onionrblacklist
-from onionrblocks import storagecounter
+from oldblocks import onionrblacklist
+from oldblocks import storagecounter
 from . import shoulddownload
 """
     This program is free software: you can redistribute it and/or modify

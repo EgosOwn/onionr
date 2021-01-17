@@ -10,8 +10,8 @@ import os
 import unpaddedbase32
 
 from coredb import blockmetadb
-from onionrblocks import onionrblockapi
-from onionrblocks import insert
+from oldblocks import onionrblockapi
+from oldblocks import insert
 
 # Import types. Just for type hiting
 from onionrtypes import UserID, DeterministicKeyPassphrase, BlockHash

@@ -70,7 +70,7 @@ createdirs.create_dirs()
 import bigbrother  # noqa
 from onionrcommands import parser  # noqa
 from onionrplugins import onionrevents as events  # noqa
-from onionrblocks.deleteplaintext import delete_plaintext_no_blacklist  # noqa
+from oldblocks.deleteplaintext import delete_plaintext_no_blacklist  # noqa
 
 setup.setup_config()
 

@@ -14,7 +14,7 @@ createdirs.create_dirs()
 import onionrstorage
 from onionrutils import bytesconverter
 import onionrcrypto
-from onionrblocks import onionrblockapi
+from oldblocks import onionrblockapi
 
 from onionrsetup import setup_config, setup_default_plugins
 
@@ -25,20 +25,20 @@ import config
 config.set("general.minimum_block_pow", 2)
 config.set('general.minimum_send_pow', 2)
 config.save()
-import onionrblocks
+import oldblocks
 
 class OnionrBlockTests(unittest.TestCase):
     def test_plaintext_insert(self):
 
         message = 'hello world'
-        bl = onionrblocks.insert(message)
+        bl = oldblocks.insert(message)
         self.assertTrue(bl.startswith('0'))
         self.assertIn(bytesconverter.str_to_bytes(message), onionrstorage.getData(bl))
 
     def test_encrypted_insert(self):
 
         message = 'hello world2'
-        bl = onionrblocks.insert(message, asymPeer=onionrcrypto.pub_key)
+        bl = oldblocks.insert(message, asymPeer=onionrcrypto.pub_key)
         self.assertIn(bytesconverter.str_to_bytes(message), onionrblockapi.Block(bl, decrypt=True).bcontent)
 
 unittest.main()

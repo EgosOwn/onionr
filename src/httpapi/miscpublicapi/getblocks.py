@@ -8,8 +8,8 @@ import config
 from onionrutils import bytesconverter, stringvalidators
 from coredb import blockmetadb
 from utils import reconstructhash
-from onionrblocks import BlockList
-from onionrblocks.onionrblockapi import Block
+from oldblocks import BlockList
+from oldblocks.onionrblockapi import Block
 from .. import apiutils
 """
     This program is free software: you can redistribute it and/or modify

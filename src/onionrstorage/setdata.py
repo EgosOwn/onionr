@@ -9,7 +9,7 @@ import onionrstorage
 import onionrexceptions
 import onionrcrypto as crypto
 import filepaths
-from onionrblocks import storagecounter, blockmetadata
+from oldblocks import storagecounter, blockmetadata
 from coredb import dbfiles
 from onionrutils import bytesconverter
 from etc.onionrvalues import DATABASE_LOCK_TIMEOUT

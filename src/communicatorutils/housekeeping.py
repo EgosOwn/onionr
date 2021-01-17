@@ -15,8 +15,8 @@ from onionrutils import epoch
 from coredb import blockmetadb, dbfiles
 import onionrstorage
 from onionrstorage import removeblock
-from onionrblocks import onionrblacklist
-from onionrblocks.storagecounter import StorageCounter
+from oldblocks import onionrblacklist
+from oldblocks.storagecounter import StorageCounter
 from etc.onionrvalues import DATABASE_LOCK_TIMEOUT
 from onionrproofs import hashMeetsDifficulty
 """
@@ -103,6 +103,6 @@ def clean_blocks_not_meeting_pow(shared_state):
     for block in block_list:
         if not hashMeetsDifficulty(block):
             logger.warn(
-                f"Deleting block {block} because it was stored" + 
+                f"Deleting block {block} because it was stored" +
                 "with a POW level smaller than current.", terminal=True)
             __purge_block(shared_state, block)

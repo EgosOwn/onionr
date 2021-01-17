@@ -1,7 +1,7 @@
 import os
 import time
 
-import onionrblocks
+import oldblocks
 import logger
 import coredb
 from communicator import peeraction
@@ -11,7 +11,7 @@ def _check_remote_node(testmanager):
 
 def insert_bin_test(testmanager):
     data = os.urandom(32)
-    b_hash = onionrblocks.insert(data)
+    b_hash = oldblocks.insert(data)
     time.sleep(0.3)
     if b_hash not in testmanager._too_many.get_by_string("PublicAPI").hideBlocks:
         raise ValueError("Block not hidden")

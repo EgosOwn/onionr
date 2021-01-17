@@ -21,7 +21,7 @@ import sqlite3
 import logger
 from onionrutils import epoch
 from . import scoresortedpeerlist, peerprofiles
-from onionrblocks import onionrblacklist
+from oldblocks import onionrblacklist
 import config
 from coredb import keydb
 def peer_cleanup():
@@ -30,7 +30,7 @@ def peer_cleanup():
     blacklist = onionrblacklist.OnionrBlackList()
     adders = scoresortedpeerlist.get_score_sorted_peer_list()
     adders.reverse()
-    
+
     if len(adders) > 1:
 
         min_score = int(config.get('peers.minimum_score', -100))

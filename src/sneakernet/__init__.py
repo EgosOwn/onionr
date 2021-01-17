@@ -10,7 +10,7 @@ from watchdog.events import FileSystemEventHandler
 import config
 from filepaths import block_data_location
 from etc.onionrvalues import BLOCK_EXPORT_FILE_EXT
-from onionrblocks.blockimporter import import_block_from_data
+from oldblocks.blockimporter import import_block_from_data
 import onionrexceptions
 """
     This program is free software: you can redistribute it and/or modify

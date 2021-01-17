@@ -5,7 +5,7 @@ Add an entry to the block metadata database
 import sqlite3
 import secrets
 from onionrutils import epoch
-from onionrblocks import blockmetadata
+from oldblocks import blockmetadata
 from etc import onionrvalues
 from .. import dbfiles
 from onionrexceptions import BlockMetaEntryExists

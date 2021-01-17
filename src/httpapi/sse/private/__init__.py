@@ -9,7 +9,7 @@ from gevent import sleep
 import gevent
 import ujson
 
-from onionrblocks.onionrblockapi import Block
+from oldblocks.onionrblockapi import Block
 from coredb.dbfiles import block_meta_db
 from coredb.blockmetadb import get_block_list
 from onionrutils.epoch import get_epoch

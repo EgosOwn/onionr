@@ -10,7 +10,7 @@ import unpaddedbase32
 
 from flask import Blueprint, Response, request, abort
 
-from onionrblocks import onionrblockapi
+from oldblocks import onionrblockapi
 import onionrexceptions
 from onionrutils import stringvalidators
 from onionrutils import mnemonickeys

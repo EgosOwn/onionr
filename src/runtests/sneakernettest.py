@@ -1,7 +1,7 @@
 import os
 from shutil import move
 
-from onionrblocks import insert
+from oldblocks import insert
 from onionrstorage import deleteBlock
 from onionrcommands.exportblocks import export_block
 from filepaths import export_location, block_data_location, data_nonce_file

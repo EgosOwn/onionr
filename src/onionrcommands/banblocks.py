@@ -7,7 +7,7 @@ import logger
 from onionrutils import stringvalidators
 from onionrstorage import removeblock
 from onionrstorage import deleteBlock
-from onionrblocks import onionrblacklist
+from oldblocks import onionrblacklist
 from utils import reconstructhash
 """
     This program is free software: you can redistribute it and/or modify

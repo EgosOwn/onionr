@@ -2,7 +2,7 @@ import os
 
 from gevent import sleep
 
-from onionrblocks import insert
+from oldblocks import insert
 import logger
 from coredb.blockmetadb import get_block_list
 from onionrutils import epoch

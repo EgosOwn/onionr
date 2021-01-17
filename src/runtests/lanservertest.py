@@ -2,7 +2,7 @@ import requests
 
 from lan.getip import best_ip
 
-from onionrblocks import insert, onionrblockapi
+from oldblocks import insert, onionrblockapi
 from gevent import sleep
 from coredb import blockmetadb
 from onionrutils.epoch import get_epoch

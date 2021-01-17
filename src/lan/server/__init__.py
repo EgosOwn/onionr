@@ -12,7 +12,7 @@ from flask import Response
 from flask import request
 from flask import abort
 
-from onionrblocks.onionrblockapi import Block
+from oldblocks.onionrblockapi import Block
 from httpapi.fdsafehandler import FDSafeHandler
 from netcontroller import get_open_port
 import config

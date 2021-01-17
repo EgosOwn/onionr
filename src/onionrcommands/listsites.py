@@ -3,7 +3,7 @@
 Dumb listing of Onionr sites
 """
 from coredb.blockmetadb import get_blocks_by_type
-from onionrblocks.onionrblockapi import Block
+from oldblocks.onionrblockapi import Block
 import logger
 """
     This program is free software: you can redistribute it and/or modify
