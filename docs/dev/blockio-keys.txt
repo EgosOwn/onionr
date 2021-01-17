@@ -1,0 +1,6 @@
+Blockio wraps safedb, the new key value database module
+
+This is how the keys are setup and what they are for:
+
+bl-{type}: list of hashes for blocks for every stored block type
+{block hash}: block data
