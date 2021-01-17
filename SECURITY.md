@@ -22,13 +22,13 @@ The following exploits are of particular interest:
 * Cryptography/protocol issues
 * Denying nodes access to the network by segmenting them out with Sybil nodes
 
-We do not consider non-network based same-machine attacks to be very significant, but we are still willing to listen.
+We do not consider OS user-level side channel attacks on a shared machine to be very significant, but we are still willing to listen.
 
 # Rewards
 
-Onionr is a student-owned hobby project, resources are not available for large rewards.
+Onionr is a hobbyist project, resources are not available for monetary rewards.
 
-Stickers or other small rewards are available. We reserve the right to refuse rewards for any reason.
+Shirts/stickers or other small rewards are available. We reserve the right to refuse rewards for any reason.
 
 Public recognition can be given upon request.
 
@@ -36,4 +36,4 @@ Public recognition can be given upon request.
 
 Email: beardog [ at ] mailbox.org
 
-PGP (optional): F61A 4DBB 0B3D F172 1F65  0EDF 0D41 4D0F E405 B63B
+Keybase: beardog
