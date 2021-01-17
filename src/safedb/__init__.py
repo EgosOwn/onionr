@@ -30,7 +30,7 @@ class SafeDB:
     """Wrapper around dbm to optionally encrypt db values."""
 
     def get(self, key: Union[str, bytes, bytearray]) -> bytes:
-        if self.protected:
+        if not self.protected:
             return self.db_conn[key]
         return unprotect_string(self.db_conn[key])
 
