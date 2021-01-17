@@ -2,9 +2,7 @@
 
 Store blocks and cache meta info such as block type
 """
-from typing import TYPE_CHECKING, Union, NewType
-
-from safedb import DBProtectionOpeningModeError
+from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from kasten import Kasten
@@ -24,10 +22,20 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-RawBlock = NewType('RawBlock', bytes)
 
+def store_block(block: 'Kasten', safe_db: 'SafeDB'):
 
-def store_block(block: Kasten, safe_db: SafeDB):
-    
+    block_type = block.get_data_type()
+    try:
+        block_list_for_type = safe_db.get(f'bl-{block_type}')
+        if block.id in block_list_for_type:
+            raise ValueError("Cannot store duplicate block")
+    except KeyError:
+        block_list_for_type = b''
+
     safe_db.put(block.id, block.get_packed())
+    # Append the block to the list of blocks for this given type
+    block_list_for_type += block.id
+    safe_db.put(f'bl-{block_type}', block_list_for_type)
+
 
