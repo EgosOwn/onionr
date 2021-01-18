@@ -415,7 +415,7 @@ for (var i = 0; i < document.getElementsByClassName('refresh').length; i++){
     document.getElementsByClassName('refresh')[i].style.float = 'right'
 }
 
-fetch('/friends/list', {
+fetch('/friends/listall', {
     headers: {
       "token": webpass
     }})

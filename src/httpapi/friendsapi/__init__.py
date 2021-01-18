@@ -24,6 +24,15 @@ from coredb import keydb
 friends = Blueprint('friends', __name__)
 
 
+@friends.route('/friends/listall')
+def list_all():
+    pubkey_list = {}
+    friend_list = contactmanager.ContactManager.list_friends(0)
+    for friend in friend_list:
+        pubkey_list[friend.publicKey] = {'name': friend.get_info('name')}
+    return json.dumps(pubkey_list)
+
+
 @friends.route('/friends/list')
 def list_friends():
     pubkey_list = {}

@@ -252,8 +252,8 @@ class OnionrUser:
         return True
 
     @classmethod
-    def list_friends(cls):
+    def list_friends(cls, trust_level=1):
         friendList = []
-        for x in keydb.listkeys.list_peers(trust=1):
+        for x in keydb.listkeys.list_peers(trust=trust_level):
             friendList.append(cls(x))
         return list(friendList)
