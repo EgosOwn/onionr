@@ -8,6 +8,7 @@ from typing import Union
 from filepaths import onboarding_mark_file
 from onionrtypes import JSONSerializable
 from onionrtypes import OnboardingConfig
+from onionrplugins import onionrevents
 import config
 """
     This program is free software: you can redistribute it and/or modify
@@ -68,12 +69,4 @@ def set_config_from_onboarding(config_settings: OnboardingConfig):
                get(config_settings, 'plainContrib'))
 
     config.set('onboarding.done', True, savefile=True)
-
-
-def set_onboarding_finished():
-    """Create the onboarding completed setting file"""
-    Path(onboarding_mark_file).touch()
-
-
-def is_onboarding_finished() -> bool:
-    return True
+    onionrevents.event("onboard", config_settings)
