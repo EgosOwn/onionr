@@ -34,6 +34,8 @@ def on_onboard(api, data=None):
     for entry in username_and_keys:
         username, key = entry.split(',')
         username = username.strip()
+        if not username:
+            continue
         key = key.strip()
         user = contactmanager.ContactManager(key, saveUser=True)
         user.set_info('name', username)
