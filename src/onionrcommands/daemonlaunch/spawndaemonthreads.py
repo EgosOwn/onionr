@@ -23,6 +23,7 @@ if TYPE_CHECKING:
 
 def spawn_client_threads(shared_state: 'TooMany'):
     kv: 'DeadSimpleKV' = shared_state.get_by_string('DeadSimpleKV')
+    config.reload()
     add_onionr_thread(get_online_peers, (shared_state,), 3, 1)
 
     add_onionr_thread(
