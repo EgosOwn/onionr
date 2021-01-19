@@ -4,11 +4,12 @@ Setup config from onboarding choices
 """
 from pathlib import Path
 from typing import Union
+from threading import Thread
+from time import sleep
 
-from filepaths import onboarding_mark_file
 from onionrtypes import JSONSerializable
 from onionrtypes import OnboardingConfig
-from onionrplugins import onionrevents
+
 import config
 """
     This program is free software: you can redistribute it and/or modify
@@ -69,4 +70,4 @@ def set_config_from_onboarding(config_settings: OnboardingConfig):
                get(config_settings, 'plainContrib'))
 
     config.set('onboarding.done', True, savefile=True)
-    onionrevents.event("onboard", config_settings)
+

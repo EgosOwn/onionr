@@ -52,12 +52,11 @@ document.getElementById('onboardingForm').onsubmit = function(e){
     submitInfo.networkContrib = getCheckValue('networkContribution')
     submitInfo.plainContrib = getCheckValue('networkContributionPlain')
     submitInfo.donate = getCheckValue('donate')
-    //submitInfo.deterministic = getCheckValue('useDeterministic')
     submitInfo.mail = getCheckValue('useMail')
     submitInfo.circles = getCheckValue('useCircles')
     submitInfo.useDark = getCheckValue('useDarkTheme')
-    submitInfo.preloadUsernames = getCheckValue('usernames')
     submitInfo.optimize = getCheckValue('optimize')
+
 
     if (submitInfo.donate){
         openDonateModal(submitInfo)

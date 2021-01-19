@@ -6,8 +6,13 @@ Preset Onionr usernames
 import locale
 locale.setlocale(locale.LC_ALL, '')
 
-from utils import identifyhome
+import os
+import sys
+sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
+import logger
 from onionrusers import contactmanager
+from utils import identifyhome
+import config
 """
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -24,13 +29,19 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
 plugin_name = 'usernames'
+PLUGIN_VERSION = '0.0.1'
 
 
-def on_onboard(api, data=None):
-    username_file = identifyhome.identify_home() + f'plugins/{plugin_name}/usernames.dat'
+def on_init(api, data = None):
+    config.reload()
+    if config.get('onboarding.done', True):
+        return
+
+    username_file = identifyhome.identify_home() + 'plugins/usernames/usernames.dat'
     with open(username_file, 'r') as usernames:
         username_and_keys = usernames.readlines()
 
+    logger.info("Setting preset usernames", terminal=True)
     for entry in username_and_keys:
         username, key = entry.split(',')
         username = username.strip()
@@ -39,6 +50,4 @@ def on_onboard(api, data=None):
         key = key.strip()
         user = contactmanager.ContactManager(key, saveUser=True)
         user.set_info('name', username)
-
-
 
