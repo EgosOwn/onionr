@@ -126,9 +126,9 @@ jinja2==2.11.1 \
     --hash=sha256:93187ffbc7808079673ef52771baa950426fd664d3aad1d0fa3e95644360e250 \
     --hash=sha256:b0eaf100007721b5c16c1fc1eecb87409464edc10469ddc9a22a27a99123be49
     # via flask
-kasten==2.0.0 \
-    --hash=sha256:14e2f3b271c0186f4d31c7438f2b9e9406cadf73549ba7003a3fd452604c35e8 \
-    --hash=sha256:64cf38521fd5faf89abd71839a3dde8f687536c56c699d7adb3aa31af8c9c97c
+kasten==2.0.1 \
+    --hash=sha256:067ebb1b17d3b2684956d575b5c9822ed48d1879daf11df9f85d2514fe1961db \
+    --hash=sha256:9080f10b16f1b16247823518a5023a473b0493eac6fe46341f3d17fa4e1bed64
     # via onionrblocks
 markupsafe==1.1.1 \
     --hash=sha256:00bc623926325b26bb9605ae9eae8a215691f33cae5df11ca5424f06f2d1f473 \
@@ -165,9 +165,8 @@ markupsafe==1.1.1 \
     --hash=sha256:e249096428b3ae81b08327a63a485ad0878de3fb939049038579ac0ef61e17e7 \
     --hash=sha256:e8313f01ba26fbbe36c7be1966a7b7424942f670f38e666995b88d012765b9be
     # via jinja2
-mimcvdf==1.1.0 \
-    --hash=sha256:97a4ccdebb58352c64c268d2e57ef8817c9fe4ac3dcc922410bfcc72033f344a \
-    --hash=sha256:ae47c79bfd6b7b76077c8ce3301a48a7c10a609d8a882e7bd785e2ef851ecd28
+mimcvdf==1.2.0 \
+    --hash=sha256:647009b6f13173ac84a683b491566c8b63bc3dd5d60edd1e109b41cd311e2c08
     # via kasten
 msgpack==1.0.2 \
     --hash=sha256:0cb94ee48675a45d3b86e61d13c1e6f1696f0183f0715544976356ff86f741d9 \
@@ -203,9 +202,9 @@ niceware==0.2.1 \
     --hash=sha256:0f8b192f2a1e800e068474f6e208be9c7e2857664b33a96f4045340de4e5c69c \
     --hash=sha256:cf2dc0e1567d36d067c61b32fed0f1b9c4534ed511f9eeead4ba548d03b5c9eb
     # via -r requirements.in
-onionrblocks==0.0.2 \
-    --hash=sha256:24ec41e56627a901566a35ddae50431976282e8eba0530406d8a853b6230d593 \
-    --hash=sha256:725100dfbc778aa2d41708a85605c20ca9b49748f6aac58da0cdc7178c32b44f
+onionrblocks==0.0.3 \
+    --hash=sha256:2149525bcf7d631b1db276ca7c6838533e6939e8fb221d74f691c049a4e1926e \
+    --hash=sha256:b2f009637ca730ee7498fdc077a48e53211d3a21d7eef810d4f3b5670aec3369
     # via -r requirements.in
 psutil==5.8.0 \
     --hash=sha256:0066a82f7b1b37d334e68697faba68e5ad5e858279fd6351c8ca6024e8d6ba64 \
