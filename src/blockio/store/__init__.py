@@ -24,6 +24,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
 def store_block(block: 'Kasten', safe_db: 'SafeDB'):
+    # This does not handle validation of blocks
+    # safe_db is initialized by the daemon when starting normally
+    # so any other commands need to initialize it seperately
 
     block_type = block.get_data_type()
     try:
@@ -37,5 +40,6 @@ def store_block(block: 'Kasten', safe_db: 'SafeDB'):
     # Append the block to the list of blocks for this given type
     block_list_for_type += block.id
     safe_db.put(f'bl-{block_type}', block_list_for_type)
+    
 
 

@@ -126,9 +126,9 @@ jinja2==2.11.1 \
     --hash=sha256:93187ffbc7808079673ef52771baa950426fd664d3aad1d0fa3e95644360e250 \
     --hash=sha256:b0eaf100007721b5c16c1fc1eecb87409464edc10469ddc9a22a27a99123be49
     # via flask
-kasten==2.0.1 \
-    --hash=sha256:067ebb1b17d3b2684956d575b5c9822ed48d1879daf11df9f85d2514fe1961db \
-    --hash=sha256:9080f10b16f1b16247823518a5023a473b0493eac6fe46341f3d17fa4e1bed64
+kasten==3.0.0 \
+    --hash=sha256:52894af46d6e1339f0d5fa8961892b292f99176848bce11877fe4a435b6782e5 \
+    --hash=sha256:b22ebdc5f475c2ef9ab74abc36552add0b37732a7ce2be6bd7977ee41b2163b4
     # via onionrblocks
 markupsafe==1.1.1 \
     --hash=sha256:00bc623926325b26bb9605ae9eae8a215691f33cae5df11ca5424f06f2d1f473 \
@@ -202,9 +202,9 @@ niceware==0.2.1 \
     --hash=sha256:0f8b192f2a1e800e068474f6e208be9c7e2857664b33a96f4045340de4e5c69c \
     --hash=sha256:cf2dc0e1567d36d067c61b32fed0f1b9c4534ed511f9eeead4ba548d03b5c9eb
     # via -r requirements.in
-onionrblocks==0.0.3 \
-    --hash=sha256:2149525bcf7d631b1db276ca7c6838533e6939e8fb221d74f691c049a4e1926e \
-    --hash=sha256:b2f009637ca730ee7498fdc077a48e53211d3a21d7eef810d4f3b5670aec3369
+onionrblocks==2.0.0 \
+    --hash=sha256:2ffe5e75d98ab759496cbb1fac8c6d71652e27ab8df049d45d41e21cabffed0d \
+    --hash=sha256:5d633c54ee5b116cf953427bad2b4601da8a777d2dbe72cd9f711b3c5c565aa0
     # via -r requirements.in
 psutil==5.8.0 \
     --hash=sha256:0066a82f7b1b37d334e68697faba68e5ad5e858279fd6351c8ca6024e8d6ba64 \
@@ -256,7 +256,9 @@ pynacl==1.4.0 \
     --hash=sha256:d452a6746f0a7e11121e64625109bc4468fc3100452817001dbe018bb8b08514 \
     --hash=sha256:ea6841bc3a76fa4942ce00f3bda7d436fda21e2d91602b9e21b7ca9ecab8f3ff \
     --hash=sha256:f8851ab9041756003119368c1e6cd0b9c631f46d686b3904b18c0139f4419f80
-    # via -r requirements.in
+    # via
+    #   -r requirements.in
+    #   onionrblocks
 pysocks==1.7.1 \
     --hash=sha256:08e69f092cc6dbe92a0fdd16eeb9b9ffbc13cadfe5ca4c7bd92ffb078b293299 \
     --hash=sha256:2725bd0a9925919b9b51739eea5f9e2bae91e83288108a9ad338b2e3a4435ee5 \
