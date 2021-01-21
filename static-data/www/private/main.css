@@ -14,11 +14,6 @@
     margin-top: 1em;
 }
 
-#connectedNodes{
-    overflow-y: hidden;
-    max-height: 300px;
-    max-width: 300px;
-}
 
 #configToggle, #configContent{
     margin-left: 1em;
@@ -61,3 +56,7 @@
   .torTransportField {
       margin-top: 2em;
   }
+
+  #connectedNodesIframe{
+    overflow: hidden;
+}

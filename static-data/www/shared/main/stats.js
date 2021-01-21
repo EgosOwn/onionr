@@ -96,12 +96,11 @@ var getStats = function(){
         .then(function(stats) {
             uptimeDisplay.innerText = seconds2time(stats['uptime'])
             connectedNodes = stats['connectedNodes'].split('\n')
-            connectedDisplay.innerText = ''
+            document.getElementById('connectedNodesIframe').srcdoc = '<pre>'
             for (x = 0; x < connectedNodes.length; x++){
-                if (! connectedDisplay.innerText.includes(connectedNodes[x])){
-                    connectedDisplay.innerText += '🧅 ' + connectedNodes[x] + '\n'
-                }
+                document.getElementById('connectedNodesIframe').srcdoc += '🧅 ' + connectedNodes[x] + '\n'
             }
+            document.getElementById('connectedNodesIframe').srcdoc += '</pre>'
             storedBlockDisplay.innerText = stats['blockCount']
             queuedBlockDisplay.innerText = stats['blockQueueCount']
             document.getElementById('threads').innerText = stats['threads']
