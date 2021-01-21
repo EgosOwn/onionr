@@ -17,10 +17,17 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>
 */
 apiOnline = true
+lastMessageShown = new Date()
+everShown = false
 async function doPing(){
     out = setTimeout(function(){
+        if (everShown && new Date() - lastMessageShown < 90000){
+            return
+        }
+        everShown = true
         if (apiOnline){
-        PNotify.notice('Connection lost with API server')
+            lastMessageShown = new Date()
+            PNotify.notice('Connection lost with API server')
         }
         apiOnline = false
     }, 10000)
