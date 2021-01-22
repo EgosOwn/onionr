@@ -91,7 +91,7 @@ class NetController:
                     if '100' not in line.decode():
                         logger.info(line.decode().strip(), terminal=True)
                 if 'bootstrapped 100' in line.decode().lower():
-                    logger.info(line.decode())
+                    logger.info(line.decode(), terminal=True)
                     break
                 elif 'opening socks listener' in line.decode().lower():
                     logger.debug(line.decode().replace('\n', ''))

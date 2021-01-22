@@ -54,9 +54,10 @@ class ClientAPISecurity:
             """Validate request has set password & is the correct hostname."""
             # For the purpose of preventing DNS rebinding attacks
             localhost = True
-            if request.host != '%s:%s' % \
-                    (client_api.host, client_api.bindPort):
-                localhost = False
+            if client_api.host != '0.0.0.0':
+                if request.host != '%s:%s' % \
+                        (client_api.host, client_api.bindPort):
+                    localhost = False
 
             if not localhost and public_remote_enabled:
                 if request.host not in public_remote_hostnames:
