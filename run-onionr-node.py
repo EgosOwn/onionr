@@ -80,7 +80,7 @@ parser.add_argument(
 args = parser.parse_args()
 
 p = Popen([sub_script, 'version'])
-p.wait()
+p.communicate()
 print("Configuring Onionr before starting daemon")
 from filepaths import config_file, keys_file
 from coredb import blockmetadb
