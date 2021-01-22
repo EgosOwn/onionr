@@ -121,8 +121,8 @@ class NetController:
         with open(self.dataDir + 'torPid.txt', 'w') as tor_pid_file:
             tor_pid_file.write(str(tor.pid))
 
-        multiprocessing.Process(target=watchdog.watchdog,
-                                args=[os.getpid(), tor.pid], daemon=True).start()
+        #multiprocessing.Process(target=watchdog.watchdog,
+        #                        args=[os.getpid(), tor.pid], daemon=True).start()
 
         logger.info('Finished starting Tor.', terminal=True)
 
