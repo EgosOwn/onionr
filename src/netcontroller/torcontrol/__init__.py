@@ -97,9 +97,11 @@ class NetController:
                     logger.debug(line.decode().replace('\n', ''))
                 else:
                     if 'err' in line.decode():
-                        logger.error(line.decode().replace('\n', ''))
+                        logger.error(
+                            line.decode().replace('\n', ''), terminal=True)
                     elif 'warn' in line.decode():
-                        logger.warn(line.decode().replace('\n', ''))
+                        logger.warn(
+                            line.decode().replace('\n', ''), terminal=True)
                     else:
                         logger.debug(line.decode().replace('\n', ''))
             else:
