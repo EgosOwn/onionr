@@ -202,9 +202,9 @@ niceware==0.2.1 \
     --hash=sha256:0f8b192f2a1e800e068474f6e208be9c7e2857664b33a96f4045340de4e5c69c \
     --hash=sha256:cf2dc0e1567d36d067c61b32fed0f1b9c4534ed511f9eeead4ba548d03b5c9eb
     # via -r requirements.in
-onionrblocks==2.0.0 \
-    --hash=sha256:2ffe5e75d98ab759496cbb1fac8c6d71652e27ab8df049d45d41e21cabffed0d \
-    --hash=sha256:5d633c54ee5b116cf953427bad2b4601da8a777d2dbe72cd9f711b3c5c565aa0
+onionrblocks==3.0.0 \
+    --hash=sha256:9fbe0e62c0b51c06eb5a0184bcdf36ba0f0ae0d684627502885d6332f433364c \
+    --hash=sha256:d8a4470b15559a1c76e3023e810dc5722838a365b5c7706d052fbf53463c4eab
     # via -r requirements.in
 psutil==5.8.0 \
     --hash=sha256:0066a82f7b1b37d334e68697faba68e5ad5e858279fd6351c8ca6024e8d6ba64 \
