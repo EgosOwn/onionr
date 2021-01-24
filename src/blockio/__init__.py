@@ -3,6 +3,7 @@
 Wrap safedb for storing and fetching blocks
 """
 from .store import store_block
+from .load import load_block, list_blocks_by_type
 """
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

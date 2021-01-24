@@ -2,11 +2,12 @@
 
 Get blocks from safedb
 """
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, List
 
 from kasten import Kasten
 
 if TYPE_CHECKING:
+    from kasten.types import BlockChecksumBytes
     from safedb import SafeDB
 """
 This program is free software: you can redistribute it and/or modify
@@ -23,11 +24,13 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
+
 def load_block(block: 'BlockChecksumBytes', safe_db: 'SafeDB') -> Kasten:
-    kasten_generator = get_generator
-    return Kasten()
+    return Kasten(
+        block, safe_db.get(block), generator=None, auto_check_generator=False)
 
 
-#def list_blocks_by_type(block_type: str, safe_db: 'SafeDB'):
-
-
+def list_blocks_by_type(
+        block_type: str, safe_db: 'SafeDB') -> List['BlockChecksumBytes']:
+    blocks = safe_db.get(f'bl-{block_type}')
+    return zip(*[iter(blocks)]*64)

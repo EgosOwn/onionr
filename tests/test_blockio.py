@@ -16,6 +16,7 @@ setup_default_plugins()
 
 import kasten
 from onionrblocks.generators import anonvdf
+from onionrblocks import blockcreator
 from utils import identifyhome
 
 import safedb
@@ -47,6 +48,18 @@ class TestBlockIO(unittest.TestCase):
         db.close()
         _remove_db(db_file)
 
+    def test_list_blocks(self):
+        db_file = identifyhome.identify_home() + 'test.db'
+        db = safedb.SafeDB(db_file)
+        expected_list = []
+        for i in range(10):
+            bl = blockcreator.create_anonvdf_block(b'test' + int(i).to_bytes(1, 'big'), 'txt', 60)
+            blockio.store_block(bl, db)
+            expected_list.append(bl.id)
+        l = blockio.list_blocks_by_type('txt', db)
+        self.assertEqual(len(list(l)), len(expected_list))
+        for i in l:
+            self.assertIn(bytes(i), expected_list)
 
 
 unittest.main()
