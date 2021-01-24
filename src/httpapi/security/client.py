@@ -3,6 +3,7 @@
 Process incoming requests to the client api server to validate
 that they are legitimate and not DNSR/XSRF or other local adversary
 """
+from ipaddress import ip_address
 import hmac
 
 from flask import Blueprint, request, abort, g
@@ -53,21 +54,22 @@ class ClientAPISecurity:
         def validate_request():
             """Validate request has set password & is the correct hostname."""
             # For the purpose of preventing DNS rebinding attacks
-            localhost = True
-            if request.host != '%s:%s' % \
-                    (client_api.host, client_api.bindPort):
-                localhost = False
+            if ip_address(client_api.host).is_loopback:
+                localhost = True
+                if request.host != '%s:%s' % \
+                        (client_api.host, client_api.bindPort):
+                    localhost = False
 
-            if not localhost and public_remote_enabled:
-                if request.host not in public_remote_hostnames:
-                    logger.warn(
-                        f'{request.host} not in {public_remote_hostnames}')
-                    abort(403)
-            else:
-                if not localhost:
-                    logger.warn(
-                        f'Possible DNS rebinding attack by {request.host}')
-                    abort(403)
+                if not localhost and public_remote_enabled:
+                    if request.host not in public_remote_hostnames:
+                        logger.warn(
+                            f'{request.host} not in {public_remote_hostnames}')
+                        abort(403)
+                else:
+                    if not localhost:
+                        logger.warn(
+                            f'Possible DNS rebinding attack by {request.host}')
+                        abort(403)
 
             # Add shared objects
             try:

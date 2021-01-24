@@ -9,10 +9,8 @@ from subprocess import DEVNULL
 import ujson
 from psutil import Popen
 from psutil import Process
-import psutil
 
 import sys
-import curses
 
 script_dir = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(script_dir + '/src/')
@@ -21,36 +19,6 @@ from etc import onionrvalues
 
 
 sub_script = script_dir + '/' + onionrvalues.SCRIPT_NAME
-
-
-def show_info(p: Process):
-    def pbar(window):
-        window.addstr(8, 10, "Onionr statistics")
-        window.addstr(9, 10, "-" * 17)
-        curses.curs_set(0)
-        while True:
-            threads = p.num_threads()
-            open_files = len(p.open_files())
-            cpu_percent = p.cpu_percent()
-            block_count = len(blockmetadb.get_block_list())
-            for proc in p.children(recursive=True):
-                threads += proc.num_threads()
-                cpu_percent += proc.cpu_percent()
-                try:
-                    open_files += len(proc.open_files())
-                except psutil.AccessDenied:
-                    pass
-            cpu_percent = cpu_percent * 100
-            window.addstr(11, 10, f"Threads: {threads}")
-            window.addstr(10, 10, f"Open files: {open_files}")
-            window.addstr(12, 10, f"CPU: {cpu_percent}%")
-            window.addstr(13, 10, f"Blocks: {block_count}")
-            window.refresh()
-            sleep(0.5)
-    sleep(15)
-    curses.wrapper(pbar)
-    while True:
-        sleep(1)
 
 
 parser = argparse.ArgumentParser()
@@ -111,8 +79,9 @@ parser.add_argument(
 
 args = parser.parse_args()
 
-p = Popen([sub_script, 'version'], stdout=DEVNULL)
+p = Popen([sub_script, 'version'])
 p.wait()
+print("Configuring Onionr before starting daemon")
 from filepaths import config_file, keys_file
 from coredb import blockmetadb
 import onionrcrypto
@@ -172,13 +141,10 @@ with open(config_file, 'w') as cf:
     cf.write(ujson.dumps(config, reject_bytes=False))
 
 if args.open_ui:
-    p = Popen([sub_script, 'start'], stdout=DEVNULL)
+    p = Popen([sub_script, 'start'])
     sleep(2)
-    Popen([sub_script, 'openhome'], stdout=DEVNULL)
+    Popen([sub_script, 'openhome'])
 else:
-    p = Popen([sub_script, 'start'], stdout=DEVNULL)
+    p = Popen([sub_script, 'start'])
 
-p = p.children()[0]
-if args.show_stats:
-    Thread(target=show_info, args=[p], daemon=True).start()
 p.wait()

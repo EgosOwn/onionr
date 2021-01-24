@@ -91,15 +91,17 @@ class NetController:
                     if '100' not in line.decode():
                         logger.info(line.decode().strip(), terminal=True)
                 if 'bootstrapped 100' in line.decode().lower():
-                    logger.info(line.decode())
+                    logger.info(line.decode(), terminal=True)
                     break
                 elif 'opening socks listener' in line.decode().lower():
                     logger.debug(line.decode().replace('\n', ''))
                 else:
                     if 'err' in line.decode():
-                        logger.error(line.decode().replace('\n', ''))
+                        logger.error(
+                            line.decode().replace('\n', ''), terminal=True)
                     elif 'warn' in line.decode():
-                        logger.warn(line.decode().replace('\n', ''))
+                        logger.warn(
+                            line.decode().replace('\n', ''), terminal=True)
                     else:
                         logger.debug(line.decode().replace('\n', ''))
             else:
@@ -119,8 +121,8 @@ class NetController:
         with open(self.dataDir + 'torPid.txt', 'w') as tor_pid_file:
             tor_pid_file.write(str(tor.pid))
 
-        multiprocessing.Process(target=watchdog.watchdog,
-                                args=[os.getpid(), tor.pid], daemon=True).start()
+        #multiprocessing.Process(target=watchdog.watchdog,
+        #                        args=[os.getpid(), tor.pid], daemon=True).start()
 
         logger.info('Finished starting Tor.', terminal=True)
 
