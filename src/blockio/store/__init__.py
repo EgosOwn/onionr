@@ -41,4 +41,3 @@ def store_block(block: 'Kasten', safe_db: 'SafeDB'):
     block_list_for_type += block.id
     safe_db.put(f'bl-{block_type}', block_list_for_type)
 
-

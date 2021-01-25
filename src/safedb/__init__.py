@@ -68,5 +68,3 @@ class SafeDB:
                 pass
 
         self.protected = protected
-
-
