@@ -9,7 +9,6 @@ from onionrblocks.generators.anonvdf import AnonVDFGenerator
 from onionrblocks.exceptions import BlockExpired
 
 if TYPE_CHECKING:
-    from kasten.types import BlockChecksumBytes
     from safedb import SafeDB
 """
 This program is free software: you can redistribute it and/or modify
@@ -30,6 +29,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 def clean_expired_blocks(db: 'SafeDB'):
     key = db.db_conn.firstkey()
     delete_list = set()
+    # Scan all database keys and check kasten objs if they are a hash
     while key:
         try:
             if key.startswith(b'bl-') or key.startswith(b'enc'):
@@ -37,7 +37,12 @@ def clean_expired_blocks(db: 'SafeDB'):
                 continue
             Kasten(key, db.get(key), AnonVDFGenerator)
         except BlockExpired:
+            block_type = Kasten(
+                key, db.get(key),
+                None, auto_check_generator=False).get_data_type()
+            db.db_conn[f'bl-{block_type}'] = \
+                db.db_conn[f'bl-{block_type}'].replace(key, b'')
             delete_list.add(key)
         key = db.db_conn.nextkey(key)
     for key in delete_list:
-        del db[key]
+        del db.db_conn[key]

@@ -1,10 +1,10 @@
 """Onionr - Private P2P Communication.
 
-Wrap safedb for storing and fetching blocks
+Delete block type lists that are empty
 """
-from .store import store_block
-from .load import load_block, list_blocks_by_type
-from .clean import clean_expired_blocks, clean_block_list_entries
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from safedb import SafeDB
 """
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -19,3 +19,15 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
+
+
+def clean_block_list_entries(db: 'SafeDB'):
+    key = db.db_conn.firstkey()
+    delete_keys = []
+    while key:
+        if key.startswith(b'bl-'):
+            if not db.get(key):
+                delete_keys.append(key)
+        key = db.db_conn.nextkey(key)
+    for key in delete_keys:
+        del db.db_conn[key]

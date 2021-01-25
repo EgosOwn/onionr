@@ -44,7 +44,7 @@ class TestSafeDB(unittest.TestCase):
             db['enc'] = b'1'
         db = safedb.SafeDB(db_path, protected=True)
         db.close()
-        self.assertRaises(ValueError, safedb.SafeDB, db_path, protected=False)
+        self.assertRaises(safedb.DBProtectionOpeningModeError, safedb.SafeDB, db_path, protected=False)
 
     def test_db_open_unprotected(self):
         _remove_db()
@@ -52,7 +52,7 @@ class TestSafeDB(unittest.TestCase):
             db['enc'] = b'0'
         db = safedb.SafeDB(db_path, protected=False)
         db.close()
-        self.assertRaises(ValueError, safedb.SafeDB, db_path, protected=True)
+        self.assertRaises(safedb.DBProtectionOpeningModeError, safedb.SafeDB, db_path, protected=True)
 
     def test_db_put_unprotected(self):
         _remove_db()
@@ -60,8 +60,6 @@ class TestSafeDB(unittest.TestCase):
         db.put("test", b"Test")
         db.close()
         with dbm.open(db_path, 'c') as db:
-            self.assertEqual(db['test', b"Test"])
-
-
+            self.assertEqual(db['test'], b"Test")
 
 unittest.main()

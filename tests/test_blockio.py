@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import sys, os
+
 sys.path.append(".")
 sys.path.append("src/")
 import uuid
@@ -8,7 +9,7 @@ print("Test directory:", TEST_DIR)
 os.environ["ONIONR_HOME"] = TEST_DIR
 import unittest
 import time
-from utils import identifyhome, createdirs, bettersleep
+from utils import identifyhome, createdirs
 from onionrsetup import setup_config, setup_default_plugins
 
 createdirs.create_dirs()
@@ -22,6 +23,7 @@ from utils import identifyhome
 
 import safedb
 import blockio
+from blockio.clean.cleanblocklistentries import clean_block_list_entries
 
 
 def _remove_db(path):
@@ -33,6 +35,17 @@ def _remove_db(path):
 
 class TestBlockIO(unittest.TestCase):
 
+    def test_clean_blocklist_entries(self):
+        db_file = identifyhome.identify_home() + 'test.db'
+        db = safedb.SafeDB(db_file)
+        bl = blockcreator.create_anonvdf_block(b"hello" + int(10).to_bytes(1, "big"), b"txt", 5)
+        blockio.store_block(bl, db)
+        db.db_conn[b'bl-txt'] = b''
+        clean_block_list_entries(db)
+        self.assertRaises(KeyError, db.get, 'bl-txt')
+        db.close()
+        _remove_db(db_file)
+
     def test_clean_expired(self):
 
         db_file = identifyhome.identify_home() + 'test.db'
@@ -40,12 +53,12 @@ class TestBlockIO(unittest.TestCase):
         for i in range(3):
             bl = blockcreator.create_anonvdf_block(b"hello" + int(i).to_bytes(1, "big"), b"txt", 5)
             blockio.store_block(bl, db)
-        print("done gening")
         blockio.clean_expired_blocks(db)
         time.sleep(1)
         self.assertEqual(len(list(blockio.list_blocks_by_type("txt", db))), 3)
-        time.sleep(4.1)
-        blockio.list_blocks_by_type("txt", db)
+        time.sleep(10.1)
+        blockio.clean_expired_blocks(db)
+        self.assertEqual(len(db.db_conn[b'bl-txt']), 0)
         db.close()
         _remove_db(db_file)
 
