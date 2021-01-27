@@ -3,7 +3,7 @@
 view and interact with onionr sites
 """
 from flask import Blueprint, Response, request, abort, g
-import ujson as json
+import json
 """
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -32,15 +32,29 @@ def serialized(name: str) -> Response:
             attr = getattr(initial, i)
 
     if callable(attr):
-        data = json.loads(request.get_json(force=True))
-        args = data['args']
-        del data['args']
+        try:
+            js = request.get_json(force=True)
+            print('json', js, type(js))
+            data = json.loads(js)
+            args = data['args']
+            del data['args']
+        except (TypeError, ValueError) as e:
+            print(repr(e))
+            data = {}
+            args = []
+        print('data', data)
         if data:
             print(*args, **data)
-            return Response(attr(*args, **data))
+            resp = attr(*args, **data)
+            if isinstance(resp, int):
+                resp = str(resp)
+            return Response(resp)
         else:
             print(*args, **data)
-            return Response(attr(*args))
+            resp = attr(*args)
+            if isinstance(resp, int):
+                resp = str(resp)
+            return Response(resp, content_type='application/octet-stream')
     else:
         if isinstance(attr, int):
             attr = str(attr)
