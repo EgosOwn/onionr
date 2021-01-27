@@ -4,11 +4,17 @@ Onionr - Private P2P Communication
 Gossip plugin server, multiplexing using gevent
 """
 import os
+import sys
+
 
 import selectors
 import socket
+from time import sleep
 
 import filepaths
+sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
+from commands import GossipCommands  # noqa
+import commandhandlers
 """
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -25,25 +31,47 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
 
-def start_server():
+def start_server(shared_state):
 
     sel = selectors.DefaultSelector()
 
     def accept(sock, mask):
         conn, addr = sock.accept()  # Should be ready
-        print('accepted', conn, 'from', addr)
         conn.setblocking(False)
         sel.register(conn, selectors.EVENT_READ, read)
 
+    def do_close(conn, msg=None):
+        if msg:
+            conn.sendall(msg)
+            sleep(0.1)
+        sel.unregister(conn)
+        conn.close()
+
     def read(conn, mask):
         data = conn.recv(1000)  # Should be ready
+        cmd = None
         if data:
-            print('echoing', repr(data), 'to', conn)
-            conn.send(data)  # Hope it won't block
+            try:
+                cmd = int(int(data[0]).to_bytes(1, 'little'))
+                data = data[1:]
+            except IndexError:
+                do_close(conn, b'MALFORMED COMMAND')
+            if cmd == GossipCommands.PING:
+                conn.sendall(b'PONG')
+            elif cmd == GossipCommands.EXIT:
+                do_close(conn, b'BYE')
+            elif cmd == GossipCommands.LIST_BLOCKS_BY_TYPE:
+                conn.sendall(
+                    commandhandlers.list_blocks_by_type(
+                        shared_state.get_by_string('SafeDB'), data))
+            elif cmd == GossipCommands.CHECK_HAS_BLOCK:
+                conn.sendall(
+                    commandhandlers.handle_check_block(
+                        shared_state.get_by_string('SafeDB'), data))
+            else:
+                conn.sendall(b'Unknown ' + str(cmd).encode('utf-8'))
         else:
-            print('closing', conn)
-            sel.unregister(conn)
-            conn.close()
+            do_close(conn)
 
     sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
     socket_file = filepaths.identifyhome.identify_home() + "torgossip.sock"

@@ -154,9 +154,11 @@ Donating at least $3 gets you cool Onionr stickers. Get in touch if you want the
 
 * Monero: 4B5BA24d1P3R5aWEpkGY5TP7buJJcn2aSGBVRQCHhpiahxeB4aWsu15XwmuTjC6VF62NApZeJGTS248RMVECP8aW73Uj2ax
 
-* USD (Card/Paypal): [Ko-Fi](https://www.ko-fi.com/beardogkf)
+* USD (Card/Paypal (no account required)): [Ko-Fi](https://www.ko-fi.com/beardogkf)
 
 * [Indiegogo](https://igg.me/at/onionr/x#/)
+
+* Sign up for [privacy.com (refferal link)](https://privacy.com/join/FNNDF) to protect your personal information when contributing or shopping elsewhere, we both get $5 USD.
 
 Note: probably not tax deductible
 

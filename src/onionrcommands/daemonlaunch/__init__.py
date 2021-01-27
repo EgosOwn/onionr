@@ -45,6 +45,7 @@ from onionrstatistics.devreporting import statistics_reporter
 from setupkvvars import setup_kv
 from communicatorutils.housekeeping import clean_blocks_not_meeting_pow
 from .spawndaemonthreads import spawn_client_threads
+from .loadsafedb import load_safe_db
 """
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -179,6 +180,8 @@ def daemon():
     # Create singleton
     shared_state.get(serializeddata.SerializedData)
 
+    shared_state.add(load_safe_db(config))
+
     shared_state.share_object()  # share the parent object to the threads
 
     show_logo()
@@ -205,7 +208,7 @@ def daemon():
     _show_info_messages()
     logger.info(
         "Onionr daemon is running under " + str(os.getpid()), terminal=True)
-    events.event('init', threaded=False)
+    events.event('init', threaded=False, data=shared_state)
     events.event('daemon_start')
     if config.get('transports.lan', True):
         if not onionrvalues.IS_QUBES:

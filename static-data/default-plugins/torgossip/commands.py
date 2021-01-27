@@ -1,14 +1,10 @@
+
 """
 Onionr - Private P2P Communication
 
-This default plugin allows users to encrypt/decrypt messages without using blocks
+Gossip plugin commands
 """
-import locale
-locale.setlocale(locale.LC_ALL, '')
-import sys
-import os
-from threading import Thread
-sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
+from enum import IntEnum
 """
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -23,11 +19,9 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-plugin_name = 'torgossip'
-from server import start_server
 
-def on_init(api, data=None):
-    shared_state = data
-    print("starting gossip transport")
-    Thread(target=start_server, daemon=True, args=[shared_state]).start()
-
+class GossipCommands(IntEnum):
+    PING = 1,
+    CHECK_HAS_BLOCK = 2,
+    LIST_BLOCKS_BY_TYPE = 3,
+    EXIT = 4

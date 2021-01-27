@@ -49,6 +49,9 @@
         "disabled": [],
         "enabled": []
     },
+    "security": {
+        "encrypt_database": false
+    },
     "statistics": {
         "i_dont_want_privacy": false,
         "server": ""

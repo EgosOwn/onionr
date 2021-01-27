@@ -32,5 +32,23 @@ def load_block(block: 'BlockChecksumBytes', safe_db: 'SafeDB') -> Kasten:
 
 def list_blocks_by_type(
         block_type: str, safe_db: 'SafeDB') -> List['BlockChecksumBytes']:
+    try:
+        block_type = block_type.decode('utf-8')
+    except AttributeError:
+        pass
     blocks = safe_db.get(f'bl-{block_type}')
     return zip(*[iter(blocks)]*64)
+
+
+def list_all_blocks(safe_db: 'SafeDB'):
+    # Builds and return a master list of blocks by identifying all type lists
+    # and iterating them
+    key = safe_db.db_conn.firstkey()
+    master_list = []
+    while key:
+        if key.startswith(b'bl-'):
+            master_list.extend(
+                list(list_blocks_by_type(key.replace(b'bl-', b''), safe_db)))
+        key = safe_db.db_conn.nextkey(key)
+    return master_list
+

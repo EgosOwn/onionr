@@ -3,11 +3,12 @@
 Prevent eval/exec/os.system and log it
 """
 import base64
-import platform
+from os import read
 
 import logger
 from utils import identifyhome
 from onionrexceptions import ArbitraryCodeExec
+from utils import readstatic
 """
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -56,13 +57,29 @@ def block_exec(event, info):
                         'stem/response/mapaddress.py',
                         'stem/response/protocolinfo.py',
                         'apport/__init__.py',
-                        'apport/report.py'
+                        'apport/report.py',
+                        'gevent/pool.py',
+                        'gevent/queue.py',
+                        'gevent/lock.py',
+                        'gevent/monkey.py',
+                        'gevent/_semaphore.py',
+                        'gevent/_imap.py'
                        ]
-    whitelisted_source = []
-    home = identifyhome.identify_home()
+    try:
+        whitelisted_source = readstatic.read_static(
+            'base64-code-whitelist.txt')
+        whitelisted_source = whitelisted_source.splitlines()
+    except FileNotFoundError:
+        logger.warn("Failed to read whitelisted code for bigbrother")
+        whitelisted_source = []
 
     code_b64 = base64.b64encode(info[0].co_code).decode()
     if code_b64 in whitelisted_source:
+        return
+    # uncomment when you want to build on the whitelist
+    else:
+        with open("../static-data/base64-code-whitelist.txt", "a") as f:
+            f.write(code_b64 + "\n")
         return
 
     for source in whitelisted_code:

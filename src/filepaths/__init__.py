@@ -20,6 +20,8 @@ config_file = home + 'config.json'
 daemon_mark_file = home + '/daemon-true.txt'
 lock_file = home + 'onionr.lock'
 
+main_safedb = home + "main.safe.db"
+
 site_cache = home + 'onionr-sites.txt'
 
 tor_hs_loc = home + 'hs/'

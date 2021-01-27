@@ -35,6 +35,24 @@ def _remove_db(path):
 
 class TestBlockIO(unittest.TestCase):
 
+    def test_list_all_blocks(self):
+        db_file = identifyhome.identify_home() + 'test.db'
+        db = safedb.SafeDB(db_file)
+        expected_l = []
+        for i in range(5):
+            bl = blockcreator.create_anonvdf_block(b"hello" + int(i).to_bytes(1, "big"), b"txt" + int(i).to_bytes(1, "big"), 5)
+            blockio.store_block(bl, db)
+            expected_l.append(bl.id)
+
+        l = blockio.load.list_all_blocks(db)
+        self.assertEqual(len(l), 5)
+        for i in l:
+            self.assertIn(bytes(i), expected_l)
+
+
+        db.close()
+        _remove_db(db_file)
+
     def test_clean_blocklist_entries(self):
         db_file = identifyhome.identify_home() + 'test.db'
         db = safedb.SafeDB(db_file)
@@ -91,7 +109,6 @@ class TestBlockIO(unittest.TestCase):
             bl = blockcreator.create_anonvdf_block(b'test' + int(i).to_bytes(1, 'big'), 'txt', 60)
             blockio.store_block(bl, db)
             expected_list.append(bl.id)
-        #db.db_conn.sync()
         l = blockio.list_blocks_by_type('txt', db)
         self.assertEqual(len(list(l)), len(expected_list))
         for i in l:
