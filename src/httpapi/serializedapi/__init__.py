@@ -3,7 +3,7 @@
 view and interact with onionr sites
 """
 from flask import Blueprint, Response, request, abort, g
-import json
+import ujson as json
 """
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -26,6 +26,15 @@ serialized_api_bp = Blueprint('serializedapi', __name__)
 @serialized_api_bp.route(
     '/serialized/<name>', endpoint='serialized', methods=['POST'])
 def serialized(name: str) -> Response:
+    def _do_call(method, *args, **kwargs):
+        try:
+            resp = method(*args, **kwargs)
+            if isinstance(resp, int):
+                resp = str(resp)
+            return Response(resp, content_type='application/octet-stream')
+        except Exception as e:
+            return Response(repr(e), content_type='text/plain', status=500)
+
     initial = g.too_many.get_by_string(name.split('.')[0])
     for c, i in enumerate(name.split('.')):
         if i and c != 0:
@@ -45,16 +54,10 @@ def serialized(name: str) -> Response:
         print('data', data)
         if data:
             print(*args, **data)
-            resp = attr(*args, **data)
-            if isinstance(resp, int):
-                resp = str(resp)
-            return Response(resp)
+            return _do_call(attr, *args, **data)
         else:
             print(*args, **data)
-            resp = attr(*args)
-            if isinstance(resp, int):
-                resp = str(resp)
-            return Response(resp, content_type='application/octet-stream')
+            return _do_call(attr, *args)
     else:
         if isinstance(attr, int):
             attr = str(attr)
