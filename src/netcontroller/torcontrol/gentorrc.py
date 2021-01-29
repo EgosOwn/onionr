@@ -72,6 +72,8 @@ def generate_torrc(net_controller: 'NetController',
 DataDirectory """ + home_dir + """tordata/
 CookieAuthentication 1
 KeepalivePeriod 40
+SafeSocks 1
+TestSocks 1
 CircuitsAvailableTimeout 86400
 ControlPort """ + str(control_port) + """
 HashedControlPassword """ + str(password) + """
