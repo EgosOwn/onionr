@@ -30,10 +30,8 @@ def put_block(safe_db, block):
             Kasten(block_hash, data, onionrblocks.generators.AnonVDFGenerator),
             safe_db)
     except ValueError:
-        print("Block was seen before")
         pass
     except Exception as e:
-        print("Unknown error" + repr(e))
         return b"0"
     return b"1"
 

@@ -48,4 +48,7 @@ def torgossip_runtest(test_manager):
         s.sendall(b'4' + bl_new.id)
         assert s.recv(64) == bl_new.get_packed()
 
+        # test block was uploaded by getting it
+        s.sendall(b'6')
+        assert s.recv(64) == b"BYE"
 
