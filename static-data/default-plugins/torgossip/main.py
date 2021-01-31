@@ -25,9 +25,13 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 plugin_name = 'torgossip'
 from server import start_server
+from runtest import torgossip_runtest
 
 def on_init(api, data=None):
     shared_state = data
-    print("starting gossip transport")
+
+    shared_state.get_by_string(
+        "OnionrRunTestManager").plugin_tests.append(torgossip_runtest)
+
     Thread(target=start_server, daemon=True, args=[shared_state]).start()
 

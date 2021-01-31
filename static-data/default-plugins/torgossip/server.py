@@ -60,6 +60,16 @@ def start_server(shared_state):
                 conn.sendall(b'PONG')
             elif cmd == GossipCommands.EXIT:
                 do_close(conn, b'BYE')
+            elif cmd == GossipCommands.PUT_BLOCK:
+                conn.sendall(
+                    commandhandlers.put_block(
+                        shared_state.get_by_string('SafeDB'), data
+                    )
+                )
+            elif cmd == GossipCommands.GET_BLOCK:
+                conn.sendall(
+                    commandhandlers.get_block(
+                        shared_state.get_by_string('SafeDB'), data))
             elif cmd == GossipCommands.LIST_BLOCKS_BY_TYPE:
                 conn.sendall(
                     commandhandlers.list_blocks_by_type(

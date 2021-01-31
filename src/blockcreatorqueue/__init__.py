@@ -28,6 +28,19 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 class AlreadyGenerating(Exception): pass  # noqa
 
 
+
+class PassToSafeDB:
+    def __init__(self, db: 'SafeDB'):
+        self.db = db
+        self.block_creator_queue = BlockCreatorQueue(self.store_kasten)
+
+    def store_kasten(self, kasten_object):
+        self.db.put(kasten_object.id, kasten_object.get_packed())
+
+    def queue_then_store(self, block_data, block_type, ttl, **block_metadata):
+        self.block_creator_queue.queue_block(block_data, block_type, ttl, **block_metadata)
+
+
 class BlockCreatorQueue:
     def __init__(
             self, callback_func: Callable, *additional_callback_func_args,
@@ -66,4 +79,3 @@ class BlockCreatorQueue:
 
         Thread(target=_do_create, daemon=True).start()
         return digest
-

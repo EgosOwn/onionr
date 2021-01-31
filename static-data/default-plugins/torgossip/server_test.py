@@ -10,7 +10,7 @@ def client(data):
     with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as s:
         s.connect(f'{home}/torgossip.sock')
         s.sendall(data)
-        resp = s.recv(1024)
+        resp = s.recv(32)
         print("\n", resp)
 
 while True:

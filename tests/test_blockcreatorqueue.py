@@ -23,8 +23,6 @@ setup_config()
 
 class TestBlockCreatorQueue(unittest.TestCase):
 
-    def test_in_queue(self):
-        
 
     def test_blockcreator_queue_1(self):
         received_callback = [False]

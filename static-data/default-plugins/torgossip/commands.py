@@ -24,4 +24,6 @@ class GossipCommands(IntEnum):
     PING = 1,
     CHECK_HAS_BLOCK = 2,
     LIST_BLOCKS_BY_TYPE = 3,
-    EXIT = 4
+    GET_BLOCK = 4,
+    PUT_BLOCK = 5,
+    EXIT = 6

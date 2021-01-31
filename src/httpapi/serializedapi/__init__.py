@@ -62,4 +62,3 @@ def serialized(name: str) -> Response:
         if isinstance(attr, int):
             attr = str(attr)
         return Response(attr, content_type='application/octet-stream')
-
