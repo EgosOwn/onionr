@@ -2,6 +2,7 @@
 
 Handle commands for the torgossip server
 """
+from typing import type_check_only
 from onionrblocks import generators
 from onionrblocks.generators import anonvdf
 import blockio
@@ -22,7 +23,10 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
+
+
 def put_block(safe_db, block):
+    #6
     block_hash = block[:64]
     data = block[64:]
     try:
@@ -36,11 +40,23 @@ def put_block(safe_db, block):
     return b"1"
 
 
-
 def get_block(safe_db, block_hash) -> bytes:
-    # 4
+    #5
     try:
         return safe_db.get(block_hash)
+    except KeyError:
+        return b"0"
+
+
+def list_blocks_by_type_and_offset(safe_db, type_and_offset):
+    #4
+    offset, block_type = type_and_offset.split(b',', 1)
+    try:
+        offset = int(offset)
+    except ValueError:
+        return b""
+    try:
+        return list_blocks_by_type(safe_db, block_type)[offset * 64:]
     except KeyError:
         return b"0"
 
@@ -48,7 +64,7 @@ def get_block(safe_db, block_hash) -> bytes:
 def list_blocks_by_type(safe_db, block_type) -> bytes:
     # 3
     block_type = block_type.decode('utf-8')
-    print('ty', block_type)
+
     try:
         return safe_db.get('bl-' + block_type)
     except KeyError:
