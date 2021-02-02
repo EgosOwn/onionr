@@ -24,11 +24,15 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 plugin_name = 'torgossip'
+
 from server import start_server
+from peerdb import Peers
 from runtest import torgossip_runtest
 
 def on_init(api, data=None):
     shared_state = data
+
+    shared_state.get(Peers)
 
     shared_state.get_by_string(
         "OnionrRunTestManager").plugin_tests.append(torgossip_runtest)

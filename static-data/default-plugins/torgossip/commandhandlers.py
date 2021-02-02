@@ -9,6 +9,7 @@ import blockio
 
 import onionrblocks
 from kasten import Kasten
+
 """
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -23,6 +24,12 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
+
+
+def peer_exchange(peers: 'Peers', num_of_peers: bytes):
+    #7
+    num_of_peers = int.from_bytes(num_of_peers, 'little')
+    return peers.get_highest_score_peers(num_of_peers)
 
 
 def put_block(safe_db, block):

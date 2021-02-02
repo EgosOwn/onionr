@@ -28,4 +28,5 @@ class GossipCommands(IntEnum):
     GET_BLOCK = 5,
     PUT_BLOCK = 6,
     PEER_EXCHANGE = 7,
-    EXIT = 8
+    ANNOUNCE_PEER = 8,
+    EXIT = 9

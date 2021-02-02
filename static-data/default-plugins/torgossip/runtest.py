@@ -13,16 +13,17 @@ def torgossip_runtest(test_manager):
 
     s_file = identifyhome.identify_home() + "/torgossip.sock"
     bl_test = blockcreator.create_anonvdf_block(b"test", "txt", 10)
+    shared_state = test_manager._too_many
 
-    #test_manager._too_many.get_by_string("PassToSafeDB").queue_then_store(b"test", "txt", 10)
+    #shared_state.get_by_string("PassToSafeDB").queue_then_store(b"test", "txt", 10)
     bl = subprocgenerate.vdf_block(b"test", "txt", 100)
-    blockio.store_block(bl, test_manager._too_many.get_by_string("SafeDB"))
+    blockio.store_block(bl, shared_state.get_by_string("SafeDB"))
 
     tsts = b''
     for i in range(3):
         bl = subprocgenerate.vdf_block(b"test" + os.urandom(3), "tst", 100)
         tsts += bl.id
-        blockio.store_block(bl, test_manager._too_many.get_by_string("SafeDB"))
+        blockio.store_block(bl, shared_state.get_by_string("SafeDB"))
 
     bl_new = blockcreator.create_anonvdf_block(b"test5", "txt", 10)
 
@@ -55,13 +56,17 @@ def torgossip_runtest(test_manager):
         s.sendall(b'5' + bl_new.id)
         assert s.recv(64) == bl_new.get_packed()
 
-        # test block was uploaded by getting it
-        s.sendall(b'7')
-        assert s.recv(64) == b"BYE"
-
         s.sendall(b'41tst')
         assert s.recv(1000) == tsts[64:]
 
         s.sendall(b'42tst')
         assert s.recv(1000) == tsts[64*2:]
+
+        # test peer list
+        
+        shared_state.get_by_string('TorGossipPeers').add_peer()
+
+        s.sendall(b'9')
+        assert s.recv(64) == b"BYE"
+
 

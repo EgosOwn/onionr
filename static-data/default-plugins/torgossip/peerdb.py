@@ -26,11 +26,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
 
-class Peers:
+class TorGossipPeers:  # name it this way to avoid collisions in SharedState
 
     PACK_FORMAT = "qQ"
 
-    def __init__(self, encrypt: bool):
+    def __init__(self, encrypt=True):
         self.db = safedb.SafeDB(
             identify_home() + "/torgossip-peers.db", protected=encrypt)
 
@@ -42,8 +42,11 @@ class Peers:
 
     def _pack_and_store_info(self, peer, new_score=None, new_seen=None):
         # Repack peer information with new value(s) and store it
-        score, seen = unpack(self.PACK_FORMAT, self.db.get(
-            self._shrink_peer_address(peer)))
+        peer = self._shrink_peer_address(peer)
+        try:
+            score, seen = unpack(self.PACK_FORMAT, self.db.get(peer))
+        except KeyError:
+            score = seen = 0
 
         if new_score:
             score = new_score
@@ -51,6 +54,31 @@ class Peers:
             seen = new_seen
 
         self.db.put(peer, pack(self.PACK_FORMAT, score, seen))
+
+    def get_highest_score_peers(self, max=5):
+        assert max >= 1
+        peer = self.db.db_conn.firstkey()
+
+        top = [(peer, self.db.get(peer))]
+
+        for peer in self.db.db_conn.nextkey(peer):
+            peer_data = self.db.get(peer)
+            overwrite = None
+
+            if len(top) != max:
+                top.append((peer, peer_data))
+                continue
+            for count, cur_top in enumerate(top):
+                # if peer score is greater than any set peer, overwrite
+                if unpack(self.PACK_FORMAT, cur_top[1])[0] < \
+                        unpack(self.PACK_FORMAT, peer_data)[0]:
+                    overwrite = count
+                    break  # below else won't execute, so it will be overwritten
+            else:
+                # if not overwriting, go to next peer
+                continue
+            top[overwrite] = (peer, peer_data)
+        return top
 
     def add_score(self, peer, new_score):
         shrunk = self._shrink_peer_address(peer)
@@ -61,7 +89,7 @@ class Peers:
 
     def update_seen(self, peer):
         peer = self._shrink_peer_address(peer)
-        _pack_and_store_info(peer, new_seen=int(time()))
+        self._pack_and_store_info(peer, new_seen=int(time()))
 
-
-
+    def add_peer(self, peer):
+        self._pack_and_store_info(peer)
