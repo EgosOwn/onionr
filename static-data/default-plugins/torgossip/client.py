@@ -1,10 +1,9 @@
+"""Onionr - Private P2P Communication.
 
-"""
-Onionr - Private P2P Communication
+Torgossip client
 
-Gossip plugin commands
+Create streams to random peers
 """
-from enum import IntEnum
 """
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -20,12 +19,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
-class GossipCommands(IntEnum):
-    PING = 1,
-    CHECK_HAS_BLOCK = 2,
-    LIST_BLOCKS_BY_TYPE = 3,
-    LIST_BLOCKS_BY_TYPE_OFFSET = 4,
-    GET_BLOCK = 5,
-    PUT_BLOCK = 6,
-    PEER_EXCHANGE = 7,
-    EXIT = 8
+
+def client_pool(shared_state):
+
+    

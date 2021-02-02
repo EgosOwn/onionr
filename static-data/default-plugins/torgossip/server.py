@@ -1,11 +1,10 @@
 """
 Onionr - Private P2P Communication
 
-Gossip plugin server, multiplexing using gevent
+Gossip plugin server, multiplexing using selectors
 """
 import os
 import sys
-
 
 import selectors
 import socket
@@ -100,5 +99,3 @@ def start_server(shared_state):
         for key, mask in events:
             callback = key.data
             callback(key.fileobj, mask)
-if __name__ == "__main__":
-    start_server()
