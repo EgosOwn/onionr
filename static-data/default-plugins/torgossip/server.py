@@ -73,6 +73,11 @@ def start_server(shared_state):
                 conn.sendall(
                     commandhandlers.list_blocks_by_type(
                         shared_state.get_by_string('SafeDB'), data))
+            elif cmd == GossipCommands.LIST_BLOCKS_BY_TYPE_OFFSET:
+                conn.sendall(
+                    commandhandlers.list_blocks_by_type_and_offset(
+                        shared_state.get_by_string('SafeDB'), data)
+                )
             elif cmd == GossipCommands.CHECK_HAS_BLOCK:
                 conn.sendall(
                     commandhandlers.handle_check_block(

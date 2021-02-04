@@ -65,11 +65,12 @@ def torgossip_runtest(test_manager):
         s.sendall(b'5' + bl_new.id)
         assert s.recv(64) == bl_new.get_packed()
 
-        s.sendall(b'41tst')
-        assert s.recv(1000) == tsts[64:]
+        s.sendall(b'40,tbt')
+        assert len(s.recv(100000)) == len(shared_state.get_by_string("SafeDB").get('bl-tbt'))
 
-        s.sendall(b'42tst')
-        assert s.recv(1000) == tsts[64*2:]
+        s.sendall(b'41,tbt')
+        assert len(s.recv(100000)) == len(
+            shared_state.get_by_string("SafeDB").get('bl-tbt')) - 64
 
         # test peer list
         #fake_peer = _fake_onion()
