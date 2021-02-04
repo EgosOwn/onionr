@@ -2,7 +2,6 @@
 
 Handle commands for the torgossip server
 """
-from typing import type_check_only
 from onionrblocks import generators
 from onionrblocks.generators import anonvdf
 import blockio

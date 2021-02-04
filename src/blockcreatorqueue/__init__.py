@@ -77,5 +77,7 @@ class BlockCreatorQueue:
                 *self.additional_callback_func_args,
                 **self.additional_callback_func_kwargs)
 
-        Thread(target=_do_create, daemon=True).start()
+        Thread(
+            target=_do_create, daemon=True,
+            name="BlockCreatorQueue block creation").start()
         return digest

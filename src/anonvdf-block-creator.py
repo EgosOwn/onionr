@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from base64 import b85decode
 import sys
 import os
 
@@ -13,7 +14,7 @@ metadata = json.loads(sys.argv[1])
 block_type = sys.argv[2]
 ttl = int(sys.argv[3])
 
-data = sys.stdin.read()
+data = b85decode(sys.stdin.read())
 
 with os.fdopen(sys.stdout.fileno(), 'wb') as stdout:
     bl = blockcreator.create_anonvdf_block(data, block_type, ttl, **metadata)

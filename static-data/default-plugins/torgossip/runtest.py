@@ -1,12 +1,18 @@
 import socket
 import os
-from threading import local
+import secrets
+from base64 import b32encode
 
 from utils import identifyhome
 from onionrblocks import blockcreator
 from blockio import subprocgenerate
 from onionrutils import localcommand
 import blockio
+
+
+def _fake_onion():
+    return b32encode(os.urandom(34)).decode('utf-8') + ".onion"
+
 
 def torgossip_runtest(test_manager):
 
@@ -20,12 +26,13 @@ def torgossip_runtest(test_manager):
     blockio.store_block(bl, shared_state.get_by_string("SafeDB"))
 
     tsts = b''
-    for i in range(3):
-        bl = subprocgenerate.vdf_block(b"test" + os.urandom(3), "tst", 100)
-        tsts += bl.id
-        blockio.store_block(bl, shared_state.get_by_string("SafeDB"))
 
-    bl_new = blockcreator.create_anonvdf_block(b"test5", "txt", 10)
+    for i in range(3):
+        bl2 = subprocgenerate.vdf_block(b"what" + os.urandom(4), "tbt", 100)
+        tsts += bl2.id
+        blockio.store_block(bl2, shared_state.get_by_string("SafeDB"))
+
+    bl_new = blockcreator.create_anonvdf_block(b"what", "txt", 10)
 
 
     with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as s:
@@ -41,8 +48,10 @@ def torgossip_runtest(test_manager):
         assert bl.id in s.recv(10000)
 
         # test getting a block that doesn't exist
-        s.sendall(b'5' + os.urandom(64))
-        assert s.recv(64) == b"0"
+        s.sendall(b'5' + int(secrets.randbits(64)).to_bytes(64, 'little'))
+
+        #print(len(s.recv(64)))
+        assert s.recv(64)[0] == ord(b'0')
 
         # test getting a block that does exist
         s.sendall(b'5' + bl.id)
@@ -63,8 +72,10 @@ def torgossip_runtest(test_manager):
         assert s.recv(1000) == tsts[64*2:]
 
         # test peer list
-        
-        shared_state.get_by_string('TorGossipPeers').add_peer()
+        #fake_peer = _fake_onion()
+        #shared_state.get_by_string('TorGossipPeers').add_peer(fake_peer)
+        #s.sendall(b'71')
+        #assert s.recv(100) == fake_peer
 
         s.sendall(b'9')
         assert s.recv(64) == b"BYE"

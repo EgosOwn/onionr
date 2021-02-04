@@ -1,3 +1,4 @@
+from base64 import b85encode
 import os
 import subprocess
 
@@ -10,6 +11,7 @@ _DIR = os.path.dirname(os.path.realpath(__file__)) + '/../'
 
 
 def vdf_block(data, data_type, ttl, **metadata):
+    data = b85encode(data)
     generated = subprocess.Popen(
         [
             f'{_DIR}anonvdf-block-creator.py',

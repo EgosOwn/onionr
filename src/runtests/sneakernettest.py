@@ -9,10 +9,12 @@ from etc.onionrvalues import BLOCK_EXPORT_FILE_EXT
 from onionrstorage.removeblock import remove_block
 from onionrstorage import deleteBlock
 from coredb.blockmetadb import get_block_list
-from utils import bettersleep
+import config
 from gevent import sleep
 
 def test_sneakernet_import(test_manager):
+    if not config.get('transports.lan', False):
+        return
     in_db = lambda b: b in get_block_list()
     bl = insert(os.urandom(10))
     assert in_db(bl)

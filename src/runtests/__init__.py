@@ -84,7 +84,7 @@ class OnionrRunTestManager:
             logger.error(last.__name__ + ' failed assertions', terminal=True)
         except Exception as e:
             logger.error(last.__name__ + ' failed with non-asserting exception')
-            logger.error(str(e))
+            logger.error(repr(e))
         else:
             ep = str(epoch.get_epoch())
             logger.info(f'All runtime tests passed at {ep}', terminal=True)

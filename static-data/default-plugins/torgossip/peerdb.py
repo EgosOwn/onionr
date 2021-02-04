@@ -2,10 +2,9 @@
 
 Torgossip peer safedb interface
 """
-from typing import TYPE_CHECKING
 from base64 import b32decode
 from struct import unpack, pack
-frome time import time
+from time import time
 
 from utils.identifyhome import identify_home
 import safedb

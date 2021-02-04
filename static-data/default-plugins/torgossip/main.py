@@ -25,17 +25,21 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 plugin_name = 'torgossip'
 
-from server import start_server
-from peerdb import Peers
-from runtest import torgossip_runtest
+try:
+    from server import start_server
+    from peerdb import TorGossipPeers
+    from runtest import torgossip_runtest
+except Exception as e:
+    print(repr(e))
+
 
 def on_init(api, data=None):
     shared_state = data
-
-    shared_state.get(Peers)
-
     shared_state.get_by_string(
         "OnionrRunTestManager").plugin_tests.append(torgossip_runtest)
+
+    shared_state.get(TorGossipPeers)
+
 
     Thread(target=start_server, daemon=True, args=[shared_state]).start()
 

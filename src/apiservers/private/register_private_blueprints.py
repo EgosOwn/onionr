@@ -56,6 +56,6 @@ def register_private_blueprints(private_api, app):
         app.register_blueprint(
             private_api._too_many.get_by_string('DaemonEventsBP').flask_bp)
 
-    Thread(target=_add_events_bp).start()
+    Thread(target=_add_events_bp, name='Private blueprints adder').start()
 
     return app
