@@ -2,8 +2,6 @@
 
 Handle commands for the torgossip server
 """
-from onionrblocks import generators
-from onionrblocks.generators import anonvdf
 import blockio
 
 import onionrblocks
@@ -26,9 +24,13 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
 def peer_exchange(peers: 'Peers', num_of_peers: bytes):
-    #7
-    num_of_peers = int.from_bytes(num_of_peers, 'little')
-    return peers.get_highest_score_peers(num_of_peers)
+    """command 7: exchange a number of our top performing peers"""
+    num_of_peers = int(chr(int.from_bytes(num_of_peers, 'little')))
+    peers = peers.get_highest_score_peers(num_of_peers)
+    just_addresses = []
+    for i in peers:
+        just_addresses.append(i[0])
+    return b''.join(just_addresses)
 
 
 def put_block(safe_db, block):
@@ -41,7 +43,7 @@ def put_block(safe_db, block):
             safe_db)
     except ValueError:
         pass
-    except Exception as e:
+    except Exception as _:  # noqa
         return b"0"
     return b"1"
 

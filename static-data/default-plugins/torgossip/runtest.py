@@ -1,7 +1,7 @@
 import socket
 import os
 import secrets
-from base64 import b32encode
+from base64 import b32decode, b32encode
 
 from utils import identifyhome
 from onionrblocks import blockcreator
@@ -73,10 +73,15 @@ def torgossip_runtest(test_manager):
             shared_state.get_by_string("SafeDB").get('bl-tbt')) - 64
 
         # test peer list
-        #fake_peer = _fake_onion()
-        #shared_state.get_by_string('TorGossipPeers').add_peer(fake_peer)
-        #s.sendall(b'71')
-        #assert s.recv(100) == fake_peer
+        fake_peer = _fake_onion()
+        shared_state.get_by_string('TorGossipPeers').add_peer(fake_peer)
+        shared_state.get_by_string('TorGossipPeers').add_score(fake_peer, 100000)
+        s.sendall(b'71')
+        stored = s.recv(1000)
+        expected = b32decode(fake_peer.replace('.onion', '')).replace(b'.onion', b'')
+        print(stored, expected)
+        assert stored == expected
+        shared_state.get_by_string('TorGossipPeers').remove_peer(fake_peer)
 
         s.sendall(b'9')
         assert s.recv(64) == b"BYE"

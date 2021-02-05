@@ -82,6 +82,10 @@ def start_server(shared_state):
                 conn.sendall(
                     commandhandlers.handle_check_block(
                         shared_state.get_by_string('SafeDB'), data))
+            elif cmd == GossipCommands.PEER_EXCHANGE:
+                conn.sendall(
+                    commandhandlers.peer_exchange(
+                        shared_state.get_by_string('TorGossipPeers'), data))
             else:
                 conn.sendall(b'Unknown ' + str(cmd).encode('utf-8'))
         else:

@@ -29,7 +29,7 @@ class TorGossipPeers:  # name it this way to avoid collisions in SharedState
 
     PACK_FORMAT = "qQ"
 
-    def __init__(self, encrypt=True):
+    def __init__(self, encrypt=False):
         self.db = safedb.SafeDB(
             identify_home() + "/torgossip-peers.db", protected=encrypt)
 
@@ -54,18 +54,30 @@ class TorGossipPeers:  # name it this way to avoid collisions in SharedState
 
         self.db.put(peer, pack(self.PACK_FORMAT, score, seen))
 
-    def get_highest_score_peers(self, max=5):
+    def get_highest_score_peers(self, max):
         assert max >= 1
         peer = self.db.db_conn.firstkey()
+        if peer == b'enc':
+            peer = self.db.db_conn.nextkey(peer)
+        print('p', peer)
+        assert len(peer) == 34
+        if not peer:
+            return []
 
         top = [(peer, self.db.get(peer))]
 
-        for peer in self.db.db_conn.nextkey(peer):
+        while peer:
+            peer = self.db.db_conn.nextkey(peer)
+            if not peer:
+                break
+            if peer == b"enc":
+                continue
             peer_data = self.db.get(peer)
             overwrite = None
 
             if len(top) != max:
                 top.append((peer, peer_data))
+                peer = self.db.db_conn.nextkey(peer)
                 continue
             for count, cur_top in enumerate(top):
                 # if peer score is greater than any set peer, overwrite
@@ -75,16 +87,17 @@ class TorGossipPeers:  # name it this way to avoid collisions in SharedState
                     break  # below else won't execute, so it will be overwritten
             else:
                 # if not overwriting, go to next peer
+                peer = self.db.db_conn.nextkey(peer)
                 continue
             top[overwrite] = (peer, peer_data)
         return top
 
-    def add_score(self, peer, new_score):
+    def add_score(self, peer, plus):
         shrunk = self._shrink_peer_address(peer)
         score, _ = unpack("qQ", self.db.get(shrunk))
 
         self._pack_and_store_info(
-            shrunk, new_score=score + new_score)
+            shrunk, new_score=score + plus)
 
     def update_seen(self, peer):
         peer = self._shrink_peer_address(peer)
@@ -92,3 +105,7 @@ class TorGossipPeers:  # name it this way to avoid collisions in SharedState
 
     def add_peer(self, peer):
         self._pack_and_store_info(peer)
+
+    def remove_peer(self, peer):
+        peer = self._shrink_peer_address(peer)
+        del self.db.db_conn[peer]
