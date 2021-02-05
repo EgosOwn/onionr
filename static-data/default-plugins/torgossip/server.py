@@ -86,6 +86,11 @@ def start_server(shared_state):
                 conn.sendall(
                     commandhandlers.peer_exchange(
                         shared_state.get_by_string('TorGossipPeers'), data))
+            elif cmd == GossipCommands.ANNOUNCE_PEER:
+                conn.sendall(
+                    commandhandlers.announce_peer(
+                        shared_state.get_by_string('TorGossipPeers'), data)
+                    )
             else:
                 conn.sendall(b'Unknown ' + str(cmd).encode('utf-8'))
         else:

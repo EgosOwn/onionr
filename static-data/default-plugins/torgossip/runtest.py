@@ -2,6 +2,7 @@ import socket
 import os
 import secrets
 from base64 import b32decode, b32encode
+from time import sleep
 
 from utils import identifyhome
 from onionrblocks import blockcreator
@@ -13,6 +14,11 @@ import blockio
 def _fake_onion():
     return b32encode(os.urandom(34)).decode('utf-8') + ".onion"
 
+def _shrink_peer_address(peer):
+    # strip .onion and b32decode peer address for lower database mem usage
+    if len(peer) == 62:  # constant time
+        return b32decode(peer[:-6])  # O(N)
+    return peer
 
 def torgossip_runtest(test_manager):
 
@@ -74,14 +80,32 @@ def torgossip_runtest(test_manager):
 
         # test peer list
         fake_peer = _fake_onion()
+        fakes = []
+        for i in range(3):
+            fake = _fake_onion()
+            fakes.append(fake)
+            shared_state.get_by_string('TorGossipPeers').add_peer(fake)
         shared_state.get_by_string('TorGossipPeers').add_peer(fake_peer)
         shared_state.get_by_string('TorGossipPeers').add_score(fake_peer, 100000)
         s.sendall(b'71')
         stored = s.recv(1000)
-        expected = b32decode(fake_peer.replace('.onion', '')).replace(b'.onion', b'')
-        print(stored, expected)
-        assert stored == expected
+        expected = _shrink_peer_address(fake_peer)#b32decode(fake_peer.replace('.onion', '')).replace(b'.onion', b'')
+        try:
+            assert stored == expected
+        except AssertionError:
+            print(stored, '!=', expected)
         shared_state.get_by_string('TorGossipPeers').remove_peer(fake_peer)
+        for i in fakes:
+            shared_state.get_by_string('TorGossipPeers').remove_peer(i)
+
+        announce_peer = _fake_onion()
+        announce_raw = _shrink_peer_address(announce_peer)
+        s.sendall(b'8' + announce_raw)
+        assert s.recv(1) == b'1'
+        print(type(announce_raw), type(shared_state.get_by_string('TorGossipPeers').get_highest_score_peers(100)[0][0]))
+        assert announce_raw == shared_state.get_by_string('TorGossipPeers').get_highest_score_peers(100)[0][0]
+        shared_state.get_by_string('TorGossipPeers').remove_peer(announce_raw)
+
 
         s.sendall(b'9')
         assert s.recv(64) == b"BYE"

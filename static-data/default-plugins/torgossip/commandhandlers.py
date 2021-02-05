@@ -2,11 +2,14 @@
 
 Handle commands for the torgossip server
 """
+import traceback
+import base64
+
 import blockio
+import logger
 
 import onionrblocks
 from kasten import Kasten
-
 """
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -23,7 +26,18 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
 
-def peer_exchange(peers: 'Peers', num_of_peers: bytes):
+def announce_peer(peers: 'TorGossipPeers', peer_address):
+    """command 8: accept a new peer"""
+    try:
+        peers.add_peer(peer_address)
+    except Exception as _:
+        logger.warn("Error accepting announced peer " + base64.b85encode(peer_address).decode('utf-8'), terminal=True)
+        logger.warn(traceback.format_exc(), terminal=True)
+        return b"0"
+    return b"1"
+
+
+def peer_exchange(peers: 'TorGossipPeers', num_of_peers: bytes):
     """command 7: exchange a number of our top performing peers"""
     num_of_peers = int(chr(int.from_bytes(num_of_peers, 'little')))
     peers = peers.get_highest_score_peers(num_of_peers)

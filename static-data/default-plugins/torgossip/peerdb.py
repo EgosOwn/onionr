@@ -59,7 +59,7 @@ class TorGossipPeers:  # name it this way to avoid collisions in SharedState
         peer = self.db.db_conn.firstkey()
         if peer == b'enc':
             peer = self.db.db_conn.nextkey(peer)
-        print('p', peer)
+
         assert len(peer) == 34
         if not peer:
             return []
@@ -104,7 +104,7 @@ class TorGossipPeers:  # name it this way to avoid collisions in SharedState
         self._pack_and_store_info(peer, new_seen=int(time()))
 
     def add_peer(self, peer):
-        self._pack_and_store_info(peer)
+        self.update_seen(peer)
 
     def remove_peer(self, peer):
         peer = self._shrink_peer_address(peer)

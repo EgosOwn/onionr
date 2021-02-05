@@ -4,6 +4,7 @@ Test Onionr as it is running
 """
 import os
 from secrets import SystemRandom
+import traceback
 
 import logger
 from onionrutils import epoch
@@ -56,6 +57,16 @@ class OnionrRunTestManager:
         self.plugin_tests = []
 
     def run_tests(self):
+        try:
+            assert 1 == 2
+        except AssertionError:
+            pass
+        else:
+            logger.error(
+                "Cannot perform runtests when Python interpreter is optimized",
+                terminal=True)
+            return
+
         tests = list(RUN_TESTS)
         tests.extend(self.plugin_tests)
         SystemRandom().shuffle(tests)
@@ -84,7 +95,7 @@ class OnionrRunTestManager:
             logger.error(last.__name__ + ' failed assertions', terminal=True)
         except Exception as e:
             logger.error(last.__name__ + ' failed with non-asserting exception')
-            logger.error(repr(e))
+            logger.error(traceback.format_exc())
         else:
             ep = str(epoch.get_epoch())
             logger.info(f'All runtime tests passed at {ep}', terminal=True)
