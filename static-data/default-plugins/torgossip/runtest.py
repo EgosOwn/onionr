@@ -72,7 +72,8 @@ def torgossip_runtest(test_manager):
         assert s.recv(64) == bl_new.get_packed()
 
         s.sendall(b'40,tbt')
-        assert len(s.recv(100000)) == len(shared_state.get_by_string("SafeDB").get('bl-tbt'))
+        assert len(s.recv(100000)) == len(
+            shared_state.get_by_string("SafeDB").get('bl-tbt'))
 
         s.sendall(b'41,tbt')
         assert len(s.recv(100000)) == len(
@@ -86,10 +87,11 @@ def torgossip_runtest(test_manager):
             fakes.append(fake)
             shared_state.get_by_string('TorGossipPeers').add_peer(fake)
         shared_state.get_by_string('TorGossipPeers').add_peer(fake_peer)
-        shared_state.get_by_string('TorGossipPeers').add_score(fake_peer, 100000)
+        shared_state.get_by_string(
+            'TorGossipPeers').add_score(fake_peer, 100000)
         s.sendall(b'71')
         stored = s.recv(1000)
-        expected = _shrink_peer_address(fake_peer)#b32decode(fake_peer.replace('.onion', '')).replace(b'.onion', b'')
+        expected = _shrink_peer_address(fake_peer)
         try:
             assert stored == expected
         except AssertionError:
@@ -102,10 +104,11 @@ def torgossip_runtest(test_manager):
         announce_raw = _shrink_peer_address(announce_peer)
         s.sendall(b'8' + announce_raw)
         assert s.recv(1) == b'1'
-        print(type(announce_raw), type(shared_state.get_by_string('TorGossipPeers').get_highest_score_peers(100)[0][0]))
-        assert announce_raw == shared_state.get_by_string('TorGossipPeers').get_highest_score_peers(100)[0][0]
+        print(type(announce_raw), type(shared_state.get_by_string(
+            'TorGossipPeers').get_highest_score_peers(100)[0][0]))
+        assert announce_raw == shared_state.get_by_string(
+            'TorGossipPeers').get_highest_score_peers(100)[0][0]
         shared_state.get_by_string('TorGossipPeers').remove_peer(announce_raw)
-
 
         s.sendall(b'9')
         assert s.recv(64) == b"BYE"
