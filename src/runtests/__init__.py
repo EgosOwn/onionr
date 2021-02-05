@@ -18,6 +18,7 @@ from .housekeeping import test_inserted_housekeeping
 from .lanservertest import test_lan_server
 from .sneakernettest import test_sneakernet_import
 from .dnsrebindingtest import test_dns_rebinding
+from .serviceonlinetest import test_service_online
 """
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -43,8 +44,9 @@ RUN_TESTS = [uicheck.check_ui,
              test_clearnet_tor_request,
              test_inserted_housekeeping,
              test_lan_server,
-             sneakernettest.test_sneakernet_import,
-             test_dns_rebinding
+             test_sneakernet_import,
+             test_dns_rebinding,
+             test_service_online
              ]
 
 SUCCESS_FILE = os.path.dirname(os.path.realpath(__file__)) + '/../../tests/runtime-result.txt'

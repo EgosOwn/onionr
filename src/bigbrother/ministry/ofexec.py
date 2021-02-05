@@ -77,10 +77,10 @@ def block_exec(event, info):
     if code_b64 in whitelisted_source:
         return
     # uncomment when you want to build on the whitelist
-    else:
-        with open("../static-data/base64-code-whitelist.txt", "a") as f:
-            f.write(code_b64 + "\n")
-        return
+    #else:
+    #    with open("../static-data/base64-code-whitelist.txt", "a") as f:
+    #        f.write(code_b64 + "\n")
+    #    return
 
     for source in whitelisted_code:
         if info[0].co_filename.endswith(source):

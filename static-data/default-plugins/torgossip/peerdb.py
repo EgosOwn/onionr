@@ -5,6 +5,7 @@ Torgossip peer safedb interface
 from base64 import b32decode
 from struct import unpack, pack
 from time import time
+from typing import List
 
 from utils.identifyhome import identify_home
 import safedb
@@ -54,7 +55,7 @@ class TorGossipPeers:  # name it this way to avoid collisions in SharedState
 
         self.db.put(peer, pack(self.PACK_FORMAT, score, seen))
 
-    def get_highest_score_peers(self, max):
+    def get_highest_score_peers(self, max) -> List:
         assert max >= 1
         peer = self.db.db_conn.firstkey()
         if peer == b'enc':

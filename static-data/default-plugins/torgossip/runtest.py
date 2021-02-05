@@ -112,5 +112,3 @@ def torgossip_runtest(test_manager):
 
         s.sendall(b'9')
         assert s.recv(64) == b"BYE"
-
-
