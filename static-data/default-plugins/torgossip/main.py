@@ -1,12 +1,14 @@
 """
 Onionr - Private P2P Communication
 
-This default plugin allows users to encrypt/decrypt messages without using blocks
+Default plugin which allows users to encrypt/decrypt messages w/o using blocks
 """
+from inspect import trace
 import locale
 locale.setlocale(locale.LC_ALL, '')
 import sys
 import os
+import traceback
 from threading import Thread
 sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
 """
@@ -25,12 +27,14 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 plugin_name = 'torgossip'
 
+import logger  # noqa
+
 try:
     from server import start_server
     from peerdb import TorGossipPeers
     from runtest import torgossip_runtest
-except Exception as e:
-    print(repr(e))
+except Exception as _:  # noqa
+    logger.error(traceback.format_exc(), terminal=True)
 
 
 def on_init(api, data=None):
@@ -39,7 +43,6 @@ def on_init(api, data=None):
         "OnionrRunTestManager").plugin_tests.append(torgossip_runtest)
 
     shared_state.get(TorGossipPeers)
-
 
     Thread(target=start_server, daemon=True, args=[shared_state]).start()
 
