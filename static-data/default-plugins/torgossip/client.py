@@ -10,11 +10,9 @@ from typing import TYPE_CHECKING
 from random import SystemRandom
 
 import socks as socket
-from stem import control
 
 from netcontroller.torcontrol.onionserviceonline import service_online_recently
 from netcontroller.torcontrol import torcontroller
-from .constants import GOSSIP_PORT
 
 if TYPE_CHECKING:
     from .peerdb import TorGossipPeers

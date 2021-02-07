@@ -10,10 +10,11 @@ import selectors
 import socket
 from time import sleep
 
-import filepaths
 sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
 from commands import GossipCommands  # noqa
 import commandhandlers
+
+from .constants import SERVER_SOCKET
 """
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -97,13 +98,13 @@ def start_server(shared_state):
             do_close(conn)
 
     sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-    socket_file = filepaths.identifyhome.identify_home() + "torgossip.sock"
+
     try:
-        os.remove(socket_file)
+        os.remove(SERVER_SOCKET)
     except FileNotFoundError:
         pass
 
-    sock.bind(socket_file)
+    sock.bind(SERVER_SOCKET)
     sock.listen(100)
     sock.setblocking(False)
     sel.register(sock, selectors.EVENT_READ, accept)
