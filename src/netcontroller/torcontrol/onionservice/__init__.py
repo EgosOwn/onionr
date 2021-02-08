@@ -9,7 +9,7 @@ from utils.identifyhome import identify_home
 from .servicecontrol import create_new_service, restore_service
 
 
-ONION_KEY_DATABASE_FILE = identify_home() + "torgossip-onion-address-keys.db"
+ONION_KEY_DATABASE_FILE = identify_home() + "onion-address-keys.db"
 
 
 class OnionServiceTarget(NamedTuple):
@@ -17,27 +17,34 @@ class OnionServiceTarget(NamedTuple):
     unix_socket_path: str
 
 
+class NoServices(ValueError):
+    pass
+
+
 def load_services(controller):
     db = SafeDB(ONION_KEY_DATABASE_FILE, protected=True)
-    keys = db.keys()
+    keys = db.db_conn.keys()
+    keys.remove(b'enc')
+    restored = []
 
     if not keys:
         db.close()
-        raise ValueError("No addresses to restore")
+        raise NoServices("No addresses to restore")
 
     while keys:
         # Not most pythonic but reduces mem usage as it runs
         key = keys.pop()
-        if len(len) > 3:
-            try:
-                service = unpackb(db.get(key))
-                restore_service(
-                    controller, service['k'], service['p'],
-                    unix_socket=service['s'])
-            except Exception as _:  # noqa
-                db.close()
-                raise
+        try:
+            service = unpackb(db.get(key))
+            service_id = restore_service(
+                controller, service['k'], int(service['p']),
+                unix_socket=service['s'])[0]
+            restored.append((service_id, service['s']))
+        except Exception as _:  # noqa
+            db.close()
+            raise
     db.close()
+    return restored
 
 
 def run_new_and_store_service(controller, target: OnionServiceTarget) -> bytes:

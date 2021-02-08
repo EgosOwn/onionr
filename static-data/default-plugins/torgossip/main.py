@@ -3,14 +3,18 @@ Onionr - Private P2P Communication
 
 Default plugin which allows users to encrypt/decrypt messages w/o using blocks
 """
-from inspect import trace
+from base64 import b32encode
 import locale
+
+from netcontroller.torcontrol import torcontroller
 locale.setlocale(locale.LC_ALL, '')
 import sys
 import os
 import traceback
 from threading import Thread
+from netcontroller.torcontrol import onionservice
 sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
+from constants import SERVER_SOCKET, GOSSIP_PORT, HOSTNAME_FILE
 """
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -43,6 +47,28 @@ def on_init(api, data=None):
         "OnionrRunTestManager").plugin_tests.append(torgossip_runtest)
 
     shared_state.get(TorGossipPeers)
+
+    hs = ""
+
+    try:
+        with open(HOSTNAME_FILE, "rb") as f:
+            hs = f.read()
+            if not hs:
+                raise FileNotFoundError
+    except FileNotFoundError:
+        with torcontroller.get_controller() as c:
+
+            try:
+                hs = onionservice.run_new_and_store_service(
+                    c, onionservice.OnionServiceTarget(
+                        GOSSIP_PORT, SERVER_SOCKET))
+            except Exception:
+                print(traceback.format_exc())
+                raise
+
+        with open(HOSTNAME_FILE, "wb") as hf:
+            hf.write(hs)
+    
 
     Thread(target=start_server, daemon=True, args=[shared_state]).start()
 

@@ -25,7 +25,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
 
-
 class TorGossipPeers:  # name it this way to avoid collisions in SharedState
 
     PACK_FORMAT = "qQ"

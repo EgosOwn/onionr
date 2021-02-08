@@ -18,6 +18,7 @@ from deadsimplekv import DeadSimpleKV
 import psutil
 
 import config
+from netcontroller.torcontrol import onionservice, torcontroller
 import onionrstatistics
 from onionrstatistics import serializeddata
 import apiservers
@@ -246,6 +247,13 @@ def daemon():
         _setup_online_mode(use_existing_tor, net, security_level)
 
     _show_info_messages()
+
+    with torcontroller.get_controller() as c:
+        try:
+            onionservice.load_services(c)
+        except onionservice.NoServices:
+            pass
+
     logger.info(
         "Onionr daemon is running under " + str(os.getpid()), terminal=True)
     events.event('init', threaded=False, data=shared_state)

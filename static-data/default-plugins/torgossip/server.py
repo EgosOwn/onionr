@@ -14,7 +14,7 @@ sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
 from commands import GossipCommands  # noqa
 import commandhandlers
 
-from .constants import SERVER_SOCKET
+from constants import SERVER_SOCKET
 """
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

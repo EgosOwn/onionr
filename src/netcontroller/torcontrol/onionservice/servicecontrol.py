@@ -27,16 +27,18 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 def _add_ephemeral_service(
         controller: 'Controller', virtual_port, target, key_content=None):
 
-    key_type = "ED25519-V3"
+    key_type = "NEW"
     if not key_content:
-        key_type = "NEW"
+        key_content = "ED25519-V3"
+    else:
+        key_type = "ED25519-V3"
     hs = controller.create_ephemeral_hidden_service(
         {virtual_port: target},
         key_type=key_type,
         key_content=key_content,
-        await_publication=True,
         detached=True
         )
+
     return (hs.service_id, hs.private_key)
 
 
@@ -65,10 +67,15 @@ def restore_service(
         bind_location: str = None):
     if unix_socket and bind_location or (not unix_socket and not bind_location):
         raise ValueError("Must pick unix socket or ip:port, and not both")
-    key = base64.b64encode(key)
+
+    key = base64.b64encode(key).decode()
+
     target = unix_socket
     if bind_location:
         target = bind_location
-    return _add_ephemeral_service(controller, virtual_port, target, key)
+    if not target.startswith("unix:"):
+        target = "unix:" + target
+    return _add_ephemeral_service(
+        controller, virtual_port, target, key_content=key)
 
 
