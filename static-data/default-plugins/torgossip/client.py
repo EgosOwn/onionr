@@ -77,10 +77,14 @@ def _client_pool(shared_state,  socket_pool: dict):
 
 
 def client_loop(shared_state, socket_pool):
+    block_db = shared_state.get_by_string('SafeDB')
+    peer_db = shared_state.get_by_string('TorGossipPeers')
+
     while True:
         if not socket_pool:
             _client_pool(shared_state, socket_pool)
-        
+        sync_
+
 
 
 
