@@ -18,7 +18,7 @@ from netcontroller.torcontrol import torcontroller
 if TYPE_CHECKING:
     from .peerdb import TorGossipPeers
     from stem.control import Controller
-sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
+sys.path.insert(0, path.dirname(path.realpath(__file__)))
 
 from commands import GossipCommands
 """
