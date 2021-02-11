@@ -60,9 +60,9 @@ class TorGossipPeers:  # name it this way to avoid collisions in SharedState
         if peer == b'enc':
             peer = self.db.db_conn.nextkey(peer)
 
-        assert len(peer) == 34
         if not peer:
             return []
+        assert len(peer) == 34
 
         top = [(peer, self.db.get(peer))]
 

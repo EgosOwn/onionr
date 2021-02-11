@@ -35,6 +35,7 @@ import logger  # noqa
 
 try:
     from server import start_server
+    from client import start_client
     from peerdb import TorGossipPeers
     from runtest import torgossip_runtest
 except Exception as _:  # noqa
@@ -48,7 +49,7 @@ def on_init(api, data=None):
 
     shared_state.get(TorGossipPeers)
 
-    hs = ""
+    hs = b""
 
     try:
         with open(HOSTNAME_FILE, "rb") as f:
@@ -68,7 +69,9 @@ def on_init(api, data=None):
 
         with open(HOSTNAME_FILE, "wb") as hf:
             hf.write(hs)
-    
+    logger.info("TorGossip server on " + b32encode(hs).lower().decode('utf-8'), terminal=True)
+
 
     Thread(target=start_server, daemon=True, args=[shared_state]).start()
+    Thread(target=start_client, daemon=True, args=[shared_state]).start()
 

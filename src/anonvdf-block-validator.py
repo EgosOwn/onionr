@@ -24,7 +24,7 @@ except InvalidID:
         "Invalid block ID for " +
         b85encode(block_hash).decode('utf-8'))
 except ValueError as e:
-    # Supposed to be if rounds are not specifid in the block
+    # Supposed to be if rounds are not specified in the block
     stderr.write(e.message)
 except BlockExpired:
     stderr.write(

@@ -25,5 +25,6 @@ def download_blocks(sock: 'socket', offset: int, block_type: str):
             int(GossipCommands.GET_BLOCK).to_bytes(
                 1, 'little') + hash)
         bl_content = sock.recv(10**6)
+        print(bl_content)
 
 
