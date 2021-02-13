@@ -16,5 +16,4 @@ def vdf_block(block_hash: bytes, block_data: bytes):
             b85encode(block_hash)], stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
     result = p.communicate(block_data)
     if result[1]:
-        print(result[1])
         raise anonvdf.InvalidID()

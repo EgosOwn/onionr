@@ -12,6 +12,7 @@ from typing import TYPE_CHECKING
 from random import SystemRandom
 
 import socks as socket
+from stem import SocketClosed
 
 from netcontroller.torcontrol.onionserviceonline import service_online_recently
 from netcontroller.torcontrol import torcontroller
@@ -25,6 +26,7 @@ sys.path.insert(0, path.dirname(path.realpath(__file__)))
 from commands import GossipCommands
 
 from clientfuncs import download_blocks
+from constants import HOSTNAME_FILE
 """
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -52,16 +54,19 @@ def client_funcs(shared_state, socket_pool):
         SystemRandom().shuffle(peers)
 
         for peer in peers:
+            peer = peer[0]
             if peer in socket_pool:
                 continue
-            if not service_online_recently(controller, peer):
+            p_encoded = b32encode(peer).decode().lower() + ".onion"
+            if not service_online_recently(controller, p_encoded):
                 continue
             s = socket.socksocket()
             s.set_proxy(
                 socket.SOCKS5, '127.0.0.1', socks_port, rdns=True)
             try:
                 socket_pool[peer] = s.connect(
-                    (b32encode(peer).decode().lower() + ".onion", 2021))
+                    (p_encoded, 2021))
+                logger.info(f"Connected to {p_encoded}", terminal=True)
 
             except socket.GeneralProxyError:
                 s.close()
@@ -74,7 +79,11 @@ def client_funcs(shared_state, socket_pool):
 
         while True:
             if not socket_pool:
-                _client_pool(shared_state, socket_pool)
+                try:
+                    _client_pool(shared_state, socket_pool)
+                except SocketClosed:  # Probably shutting down, or tor crashed
+                    sleep(1)
+                    continue
             peers = list(socket_pool)
             SystemRandom().shuffle(peers)
             try:
@@ -82,7 +91,7 @@ def client_funcs(shared_state, socket_pool):
             except IndexError:
                 logger.error(
                     "There are no known TorGossip peers." +
-                    f"Sleeping for {sleep_t}s",
+                    f" Sleeping for {sleep_t}s",
                     terminal=True)
                 sleep(sleep_t)
                 continue
@@ -93,11 +102,15 @@ def client_funcs(shared_state, socket_pool):
 
 
 def _add_bootstrap_peers(peer_db: 'TorGossipPeers'):
-    if len(peer_db.db.db_conn.keys()):
+    # If we have peers, ignore encrypt mark in db
+    if len(peer_db.db.db_conn.keys()) > 1:
         return
+    with open(HOSTNAME_FILE, "rb") as hf:
+        our_host = b32encode(hf.read()).decode().lower()
     bootstap_peers = path.dirname(path.realpath(__file__)) + "/bootstrap.txt"
     with open(bootstap_peers, 'r') as bs_peers:
         peers = bs_peers.read().split(',')
+        peers.remove(our_host)
         for peer in peers:
             try:
                 peer_db.db.get(peer)

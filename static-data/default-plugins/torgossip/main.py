@@ -64,7 +64,7 @@ def on_init(api, data=None):
                     c, onionservice.OnionServiceTarget(
                         GOSSIP_PORT, SERVER_SOCKET))
             except Exception:
-                print(traceback.format_exc())
+                logger.error(traceback.format_exc(), terminal=True)
                 raise
 
         with open(HOSTNAME_FILE, "wb") as hf:
