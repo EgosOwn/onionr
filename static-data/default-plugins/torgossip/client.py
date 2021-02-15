@@ -64,9 +64,10 @@ def client_funcs(shared_state, socket_pool):
             s.set_proxy(
                 socket.SOCKS5, '127.0.0.1', socks_port, rdns=True)
             try:
-                socket_pool[peer] = s.connect(
+                s.connect(
                     (p_encoded, 2021))
-                logger.info(f"Connected to {p_encoded}", terminal=True)
+                socket_pool[peer] = s
+                logger.info(f"[TorGossip] Connected to {p_encoded}", terminal=True)
 
             except socket.GeneralProxyError:
                 s.close()
@@ -88,6 +89,7 @@ def client_funcs(shared_state, socket_pool):
             SystemRandom().shuffle(peers)
             try:
                 peer = peers[0]
+                print(peer)
             except IndexError:
                 logger.error(
                     "There are no known TorGossip peers." +
@@ -95,7 +97,10 @@ def client_funcs(shared_state, socket_pool):
                     terminal=True)
                 sleep(sleep_t)
                 continue
-            download_blocks(socket_pool[peer], 0, 'txt')
+            try:
+                download_blocks(socket_pool[peer], 0, 'txt')
+            except BrokenPipeError:
+                del socket_pool[peer]
 
     _client_pool(shared_state, socket_pool)
     client_loop(shared_state, socket_pool)
@@ -110,7 +115,10 @@ def _add_bootstrap_peers(peer_db: 'TorGossipPeers'):
     bootstap_peers = path.dirname(path.realpath(__file__)) + "/bootstrap.txt"
     with open(bootstap_peers, 'r') as bs_peers:
         peers = bs_peers.read().split(',')
-        peers.remove(our_host)
+        try:
+            peers.remove(our_host)
+        except ValueError:
+            pass
         for peer in peers:
             try:
                 peer_db.db.get(peer)

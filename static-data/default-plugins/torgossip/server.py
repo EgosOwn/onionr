@@ -58,6 +58,7 @@ def start_server(shared_state):
 
     def read(conn, mask):
         data = conn.recv(1000)  # Should be ready
+        print('recd', data)
         cmd = None
         if data:
             try:
