@@ -38,7 +38,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 def start_server(shared_state):
 
-    bl = subprocgenerate.vdf_block(b"yep", "txt", 120)
+    bl = subprocgenerate.vdf_block(b"yep" + os.urandom(5), "txt", 6000)
     store_block(Kasten(bl.id, bl.get_packed(), generator=AnonVDFGenerator), shared_state.get_by_string('SafeDB'))
     print(bl.id)
 

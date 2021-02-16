@@ -98,7 +98,7 @@ def client_funcs(shared_state, socket_pool):
                 sleep(sleep_t)
                 continue
             try:
-                download_blocks(socket_pool[peer], 0, 'txt')
+                download_blocks(block_db, socket_pool[peer], 0, 'txt')
             except BrokenPipeError:
                 del socket_pool[peer]
 

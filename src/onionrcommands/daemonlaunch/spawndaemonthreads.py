@@ -12,6 +12,7 @@ from communicatorutils import uploadblocks
 from communicatorutils import announcenode, deniableinserts
 from communicatorutils import netcheck
 import onionrpeers
+from blockio import clean_expired_blocks
 
 import config
 
@@ -69,3 +70,5 @@ def spawn_client_threads(shared_state: 'TooMany'):
         add_onionr_thread(
             announcenode.announce_node, [shared_state], 600, 60)
     add_onionr_thread(onionrpeers.peer_cleanup, [], 300, 300)
+
+    add_onionr_thread(clean_expired_blocks, [shared_state.get_by_string('SafeDB')], 120, 1)

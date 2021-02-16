@@ -71,7 +71,6 @@ def on_init(api, data=None):
             hf.write(hs)
     logger.info("TorGossip server on " + b32encode(hs).lower().decode('utf-8'), terminal=True)
 
-
     Thread(target=start_server, daemon=True, args=[shared_state]).start()
     Thread(target=start_client, daemon=True, args=[shared_state]).start()
 
