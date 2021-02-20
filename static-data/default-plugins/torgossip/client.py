@@ -10,6 +10,7 @@ from os import path
 from time import sleep
 from typing import TYPE_CHECKING
 from random import SystemRandom
+from threading import Thread
 
 import socks as socket
 from stem import SocketClosed
@@ -74,9 +75,50 @@ def client_funcs(shared_state, socket_pool):
 
 
     def client_loop(shared_state, socket_pool):
+
         sleep_t = 60
         block_db = shared_state.get_by_string('SafeDB')
         peer_db = shared_state.get_by_string('TorGossipPeers')
+
+        peer_info = {}
+
+        block_types = ['txt', 'bin', 'png']
+
+        peers = list(socket_pool)
+        SystemRandom().shuffle(peers)
+
+        def download_all_missed():
+            while not socket_pool:
+                sleep(4)
+            peer = list(socket_pool)[0]
+            logger.info("[TorGossip] Downloading missed blocks", terminal=True)
+            for bl_type in block_types:
+                while True:
+                    try:
+                        peer_info[peer]
+                    except KeyError:
+                        peer_info[peer] = {'offsets': {}}
+                    else:
+                        try:
+                            peer_info[peer]['offsets']
+                        except KeyError:
+                            peer_info[peer]['offsets'] = {}
+                    try:
+                        offset = peer_info[peer]['offsets'][bl_type]
+                    except KeyError:
+                        offset = 0
+                    try:
+                        peer_info[peer]['offsets'][bl_type] = \
+                            download_blocks(
+                            block_db, socket_pool[peer], offset, bl_type)
+                    except BrokenPipeError:
+                        del peer_info[peer]['offsets']
+                        del socket_pool[peer]
+                    else:
+                        # Go back to for loop
+                        break
+
+        Thread(target=download_all_missed, daemon=True).start()
 
         while True:
             if not socket_pool:
@@ -85,11 +127,8 @@ def client_funcs(shared_state, socket_pool):
                 except SocketClosed:  # Probably shutting down, or tor crashed
                     sleep(1)
                     continue
-            peers = list(socket_pool)
-            SystemRandom().shuffle(peers)
             try:
                 peer = peers[0]
-                print(peer)
             except IndexError:
                 logger.error(
                     "There are no known TorGossip peers." +
@@ -97,10 +136,9 @@ def client_funcs(shared_state, socket_pool):
                     terminal=True)
                 sleep(sleep_t)
                 continue
-            try:
-                download_blocks(block_db, socket_pool[peer], 0, 'txt')
-            except BrokenPipeError:
-                del socket_pool[peer]
+            peers = list(socket_pool)
+            SystemRandom().shuffle(peers)
+
 
     _client_pool(shared_state, socket_pool)
     client_loop(shared_state, socket_pool)

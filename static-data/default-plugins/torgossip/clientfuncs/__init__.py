@@ -16,7 +16,8 @@ if TYPE_CHECKING:
     from socket import socket
 
 
-def download_blocks(safe_db, sock: 'socket', offset: int, block_type: str):
+def download_blocks(
+        safe_db, sock: 'socket', offset: int, block_type: str) -> int:
     sock.sendall(
         str(int(GossipCommands.LIST_BLOCKS_BY_TYPE_OFFSET)).encode('utf-8') +
         str(offset).encode('utf-8') + b',' +
@@ -24,12 +25,14 @@ def download_blocks(safe_db, sock: 'socket', offset: int, block_type: str):
     bl_hashs = sock.recv(600000)
     existing_blocks = list_all_blocks(safe_db)
     existing_blocks_hashes = b''
+    downloaded_total = 0  # Including non-succesful
     for i in existing_blocks:
         for x in i:
             existing_blocks_hashes += int(x).to_bytes(1, 'little')
     print('existing', existing_blocks_hashes)
     hash = None
     for i in range(len(bl_hashs)//64):
+        downloaded_total += 1
         hash = bl_hashs[:(i*64) + 64]
         if hash in existing_blocks_hashes:
             continue
@@ -56,3 +59,5 @@ def download_blocks(safe_db, sock: 'socket', offset: int, block_type: str):
         except ValueError:
             #print('not storing dupe block')
             existing_blocks_hashes += hash
+    return downloaded_total
+
