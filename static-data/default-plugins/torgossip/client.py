@@ -48,7 +48,8 @@ def client_funcs(shared_state, socket_pool):
     controller = torcontroller.get_controller()
 
     def _client_pool(shared_state,  socket_pool: dict):
-        peer_db: 'TorGossipPeers' = shared_state.get_by_string('TorGossipPeers')
+        peer_db: 'TorGossipPeers' = shared_state.get_by_string(
+            'TorGossipPeers')
         socks_port = shared_state.get_by_string('NetController').socksPort
 
         peers = peer_db.get_highest_score_peers(20)
@@ -73,12 +74,10 @@ def client_funcs(shared_state, socket_pool):
             except socket.GeneralProxyError:
                 s.close()
 
-
     def client_loop(shared_state, socket_pool):
 
         sleep_t = 60
         block_db = shared_state.get_by_string('SafeDB')
-        peer_db = shared_state.get_by_string('TorGossipPeers')
 
         peer_info = {}
 
@@ -128,7 +127,7 @@ def client_funcs(shared_state, socket_pool):
                     sleep(1)
                     continue
             try:
-                peer = peers[0]
+                peers[0]
             except IndexError:
                 logger.error(
                     "There are no known TorGossip peers." +
@@ -138,7 +137,6 @@ def client_funcs(shared_state, socket_pool):
                 continue
             peers = list(socket_pool)
             SystemRandom().shuffle(peers)
-
 
     _client_pool(shared_state, socket_pool)
     client_loop(shared_state, socket_pool)

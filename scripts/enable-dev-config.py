@@ -31,6 +31,7 @@ if input("Use bootstrap list? y/n").lower() == 'y':
     conf['general']['use_bootstrap_list'] = True
 conf['log']['file']['remove_on_exit'] = False
 conf['ui']['animated_background'] = False
+conf['runtests']['skip_slow'] = True
 if input('Stat reporting? y/n') == 'y':
     conf['statistics']['i_dont_want_privacy'] = True
     conf['statistics']['server'] = input('Statistics server')
