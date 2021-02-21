@@ -2,6 +2,7 @@
 
 This file handles all incoming http requests to the client, using Flask
 """
+import http
 from typing import Dict
 import hmac
 
@@ -77,6 +78,7 @@ class PrivateAPI:
         """Start client gevent API web server with flask client app."""
         waitforsetvar.wait_for_set_var(self, "_too_many")
         fd_handler = httpapi.fdsafehandler.FDSafeHandler
+        self._too_many.add(httpapi.wrappedfunctions.SubProcVDFGenerator(self._too_many))
         self.publicAPI = self._too_many.get(  # pylint: disable=E1101
             public.PublicAPI)
         self.httpServer = WSGIServer((self.host, self.bindPort),

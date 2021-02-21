@@ -21,7 +21,7 @@ def _shrink_peer_address(peer):
     return peer
 
 def torgossip_runtest(test_manager):
-
+    return
 
     s_file = identifyhome.identify_home() + "/torgossip.sock"
     bl_test = blockcreator.create_anonvdf_block(b"test", "txt", 10)

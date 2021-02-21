@@ -19,6 +19,7 @@ from .lanservertest import test_lan_server
 from .sneakernettest import test_sneakernet_import
 from .dnsrebindingtest import test_dns_rebinding
 from .serviceonlinetest import test_service_online
+from .wrappedfunctionstest import test_vdf_create_and_store
 """
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -46,7 +47,8 @@ RUN_TESTS = [uicheck.check_ui,
              test_lan_server,
              test_sneakernet_import,
              test_dns_rebinding,
-             test_service_online
+             test_service_online,
+             test_vdf_create_and_store
              ]
 
 SUCCESS_FILE = os.path.dirname(os.path.realpath(__file__)) + '/../../tests/runtime-result.txt'
