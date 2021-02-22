@@ -9,16 +9,10 @@ import traceback
 import logger
 from onionrutils import epoch
 
-from . import uicheck, inserttest, stresstest
-from . import ownnode
+from . import uicheck
 from .webpasstest import webpass_test
 from .osver import test_os_ver_endpoint
-from .clearnettor import test_clearnet_tor_request
-from .housekeeping import test_inserted_housekeeping
-from .lanservertest import test_lan_server
-from .sneakernettest import test_sneakernet_import
 from .dnsrebindingtest import test_dns_rebinding
-from .serviceonlinetest import test_service_online
 from .wrappedfunctionstest import test_vdf_create_and_store
 """
     This program is free software: you can redistribute it and/or modify
@@ -36,18 +30,9 @@ from .wrappedfunctionstest import test_vdf_create_and_store
 """
 
 RUN_TESTS = [uicheck.check_ui,
-             inserttest.insert_bin_test,
-             ownnode.test_tor_adder,
-             ownnode.test_own_node,
-             stresstest.stress_test_block_insert,
              webpass_test,
              test_os_ver_endpoint,
-             test_clearnet_tor_request,
-             test_inserted_housekeeping,
-             test_lan_server,
-             test_sneakernet_import,
              test_dns_rebinding,
-             test_service_online,
              test_vdf_create_and_store
              ]
 

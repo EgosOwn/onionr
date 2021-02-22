@@ -7,6 +7,7 @@ import onionrplugins
 import config
 
 from . import wrappedfunctions
+from . import fdsafehandler
 """
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by

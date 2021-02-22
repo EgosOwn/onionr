@@ -21,7 +21,9 @@ def test_vdf_create_and_store(testmanager):
         sleep(1)
     for i in list_all_blocks(db):
         i = bytes(i)
-        if blockio.load_block(i, db).get_packed().decode('utf-8') == b_data:
+        b = blockio.load_block(i, db).data.decode('utf-8')
+
+        if b == b_data:
             break
     else:
         logger.error("Block was not generated", terminal=True)
