@@ -1,3 +1,2 @@
-pdoc3==0.9.2
-pip-tools==5.5.0
+pip-tools==6.4.0
 helium==3.0.5
