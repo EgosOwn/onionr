@@ -25,6 +25,7 @@ import onionrcrypto
 import onionrstorage
 from onionrblocks import onionrblacklist
 from onionrblocks import storagecounter
+from onionrproofs import vdf
 from . import shoulddownload
 """
     This program is free software: you can redistribute it and/or modify
@@ -100,12 +101,7 @@ def download_blocks_from_communicator(shared_state: "TooMany"):
             except AttributeError:
                 pass
 
-            realHash = onionrcrypto.hashers.sha3_hash(content)
-            try:
-                realHash = realHash.decode() # bytes on some versions for some reason
-            except AttributeError:
-                pass
-            if realHash == blockHash:
+            if vdf.verify_vdf(blockHash, content):
                 #content = content.decode() # decode here because sha3Hash needs bytes above
                 metas = blockmetadata.get_block_metadata_from_data(content) # returns tuple(metadata, meta), meta is also in metadata
                 metadata = metas[0]
@@ -118,30 +114,10 @@ def download_blocks_from_communicator(shared_state: "TooMany"):
                 except onionrexceptions.DataExists:
                     metadata_validation_result = False
                 if metadata_validation_result: # check if metadata is valid, and verify nonce
-                    if onionrcrypto.cryptoutils.verify_POW(content): # check if POW is enough/correct
-                        logger.info('Attempting to save block %s...' % blockHash[:12])
-                        try:
-                            onionrstorage.set_data(content)
-                        except onionrexceptions.DataExists:
-                            logger.warn('Data is already set for %s ' % (blockHash,))
-                        except onionrexceptions.DiskAllocationReached:
-                            logger.error('Reached disk allocation allowance, cannot save block %s.' % (blockHash,))
-                            removeFromQueue = False
-                        else:
-                            blockmetadb.add_to_block_DB(blockHash, dataSaved=True) # add block to meta db
-                            blockmetadata.process_block_metadata(blockHash) # caches block metadata values to block database
-                            spawn(
-                                local_command,
-                                f'/daemon-event/upload_event',
-                                post=True,
-                                is_json=True,
-                                post_data={'block': blockHash}
-                            )
-                    else:
-                        logger.warn('POW failed for block %s.' % (blockHash,))
+                    save_block(blockHash, data)
                 else:
-                    if blacklist.inBlacklist(realHash):
-                        logger.warn('Block %s is blacklisted.' % (realHash,))
+                    if blacklist.inBlacklist(blockHash):
+                        logger.warn(f'Block {blockHash} is blacklisted.')
                     else:
                         logger.warn('Metadata for block %s is invalid.' % (blockHash,))
                         blacklist.addToDB(blockHash)
@@ -154,13 +130,6 @@ def download_blocks_from_communicator(shared_state: "TooMany"):
                     pass
                 # Punish peer for sharing invalid block (not always malicious, but is bad regardless)
                 onionrpeers.PeerProfiles(peerUsed).addScore(-50)
-                if tempHash != 'ed55e34cb828232d6c14da0479709bfa10a0923dca2b380496e6b2ed4f7a0253':
-                    # Dumb hack for 404 response from peer. Don't log it if 404 since its likely not malicious or a critical error.
-                    logger.warn(
-                        'Block hash validation failed for ' +
-                        blockHash + ' got ' + tempHash)
-                else:
-                    removeFromQueue = False # Don't remove from queue if 404
             if removeFromQueue:
                 try:
                     del kv.get('blockQueue')[blockHash] # remove from block queue both if success or false

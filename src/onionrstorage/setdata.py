@@ -31,9 +31,8 @@ from onionrtypes import BlockHash
 storage_counter = storagecounter.StorageCounter()
 
 
-def set_data(data) -> BlockHash:
+def set_data(data):
     """Set the data assciated with a hash."""
-    data = data
     dataSize = sys.getsizeof(data)
     nonce_hash = crypto.hashers.sha3_hash(
         bytesconverter.str_to_bytes(
@@ -50,7 +49,7 @@ def set_data(data) -> BlockHash:
     try:
         onionrstorage.getData(dataHash)
     except onionrexceptions.NoDataAvailable:
-        if storage_counter.add_bytes(dataSize) is not False:
+        if storage_counter.add_bytes(dataSize):
             onionrstorage.store(data, block_hash=dataHash)
             conn = sqlite3.connect(
                 dbfiles.block_meta_db, timeout=DATABASE_LOCK_TIMEOUT)

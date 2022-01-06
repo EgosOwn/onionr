@@ -12,6 +12,7 @@ from onionrutils import bytesconverter
 from onionrcrypto import hashers
 
 from .blocknoncestart import BLOCK_NONCE_START_INT
+from .vdf import create_vdf
 """
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by

@@ -84,7 +84,7 @@ class StorageCounter:
         new_amount = amount + self.amount
         ret_data = new_amount
         if new_amount > config.get('allocations.disk', 2000000000):
-            ret_data = False
+            ret_data = 0
         else:
             self._update(new_amount)
         return ret_data
