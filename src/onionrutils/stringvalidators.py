@@ -60,54 +60,6 @@ def validate_pub_key(key):
         retVal = True
     return retVal
 
-def validate_transport(id):
-    try:
-        idLength = len(id)
-        retVal = True
-        idNoDomain = ''
-        peerType = ''
-        # i2p b32 addresses are 60 characters long (including .b32.i2p)
-        if idLength == 60:
-            peerType = 'i2p'
-            if not id.endswith('.b32.i2p'):
-                retVal = False
-            else:
-                idNoDomain = id.split('.b32.i2p')[0]
-        # Onion v2's are 22 (including .onion), v3's are 62 with .onion
-        elif idLength == 22 or idLength == 62:
-            peerType = 'onion'
-            if not id.endswith('.onion'):
-                retVal = False
-            else:
-                idNoDomain = id.split('.onion')[0]
-        else:
-            retVal = False
-        if retVal:
-            if peerType == 'i2p':
-                try:
-                    id.split('.b32.i2p')[2]
-                except IndexError:
-                    pass
-                else:
-                    retVal = False
-            elif peerType == 'onion':
-                try:
-                    id.split('.onion')[2]
-                except IndexError:
-                    pass
-                else:
-                    retVal = False
-            if not idNoDomain.isalnum():
-                retVal = False
-
-            # Validate address is valid base32 (when capitalized and minus extension); v2/v3 onions and .b32.i2p use base32
-            for x in idNoDomain.upper():
-                if x not in string.ascii_uppercase and x not in '234567':
-                    retVal = False
-
-        return retVal
-    except Exception as e:
-        return False
 
 def is_integer_string(data):
     '''Check if a string is a valid base10 integer (also returns true if already an int)'''

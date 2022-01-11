@@ -19,7 +19,6 @@ from .. import motdcreator  # cmd to generate new Onionr MOTDs
 from .. import sitecreator  # cmd to create multi-page sites
 from .. import togglebootstrap   # cmd to toggle bootstrap file usage
 from ..listsites import print_site_list  # cmd to list list ids
-from netcontroller.torcontrol.rebuildtor import rebuild as tor_restart
 
 import onionrexceptions
 from onionrutils import importnewblocks  # func to import new blocks
@@ -54,7 +53,6 @@ def get_arguments() -> dict:
         ('start', 'daemon'): daemonlaunch.start,
         ('stop', 'kill'): daemonlaunch.kill_daemon,
         ('restart',): restartonionr.restart,
-        ('restart-tor', 'restarttor'): tor_restart,
         ('add-address', 'addaddress', 'addadder'): keyadders.add_address,
         ('openhome', 'gui', 'openweb',
          'open-home', 'open-web'): openwebinterface.open_home,

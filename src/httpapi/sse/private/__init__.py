@@ -13,7 +13,6 @@ from onionrblocks.onionrblockapi import Block
 from coredb.dbfiles import block_meta_db
 from coredb.blockmetadb import get_block_list
 from onionrutils.epoch import get_epoch
-from onionrstatistics.transports.tor import TorStats
 from .. import wrapper
 """
     This program is free software: you can redistribute it and/or modify
@@ -43,15 +42,6 @@ def stream_hello():
             sleep(1)
     return SSEWrapper.handle_sse_request(print_hello)
 
-
-@private_sse_blueprint.route('/torcircuits')
-def stream_tor_circuits():
-    tor_stats = g.too_many.get(TorStats)
-    def circuit_stat_stream():
-        while True:
-            yield "data: " + tor_stats.get_json() + "\n\n"
-            sleep(10)
-    return SSEWrapper.handle_sse_request(circuit_stat_stream)
 
 @private_sse_blueprint.route('/recentblocks')
 def stream_recent_blocks():

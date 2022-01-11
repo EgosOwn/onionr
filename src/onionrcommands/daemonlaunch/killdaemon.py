@@ -10,7 +10,6 @@ from gevent import spawn
 from onionrplugins import events
 from onionrutils import localcommand
 import logger
-from netcontroller import NetController
 import config
 """
     This program is free software: you can redistribute it and/or modify
@@ -43,7 +42,6 @@ def kill_daemon():
         pass
 
     events.event('daemon_stop')
-    net = NetController(config.get('client.port', 59496))
     try:
         spawn(
             localcommand.local_command,

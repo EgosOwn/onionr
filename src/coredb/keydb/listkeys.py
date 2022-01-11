@@ -22,8 +22,9 @@ import logger
 from onionrutils import epoch
 from etc import onionrvalues
 from .. import dbfiles
-from . import userinfo, transportinfo
-def list_peers(randomOrder=True, getPow=False, trust=0):
+from . import userinfo
+
+def list_pub_keys(randomOrder=True, getPow=False, trust=0):
     '''
         Return a list of public keys (misleading function name)
 
@@ -59,28 +60,3 @@ def list_peers(randomOrder=True, getPow=False, trust=0):
     conn.close()
 
     return peerList
-
-def list_adders(randomOrder=True, i2p=True, recent=0):
-    '''
-        Return a list of transport addresses
-    '''
-    conn = sqlite3.connect(dbfiles.address_info_db, timeout=onionrvalues.DATABASE_LOCK_TIMEOUT)
-    c = conn.cursor()
-    if randomOrder:
-        addresses = c.execute('SELECT * FROM adders ORDER BY RANDOM();')
-    else:
-        addresses = c.execute('SELECT * FROM adders;')
-    addressList = []
-    for i in addresses:
-        if len(i[0].strip()) == 0:
-            continue
-        addressList.append(i[0])
-    conn.close()
-    testList = list(addressList) # create new list to iterate
-    for address in testList:
-        try:
-            if recent > 0 and (epoch.get_epoch() - transportinfo.get_address_info(address, 'lastConnect')) > recent:
-                raise TypeError # If there is no last-connected date or it was too long ago, don't add peer to list if recent is not 0
-        except TypeError:
-            addressList.remove(address)
-    return addressList

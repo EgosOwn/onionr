@@ -254,6 +254,6 @@ class OnionrUser:
     @classmethod
     def list_friends(cls):
         friendList = []
-        for x in keydb.listkeys.list_peers(trust=1):
+        for x in keydb.listkeys.list_pub_keys(trust=1):
             friendList.append(cls(x))
         return list(friendList)

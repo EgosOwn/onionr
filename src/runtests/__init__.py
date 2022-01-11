@@ -14,7 +14,6 @@ from .webpasstest import webpass_test
 from .osver import test_os_ver_endpoint
 from .clearnettor import test_clearnet_tor_request
 from .housekeeping import test_inserted_housekeeping
-from .lanservertest import test_lan_server
 from .sneakernettest import test_sneakernet_import
 from .dnsrebindingtest import test_dns_rebinding
 """
@@ -41,7 +40,6 @@ RUN_TESTS = [uicheck.check_ui,
              test_os_ver_endpoint,
              test_clearnet_tor_request,
              test_inserted_housekeeping,
-             test_lan_server,
              sneakernettest.test_sneakernet_import,
              test_dns_rebinding
              ]

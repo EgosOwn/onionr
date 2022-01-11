@@ -24,23 +24,7 @@ from onionrutils import mnemonickeys
 from .. import dbfiles
 from etc import onionrvalues
 
-def remove_address(address):
-    '''
-        Remove an address from the address database
-    '''
 
-    if stringvalidators.validate_transport(address):
-        conn = sqlite3.connect(dbfiles.address_info_db, timeout=onionrvalues.DATABASE_LOCK_TIMEOUT)
-        c = conn.cursor()
-        t = (address,)
-        c.execute('Delete from adders where address=?;', t)
-        conn.commit()
-        conn.close()
-
-        #events.event('address_remove', data = {'address': address}, onionr = core_inst.onionrInst)
-        return True
-    else:
-        return False
 
 def remove_user(pubkey: str)->bool:
     '''

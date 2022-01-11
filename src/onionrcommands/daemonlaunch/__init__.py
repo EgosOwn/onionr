@@ -16,14 +16,11 @@ from deadsimplekv import DeadSimpleKV
 import psutil
 
 import config
-import onionrstatistics
-from onionrstatistics import serializeddata
+
 import apiservers
 import logger
-import communicator
 from onionrplugins import onionrevents as events
-from netcontroller import NetController
-from netcontroller import clean_ephemeral_services
+
 from onionrutils import localcommand
 from utils import identifyhome
 import filepaths
@@ -35,29 +32,24 @@ from httpapi import daemoneventsapi
 from .. import version
 from .getapihost import get_api_host_until_available
 from utils.bettersleep import better_sleep
-from netcontroller.torcontrol.onionservicecreator import create_onion_service
 from .killdaemon import kill_daemon  # noqa
 from .showlogo import show_logo
-from lan import LANManager
-from lan.server import LANServer
+
 from sneakernet import sneakernet_import_thread
-from onionrstatistics.devreporting import statistics_reporter
 from setupkvvars import setup_kv
-from communicatorutils.housekeeping import clean_blocks_not_meeting_pow
-from .spawndaemonthreads import spawn_client_threads
 """
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
 
@@ -78,53 +70,6 @@ def _show_info_messages():
                  getourkeypair.get_keypair()[0][:52]))
 
 
-def _setup_online_mode(
-        use_existing_tor: bool,
-        net: NetController,
-        security_level: int):
-    if config.get('transports.tor', True):
-        # If we are using tor, check if we are using an existing tor instance
-        # if we are, we need to create an onion service on it and set attrs on our NetController
-        # if not, we need to tell netcontroller to start one
-        if use_existing_tor:
-            try:
-                os.mkdir(filepaths.tor_hs_loc)
-            except FileExistsError:
-                pass
-            net.socksPort = config.get('tor.existing_socks_port')
-            try:
-                net.myID = create_onion_service(
-                    port=net.apiServerIP + ':' + str(net.hsPort))[0]
-            except stem.SocketError:
-                logger.error(
-                    "Could not connect to existing Tor service", terminal=True)
-                localcommand.local_command('shutdown')
-                cleanup.delete_run_files()
-                sys.exit(1)
-            except IncorrectPassword:
-                # Exit if we cannot connect to the existing Tor instance
-                logger.error('Invalid Tor control password', terminal=True)
-                localcommand.local_command('shutdown')
-                cleanup.delete_run_files()
-                sys.exit(1)
-
-            if not net.myID.endswith('.onion'):
-                net.myID += '.onion'
-            with open(filepaths.tor_hs_address_file, 'w') as tor_file:
-                tor_file.write(net.myID)
-        else:
-            logger.info('Tor is starting...', terminal=True)
-            if not net.startTor():
-                # Exit if we cannot start Tor.
-                localcommand.local_command('shutdown')
-                cleanup.delete_run_files()
-                sys.exit(1)
-        if len(net.myID) > 0 and security_level == 0:
-            logger.debug(
-                'Started .onion service: %s' %
-                (logger.colors.underline + net.myID))
-        else:
-            logger.debug('.onion service disabled')
 
 
 def daemon():
@@ -167,17 +112,12 @@ def daemon():
 
     Thread(target=shared_state.get(apiservers.ClientAPI).start,
            daemon=True, name='client HTTP API').start()
-    if not offline_mode:
-        Thread(target=shared_state.get(apiservers.PublicAPI).start,
-               daemon=True, name='public HTTP API').start()
+
 
     # Init run time tester
     # (ensures Onionr is running right, for testing purposes)
     # Run time tests are not normally run
     shared_state.get(runtests.OnionrRunTestManager)
-
-    # Create singleton
-    shared_state.get(serializeddata.SerializedData)
 
     shared_state.share_object()  # share the parent object to the threads
 
@@ -189,54 +129,22 @@ def daemon():
     if not offline_mode:
         apiHost = get_api_host_until_available()
 
-    net = NetController(config.get('client.public.port', 59497),
-                        apiServerIP=apiHost)
-    shared_state.add(net)
 
-    shared_state.get(onionrstatistics.tor.TorStats)
 
     security_level = config.get('general.security_level', 1)
     use_existing_tor = config.get('tor.use_existing_tor', False)
 
-    if not offline_mode:
-        # we need to setup tor for use
-        _setup_online_mode(use_existing_tor, net, security_level)
+
 
     _show_info_messages()
     logger.info(
         "Onionr daemon is running under " + str(os.getpid()), terminal=True)
     events.event('init', threaded=False)
     events.event('daemon_start')
-    if config.get('transports.lan', True):
-        if not onionrvalues.IS_QUBES:
-            Thread(target=LANServer(shared_state).start_server,
-                   daemon=True).start()
-            LANManager(shared_state).start()
-        else:
-            logger.warn('LAN not supported on Qubes', terminal=True)
+
     if config.get('transports.sneakernet', True):
         Thread(target=sneakernet_import_thread, daemon=True).start()
 
-    Thread(target=statistics_reporter,
-           args=[shared_state], daemon=True).start()
-
-    shared_state.get(DeadSimpleKV).put(
-        'proxyPort', net.socksPort)
-    spawn_client_threads(shared_state)
-
-    clean_blocks_not_meeting_pow(shared_state)
-
-    communicator.startCommunicator(shared_state)
-
-    clean_ephemeral_services()
-
-    if not offline_mode and not use_existing_tor:
-        net.killTor()
-    else:
-        try:
-            os.remove(filepaths.tor_hs_address_file)
-        except FileNotFoundError:
-            pass
 
     better_sleep(5)
 

@@ -1,1 +1,1 @@
-from . import addkeys, listkeys, removekeys, userinfo, transportinfo
+from . import addkeys, listkeys, removekeys, userinfo

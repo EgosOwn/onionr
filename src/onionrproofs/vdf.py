@@ -12,7 +12,7 @@ def _wrap_vdf_verify(queue, block_data_bytes, block_hash_hex, rounds):
 
 
 
-def rounds_for_bytes(int: byte_count):
+def rounds_for_bytes(byte_count: int):
     return byte_count * 1000
 
 

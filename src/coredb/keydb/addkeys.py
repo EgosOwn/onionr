@@ -25,9 +25,9 @@ from etc import onionrvalues
 """
 
 
-def add_peer(peerID, name=''):
+def add_pub_key(peerID, name=''):
     """Add a public key to the key database (misleading function name)."""
-    if peerID in listkeys.list_peers() or peerID == onionrcrypto.pub_key:
+    if peerID in listkeys.list_pub_keys() or peerID == onionrcrypto.pub_key:
         raise ValueError("specified id is already known")
 
     # This function simply adds a peer to the DB
@@ -54,35 +54,3 @@ def add_peer(peerID, name=''):
 
     return True
 
-
-def add_address(address):
-    """Add an address to the address database (only tor currently)"""
-
-    if type(address) is None or len(address) == 0:
-        return False
-    if stringvalidators.validate_transport(address):
-        if address in gettransports.get():
-            return False
-        conn = sqlite3.connect(dbfiles.address_info_db, timeout=onionrvalues.DATABASE_LOCK_TIMEOUT)
-        c = conn.cursor()
-        # check if address is in database
-        # this is safe to do because the address is validated above, but we strip some chars here too just in case
-        address = address.replace('\'', '').replace(';', '').replace('"', '').replace('\\', '')
-        for i in c.execute("SELECT * FROM adders WHERE address = ?;", (address,)):
-            try:
-                if i[0] == address:
-                    conn.close()
-                    return False
-            except ValueError:
-                pass
-            except IndexError:
-                pass
-
-        t = (address, 1)
-        c.execute('INSERT INTO adders (address, type) VALUES(?, ?);', t)
-        conn.commit()
-        conn.close()
-
-        return True
-    else:
-        return False

@@ -30,12 +30,12 @@ class OnionrUserTests(unittest.TestCase):
     def test_contact_init_no_save(self):
         contact = crypto.generate()[0]
         contact = contactmanager.ContactManager(contact)
-        self.assertFalse(contact.publicKey in keydb.listkeys.list_peers())
+        self.assertFalse(contact.publicKey in keydb.listkeys.list_pub_keys())
 
     def test_contact_create(self):
         contact = crypto.generate()[0]
         contact = contactmanager.ContactManager(contact, saveUser=True)
-        self.assertTrue(contact.publicKey in keydb.listkeys.list_peers())
+        self.assertTrue(contact.publicKey in keydb.listkeys.list_pub_keys())
 
     def test_contact_set_info(self):
         contact = crypto.generate()[0]
