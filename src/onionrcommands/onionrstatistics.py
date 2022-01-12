@@ -6,7 +6,7 @@ import os
 import logger
 from onionrblocks import onionrblacklist
 from onionrutils import mnemonickeys
-from utils import sizeutils, gethostname, getconsolewidth, identifyhome
+from utils import sizeutils, getconsolewidth, identifyhome
 from coredb import blockmetadb, keydb
 import onionrcrypto
 import config
@@ -67,8 +67,6 @@ def show_stats():
 
             # count stats
             'div2': True,
-            'Known Peers (nodes)':
-            str(max(len(keydb.listkeys.list_adders()) - 1, 0)),
             'Enabled Plugins':
             str(len(config.get('plugins.enabled', list()))) + ' / ' +
             str(len(os.listdir(home + 'plugins/'))),
@@ -135,7 +133,6 @@ def show_details():
     """
     details = {
         'Data directory': identifyhome.identify_home(),
-        'Node Address': gethostname.get_hostname(),
         'Public Key': onionrcrypto.pub_key.replace('=', ''),
         'Human-readable Public Key': mnemonickeys.get_human_readable_ID()
     }
@@ -147,8 +144,7 @@ def show_details():
 
 
 show_details.onionr_help = "Shows relevant information "  # type: ignore
-show_details.onionr_help += "for your Onionr install: node "  # type: ignore
-show_details.onionr_help += "address, and active public key."  # type: ignore
+show_details.onionr_help += "for your Onionr install:"
 
 show_stats.onionr_help = "Shows statistics for your Onionr "  # type: ignore
 show_stats.onionr_help += "node. Slow if Onionr is not running"  # type: ignore

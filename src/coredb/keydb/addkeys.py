@@ -5,7 +5,6 @@ add user keys or transport addresses
 import sqlite3
 from onionrutils import stringvalidators
 from . import listkeys
-from utils import gettransports
 from .. import dbfiles
 import onionrcrypto
 from etc import onionrvalues

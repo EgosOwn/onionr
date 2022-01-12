@@ -9,7 +9,6 @@ import logger
 from onionrutils import epoch
 
 from . import uicheck, inserttest, stresstest
-from . import ownnode
 from .webpasstest import webpass_test
 from .osver import test_os_ver_endpoint
 from .clearnettor import test_clearnet_tor_request
@@ -33,8 +32,6 @@ from .dnsrebindingtest import test_dns_rebinding
 
 RUN_TESTS = [uicheck.check_ui,
              inserttest.insert_bin_test,
-             ownnode.test_tor_adder,
-             ownnode.test_own_node,
              stresstest.stress_test_block_insert,
              webpass_test,
              test_os_ver_endpoint,
