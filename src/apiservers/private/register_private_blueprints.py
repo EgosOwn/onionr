@@ -5,7 +5,7 @@ This file registers blueprints for the private api server
 from threading import Thread
 from gevent import sleep
 
-from httpapi import security, friendsapi, configapi, insertblock
+from httpapi import security, friendsapi, configapi
 from httpapi import miscclientapi, onionrsitesapi, apiutils
 from httpapi import themeapi
 from httpapi import fileoffsetreader
@@ -33,8 +33,6 @@ def register_private_blueprints(private_api, app):
         private_api).client_api_security_bp)
     app.register_blueprint(friendsapi.friends)
     app.register_blueprint(configapi.config_BP)
-    app.register_blueprint(insertblock.ib)
-    app.register_blueprint(miscclientapi.getblocks.client_get_blocks)
     app.register_blueprint(miscclientapi.endpoints.PrivateEndpoints(
         private_api).private_endpoints_bp)
     app.register_blueprint(miscclientapi.motd.bp)
