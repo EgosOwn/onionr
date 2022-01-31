@@ -35,7 +35,6 @@ from utils.bettersleep import better_sleep
 from .killdaemon import kill_daemon  # noqa
 from .showlogo import show_logo
 
-from sneakernet import sneakernet_import_thread
 from setupkvvars import setup_kv
 """
 This program is free software: you can redistribute it and/or modify
@@ -141,9 +140,6 @@ def daemon():
         "Onionr daemon is running under " + str(os.getpid()), terminal=True)
     events.event('init', threaded=False)
     events.event('daemon_start')
-
-    if config.get('transports.sneakernet', True):
-        Thread(target=sneakernet_import_thread, daemon=True).start()
 
 
     better_sleep(5)

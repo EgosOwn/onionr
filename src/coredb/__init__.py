@@ -1,1 +1,1 @@
-from . import keydb, blockmetadb
+from . import keydb

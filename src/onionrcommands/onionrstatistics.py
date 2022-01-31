@@ -4,10 +4,9 @@ This module defines commands to show stats/details about the local node
 """
 import os
 import logger
-from onionrblocks import onionrblacklist
 from onionrutils import mnemonickeys
 from utils import sizeutils, getconsolewidth, identifyhome
-from coredb import blockmetadb, keydb
+from coredb import keydb
 import onionrcrypto
 import config
 from etc import onionrvalues
@@ -43,9 +42,8 @@ def show_stats():
     """Print/log statistic info about our Onionr install."""
     try:
         # define stats messages here
-        totalBlocks = len(blockmetadb.get_block_list())
         home = identifyhome.identify_home()
-        totalBanned = len(onionrblacklist.OnionrBlackList().getList())
+
 
         messages = {
             # info about local client
@@ -69,9 +67,7 @@ def show_stats():
             'div2': True,
             'Enabled Plugins':
             str(len(config.get('plugins.enabled', list()))) + ' / ' +
-            str(len(os.listdir(home + 'plugins/'))),
-            'Stored Blocks': str(totalBlocks),
-            'Deleted Blocks': str(totalBanned)
+            str(len(os.listdir(home + 'plugins/')))
         }
 
         # color configuration

@@ -6,7 +6,7 @@ from threading import Thread
 from gevent import sleep
 
 from httpapi import security, friendsapi, configapi
-from httpapi import miscclientapi, onionrsitesapi, apiutils
+from httpapi import miscclientapi, apiutils
 from httpapi import themeapi
 from httpapi import fileoffsetreader
 from httpapi.sse.private import private_sse_blueprint
@@ -35,8 +35,6 @@ def register_private_blueprints(private_api, app):
     app.register_blueprint(configapi.config_BP)
     app.register_blueprint(miscclientapi.endpoints.PrivateEndpoints(
         private_api).private_endpoints_bp)
-    app.register_blueprint(miscclientapi.motd.bp)
-    app.register_blueprint(onionrsitesapi.site_api)
     app.register_blueprint(apiutils.shutdown.shutdown_bp)
     app.register_blueprint(miscclientapi.staticfiles.static_files_bp)
     app.register_blueprint(themeapi.theme_blueprint)

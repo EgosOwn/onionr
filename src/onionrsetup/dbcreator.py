@@ -77,57 +77,6 @@ def createPeerDB():
     conn.close()
     return
 
-def createBlockDB():
-    '''
-        Create a database for blocks
-
-        hash         - the hash of a block
-        dateReceived - the date the block was recieved, not necessarily when it was created
-        decrypted    - if we can successfully decrypt the block (does not describe its current state)
-        dataType     - data type of the block
-        dataFound    - if the data has been found for the block
-        dataSaved    - if the data has been saved for the block
-        sig    - optional signature by the author (not optional if author is specified)
-        author       - multi-round partial sha3-256 hash of authors public key
-        dateClaimed  - timestamp claimed inside the block, only as trustworthy as the block author is
-        expire int   - block expire date in epoch
-    '''
-    if os.path.exists(dbfiles.block_meta_db):
-        raise FileExistsError("Block database already exists")
-    conn = sqlite3.connect(dbfiles.block_meta_db)
-    c = conn.cursor()
-    c.execute('''CREATE TABLE hashes(
-        hash text not null,
-        dateReceived int,
-        decrypted int,
-        dataType text,
-        dataFound int,
-        dataSaved int,
-        sig text,
-        author text,
-        dateClaimed int,
-        expire int
-        );
-    ''')
-    conn.commit()
-    conn.close()
-    return
-
-def createBlockDataDB():
-    if os.path.exists(dbfiles.block_data_db):
-        raise FileExistsError("Block data database already exists")
-    else:
-        if not os.path.exists(filepaths.block_data_location):
-            os.mkdir(filepaths.block_data_location)
-    conn = sqlite3.connect(dbfiles.block_data_db)
-    c = conn.cursor()
-    c.execute('''CREATE TABLE blockData(
-        hash text not null,
-        data blob not null
-        );
-    ''')
-    conn.commit()
-    conn.close()
 
 def createForwardKeyDB():
     '''
@@ -168,5 +117,4 @@ def create_blacklist_db():
 
 
 create_funcs = [createAddressDB, createPeerDB,
-                createBlockDB, createBlockDataDB,
                 createForwardKeyDB, create_blacklist_db]

@@ -68,7 +68,6 @@ class PrivateAPI:
         self.httpServer = ''
 
         self.queueResponse = {}
-        self.get_block_data = httpapi.apiutils.GetBlockData(self)
         register_private_blueprints.register_private_blueprints(self, app)
         httpapi.load_plugin_blueprints(app)
         self.app = app

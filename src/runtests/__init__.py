@@ -8,12 +8,9 @@ from secrets import SystemRandom
 import logger
 from onionrutils import epoch
 
-from . import uicheck, inserttest, stresstest
+from . import uicheck
 from .webpasstest import webpass_test
 from .osver import test_os_ver_endpoint
-from .clearnettor import test_clearnet_tor_request
-from .housekeeping import test_inserted_housekeeping
-from .sneakernettest import test_sneakernet_import
 from .dnsrebindingtest import test_dns_rebinding
 """
     This program is free software: you can redistribute it and/or modify
@@ -31,14 +28,8 @@ from .dnsrebindingtest import test_dns_rebinding
 """
 
 RUN_TESTS = [uicheck.check_ui,
-             inserttest.insert_bin_test,
-             stresstest.stress_test_block_insert,
              webpass_test,
              test_os_ver_endpoint,
-             test_clearnet_tor_request,
-             test_inserted_housekeeping,
-             sneakernettest.test_sneakernet_import,
-             test_dns_rebinding
              ]
 
 SUCCESS_FILE = os.path.dirname(os.path.realpath(__file__)) + '/../../tests/runtime-result.txt'

@@ -1,1 +1,1 @@
-from . import staticfiles, endpoints, motd
+from . import staticfiles, endpoints

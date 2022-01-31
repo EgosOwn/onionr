@@ -78,10 +78,6 @@ class PrivateEndpoints:
             subprocess.Popen([SCRIPT_NAME, 'restart'])
             return Response("bye")
 
-        @private_endpoints_bp.route('/gethidden')
-        def get_hidden_blocks():
-            return Response('\n'.join(client_api.publicAPI.hideBlocks))
-
 
         @private_endpoints_bp.route('/getuptime')
         def show_uptime():
