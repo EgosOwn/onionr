@@ -45,12 +45,10 @@ def kill_daemon():
     try:
         spawn(
             localcommand.local_command,
-            '/shutdownclean'
+            '/shutdown'
             ).get(timeout=5)
     except sqlite3.OperationalError:
         pass
-
-    net.killTor()
 
 
 kill_daemon.onionr_help = "Gracefully stops the "  # type: ignore

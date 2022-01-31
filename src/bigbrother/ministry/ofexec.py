@@ -58,7 +58,9 @@ def block_exec(event, info):
                         'apport/__init__.py',
                         'apport/report.py'
                        ]
-    whitelisted_source = []
+    whitelisted_source = [
+        'ZABaAGQBZAJsAW0CWgIBAHoGZAFkA2wDWgRXAG4LBABlBXkZAQABAAEAZARaBlkAbgN3AGQFWgZkAWQGbAdtCFoIAQBkAWQDbAlaCWQBZAdsCm0LWgwBAAkAZQmgDWQIZAWhAnM1ZARaBmUIgwBkCRcAWg5kEmQMZQ9kDWUPZgRkDmQPhAVaEGQTZBBkEYQBWhFkA1MA'
+    ]
     home = identifyhome.identify_home()
 
     code_b64 = base64.b64encode(info[0].co_code).decode()

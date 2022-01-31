@@ -5,7 +5,17 @@ This file initializes Onionr when ran to be a daemon or with commands
 
 Run with 'help' for usage.
 """
+# Enable pyjion if we can because why not
+pyjion_enabled = False
+try:
+    import pyjion
+    pyjion.enable()
+    pyjion_enabled = True
+except ImportError:
+    pass
+
 import sys
+
 try:
     import sqlite3
 except ModuleNotFoundError:

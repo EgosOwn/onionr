@@ -30,7 +30,6 @@ from utils import hastor
 import runtests
 from httpapi import daemoneventsapi
 from .. import version
-from .getapihost import get_api_host_until_available
 from utils.bettersleep import better_sleep
 from .killdaemon import kill_daemon  # noqa
 from .showlogo import show_logo
@@ -109,31 +108,19 @@ def daemon():
 
     shared_state.get(daemoneventsapi.DaemonEventsBP)
 
-    Thread(target=shared_state.get(apiservers.ClientAPI).start,
-           daemon=True, name='client HTTP API').start()
-
-
     # Init run time tester
     # (ensures Onionr is running right, for testing purposes)
     # Run time tests are not normally run
     shared_state.get(runtests.OnionrRunTestManager)
 
+    # initialize clientAPI but dont start it yet
+    shared_state.get(apiservers.ClientAPI)
+
     shared_state.share_object()  # share the parent object to the threads
 
     show_logo()
 
-    # since we randomize loopback API server hostname to protect against attacks,
-    # we have to wait for it to become set
-    apiHost = ''
-    if not offline_mode:
-        apiHost = get_api_host_until_available()
-
-
-
     security_level = config.get('general.security_level', 1)
-    use_existing_tor = config.get('tor.use_existing_tor', False)
-
-
 
     _show_info_messages()
     logger.info(
@@ -141,8 +128,11 @@ def daemon():
     events.event('init', threaded=False)
     events.event('daemon_start')
 
+    try:
+        shared_state.get(apiservers.ClientAPI).start()
+    except KeyboardInterrupt:
+        pass
 
-    better_sleep(5)
 
     cleanup.delete_run_files()
     if security_level >= 2:
