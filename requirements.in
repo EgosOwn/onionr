@@ -15,3 +15,4 @@ filenuke==0.0.0
 watchdog==2.1.6
 ujson==5.1.0
 cffi==1.14.4
+onionrblocks==7.0.0
