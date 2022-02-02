@@ -1,6 +1,6 @@
 from onionrutils import localcommand
 def check_ui(test_manager):
-    endpoints = ['/', '/mail/', '/friends/', '/board/']
+    endpoints = ['/']
     for point in endpoints:
         result = localcommand.local_command(point)
         if not result: raise ValueError

@@ -1,7 +1,7 @@
 from . import getopenport
+from .getopenport import get_open_port
 import os
 from shutil import which
-
 
 def tor_binary():
     """Return tor binary path or none if not exists"""

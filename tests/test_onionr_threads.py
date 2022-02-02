@@ -13,7 +13,6 @@ createdirs.create_dirs()
 from onionrcrypto import getourkeypair
 getourkeypair.get_keypair()
 
-from utils import networkmerger
 from coredb import keydb
 import onionrsetup as setup
 from onionrthreads import add_onionr_thread

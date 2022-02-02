@@ -79,7 +79,7 @@ class OnionrUser:
 
         if saveUser and not publicKey == getourkeypair.get_keypair():
             try:
-                keydb.addkeys.add_peer(publicKey)
+                keydb.addkeys.add_pub_key(publicKey)
             except (AssertionError, ValueError) as _:
                 pass
 
