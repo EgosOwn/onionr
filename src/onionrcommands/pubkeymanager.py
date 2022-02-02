@@ -8,7 +8,6 @@ import getpass
 import unpaddedbase32
 import niceware
 
-import vanityonionr
 import logger
 import onionrexceptions
 from onionrutils import stringvalidators, bytesconverter
@@ -94,43 +93,3 @@ change_ID.onionr_help = "<pubkey>: Switches Onionr to "  # type: ignore
 change_ID.onionr_help += "use a different user ID key. "  # type: ignore
 change_ID.onionr_help += "You should immediately restart "  # type: ignore
 change_ID.onionr_help += "Onionr if it is running."  # type: ignore
-
-
-def add_vanity():
-    """Command to generate menmonic vanity key pair."""
-    key_manager = keymanager.KeyManager()
-
-    def tell(tell):
-        return logger.info(tell, terminal=True)
-
-    words = ''
-    length = len(sys.argv) - 2
-    if length == 0:
-        return
-    for i in range(2, len(sys.argv)):
-        words += ' '
-        words += sys.argv[i]
-    try:
-        if length == 1:
-            tell('Finding vanity, this should only take a few moments.')
-        else:
-            tell('Finding vanity, this will probably take a really long time.')
-        try:
-            vanity = vanityonionr.find_multiprocess(words)
-        except ValueError:
-            logger.warn('Vanity words must be valid niceware',
-                        terminal=True)
-        else:
-            b32_pub = unpaddedbase32.b32encode(vanity[0])
-            tell('Found vanity address:\n' +
-                 '-'.join(niceware.bytes_to_passphrase(vanity[0])))
-            tell('Base32 Public key: %s' % (b32_pub.decode(),))
-            key_manager.addKey(b32_pub, unpaddedbase32.b32encode(vanity[1]))
-    except KeyboardInterrupt:
-        pass
-
-
-add_vanity.onionr_help = "<space separated words> - "  # type: ignore
-add_vanity.onionr_help += "Generates and stores an "  # type: ignore
-add_vanity.onionr_help += "Onionr vanity address "  # type: ignore
-add_vanity.onionr_help += "(see is.gd/YklHGe)"  # type: ignore

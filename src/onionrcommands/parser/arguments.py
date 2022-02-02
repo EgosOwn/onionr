@@ -48,7 +48,6 @@ def get_arguments() -> dict:
         ('get-url', 'url', 'get-web'): openwebinterface.get_url,
         ('addid', 'add-id'): pubkeymanager.add_ID,
         ('changeid', 'change-id'): pubkeymanager.change_ID,
-        ('add-vanity', 'addvanity'): pubkeymanager.add_vanity,
         ('resetplugins', 'reset-plugins'): resetplugins.reset,
         ('soft-reset', 'softreset'): softreset.soft_reset,
         ('runtime-test', 'runtimetest'): runtimetestcmd.do_runtime_test
