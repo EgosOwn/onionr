@@ -1,16 +1,27 @@
-from typing import Generator
-
 from onionrblocks import Block
 
 import db
-from .. import identifyhome
+from utils import identifyhome
 
-block_db_path = identifyhome.identify_home() + 'blocks.db'
+block_db_path = identifyhome.identify_home() + 'blockdata'
 
 
-def get_blocks_by_type(block_type) -> Generator[Block]:
+
+def store_vdf_block(block: Block):
+    db.set(block_db_path, block.id, block.raw)
+
+
+def get_blocks_by_type(block_type):
     block_db = db.get_db_obj(block_db_path, 'u')
     for block_hash in db.list_keys(block_db_path):
         block = Block(block_hash, block_db[block_hash], auto_verify=False)
         if block.type == block_type:
             yield block
+
+def get_blocks_after_timestamp(timestamp: int, block_type: bytes = ''):
+    block_db = db.get_db_obj(block_db_path, 'u')
+    for block_hash in db.list_keys(block_db_path):
+        block = Block(block_hash, block_db[block_hash], auto_verify=False)
+        if block.type == block_type:
+            yield block
+

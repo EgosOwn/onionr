@@ -17,7 +17,7 @@ def _do_timeout(func, *args):
                 continue
             if time.time() - ts > timeout:
                 raise TimeoutError()
-            time.sleep(0.1)
+            time.sleep(0.01)
         else:
             return res
 
@@ -43,7 +43,7 @@ def get_db_obj(db_path, extra_flag=''):
     """For when you should keep a db obj open"""
     def _get_db():
         return dbm.open(db_path, "c" + extra_flag)
-    return _do_timeout(_get_db, db_path)
+    return _do_timeout(_get_db)
 
 
 def list_keys(db_path):
