@@ -1,6 +1,7 @@
 from audioop import mul
 import multiprocessing
 
+
 def run_func_in_new_process(func, *args, **kwargs):
     queue = multiprocessing.Queue()
 
@@ -14,9 +15,7 @@ def run_func_in_new_process(func, *args, **kwargs):
         else:
             queue.put(func())
 
-
     proc = multiprocessing.Process(target=_wrap_func, daemon=True)
     proc.start()
     return queue.get()
-
 
