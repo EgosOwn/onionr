@@ -9,7 +9,7 @@ from utils import createdirs
 createdirs.create_dirs()
 from onionrcrypto import getourkeypair
 getourkeypair.get_keypair()
-from etc import waitforsetvar
+from onionrutils import waitforsetvar
 
 def set_test_var_delay(obj, delay=0):
     if delay > 0: time.sleep(delay)

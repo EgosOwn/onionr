@@ -48,7 +48,7 @@ if __name__ == "__main__": ran_as_script = True
 # Import standard libraries
 
 try:
-    from etc import dependencycheck  # noqa
+    from onionrutils import dependencycheck  # noqa
 except ModuleNotFoundError as e:
     print('Missing requirement: ' + str(e) + ' installed')
     sys.exit(1)
@@ -60,7 +60,7 @@ from filenuke import nuke  # noqa
 # Onionr imports
 
 # For different Onionr related constants such as versions
-from etc import onionrvalues  # noqa
+import onionrvalues  # noqa
 
 import onionrexceptions  # noqa
 import onionrsetup as setup  # noqa

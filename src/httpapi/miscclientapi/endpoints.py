@@ -17,7 +17,7 @@ import onionrcrypto
 import config
 from onionrutils import mnemonickeys
 from onionrutils import bytesconverter
-from etc import onionrvalues
+import onionrvalues
 from utils import reconstructhash
 """
     This program is free software: you can redistribute it and/or modify

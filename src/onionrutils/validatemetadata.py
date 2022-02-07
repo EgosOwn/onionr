@@ -6,7 +6,7 @@ from json import JSONDecodeError
 import ujson as json
 
 import logger, onionrexceptions
-from etc import onionrvalues
+import onionrvalues
 from . import stringvalidators, epoch, bytesconverter
 import config, filepaths, onionrcrypto
 """

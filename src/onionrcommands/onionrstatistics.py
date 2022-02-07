@@ -9,7 +9,7 @@ from utils import sizeutils, getconsolewidth, identifyhome
 from coredb import keydb
 import onionrcrypto
 import config
-from etc import onionrvalues
+import onionrvalues
 from filepaths import lock_file
 
 import psutil

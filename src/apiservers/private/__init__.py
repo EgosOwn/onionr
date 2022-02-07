@@ -13,7 +13,7 @@ import httpapi
 from filepaths import private_API_host_file
 import logger
 
-from etc import waitforsetvar
+from onionrutils import waitforsetvar
 from . import register_private_blueprints
 import config
 

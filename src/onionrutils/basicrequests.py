@@ -7,7 +7,7 @@ from urllib.parse import urlparse
 
 import requests, streamedrequests
 import logger, onionrexceptions
-from etc import onionrvalues
+import onionrvalues
 from . import localcommand
 '''
     This program is free software: you can redistribute it and/or modify

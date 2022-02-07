@@ -15,7 +15,7 @@ import sys
 script_dir = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(script_dir + '/src/')
 
-from etc import onionrvalues
+import onionrvalues
 
 
 sub_script = script_dir + '/' + onionrvalues.SCRIPT_NAME

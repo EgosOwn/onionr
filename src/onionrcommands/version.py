@@ -4,7 +4,7 @@ Command to show version info
 """
 import platform
 from utils import identifyhome
-from etc import onionrvalues
+import onionrvalues
 import logger
 """
     This program is free software: you can redistribute it and/or modify

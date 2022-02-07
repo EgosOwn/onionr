@@ -14,7 +14,7 @@ import nacl.exceptions
 from coredb import keydb, dbfiles
 import onionrcrypto
 from onionrcrypto import getourkeypair
-from etc.onionrvalues import DATABASE_LOCK_TIMEOUT
+from onionrvalues import DATABASE_LOCK_TIMEOUT
 """
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by

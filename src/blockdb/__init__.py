@@ -6,7 +6,6 @@ from utils import identifyhome
 block_db_path = identifyhome.identify_home() + 'blockdata'
 
 
-
 def store_vdf_block(block: Block):
     db.set(block_db_path, block.id, block.raw)
 

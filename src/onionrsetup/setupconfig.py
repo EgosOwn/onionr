@@ -9,8 +9,8 @@ import ujson as json
 
 import config
 import logger
-import netcontroller
-from etc import onionrvalues
+import onionrvalues
+from onionrutils import getopenport
 from logger.settings import *
 from utils import readstatic
 """
@@ -81,10 +81,10 @@ def setup_config():
     if type(config.get('client.webpassword')) is type(None):
         config.set('client.webpassword', base64.b16encode(os.urandom(32)).decode('utf-8'), savefile=True)
     if type(config.get('client.client.port')) is type(None):
-        randomPort = netcontroller.getopenport.get_open_port()
+        randomPort = getopenport.get_open_port()
         config.set('client.client.port', randomPort, savefile=True)
     if type(config.get('client.public.port')) is type(None):
-        randomPort = netcontroller.getopenport.get_open_port()
+        randomPort = getopenport.get_open_port()
         config.set('client.public.port', randomPort, savefile=True)
     if type(config.get('client.api_version')) is type(None):
         config.set('client.api_version', onionrvalues.API_VERSION, savefile=True)

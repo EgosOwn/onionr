@@ -10,7 +10,7 @@ import unittest, json
 
 from utils import identifyhome, createdirs
 createdirs.create_dirs()
-from etc.cleanup import delete_run_files
+from onionrutils.cleanup import delete_run_files
 import filepaths
 
 

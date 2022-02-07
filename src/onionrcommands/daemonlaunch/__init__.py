@@ -24,9 +24,9 @@ from onionrplugins import onionrevents as events
 from onionrutils import localcommand
 from utils import identifyhome
 import filepaths
-from etc import onionrvalues, cleanup
+import onionrvalues
+from onionrutils import cleanup
 from onionrcrypto import getourkeypair
-from utils import hastor
 import runtests
 from httpapi import daemoneventsapi
 from .. import version
@@ -86,15 +86,6 @@ def daemon():
                 f"Recieved sigterm in child process or fork, exiting. PID: {pid}")
             sys.exit(0)
     signal.signal(signal.SIGTERM, _handle_sig_term)
-
-    # Determine if Onionr is in offline mode.
-    # When offline, Onionr can only use LAN and disk transport
-    offline_mode = config.get('general.offline_mode', False)
-
-    if not hastor.has_tor():
-        offline_mode = True
-        logger.error("Tor is not present in system path or Onionr directory",
-                     terminal=True)
 
     # Create shared objects
 

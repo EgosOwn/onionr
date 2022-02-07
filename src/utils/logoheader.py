@@ -1,7 +1,7 @@
 import sys, os
 from . import readstatic
 import logger
-from etc import onionrvalues
+import onionrvalues
 def header(message = logger.colors.fg.pink + logger.colors.bold + 'Onionr' + logger.colors.reset + logger.colors.fg.pink + ' has started.'):
     if onionrvalues.DEVELOPMENT_MODE:
         return

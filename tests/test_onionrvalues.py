@@ -9,7 +9,7 @@ print("Test directory:", TEST_DIR)
 os.environ["ONIONR_HOME"] = TEST_DIR
 
 from utils import identifyhome, createdirs
-from etc import onionrvalues
+import onionrvalues
 
 class TestOnionrValues(unittest.TestCase):
     def test_api_version(self):

@@ -9,8 +9,8 @@ import subprocess  # nosec
 
 from psutil import Process
 
-from etc import onionrvalues
-from etc import cleanup
+import onionrvalues
+from onionrutils import cleanup
 from onionrutils import localcommand
 import logger
 import filepaths
