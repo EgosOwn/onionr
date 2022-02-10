@@ -25,7 +25,7 @@ def detect_disk_access(info):
 
     if '/dev/null' == info[0]: return
 
-    whitelist = [identify_home(), 'onionr/src/', '/site-packages/', '/usr/lib64/']
+    whitelist = [identify_home(), 'onionr/src/', '/site-packages/', '/usr/lib64/', '/usr/local/lib/python']
 
     for item in whitelist:
         if item in info[0]:
