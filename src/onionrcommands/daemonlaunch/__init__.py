@@ -68,8 +68,6 @@ def _show_info_messages():
                  getourkeypair.get_keypair()[0][:52]))
 
 
-
-
 def daemon():
     """Start Onionr's primary threads for communicator, API server, node, and LAN."""
 
@@ -80,7 +78,7 @@ def daemon():
         if main_pid and main_pid == pid:
             logger.info(
             f"Received sigterm, shutting down gracefully. PID: {pid}", terminal=True)
-            localcommand.local_command('/shutdownclean')
+            localcommand.local_command('/shutdown')
         else:
             logger.info(
                 f"Recieved sigterm in child process or fork, exiting. PID: {pid}")
