@@ -25,7 +25,7 @@ class OnionrThreadsTests(unittest.TestCase):
         def _test_func(obj_list):
             obj_list.append(1)
 
-        add_onionr_thread(_test_func, (l,), 0.05, 0)
+        add_onionr_thread(_test_func, 0.05, l, initial_sleep=0)
         sleep(0.05)
         self.assertGreaterEqual(len(l), 1)
 
@@ -34,8 +34,7 @@ class OnionrThreadsTests(unittest.TestCase):
         def _test_func(obj_list):
             obj_list.append(1)
 
-        add_onionr_thread(_test_func, (l,), 0.05, 0.1)
-        sleep(0.06)
+        add_onionr_thread(_test_func, 0.05, l, initial_sleep=1)
         self.assertEqual(len(l), 0)
 
 

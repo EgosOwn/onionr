@@ -10,14 +10,14 @@ from time import sleep
 import logger
 
 
-def _onionr_thread(func: Callable, args: Iterable,
-                   sleep_secs: int, initial_sleep):
+def _onionr_thread(func: Callable,
+                   sleep_secs: int, initial_sleep, *args, **kwargs):
     thread_id = str(uuid4())
     if initial_sleep:
         sleep(initial_sleep)
     while True:
         try:
-            func(*args)
+            func(*args, **kwargs)
         except Exception as _:  # noqa
             logger.warn(
                 f"Onionr thread exception in {thread_id} \n" +
@@ -27,11 +27,18 @@ def _onionr_thread(func: Callable, args: Iterable,
 
 
 def add_onionr_thread(
-        func: Callable, args: Iterable,
-        sleep_secs: int, initial_sleep: int = 5):
+        func: Callable,
+        sleep_secs: int, *args, initial_sleep: int = 5, **kwargs):
     """Spawn a new onionr thread that exits when the main thread does.
 
     Runs in an infinite loop with sleep between calls
     Passes in an interable args and sleep variables"""
+
     Thread(target=_onionr_thread,
-           args=(func, args, sleep_secs, initial_sleep), daemon=True).start()
+           args=(
+                func,
+                sleep_secs,
+                initial_sleep,
+                *args),
+           kwargs=kwargs,
+           daemon=True).start()
