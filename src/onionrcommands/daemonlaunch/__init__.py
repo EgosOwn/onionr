@@ -33,6 +33,7 @@ from .. import version
 from utils.bettersleep import better_sleep
 from .killdaemon import kill_daemon  # noqa
 from .showlogo import show_logo
+import gossip
 
 from setupkvvars import setup_kv
 """
@@ -116,6 +117,8 @@ def daemon():
         "Onionr daemon is running under " + str(os.getpid()), terminal=True)
     events.event('init', threaded=False)
     events.event('daemon_start')
+
+    gossip.start_gossip_threads(shared_state.get(DeadSimpleKV)['peers'], shared_state.get(DeadSimpleKV)['block_queue'])
 
     try:
         shared_state.get(apiservers.ClientAPI).start()
