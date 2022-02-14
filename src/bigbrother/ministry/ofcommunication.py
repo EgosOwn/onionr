@@ -29,6 +29,8 @@ def detect_socket_leaks(socket_event):
     raises exception & logs if not to loopback
     """
     ip_address = socket_event[1][0]
+    if ip_address.startswith('/'):
+        return
 
     # validate is valid ip address (no hostname, etc)
     # raises NetworkLeak if not

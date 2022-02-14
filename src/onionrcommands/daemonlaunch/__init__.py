@@ -3,6 +3,7 @@
 launch the api servers and communicator
 """
 import os
+import queue
 import sys
 import platform
 import signal
@@ -118,7 +119,12 @@ def daemon():
     events.event('init', threaded=False)
     events.event('daemon_start')
 
-    gossip.start_gossip_threads(shared_state.get(DeadSimpleKV)['peers'], shared_state.get(DeadSimpleKV)['block_queue'])
+    shared_state.get(apiservers.ClientAPI).gossip_peer_set = set()
+    shared_state.get(apiservers.ClientAPI).gossip_block_queue = queue.Queue()
+
+    gossip.start_gossip_threads(
+        shared_state.get(apiservers.ClientAPI).gossip_peer_set,
+        shared_state.get(apiservers.ClientAPI).gossip_block_queue)
 
     try:
         shared_state.get(apiservers.ClientAPI).start()

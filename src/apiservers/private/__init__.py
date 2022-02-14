@@ -3,6 +3,8 @@
 This file handles all incoming http requests to the client, using Flask
 """
 from typing import Dict
+from typing import Set
+from typing import TYPE_CHECKING
 import hmac
 
 import flask
@@ -50,6 +52,9 @@ class PrivateAPI:
 
         self.startTime = epoch.get_epoch()
         app = flask.Flask(__name__)
+
+        self.gossip_block_queue: 'queue.Queue' = None
+        self.gossip_peer_set: Set['Peer'] = None
 
 
         bind_port = int(config.get('client.client.port', 59496))

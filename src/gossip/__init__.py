@@ -1,8 +1,11 @@
 from typing import TYPE_CHECKING, Set
-from gossip.peer import Peer
+from os import urandom
+import queue
+
 if TYPE_CHECKING:
-    import queue
     from onionrblocks import Block
+
+    from .peer import Peer
 
 from onionrthreads import add_onionr_thread
 import onionrplugins
@@ -17,20 +20,27 @@ as well as each of the plugins.
 
 The transports forward incoming requests to the gossip server
 
-When a new peer announcement is recieved an event is fired and the transport plugin that handles it will (or wont)
-create a new peer object by connecting to that peer
+When a new peer announcement is recieved an event is fired and the transport
+plugin that handles it will (or wont) create a new peer object by connecting
+to that peer
 
-When a new block is generated, it is added to a queue in raw form passed to the starter
+When a new block is generated, it is added to a queue in raw form passed to
+the starter
 
+In stem phase, client uploads recieved (stem) blocks to 2 random peers.
+In stem phase, server disables diffusion
 
 """
 
-def start_gossip_threads(peer_set: Set[Peer], block_queue: queue.Queue[Block]):
+
+def start_gossip_threads(
+        peer_set: Set['Peer'], block_queue: queue.Queue['Block']):
     # Peer set is largely handled by the transport plugins
     # There is a unified set so gossip logic is not repeated
+    seed = urandom(32)
 
-    add_onionr_thread(gossip_server, 1, peer_set, block_queue, initial_sleep=0.2)
-    add_onionr_thread(gossip_client, 1, peer_set, block_queue, initial_sleep=0)
+    add_onionr_thread(
+        gossip_server, 1, peer_set, block_queue, seed, initial_sleep=0.2)
+    add_onionr_thread(
+        gossip_client, 1, peer_set, block_queue, seed, initial_sleep=0)
     onionrplugins.events.event('gossip_start', data=peer_set, threaded=True)
-
-

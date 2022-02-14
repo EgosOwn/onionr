@@ -5,6 +5,8 @@ Deals with configuration management.
 """
 from threading import Thread
 
+import traceback
+
 import config, logger
 import onionrplugins as plugins
 from . import onionrpluginapi as pluginapi
@@ -42,8 +44,9 @@ def __event_caller(event_name, data = {}):
             logger.warn('Disabling nonexistant plugin "%s"...' % plugin, terminal=True)
             plugins.disable(plugin, stop_event = False)
         except Exception as e:
-            logger.warn('Event "%s" failed for plugin "%s".' % (event_name, plugin), terminal=True)
-            logger.debug((event_name + ' - ' + plugin + ' - ' + str(e)), terminal=True)
+
+            logger.error('Event "%s" failed for plugin "%s".' % (event_name, plugin), terminal=True)
+            logger.error('\n' + traceback.format_exc(), terminal=True)
 
 def event(event_name, data = {}, threaded = True):
     """Call an event on all plugins (if defined)"""
@@ -59,16 +62,13 @@ def call(plugin, event_name, data = None, pluginapi = None):
     """Call an event on a plugin if one is defined"""
 
     if not plugin is None:
-        try:
-            attribute = 'on_' + str(event_name).lower()
-            if pluginapi is None:
-                pluginapi = get_pluginapi(data)
-            if hasattr(plugin, attribute):
-                return getattr(plugin, attribute)(pluginapi, data)
+        attribute = 'on_' + str(event_name).lower()
+        if pluginapi is None:
+            pluginapi = get_pluginapi(data)
+        if hasattr(plugin, attribute):
+            return getattr(plugin, attribute)(pluginapi, data)
 
-            return True
-        except Exception as e:
-            #logger.error(str(e), terminal=True)
-            return False
+        return True
+
     else:
         return True

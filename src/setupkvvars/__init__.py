@@ -28,8 +28,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 def setup_kv(shared_vars: 'DeadSimpleKV'):
     """Init initial pseudo-globals."""
-    shared_vars.put("peers", set())
-    shared_vars.put("block_queue", queue.Queue())
     shared_vars.put('shutdown', False)
     shared_vars.put('generating_blocks', [])
     shared_vars.put('startTime', epoch.get_epoch())
