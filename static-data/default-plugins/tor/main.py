@@ -9,6 +9,7 @@ import locale
 from typing import Set, TYPE_CHECKING
 import base64
 
+import stem
 from stem.control import Controller
 
 import logger
@@ -18,7 +19,6 @@ from filepaths import gossip_server_socket_file
 
 
 from gossip.peer import Peer
-import onionrcrypto
 
 locale.setlocale(locale.LC_ALL, '')
 sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
@@ -62,15 +62,17 @@ def on_gossip_start(api, data: Set[Peer] = None):
     # We don't do gossip logic
     try:
         with open(bootstrap_file, 'r') as bootstrap_file_obj:
-            bootstrap_nodes = bootstrap_file_obj.read().split(',')
+            bootstrap_nodes = set(bootstrap_file_obj.read().split(','))
     except FileNotFoundError:
-        bootstrap_nodes = []
-    #for node in bootstrap_nodes:
+        bootstrap_nodes = set()
+
     starttor.start_tor()
 
     with Controller.from_socket_file(control_socket) as controller:
         controller.authenticate()
-        logger.info(f"Tor socks is listening on {controller.get_listeners('SOCKS')}", terminal=True)
+        logger.info(
+            "Tor socks is listening on " +
+            f"{controller.get_listeners('SOCKS')}", terminal=True)
         key = config.get('tor.key')
         new_address = ''
         if not key:
@@ -79,10 +81,18 @@ def on_gossip_start(api, data: Set[Peer] = None):
                 key_content='BEST', key_type='NEW')
             config.set('tor.key', add_onion_resp.private_key, savefile=True)
             new_address = 'Generated '
+            config.set('tor.transport_address', add_onion_resp.service_id)
         else:
-            add_onion_resp = controller.create_ephemeral_hidden_service(
-                {'80': f'unix:{gossip_server_socket_file}'},
-                key_content=key, key_type='ED25519-V3')
+            try:
+                add_onion_resp = controller.create_ephemeral_hidden_service(
+                    {'80': f'unix:{gossip_server_socket_file}'},
+                    key_content=key, key_type='ED25519-V3')
+            except stem.ProtocolError:
+                logger.error(
+                    "Could not start Tor transport. Try restarting Onionr",
+                    terminal=True)
+                config.set('tor.key', '', savefile=True)
+                return
         logger.info(
             f'{new_address}Tor transport address {add_onion_resp.service_id}' +
             '.onion',

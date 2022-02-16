@@ -1,3 +1,4 @@
+import asyncio
 from typing import TYPE_CHECKING
 from typing import Set
 
@@ -8,13 +9,44 @@ if TYPE_CHECKING:
     from peer import Peer
 
 from filepaths import gossip_server_socket_file
+from .commands import GossipCommands
+"""
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
 
-import asyncio
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
 
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+"""
 
 
 def gossip_server(
         peer_set: Set['Peer'],
         block_queue: Queue['Block'],
         dandelion_seed: bytes):
-    return
+
+    async def peer_connected(reader, writer):
+        while True:
+            cmd = asyncio.wait_for(await reader.read(1), 30)
+            match cmd:
+                case GossipCommands.PING:
+                    writer.write(b'PONG')
+
+            await writer.drain()
+
+    async def main():
+
+        server = await asyncio.start_unix_server(
+            peer_connected, gossip_server_socket_file
+        )
+
+        async with server:
+            await server.serve_forever()
+
+    asyncio.run(main())
