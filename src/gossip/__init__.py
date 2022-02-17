@@ -12,6 +12,7 @@ import onionrplugins
 
 from .client import gossip_client
 from .server import gossip_server
+from .commands import GossipCommands
 """
 Onionr uses a flavor of Dandelion++ epidemic routing
 

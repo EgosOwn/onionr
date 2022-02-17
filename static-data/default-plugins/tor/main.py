@@ -6,6 +6,7 @@ This default plugin handles "flow" messages
 import sys
 import os
 import locale
+import traceback
 from typing import Set, TYPE_CHECKING
 import base64
 
@@ -24,7 +25,9 @@ locale.setlocale(locale.LC_ALL, '')
 sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
 # import after path insert
 import starttor
+from torpeer import TorPeer
 from torfilepaths import control_socket
+from getsocks import get_socks
 
 """
 This program is free software: you can redistribute it and/or modify
@@ -58,13 +61,37 @@ def on_init(api, data=None):
         f"Tor Transport Plugin v{PLUGIN_VERSION} enabled", terminal=True)
 
 
-def on_gossip_start(api, data: Set[Peer] = None):
-    # We don't do gossip logic
+def on_bootstrap(api, data: Set[Peer] = None):
+    bootstrap_nodes: Set[str]
+    peers = data
+
+    socks_address, socks_port = get_socks()
+
     try:
         with open(bootstrap_file, 'r') as bootstrap_file_obj:
             bootstrap_nodes = set(bootstrap_file_obj.read().split(','))
     except FileNotFoundError:
         bootstrap_nodes = set()
+
+    for transport_address in bootstrap_nodes:
+        if not transport_address.endswith('.onion'):
+            transport_address += '.onion'
+        tor_peer = TorPeer(socks_address, socks_port, transport_address)
+        try:
+            s = tor_peer.get_socket()
+        except Exception as e:
+            logger.warn(
+                f"Could not connnect to Tor peer {transport_address} " +
+                "see logs for more info",
+                terminal=True)
+            logger.warn(traceback.format_exc())
+            continue
+        peers.add(tor_peer)
+
+
+def on_gossip_start(api, data: Set[Peer] = None):
+    # We don't do gossip logic
+
 
     starttor.start_tor()
 
