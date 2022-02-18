@@ -1,6 +1,6 @@
 from stem.control import Controller
 
-from .torfilepaths import control_socket
+from torfilepaths import control_socket
 
 
 def get_socks():
