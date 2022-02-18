@@ -18,6 +18,7 @@
     along with this program.  If not, see <https://www.gnu.org/licenses/>.
 '''
 import os, re, importlib
+import traceback
 
 from . import onionrevents as events
 import config, logger
@@ -59,9 +60,7 @@ def reload(stop_event = True):
     return False
 
 def enable(name, start_event = True):
-    '''
-        Enables a plugin
-    '''
+    """Enable a plugin."""
 
     check()
 
@@ -73,7 +72,8 @@ def enable(name, start_event = True):
             except ImportError as e: # Was getting import error on Gitlab CI test "data"
                 # NOTE: If you are experiencing issues with plugins not being enabled, it might be this resulting from an error in the module
                 # can happen inconsistently (especially between versions)
-                logger.debug('Failed to enable module; Import error: %s' % e)
+                logger.error('Failed to enable module:', terminal=True)
+                logger.error(traceback.format_exc(), terminal=True)
                 return False
             else:
                 enabled_plugins.append(name)
