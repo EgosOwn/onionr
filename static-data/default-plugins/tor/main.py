@@ -6,9 +6,11 @@ This default plugin handles "flow" messages
 import sys
 import os
 import locale
+from time import sleep
 import traceback
 from typing import Set, TYPE_CHECKING
 import base64
+from threading import Thread
 
 import stem
 from stem.control import Controller
@@ -17,7 +19,6 @@ import logger
 from utils import readstatic
 import config
 from filepaths import gossip_server_socket_file
-
 
 from gossip.peer import Peer
 
@@ -51,6 +52,7 @@ PLUGIN_VERSION = '0.0.0'
 
 bootstrap_file = f'{os.path.dirname(os.path.realpath(__file__))}/bootstrap.txt'
 
+
 class OnionrTor:
     def __init__(self):
         return
@@ -65,20 +67,28 @@ def on_bootstrap(api, data: Set[Peer] = None):
     bootstrap_nodes: Set[str]
     peers = data
 
-    socks_address, socks_port = get_socks()
-
     try:
         with open(bootstrap_file, 'r') as bootstrap_file_obj:
             bootstrap_nodes = set(bootstrap_file_obj.read().split(','))
     except FileNotFoundError:
         bootstrap_nodes = set()
 
+    while not os.path.exists(control_socket):
+        sleep(0.1)
+
+    socks_address, socks_port = get_socks()[0]
+    sleep(10)
+
     for transport_address in bootstrap_nodes:
+        config.reload()
+        if config.get('tor.transport_address') == transport_address:
+            # ignore if its our own
+            continue
         if not transport_address.endswith('.onion'):
             transport_address += '.onion'
         tor_peer = TorPeer(socks_address, socks_port, transport_address)
         try:
-            s = tor_peer.get_socket()
+            tor_peer.get_socket()
         except Exception as e:
             logger.warn(
                 f"Could not connnect to Tor peer {transport_address} " +
@@ -87,11 +97,11 @@ def on_bootstrap(api, data: Set[Peer] = None):
             logger.warn(traceback.format_exc())
             continue
         peers.add(tor_peer)
+    logger.info(f"Connected to {len(peers)} Tor peers", terminal=True)
 
 
 def on_gossip_start(api, data: Set[Peer] = None):
     # We don't do gossip logic
-
 
     starttor.start_tor()
 
@@ -105,15 +115,16 @@ def on_gossip_start(api, data: Set[Peer] = None):
         if not key:
             add_onion_resp = controller.create_ephemeral_hidden_service(
                 {'80': f'unix:{gossip_server_socket_file}'},
-                key_content='BEST', key_type='NEW')
+                key_content='BEST', key_type='NEW', detached=True)
             config.set('tor.key', add_onion_resp.private_key, savefile=True)
             new_address = 'Generated '
-            config.set('tor.transport_address', add_onion_resp.service_id)
+            config.set('tor.transport_address', add_onion_resp.service_id,
+            savefile=True)
         else:
             try:
                 add_onion_resp = controller.create_ephemeral_hidden_service(
                     {'80': f'unix:{gossip_server_socket_file}'},
-                    key_content=key, key_type='ED25519-V3')
+                    key_content=key, key_type='ED25519-V3', detached=True)
             except stem.ProtocolError:
                 logger.error(
                     "Could not start Tor transport. Try restarting Onionr",
@@ -124,4 +135,3 @@ def on_gossip_start(api, data: Set[Peer] = None):
             f'{new_address}Tor transport address {add_onion_resp.service_id}' +
             '.onion',
             terminal=True)
-

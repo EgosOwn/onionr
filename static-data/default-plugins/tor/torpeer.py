@@ -10,6 +10,6 @@ class TorPeer:
 
     def get_socket(self) -> socks.socksocket:
         s = socks.socksocket()
-        s.set_proxy(socks.SOCKS4, self.socks_host, self.socks_host, rdns=True)
+        s.set_proxy(socks.SOCKS4, self.socks_host, self.socks_port, rdns=True)
         s.connect((self.onion_address, 80))
         return s

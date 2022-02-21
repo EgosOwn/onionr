@@ -1,3 +1,4 @@
+from time import sleep
 from typing import TYPE_CHECKING, Set
 from os import urandom
 import queue
@@ -45,3 +46,5 @@ def start_gossip_threads(
     add_onionr_thread(
         gossip_client, 1, peer_set, block_queue, seed, initial_sleep=0)
     onionrplugins.events.event('gossip_start', data=peer_set, threaded=True)
+    sleep(4)
+    onionrplugins.events.event('bootstrap', data=peer_set)

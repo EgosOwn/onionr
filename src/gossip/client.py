@@ -33,4 +33,4 @@ def gossip_client(
         peer_set: Set['Peer'],
         block_queue: Queue['Block'],
         dandelion_seed: bytes):
-    onionrplugins.events.event('')
+        return
