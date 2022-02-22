@@ -77,7 +77,7 @@ def on_bootstrap(api, data: Set[Peer] = None):
         sleep(0.1)
 
     socks_address, socks_port = get_socks()[0]
-    sleep(10)
+    sleep(5)
 
     for transport_address in bootstrap_nodes:
         config.reload()

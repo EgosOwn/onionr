@@ -33,10 +33,19 @@ def gossip_server(
 
     async def peer_connected(reader, writer):
         while True:
-            cmd = asyncio.wait_for(await reader.read(1), 30)
-            match cmd:
+            try:
+                cmd = await asyncio.wait_for(reader.read(1), 60)
+            except asyncio.exceptions.CancelledError:
+                writer.close()
+
+            cmd = int.from_bytes(cmd, 'big')
+            if cmd == b'' or cmd == 0:
+                continue
+            match GossipCommands(cmd):
                 case GossipCommands.PING:
                     writer.write(b'PONG')
+                case GossipCommands.CLOSE:
+                    writer.close()
 
             await writer.drain()
 
