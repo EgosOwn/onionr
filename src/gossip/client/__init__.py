@@ -11,11 +11,16 @@ from queue import Queue
 
 if TYPE_CHECKING:
     from onionrblocks import Block
-    from .peer import Peer
+    from ..peer import Peer
 
 import logger
 import onionrplugins
-from .commands import GossipCommands
+from ..commands import GossipCommands
+from gossip.phase import DandelionPhase
+from onionrthreads import add_onionr_thread
+
+from .announce import do_announce
+from .peerexchange import get_new_peers
 """
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -43,26 +48,23 @@ def gossip_client(
     Stream new blocks
     """
 
-    remove_peers = []
+    def _trigger_new_peers_event(new_peer_set: Set['Peer']):
+        onionrplugins.events.event(
+            'new_peer',
+            data={'peers': peer_set, 'new_peers': new_peer_set})
 
+    add_onionr_thread(do_announce, 3600, peer_set, initial_sleep=10)
+    add_onionr_thread(
+        get_new_peers,
+        1200, peer_set,  _trigger_new_peers_event, initial_sleep=5)
+
+
+    dandelion_phase = DandelionPhase(dandelion_seed, 30)
     while True:
-        remove_peers.clear()
-        for peer in peer_set:
-            try:
-                sock = peer.get_socket()
-            except Exception:
-                logger.warn("Lost connection to " + peer.transport_address)
-                logger.warn(traceback.format_exc())
-                remove_peers.append(peer)
-                break
-            sock.sendall(int(GossipCommands.PING).to_bytes(1, 'big'))
-            if sock.recv(10) == b"PONG":
-                print("Got ping at peer")
-        while len(remove_peers):
-            try:
-                peer_set.remove(remove_peers.pop())
-            except KeyError:
-                pass
+        while not len(peer_set):
+            sleep(0.2)
+        if dandelion_phase.is_stem_phase():
+            pass
+        else:
+            pass
 
-        sleep(30)
-    return
