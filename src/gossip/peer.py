@@ -1,4 +1,6 @@
-from typing import Protocol
+from typing import TYPE_CHECKING, Protocol
+if TYPE_CHECKING:
+    import socket
 
 
 class Peer(Protocol):
@@ -9,7 +11,7 @@ class Peer(Protocol):
 
     def __init__(self):
         return
-    def get_socket(self):
+    def get_socket(self) -> 'socket.socket':
         return
 
     def disconnect(self):

@@ -8,3 +8,6 @@ class GossipCommands(IntEnum):
     PUT_BLOCKS = auto()
     CLOSE = auto()
 
+
+def command_to_byte(cmd: GossipCommands):
+    return int(cmd).to_bytes(1, 'big')
