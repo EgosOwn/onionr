@@ -4,6 +4,8 @@ from typing import Set
 
 from queue import Queue
 
+from onionrplugins import onionrevents
+
 if TYPE_CHECKING:
     from onionrblocks import Block
     from peer import Peer
@@ -46,6 +48,15 @@ def gossip_server(
                     writer.write(b'PONG')
                 case GossipCommands.CLOSE:
                     writer.close()
+                case GossipCommands.ANNOUNCE:
+                    async def _read_announce():
+                        address = await reader.read(56)
+                        onionrevents.event(
+                            'announce_rec',
+                            data={'peer_set': peer_set, 'address': address},
+                            threaded=False)
+                        writer.write(int(1).to_bytes(1, 'big'))
+                    await asyncio.wait_for(_read_announce(), 10)
 
             await writer.drain()
 

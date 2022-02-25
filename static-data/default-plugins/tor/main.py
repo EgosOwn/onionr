@@ -63,6 +63,17 @@ def on_init(api, data=None):
         f"Tor Transport Plugin v{PLUGIN_VERSION} enabled", terminal=True)
 
 
+def on_get_our_transport(api, data=None):
+    callback_func = data['callback']
+    for_peer = data['peer']
+    if data['peer'].__class__ == TorPeer:
+        callback_func(for_peer, config.get('tor.transport_address'))
+
+
+def on_announce_rec(api, data=None):
+    print("got announce rec event")
+
+
 def on_bootstrap(api, data: Set[Peer] = None):
     bootstrap_nodes: Set[str]
     peers = data
@@ -89,7 +100,7 @@ def on_bootstrap(api, data: Set[Peer] = None):
         tor_peer = TorPeer(socks_address, socks_port, transport_address)
         try:
             tor_peer.get_socket()
-        except Exception as e:
+        except Exception:
             logger.warn(
                 f"Could not connnect to Tor peer {transport_address} " +
                 "see logs for more info",
