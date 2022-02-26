@@ -28,7 +28,9 @@ sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
 import starttor
 from torpeer import TorPeer
 from torfilepaths import control_socket
-from getsocks import get_socks
+
+from bootstrap import on_bootstrap
+from announce import on_announce_rec
 
 """
 This program is free software: you can redistribute it and/or modify
@@ -50,9 +52,6 @@ plugin_name = 'tor'
 PLUGIN_VERSION = '0.0.0'
 
 
-bootstrap_file = f'{os.path.dirname(os.path.realpath(__file__))}/bootstrap.txt'
-
-
 class OnionrTor:
     def __init__(self):
         return
@@ -68,47 +67,6 @@ def on_get_our_transport(api, data=None):
     for_peer = data['peer']
     if data['peer'].__class__ == TorPeer:
         callback_func(for_peer, config.get('tor.transport_address'))
-
-
-def on_announce_rec(api, data=None):
-    print("got announce rec event")
-
-
-def on_bootstrap(api, data: Set[Peer] = None):
-    bootstrap_nodes: Set[str]
-    peers = data
-
-    try:
-        with open(bootstrap_file, 'r') as bootstrap_file_obj:
-            bootstrap_nodes = set(bootstrap_file_obj.read().split(','))
-    except FileNotFoundError:
-        bootstrap_nodes = set()
-
-    while not os.path.exists(control_socket):
-        sleep(0.1)
-
-    socks_address, socks_port = get_socks()[0]
-    sleep(5)
-
-    for transport_address in bootstrap_nodes:
-        config.reload()
-        if config.get('tor.transport_address') == transport_address:
-            # ignore if its our own
-            continue
-        if not transport_address.endswith('.onion'):
-            transport_address += '.onion'
-        tor_peer = TorPeer(socks_address, socks_port, transport_address)
-        try:
-            tor_peer.get_socket()
-        except Exception:
-            logger.warn(
-                f"Could not connnect to Tor peer {transport_address} " +
-                "see logs for more info",
-                terminal=True)
-            logger.warn(traceback.format_exc())
-            continue
-        peers.add(tor_peer)
-    logger.info(f"Connected to {len(peers)} Tor peers", terminal=True)
 
 
 def on_gossip_start(api, data: Set[Peer] = None):

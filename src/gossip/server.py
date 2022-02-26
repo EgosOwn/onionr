@@ -3,6 +3,7 @@ from typing import TYPE_CHECKING
 from typing import Set
 
 from queue import Queue
+from .connectpeer import connect_peer
 
 from onionrplugins import onionrevents
 
@@ -53,8 +54,10 @@ def gossip_server(
                         address = await reader.read(56)
                         onionrevents.event(
                             'announce_rec',
-                            data={'peer_set': peer_set, 'address': address},
-                            threaded=False)
+                            data={'peer_set': peer_set,
+                                  'address': address,
+                                  'callback': connect_peer},
+                            threaded=True)
                         writer.write(int(1).to_bytes(1, 'big'))
                     await asyncio.wait_for(_read_announce(), 10)
 

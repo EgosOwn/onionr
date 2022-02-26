@@ -20,7 +20,7 @@ from gossip.phase import DandelionPhase
 from onionrthreads import add_onionr_thread
 
 from .announce import do_announce
-from .peerexchange import get_new_peers
+#from .peerexchange import get_new_peers
 """
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -54,9 +54,11 @@ def gossip_client(
             data={'peers': peer_set, 'new_peers': new_peer_set})
 
     add_onionr_thread(do_announce, 3600, peer_set, initial_sleep=10)
+    """
     add_onionr_thread(
         get_new_peers,
         1200, peer_set,  _trigger_new_peers_event, initial_sleep=5)
+    """
 
 
     dandelion_phase = DandelionPhase(dandelion_seed, 30)

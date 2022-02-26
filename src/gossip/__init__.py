@@ -11,6 +11,7 @@ if TYPE_CHECKING:
 from onionrthreads import add_onionr_thread
 import onionrplugins
 
+from .connectpeer import connect_peer
 from .client import gossip_client
 from .server import gossip_server
 from .commands import GossipCommands
@@ -46,5 +47,5 @@ def start_gossip_threads(
     add_onionr_thread(
         gossip_client, 1, peer_set, block_queue, seed, initial_sleep=0)
     onionrplugins.events.event('gossip_start', data=peer_set, threaded=True)
-    sleep(4)
-    onionrplugins.events.event('bootstrap', data=peer_set)
+    onionrplugins.events.event(
+        'bootstrap', data={'peer_set': peer_set, 'callback': connect_peer})
