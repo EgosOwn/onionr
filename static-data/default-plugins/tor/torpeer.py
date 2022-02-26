@@ -13,3 +13,12 @@ class TorPeer:
         s.set_proxy(socks.SOCKS4, self.socks_host, self.socks_port, rdns=True)
         s.connect((self.onion_address, 80))
         return s
+
+    def __hash__(self):
+        return hash(self.transport_address)
+
+    def __eq__(self, other):
+        try:
+            return self.transport_address == other.transport_address
+        except AttributeError:
+            return False

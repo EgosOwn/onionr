@@ -4,10 +4,7 @@ if TYPE_CHECKING:
 
 
 class Peer(Protocol):
-    stats = {}
-    sock = None
-    id = ""
-    node_address = ""
+    transport_address = ""
 
     def __init__(self):
         return
@@ -15,4 +12,11 @@ class Peer(Protocol):
         return
 
     def disconnect(self):
+        return
+
+    def __eq__(self, other):
+        return
+
+    def __hash__(self):
+        """Use the transport address"""
         return
