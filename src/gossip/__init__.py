@@ -1,3 +1,4 @@
+import threading
 from time import sleep
 from typing import TYPE_CHECKING, Set
 from os import urandom
@@ -10,6 +11,7 @@ if TYPE_CHECKING:
 
 from onionrthreads import add_onionr_thread
 import onionrplugins
+import logger
 
 from .connectpeer import connect_peer
 from .client import gossip_client
@@ -44,8 +46,18 @@ def start_gossip_threads(
 
     add_onionr_thread(
         gossip_server, 1, peer_set, block_queue, seed, initial_sleep=0.2)
-    add_onionr_thread(
-        gossip_client, 1, peer_set, block_queue, seed, initial_sleep=0)
+
+    threading.Thread(
+        target=gossip_client,
+        args=[peer_set, block_queue, seed], daemon=True).start()
     onionrplugins.events.event('gossip_start', data=peer_set, threaded=True)
-    onionrplugins.events.event(
-        'bootstrap', data={'peer_set': peer_set, 'callback': connect_peer})
+    for _ in range(2):
+        onionrplugins.events.event(
+            'bootstrap', data={'peer_set': peer_set, 'callback': connect_peer},
+            threaded=False)
+        sleep(60)
+        if len(peer_set):
+            return
+    logger.error("Could not connect to any peers :(", terminal=True)
+
+
