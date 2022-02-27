@@ -39,7 +39,7 @@ def gossip_server(
             try:
                 cmd = await asyncio.wait_for(reader.read(1), 60)
             except asyncio.exceptions.CancelledError:
-                writer.close()
+                break
 
             cmd = int.from_bytes(cmd, 'big')
             if cmd == b'' or cmd == 0:
@@ -48,7 +48,7 @@ def gossip_server(
                 case GossipCommands.PING:
                     writer.write(b'PONG')
                 case GossipCommands.CLOSE:
-                    writer.close()
+                    pass
                 case GossipCommands.ANNOUNCE:
                     async def _read_announce():
                         address = await reader.read(56)
@@ -60,8 +60,10 @@ def gossip_server(
                             threaded=True)
                         writer.write(int(1).to_bytes(1, 'big'))
                     await asyncio.wait_for(_read_announce(), 10)
+            break
 
-            await writer.drain()
+        await writer.drain()
+        writer.close()
 
     async def main():
 
