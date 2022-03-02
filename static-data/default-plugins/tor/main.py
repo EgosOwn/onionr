@@ -78,7 +78,7 @@ def on_gossip_start(api, data: Set[Peer] = None):
         controller.authenticate()
         logger.info(
             "Tor socks is listening on " +
-            f"{controller.get_listeners('SOCKS')}", terminal=True)
+            f"{controller.get_listeners('SOCKS')[0]}", terminal=True)
         key = config.get('tor.key')
         new_address = ''
         if not key:

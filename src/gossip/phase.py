@@ -26,6 +26,11 @@ class DandelionPhase:
             self._is_stem = False
 
 
+    def remaining_time(self) -> int:
+        current_time = int(time())
+        return self.epoch_interval - (current_time - self.epoch)
+
+
     def is_stem_phase(self) -> bool:
         current_time = int(time())
         if current_time - self.epoch >= self.epoch_interval:

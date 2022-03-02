@@ -1,18 +1,22 @@
 import asyncio
 from typing import TYPE_CHECKING
-from typing import Set
+from typing import Set, List
 
 from queue import Queue
-from .connectpeer import connect_peer
+
+from gossip import constants
+from ..connectpeer import connect_peer
 
 from onionrplugins import onionrevents
 
 if TYPE_CHECKING:
     from onionrblocks import Block
     from peer import Peer
+    from asyncio import StreamReader, StreamWriter
 
 from filepaths import gossip_server_socket_file
-from .commands import GossipCommands
+from ..commands import GossipCommands
+from .acceptstem import accept_stem_blocks
 """
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -31,10 +35,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 def gossip_server(
         peer_set: Set['Peer'],
-        block_queue: Queue['Block'],
+        block_queues: List[Queue['Block']],
         dandelion_seed: bytes):
 
-    async def peer_connected(reader, writer):
+    async def peer_connected(
+            reader: 'StreamReader', writer: 'StreamWriter'):
         while True:
             try:
                 cmd = await asyncio.wait_for(reader.read(1), 60)
@@ -51,7 +56,8 @@ def gossip_server(
                     pass
                 case GossipCommands.ANNOUNCE:
                     async def _read_announce():
-                        address = await reader.read(56)
+                        address = await reader.read(
+                            constants.TRANSPORT_SIZE_BYTES)
                         onionrevents.event(
                             'announce_rec',
                             data={'peer_set': peer_set,
@@ -60,6 +66,14 @@ def gossip_server(
                             threaded=True)
                         writer.write(int(1).to_bytes(1, 'big'))
                     await asyncio.wait_for(_read_announce(), 10)
+                case GossipCommands.PEER_EXCHANGE:
+                    for peer in peer_set:
+                        writer.write(
+                            peer.transport_address.encode(
+                                'utf-8').removesuffix(b'.onion'))
+                case GossipCommands.PUT_BLOCKS:
+                    # Create block queue & append stemmed blocks to it
+                    await accept_stem_blocks(block_queues, reader, writer)
             break
 
         await writer.drain()

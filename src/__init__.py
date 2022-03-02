@@ -8,9 +8,10 @@ Run with 'help' for usage.
 # Enable pyjion if we can because why not
 pyjion_enabled = False
 try:
-    import pyjion
-    pyjion.enable()
-    pyjion_enabled = True
+    pass
+    #import pyjion
+    #pyjion.enable()
+    #pyjion_enabled = True
 except ImportError:
     pass
 

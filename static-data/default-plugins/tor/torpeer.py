@@ -4,6 +4,8 @@ import socks
 class TorPeer:
 
     def __init__(self, socks_host, socks_port, onion_address):
+        if not onion_address or onion_address == '.onion':
+            raise ValueError("Invalid transport address")
         self.transport_address = self.onion_address = onion_address
         self.socks_host = socks_host
         self.socks_port = socks_port
