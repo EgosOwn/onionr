@@ -8,6 +8,8 @@ from typing import Set
 from time import sleep
 
 from queue import Queue
+
+from ..constants import DANDELION_EPOCH_LENGTH
 from ..connectpeer import connect_peer
 
 if TYPE_CHECKING:
@@ -17,7 +19,7 @@ if TYPE_CHECKING:
 import logger
 import onionrplugins
 from ..commands import GossipCommands
-from gossip.phase import DandelionPhase
+from gossip.dandelion.phase import DandelionPhase
 from onionrthreads import add_onionr_thread
 
 from .announce import do_announce
@@ -57,7 +59,7 @@ def gossip_client(
         get_new_peers,
         1200, peer_set, initial_sleep=5)
 
-    dandelion_phase = DandelionPhase(dandelion_seed, 30)
+    dandelion_phase = DandelionPhase(dandelion_seed, DANDELION_EPOCH_LENGTH)
 
     while True:
         while not len(peer_set):

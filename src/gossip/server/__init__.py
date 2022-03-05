@@ -1,4 +1,5 @@
 import asyncio
+import traceback
 from typing import TYPE_CHECKING
 from typing import Set, List
 
@@ -8,6 +9,7 @@ from gossip import constants
 from ..connectpeer import connect_peer
 
 from onionrplugins import onionrevents
+import logger
 
 if TYPE_CHECKING:
     from onionrblocks import Block
@@ -32,6 +34,8 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
+inbound_dandelion_edge_count = [0]
+
 
 def gossip_server(
         peer_set: Set['Peer'],
@@ -40,6 +44,7 @@ def gossip_server(
 
     async def peer_connected(
             reader: 'StreamReader', writer: 'StreamWriter'):
+
         while True:
             try:
                 cmd = await asyncio.wait_for(reader.read(1), 60)
@@ -73,7 +78,19 @@ def gossip_server(
                                 'utf-8').removesuffix(b'.onion'))
                 case GossipCommands.PUT_BLOCKS:
                     # Create block queue & append stemmed blocks to it
-                    await accept_stem_blocks(block_queues, reader, writer)
+
+                    try:
+                        await accept_stem_blocks(
+                            block_queues,
+                            reader, writer,
+                            inbound_dandelion_edge_count)
+                    except Exception:
+                        logger.warn(
+                            f"Err getting\n{traceback.format_exc()}",
+                            terminal=True)
+                    # Subtract dandelion edge, make sure >=0
+                    inbound_dandelion_edge_count[0] = \
+                        max(inbound_dandelion_edge_count[0] - 1, 0)
             break
 
         await writer.drain()
