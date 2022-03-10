@@ -37,7 +37,6 @@ async def accept_stem_blocks(
 
     q = Queue()
     appended_queue = False
-    #block_queues.append(q)
 
     for _ in range(MAX_STEM_BLOCKS_PER_STREAM):
         block_id = (
@@ -66,5 +65,4 @@ async def accept_stem_blocks(
                 block_queues.append(q)
             appended_queue = True
         read_routine = reader.read(BLOCK_ID_SIZE)
-
 

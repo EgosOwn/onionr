@@ -12,7 +12,10 @@ def stem_out(
         block_queue: Queue['Block'],
         peer_set: Set['Block'],
         d_phase: 'DandelionPhase'):
-    block = block_queue.get(block=True, timeout=5)
+    # Deep copy the block queues so that everything gets
+    # stemmed out if we run out of time in epoch
+    # Also spawn a thread with block set to add to db after time for black hole attack
+    block = block_queue.get(block=True, timeout=d_phase.remaining_time)
     raw_block = block.raw
     block_size = len(block.raw)
     block_id = block.id
