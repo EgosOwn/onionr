@@ -4,7 +4,7 @@ Dandelion ++ Gossip client logic
 """
 import traceback
 from typing import TYPE_CHECKING
-from typing import Set, List
+from typing import Set, Tuple
 from time import sleep
 
 from queue import Queue
@@ -19,6 +19,7 @@ from ..connectpeer import connect_peer
 
 if TYPE_CHECKING:
     from ..peer import Peer
+    from ordered_set import OrderedSet
 
 import logger
 import onionrplugins
@@ -49,8 +50,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
 def gossip_client(
-        peer_set: Set['Peer'],
-        block_queues: List[Queue['Block']],
+        peer_set: OrderedSet['Peer'],
+        block_queues: Tuple[Queue['Block']],
         dandelion_seed: bytes):
     """
     Gossip client does the following:

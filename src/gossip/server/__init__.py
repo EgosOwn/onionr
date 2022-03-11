@@ -1,7 +1,7 @@
 import asyncio
 import traceback
 from typing import TYPE_CHECKING
-from typing import Set, List
+from typing import Set, Tuple
 
 from queue import Queue
 
@@ -14,6 +14,7 @@ import logger
 if TYPE_CHECKING:
     from onionrblocks import Block
     from peer import Peer
+    from ordered_set import OrderedSet
     from asyncio import StreamReader, StreamWriter
 
 from filepaths import gossip_server_socket_file
@@ -38,8 +39,8 @@ inbound_dandelion_edge_count = [0]
 
 
 def gossip_server(
-        peer_set: Set['Peer'],
-        block_queues: List[Queue['Block']],
+        peer_set: OrderedSet['Peer'],
+        block_queues: Tuple[Queue['Block']],
         dandelion_seed: bytes):
 
     async def peer_connected(

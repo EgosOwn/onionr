@@ -1,23 +1,23 @@
 from queue import Queue
+from time import sleep
 
-
-from typing import TYPE_CHECKING, Set
+from typing import TYPE_CHECKING, Tuple
 
 if TYPE_CHECKING:
+    from ordered_set import OrderedSet
     from onionrblocks import Block
     from ..peer import Peer
     from ..dandelion.phase import DandelionPhase
 
 def stem_out(
-        block_queue: Queue['Block'],
-        peer_set: Set['Block'],
+        block_queues: Tuple[Queue['Block']],
+        peer_set: OrderedSet['Peer'],
         d_phase: 'DandelionPhase'):
-    # Deep copy the block queues so that everything gets
-    # stemmed out if we run out of time in epoch
-    # Also spawn a thread with block set to add to db after time for black hole attack
-    block = block_queue.get(block=True, timeout=d_phase.remaining_time)
-    raw_block = block.raw
-    block_size = len(block.raw)
-    block_id = block.id
-    del block
+
+    # Spawn a thread with block set to add to db after time for black hole attack
+
+    if not len(peer_set):
+        sleep(1)
+        return
+
 

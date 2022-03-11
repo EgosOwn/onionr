@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, List
+from typing import TYPE_CHECKING, Tuple
 from threading import Thread
 from queue import Queue
 
@@ -10,7 +10,7 @@ if TYPE_CHECKING:
 
 
 def store_blocks(
-        block_queues: List[Queue['Block']],
+        block_queues: Tuple[Queue['Block']],
         dandelion_phase: 'DandelionPhase'):
 
     new_queue: Queue['Block'] = Queue()

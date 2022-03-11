@@ -7,14 +7,13 @@ import queue
 import sys
 import platform
 import signal
-from threading import Thread
 
 from stem.connection import IncorrectPassword
-import stem
 import toomanyobjs
 import filenuke
 from deadsimplekv import DeadSimpleKV
 import psutil
+from ordered_set import OrderedSet
 
 import config
 
@@ -31,7 +30,6 @@ from onionrcrypto import getourkeypair
 import runtests
 from httpapi import daemoneventsapi
 from .. import version
-from utils.bettersleep import better_sleep
 from .killdaemon import kill_daemon  # noqa
 from .showlogo import show_logo
 import gossip
@@ -119,12 +117,13 @@ def daemon():
     events.event('init', threaded=False)
     events.event('daemon_start')
 
-    shared_state.get(apiservers.ClientAPI).gossip_peer_set = set()
-    shared_state.get(apiservers.ClientAPI).gossip_block_queue = queue.Queue()
+    shared_state.get(apiservers.ClientAPI).gossip_peer_set = OrderedSet()
+    shared_state.get(apiservers.ClientAPI).gossip_block_queues = \
+        (queue.Queue(), queue.Queue())
 
     gossip.start_gossip_threads(
         shared_state.get(apiservers.ClientAPI).gossip_peer_set,
-        shared_state.get(apiservers.ClientAPI).gossip_block_queue)
+        shared_state.get(apiservers.ClientAPI).gossip_block_queues)
 
     try:
         shared_state.get(apiservers.ClientAPI).start()
