@@ -10,7 +10,7 @@ if TYPE_CHECKING:
 
 
 def store_blocks(
-        block_queues: Tuple[Queue['Block']],
+        block_queues: Tuple[Queue['Block'], Queue['Block']],
         dandelion_phase: 'DandelionPhase'):
 
     new_queue: Queue['Block'] = Queue()
@@ -31,7 +31,7 @@ def store_blocks(
     while not dandelion_phase.is_stem_phase() \
             and dandelion_phase.remaining_time() > 1:
         try:
-            blockdb.store_vdf_block(
+            blockdb.add_block_to_db(
                 new_queue.get(timeout=dandelion_phase.remaining_time())
             )
         except TimeoutError:

@@ -4,5 +4,12 @@ TRANSPORT_SIZE_BYTES = 64
 BLOCK_MAX_SIZE = 1024 * 2000
 BLOCK_ID_SIZE = 128
 DANDELION_EPOCH_LENGTH = 60
-MAX_INBOUND_DANDELION_EDGE = 2
+
+# Magic number i made up, not really specified in dandelion++ paper
+MAX_INBOUND_DANDELION_EDGE = 50  # Mainly picked to avoid slowlorisstor browser dvm 16
+
+# Dandelion subgraph is aprox 4-regular
+MAX_OUTBOUND_DANDELION_EDGE = 2
+
 MAX_STEM_BLOCKS_PER_STREAM = 1000
+BLACKHOLE_EVADE_TIMER_SECS = DANDELION_EPOCH_LENGTH * 3

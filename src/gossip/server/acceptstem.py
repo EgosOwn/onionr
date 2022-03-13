@@ -20,7 +20,7 @@ if TYPE_CHECKING:
 
 
 async def accept_stem_blocks(
-        block_queues: Tuple[Queue['Block']],
+        block_queues: Tuple[Queue['Block'], Queue['Block']],
         reader: 'StreamReader',
         writer: 'StreamWriter',
         inbound_edge_count: List[int]):
@@ -34,6 +34,8 @@ async def accept_stem_blocks(
     # Start getting the first block
     read_routine = reader.read(BLOCK_ID_SIZE)
     stream_start_time = int(time())
+
+    block_queue_to_use = secrets.choice(block_queues)
 
     for _ in range(MAX_STEM_BLOCKS_PER_STREAM):
         block_id = (
@@ -51,7 +53,7 @@ async def accept_stem_blocks(
         raw_block: bytes = await wait_for(
             reader.read(block_size), base_wait_timeout * 6)
 
-        secrets.choice(block_queues).put(
+        block_queue_to_use.put(
             Block(block_id, raw_block, auto_verify=True)
         )
         # Regardless of stem phase, we add to queue

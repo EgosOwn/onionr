@@ -26,7 +26,7 @@ import onionrplugins
 from ..commands import GossipCommands
 from gossip.dandelion.phase import DandelionPhase
 from onionrthreads import add_onionr_thread
-from blockdb import store_vdf_block
+from blockdb import add_block_to_db
 
 
 from .announce import do_announce
@@ -51,7 +51,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 def gossip_client(
         peer_set: OrderedSet['Peer'],
-        block_queues: Tuple[Queue['Block']],
+        block_queues: Tuple[Queue['Block'], Queue['Block']],
         dandelion_seed: bytes):
     """
     Gossip client does the following:

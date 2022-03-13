@@ -4,7 +4,6 @@ from typing import Iterable
 import traceback
 from threading import Thread
 from uuid import uuid4
-
 from time import sleep
 
 import logger
@@ -42,3 +41,10 @@ def add_onionr_thread(
                 *args),
            kwargs=kwargs,
            daemon=True).start()
+
+
+def add_delayed_thread(func: Callable, sleep_secs: int, *args, **kwargs):
+    assert sleep_secs > 0
+    t = Thread(target=func, args=args, kwargs=kwargs, daemon=True)
+    sleep(sleep_secs)
+    t.start()
