@@ -6,7 +6,7 @@ BLOCK_ID_SIZE = 128
 DANDELION_EPOCH_LENGTH = 60
 
 # Magic number i made up, not really specified in dandelion++ paper
-MAX_INBOUND_DANDELION_EDGE = 50  # Mainly picked to avoid slowlorisstor browser dvm 16
+MAX_INBOUND_DANDELION_EDGE = 50  # Mainly picked to avoid slowloris
 
 # Dandelion subgraph is aprox 4-regular
 MAX_OUTBOUND_DANDELION_EDGE = 2
