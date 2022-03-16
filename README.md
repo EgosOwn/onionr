@@ -13,7 +13,7 @@
 
 <img src='https://img.shields.io/github/license/beardog108/onionr'> <img src="https://img.shields.io/github/repo-size/beardog108/onionr"> <img src='https://img.shields.io/badge/python%20version%20%F0%9F%90%8D-3.7+-blue'> <img src='https://img.shields.io/github/commit-activity/m/beardog108/onionr'>
 
-<a href='https://www.reddit.com/r/onionr'><img src = 'https://img.shields.io/reddit/subreddit-subscribers/onionr?style=social'></a> <a href='https://twitter.com/onionrnet'><img src='https://img.shields.io/twitter/follow/onionrnet?style=social'></a> - [Discord](https://discord.gg/DVF2bEAzrt) - Matrix: #onionr:amorgan.xyz
+<a href='https://twitter.com/onionrnet'><img src='https://img.shields.io/twitter/follow/onionrnet?style=social'></a> - [Discord](https://discord.gg/DVF2bEAzrt) - Matrix: #onionr:amorgan.xyz
 
 |                                      |                            |                            |
 | -----------                          | -----------                | -----------                |
@@ -25,7 +25,9 @@
 
 **The main repository for this software is at https://git.VoidNet.tech/kev/onionr/**
 
-Mirrors: [Github](https://github.com/beardog108/onionr), [Gitlab](https://gitlab.com/beardog/onionr)
+***Note that this README reflects the state of the rewrite, and not the original alpha network***
+
+Mirrors [Gitlab](https://gitlab.com/beardog/onionr)
 
 
 Onionr ("Onion Relay") is a decentralized/distributed peer-to-peer communication network, designed to be anonymous and resistant to (meta)data analysis, spam, and corruption.
@@ -34,65 +36,50 @@ Onionr gives the individual the ability to speak freely, without fear of surveil
 
 ---
 
-Onionr stores data in independent packages referred to as 'blocks'. The blocks are distributed to all nodes interested in their data type. Blocks and user IDs cannot be easily proven to have been created by a particular user. Even if there is enough evidence to believe that a specific user created a block, nodes still operate behind Tor and as such cannot be trivially unmasked. Anonymity is achieved by a stateless network, with no given indication of what node a block originates from. In fact, since one is not required to participate in routing or storage to insert a message, blocks often do not originate from any identifiable node.
+# Onionr internals
 
-Onionr works primarily via epidemic/gossip style routing, with message delivery taking roughly log<sub>F</sub>(N) cycles where F is the number of nodes to send a message to each cycle and N is the number of connected nodes. So a network of 100 million nodes can deliver messages in a few minutes even with high packet loss and malfunctioning nodes.
+At the core, Onionr is an anonymous Distributed Hash Table (DHT) syncing prepackaged blocks using a simple Gossip protocol with Dandelion++ as an overlay network on top of Tor and I2P.
 
-Through message mixing and key privacy, it is intended to be nigh impossible to discover the identity of a message creator or recipient. Via long-term traffic analysis, a well funded adversary may discover the most probable node(s) to be creating a set of related blocks, however doing so would only lead them to a node behind Tor. As the first node that a block appears on is almost always not the creator of the block, there is plausible deniability regarding the true creator of the block.
+Onionr stores data in independent packages referred to as 'blocks'. The blocks are distributed to all nodes interested in their data type. Blocks and user IDs cannot be easily proven to have been created by a particular user. Even if Dandelion++ is defeated and there is enough evidence to believe that a specific node is linked to a block's creation, nodes still operate behind Tor or I2P and as such cannot be trivially unmasked. Anonymity is achieved by a stateless network, with no given indication of what node a block originates from. In fact, since one is not required to participate in routing or storage to insert a message, blocks often do not originate from any identifiable node, similar to how Bitcoin transactions do not necessarily originate from a wallet directly associated with a node.
+
+## Onionr Gossip
+
+Onionr works via epidemic/gossip style routing, with message delivery taking roughly log<sub>C</sub>(N) cycles where C is the number of nodes to send a message to each cycle and N is the number of connected nodes. So a network of 100 million nodes can deliver messages in a few minutes even with high packet loss and malfunctioning nodes.
+
+Through Dandelion++ message forwarding and key privacy, it is intended to be nigh impossible to discover the identity of a message creator or recipient. Via long-term traffic analysis, a well funded adversary may discover the most probable node(s) to be creating a set of related blocks, however doing so would only lead them to a node behind Tor. As the first node that a block appears on is almost always not the creator of the block, there is plausible deniability regarding the true creator of the block.
 
 Users are identified by ed25519/curve25519 public keys, which can be used to sign blocks or send encrypted data.
 
 Onionr can be used for mail, as a social network, instant messenger, file sharing software, or for encrypted group discussion.
 
-Due to the nature of anonymity, the graph as implemented in this reference network is dense, undirected, cyclic and can be disconnected. Since Onionr is technically just a data format, any routing scheme can be used to pass messages.
+Since Onionr is technically just a data format, any routing scheme can  technically be used to pass messages.
 
 The whitepaper is available [here](docs/whitepaper.md).
 
 ---
 
-## Main Features
+# Main Features
 
 * [X] 🌐 Fully p2p/decentralized, no trackers or other single points of failure
-* [X] 🔒 End to end encryption of user data
-* [X] 📢 Optional non-encrypted blocks, useful for blog posts or public file sharing
 * [X] 💻 Easy HTTP API for integration to websites
 * [X] 🕵️ Metadata analysis resistance and anonymity
 * [X] 📡 Transport agnosticism (no internet required)
 
-Onionr ships with various application plugins ready for use out of the box:
 
-Currently usable:
+# Roadmap
 
-* 📨 Mail
-* 💬 Public anonymous chat/message board
-* 📃 Simple webpage hosting - Will be greatly extended
-* File sharing (Work in progress)
+* [ ] 📨 Mail
+* [ ] 💬 Public message board
+* [ ] 📃 Simple webpage hosting - Will be greatly extended
+* [ ] File sharing (Work in progress)
+* [ ] Store fronts with user reviews
+* [ ] Instant messaging
 
-Not yet usable:
-
-* Instant messaging
-
-
-# Screenshots
-
-<img alt='Node statistics page screenshot' src='docs/onionr-1.png' width=600>
-
-Home screen
-
-<img alt='Friend/contact manager screenshot' src='docs/onionr-2.png' width=600>
-
-Friend/contact manager
-
-<img alt='Encrypted, metadata-masking mail application screenshot' src='docs/onionr-3.png' width=600>
-
-Encrypted, metadata-masking mail application. One of the first distributed mail systems to have basic forward secrecy.
 
 # Documentation
 
 More docs coming soon.
 
-* [Block specification](docs/dev/specs/block-spec.md)
-* [HTTP API](docs/dev/http-api.md)
 
 # Install and Run on Linux
 
@@ -115,15 +102,13 @@ Master may be unstable, you should use the latest release tag. (checkout via git
 
 * Run Onionr normally:  `$ ./onionr.sh start`
 * Run Onionr in background as daemon: `$ ./start-daemon.sh`
-* Open Onionr web interface  `$ ./onionr.sh openhome`
 * Gracefully stop Onionr from CLI `$ ./onionr.sh stop`
 
 
 # Contact/Community
 
-* Email: beardog [ at ] mailbox.org
+* Email: onionr [ at ] voidnet.tech
 * Twitter: [@onionrnet](https://twitter.com/onionrnet)
-* Onionr Mail: decentralized-fiery-freehearted-skimmer-yodling-topstitch-divorceable-ojibwa-resettlement-infracted-lessor-noninstinctual-leaseholder-counterpoised-couture-skinful
 * Matrix: #onionr:amorgan.xyz
 * Discord: https://discord.gg/DVF2bEAzrt (Discord is bad for freedom and privacy, this is only provided for convienience)
 
@@ -134,7 +119,7 @@ Everyone is welcome to contribute. Help is wanted for the following:
 * Development (Get in touch first)
     * Creation of a shared lib for use from other languages and faster proof-of-work
     * Android and IOS development
-    * Mac support (already partially supported, testers needed)
+    * Mac support (testers needed)
     * Bug fixes and development of new features
 * Testing
 * Translations/localizations
@@ -156,7 +141,7 @@ Donating at least $3 gets you cool Onionr stickers. Get in touch if you want the
 ![sticker](docs/sticker.png)
 
 
-* Bitcoin: [1onion55FXzm6h8KQw3zFw2igpHcV7LPq](bitcoin:1onion55FXzm6h8KQw3zFw2igpHcV7LPq) (Contact us for a unique address or for other coins)
+* Bitcoin: [bc1qpayme9rlpkch0qp3r79lvm5racr7t6llauwfmg](bitcoin:bc1qpayme9rlpkch0qp3r79lvm5racr7t6llauwfmg) (Contact us for a unique address or for other coins)
 
 * Monero: 4B5BA24d1P3R5aWEpkGY5TP7buJJcn2aSGBVRQCHhpiahxeB4aWsu15XwmuTjC6VF62NApZeJGTS248RMVECP8aW73Uj2ax
 
@@ -164,7 +149,7 @@ Donating at least $3 gets you cool Onionr stickers. Get in touch if you want the
 
 * Sign up for [privacy.com (refferal link)](https://privacy.com/join/FNNDF) to protect your personal information when contributing or shopping elsewhere, we both get $5 USD.
 
-Note: probably not tax deductible
+Note: not tax deductible
 
 # Security
 
