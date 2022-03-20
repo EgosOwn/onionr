@@ -12,6 +12,7 @@ from torfilepaths import control_socket
 
 bootstrap_file = f'{os.path.dirname(os.path.realpath(__file__))}/bootstrap.txt'
 
+
 def on_bootstrap(api, data):
 
     try:
@@ -30,10 +31,10 @@ def on_bootstrap(api, data):
     socks_address, socks_port = get_socks()[0]
 
     for address in bootstrap_nodes:
-        if address == config.get('tor.transport_address'):
+        if address == config.get('tor.transport_address') or not address:
             continue
-        if not address.endswith('.onion'):
-            address += '.onion'
+        assert not address.endswith('.onion')
+        address += '.onion'
         # Tell the gossip logic that this peer is ready to connect
         # it will add it to data['peer_set'] if it responds to ping
         Thread(
