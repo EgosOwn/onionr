@@ -11,7 +11,7 @@
     Anonymous social platform, mail, file sharing.
 </p>
 
-<img src='https://img.shields.io/github/license/beardog108/onionr'> <img src="https://img.shields.io/github/repo-size/beardog108/onionr"> <img src='https://img.shields.io/badge/python%20version%20%F0%9F%90%8D-3.7+-blue'> <img src='https://img.shields.io/github/commit-activity/m/beardog108/onionr'>
+<img src="https://img.shields.io/badge/License-aGPLv3-yellow"> <img src='https://img.shields.io/badge/python%20version%20%F0%9F%90%8D-3.7+-blue'>
 
 <a href='https://twitter.com/onionrnet'><img src='https://img.shields.io/twitter/follow/onionrnet?style=social'></a> - [Discord](https://discord.gg/DVF2bEAzrt) - Matrix: #onionr:amorgan.xyz
 
@@ -38,9 +38,11 @@ Onionr gives the individual the ability to speak freely, without fear of surveil
 
 # Onionr internals
 
+## Blocks
+
 At the core, Onionr is an anonymous Distributed Hash Table (DHT) syncing prepackaged blocks using a simple Gossip protocol with Dandelion++ as an overlay network on top of Tor and I2P.
 
-Onionr stores data in independent packages referred to as 'blocks'. The blocks are distributed to all nodes interested in their data type. Blocks and user IDs cannot be easily proven to have been created by a particular user. Even if Dandelion++ is defeated and there is enough evidence to believe that a specific node is linked to a block's creation, nodes still operate behind Tor or I2P and as such cannot be trivially unmasked. Anonymity is achieved by a stateless network, with no given indication of what node a block originates from. In fact, since one is not required to participate in routing or storage to insert a message, blocks often do not originate from any identifiable node, similar to how Bitcoin transactions do not necessarily originate from a wallet directly associated with a node.
+Onionr stores data in independent packages referred to as 'blocks'. The blocks are distributed to all nodes, but are not required to be stored. Blocks and user IDs cannot be easily proven to have been created by a particular user. Even if Dandelion++ is defeated and there is enough evidence to believe that a specific node is linked to a block's creation, nodes still operate behind Tor or I2P and as such cannot be trivially unmasked. Anonymity is achieved by a stateless network, with no given indication of what node a block originates from. In fact, since one is not required to participate in routing or storage to insert a message, blocks often do not originate from any identifiable node, similar to how Bitcoin transactions do not necessarily originate from a wallet directly associated with a node.
 
 ## Onionr Gossip
 
