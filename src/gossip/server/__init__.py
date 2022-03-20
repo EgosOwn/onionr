@@ -39,8 +39,8 @@ inbound_dandelion_edge_count = [0]
 
 
 def gossip_server(
-        peer_set: OrderedSet['Peer'],
-        block_queues: Tuple[Queue['Block'], Queue['Block']],
+        peer_set: "OrderedSet[Peer]",
+        block_queues: Tuple["Queue[Block]", "Queue[Block]"],
         dandelion_seed: bytes):
 
     async def peer_connected(

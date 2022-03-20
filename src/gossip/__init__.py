@@ -2,11 +2,11 @@ import threading
 from time import sleep
 from typing import TYPE_CHECKING, Set, Tuple
 from os import urandom
-import queue
 
 if TYPE_CHECKING:
     from ordered_set import OrderedSet
     from onionrblocks import Block
+    from queue import Queue
 
     from .peer import Peer
 
@@ -41,8 +41,8 @@ In stem phase, server disables diffusion
 
 
 def start_gossip_threads(
-        peer_set: OrderedSet['Peer'],
-        block_queues: Tuple[queue.Queue['Block']]):
+        peer_set: "OrderedSet[Peer]",
+        block_queues: Tuple["Queue[Block]"]):
     # Peer set is largely handled by the transport plugins
     # There is a unified set so gossip logic is not repeated
     seed = urandom(32)

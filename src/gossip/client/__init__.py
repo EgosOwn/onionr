@@ -50,8 +50,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
 def gossip_client(
-        peer_set: OrderedSet['Peer'],
-        block_queues: Tuple[Queue['Block'], Queue['Block']],
+        peer_set: "OrderedSet[Peer]",
+        block_queues: Tuple["Queue[Block]", "Queue[Block]"],
         dandelion_seed: bytes):
     """
     Gossip client does the following:

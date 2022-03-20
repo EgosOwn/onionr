@@ -20,7 +20,7 @@ if TYPE_CHECKING:
 
 
 async def accept_stem_blocks(
-        block_queues: Tuple[Queue['Block'], Queue['Block']],
+        block_queues: Tuple["Queue[Block]", "Queue[Block]"],
         reader: 'StreamReader',
         writer: 'StreamWriter',
         inbound_edge_count: List[int]):

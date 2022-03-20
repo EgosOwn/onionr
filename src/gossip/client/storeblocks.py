@@ -10,12 +10,12 @@ if TYPE_CHECKING:
 
 
 def store_blocks(
-        block_queues: Tuple[Queue['Block'], Queue['Block']],
+        block_queues: Tuple["Queue[Block]", "Queue[Block]"],
         dandelion_phase: 'DandelionPhase'):
 
-    new_queue: Queue['Block'] = Queue()
+    new_queue: "Queue[Block]" = Queue()
 
-    def _watch_queue(block_queue: Queue['Block']):
+    def _watch_queue(block_queue: "Queue[Block]"):
         # Copy all incoming blocks into 1 queue which gets processed to db
         while not dandelion_phase.is_stem_phase() \
                 and dandelion_phase.remaining_time() > 1:
