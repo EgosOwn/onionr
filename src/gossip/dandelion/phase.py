@@ -9,18 +9,19 @@ class DandelionPhase:
         self.epoch = int(time())
         self.epoch_interval = epoch_interval_secs
         self._is_stem = True
+        self.phase_id = b''
 
 
     def _update_stem_phase(self, cur_time):
         self.epoch = cur_time
-        # Hash the seed with the time stamp to produce 1 pseudorandom byte
-        # We produce an len(8) byte string for year 2038 problem
-        choice = shake_128(
+        # Hash the seed with the time stamp to produce 8 pseudorandom bytes
+        # Produce an len(8) byte string for time as well for year 2038 problem
+        self.phase_id = shake_128(
             self.seed +
-            int.to_bytes(cur_time, 8, 'big')).digest(1)
+            int.to_bytes(cur_time, 8, 'big')).digest(8)
 
-        # If the byte is even
-        if int.from_bytes(choice, 'big') % 2:
+        # Use first byte of phase id as random source for stem phase picking
+        if int.from_bytes(self.phase_id[0], 'big') % 2:
             self._is_stem = True
         else:
             self._is_stem = False
