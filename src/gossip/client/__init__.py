@@ -76,12 +76,12 @@ def gossip_client(
     while True:
         while not len(peer_set):
             sleep(0.2)
-        if dandelion_phase.remaining_time <= 10:
-            sleep(dandelion_phase.remaining_time)
+        if dandelion_phase.remaining_time() <= 10:
+            sleep(dandelion_phase.remaining_time())
         if dandelion_phase.is_stem_phase():
             try:
                 # Stem out blocks for (roughly) remaining epoch time
-                stem_out(
+                await stem_out(
                     block_queues, peer_set, dandelion_phase)
             except TimeoutError:
                 continue
