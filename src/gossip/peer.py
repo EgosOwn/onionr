@@ -8,7 +8,7 @@ class Peer(Protocol):
 
     def __init__(self):
         return
-    def get_socket(self) -> 'socket.socket':
+    def get_socket(self, connect_timeout) -> 'socket.socket':
         return
 
     def disconnect(self):

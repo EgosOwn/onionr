@@ -6,7 +6,7 @@ def connect_peer(peer_set, peer):
     if peer in peer_set:
         return
     try:
-        s = peer.get_socket()
+        s = peer.get_socket(12)
     except Exception:
         logger.warn(f"Could not connect to {peer.transport_address}")
     else:

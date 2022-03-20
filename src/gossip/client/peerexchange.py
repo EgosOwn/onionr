@@ -15,7 +15,7 @@ MAX_PEERS = 10
 
 
 def _ask_peer(peer, peer_set):
-    s: 'socket' = peer.get_socket()
+    s: 'socket' = peer.get_socket(12)
     s.sendall(command_to_byte(GossipCommands.PEER_EXCHANGE))
     # Get 10 max peers
     for _ in range(MAX_PEERS):

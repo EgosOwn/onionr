@@ -17,7 +17,7 @@ def do_announce(peer_set):
             our_transport_address = our_transport_address.encode('utf-8')
         except AttributeError:
             pass
-        sock = announce_peer.get_socket()
+        sock = announce_peer.get_socket(12)
         sock.sendall(
             command_to_byte(GossipCommands.ANNOUNCE) + our_transport_address)
         if int.from_bytes(sock.recv(1), 'big') != 1:
