@@ -113,7 +113,7 @@ def daemon():
 
     _show_info_messages()
     logger.info(
-        "Onionr daemon is running under " + str(os.getpid()), terminal=True)
+        f"Onionr daemon is running under pid {os.getpid()}", terminal=True)
     events.event('init', threaded=False)
     events.event('daemon_start')
 
