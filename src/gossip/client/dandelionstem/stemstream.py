@@ -1,5 +1,7 @@
 from typing import TYPE_CHECKING
 
+from ...constants import BLOCK_MAX_SIZE
+
 if TYPE_CHECKING:
     from queue import Queue
     import socket
@@ -20,6 +22,9 @@ async def do_stem_stream(
             # Primary client component that communicate's with gossip.server.acceptstem
             remaining_time = d_phase.remaining_time()
             bl: 'Block' = block_queue.get(block=True, timeout=remaining_time)
+
+            block_size = str(len(bl.raw)).zfill(BLOCK_MAX_SIZE)
+
             peer_socket.sendall(bl.id)
-            peer_socket.sendall(len(bl.raw))
+            peer_socket.sendall(block_size.encode('utf-8'))
             peer_socket.sendall(bl.raw)

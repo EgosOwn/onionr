@@ -6,6 +6,7 @@ import traceback
 from typing import TYPE_CHECKING
 from typing import Set, Tuple
 from time import sleep
+import asyncio
 
 from queue import Queue
 
@@ -79,13 +80,17 @@ def gossip_client(
         if dandelion_phase.remaining_time() <= 10:
             sleep(dandelion_phase.remaining_time())
         if dandelion_phase.is_stem_phase():
+            logger.debug("Entering stem phase", terminal=True)
             try:
                 # Stem out blocks for (roughly) remaining epoch time
-                await stem_out(
-                    block_queues, peer_set, dandelion_phase)
+                asyncio.run(stem_out(
+                    block_queues, peer_set, dandelion_phase))
             except TimeoutError:
                 continue
+            except Exception:
+                logger.error(traceback.format_exc(), terminal=True)
             continue
         else:
+            logger.debug("Entering fluff phase", terminal=True)
             # Add block to primary block db, where the diffuser can read it
             store_blocks(block_queues, dandelion_phase)

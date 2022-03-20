@@ -12,7 +12,7 @@ from ..constants import MAX_INBOUND_DANDELION_EDGE, MAX_STEM_BLOCKS_PER_STREAM
 
 
 block_size_digits = len(str(BLOCK_MAX_SIZE))
-base_wait_timeout = 10
+base_wait_timeout = 30
 
 if TYPE_CHECKING:
     from queue import Queue
@@ -44,6 +44,9 @@ async def accept_stem_blocks(
             reader.read(block_size_digits),
             base_wait_timeout)).decode('utf-8')
 
+        if not block_size:
+            break
+
         if not all(c in "0123456789" for c in block_size):
             raise ValueError("Invalid block size data (non 0-9 char)")
         block_size = int(block_size)
@@ -52,6 +55,9 @@ async def accept_stem_blocks(
 
         raw_block: bytes = await wait_for(
             reader.read(block_size), base_wait_timeout * 6)
+
+        if not raw_block:
+            break
 
         block_queue_to_use.put(
             Block(block_id, raw_block, auto_verify=True)

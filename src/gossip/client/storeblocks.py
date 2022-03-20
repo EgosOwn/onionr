@@ -1,6 +1,7 @@
 from typing import TYPE_CHECKING, Tuple
 from threading import Thread
 from queue import Queue
+from queue import Empty
 
 import blockdb
 
@@ -22,11 +23,11 @@ def store_blocks(
             try:
                 new_queue.put(
                     block_queue.get(timeout=dandelion_phase.remaining_time()))
-            except TimeoutError:
+            except Empty:
                 pass
 
     for block_queue in block_queues:
-        Thread(target=_watch_queue, args=block_queue, daemon=True).start()
+        Thread(target=_watch_queue, args=[block_queue], daemon=True).start()
 
     while not dandelion_phase.is_stem_phase() \
             and dandelion_phase.remaining_time() > 1:
@@ -34,6 +35,6 @@ def store_blocks(
             blockdb.add_block_to_db(
                 new_queue.get(timeout=dandelion_phase.remaining_time())
             )
-        except TimeoutError:
+        except Empty:
             pass
 

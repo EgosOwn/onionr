@@ -5,6 +5,8 @@ import traceback
 
 from typing import TYPE_CHECKING, Coroutine, Tuple, List
 
+from ordered_set import OrderedSet
+
 from onionrthreads import add_delayed_thread
 from blockdb import add_block_to_db
 import logger
@@ -16,7 +18,7 @@ from ... import dandelion
 from .stemstream import do_stem_stream
 
 if TYPE_CHECKING:
-    from ordered_set import OrderedSet
+
     from onionrblocks import Block
     from ...peer import Peer
     from ...dandelion.phase import DandelionPhase

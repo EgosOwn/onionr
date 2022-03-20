@@ -1,5 +1,6 @@
 from time import time
 from hashlib import shake_128
+from secrets import randbits
 
 
 class DandelionPhase:
@@ -8,7 +9,7 @@ class DandelionPhase:
         assert len(self.seed) == 32
         self.epoch = int(time())
         self.epoch_interval = epoch_interval_secs
-        self._is_stem = True
+        self._is_stem = bool(randbits(1))
         self.phase_id = b''
 
 
@@ -21,7 +22,7 @@ class DandelionPhase:
             int.to_bytes(cur_time, 8, 'big')).digest(8)
 
         # Use first byte of phase id as random source for stem phase picking
-        if int.from_bytes(self.phase_id[0], 'big') % 2:
+        if self.phase_id[0] % 2:
             self._is_stem = True
         else:
             self._is_stem = False
@@ -29,7 +30,8 @@ class DandelionPhase:
 
     def remaining_time(self) -> int:
         current_time = int(time())
-        return self.epoch_interval - (current_time - self.epoch)
+
+        return max(0, self.epoch_interval - (current_time - self.epoch))
 
 
     def is_stem_phase(self) -> bool:

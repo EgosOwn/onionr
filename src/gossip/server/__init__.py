@@ -85,6 +85,10 @@ def gossip_server(
                             block_queues,
                             reader, writer,
                             inbound_dandelion_edge_count)
+                    except asyncio.exceptions.TimeoutError:
+                        logger.debug(
+                            "Inbound edge timed out when steming blocks to us",
+                            terminal=True)
                     except Exception:
                         logger.warn(
                             f"Err getting\n{traceback.format_exc()}",
