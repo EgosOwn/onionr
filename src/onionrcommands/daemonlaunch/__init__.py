@@ -117,13 +117,7 @@ def daemon():
     events.event('init', threaded=False)
     events.event('daemon_start')
 
-    shared_state.get(apiservers.ClientAPI).gossip_peer_set = OrderedSet()
-    shared_state.get(apiservers.ClientAPI).gossip_block_queues = \
-        (queue.Queue(), queue.Queue())
-
-    gossip.start_gossip_threads(
-        shared_state.get(apiservers.ClientAPI).gossip_peer_set,
-        shared_state.get(apiservers.ClientAPI).gossip_block_queues)
+    gossip.start_gossip_threads()
 
     try:
         shared_state.get(apiservers.ClientAPI).start()

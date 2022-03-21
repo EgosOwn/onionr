@@ -6,11 +6,13 @@ if TYPE_CHECKING:
     from .. import Peer
 
 import logger
-from ..commands import GossipCommands, command_to_byte
 import onionrplugins
 
+from ..commands import GossipCommands, command_to_byte
+from ..peerset import gossip_peer_set
 
-def do_announce(peer_set):
+
+def do_announce():
     "Announce with N peers of each identified transport"
     def _announce(announce_peer: 'Peer', our_transport_address: str):
         try:
@@ -25,13 +27,13 @@ def do_announce(peer_set):
                 f"Could not announce with {announce_peer.transport_address}")
         sock.close()
 
-    while not len(peer_set):
+    while not len(gossip_peer_set):
         sleep(1)
 
     per_transport = 3
     peer_types = {}
     count_for_peer = 0
-    for peer in peer_set:
+    for peer in gossip_peer_set:
         try:
             count_for_peer = peer_types[peer.__class__]
         except KeyError:

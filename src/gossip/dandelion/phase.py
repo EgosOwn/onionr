@@ -1,12 +1,14 @@
 from time import time
 from hashlib import shake_128
 from secrets import randbits
+import secrets
+
+seed = secrets.token_bytes(32)
 
 
 class DandelionPhase:
-    def __init__(self, seed: bytes, epoch_interval_secs: int):
-        self.seed = seed  # Seed intended to be from good random source like urandom
-        assert len(self.seed) == 32
+    def __init__(self, epoch_interval_secs: int):
+        assert len(seed) == 32
         self.epoch = int(time())
         self.epoch_interval = epoch_interval_secs
         self._is_stem = bool(randbits(1))
@@ -18,7 +20,7 @@ class DandelionPhase:
         # Hash the seed with the time stamp to produce 8 pseudorandom bytes
         # Produce an len(8) byte string for time as well for year 2038 problem
         self.phase_id = shake_128(
-            self.seed +
+            seed +
             int.to_bytes(cur_time, 8, 'big')).digest(8)
 
         # Use first byte of phase id as random source for stem phase picking

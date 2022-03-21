@@ -9,6 +9,7 @@ from onionrblocks import Block
 from ..dandelion import DandelionPhase, StemAcceptResult
 from ..constants import BLOCK_ID_SIZE, BLOCK_MAX_SIZE
 from ..constants import MAX_INBOUND_DANDELION_EDGE, MAX_STEM_BLOCKS_PER_STREAM
+from ..blockqueues import gossip_block_queues
 
 
 block_size_digits = len(str(BLOCK_MAX_SIZE))
@@ -20,7 +21,6 @@ if TYPE_CHECKING:
 
 
 async def accept_stem_blocks(
-        block_queues: Tuple["Queue[Block]", "Queue[Block]"],
         reader: 'StreamReader',
         writer: 'StreamWriter',
         inbound_edge_count: List[int]):
@@ -35,7 +35,7 @@ async def accept_stem_blocks(
     read_routine = reader.read(BLOCK_ID_SIZE)
     stream_start_time = int(time())
 
-    block_queue_to_use = secrets.choice(block_queues)
+    block_queue_to_use = secrets.choice(gossip_block_queues)
 
     for _ in range(MAX_STEM_BLOCKS_PER_STREAM):
         block_id = (

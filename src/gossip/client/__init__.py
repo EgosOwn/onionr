@@ -33,6 +33,7 @@ from blockdb import add_block_to_db
 from .announce import do_announce
 from .dandelionstem import stem_out
 from .peerexchange import get_new_peers
+from ..peerset import gossip_peer_set
 
 """
 This program is free software: you can redistribute it and/or modify
@@ -50,10 +51,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
 
-def gossip_client(
-        peer_set: "OrderedSet[Peer]",
-        block_queues: Tuple["Queue[Block]", "Queue[Block]"],
-        dandelion_seed: bytes):
+def gossip_client():
     """
     Gossip client does the following:
 
@@ -61,7 +59,7 @@ def gossip_client(
     Stream new blocks
     """
     bl: Block
-    do_announce(peer_set)
+    do_announce()
 
     # Start a thread that runs every 1200 secs to
     # Ask peers for a subset for their peer set
@@ -70,12 +68,12 @@ def gossip_client(
     # transport plugin handles the new peer
     add_onionr_thread(
         get_new_peers,
-        1200, peer_set, initial_sleep=5)
+        1200, initial_sleep=5)
 
-    dandelion_phase = DandelionPhase(dandelion_seed, DANDELION_EPOCH_LENGTH)
+    dandelion_phase = DandelionPhase(DANDELION_EPOCH_LENGTH)
 
     while True:
-        while not len(peer_set):
+        while not len(gossip_peer_set):
             sleep(0.2)
         if dandelion_phase.remaining_time() <= 10:
             sleep(dandelion_phase.remaining_time())
@@ -83,8 +81,7 @@ def gossip_client(
             logger.debug("Entering stem phase", terminal=True)
             try:
                 # Stem out blocks for (roughly) remaining epoch time
-                asyncio.run(stem_out(
-                    block_queues, peer_set, dandelion_phase))
+                asyncio.run(stem_out())
             except TimeoutError:
                 continue
             except Exception:
@@ -93,4 +90,4 @@ def gossip_client(
         else:
             logger.debug("Entering fluff phase", terminal=True)
             # Add block to primary block db, where the diffuser can read it
-            store_blocks(block_queues, dandelion_phase)
+            store_blocks(dandelion_phase)

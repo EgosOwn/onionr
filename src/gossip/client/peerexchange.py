@@ -10,11 +10,12 @@ from ..peer import Peer
 from ..commands import GossipCommands, command_to_byte
 from ..constants import PEER_AMOUNT_TO_ASK, TRANSPORT_SIZE_BYTES
 from .. import connectpeer
+from ..peerset import gossip_peer_set
 
 MAX_PEERS = 10
 
 
-def _ask_peer(peer, peer_set):
+def _ask_peer(peer):
     s: 'socket' = peer.get_socket(12)
     s.sendall(command_to_byte(GossipCommands.PEER_EXCHANGE))
     # Get 10 max peers
@@ -24,19 +25,18 @@ def _ask_peer(peer, peer_set):
             break
         connect_data = {
             'address': peer,
-            'callback': connectpeer.connect_peer,
-            'peer_set': peer_set
+            'callback': connectpeer.connect_peer
         }
         onionrevents.event('announce_rec', data=connect_data, threaded=True)
     s.close()
 
 
-def get_new_peers(peer_set):
-    while not len(peer_set):
+def get_new_peers():
+    while not len(gossip_peer_set):
         sleep(0.5)
 
     # Deep copy the peer list
-    peer_list: Peer = list(peer_set)
+    peer_list: Peer = list(gossip_peer_set)
     peers_we_ask: Peer = []
     asked_count = 0
 
@@ -54,7 +54,7 @@ def get_new_peers(peer_set):
     # Start threads to ask the peers for more peers
     threads = []
     for peer in peers_we_ask:
-        t = Thread(target=_ask_peer, args=[peer, peer_set], daemon=True)
+        t = Thread(target=_ask_peer, args=[peer, gossip_peer_set], daemon=True)
         t.start()
         threads.append(t)
     peers_we_ask.clear()

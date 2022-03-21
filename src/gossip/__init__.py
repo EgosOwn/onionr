@@ -1,7 +1,6 @@
 import threading
 from time import sleep
 from typing import TYPE_CHECKING, Set, Tuple
-from os import urandom
 
 if TYPE_CHECKING:
     from ordered_set import OrderedSet
@@ -17,8 +16,8 @@ import logger
 from .connectpeer import connect_peer
 from .client import gossip_client
 from .server import gossip_server
-from .commands import GossipCommands
 from .constants import BOOTSTRAP_ATTEMPTS
+from .peerset import gossip_peer_set
 """
 Onionr uses a flavor of Dandelion++ epidemic routing
 
@@ -40,25 +39,21 @@ In stem phase, server disables diffusion
 """
 
 
-def start_gossip_threads(
-        peer_set: "OrderedSet[Peer]",
-        block_queues: Tuple["Queue[Block]"]):
+def start_gossip_threads():
     # Peer set is largely handled by the transport plugins
     # There is a unified set so gossip logic is not repeated
-    seed = urandom(32)
 
     add_onionr_thread(
-        gossip_server, 1, peer_set, block_queues, seed, initial_sleep=0.2)
+        gossip_server, 1, initial_sleep=0.2)
 
     threading.Thread(
-        target=gossip_client,
-        args=[peer_set, block_queues, seed], daemon=True).start()
-    onionrplugins.events.event('gossip_start', data=peer_set, threaded=True)
+        target=gossip_client, daemon=True).start()
+    onionrplugins.events.event('gossip_start', data=None, threaded=True)
     for _ in range(BOOTSTRAP_ATTEMPTS):
         onionrplugins.events.event(
-            'bootstrap', data={'peer_set': peer_set, 'callback': connect_peer},
+            'bootstrap', data={'callback': connect_peer},
             threaded=False)
         sleep(60)
-        if len(peer_set):
+        if len(gossip_peer_set):
             return
     logger.error("Could not connect to any peers :(", terminal=True)

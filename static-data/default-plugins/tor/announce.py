@@ -3,6 +3,7 @@ import logger
 
 from getsocks import get_socks
 from torpeer import TorPeer
+from gossip.peerset import gossip_peer_set
 
 
 def on_announce_rec(api, data=None):
@@ -21,5 +22,5 @@ def on_announce_rec(api, data=None):
     announced += '.onion'
 
     data['callback'](
-        data['peer_set'],
+        gossip_peer_set,
         TorPeer(socks_address, socks_port, announced))

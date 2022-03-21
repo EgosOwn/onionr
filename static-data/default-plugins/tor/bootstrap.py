@@ -3,6 +3,7 @@ from time import sleep
 import os
 
 from gossip.peer import Peer
+from gossip.peerset import gossip_peer_set
 import logger
 import config
 from getsocks import get_socks
@@ -39,7 +40,7 @@ def on_bootstrap(api, data):
         # it will add it to data['peer_set'] if it responds to ping
         Thread(
             target=data['callback'],
-            args=[data['peer_set'], TorPeer(socks_address, socks_port, address)],
+            args=[TorPeer(socks_address, socks_port, address)],
             daemon=True).start()
 
 

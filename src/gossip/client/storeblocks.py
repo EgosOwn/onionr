@@ -9,10 +9,10 @@ if TYPE_CHECKING:
     from onionrblocks import Block
     from ..dandelion.phase import DandelionPhase
 
+from ..blockqueues import gossip_block_queues
 
-def store_blocks(
-        block_queues: Tuple["Queue[Block]", "Queue[Block]"],
-        dandelion_phase: 'DandelionPhase'):
+
+def store_blocks(dandelion_phase: 'DandelionPhase'):
 
     new_queue: "Queue[Block]" = Queue()
 
@@ -26,7 +26,7 @@ def store_blocks(
             except Empty:
                 pass
 
-    for block_queue in block_queues:
+    for block_queue in gossip_block_queues:
         Thread(target=_watch_queue, args=[block_queue], daemon=True).start()
 
     while not dandelion_phase.is_stem_phase() \

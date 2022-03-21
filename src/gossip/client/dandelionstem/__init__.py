@@ -14,6 +14,8 @@ import logger
 from ...constants import BLACKHOLE_EVADE_TIMER_SECS, OUTBOUND_DANDELION_EDGES
 from ...commands import GossipCommands, command_to_byte
 from ... import dandelion
+from ...blockqueues import gossip_block_queues
+from ...peerset import gossip_peer_set
 
 from .stemstream import do_stem_stream
 
@@ -69,19 +71,16 @@ async def _setup_edge(
     s.close()
 
 
-async def stem_out(
-        block_queues: Tuple["Queue[Block]", "Queue[Block]"],
-        peer_set: "OrderedSet[Peer]",
-        d_phase: 'DandelionPhase'):
+async def stem_out(d_phase: 'DandelionPhase'):
 
     # don't bother if there are no possible outbound edges
-    if not len(peer_set):
+    if not len(gossip_peer_set):
         sleep(1)
         return
 
     # Spawn threads with deep copied block queue to add to db after time
     # for black hole attack
-    for block_q in block_queues:
+    for block_q in gossip_block_queues:
         add_delayed_thread(
             lambda q: set(map(add_block_to_db, q)),
             BLACKHOLE_EVADE_TIMER_SECS, list(block_q.queue))
@@ -96,7 +95,7 @@ async def stem_out(
     while len(peer_sockets) < OUTBOUND_DANDELION_EDGES:
         try:
             # Get a socket for stem out (makes sure they accept)
-            peer_sockets.append(await _setup_edge(peer_set, tried_edges))
+            peer_sockets.append(await _setup_edge(gossip_peer_set, tried_edges))
         except NotEnoughEdges:
             # No possible edges at this point (edges < OUTBOUND_DANDELION_EDGE)
             logger.warn("Not able to build enough peers for stemout.",
@@ -116,7 +115,7 @@ async def stem_out(
 
     for count, peer_socket in enumerate(peer_sockets):
         stream_routines.append(
-            do_stem_stream(peer_socket, block_queues[count], d_phase))
+            do_stem_stream(peer_socket, gossip_block_queues[count], d_phase))
 
     for routine in stream_routines:
         try:

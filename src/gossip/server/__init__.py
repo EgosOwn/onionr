@@ -19,6 +19,7 @@ if TYPE_CHECKING:
 
 from filepaths import gossip_server_socket_file
 from ..commands import GossipCommands
+from ..peerset import gossip_peer_set
 from .acceptstem import accept_stem_blocks
 """
 This program is free software: you can redistribute it and/or modify
@@ -38,10 +39,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 inbound_dandelion_edge_count = [0]
 
 
-def gossip_server(
-        peer_set: "OrderedSet[Peer]",
-        block_queues: Tuple["Queue[Block]", "Queue[Block]"],
-        dandelion_seed: bytes):
+def gossip_server():
 
     async def peer_connected(
             reader: 'StreamReader', writer: 'StreamWriter'):
@@ -66,14 +64,13 @@ def gossip_server(
                             constants.TRANSPORT_SIZE_BYTES)
                         onionrevents.event(
                             'announce_rec',
-                            data={'peer_set': peer_set,
-                                  'address': address,
+                            data={'address': address,
                                   'callback': connect_peer},
                             threaded=True)
                         writer.write(int(1).to_bytes(1, 'big'))
                     await asyncio.wait_for(_read_announce(), 10)
                 case GossipCommands.PEER_EXCHANGE:
-                    for peer in peer_set:
+                    for peer in gossip_peer_set:
                         writer.write(
                             peer.transport_address.encode(
                                 'utf-8').removesuffix(b'.onion'))
@@ -82,7 +79,6 @@ def gossip_server(
 
                     try:
                         await accept_stem_blocks(
-                            block_queues,
                             reader, writer,
                             inbound_dandelion_edge_count)
                     except asyncio.exceptions.TimeoutError:

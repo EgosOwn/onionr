@@ -1,7 +1,6 @@
 """Onionr - Private P2P Communication.
 
-This default plugin handles "flow" messages
-(global chatroom style communication)
+Tor transport plugin
 """
 import sys
 import os

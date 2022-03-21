@@ -53,10 +53,6 @@ class PrivateAPI:
         self.startTime = epoch.get_epoch()
         app = flask.Flask(__name__)
 
-        self.gossip_block_queue: 'queue.Queue' = None
-        self.gossip_peer_set: Set['Peer'] = None
-
-
         bind_port = int(config.get('client.client.port', 59496))
         self.bindPort = bind_port
 
