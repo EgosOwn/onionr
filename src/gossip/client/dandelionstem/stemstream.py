@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING
 
-from ...constants import BLOCK_MAX_SIZE
+from ...constants import BLOCK_MAX_SIZE, BLOCK_MAX_SIZE_LEN
 
 if TYPE_CHECKING:
     from queue import Queue
@@ -23,7 +23,7 @@ async def do_stem_stream(
             remaining_time = d_phase.remaining_time()
             bl: 'Block' = block_queue.get(block=True, timeout=remaining_time)
 
-            block_size = str(len(bl.raw)).zfill(BLOCK_MAX_SIZE)
+            block_size = str(len(bl.raw)).zfill(BLOCK_MAX_SIZE_LEN)
 
             peer_socket.sendall(bl.id)
             peer_socket.sendall(block_size.encode('utf-8'))

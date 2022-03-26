@@ -13,6 +13,7 @@
 * [  ] Restore webUI as a plugin
 * [  ] Restore/reimplement mail plugin
 * [  ] Restore/reimplement friends plugin
+* [  ] Refresh test suite
 
 
 ## Store Plugin Release (9.1)

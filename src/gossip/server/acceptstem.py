@@ -32,7 +32,7 @@ async def accept_stem_blocks(
     inbound_edge_count[0] += 1
 
     # Start getting the first block
-    read_routine = reader.read(BLOCK_ID_SIZE)
+    read_routine = reader.readexactly(BLOCK_ID_SIZE)
     stream_start_time = int(time())
 
     block_queue_to_use = secrets.choice(gossip_block_queues)
@@ -40,10 +40,12 @@ async def accept_stem_blocks(
     for _ in range(MAX_STEM_BLOCKS_PER_STREAM):
         block_id = (
             await wait_for(read_routine, base_wait_timeout)).decode('utf-8')
-        block_size = (await wait_for(
-            reader.read(block_size_digits),
-            base_wait_timeout)).decode('utf-8')
+        if not block_id:
+            break
 
+        block_size = (await wait_for(
+            reader.readexactly(block_size_digits),
+            base_wait_timeout)).decode('utf-8')
         if not block_size:
             break
 
@@ -54,8 +56,7 @@ async def accept_stem_blocks(
             raise ValueError("Max block size")
 
         raw_block: bytes = await wait_for(
-            reader.read(block_size), base_wait_timeout * 6)
-
+            reader.readexactly(block_size), base_wait_timeout * 6)
         if not raw_block:
             break
 
@@ -65,5 +66,5 @@ async def accept_stem_blocks(
         # Regardless of stem phase, we add to queue
         # Client will decide if they are to be stemmed
 
-        read_routine = reader.read(BLOCK_ID_SIZE)
+        read_routine = reader.readexactly(BLOCK_ID_SIZE)
 

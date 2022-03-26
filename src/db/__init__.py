@@ -4,6 +4,8 @@ import os
 
 timeout = 120
 
+class DuplicateKey(ValueError): pass
+
 
 def _do_timeout(func, *args):
     ts = 0
@@ -20,6 +22,18 @@ def _do_timeout(func, *args):
             time.sleep(0.01)
         else:
             return res
+
+
+def set_if_new(db_path, key, value):
+    def _set(key, value):
+        with dbm.open(db_path, "c") as my_db:
+            try:
+                my_db[key]
+            except KeyError:
+                my_db[key] = value
+            else:
+                raise DuplicateKey
+    _do_timeout(_set, key, value)
 
 
 def set(db_path, key, value):

@@ -21,6 +21,7 @@ from filepaths import gossip_server_socket_file
 from ..commands import GossipCommands
 from ..peerset import gossip_peer_set
 from .acceptstem import accept_stem_blocks
+from .streamblocks import stream_blocks
 """
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -46,8 +47,10 @@ def gossip_server():
 
         while True:
             try:
-                cmd = await asyncio.wait_for(reader.read(1), 60)
+                cmd = await asyncio.wait_for(reader.readexactly(1), 60)
             except asyncio.exceptions.CancelledError:
+                break
+            except asyncio.IncompleteReadError:
                 break
 
             cmd = int.from_bytes(cmd, 'big')
@@ -60,23 +63,30 @@ def gossip_server():
                     pass
                 case GossipCommands.ANNOUNCE:
                     async def _read_announce():
-                        address = await reader.read(
+                        address = await reader.readexactly(
                             constants.TRANSPORT_SIZE_BYTES)
-                        onionrevents.event(
-                            'announce_rec',
-                            data={'address': address,
-                                  'callback': connect_peer},
-                            threaded=True)
-                        writer.write(int(1).to_bytes(1, 'big'))
+                        if address:
+                            onionrevents.event(
+                                'announce_rec',
+                                data={'address': address,
+                                    'callback': connect_peer},
+                                threaded=True)
+                            writer.write(int(1).to_bytes(1, 'big'))
                     await asyncio.wait_for(_read_announce(), 10)
                 case GossipCommands.PEER_EXCHANGE:
                     for peer in gossip_peer_set:
                         writer.write(
                             peer.transport_address.encode(
                                 'utf-8').removesuffix(b'.onion'))
+                case GossipCommands.STREAM_BLOCKS:
+                    try:
+                        await stream_blocks(reader, writer)
+                    except Exception:
+                        logger.warn(
+                            f"Err streaming blocks\n{traceback.format_exc()}",
+                            terminal=True)
                 case GossipCommands.PUT_BLOCKS:
-                    # Create block queue & append stemmed blocks to it
-
+                    # Pick block queue & append stemmed blocks to it
                     try:
                         await accept_stem_blocks(
                             reader, writer,

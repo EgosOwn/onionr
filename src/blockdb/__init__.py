@@ -1,16 +1,24 @@
+from typing import Callable, Generator, List
+
 from onionrblocks import Block
 
 import db
-from utils import identifyhome
 
-block_db_path = identifyhome.identify_home() + 'blockdata'
+from .dbpath import block_db_path
+
+
+block_storage_observers: List[Callable] = []
 
 
 def add_block_to_db(block: Block):
-    db.set(block_db_path, block.id, block.raw)
+    # Raises db.DuplicateKey if dupe
+    db.set_if_new(block_db_path, block.id, block.raw)
+
+    for func in block_storage_observers:
+        func(block)
 
 
-def get_blocks_by_type(block_type: str):
+def get_blocks_by_type(block_type: str) -> Generator[Block]:
     block_db = db.get_db_obj(block_db_path, 'u')
     for block_hash in db.list_keys(block_db_path):
         block = Block(block_hash, block_db[block_hash], auto_verify=False)
@@ -18,7 +26,8 @@ def get_blocks_by_type(block_type: str):
             yield block
 
 
-def get_blocks_after_timestamp(timestamp: int, block_type: str = ''):
+def get_blocks_after_timestamp(
+        timestamp: int, block_type: str = '') -> Generator[Block]:
     block_db = db.get_db_obj(block_db_path, 'u')
 
     for block_hash in db.list_keys(block_db_path):

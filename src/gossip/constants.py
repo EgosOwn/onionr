@@ -2,8 +2,9 @@ BOOTSTRAP_ATTEMPTS = 5
 PEER_AMOUNT_TO_ASK = 3
 TRANSPORT_SIZE_BYTES = 64
 BLOCK_MAX_SIZE = 1024 * 2000
+BLOCK_MAX_SIZE_LEN = len(str(BLOCK_MAX_SIZE))
 BLOCK_ID_SIZE = 128
-DANDELION_EPOCH_LENGTH = 120
+DANDELION_EPOCH_LENGTH = 60
 
 # Magic number i made up, not really specified in dandelion++ paper
 MAX_INBOUND_DANDELION_EDGE = 50  # Mainly picked to avoid slowloris
