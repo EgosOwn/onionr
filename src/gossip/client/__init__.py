@@ -70,6 +70,9 @@ def gossip_client():
         get_new_peers,
         1200, initial_sleep=5)
 
+    # Start a new thread to stream blocks from peers
+
+
     dandelion_phase = DandelionPhase(DANDELION_EPOCH_LENGTH)
 
     while True:

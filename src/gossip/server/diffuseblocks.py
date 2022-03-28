@@ -1,6 +1,6 @@
 """Onionr - Private P2P Communication.
 
-Stream blocks we can for inbound edge peers that ask for them
+Diffuse blocks we can for inbound edge peers that ask for them
 
 doesn't apply for blocks in the gossip queue that are awaiting
 descision to fluff or stem
@@ -37,7 +37,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
 
-async def stream_blocks(reader: 'StreamReader', writer: 'StreamWriter'):
+async def diffuse_blocks(reader: 'StreamReader', writer: 'StreamWriter'):
     """stream blocks to a peer created since an offset
     """
     time_offset = await wait_for(reader.read(8), 12)
@@ -54,6 +54,7 @@ async def stream_blocks(reader: 'StreamReader', writer: 'StreamWriter'):
             "Peer's specified time offset skewed too far into the future")
 
     newly_stored_blocks = queue.Queue()
+
     def _add_to_queue(bl):
         newly_stored_blocks.put_nowait(bl)
     block_storage_observers.append(
@@ -70,6 +71,7 @@ async def stream_blocks(reader: 'StreamReader', writer: 'StreamWriter'):
         await writer.drain()
 
     try:
+        # Send initial blocks from offset
         for block in get_blocks_after_timestamp(time_offset):
             if not keep_writing:
                 break
@@ -83,14 +85,15 @@ async def stream_blocks(reader: 'StreamReader', writer: 'StreamWriter'):
             except IncompleteReadError:
                 keep_writing = False
 
+        # Diffuse blocks stored since we started this stream
         while keep_writing:
             await _send_block(newly_stored_blocks.get())
-        try:
-            keep_writing = bool(
-                int.from_bytes(await reader.readexactly(1), 'big')
-            )
-        except IncompleteReadError:
-            keep_writing = False
+            try:
+                keep_writing = bool(
+                    int.from_bytes(await reader.readexactly(1), 'big')
+                )
+            except IncompleteReadError:
+                keep_writing = False
     except Exception:
         logger.warn(traceback.format_exc(), terminal=True)
 

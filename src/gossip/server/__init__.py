@@ -21,7 +21,7 @@ from filepaths import gossip_server_socket_file
 from ..commands import GossipCommands
 from ..peerset import gossip_peer_set
 from .acceptstem import accept_stem_blocks
-from .streamblocks import stream_blocks
+from .diffuseblocks import stream_blocks
 """
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
