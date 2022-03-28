@@ -8,7 +8,7 @@
     Privacy Respecting Communication Network 📡
 </p>
 <p align="center">
-    Anonymous social platform, mail, file sharing.
+    WIP anonymous social platform, mail, file sharing and marketplace
 </p>
 
 <img src="https://img.shields.io/badge/License-aGPLv3-yellow"> <img src='https://img.shields.io/badge/python%20version%20%F0%9F%90%8D-3.7+-blue'>
@@ -63,20 +63,13 @@ The whitepaper is available [here](docs/whitepaper.md).
 # Main Features
 
 * [X] 🌐 Fully p2p/decentralized, no trackers or other single points of failure
-* [X] 💻 Easy HTTP API for integration to websites
 * [X] 🕵️ Metadata analysis resistance and anonymity
 * [X] 📡 Transport agnosticism (no internet required)
 
 
 # Roadmap
 
-* [ ] 📨 Mail
-* [ ] 💬 Public message board
-* [ ] 📃 Simple webpage hosting - Will be greatly extended
-* [ ] File sharing (Work in progress)
-* [ ] Store fronts with user reviews
-* [ ] Instant messaging
-
+See [ROADMAP.md](ROADMAP.md)
 
 # Documentation
 
@@ -112,7 +105,7 @@ Master may be unstable, you should use the latest release tag. (checkout via git
 * Email: onionr [ at ] voidnet.tech
 * Twitter: [@onionrnet](https://twitter.com/onionrnet)
 * Matrix: #onionr:amorgan.xyz
-* Discord: https://discord.gg/DVF2bEAzrt (Discord is bad for freedom and privacy, this is only provided for convienience)
+* Discord: https://discord.gg/DVF2bEAzrt (Discord is bad for freedom and privacy, this is only provided for convenience)
 
 # Help out
 
