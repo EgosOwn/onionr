@@ -38,3 +38,15 @@ def get_blocks_after_timestamp(
                     yield block
             else:
                 yield block
+
+
+def has_block(block_hash):
+    return block_hash in db.list_keys()
+
+
+def get_block(block_hash) -> Block:
+    return Block(
+        block_hash,
+        db.get_db_obj(block_db_path, 'u').get(block_hash),
+        auto_verify=False)
+

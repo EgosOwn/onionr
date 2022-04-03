@@ -4,6 +4,7 @@ TRANSPORT_SIZE_BYTES = 64
 BLOCK_MAX_SIZE = 1024 * 2000
 BLOCK_MAX_SIZE_LEN = len(str(BLOCK_MAX_SIZE))
 BLOCK_ID_SIZE = 128
+BLOCK_STREAM_OFFSET_DIGITS = 8
 DANDELION_EPOCH_LENGTH = 60
 
 # Magic number i made up, not really specified in dandelion++ paper

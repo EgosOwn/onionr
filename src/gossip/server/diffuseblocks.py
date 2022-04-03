@@ -17,7 +17,7 @@ if TYPE_CHECKING:
     from asyncio import StreamWriter, StreamReader
     from onionrblocks import Block
 
-from ..constants import BLOCK_MAX_SIZE, BLOCK_MAX_SIZE_LEN
+from ..constants import BLOCK_MAX_SIZE, BLOCK_MAX_SIZE_LEN, BLOCK_STREAM_OFFSET_DIGITS
 
 import logger
 from blockdb import get_blocks_after_timestamp, block_storage_observers
@@ -40,7 +40,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 async def diffuse_blocks(reader: 'StreamReader', writer: 'StreamWriter'):
     """stream blocks to a peer created since an offset
     """
-    time_offset = await wait_for(reader.read(8), 12)
+    time_offset = await wait_for(reader.readexactly(BLOCK_STREAM_OFFSET_DIGITS), 12)
     time_offset = time_offset.decode('utf-8')
     keep_writing = True
 
@@ -63,6 +63,11 @@ async def diffuse_blocks(reader: 'StreamReader', writer: 'StreamWriter'):
 
     async def _send_block(bl: 'Block'):
         writer.write(block.id)
+
+        # we tell id above, they tell if they want the block
+        if int.from_bytes(await reader.readexactly(1), 'big') == 0:
+            return
+
         await writer.drain()
         writer.write(
             str(len(block.raw)).zfill(BLOCK_MAX_SIZE_LEN).encode('utf-8'))

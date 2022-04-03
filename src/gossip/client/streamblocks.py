@@ -11,6 +11,10 @@ from random import SystemRandom
 from time import sleep
 import traceback
 
+import blockdb
+
+from ..constants import BLOCK_ID_SIZE, BLOCK_MAX_SIZE, BLOCK_MAX_SIZE_LEN, BLOCK_STREAM_OFFSET_DIGITS
+
 if TYPE_CHECKING:
     from socket import socket
     from typing import TYPE_CHECKING, List
@@ -20,6 +24,7 @@ from ordered_set import OrderedSet
 
 import logger
 
+import onionrblocks
 from ..peerset import gossip_peer_set
 from ..commands import GossipCommands, command_to_byte
 
@@ -53,6 +58,7 @@ def stream_from_peers():
     sys_rand = SystemRandom()
 
     need_socket_lock = Semaphore(MAX_STREAMS)
+    offset = 0
 
     def _stream_from_peer(peer: Peer):
 
@@ -61,8 +67,35 @@ def stream_from_peers():
             sock.sendall(
                 command_to_byte(GossipCommands.STREAM_BLOCKS)
             )
+            sock.sendall(
+                str(offset).zfill(BLOCK_STREAM_OFFSET_DIGITS).encode('utf-8'))
+
+            while True:
+                block_id = sock.recv(BLOCK_ID_SIZE)
+                if blockdb.has_block(block_id):
+                    sock.sendall(int(0).to_bytes(1, 'big'))
+                    continue
+                block_size = int(sock.recv(BLOCK_MAX_SIZE_LEN))
+                if block_size > BLOCK_MAX_SIZE or block_size <= 0:
+                    logger.warn(
+                        f"Peer {peer.transport_address} " +
+                        "reported block size out of range")
+                    break
+                block_data = sock.recv(block_size)
+                try:
+                    blockdb.add_block_to_db(
+                        onionrblocks.Block(
+                            block_id, block_data, auto_verify=True)
+                    )
+                except Exception:
+                    sock.sendall(int(0).to_bytes(1, 'big'))
+                    raise
+                sock.sendall(int(1).to_bytes(1, 'big'))
+
+            sock.close()
         except Exception:
             logger.warn(traceback.format_exc())
+        finally:
             sock.close()
             need_socket_lock.release()
 
