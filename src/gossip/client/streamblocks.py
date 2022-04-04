@@ -4,12 +4,12 @@ Download blocks that are being diffused
 
 doesn't apply for blocks in the gossip queue that are awaiting
 descision to fluff or stem
-
 """
 from threading import Thread, Semaphore
 from random import SystemRandom
 from time import sleep
 import traceback
+from typing import TYPE_CHECKING, List
 
 import blockdb
 
@@ -17,7 +17,6 @@ from ..constants import BLOCK_ID_SIZE, BLOCK_MAX_SIZE, BLOCK_MAX_SIZE_LEN, BLOCK
 
 if TYPE_CHECKING:
     from socket import socket
-    from typing import TYPE_CHECKING, List
     from gossip.peer import Peer
 
 from ordered_set import OrderedSet
@@ -75,6 +74,8 @@ def stream_from_peers():
                 if blockdb.has_block(block_id):
                     sock.sendall(int(0).to_bytes(1, 'big'))
                     continue
+                sock.sendall(int(1).to_bytes(1, 'big'))
+
                 block_size = int(sock.recv(BLOCK_MAX_SIZE_LEN))
                 if block_size > BLOCK_MAX_SIZE or block_size <= 0:
                     logger.warn(
@@ -88,8 +89,11 @@ def stream_from_peers():
                             block_id, block_data, auto_verify=True)
                     )
                 except Exception:
+                    # They gave us a bad block, kill the stream
+                    # Could be corruption or malice
                     sock.sendall(int(0).to_bytes(1, 'big'))
                     raise
+                # Tell them to keep streaming
                 sock.sendall(int(1).to_bytes(1, 'big'))
 
             sock.close()
@@ -99,6 +103,7 @@ def stream_from_peers():
             sock.close()
             need_socket_lock.release()
 
+    # spawn stream threads infinitely
     while True:
         need_socket_lock.acquire()
         available_set = gossip_peer_set - tried_peers

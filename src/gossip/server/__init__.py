@@ -21,7 +21,7 @@ from filepaths import gossip_server_socket_file
 from ..commands import GossipCommands
 from ..peerset import gossip_peer_set
 from .acceptstem import accept_stem_blocks
-from .diffuseblocks import stream_blocks
+from .diffuseblocks import diffuse_blocks
 """
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -80,7 +80,7 @@ def gossip_server():
                                 'utf-8').removesuffix(b'.onion'))
                 case GossipCommands.STREAM_BLOCKS:
                     try:
-                        await stream_blocks(reader, writer)
+                        await diffuse_blocks(reader, writer)
                     except Exception:
                         logger.warn(
                             f"Err streaming blocks\n{traceback.format_exc()}",

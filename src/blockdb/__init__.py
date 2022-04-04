@@ -18,7 +18,7 @@ def add_block_to_db(block: Block):
         func(block)
 
 
-def get_blocks_by_type(block_type: str) -> Generator[Block]:
+def get_blocks_by_type(block_type: str) -> "Generator[Block]":
     block_db = db.get_db_obj(block_db_path, 'u')
     for block_hash in db.list_keys(block_db_path):
         block = Block(block_hash, block_db[block_hash], auto_verify=False)
@@ -27,7 +27,7 @@ def get_blocks_by_type(block_type: str) -> Generator[Block]:
 
 
 def get_blocks_after_timestamp(
-        timestamp: int, block_type: str = '') -> Generator[Block]:
+        timestamp: int, block_type: str = '') -> "Generator[Block]":
     block_db = db.get_db_obj(block_db_path, 'u')
 
     for block_hash in db.list_keys(block_db_path):

@@ -63,6 +63,7 @@ async def diffuse_blocks(reader: 'StreamReader', writer: 'StreamWriter'):
 
     async def _send_block(bl: 'Block'):
         writer.write(block.id)
+        await writer.drain()
 
         # we tell id above, they tell if they want the block
         if int.from_bytes(await reader.readexactly(1), 'big') == 0:
