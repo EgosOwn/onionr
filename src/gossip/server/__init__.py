@@ -69,7 +69,7 @@ def gossip_server():
                             onionrevents.event(
                                 'announce_rec',
                                 data={'address': address,
-                                    'callback': connect_peer},
+                                      'callback': connect_peer},
                                 threaded=True)
                             writer.write(int(1).to_bytes(1, 'big'))
                     await asyncio.wait_for(_read_announce(), 10)

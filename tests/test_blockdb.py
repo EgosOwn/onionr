@@ -29,7 +29,7 @@ class TestBlockDB(unittest.TestCase):
     def test_store_vdf_block(self):
         _delete_db()
         bl: Block = onionrblocks.create_anonvdf_block(os.urandom(10), b'bin', 2500)
-        blockdb.store_vdf_block(bl)
+        blockdb.add_block_to_db(bl)
 
         with dbm.open(blockdb.block_db_path, 'r') as b_db:
             b_db[bl.id]

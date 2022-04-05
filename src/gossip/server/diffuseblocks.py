@@ -49,7 +49,7 @@ async def diffuse_blocks(reader: 'StreamReader', writer: 'StreamWriter'):
         raise ValueError("Invalid time offset")
     time_offset = int(time_offset)
 
-    if time_offset - time() < -5:
+    if time_offset - time() > -5:
         raise ValueError(
             "Peer's specified time offset skewed too far into the future")
 
