@@ -26,6 +26,7 @@ BLOCK_STREAM_OFFSET_DIGITS = 8
 
 class OnionrServerDiffuseTest(unittest.TestCase):
 
+
     def test_one_block(self):
 
         Thread(target=gossip_server, daemon=True).start()
@@ -44,6 +45,17 @@ class OnionrServerDiffuseTest(unittest.TestCase):
             await writer.drain()
 
             self.assertEqual(bl.id, await reader.readexactly(BLOCK_ID_SIZE))
+
+            # we want the block
+            writer.write(int(1).to_bytes(1, 'big'))
+            assert writer.drain()
+
+            # check block size
+            self.assertEqual(
+                len(bl.raw),
+                int((await reader.readexactly(BLOCK_MAX_SIZE_LEN)).decode('utf-8')))
+
+            self.assertEqual(bl.raw, await reader.readexactly(len(bl.raw)))
 
 
         asyncio.run(diffuse_client())
