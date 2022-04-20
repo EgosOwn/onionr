@@ -3,7 +3,6 @@ import logger
 
 from getsocks import get_socks
 from torpeer import TorPeer
-from gossip.peerset import gossip_peer_set
 
 
 def on_announce_rec(api, data=None):
@@ -16,11 +15,11 @@ def on_announce_rec(api, data=None):
         pass
 
     if announced == config.get('tor.transport_address'):
-        logger.warn("Recieved announcement for our own node, which shouldnt happen")
+        logger.warn(
+            "Received announcement for our own node, which shouldn't happen")
         return
 
+    announced = announced.strip()
     announced += '.onion'
 
-    data['callback'](
-        gossip_peer_set,
-        TorPeer(socks_address, socks_port, announced))
+    data['callback'](TorPeer(socks_address, socks_port, announced))

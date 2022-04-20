@@ -70,6 +70,7 @@ async def diffuse_blocks(reader: 'StreamReader', writer: 'StreamWriter'):
             return
 
         await writer.drain()
+        # write block size
         writer.write(
             str(len(block.raw)).zfill(BLOCK_MAX_SIZE_LEN).encode('utf-8'))
         await writer.drain()

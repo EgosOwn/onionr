@@ -8,7 +8,7 @@ def connect_peer(peer):
     if peer in gossip_peer_set:
         return
     try:
-        s = peer.get_socket(12)
+        s = peer.get_socket(15)
     except Exception:
         logger.warn(f"Could not connect to {peer.transport_address}")
     else:

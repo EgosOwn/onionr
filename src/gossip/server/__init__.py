@@ -1,4 +1,5 @@
 import asyncio
+from audioop import add
 import traceback
 from typing import TYPE_CHECKING
 from typing import Set, Tuple
@@ -63,8 +64,8 @@ def gossip_server():
                     pass
                 case GossipCommands.ANNOUNCE:
                     async def _read_announce():
-                        address = await reader.readexactly(
-                            constants.TRANSPORT_SIZE_BYTES)
+                        address = await reader.readuntil(b'\n')
+
                         if address:
                             onionrevents.event(
                                 'announce_rec',
@@ -74,10 +75,10 @@ def gossip_server():
                             writer.write(int(1).to_bytes(1, 'big'))
                     await asyncio.wait_for(_read_announce(), 10)
                 case GossipCommands.PEER_EXCHANGE:
+
                     for peer in gossip_peer_set:
-                        writer.write(
-                            peer.transport_address.encode(
-                                'utf-8').removesuffix(b'.onion'))
+                        writer.write(peer.transport_address.encode('utf-8') + b'\n')
+                        await writer.drain()
                 case GossipCommands.STREAM_BLOCKS:
                     try:
                         await diffuse_blocks(reader, writer)

@@ -59,6 +59,7 @@ def stream_from_peers():
     need_socket_lock = Semaphore(MAX_STREAMS)
     offset = 0
 
+
     def _stream_from_peer(peer: Peer):
 
         try:
@@ -83,11 +84,11 @@ def stream_from_peers():
                         "reported block size out of range")
                     break
                 block_data = sock.recv(block_size)
+
                 try:
                     blockdb.add_block_to_db(
                         onionrblocks.Block(
-                            block_id, block_data, auto_verify=True)
-                    )
+                            block_id, block_data, auto_verify=True))
                 except Exception:
                     # They gave us a bad block, kill the stream
                     # Could be corruption or malice

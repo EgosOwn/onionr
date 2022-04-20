@@ -16,7 +16,7 @@ def do_announce():
     "Announce with N peers of each identified transport"
     def _announce(announce_peer: 'Peer', our_transport_address: str):
         try:
-            our_transport_address = our_transport_address.encode('utf-8')
+            our_transport_address = our_transport_address.encode('utf-8') + b"\n"
         except AttributeError:
             pass
         sock = announce_peer.get_socket(12)

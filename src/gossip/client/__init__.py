@@ -76,6 +76,8 @@ def gossip_client():
     dandelion_phase = DandelionPhase(DANDELION_EPOCH_LENGTH)
 
     while True:
+        sleep(5)
+        continue
         while not len(gossip_peer_set):
             sleep(0.2)
         if dandelion_phase.remaining_time() <= 10:
@@ -84,7 +86,7 @@ def gossip_client():
             logger.debug("Entering stem phase", terminal=True)
             try:
                 # Stem out blocks for (roughly) remaining epoch time
-                asyncio.run(stem_out())
+                asyncio.run(stem_out(dandelion_phase))
             except TimeoutError:
                 continue
             except Exception:

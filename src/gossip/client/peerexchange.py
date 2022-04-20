@@ -20,7 +20,11 @@ def _ask_peer(peer):
     s.sendall(command_to_byte(GossipCommands.PEER_EXCHANGE))
     # Get 10 max peers
     for _ in range(MAX_PEERS):
-        peer = s.recv(TRANSPORT_SIZE_BYTES)
+        peer = b''
+        c = b''
+        while c != b'\n':
+            c = s.recv(1)
+            peer += c
         if not peer:
             break
         connect_data = {
@@ -54,7 +58,7 @@ def get_new_peers():
     # Start threads to ask the peers for more peers
     threads = []
     for peer in peers_we_ask:
-        t = Thread(target=_ask_peer, args=[peer, gossip_peer_set], daemon=True)
+        t = Thread(target=_ask_peer, args=[peer], daemon=True)
         t.start()
         threads.append(t)
     peers_we_ask.clear()
