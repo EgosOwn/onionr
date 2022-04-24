@@ -1,12 +1,11 @@
 from typing import TYPE_CHECKING
-from typing import List, Tuple
+from typing import List
 import secrets
-from time import time
 from asyncio import wait_for
 
 from onionrblocks import Block
 
-from ..dandelion import DandelionPhase, StemAcceptResult
+from ..dandelion import StemAcceptResult
 from ..constants import BLOCK_ID_SIZE, BLOCK_MAX_SIZE
 from ..constants import MAX_INBOUND_DANDELION_EDGE, MAX_STEM_BLOCKS_PER_STREAM
 from ..blockqueues import gossip_block_queues
@@ -16,7 +15,6 @@ block_size_digits = len(str(BLOCK_MAX_SIZE))
 base_wait_timeout = 30
 
 if TYPE_CHECKING:
-    from queue import Queue
     from asyncio import StreamWriter, StreamReader
 
 
@@ -33,7 +31,6 @@ async def accept_stem_blocks(
 
     # Start getting the first block
     read_routine = reader.readexactly(BLOCK_ID_SIZE)
-    stream_start_time = int(time())
 
     block_queue_to_use = secrets.choice(gossip_block_queues)
 
@@ -63,6 +60,7 @@ async def accept_stem_blocks(
         block_queue_to_use.put(
             Block(block_id, raw_block, auto_verify=True)
         )
+
         # Regardless of stem phase, we add to queue
         # Client will decide if they are to be stemmed
 
