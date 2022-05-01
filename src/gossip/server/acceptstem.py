@@ -12,7 +12,7 @@ from ..blockqueues import gossip_block_queues
 
 
 block_size_digits = len(str(BLOCK_MAX_SIZE))
-base_wait_timeout = 30
+base_wait_timeout = 120
 
 if TYPE_CHECKING:
     from asyncio import StreamWriter, StreamReader

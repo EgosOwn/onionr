@@ -71,12 +71,6 @@ class ClientAPISecurity:
                             f'Possible DNS rebinding attack by {request.host}')
                         abort(403)
 
-            # Add shared objects
-            try:
-                g.too_many = self.client_api._too_many
-            except KeyError:
-                g.too_many = None
-
             # Static files for Onionr sites
             if request.path.startswith('/site/'):
                 return

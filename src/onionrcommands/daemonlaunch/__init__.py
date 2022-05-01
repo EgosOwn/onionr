@@ -7,6 +7,7 @@ import queue
 import sys
 import platform
 import signal
+from threading import Thread
 
 from stem.connection import IncorrectPassword
 import toomanyobjs
@@ -28,7 +29,6 @@ import onionrvalues
 from onionrutils import cleanup
 from onionrcrypto import getourkeypair
 import runtests
-from httpapi import daemoneventsapi
 from .. import version
 from .killdaemon import kill_daemon  # noqa
 from .showlogo import show_logo
@@ -95,15 +95,11 @@ def daemon():
     # Initialize the quasi-global variables
     setup_kv(shared_state.get(DeadSimpleKV))
 
-    shared_state.get(daemoneventsapi.DaemonEventsBP)
-
     # Init run time tester
     # (ensures Onionr is running right, for testing purposes)
     # Run time tests are not normally run
     shared_state.get(runtests.OnionrRunTestManager)
 
-    # initialize clientAPI but dont start it yet
-    shared_state.get(apiservers.ClientAPI)
 
     shared_state.share_object()  # share the parent object to the threads
 
@@ -117,10 +113,10 @@ def daemon():
     events.event('init', threaded=False)
     events.event('daemon_start')
 
-    gossip.start_gossip_threads()
+    Thread(target=gossip.start_gossip_threads, daemon=True).start()
 
     try:
-        shared_state.get(apiservers.ClientAPI).start()
+        apiservers.private_api.start()
     except KeyboardInterrupt:
         pass
 
@@ -149,8 +145,9 @@ def start(override: bool = False):
             except psutil.NoSuchProcess:
                 proc = ""
             if not proc.startswith("python"):
-                logger.info(
-                    f"Detected stale run file, deleting {filepaths.lock_file}", terminal=True)
+                logger.warn(
+                    f"Detected stale run file, deleting {filepaths.lock_file}",
+                    terminal=True)
                 try:
                     os.remove(filepaths.lock_file)
                 except FileNotFoundError:

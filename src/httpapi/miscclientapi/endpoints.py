@@ -68,7 +68,6 @@ class PrivateEndpoints:
             return Response("pong!")
 
 
-
         @private_endpoints_bp.route('/shutdown')
         def shutdown():
             return apiutils.shutdown.shutdown(client_api)
@@ -109,14 +108,4 @@ class PrivateEndpoints:
         @private_endpoints_bp.route('/os')
         def get_os_system():
             return Response(platform.system().lower())
-
-
-        @private_endpoints_bp.route('/getgeneratingblocks')
-        def get_generating_blocks() -> Response:
-            return Response(
-                ','.join(
-                    g.too_many.get_by_string('DeadSimpleKV').get(
-                        'generating_blocks'
-                    ))
-            )
 

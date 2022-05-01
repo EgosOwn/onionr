@@ -13,6 +13,10 @@ for f in tests/*.py; do
   python3 "$f"   || close # if needed
   let "ran++"
 done
+for f in tests/gossip-unittests/*.py; do
+  python3 "$f"   || close # if needed
+  let "ran++"
+done
 echo "ran $ran unittests. Unittest Time: $SECONDS"
 ran=0;
 

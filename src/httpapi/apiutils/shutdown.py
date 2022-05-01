@@ -28,10 +28,3 @@ def shutdown(client_api_inst):
     except AttributeError:
         pass
     return Response("bye")
-
-
-@shutdown_bp.route('/shutdownclean')
-def shutdown_clean():
-    # good for calling from other clients
-    g.too_many.get_by_string("DeadSimpleKV").put('shutdown', True)
-    return Response("bye")

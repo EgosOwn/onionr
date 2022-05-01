@@ -41,16 +41,4 @@ def register_private_blueprints(private_api, app):
     app.register_blueprint(private_sse_blueprint)
     app.register_blueprint(fileoffsetreader.offset_reader_api)
 
-    def _add_events_bp():
-        while True:
-            try:
-                private_api._too_many
-                break
-            except AttributeError:
-                sleep(0.2)
-        app.register_blueprint(
-            private_api._too_many.get_by_string('DaemonEventsBP').flask_bp)
-
-    Thread(target=_add_events_bp, daemon=True).start()
-
     return app

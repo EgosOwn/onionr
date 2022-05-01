@@ -98,7 +98,7 @@ async def stem_out(d_phase: 'DandelionPhase'):
             peer_sockets.append(await _setup_edge(gossip_peer_set, tried_edges))
         except NotEnoughEdges:
             # No possible edges at this point (edges < OUTBOUND_DANDELION_EDGE)
-            logger.warn("Not able to build enough peers for stemout.",
+            logger.warn("Not able to build enough tunnels for stemout.",
                         terminal=True)
             break
         else:

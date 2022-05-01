@@ -65,7 +65,7 @@ class PrivateAPI:
         else:
             self.host = httpapi.apiutils.setbindip.set_bind_IP(
                 private_API_host_file)
-        logger.info('Running api on %s:%s' % (self.host, self.bindPort))
+        logger.info(f'Running API on {self.host}:{self.bindPort}', terminal=True)
         self.httpServer = ''
 
         self.queueResponse = {}
@@ -75,7 +75,6 @@ class PrivateAPI:
 
     def start(self):
         """Start client gevent API web server with flask client app."""
-        waitforsetvar.wait_for_set_var(self, "_too_many")
         fd_handler = httpapi.fdsafehandler.FDSafeHandler
 
         self.httpServer = WSGIServer((self.host, self.bindPort),
@@ -116,3 +115,6 @@ class PrivateAPI:
                                                   decrypt=decrypt,
                                                   raw=raw,
                                                   headerOnly=headerOnly)
+
+
+private_api = PrivateAPI()

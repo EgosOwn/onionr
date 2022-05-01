@@ -43,4 +43,3 @@ def on_bootstrap(api, data):
             args=[TorPeer(socks_address, socks_port, address)],
             daemon=True).start()
 
-

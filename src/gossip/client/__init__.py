@@ -68,7 +68,7 @@ def gossip_client():
     # transport plugin handles the new peer
     add_onionr_thread(
         get_new_peers,
-        1200, initial_sleep=5)
+        120, initial_sleep=5)
 
     # Start a new thread to stream blocks from peers
 
@@ -76,8 +76,6 @@ def gossip_client():
     dandelion_phase = DandelionPhase(DANDELION_EPOCH_LENGTH)
 
     while True:
-        sleep(5)
-        continue
         while not len(gossip_peer_set):
             sleep(0.2)
         if dandelion_phase.remaining_time() <= 10:

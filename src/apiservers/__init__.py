@@ -6,4 +6,4 @@ Private is meant for controlling and accessing this node
 
 from . import private
 
-ClientAPI = private.PrivateAPI
+private_api = private.private_api
