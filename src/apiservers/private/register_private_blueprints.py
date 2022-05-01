@@ -10,6 +10,7 @@ from httpapi import miscclientapi, apiutils
 from httpapi import themeapi
 from httpapi import fileoffsetreader
 from httpapi.sse.private import private_sse_blueprint
+from httpapi import addblock
 
 """
 This program is free software: you can redistribute it and/or modify
@@ -40,5 +41,6 @@ def register_private_blueprints(private_api, app):
     app.register_blueprint(themeapi.theme_blueprint)
     app.register_blueprint(private_sse_blueprint)
     app.register_blueprint(fileoffsetreader.offset_reader_api)
+    app.register_blueprint(addblock.blockapi_blueprint)
 
     return app

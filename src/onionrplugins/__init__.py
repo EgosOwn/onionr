@@ -86,7 +86,7 @@ def enable(name, start_event = True):
             return False
     else:
         logger.error('Failed to enable plugin \"%s\", disabling plugin.' % name, terminal=True)
-        logger.debug('Plugins folder not found: %s' % get_plugins_folder(str(name).lower()))
+        logger.debug('Plugins folder not found: %s' % get_plugins_folder(str(name).lower()), terminal=True)
         disable(name)
 
         return False

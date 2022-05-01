@@ -27,18 +27,17 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-blockapi = Blueprint('blockapi', __name__)
+blockapi_blueprint = Blueprint('blockapi', __name__)
 
 
 stream_to_use = secrets.randbits(1)
 
 # Add a block that we generated (or received from a transport like LAN/sneakernet)
-@blockapi.route('/addvdfblock', methods=['POST'])
+@blockapi_blueprint.route('/addvdfblock', methods=['POST'])
 def block_serialized():
     req_data = request.data
     block_id = req_data[:BLOCK_ID_SIZE]
     block_data = req_data[BLOCK_ID_SIZE:]
     blockqueues.gossip_block_queues[stream_to_use].put(
         Block(block_id, block_data, auto_verify=False))
-    logger.info("Added block" + block_id, terminal=True)
     return "ok"

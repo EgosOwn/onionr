@@ -35,7 +35,7 @@ def __event_caller(event_name, data = {}):
 
         Instead, call onionrevents.event
     """
-    disabled = config.get('plugins.disabled')
+    disabled = config.get('plugins.disabled', [])
     for plugin in plugins.get_enabled_plugins():
         if plugin in disabled: continue
         try:

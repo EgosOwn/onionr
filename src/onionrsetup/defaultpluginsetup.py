@@ -26,20 +26,22 @@ from utils.readstatic import get_static_dir
 
 def setup_default_plugins():
     # Copy default plugins into plugins folder
-    if not os.path.exists(plugins.get_plugins_folder()):
-        if os.path.exists(get_static_dir() + '/default-plugins/'):
-            names = [f for f in os.listdir(get_static_dir() + '/default-plugins/')]
-            try:
-                shutil.copytree(
-                    get_static_dir() + '/default-plugins/',
-                    plugins.get_plugins_folder())
-            except FileExistsError:
-                pass
+    if os.path.exists(get_static_dir() + '/default-plugins/'):
+        names = [f for f in os.listdir(get_static_dir() + '/default-plugins/')]
+        shutil.copytree(
+            get_static_dir() + '/default-plugins/',
+            plugins.get_plugins_folder(), dirs_exist_ok=True)
 
-            # Enable plugins
-            for name in names:
-                if not name in plugins.get_enabled_plugins():
-                    plugins.enable(name)
+
+        # Enable plugins
+        for name in names:
+            if not name in plugins.get_enabled_plugins():
+                plugins.enable(name)
+    else:
+        logger.error(
+            "Plugin source directory does not exist!" +
+            "Onionr needs plugins to be useful", terminal=True)
+
 
     for name in plugins.get_enabled_plugins():
         if not os.path.exists(plugins.get_plugin_data_folder(name)):

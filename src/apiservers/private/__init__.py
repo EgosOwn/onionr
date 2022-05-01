@@ -53,19 +53,7 @@ class PrivateAPI:
         self.startTime = epoch.get_epoch()
         app = flask.Flask(__name__)
 
-        bind_port = int(config.get('client.client.port', 59496))
-        self.bindPort = bind_port
 
-        self.clientToken = config.get('client.webpassword')
-
-        if config.get('general.bind_address'):
-            with open(private_API_host_file, 'w') as bindFile:
-                bindFile.write(config.get('general.bind_address'))
-            self.host = config.get('general.bind_address')
-        else:
-            self.host = httpapi.apiutils.setbindip.set_bind_IP(
-                private_API_host_file)
-        logger.info(f'Running API on {self.host}:{self.bindPort}', terminal=True)
         self.httpServer = ''
 
         self.queueResponse = {}
@@ -75,11 +63,24 @@ class PrivateAPI:
 
     def start(self):
         """Start client gevent API web server with flask client app."""
+
         fd_handler = httpapi.fdsafehandler.FDSafeHandler
+
+        self.clientToken = config.get('client.webpassword')
+        if config.get('general.bind_address'):
+            with open(private_API_host_file, 'w') as bindFile:
+                bindFile.write(config.get('general.bind_address'))
+            self.host = config.get('general.bind_address')
+        else:
+            self.host = httpapi.apiutils.setbindip.set_bind_IP(
+                private_API_host_file)
+        bind_port = int(config.get('client.client.port', 59496))
+        self.bindPort = bind_port
 
         self.httpServer = WSGIServer((self.host, self.bindPort),
                                      self.app, log=None,
                                      handler_class=fd_handler)
+        logger.info(f'Running API on {self.host}:{self.bindPort}', terminal=True)
         self.httpServer.serve_forever()
 
     def setPublicAPIInstance(self, inst):

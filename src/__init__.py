@@ -66,6 +66,8 @@ import onionrvalues  # noqa
 import onionrexceptions  # noqa
 import onionrsetup as setup  # noqa
 
+setup.setup_default_plugins()
+
 min_ver = onionrvalues.MIN_PY_VERSION
 
 # Ensure we have at least the minimum python version
@@ -95,7 +97,6 @@ if config.get('advanced.security_auditing', True):
         pass
 
 
-setup.setup_default_plugins()
 
 
 def onionr_main():
