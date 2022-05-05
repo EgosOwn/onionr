@@ -41,7 +41,7 @@ def get_blocks_after_timestamp(
 
 
 def has_block(block_hash):
-    return block_hash in db.list_keys()
+    return block_hash in db.list_keys(block_db_path)
 
 
 def get_block(block_hash) -> Block:
