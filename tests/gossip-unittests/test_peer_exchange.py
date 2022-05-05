@@ -1,4 +1,3 @@
-from ast import Assert
 import os, uuid
 from unittest.mock import Mock
 from time import sleep

@@ -52,7 +52,7 @@ def stream_from_peers():
     # Create sockets for them
     # Spawn thread to stream from the socket
 
-    tried_peers: OrderedSet[Peer] = OrderedSet()
+    tried_peers: OrderedSet['Peer'] = OrderedSet()
 
     sys_rand = SystemRandom()
 
@@ -60,10 +60,14 @@ def stream_from_peers():
     offset = 0
 
 
-    def _stream_from_peer(peer: Peer):
-
+    def _stream_from_peer(peer: 'Peer'):
         try:
             sock = peer.get_socket(CONNECT_TIMEOUT)
+        except Exception:
+            logger.warn(traceback.format_exc(), terminal=True)
+            need_socket_lock.release()
+            return
+        try:
             sock.sendall(
                 command_to_byte(GossipCommands.STREAM_BLOCKS)
             )
@@ -97,9 +101,8 @@ def stream_from_peers():
                 # Tell them to keep streaming
                 sock.sendall(int(1).to_bytes(1, 'big'))
 
-            sock.close()
         except Exception:
-            logger.warn(traceback.format_exc())
+            logger.warn(traceback.format_exc(), terminal=True)
         finally:
             sock.close()
             need_socket_lock.release()

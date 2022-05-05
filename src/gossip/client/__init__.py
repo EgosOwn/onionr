@@ -34,6 +34,7 @@ from .announce import do_announce
 from .dandelionstem import stem_out
 from .peerexchange import get_new_peers
 from ..peerset import gossip_peer_set
+from .streamblocks import stream_from_peers
 
 """
 This program is free software: you can redistribute it and/or modify
