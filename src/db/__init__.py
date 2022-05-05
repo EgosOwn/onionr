@@ -24,7 +24,7 @@ def _do_timeout(func, *args):
             return res
 
 
-def set_if_new(db_path, key, value):
+def set_if_new(db_path, key, value) -> bool:
     def _set(key, value):
         with dbm.open(db_path, "c") as my_db:
             try:
@@ -33,7 +33,11 @@ def set_if_new(db_path, key, value):
                 my_db[key] = value
             else:
                 raise DuplicateKey
-    _do_timeout(_set, key, value)
+    try:
+        _do_timeout(_set, key, value)
+    except DuplicateKey:
+        return False
+    return True
 
 
 def set(db_path, key, value):
