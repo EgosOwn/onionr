@@ -100,7 +100,8 @@ def stream_from_peers():
                     raise
                 # Tell them to keep streaming
                 sock.sendall(int(1).to_bytes(1, 'big'))
-
+        except BrokenPipeError:
+            pass
         except Exception:
             logger.warn(traceback.format_exc(), terminal=True)
         finally:
