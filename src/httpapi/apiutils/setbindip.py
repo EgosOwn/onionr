@@ -24,7 +24,7 @@ def set_bind_IP(filePath=''):
         hostOctets = ['127'] + hostOctets
         # Convert the localhost address to a normal string address
         data = '.'.join(hostOctets)
-        
+
         # Try to bind IP. Some platforms like Mac block non normal 127.x.x.x
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         try:

@@ -18,20 +18,14 @@ sys.path.append(".")
 sys.path.append("src/")
 from unittest.mock import patch
 
-from ordered_set import OrderedSet
-from gossip import peerset
-
-
 import onionrblocks
-
-import blockdb
-
-from gossip.peerset import gossip_peer_set
-from gossip.client import stream_from_peers
-
 
 
 from filepaths import gossip_server_socket_file
+from gossip.client import block_queue_processing
+from gossip import client
+from gossip.blockqueues import gossip_block_queues
+from gossip.peerset import gossip_peer_set
 
 
 BLOCK_MAX_SIZE = 1024 * 2000
@@ -43,33 +37,19 @@ TRANSPORT_SIZE_BYTES = 64
 
 server_file = TEST_DIR + 'test_serv.sock'
 
-def _server():
-    with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as s:
-        s.bind(server_file)
-        s.listen(1)
-        conn, _ = s.accept()
-        with conn:
-            while True:
-                conn.recv(1)
-                conn.recv(BLOCK_STREAM_OFFSET_DIGITS)
-                for bl in test_blocks:
-                    conn.sendall(bl.id)
-                    conn.recv(1)
-                    conn.sendall(str(len(bl.raw)).encode('utf-8').zfill(BLOCK_MAX_SIZE_LEN))
-                    conn.sendall(bl.raw)
-                    conn.recv(1)
 
 def gen_random_block():
     return onionrblocks.create_anonvdf_block(os.urandom(12), b'txt', 3600)
 
+
 test_blocks = []
+
+test_thread = []
 
 test_block_count = 5
 for i in range(test_block_count):
     test_blocks.append(gen_random_block())
 
-
-Thread(target=_server, daemon=True).start()
 
 class MockPeer:
     def __init__(self):
@@ -83,23 +63,26 @@ class MockPeer:
         s.connect(server_file)
         return s
 
+class MockPhase:
+    def __init__(self):
+        return
+    def remaining_time(self):
+        return 120
+    def is_stem_phase(self):
+        return False
 
 
-class OnionrGossipClientDiffuse(unittest.TestCase):
+class OnionrGossipClientBlockChoice(unittest.TestCase):
 
 
-    def test_client_stream(self):
+    @patch('gossip.client.dandelionstem.stem_out')
+    @patch('gossip.client.store_blocks')
+    def test_client_block_processing_fluff_phase(self, mock_store_blocks, mock_stem_out):
         gossip_peer_set.add(MockPeer())
-        Thread(target=stream_from_peers, daemon=True).start()
 
-        c = 0
-        while c < 60:
-            c += 1
-            if len(list(blockdb.get_blocks_after_timestamp(0))) == test_block_count:
-                break
-            sleep(1)
-        else:
-            raise TimeoutError("Did not stream blocks in time")
+        client.dandelion_phase = MockPhase()
+        block_queue_processing()
+        self.assertTrue(mock_store_blocks.called)
 
 
 unittest.main()

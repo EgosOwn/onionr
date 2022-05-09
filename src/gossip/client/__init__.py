@@ -13,8 +13,6 @@ from queue import Queue
 
 from onionrblocks import Block
 
-from gossip.client.storeblocks import store_blocks
-
 from ..constants import DANDELION_EPOCH_LENGTH
 from ..connectpeer import connect_peer
 
@@ -30,6 +28,7 @@ from onionrthreads import add_onionr_thread
 from blockdb import add_block_to_db
 
 
+from .storeblocks import store_blocks
 from .announce import do_announce
 from .dandelionstem import stem_out
 from .peerexchange import get_new_peers
@@ -51,8 +50,34 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
+dandelion_phase = DandelionPhase(DANDELION_EPOCH_LENGTH)
 
-def gossip_client():
+
+def block_queue_processing():
+
+
+    while not len(gossip_peer_set):
+        sleep(0.2)
+    if dandelion_phase.remaining_time() <= 15:
+        logger.debug("Sleeping", terminal=True)
+        sleep(dandelion_phase.remaining_time())
+    if dandelion_phase.is_stem_phase():
+        logger.debug("Entering stem phase", terminal=True)
+        try:
+            # Stem out blocks for (roughly) remaining epoch time
+            asyncio.run(stem_out(dandelion_phase))
+        except TimeoutError:
+            pass
+        except Exception:
+            logger.error(traceback.format_exc(), terminal=True)
+        pass
+    else:
+        logger.debug("Entering fluff phase", terminal=True)
+        # Add block to primary block db, where the diffuser can read it
+        store_blocks(dandelion_phase)
+
+
+def start_gossip_client():
     """
     Gossip client does the following:
 
@@ -72,26 +97,10 @@ def gossip_client():
         120, initial_sleep=5)
 
     # Start a new thread to stream blocks from peers
-
-
-    dandelion_phase = DandelionPhase(DANDELION_EPOCH_LENGTH)
+    add_onionr_thread(
+        stream_from_peers,
+        3, initial_sleep=10
+    )
 
     while True:
-        while not len(gossip_peer_set):
-            sleep(0.2)
-        if dandelion_phase.remaining_time() <= 10:
-            sleep(dandelion_phase.remaining_time())
-        if dandelion_phase.is_stem_phase():
-            logger.debug("Entering stem phase", terminal=True)
-            try:
-                # Stem out blocks for (roughly) remaining epoch time
-                asyncio.run(stem_out(dandelion_phase))
-            except TimeoutError:
-                continue
-            except Exception:
-                logger.error(traceback.format_exc(), terminal=True)
-            continue
-        else:
-            logger.debug("Entering fluff phase", terminal=True)
-            # Add block to primary block db, where the diffuser can read it
-            store_blocks(dandelion_phase)
+        block_queue_processing()

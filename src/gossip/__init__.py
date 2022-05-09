@@ -14,7 +14,7 @@ import onionrplugins
 import logger
 
 from .connectpeer import connect_peer
-from .client import gossip_client
+from .client import start_gossip_client
 from .server import gossip_server
 from .constants import BOOTSTRAP_ATTEMPTS
 from .peerset import gossip_peer_set
@@ -47,7 +47,7 @@ def start_gossip_threads():
         gossip_server, 1, initial_sleep=0.2)
 
     threading.Thread(
-        target=gossip_client, daemon=True).start()
+        target=start_gossip_client, daemon=True).start()
     onionrplugins.events.event('gossip_start', data=None, threaded=True)
     for _ in range(BOOTSTRAP_ATTEMPTS):
         onionrplugins.events.event(

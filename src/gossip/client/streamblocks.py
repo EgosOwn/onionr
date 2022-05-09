@@ -47,6 +47,7 @@ MAX_STREAMS = 3
 CONNECT_TIMEOUT = 12
 MAX_TRIED_PEERS = 10_000
 
+
 def stream_from_peers():
     # Pick N peers to stream from
     # Create sockets for them

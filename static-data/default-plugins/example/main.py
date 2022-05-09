@@ -42,7 +42,7 @@ PLUGIN_VERSION = '0.0.0'
 
 
 def on_blocktest_cmd(api, data=None):
-    bl = onionrblocks.create_anonvdf_block(b"test", b"txt", 3600)
+    bl = onionrblocks.create_anonvdf_block(input("Enter a message:").encode('utf-8'), b"txt", 3600)
     logger.info(
         local_command(
             '/addvdfblock',

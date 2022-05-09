@@ -45,6 +45,10 @@ def add_onionr_thread(
 
 def add_delayed_thread(func: Callable, sleep_secs: int, *args, **kwargs):
     assert sleep_secs > 0
-    t = Thread(target=func, args=args, kwargs=kwargs, daemon=True)
-    sleep(sleep_secs)
+    def _do_delay_thread():
+        t = Thread(target=func, args=args, kwargs=kwargs, daemon=True)
+        sleep(sleep_secs)
+        t.start()
+    t = Thread(target=_do_delay_thread, daemon=True)
     t.start()
+    return t

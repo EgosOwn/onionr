@@ -5,6 +5,7 @@ from asyncio import wait_for
 
 from onionrblocks import Block
 
+import logger
 from ..dandelion import StemAcceptResult
 from ..constants import BLOCK_ID_SIZE, BLOCK_MAX_SIZE
 from ..constants import MAX_INBOUND_DANDELION_EDGE, MAX_STEM_BLOCKS_PER_STREAM
@@ -57,6 +58,7 @@ async def accept_stem_blocks(
         if not raw_block:
             break
 
+        logger.debug("Got a stem block, put into queue", terminal=True)
         block_queue_to_use.put(
             Block(block_id, raw_block, auto_verify=True)
         )
