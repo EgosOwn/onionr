@@ -2,7 +2,7 @@ import os, uuid
 from sqlite3 import Time
 import socket
 from queue import Queue
-from time import sleep
+from time import sleep, time
 import secrets
 
 
@@ -65,24 +65,49 @@ class MockPeer:
 
 class MockPhase:
     def __init__(self):
+        self.stem = False
         return
     def remaining_time(self):
         return 120
     def is_stem_phase(self):
-        return False
+        return self.stem
 
 
 class OnionrGossipClientBlockChoice(unittest.TestCase):
 
-
-    @patch('gossip.client.dandelionstem.stem_out')
     @patch('gossip.client.store_blocks')
-    def test_client_block_processing_fluff_phase(self, mock_store_blocks, mock_stem_out):
+    @patch('gossip.client.stem_out')
+    def test_no_peers(self, mock_stem_out, mock_store_blocks):
+        def _add_peer():
+            sleep(5)
+            gossip_peer_set.add(MockPeer())
+        client.dandelion_phase = MockPhase()
+        gossip_peer_set.clear()
+
+        Thread(target=_add_peer, daemon=True).start()
+        t = time()
+        block_queue_processing()
+        self.assertAlmostEqual(time() - t, 5, 1)
+
+        self.assertFalse(mock_stem_out.called)
+        self.assertTrue(mock_store_blocks.called)
+
+
+    @patch('gossip.client.store_blocks')
+    def test_client_block_processing_fluff_phase(self, mock_store_blocks):
         gossip_peer_set.add(MockPeer())
 
         client.dandelion_phase = MockPhase()
         block_queue_processing()
         self.assertTrue(mock_store_blocks.called)
+
+    @patch('gossip.client.stem_out')
+    def test_client_block_processing_stem_phase(self, mock_stem_out):
+        gossip_peer_set.add(MockPeer())
+        client.dandelion_phase = MockPhase()
+        client.dandelion_phase.stem = True
+        block_queue_processing()
+        self.assertTrue(mock_stem_out.called)
 
 
 unittest.main()
