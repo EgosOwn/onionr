@@ -101,6 +101,7 @@ class OnionrGossipClientBlockChoice(unittest.TestCase):
         block_queue_processing()
         self.assertTrue(mock_store_blocks.called)
 
+
     @patch('gossip.client.stem_out')
     def test_client_block_processing_stem_phase(self, mock_stem_out):
         gossip_peer_set.add(MockPeer())
