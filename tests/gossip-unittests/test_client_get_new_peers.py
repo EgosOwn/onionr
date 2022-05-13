@@ -23,8 +23,7 @@ import onionrblocks
 
 from filepaths import gossip_server_socket_file
 from gossip.client import block_queue_processing
-from gossip import client
-from gossip.blockqueues import gossip_block_queues
+from gossip.client import get_new_peers
 from gossip.peerset import gossip_peer_set
 
 
@@ -53,9 +52,14 @@ class MockPeer:
 
 class OnionrGossipClientGetNewPeers(unittest.TestCase):
 
+    def test_get_new_peers_no_peers(self):
+        gossip_peer_set.clear()
+        self.assertRaises(ValueError, get_new_peers)
 
     def test_get_new_peers(self):
-        return
+        p = MockPeer()
+        gossip_peer_set.add(p)
+        get_new_peers()
 
 
 unittest.main()

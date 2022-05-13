@@ -36,8 +36,8 @@ def _ask_peer(peer):
 
 
 def get_new_peers():
-    while not len(gossip_peer_set):
-        sleep(0.5)
+    if not len(gossip_peer_set):
+        raise ValueError("Peer set empty")
 
     # Deep copy the peer list
     peer_list: Peer = list(gossip_peer_set)
