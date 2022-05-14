@@ -36,7 +36,6 @@ TRANSPORT_SIZE_BYTES = 64
 
 server_file = TEST_DIR + 'test_serv.sock'
 
-
 class MockPeer:
     def __init__(self):
         self.transport_address = secrets.token_hex(16)
@@ -48,6 +47,21 @@ class MockPeer:
         s.connect(server_file)
         return s
 
+
+def _server():
+    fake_peer_addresses = [MockPeer().transport_address for i in range(10)]
+
+    with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as s:
+        s.bind(server_file)
+        s.listen(1)
+        conn, _ = s.accept()
+        with conn:
+            conn.recv(1)
+            for address in fake_peer_addresses:
+                conn.sendall(address.zfill(TRANSPORT_SIZE_BYTES).encode('utf-8'))
+
+
+Thread(target=_server, daemon=True).start()
 
 
 class OnionrGossipClientGetNewPeers(unittest.TestCase):
