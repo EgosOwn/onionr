@@ -23,6 +23,8 @@ def _ask_peer(peer):
         peer = b''
         c = b''
         while c != b'\n':
+            if len(peer) > TRANSPORT_SIZE_BYTES:
+                raise OverflowError
             c = s.recv(1)
             peer += c
         if not peer:

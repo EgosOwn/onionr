@@ -47,10 +47,11 @@ class MockPeer:
         s.connect(server_file)
         return s
 
+fake_peer_addresses = [MockPeer().transport_address for i in range(10)]
+
 
 def _server():
-    fake_peer_addresses = [MockPeer().transport_address for i in range(10)]
-
+   
     with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as s:
         s.bind(server_file)
         s.listen(1)
@@ -58,7 +59,7 @@ def _server():
         with conn:
             conn.recv(1)
             for address in fake_peer_addresses:
-                conn.sendall(address.zfill(TRANSPORT_SIZE_BYTES).encode('utf-8'))
+                conn.sendall(address.encode('utf-8') + b'\n')
 
 
 Thread(target=_server, daemon=True).start()
@@ -74,6 +75,7 @@ class OnionrGossipClientGetNewPeers(unittest.TestCase):
         p = MockPeer()
         gossip_peer_set.add(p)
         get_new_peers()
+        self.assertTrue(len(gossip_peer_set), len(fake_peer_addresses) + 1)
 
 
 unittest.main()
