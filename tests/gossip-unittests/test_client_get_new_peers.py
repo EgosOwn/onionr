@@ -44,6 +44,7 @@ class MockPeer:
 
     def get_socket(self, timeout):
         s = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+        s.settimeout(timeout)
         s.connect(server_file)
         return s
 
@@ -60,9 +61,12 @@ def _server():
             conn.recv(1)
             for address in fake_peer_addresses:
                 conn.sendall(address.encode('utf-8') + b'\n')
+    try:
+        os.remove(server_file)
+    except FileNotFoundError:
+        pass
 
 
-Thread(target=_server, daemon=True).start()
 
 
 class OnionrGossipClientGetNewPeers(unittest.TestCase):
@@ -72,12 +76,30 @@ class OnionrGossipClientGetNewPeers(unittest.TestCase):
         self.assertRaises(ValueError, get_new_peers)
         self.assertFalse(len(gossip_peer_set))
 
+
     def test_get_new_peers(self):
+        Thread(target=_server, daemon=True).start()
+        sleep(1)
         p = MockPeer()
+        gossip_peer_set.clear()
         gossip_peer_set.add(p)
         get_new_peers()
         assert len(gossip_peer_set)
         self.assertTrue(len(gossip_peer_set), len(fake_peer_addresses) + 1)
+
+    def test_peer_too_long(self):
+        Thread(target=_server, daemon=True).start()
+        sleep(1)
+        gossip_peer_set.clear()
+        fake_peer_addresses.pop()
+        peer_good = MockPeer()
+        p = MockPeer()
+        p.transport_address = secrets.token_hex(12)
+        fake_peer_addresses.append(p.transport_address)
+        gossip_peer_set.append(peer_good)
+        get_new_peers()
+        self.assertNotIn(p, gossip_peer_set)
+
 
 sleep(0.5)
 unittest.main()
