@@ -51,7 +51,7 @@ fake_peer_addresses = [MockPeer().transport_address for i in range(10)]
 
 
 def _server():
-   
+
     with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as s:
         s.bind(server_file)
         s.listen(1)
@@ -70,12 +70,14 @@ class OnionrGossipClientGetNewPeers(unittest.TestCase):
     def test_get_new_peers_no_peers(self):
         gossip_peer_set.clear()
         self.assertRaises(ValueError, get_new_peers)
+        self.assertFalse(len(gossip_peer_set))
 
     def test_get_new_peers(self):
         p = MockPeer()
         gossip_peer_set.add(p)
         get_new_peers()
+        assert len(gossip_peer_set)
         self.assertTrue(len(gossip_peer_set), len(fake_peer_addresses) + 1)
 
-
+sleep(0.5)
 unittest.main()

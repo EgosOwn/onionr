@@ -17,6 +17,11 @@ createdirs.create_dirs()
 setup.setup_config()
 
 class TestBigBrother(unittest.TestCase):
+    def test_system(self):
+        import bigbrother
+        bigbrother.enable_ministries()
+        self.assertRaises(onionrexceptions.ArbitraryCodeExec, os.system, "echo test")
+
     def test_requests_connect(self):
         import bigbrother
         bigbrother.enable_ministries()
