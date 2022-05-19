@@ -81,7 +81,6 @@ Thread(target=_announce_server, daemon=True).start()
 class OnionrClientAnnounce(unittest.TestCase):
 
     def test_client_announce_too_long(self):
-        sleep(1)
         import onionrplugins
 
         our_address = "testtransport" * 100
@@ -100,7 +99,6 @@ class OnionrClientAnnounce(unittest.TestCase):
         self.assertNotEqual(our_address, reced_address[0])
 
     def test_client_announce(self):
-        sleep(1)
         import onionrplugins
 
         our_address = "testtransport"

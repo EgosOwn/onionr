@@ -6,7 +6,6 @@ class GossipCommands(IntEnum):
     PEER_EXCHANGE = auto()
     STREAM_BLOCKS = auto()
     PUT_BLOCKS = auto()
-    CLOSE = auto()
 
 
 def command_to_byte(cmd: GossipCommands):
