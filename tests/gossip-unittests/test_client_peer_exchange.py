@@ -67,8 +67,6 @@ def _server():
         pass
 
 
-
-
 class OnionrGossipClientGetNewPeers(unittest.TestCase):
 
     def test_get_new_peers_no_peers(self):

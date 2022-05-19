@@ -27,7 +27,6 @@ from gossip.server import gossip_server
 from gossip.peer import Peer
 
 
-
 from filepaths import gossip_server_socket_file
 
 
