@@ -1,10 +1,12 @@
 from threading import Thread
 from time import sleep
+from traceback import format_exc
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from socket import socket
 
 from onionrplugins import onionrevents
+import logger
 
 from ..peer import Peer
 from ..commands import GossipCommands, command_to_byte
@@ -14,6 +16,14 @@ from ..peerset import gossip_peer_set
 
 MAX_PEERS = 10
 
+
+def _do_ask_peer(peer):
+    try:
+        _ask_peer(peer)
+    except TimeoutError:
+        logger.debug("Timed out when asking for new peers")
+    except Exception:
+        logger.error(format_exc(), terminal=True)
 
 def _ask_peer(peer):
     s: 'socket' = peer.get_socket(12)
@@ -60,7 +70,7 @@ def get_new_peers():
     # Start threads to ask the peers for more peers
     threads = []
     for peer in peers_we_ask:
-        t = Thread(target=_ask_peer, args=[peer], daemon=True)
+        t = Thread(target=_do_ask_peer, args=[peer], daemon=True)
         t.start()
         threads.append(t)
     peers_we_ask.clear()

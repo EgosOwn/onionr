@@ -12,7 +12,8 @@ def connect_peer(peer):
     except Exception:
         logger.warn(f"Could not connect to {peer.transport_address}")
     else:
-        s.sendall(command_to_byte(GossipCommands.CLOSE))
+        s.sendall(command_to_byte(GossipCommands.PING))
+        if s.recv(5).decode('utf-8') == 'PONG':
+            gossip_peer_set.add(peer)
+            logger.info(f"connected to {peer.transport_address}")
         s.close()
-        gossip_peer_set.add(peer)
-        logger.info(f"connected to {peer.transport_address}")

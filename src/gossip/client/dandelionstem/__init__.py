@@ -55,10 +55,14 @@ async def _setup_edge(
         s.settimeout(10)
         if s.recv(1) == dandelion.StemAcceptResult.DENY:
             raise StemConnectionDenied
+    except TimeoutError:
+        logger.debug("Peer timed out when establishing stem connection", terminal=True)
+        logger.debug(traceback.format_exc())
     except StemConnectionDenied:
         logger.debug(
             "Stem connection denied (peer has too many) " +
             f"{peer.transport_address}")
+        logger.debug(traceback.format_exc())
     except Exception:
         logger.warn(
             "Error asking peer to establish stem connection" +
