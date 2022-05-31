@@ -97,10 +97,11 @@ if config.get('advanced.security_auditing', True):
         pass
 
 
-
-
 def onionr_main():
-    """Onionr entrypoint, start command processor"""
+    """Onionr entrypoint, start command processor
+
+    Entrypoint for daemon is commands/daemonlaunch/__init__.py
+    """
     parser.register()
 
 

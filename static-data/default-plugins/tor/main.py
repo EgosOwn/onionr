@@ -30,6 +30,7 @@ from torfilepaths import control_socket
 
 from bootstrap import on_bootstrap
 from announce import on_announce_rec
+from shutdown import on_shutdown_event
 
 """
 This program is free software: you can redistribute it and/or modify
@@ -92,7 +93,8 @@ def on_gossip_start(api, data: Set[Peer] = None):
             try:
                 add_onion_resp = controller.create_ephemeral_hidden_service(
                     {'80': f'unix:{gossip_server_socket_file}'},
-                    key_content=key, key_type='ED25519-V3', detached=True, await_publication=True)
+                    key_content=key, key_type='ED25519-V3',
+                    detached=True, await_publication=True)
             except stem.ProtocolError:
                 logger.error(
                     "Could not start Tor transport. Try restarting Onionr",

@@ -117,6 +117,7 @@ def daemon():
 
     try:
         apiservers.private_api.start()
+        events.event('shutdown', threaded=False)
     except KeyboardInterrupt:
         pass
 
