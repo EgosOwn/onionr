@@ -20,6 +20,9 @@ def on_announce_rec(api, data=None):
         return
 
     announced = announced.strip()
-    announced += '.onion'
+    if not announced.endswith('.onion'):
+        announced += '.onion'
+
+    logger.info(f"Peer {announced} announced to us.", terminal=True)
 
     data['callback'](TorPeer(socks_address, socks_port, announced))
