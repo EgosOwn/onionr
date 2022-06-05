@@ -60,6 +60,7 @@ def gossip_server():
             match GossipCommands(cmd):
                 case GossipCommands.PING:
                     writer.write(b'PONG')
+                    break
                 case GossipCommands.ANNOUNCE:
                     async def _read_announce():
                         address = await reader.readuntil(b'\n')
