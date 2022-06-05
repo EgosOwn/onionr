@@ -65,6 +65,7 @@ import onionrvalues  # noqa
 
 import onionrexceptions  # noqa
 import onionrsetup as setup  # noqa
+setup.setup_config()
 
 setup.setup_default_plugins()
 
@@ -84,7 +85,7 @@ import bigbrother  # noqa
 from onionrcommands import parser  # noqa
 from onionrplugins import onionrevents as events  # noqa
 
-setup.setup_config()
+
 
 import config  # noqa
 from utils import identifyhome  # noqa
