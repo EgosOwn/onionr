@@ -23,6 +23,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
+untrusted_exec = True
 
 def block_system(cmd):
     """Prevent os.system except for whitelisted commands+contexts."""
@@ -36,6 +37,8 @@ def block_exec(event, info):
     # because libraries have stupid amounts of compile/exec/eval,
     # We have to use a whitelist where it can be tolerated
     # Generally better than nothing, not a silver bullet
+    if untrusted_exec:
+        return
     whitelisted_code = [
                         'netrc.py',
                         'shlex.py',

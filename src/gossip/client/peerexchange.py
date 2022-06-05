@@ -8,6 +8,8 @@ if TYPE_CHECKING:
 from onionrplugins import onionrevents
 import logger
 
+from socks import GeneralProxyError
+
 from ..peer import Peer
 from ..commands import GossipCommands, command_to_byte
 from ..constants import PEER_AMOUNT_TO_ASK, TRANSPORT_SIZE_BYTES
@@ -22,11 +24,15 @@ def _do_ask_peer(peer):
         _ask_peer(peer)
     except TimeoutError:
         logger.debug("Timed out when asking for new peers")
+    except GeneralProxyError:
+        logger.debug("Proxy error")
+        logger.debug(format_exc(), terminal=True)
     except Exception:
         logger.error(format_exc(), terminal=True)
 
 def _ask_peer(peer):
     s: 'socket' = peer.get_socket(12)
+
     s.sendall(command_to_byte(GossipCommands.PEER_EXCHANGE))
     # Get 10 max peers
     for _ in range(MAX_PEERS):
@@ -49,7 +55,8 @@ def _ask_peer(peer):
 
 def get_new_peers():
     if not len(gossip_peer_set):
-        raise ValueError("Peer set empty")
+        logger.debug("Peer set empty, cannot get new peers")
+        return
 
     # Deep copy the peer list
     peer_list: Peer = list(gossip_peer_set)

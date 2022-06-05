@@ -1,4 +1,4 @@
-from queue import Queue
+from queue import Empty, Queue
 from time import sleep
 from secrets import choice
 import traceback
@@ -112,7 +112,9 @@ async def stem_out(d_phase: 'DandelionPhase'):
                     "Did not stem out any blocks in time, " +
                     "if this happens regularly you may be under attack",
                     terminal=True)
-                list(map(lambda p: p.close(), peer_sockets))
+                for s in peer_sockets:
+                    if s:
+                        s.close()
                 peer_sockets.clear()
                 break
     # If above loop ran out of time or NotEnoughEdges, loops below will not execute
@@ -124,6 +126,8 @@ async def stem_out(d_phase: 'DandelionPhase'):
     for routine in stream_routines:
         try:
             await routine
+        except Empty:
+            pass
         except Exception:
             logger.warn(traceback.format_exc())
         else:

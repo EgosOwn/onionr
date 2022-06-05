@@ -3,6 +3,7 @@
 Dandelion ++ Gossip client logic
 """
 import traceback
+from threading import Thread
 from typing import TYPE_CHECKING
 from typing import Set, Tuple
 from time import sleep
@@ -85,7 +86,11 @@ def start_gossip_client():
     Stream new blocks
     """
     bl: Block
-    do_announce()
+
+    def _start_announce():
+        sleep(60)
+        do_announce()
+    Thread(target=_start_announce, daemon=True).start()
 
     # Start a thread that runs every 1200 secs to
     # Ask peers for a subset for their peer set

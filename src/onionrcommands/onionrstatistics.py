@@ -57,7 +57,7 @@ def show_stats():
             # file and folder size stats
             'div1': True,  # this creates a solid line across the screen, a div
             'Total Block Size':
-            sizeutils.human_size(sizeutils.size(home + 'blocks/')),
+            sizeutils.human_size(sizeutils.size(home + 'blocks.db')),
             'Total Plugin Size':
             sizeutils.human_size(sizeutils.size(home + 'plugins/')),
             'Log File Size':

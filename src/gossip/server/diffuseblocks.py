@@ -61,7 +61,7 @@ async def diffuse_blocks(reader: 'StreamReader', writer: 'StreamWriter'):
         _add_to_queue
     )
 
-    async def _send_block(bl: 'Block'):
+    async def _send_block(block: 'Block'):
         writer.write(block.id)
         await writer.drain()
 

@@ -2,6 +2,7 @@ import shelve
 from threading import Thread
 from time import sleep
 import os
+import dbm
 import traceback
 from typing import Callable
 
@@ -39,14 +40,14 @@ def on_bootstrap(api, data):
 
     try:
         load_existing_peers(callback_func)
-    except FileNotFoundError:
+    except dbm.error:
         try:
             with open(bootstrap_file, 'r') as bootstrap_file_obj:
                 bootstrap_nodes = set(bootstrap_file_obj.read().split(','))
         except FileNotFoundError:
             bootstrap_nodes = set()
     except Exception as e:
-        logger.warn(traceback.format_exc())
+        logger.warn(traceback.format_exc(), terminal=True)
         return
     else:
         return
