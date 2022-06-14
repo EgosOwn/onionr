@@ -31,7 +31,7 @@ def create_dirs():
     """Create onionr data-related directories in
     order of the hardcoded list below,
     then trigger creation of DBs"""
-    gen_dirs = [home, filepaths.block_data_location,
+    gen_dirs = [home,
                 filepaths.contacts_location,
                 filepaths.export_location]
     for path in gen_dirs:

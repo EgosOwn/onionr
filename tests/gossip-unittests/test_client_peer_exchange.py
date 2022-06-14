@@ -71,7 +71,7 @@ class OnionrGossipClientGetNewPeers(unittest.TestCase):
 
     def test_get_new_peers_no_peers(self):
         gossip_peer_set.clear()
-        self.assertRaises(ValueError, get_new_peers)
+        get_new_peers()
         self.assertFalse(len(gossip_peer_set))
 
 

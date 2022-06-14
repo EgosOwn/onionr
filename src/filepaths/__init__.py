@@ -8,7 +8,6 @@ app_root = os.path.dirname(os.path.realpath(__file__)) + '/../../'
 gossip_server_socket_file = home + 'gossip-server.sock'
 
 usage_file = home + 'disk-usage.txt'
-block_data_location = home + 'blocks/'
 contacts_location = home + 'contacts/'
 public_API_host_file = home + 'public-host.txt'
 private_API_host_file = home + 'private-host.txt'

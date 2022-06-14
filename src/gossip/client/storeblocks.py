@@ -33,7 +33,7 @@ def store_blocks(dandelion_phase: 'DandelionPhase'):
             and dandelion_phase.remaining_time() > 1:
         try:
             blockdb.add_block_to_db(
-                new_queue.get(timeout=dandelion_phase.remaining_time())
+                new_queue.get(timeout=dandelion_phase.remaining_time() + 1)
             )
         except Empty:
             pass
