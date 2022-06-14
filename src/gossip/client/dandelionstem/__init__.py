@@ -81,6 +81,7 @@ async def stem_out(d_phase: 'DandelionPhase'):
     if not len(gossip_peer_set):
         sleep(1)
         return
+    not_enough_edges = False
 
     # Spawn threads with deep copied block queue to add to db after time
     # for black hole attack
@@ -96,15 +97,17 @@ async def stem_out(d_phase: 'DandelionPhase'):
     # Using orderedset for the tried edges to ensure random pairing with queue
     tried_edges: "OrderedSet[Peer]" = OrderedSet()
 
-    while len(peer_sockets) < OUTBOUND_DANDELION_EDGES:
+    while len(peer_sockets) < OUTBOUND_DANDELION_EDGES or not_enough_edges:
         try:
             # Get a socket for stem out (makes sure they accept)
             peer_sockets.append(await _setup_edge(gossip_peer_set, tried_edges))
         except NotEnoughEdges:
             # No possible edges at this point (edges < OUTBOUND_DANDELION_EDGE)
-            logger.warn("Not able to build enough tunnels for stemout.",
-                        terminal=True)
-            break
+            logger.warn(
+                "Making too few edges for stemout " +
+                "this is bad for anonymity if frequent."
+                terminal=True)
+            not_enough_edges = True
         else:
             # Ran out of time for stem phase
             if not d_phase.is_stem_phase() or d_phase.remaining_time() < 5:
