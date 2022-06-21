@@ -103,9 +103,8 @@ async def stem_out(d_phase: 'DandelionPhase'):
             peer_sockets.append(await _setup_edge(gossip_peer_set, tried_edges))
         except NotEnoughEdges:
             # No possible edges at this point (edges < OUTBOUND_DANDELION_EDGE)
-            logger.warn(
-                "Making too few edges for stemout " +
-                "this is bad for anonymity if frequent."
+            logger.warn("Making too few edges for stemout " +
+                "this is bad for anonymity if frequent.",
                 terminal=True)
             not_enough_edges = True
         else:
