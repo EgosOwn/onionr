@@ -20,8 +20,8 @@ def do_announce():
         except AttributeError:
             pass
         sock = announce_peer.get_socket(12)
-        sock.sendall(
-            command_to_byte(GossipCommands.ANNOUNCE) + our_transport_address)
+        sock.sendall(command_to_byte(GossipCommands.ANNOUNCE))
+        sock.sendall(our_transport_address)
         if int.from_bytes(sock.recv(1), 'big') != 1:
             logger.warn(
                 f"Could not announce with {announce_peer.transport_address}")

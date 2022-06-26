@@ -1,0 +1,1 @@
+/dev/shm/onionr655223043/gossip-server.sock
