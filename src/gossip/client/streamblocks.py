@@ -13,7 +13,7 @@ from typing import TYPE_CHECKING, List
 
 import blockdb
 
-from ..constants import BLOCK_ID_SIZE, BLOCK_MAX_SIZE, BLOCK_MAX_SIZE_LEN, BLOCK_STREAM_OFFSET_DIGITS
+from ..constants import BLOCK_ID_SIZE, BLOCK_MAX_SIZE, BLOCK_SIZE_LEN, BLOCK_STREAM_OFFSET_DIGITS
 
 if TYPE_CHECKING:
     from socket import socket
@@ -76,13 +76,16 @@ def stream_from_peers():
                 str(offset).zfill(BLOCK_STREAM_OFFSET_DIGITS).encode('utf-8'))
 
             while True:
+                logger.debug("Reading block id in stream", terminal=True)
                 block_id = sock.recv(BLOCK_ID_SIZE)
                 if blockdb.has_block(block_id):
                     sock.sendall(int(0).to_bytes(1, 'big'))
                     continue
                 sock.sendall(int(1).to_bytes(1, 'big'))
 
-                block_size = int(sock.recv(BLOCK_MAX_SIZE_LEN))
+                logger.debug("Reading block size in stream", terminal=True)
+
+                block_size = int(sock.recv(BLOCK_SIZE_LEN))
                 if block_size > BLOCK_MAX_SIZE or block_size <= 0:
                     logger.warn(
                         f"Peer {peer.transport_address} " +
@@ -90,6 +93,9 @@ def stream_from_peers():
                     break
                 block_data = sock.recv(block_size)
 
+                logger.debug(
+                    "We got a block from stream, assuming it is valid",
+                    terminal=True)
                 try:
                     blockdb.add_block_to_db(
                         onionrblocks.Block(

@@ -29,7 +29,7 @@ from gossip.peerset import gossip_peer_set
 
 
 BLOCK_MAX_SIZE = 1024 * 2000
-BLOCK_MAX_SIZE_LEN = len(str(BLOCK_MAX_SIZE))
+BLOCK_SIZE_LEN = len(str(BLOCK_MAX_SIZE))
 BLOCK_ID_SIZE = 128
 BLOCK_STREAM_OFFSET_DIGITS = 8
 MAX_PEERS = 10

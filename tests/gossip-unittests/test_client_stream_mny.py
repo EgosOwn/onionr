@@ -35,7 +35,7 @@ from filepaths import gossip_server_socket_file
 
 
 BLOCK_MAX_SIZE = 1024 * 2000
-BLOCK_MAX_SIZE_LEN = len(str(BLOCK_MAX_SIZE))
+BLOCK_SIZE_LEN = len(str(BLOCK_MAX_SIZE))
 BLOCK_ID_SIZE = 128
 BLOCK_STREAM_OFFSET_DIGITS = 8
 MAX_PEERS = 10
@@ -55,7 +55,7 @@ def _server():
                 for bl in test_blocks:
                     conn.sendall(bl.id)
                     conn.recv(1)
-                    conn.sendall(str(len(bl.raw)).encode('utf-8').zfill(BLOCK_MAX_SIZE_LEN))
+                    conn.sendall(str(len(bl.raw)).encode('utf-8').zfill(BLOCK_SIZE_LEN))
                     conn.sendall(bl.raw)
                     conn.recv(1)
 

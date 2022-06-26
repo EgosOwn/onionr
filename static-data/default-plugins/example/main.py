@@ -5,10 +5,12 @@ Default example plugin for devs or to test blocks
 import sys
 import os
 import locale
+from time import sleep
 import traceback
 from typing import Set, TYPE_CHECKING
 from threading import Thread, local
 import blockdb
+from gossip.peerset import gossip_peer_set
 
 import logger
 
@@ -39,16 +41,26 @@ plugin_name = 'example'
 PLUGIN_VERSION = '0.0.0'
 
 
-
-
 def on_blocktest_cmd(api, data=None):
-    bl = onionrblocks.create_anonvdf_block(input("Enter a message:").encode('utf-8'), b"txt", 3600)
+    bl = onionrblocks.create_anonvdf_block(input("Enter a message:").encode('utf-8'), b"tst", 3600)
     logger.info(
         local_command(
             '/addvdfblock',
             post_data=bl.id + bl.raw,
             silent=False, post=True),
             terminal=True)
+
+
+def on_printtest_cmd(api, data=None):
+    while True:
+        try:
+            print(list(blockdb.get_blocks_by_type("tst"))[0].data)
+        except IndexError:
+            pass
+        try:
+            sleep(1)
+        except KeyboardInterrupt:
+            break
 
 
 

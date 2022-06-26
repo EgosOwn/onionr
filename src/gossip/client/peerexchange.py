@@ -49,6 +49,7 @@ def _ask_peer(peer):
             'address': peer,
             'callback': connectpeer.connect_peer
         }
+        logger.info("Got new peer from exchange " + peer.decode('utf-8'), terminal=True)
         onionrevents.event('announce_rec', data=connect_data, threaded=True)
     s.close()
 

@@ -1,9 +1,9 @@
-from queue import Empty, Queue
+from queue import Empty
 from time import sleep
 from secrets import choice
 import traceback
 
-from typing import TYPE_CHECKING, Coroutine, Tuple, List
+from typing import TYPE_CHECKING, Coroutine, List
 
 from ordered_set import OrderedSet
 
@@ -20,8 +20,6 @@ from ...peerset import gossip_peer_set
 from .stemstream import do_stem_stream
 
 if TYPE_CHECKING:
-
-    from onionrblocks import Block
     from ...peer import Peer
     from ...dandelion.phase import DandelionPhase
     import socket
@@ -56,7 +54,8 @@ async def _setup_edge(
         if s.recv(1) == dandelion.StemAcceptResult.DENY:
             raise StemConnectionDenied
     except TimeoutError:
-        logger.debug("Peer timed out when establishing stem connection", terminal=True)
+        logger.debug(
+            "Peer timed out when establishing stem connection", terminal=True)
         logger.debug(traceback.format_exc())
     except StemConnectionDenied:
         logger.debug(
@@ -83,12 +82,15 @@ async def stem_out(d_phase: 'DandelionPhase'):
         return
     not_enough_edges = False
 
+    def blackhole_protection(q):
+        for bl in q:
+            add_block_to_db(q)
+
+
     # Spawn threads with deep copied block queue to add to db after time
     # for black hole attack
     for block_q in gossip_block_queues:
-        add_delayed_thread(
-            lambda q: set(map(add_block_to_db, q)),
-            BLACKHOLE_EVADE_TIMER_SECS, list(block_q.queue))
+        add_delayed_thread(blackhole_protection, BLACKHOLE_EVADE_TIMER_SECS, block_q.queue)
 
     peer_sockets: List['socket.socket'] = []
     stream_routines: List[Coroutine] = []
@@ -98,15 +100,22 @@ async def stem_out(d_phase: 'DandelionPhase'):
     tried_edges: "OrderedSet[Peer]" = OrderedSet()
 
     while len(peer_sockets) < OUTBOUND_DANDELION_EDGES or not_enough_edges:
+        if gossip_block_queues[0].qsize() == 0 and \
+                gossip_block_queues[1].qsize() == 0:
+            sleep(1)
+            continue
         try:
             # Get a socket for stem out (makes sure they accept)
-            peer_sockets.append(await _setup_edge(gossip_peer_set, tried_edges))
+            peer_sockets.append(
+                await _setup_edge(gossip_peer_set, tried_edges))
         except NotEnoughEdges:
             # No possible edges at this point (edges < OUTBOUND_DANDELION_EDGE)
-            logger.warn("Making too few edges for stemout " +
-                "this is bad for anonymity if frequent.",
-                terminal=True)
+            #logger.debug(
+            #    "Making too few edges for stemout " +
+            #    "this is bad for anonymity if frequent.",
+            #    terminal=True)
             not_enough_edges = True
+            sleep(1)
         else:
             # Ran out of time for stem phase
             if not d_phase.is_stem_phase() or d_phase.remaining_time() < 5:
@@ -119,7 +128,8 @@ async def stem_out(d_phase: 'DandelionPhase'):
                         s.close()
                 peer_sockets.clear()
                 break
-    # If above loop ran out of time or NotEnoughEdges, loops below will not execute
+    # If above loop ran out of time or NotEnoughEdges,
+    # loops below will not execute
 
     for count, peer_socket in enumerate(peer_sockets):
         stream_routines.append(

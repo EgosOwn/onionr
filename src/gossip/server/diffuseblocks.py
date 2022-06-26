@@ -17,7 +17,8 @@ if TYPE_CHECKING:
     from asyncio import StreamWriter, StreamReader
     from onionrblocks import Block
 
-from ..constants import BLOCK_MAX_SIZE, BLOCK_MAX_SIZE_LEN, BLOCK_STREAM_OFFSET_DIGITS
+from ..constants import BLOCK_MAX_SIZE, BLOCK_SIZE_LEN
+from ..constants import BLOCK_STREAM_OFFSET_DIGITS
 
 import logger
 from blockdb import get_blocks_after_timestamp, block_storage_observers
@@ -72,7 +73,7 @@ async def diffuse_blocks(reader: 'StreamReader', writer: 'StreamWriter'):
         await writer.drain()
         # write block size
         writer.write(
-            str(len(block.raw)).zfill(BLOCK_MAX_SIZE_LEN).encode('utf-8'))
+            str(len(block.raw)).zfill(BLOCK_SIZE_LEN).encode('utf-8'))
         await writer.drain()
         writer.write(block.raw)
         await writer.drain()

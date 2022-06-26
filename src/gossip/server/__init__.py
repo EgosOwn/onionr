@@ -92,16 +92,18 @@ def gossip_server():
                             reader, writer,
                             inbound_dandelion_edge_count)
                     except asyncio.exceptions.TimeoutError:
+                        pass
                         logger.debug(
                             "Inbound edge timed out when steming blocks to us",
                             terminal=True)
                     except asyncio.exceptions.IncompleteReadError:
+                        pass
                         logger.debug(
                             "Inbound edge timed out (Incomplete Read) when steming blocks to us",
                             terminal=True)
                     except Exception:
                         logger.warn(
-                            f"Err acceptind stem blocks\n{traceback.format_exc()}",
+                            f"Err accepting stem blocks\n{traceback.format_exc()}",
                             terminal=True)
                     # Subtract dandelion edge, make sure >=0
                     inbound_dandelion_edge_count[0] = \

@@ -22,7 +22,7 @@ from filepaths import gossip_server_socket_file
 
 
 BLOCK_MAX_SIZE = 1024 * 2000
-BLOCK_MAX_SIZE_LEN = len(str(BLOCK_MAX_SIZE))
+BLOCK_SIZE_LEN = len(str(BLOCK_MAX_SIZE))
 BLOCK_ID_SIZE = 128
 BLOCK_STREAM_OFFSET_DIGITS = 8
 
@@ -46,7 +46,7 @@ class OnionrServerPutBlockTest(unittest.TestCase):
 
             writer.write(bl.id)
             writer.write(
-                str(len(bl.raw)).zfill(BLOCK_MAX_SIZE_LEN).encode('utf-8'))
+                str(len(bl.raw)).zfill(BLOCK_SIZE_LEN).encode('utf-8'))
             writer.write(bl.raw)
             await writer.drain()
 

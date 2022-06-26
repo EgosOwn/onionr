@@ -19,7 +19,7 @@ from filepaths import gossip_server_socket_file
 
 
 BLOCK_MAX_SIZE = 1024 * 2000
-BLOCK_MAX_SIZE_LEN = len(str(BLOCK_MAX_SIZE))
+BLOCK_SIZE_LEN = len(str(BLOCK_MAX_SIZE))
 BLOCK_ID_SIZE = 128
 BLOCK_STREAM_OFFSET_DIGITS = 8
 
@@ -53,7 +53,7 @@ class OnionrServerDiffuseTest(unittest.TestCase):
             # check block size
             self.assertEqual(
                 len(bl.raw),
-                int((await reader.readexactly(BLOCK_MAX_SIZE_LEN)).decode('utf-8')))
+                int((await reader.readexactly(BLOCK_SIZE_LEN)).decode('utf-8')))
 
             self.assertEqual(bl.raw, await reader.readexactly(len(bl.raw)))
 

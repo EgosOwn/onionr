@@ -7,12 +7,11 @@ from onionrblocks import Block
 
 import logger
 from ..dandelion import StemAcceptResult
-from ..constants import BLOCK_ID_SIZE, BLOCK_MAX_SIZE
+from ..constants import BLOCK_ID_SIZE, BLOCK_SIZE_LEN, BLOCK_MAX_SIZE
 from ..constants import MAX_INBOUND_DANDELION_EDGE, MAX_STEM_BLOCKS_PER_STREAM
 from ..blockqueues import gossip_block_queues
 
 
-block_size_digits = len(str(BLOCK_MAX_SIZE))
 base_wait_timeout = 120
 
 if TYPE_CHECKING:
@@ -28,21 +27,23 @@ async def accept_stem_blocks(
         writer.write(StemAcceptResult.DENY)
         return
     writer.write(StemAcceptResult.ALLOW)
+    await writer.drain()
     inbound_edge_count[0] += 1
 
-    # Start getting the first block
-    read_routine = reader.readexactly(BLOCK_ID_SIZE)
 
     block_queue_to_use = secrets.choice(gossip_block_queues)
 
     for _ in range(MAX_STEM_BLOCKS_PER_STREAM):
+        read_routine = reader.readexactly(BLOCK_ID_SIZE)
+        logger.debug(f"Reading block id in stem server", terminal=True)
         block_id = (
             await wait_for(read_routine, base_wait_timeout)).decode('utf-8')
         if not block_id:
             break
 
+        logger.debug(f"Reading block size in stem server", terminal=True)
         block_size = (await wait_for(
-            reader.readexactly(block_size_digits),
+            reader.readexactly(BLOCK_SIZE_LEN),
             base_wait_timeout)).decode('utf-8')
         if not block_size:
             break
@@ -52,6 +53,8 @@ async def accept_stem_blocks(
         block_size = int(block_size)
         if block_size > BLOCK_MAX_SIZE:
             raise ValueError("Max block size")
+
+        logger.debug(f"Reading block of size {block_size} in stem server", terminal=True)
 
         raw_block: bytes = await wait_for(
             reader.readexactly(block_size), base_wait_timeout * 6)
@@ -65,6 +68,4 @@ async def accept_stem_blocks(
 
         # Regardless of stem phase, we add to queue
         # Client will decide if they are to be stemmed
-
-        read_routine = reader.readexactly(BLOCK_ID_SIZE)
 

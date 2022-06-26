@@ -30,11 +30,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 blockapi_blueprint = Blueprint('blockapi', __name__)
 
 
-stream_to_use = secrets.randbits(1)
 
 # Add a block that we generated (or received from a transport like LAN/sneakernet)
 @blockapi_blueprint.route('/addvdfblock', methods=['POST'])
 def block_serialized():
+    stream_to_use = secrets.randbits(1)
     req_data = request.data
     block_id = req_data[:BLOCK_ID_SIZE]
     block_data = req_data[BLOCK_ID_SIZE:]
