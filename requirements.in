@@ -1,5 +1,5 @@
 urllib3==1.26.7
-requests==2.26.0
+requests==2.28.1
 PyNaCl==1.5.0
 gevent==21.12.0
 Flask==2.1.2
@@ -11,8 +11,8 @@ toomanyobjs==1.1.0
 niceware==0.2.1
 psutil==5.9.1
 filenuke==0.0.0
-watchdog==2.1.6
-ujson==5.3.0
-cffi==1.14.4
+watchdog==2.1.9
+ujson==5.4.0
+cffi==1.15.1
 onionrblocks==7.0.0
-ordered_set==4.1.0
+ordered-set==4.1.0
