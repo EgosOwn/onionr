@@ -87,10 +87,8 @@ def start_gossip_client():
     """
     bl: Block
 
-    def _start_announce():
-        sleep(60)
-        do_announce()
-    Thread(target=_start_announce, daemon=True).start()
+
+    Thread(target=do_announce, daemon=True).start()
 
     # Start a thread that runs every 1200 secs to
     # Ask peers for a subset for their peer set

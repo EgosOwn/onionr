@@ -1,19 +1,23 @@
 import config
 import logger
+from gossip.peerset import gossip_peer_set
 
 from getsocks import get_socks
 from torpeer import TorPeer
 
+MAX_TOR_PEERS = 20
 
 def on_announce_rec(api, data=None):
-    socks_address, socks_port = get_socks()[0]
-
     announced: str = data['address']
     try:
         announced = announced.decode('utf-8')
     except AttributeError:
         pass
     announced = announced.strip()
+    if not announced.endswith('.onion'):
+        return
+    socks_address, socks_port = get_socks()[0]
+
 
     if announced.removesuffix('.onion') == config.get(
             'tor.transport_address', '').removesuffix('.onion'):
@@ -21,8 +25,6 @@ def on_announce_rec(api, data=None):
             "Received announcement for our own node, which shouldn't happen")
         return
 
-    if not announced.endswith('.onion'):
-        announced += '.onion'
 
     logger.info(f"Peer {announced} announced to us.", terminal=True)
 

@@ -1,5 +1,4 @@
 import asyncio
-from audioop import add
 import traceback
 from typing import TYPE_CHECKING
 from typing import Set, Tuple
@@ -60,7 +59,6 @@ def gossip_server():
             match GossipCommands(cmd):
                 case GossipCommands.PING:
                     writer.write(b'PONG')
-                    break
                 case GossipCommands.ANNOUNCE:
                     async def _read_announce():
                         address = await reader.readuntil(b'\n')
@@ -72,6 +70,7 @@ def gossip_server():
                                       'callback': connect_peer},
                                 threaded=True)
                             writer.write(int(1).to_bytes(1, 'big'))
+                            await writer.drain()
                     await asyncio.wait_for(_read_announce(), 10)
                 case GossipCommands.PEER_EXCHANGE:
 
@@ -111,14 +110,12 @@ def gossip_server():
             break
 
         await writer.drain()
-        writer.close()
 
     async def main():
 
         server = await asyncio.start_unix_server(
             peer_connected, gossip_server_socket_file
         )
-
         async with server:
             await server.serve_forever()
 

@@ -65,4 +65,5 @@ def on_bootstrap(api, data):
             target=callback_func,
             args=[UnixPeer(address)],
             daemon=True).start()
+        sleep(1)
 

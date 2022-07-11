@@ -61,6 +61,8 @@ def on_init(api, data=None):
 def on_get_our_transport(api, data=None):
     callback_func = data['callback']
     for_peer = data['peer']
+    if for_peer.transport_address == gossip_server_socket_file:
+        return
     if data['peer'].__class__ == UnixPeer:
         callback_func(for_peer, gossip_server_socket_file)
 

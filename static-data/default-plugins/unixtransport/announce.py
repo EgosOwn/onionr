@@ -13,6 +13,9 @@ def on_announce_rec(api, data=None):
     except AttributeError:
         pass
     announced = announced.strip()
+    if not announced.endswith('.sock'):
+        return
+
 
     if announced == gossip_server_socket_file:
         logger.warn(

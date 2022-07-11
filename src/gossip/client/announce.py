@@ -14,11 +14,15 @@ from ..peerset import gossip_peer_set
 
 def do_announce():
     "Announce with N peers of each identified transport"
+    per_transport = 4
+    peer_types = {}
+    count_for_peer = 0
     def _announce(announce_peer: 'Peer', our_transport_address: str):
+        assert our_transport_address
         try:
             our_transport_address = our_transport_address.encode('utf-8') + b"\n"
         except AttributeError:
-            pass
+            our_transport_address = our_transport_address + b'\n'
         sock = announce_peer.get_socket(12)
         sock.sendall(command_to_byte(GossipCommands.ANNOUNCE))
         sock.sendall(our_transport_address)
@@ -30,9 +34,7 @@ def do_announce():
     while not len(gossip_peer_set):
         sleep(1)
 
-    per_transport = 3
-    peer_types = {}
-    count_for_peer = 0
+
     for peer in gossip_peer_set:
         try:
             count_for_peer = peer_types[peer.__class__]

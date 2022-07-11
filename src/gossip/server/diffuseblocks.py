@@ -6,9 +6,8 @@ doesn't apply for blocks in the gossip queue that are awaiting
 descision to fluff or stem
 
 """
-from asyncio import IncompleteReadError, wait_for
+from asyncio import IncompleteReadError, wait_for, Queue
 
-import queue
 import traceback
 from typing import TYPE_CHECKING
 from time import time
@@ -54,7 +53,7 @@ async def diffuse_blocks(reader: 'StreamReader', writer: 'StreamWriter'):
         raise ValueError(
             "Peer's specified time offset skewed too far into the future")
 
-    newly_stored_blocks = queue.Queue()
+    newly_stored_blocks = Queue()
 
     def _add_to_queue(bl):
         newly_stored_blocks.put_nowait(bl)
@@ -70,7 +69,6 @@ async def diffuse_blocks(reader: 'StreamReader', writer: 'StreamWriter'):
         if int.from_bytes(await reader.readexactly(1), 'big') == 0:
             return
 
-        await writer.drain()
         # write block size
         writer.write(
             str(len(block.raw)).zfill(BLOCK_SIZE_LEN).encode('utf-8'))
@@ -95,7 +93,7 @@ async def diffuse_blocks(reader: 'StreamReader', writer: 'StreamWriter'):
 
         # Diffuse blocks stored since we started this stream
         while keep_writing:
-            await _send_block(newly_stored_blocks.get())
+            await _send_block(await newly_stored_blocks.get())
             try:
                 keep_writing = bool(
                     int.from_bytes(await reader.readexactly(1), 'big')
