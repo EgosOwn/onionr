@@ -1,22 +1,22 @@
-'''
-    Onionr - Private P2P Communication
+"""
+Onionr - Private P2P Communication.
 
-    This file deals with management of modules/plugins.
-'''
-'''
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
+<anagement of modules/plugins.
+"""
+"""
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <https://www.gnu.org/licenses/>.
-'''
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+"""
 import os, re, importlib
 import traceback
 
@@ -32,9 +32,9 @@ _instances = dict()
 config.reload()
 
 def reload(stop_event = True):
-    '''
+    """
         Reloads all the plugins
-    '''
+    """
 
     check()
 
@@ -93,9 +93,9 @@ def enable(name, start_event = True):
 
 
 def disable(name, stop_event = True):
-    '''
+    """
         Disables a plugin
-    '''
+    """
 
     check()
 
@@ -111,9 +111,9 @@ def disable(name, stop_event = True):
             stop(name)
 
 def start(name):
-    '''
+    """
         Starts the plugin
-    '''
+    """
 
     check()
 
@@ -135,9 +135,9 @@ def start(name):
     return None
 
 def stop(name):
-    '''
+    """
         Stops the plugin
-    '''
+    """
 
     check()
 
@@ -183,12 +183,11 @@ def import_module_from_file(full_path_to_module):
     return module
 
 def get_plugin(name):
-    '''
+    """
         Returns the instance of a module
-    '''
+    """
 
     check()
-
     if str(name).lower() in _instances:
         return _instances[str(name).lower()]
     else:
@@ -196,23 +195,23 @@ def get_plugin(name):
         return get_plugin(name)
 
 def get_plugins():
-    '''
+    """
         Returns a list of plugins (deprecated)
-    '''
+    """
 
     return _instances
 
 def exists(name):
-    '''
+    """
         Return value indicates whether or not the plugin exists
-    '''
+    """
 
     return os.path.isdir(get_plugins_folder(str(name).lower()))
 
 def get_enabled_plugins():
-    '''
+    """
         Returns a list of the enabled plugins
-    '''
+    """
 
     check()
     config.reload()
@@ -220,16 +219,16 @@ def get_enabled_plugins():
     return list(config.get('plugins.enabled', list()))
 
 def is_enabled(name):
-    '''
+    """
         Return value indicates whether or not the plugin is enabled
-    '''
+    """
 
     return name in get_enabled_plugins()
 
 def get_plugins_folder(name = None, absolute = True):
-    '''
+    """
         Returns the path to the plugins folder
-    '''
+    """
 
     path = ''
 
@@ -246,16 +245,16 @@ def get_plugins_folder(name = None, absolute = True):
     return path + '/'
 
 def get_plugin_data_folder(name, absolute = True):
-    '''
+    """
         Returns the location of a plugin's data folder
-    '''
+    """
 
     return get_plugins_folder(name, absolute)
 
 def check():
-    '''
+    """
         Checks to make sure files exist
-    '''
+    """
 
     if not config.is_set('plugins'):
         logger.debug('Generating plugin configuration data...')

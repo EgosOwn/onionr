@@ -25,8 +25,8 @@ sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
 # import after path insert
 from unixpeer import UnixPeer
 
-from bootstrap import on_bootstrap
-from announce import on_announce_rec
+from unixbootstrap import on_bootstrap
+from unixannounce import on_announce_rec
 #from shutdown import on_shutdown_event
 
 """
@@ -57,7 +57,6 @@ def on_init(api, data=None):
     logger.info(
         f"Peers can connect to {gossip_server_socket_file}", terminal=True)
 
-
 def on_get_our_transport(api, data=None):
     callback_func = data['callback']
     for_peer = data['peer']
@@ -65,9 +64,3 @@ def on_get_our_transport(api, data=None):
         return
     if data['peer'].__class__ == UnixPeer:
         callback_func(for_peer, gossip_server_socket_file)
-
-
-def on_gossip_start(api, data: Set[Peer] = None):
-    # We don't do gossip logic
-    return
-

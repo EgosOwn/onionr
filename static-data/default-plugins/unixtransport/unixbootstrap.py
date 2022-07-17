@@ -34,8 +34,7 @@ def load_existing_peers(callback: Callable):
                 daemon=True).start()
 
 
-def on_bootstrap(api, data):
-
+def on_bootstrap(api, data=None):
     callback_func = data['callback']
 
     try:

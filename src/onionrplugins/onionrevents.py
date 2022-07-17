@@ -40,11 +40,10 @@ def __event_caller(event_name, data = {}):
         if plugin in disabled: continue
         try:
             call(plugins.get_plugin(plugin), event_name, data, get_pluginapi(data))
-        except ModuleNotFoundError as e:
+        except ModuleNotFoundError as _:
             logger.warn('Disabling nonexistant plugin "%s"...' % plugin, terminal=True)
             plugins.disable(plugin, stop_event = False)
-        except Exception as e:
-
+        except Exception as _:
             logger.error('Event "%s" failed for plugin "%s".' % (event_name, plugin), terminal=True)
             logger.error('\n' + traceback.format_exc(), terminal=True)
 

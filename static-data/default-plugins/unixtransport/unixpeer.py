@@ -12,7 +12,6 @@ class UnixPeer:
 
 
     def get_socket(self, connect_timeout) -> socket:
-
         s = socket(AF_UNIX, SOCK_STREAM)
         #s.settimeout(connect_timeout)
         s.connect(self.transport_address)
