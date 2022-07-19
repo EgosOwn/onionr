@@ -5,6 +5,7 @@ Download blocks that are being diffused
 doesn't apply for blocks in the gossip queue that are awaiting
 descision to fluff or stem
 """
+from ast import Index
 from threading import Thread, Semaphore
 from random import SystemRandom
 from time import sleep
@@ -120,6 +121,12 @@ def stream_from_peers():
     while True:
         need_socket_lock.acquire()
         available_set = gossip_peer_set - tried_peers
+        if not len(available_set) and len(tried_peers):
+            try:
+                tried_peers.pop()
+            except IndexError:
+                pass
+            available_set = gossip_peer_set - tried_peers
         peers = sys_rand.sample(
             available_set,
             min(MAX_STREAMS, len(available_set)))
@@ -137,3 +144,4 @@ def stream_from_peers():
             except IndexError:
                 need_socket_lock.release()
                 break
+            

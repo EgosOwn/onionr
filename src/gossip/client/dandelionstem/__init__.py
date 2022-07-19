@@ -84,7 +84,7 @@ async def stem_out(d_phase: 'DandelionPhase'):
 
     def blackhole_protection(q):
         for bl in q:
-            add_block_to_db(q)
+            add_block_to_db(bl)
 
 
     # Spawn threads with deep copied block queue to add to db after time
@@ -122,7 +122,7 @@ async def stem_out(d_phase: 'DandelionPhase'):
                 logger.error(
                     "Did not stem out any blocks in time, " +
                     "if this happens regularly you may be under attack",
-                    terminal=True)
+                    terminal=False)
                 for s in peer_sockets:
                     if s:
                         s.close()

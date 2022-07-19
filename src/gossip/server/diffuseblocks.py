@@ -20,6 +20,7 @@ from ..constants import BLOCK_MAX_SIZE, BLOCK_SIZE_LEN
 from ..constants import BLOCK_STREAM_OFFSET_DIGITS
 
 import logger
+import blockdb
 from blockdb import get_blocks_after_timestamp, block_storage_observers
 """
 This program is free software: you can redistribute it and/or modify
@@ -53,13 +54,7 @@ async def diffuse_blocks(reader: 'StreamReader', writer: 'StreamWriter'):
         raise ValueError(
             "Peer's specified time offset skewed too far into the future")
 
-    newly_stored_blocks = Queue()
 
-    def _add_to_queue(bl):
-        newly_stored_blocks.put_nowait(bl)
-    block_storage_observers.append(
-        _add_to_queue
-    )
 
     async def _send_block(block: 'Block'):
         writer.write(block.id)
@@ -90,17 +85,20 @@ async def diffuse_blocks(reader: 'StreamReader', writer: 'StreamWriter'):
                 )
             except IncompleteReadError:
                 keep_writing = False
+        time_offset = time()
 
         # Diffuse blocks stored since we started this stream
         while keep_writing:
-            await _send_block(await newly_stored_blocks.get())
-            try:
-                keep_writing = bool(
-                    int.from_bytes(await reader.readexactly(1), 'big')
-                )
-            except IncompleteReadError:
-                keep_writing = False
+            bls = blockdb.get_blocks_after_timestamp(time_offset)
+            for bl in bls:
+                await _send_block(bl)
+                try:
+                    keep_writing = bool(
+                        int.from_bytes(await reader.readexactly(1), 'big')
+                    )
+                except IncompleteReadError:
+                    keep_writing = False
+                    break
     except Exception:
         logger.warn(traceback.format_exc(), terminal=True)
 
-    block_storage_observers.remove(_add_to_queue)

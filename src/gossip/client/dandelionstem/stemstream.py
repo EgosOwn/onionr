@@ -1,3 +1,5 @@
+from asyncio import sleep
+from queue import Empty
 from typing import TYPE_CHECKING
 
 import logger
@@ -22,7 +24,14 @@ async def do_stem_stream(
         while remaining_time > 5 and my_phase_id == d_phase.phase_id:
             # Primary client component that communicate's with gossip.server.acceptstem
             remaining_time = d_phase.remaining_time()
-            bl: 'Block' = block_queue.get(block=True, timeout=remaining_time)
+            while remaining_time:
+                try:
+                    # queues can't block because we're in async
+                    bl = block_queue.get(block=False)
+                except Empty:
+                    await sleep(1)
+                else:
+                    break
             logger.info("Sending block over dandelion++", terminal=True)
 
             block_size = str(len(bl.raw)).zfill(BLOCK_SIZE_LEN)
