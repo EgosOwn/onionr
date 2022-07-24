@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING, Coroutine, List
 
 from ordered_set import OrderedSet
 
+import config
 from onionrthreads import add_delayed_thread
 from blockdb import add_block_to_db
 import logger
@@ -81,6 +82,7 @@ async def stem_out(d_phase: 'DandelionPhase'):
         sleep(1)
         return
     not_enough_edges = False
+    strict_dandelion = config.get('security.strict_dandelion', True)
 
     def blackhole_protection(q):
         for bl in q:
@@ -114,7 +116,14 @@ async def stem_out(d_phase: 'DandelionPhase'):
             #    "Making too few edges for stemout " +
             #    "this is bad for anonymity if frequent.",
             #    terminal=True)
-            not_enough_edges = True
+            if strict_dandelion:
+                not_enough_edges = True
+            else:
+                if peer_sockets:
+                    # if we have at least 1 peer,
+                    # do dandelion anyway in non strict mode
+                    # Allow poorly connected networks to communicate faster
+                    break
             sleep(1)
         else:
             # Ran out of time for stem phase
