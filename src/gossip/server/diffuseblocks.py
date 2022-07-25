@@ -6,7 +6,7 @@ doesn't apply for blocks in the gossip queue that are awaiting
 descision to fluff or stem
 
 """
-from asyncio import IncompleteReadError, wait_for, Queue
+from asyncio import IncompleteReadError, wait_for, Queue, sleep
 
 import traceback
 from typing import TYPE_CHECKING
@@ -90,6 +90,7 @@ async def diffuse_blocks(reader: 'StreamReader', writer: 'StreamWriter'):
         # Diffuse blocks stored since we started this stream
         while keep_writing:
             bls = blockdb.get_blocks_after_timestamp(time_offset)
+            await sleep(1)  # Must be here to avoid blocking the event loop
             for bl in bls:
                 await _send_block(bl)
                 try:
