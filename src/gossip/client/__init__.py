@@ -34,7 +34,7 @@ from .announce import do_announce
 from .dandelionstem import stem_out
 from .peerexchange import get_new_peers
 from ..peerset import gossip_peer_set
-from .streamblocks import stream_from_peers
+from .streamblocks import stream_from_peers, stream_to_peer
 
 """
 This program is free software: you can redistribute it and/or modify
@@ -97,15 +97,23 @@ def start_gossip_client():
     # transport plugin handles the new peer
     add_onionr_thread(
         get_new_peers,
-        60, initial_sleep=120)
+        60, 'get_new_peers', initial_sleep=120)
 
     # Start a new thread to stream blocks from peers
     # These blocks are being diffused and are stored in
     # the peer's block database
     add_onionr_thread(
         stream_from_peers,
-        3, initial_sleep=10
+        3, 'stream_from_peers', initial_sleep=10
     )
+
+    # Start a thread to upload blocks, useful for when
+    # connectivity is poor or we are not allowing incoming
+    # connections on any transports
+
+    add_onionr_thread(
+        stream_to_peer,
+        10, 'stream_to_peer', initial_sleep=1)
 
     # Blocks we receive or create through all means except
     # Diffusal are put into block queues, we decide to either

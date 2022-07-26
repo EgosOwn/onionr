@@ -44,7 +44,7 @@ def start_gossip_threads():
     # There is a unified set so gossip logic is not repeated
 
     add_onionr_thread(
-        gossip_server, 1, initial_sleep=0.2)
+        gossip_server, 1, 'gossip_server', initial_sleep=0.2)
 
     threading.Thread(
         target=start_gossip_client, daemon=True).start()

@@ -58,6 +58,9 @@ def on_bootstrap(api, data=None):
         if address == gossip_server_socket_file or not address:
             continue
 
+        if not os.path.exists(address):
+            continue
+
         # Tell the gossip logic that this peer is ready to connect
         # it will add it to data['peer_set'] if it responds to ping
         Thread(

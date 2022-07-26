@@ -27,7 +27,8 @@ def _onionr_thread(func: Callable,
 
 def add_onionr_thread(
         func: Callable,
-        sleep_secs: int, *args, initial_sleep: int = 5, **kwargs):
+        sleep_secs: int, thread_name: str,
+         *args, initial_sleep: int = 5, **kwargs):
     """Spawn a new onionr thread that exits when the main thread does.
 
     Runs in an infinite loop with sleep between calls
@@ -40,6 +41,7 @@ def add_onionr_thread(
                 initial_sleep,
                 *args),
            kwargs=kwargs,
+           name=thread_name,
            daemon=True).start()
 
 

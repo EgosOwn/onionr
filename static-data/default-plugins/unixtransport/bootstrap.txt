@@ -1,1 +1,1 @@
-/dev/shm/onionr3177415330/gossip-server.sock
+/dev/shm/onionr90775244/gossip-server.sock,/dev/shm/onionr1873728538/gossip-server.sock

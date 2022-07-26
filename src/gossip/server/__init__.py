@@ -1,9 +1,12 @@
 import asyncio
 import traceback
+from time import time
 from typing import TYPE_CHECKING
 from typing import Set, Tuple
 
-from queue import Queue
+from threading import Thread
+
+from onionrblocks import Block
 
 from gossip import constants
 from ..connectpeer import connect_peer
@@ -18,10 +21,13 @@ if TYPE_CHECKING:
     from asyncio import StreamReader, StreamWriter
 
 from filepaths import gossip_server_socket_file
+import blockdb
+from blockdb import add_block_to_db
 from ..commands import GossipCommands
 from ..peerset import gossip_peer_set
 from .acceptstem import accept_stem_blocks
 from .diffuseblocks import diffuse_blocks
+from .import lastincoming
 """
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -52,6 +58,7 @@ def gossip_server():
                 break
             except asyncio.IncompleteReadError:
                 break
+            lastincoming.last_incoming_timestamp = int(time())
 
             cmd = int.from_bytes(cmd, 'big')
             if cmd == b'' or cmd == 0:
@@ -107,6 +114,24 @@ def gossip_server():
                     # Subtract dandelion edge, make sure >=0
                     inbound_dandelion_edge_count[0] = \
                         max(inbound_dandelion_edge_count[0] - 1, 0)
+                case GossipCommands.PUT_BLOCK_DIFFUSE:
+                    async def _get_block_diffused():
+                        block_id = await reader.readexactly(constants.BLOCK_ID_SIZE)
+                        if blockdb.has_block(block_id):
+                            writer.write(int(0).to_bytes(1, 'big'))
+                        else:
+                            
+                            writer.write(int(1).to_bytes(1, 'big'))
+                            await writer.drain()
+                            block_size = int(await asyncio.wait_for(reader.readexactly(constants.BLOCK_SIZE_LEN), 30))
+                            block_data = await reader.readexactly(block_size)
+
+                            Thread(
+                                target=add_block_to_db, 
+                                args=[
+                                    Block(block_id, block_data, auto_verify=True)]
+                                    ).start()
+                    await _get_block_diffused()
             break
 
         await writer.drain()

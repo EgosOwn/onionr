@@ -14,7 +14,7 @@ from typing import TYPE_CHECKING, List
 
 import blockdb
 
-from ..constants import BLOCK_ID_SIZE, BLOCK_MAX_SIZE, BLOCK_SIZE_LEN, BLOCK_STREAM_OFFSET_DIGITS
+from ...constants import BLOCK_ID_SIZE, BLOCK_MAX_SIZE, BLOCK_SIZE_LEN, BLOCK_STREAM_OFFSET_DIGITS
 
 if TYPE_CHECKING:
     from socket import socket
@@ -25,8 +25,8 @@ from ordered_set import OrderedSet
 import logger
 
 import onionrblocks
-from ..peerset import gossip_peer_set
-from ..commands import GossipCommands, command_to_byte
+from ...peerset import gossip_peer_set
+from ...commands import GossipCommands, command_to_byte
 
 """
 This program is free software: you can redistribute it and/or modify
