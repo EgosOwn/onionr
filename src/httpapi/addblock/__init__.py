@@ -39,7 +39,7 @@ def block_serialized():
     req_data = request.data
     block_id = req_data[:BLOCK_ID_SIZE]
     block_data = req_data[BLOCK_ID_SIZE:]
-    blockdb.add_block_to_db(Block(block_id, block_data, auto_verify=False))
-    #blockqueues.gossip_block_queues[stream_to_use].put(
-    #Block(block_id, block_data, auto_verify=False), block=False)
+    #blockdb.add_block_to_db(Block(block_id, block_data, auto_verify=False))
+    blockqueues.gossip_block_queues[stream_to_use].put(
+    Block(block_id, block_data, auto_verify=False), block=False)
     return "ok"

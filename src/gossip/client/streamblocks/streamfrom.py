@@ -65,6 +65,9 @@ def stream_from_peers():
     def _stream_from_peer(peer: 'Peer'):
         try:
             sock = peer.get_socket(CONNECT_TIMEOUT)
+        except ConnectionRefusedError:
+            need_socket_lock.release()
+            return
         except Exception:
             logger.warn(traceback.format_exc(), terminal=True)
             need_socket_lock.release()

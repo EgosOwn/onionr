@@ -1,4 +1,5 @@
-from queue import Empty
+from collections import deque
+from queue import Empty, Queue
 from time import sleep
 from secrets import choice
 import traceback
@@ -123,6 +124,10 @@ async def stem_out(d_phase: 'DandelionPhase'):
                     # if we have at least 1 peer,
                     # do dandelion anyway in non strict mode
                     # Allow poorly connected networks to communicate faster
+                    for block in gossip_block_queues[1].queue:
+                        gossip_block_queues[0].put_nowait(block)
+                    else:
+                        gossip_block_queues[1].queue = deque()
                     break
             sleep(1)
         else:
