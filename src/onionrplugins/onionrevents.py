@@ -51,7 +51,7 @@ def event(event_name, data = {}, threaded = True):
     """Call an event on all plugins (if defined)"""
 
     if threaded:
-        thread = Thread(target = __event_caller, args = (event_name, data))
+        thread = Thread(target = __event_caller, args = (event_name, data), name=f'{event_name} event', daemon=True)
         thread.start()
         return thread
     else:

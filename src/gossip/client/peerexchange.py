@@ -78,7 +78,9 @@ def get_new_peers():
     # Start threads to ask the peers for more peers
     threads = []
     for peer in peers_we_ask:
-        t = Thread(target=_do_ask_peer, args=[peer], daemon=True)
+        t = Thread(
+            target=_do_ask_peer, 
+            args=[peer], daemon=True, name='_do_ask_peer')
         t.start()
         threads.append(t)
     peers_we_ask.clear()

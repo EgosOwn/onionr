@@ -39,11 +39,14 @@ async def do_stem_stream(
 
         block_size = str(len(bl.raw)).zfill(BLOCK_SIZE_LEN)
         def _send_it():
-            with peer_socket:
-                try:
-                    peer_socket.sendall(bl.id.zfill(BLOCK_ID_SIZE).encode('utf-8'))
-                except AttributeError:
-                    peer_socket.sendall(bl.id.zfill(BLOCK_ID_SIZE))
-                peer_socket.sendall(block_size.encode('utf-8'))
-                peer_socket.sendall(bl.raw)
+            try:
+                with peer_socket:
+                    try:
+                        peer_socket.sendall(bl.id.zfill(BLOCK_ID_SIZE).encode('utf-8'))
+                    except AttributeError:
+                        peer_socket.sendall(bl.id.zfill(BLOCK_ID_SIZE))
+                    peer_socket.sendall(block_size.encode('utf-8'))
+                    peer_socket.sendall(bl.raw)
+            except OSError:
+                pass
         Thread(target=_send_it, daemon=True, name="stemout block").start()

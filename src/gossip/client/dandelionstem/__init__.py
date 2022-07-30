@@ -83,7 +83,7 @@ async def stem_out(d_phase: 'DandelionPhase'):
         sleep(1)
         return
     not_enough_edges = False
-    strict_dandelion = config.get('security.strict_dandelion', True)
+    strict_dandelion = config.get('security.dandelion.strict', True)
 
     def blackhole_protection(q):
         for bl in q:

@@ -44,7 +44,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
 
-MAX_STREAMS = 3
+MAX_STREAMS = 6
 CONNECT_TIMEOUT = 12
 MAX_TRIED_PEERS = 10_000
 
@@ -63,6 +63,8 @@ def stream_from_peers():
 
 
     def _stream_from_peer(peer: 'Peer'):
+        stream_counter = 0
+        stream_times = 100
         try:
             sock = peer.get_socket(CONNECT_TIMEOUT)
         except ConnectionRefusedError:
@@ -79,8 +81,10 @@ def stream_from_peers():
             sock.sendall(
                 str(offset).zfill(BLOCK_STREAM_OFFSET_DIGITS).encode('utf-8'))
 
-            while True:
-                logger.debug("Reading block id in stream", terminal=True)
+            while stream_times >= stream_counter:
+                stream_counter += 1
+                logger.debug("Reading block id in stream with " + peer.transport_address, terminal=True)
+                sock.settimeout(5)
                 block_id = sock.recv(BLOCK_ID_SIZE)
                 if blockdb.has_block(block_id):
                     sock.sendall(int(0).to_bytes(1, 'big'))
@@ -89,12 +93,15 @@ def stream_from_peers():
 
                 logger.debug("Reading block size in stream", terminal=True)
 
+                sock.settimeout(5)
                 block_size = int(sock.recv(BLOCK_SIZE_LEN))
                 if block_size > BLOCK_MAX_SIZE or block_size <= 0:
                     logger.warn(
                         f"Peer {peer.transport_address} " +
                         "reported block size out of range")
                     break
+                
+                sock.settimeout(5)
                 block_data = sock.recv(block_size)
 
                 logger.debug(
@@ -122,14 +129,14 @@ def stream_from_peers():
 
     # spawn stream threads infinitely
     while True:
-        need_socket_lock.acquire()
+        
         available_set = gossip_peer_set - tried_peers
         if not len(available_set) and len(tried_peers):
             try:
-                tried_peers.pop()
+                tried_peers.clear()
             except IndexError:
                 pass
-            available_set = gossip_peer_set - tried_peers
+            available_set = gossip_peer_set.copy()
         peers = sys_rand.sample(
             available_set,
             min(MAX_STREAMS, len(available_set)))
@@ -140,10 +147,12 @@ def stream_from_peers():
 
         while len(peers):
             try:
+                need_socket_lock.acquire()
                 Thread(
                     target=_stream_from_peer,
                     args=[peers.pop()],
-                    daemon=True).start()
+                    daemon=True,
+                    name="_stream_from_peer").start()
             except IndexError:
                 need_socket_lock.release()
                 break

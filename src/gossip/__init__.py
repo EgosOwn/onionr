@@ -47,7 +47,7 @@ def start_gossip_threads():
         gossip_server, 1, 'gossip_server', initial_sleep=0.2)
 
     threading.Thread(
-        target=start_gossip_client, daemon=True).start()
+        target=start_gossip_client, daemon=True, name="start_gossip_client").start()
     onionrplugins.events.event('gossip_start', data=None, threaded=True)
     for _ in range(BOOTSTRAP_ATTEMPTS):
         onionrplugins.events.event(

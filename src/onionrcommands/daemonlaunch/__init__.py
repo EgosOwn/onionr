@@ -112,7 +112,10 @@ def daemon():
         f"Onionr daemon is running under pid {os.getpid()}", terminal=True)
     events.event('init', threaded=False)
     events.event('daemon_start')
-    Thread(target=gossip.start_gossip_threads, daemon=True).start()
+    Thread(
+        target=gossip.start_gossip_threads, 
+        daemon=True, 
+        name='start_gossip_threads').start()
 
     try:
         apiservers.private_api.start()

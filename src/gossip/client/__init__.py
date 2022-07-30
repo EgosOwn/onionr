@@ -22,6 +22,7 @@ if TYPE_CHECKING:
     from ordered_set import OrderedSet
 
 import logger
+import config
 import onionrplugins
 from ..commands import GossipCommands
 from gossip.dandelion.phase import DandelionPhase
@@ -60,9 +61,9 @@ def block_queue_processing():
     while not len(gossip_peer_set):
         sleep(0.2)
     if dandelion_phase.remaining_time() <= 15:
-        logger.debug("Sleeping", terminal=True)
+        #logger.debug("Sleeping", terminal=True)
         sleep(dandelion_phase.remaining_time())
-    if dandelion_phase.is_stem_phase():
+    if dandelion_phase.is_stem_phase() and config.get('security.dandelion.enabled', True):
         logger.debug("Entering stem phase", terminal=True)
         try:
             # Stem out blocks for (roughly) remaining epoch time
@@ -73,8 +74,9 @@ def block_queue_processing():
             logger.error(traceback.format_exc(), terminal=True)
         pass
     else:
-        logger.debug("Entering fluff phase", terminal=True)
+        #logger.debug("Entering fluff phase", terminal=True)
         # Add block to primary block db, where the diffuser can read it
+        sleep(0.1)
         store_blocks(dandelion_phase)
 
 
@@ -88,7 +90,7 @@ def start_gossip_client():
     bl: Block
 
 
-    Thread(target=do_announce, daemon=True).start()
+    Thread(target=do_announce, daemon=True, name='do_announce').start()
 
     # Start a thread that runs every 1200 secs to
     # Ask peers for a subset for their peer set

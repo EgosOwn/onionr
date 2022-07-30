@@ -21,8 +21,6 @@ def on_announce_rec(api, data=None):
 
     if announced.removesuffix('.onion') == config.get(
             'tor.transport_address', '').removesuffix('.onion'):
-        logger.warn(
-            "Received announcement for our own node, which shouldn't happen")
         return
 
 

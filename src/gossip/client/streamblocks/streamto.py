@@ -2,8 +2,8 @@ from secrets import SystemRandom
 from time import time
 from typing import List, TYPE_CHECKING
 
-if TYPE_CHECKING:
-    from onionrblocks import Block
+#if TYPE_CHECKING:
+from onionrblocks import Block
 
 from gossip.commands import GossipCommands, command_to_byte
 from blockdb import get_blocks_after_timestamp
@@ -19,7 +19,7 @@ class SendTimestamp:
 
 def stream_to_peer():
     if SECS_ELAPSED_NO_INCOMING_BEFORE_STREAM > time() - lastincoming.last_incoming_timestamp:
-        SendTimestamp.timestamp = int(time())
+        SendTimestamp.timestamp = int(time()) - 60
         return
     if not len(gossip_peer_set):
         return 
@@ -28,6 +28,7 @@ def stream_to_peer():
     buffer: List['Block'] = []
 
     def _do_upload():
+        print('uploading to', peer.transport_address)
         with peer.get_socket(30) as p:
             p.sendall(command_to_byte(GossipCommands.PUT_BLOCK_DIFFUSE))
 
@@ -47,10 +48,11 @@ def stream_to_peer():
     # and to efficiently avoid connecting without sending anything
     buffer_max = 10
     for block in get_blocks_after_timestamp(SendTimestamp.timestamp):
+        assert isinstance(block, Block)
         buffer.append(block)
         if len(buffer) > buffer_max:
             _do_upload(buffer)
     if len(buffer):
         _do_upload()
 
-    SendTimestamp.timestamp = int(time())
+    SendTimestamp.timestamp = int(time()) - 60

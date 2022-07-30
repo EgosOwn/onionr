@@ -16,11 +16,7 @@ def on_announce_rec(api, data=None):
     if not announced.endswith('.sock'):
         return
 
-
     if announced == gossip_server_socket_file:
-        logger.warn(
-            "Received announcement for our unix node, which shouldn't happen",
-            terminal=True)
         return
 
     logger.info(f"Peer {announced} announced to us.", terminal=True)

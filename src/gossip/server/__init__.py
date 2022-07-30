@@ -133,8 +133,10 @@ def gossip_server():
                                     ).start()
                     await _get_block_diffused()
             break
-
-        await writer.drain()
+        try:
+            await writer.drain()
+        except BrokenPipeError:
+            pass
 
     async def main():
 

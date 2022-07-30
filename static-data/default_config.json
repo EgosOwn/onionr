@@ -50,6 +50,12 @@
         "i_dont_want_privacy": false,
         "server": ""
     },
+    "security": {
+        "dandelion": {
+            "strict": true,
+            "enabled": true
+        }
+    },
     "timers": {
         "getBlocks": 10,
         "lookupBlocks": 25
