@@ -24,6 +24,16 @@ def _do_timeout(func, *args):
             return res
 
 
+def delete(db_path, key):
+    def _delete(key):
+        with dbm.open(db_path, "c") as my_db:
+            del my_db[key]
+    try:
+        _do_timeout(_delete, key)
+    except KeyError:
+        pass
+
+
 def set_if_new(db_path, key, value) -> bool:
     def _set(key, value):
         with dbm.open(db_path, "c") as my_db:

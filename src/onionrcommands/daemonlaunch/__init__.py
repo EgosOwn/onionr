@@ -28,6 +28,8 @@ import filepaths
 import onionrvalues
 from onionrutils import cleanup
 from onionrcrypto import getourkeypair
+from onionrthreads import add_onionr_thread
+from blockdb.blockcleaner import clean_block_database
 import runtests
 from .. import version
 from .killdaemon import kill_daemon  # noqa
@@ -100,7 +102,6 @@ def daemon():
     # Run time tests are not normally run
     shared_state.get(runtests.OnionrRunTestManager)
 
-
     shared_state.share_object()  # share the parent object to the threads
 
     show_logo()
@@ -112,11 +113,15 @@ def daemon():
         f"Onionr daemon is running under pid {os.getpid()}", terminal=True)
     events.event('init', threaded=False)
     events.event('daemon_start')
+
+    add_onionr_thread(
+        clean_block_database, 60, 'clean_block_database', initial_sleep=0)
+
     Thread(
         target=gossip.start_gossip_threads, 
         daemon=True, 
         name='start_gossip_threads').start()
-
+    
     try:
         apiservers.private_api.start()
         events.event('shutdown', threaded=False)
