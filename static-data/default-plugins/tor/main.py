@@ -87,7 +87,9 @@ def on_gossip_start(api, data: Set[Peer] = None):
                 key_content='BEST', key_type='NEW', detached=True)
             config.set('tor.key', add_onion_resp.private_key, savefile=True)
             new_address = 'Generated '
-            config.set('tor.transport_address', add_onion_resp.service_id,
+            onion = add_onion_resp.service_id
+            onion = onion.removesuffix('.onion') + '.onion'
+            config.set('tor.transport_address', onion,
             savefile=True)
         else:
             try:

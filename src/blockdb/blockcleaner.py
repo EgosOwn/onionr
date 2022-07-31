@@ -8,8 +8,6 @@ from .deleteblock import delete_block
 from .getblocks import get_blocks_after_timestamp
 
 
-
-
 def clean_block_database():
     """Delete expired blocks from block db"""
     remove_set: Set[bytes] = set()
@@ -21,5 +19,6 @@ def clean_block_database():
         except ValueError:  # block expired
             remove_set.add(block)
     
-    logger.info(f"Cleaning {len(remove_set)} blocks", terminal=True)
-    [i for i in map(delete_block, remove_set)]
+    if len(remove_set):
+        logger.info(f"Cleaning {len(remove_set)} blocks", terminal=True)
+        [i for i in map(delete_block, remove_set)]

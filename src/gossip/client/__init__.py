@@ -89,8 +89,10 @@ def start_gossip_client():
     """
     bl: Block
 
-
-    Thread(target=do_announce, daemon=True, name='do_announce').start()
+    # Start a thread to announce our transport addresses to peers
+    add_onionr_thread(
+        do_announce,
+        300, 'do_announce', initial_sleep=5)
 
     # Start a thread that runs every 1200 secs to
     # Ask peers for a subset for their peer set

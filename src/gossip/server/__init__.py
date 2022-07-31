@@ -78,7 +78,7 @@ def gossip_server():
                                 threaded=True)
                             writer.write(int(1).to_bytes(1, 'big'))
                             await writer.drain()
-                    await asyncio.wait_for(_read_announce(), 10)
+                    await asyncio.wait_for(_read_announce(), 30)
                 case GossipCommands.PEER_EXCHANGE:
 
                     for peer in gossip_peer_set:

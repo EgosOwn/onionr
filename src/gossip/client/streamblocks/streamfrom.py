@@ -45,7 +45,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
 MAX_STREAMS = 6
-CONNECT_TIMEOUT = 12
+CONNECT_TIMEOUT = 45
 MAX_TRIED_PEERS = 10_000
 
 
@@ -119,8 +119,8 @@ def stream_from_peers():
                 # Tell them to keep streaming
                 sock.sendall(int(1).to_bytes(1, 'big'))
         except (BrokenPipeError, TimeoutError) as e:
-            logger.info(f"{e} when streaming peers", terminal=True)
-            logger.debug(traceback.format_exc())
+            logger.debug(f"{e} when streaming peers", terminal=True)
+            #logger.debug(traceback.format_exc())
         except Exception:
             logger.warn(traceback.format_exc(), terminal=True)
         finally:

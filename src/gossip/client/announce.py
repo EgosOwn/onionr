@@ -17,13 +17,14 @@ def do_announce():
     per_transport = 4
     peer_types = {}
     count_for_peer = 0
+
     def _announce(announce_peer: 'Peer', our_transport_address: str):
         assert our_transport_address
         try:
             our_transport_address = our_transport_address.encode('utf-8') + b"\n"
         except AttributeError:
             our_transport_address = our_transport_address + b'\n'
-        sock = announce_peer.get_socket(12)
+        sock = announce_peer.get_socket(40)
         sock.sendall(command_to_byte(GossipCommands.ANNOUNCE))
         sock.sendall(our_transport_address)
         if int.from_bytes(sock.recv(1), 'big') != 1:
@@ -33,7 +34,6 @@ def do_announce():
 
     while not len(gossip_peer_set):
         sleep(1)
-
 
     for peer in gossip_peer_set:
         try:
