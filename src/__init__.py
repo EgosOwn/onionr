@@ -46,14 +46,6 @@ locale.setlocale(locale.LC_ALL, '')  # noqa
 ran_as_script = False
 if __name__ == "__main__": ran_as_script = True
 
-# Import standard libraries
-
-try:
-    from onionrutils import dependencycheck  # noqa
-except ModuleNotFoundError as e:
-    print('Missing requirement: ' + str(e) + ' installed')
-    sys.exit(1)
-
 # Import 3rd party libraries
 
 from filenuke import nuke  # noqa
