@@ -20,6 +20,7 @@ upload_list = home + 'upload-list.json'
 config_file = home + 'config.json'
 daemon_mark_file = home + '/daemon-true.txt'
 lock_file = home + 'onionr.lock'
+pid_file = home + 'onionr.pid'
 
 site_cache = home + 'onionr-sites.txt'
 

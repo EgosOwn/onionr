@@ -5,12 +5,8 @@ Sets CLI arguments for Onionr
 from typing import Callable
 
 from .. import onionrstatistics, version, daemonlaunch
-from .. import openwebinterface
 from .. import pubkeymanager  # commands to add or change id
 from .. import resetplugins  # command to reinstall default plugins
-from .. import softreset  # command to delete onionr blocks
-from .. import restartonionr  # command to restart Onionr
-from .. import runtimetestcmd  # cmd to execute the runtime integration tests
 
 
 import onionrexceptions
@@ -42,15 +38,9 @@ def get_arguments() -> dict:
         ('version',): version.version,
         ('start', 'daemon'): daemonlaunch.start,
         ('stop', 'kill'): daemonlaunch.kill_daemon,
-        ('restart',): restartonionr.restart,
-        ('openhome', 'gui', 'openweb',
-         'open-home', 'open-web'): openwebinterface.open_home,
-        ('get-url', 'url', 'get-web'): openwebinterface.get_url,
         ('addid', 'add-id'): pubkeymanager.add_ID,
         ('changeid', 'change-id'): pubkeymanager.change_ID,
-        ('resetplugins', 'reset-plugins'): resetplugins.reset,
-        ('soft-reset', 'softreset'): softreset.soft_reset,
-        ('runtime-test', 'runtimetest'): runtimetestcmd.do_runtime_test
+        ('resetplugins', 'reset-plugins'): resetplugins.reset
     }
     return args
 

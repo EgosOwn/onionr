@@ -1,5 +1,15 @@
 import socks
 
+from gossip.peerset import gossip_peer_set
+import logger
+
+class HandleRevc:
+    def __init__(self, sock):
+        self.sock_recv = sock.recv
+
+    def recv(self, *args, **kwargs):
+        return self.sock_recv(*args, **kwargs)
+
 
 class TorPeer:
 
@@ -18,7 +28,18 @@ class TorPeer:
         s = socks.socksocket()
         s.set_proxy(socks.SOCKS4, self.socks_host, self.socks_port, rdns=True)
         s.settimeout(connect_timeout)
-        s.connect((self.onion_address, 80))
+        try:
+            s.connect((self.onion_address, 80))
+        except socks.GeneralProxyError:
+            try:
+                gossip_peer_set.remove(self)
+            except KeyError:
+                pass
+            else:
+                logger.debug(f"Could not create socket to peer {self.transport_address}", terminal=True)
+            raise
+        mock_recv = HandleRevc(s)
+        s.recv = mock_recv.recv
         return s
 
     def __hash__(self):

@@ -43,7 +43,7 @@
         "minimum_score": -100
     },
     "plugins": {
-        "disabled": [],
+        "disabled": ["unixtransport"],
         "enabled": []
     },
     "statistics": {

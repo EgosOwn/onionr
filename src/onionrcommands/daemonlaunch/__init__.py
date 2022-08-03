@@ -3,26 +3,20 @@
 launch the api servers and communicator
 """
 import os
-import queue
+from time import sleep
 import sys
 import platform
 import signal
 from threading import Thread
 
-from stem.connection import IncorrectPassword
-import toomanyobjs
 import filenuke
-from deadsimplekv import DeadSimpleKV
 import psutil
-from ordered_set import OrderedSet
 
 import config
 
-import apiservers
 import logger
 from onionrplugins import onionrevents as events
 
-from onionrutils import localcommand
 from utils import identifyhome
 import filepaths
 import onionrvalues
@@ -30,13 +24,11 @@ from onionrutils import cleanup
 from onionrcrypto import getourkeypair
 from onionrthreads import add_onionr_thread
 from blockdb.blockcleaner import clean_block_database
-import runtests
 from .. import version
 from .killdaemon import kill_daemon  # noqa
 from .showlogo import show_logo
 import gossip
 
-from setupkvvars import setup_kv
 """
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -51,11 +43,6 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-
-
-def _proper_shutdown():
-    localcommand.local_command('shutdown')
-    sys.exit(1)
 
 
 def _show_info_messages():
@@ -74,35 +61,13 @@ def daemon():
     """Start Onionr's primary threads for communicator, API server, node, and LAN."""
 
     def _handle_sig_term(signum, frame):
-        pid = str(os.getpid())
-        main_pid = localcommand.local_command('/getpid')
-        #logger.info(main_pid, terminal=True)
-        if main_pid and main_pid == pid:
-            logger.info(
-            f"Received sigterm, shutting down gracefully. PID: {pid}", terminal=True)
-            localcommand.local_command('/shutdown')
-        else:
-            logger.info(
-                f"Recieved sigterm in child process or fork, exiting. PID: {pid}")
-            sys.exit(0)
+        sys.exit(0)
+    
+    with open(filepaths.pid_file, 'w') as f:
+        f.write(str(os.getpid()))
+
     signal.signal(signal.SIGTERM, _handle_sig_term)
 
-    # Create shared objects
-
-    shared_state = toomanyobjs.TooMany()
-
-    # Add DeadSimpleKV for quasi-global variables (ephemeral key-value)
-    shared_state.get(DeadSimpleKV)
-
-    # Initialize the quasi-global variables
-    setup_kv(shared_state.get(DeadSimpleKV))
-
-    # Init run time tester
-    # (ensures Onionr is running right, for testing purposes)
-    # Run time tests are not normally run
-    shared_state.get(runtests.OnionrRunTestManager)
-
-    shared_state.share_object()  # share the parent object to the threads
 
     show_logo()
 
@@ -121,13 +86,12 @@ def daemon():
         target=gossip.start_gossip_threads, 
         daemon=True, 
         name='start_gossip_threads').start()
-    
+
     try:
-        apiservers.private_api.start()
-        events.event('shutdown', threaded=False)
+        while True:
+            sleep(60)
     except KeyboardInterrupt:
         pass
-
 
     cleanup.delete_run_files()
     if security_level >= 2:

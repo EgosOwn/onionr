@@ -19,7 +19,6 @@ import onionrblocks
 locale.setlocale(locale.LC_ALL, '')
 sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
 # import after path insert
-from onionrutils.localcommand import local_command
 
 """
 This program is free software: you can redistribute it and/or modify
@@ -43,12 +42,6 @@ PLUGIN_VERSION = '0.0.0'
 
 def on_blocktest_cmd(api, data=None):
     bl = onionrblocks.create_anonvdf_block(input("Enter a message:").encode('utf-8'), b"tst", 3600)
-    logger.info(
-        local_command(
-            '/addvdfblock',
-            post_data=bl.id + bl.raw,
-            silent=False, post=True),
-            terminal=True)
 
 
 def on_printtest_cmd(api, data=None):

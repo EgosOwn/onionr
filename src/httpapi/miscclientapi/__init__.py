@@ -1,1 +1,0 @@
-from . import staticfiles, endpoints

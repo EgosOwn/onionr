@@ -57,7 +57,10 @@ def on_bootstrap(api, data):
 
     while not config.get('tor.transport_address'):
         sleep(1)
-        config.reload()
+        try:
+            config.reload()
+        except Exception:
+            logger.error(traceback.format_exc(), terminal=True)
 
     socks_address, socks_port = get_socks()[0]
 

@@ -1,4 +1,6 @@
 import hmac
+
+
 def safe_compare(one, two):
     # Do encode here to avoid spawning core
     try:
@@ -10,3 +12,4 @@ def safe_compare(one, two):
     except AttributeError:
         pass
     return hmac.compare_digest(one, two)
+    

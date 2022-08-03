@@ -2,15 +2,11 @@
 
 Gracefully stop Onionr daemon
 """
-import sqlite3
 import os
+from signal import SIGTERM
 
-from gevent import spawn
-
-from onionrplugins import events
-from onionrutils import localcommand
+from filepaths import pid_file
 import logger
-import config
 """
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -29,26 +25,13 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 def kill_daemon():
     """Shutdown the Onionr daemon (communicator)."""
-    config.reload()
+    try:
+        with open(pid_file, 'r') as pid:
+            os.kill(int(pid.read()), SIGTERM)
+    except FileNotFoundError:
+        logger.error("Daemon not running/pid file missing")
     logger.warn('Stopping the running daemon, if one exists...', timestamp=False,
                 terminal=True)
-
-    # On platforms where we can, fork out to prevent locking
-    try:
-        pid = os.fork()
-        if pid != 0:
-            return
-    except (AttributeError, OSError):
-        pass
-
-    events.event('daemon_stop')
-    try:
-        spawn(
-            localcommand.local_command,
-            '/shutdown'
-            ).get(timeout=5)
-    except sqlite3.OperationalError:
-        pass
 
 
 kill_daemon.onionr_help = "Gracefully stops the "  # type: ignore
