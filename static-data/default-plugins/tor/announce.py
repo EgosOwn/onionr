@@ -19,8 +19,8 @@ def on_announce_rec(api, data=None):
     socks_address, socks_port = get_socks()[0]
 
 
-    if announced.removesuffix('.onion') == config.get(
-            'tor.transport_address', '').removesuffix('.onion'):
+    if announced.replace('.onion', '') == config.get(
+            'tor.transport_address', '').replace('.onion', ''):
         return
 
 

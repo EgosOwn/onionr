@@ -83,7 +83,7 @@ def stream_from_peers():
 
             while stream_times >= stream_counter:
                 stream_counter += 1
-                logger.debug("Reading block id in stream with " + peer.transport_address, terminal=True)
+                logger.debug("Reading block of id in stream with " + peer.transport_address, terminal=True)
                 sock.settimeout(5)
                 block_id = sock.recv(BLOCK_ID_SIZE)
                 if blockdb.has_block(block_id):
@@ -91,7 +91,7 @@ def stream_from_peers():
                     continue
                 sock.sendall(int(1).to_bytes(1, 'big'))
 
-                logger.debug("Reading block size in stream", terminal=True)
+                #logger.debug("Reading block size in stream", terminal=True)
 
                 sock.settimeout(5)
                 block_size = int(sock.recv(BLOCK_SIZE_LEN))
@@ -104,9 +104,9 @@ def stream_from_peers():
                 sock.settimeout(5)
                 block_data = sock.recv(block_size)
 
-                logger.debug(
-                    "We got a block from stream, assuming it is valid",
-                    terminal=True)
+                #logger.debug(
+                #    "We got a block from stream, assuming it is valid",
+                #    terminal=True)
                 try:
                     blockdb.add_block_to_db(
                         onionrblocks.Block(
@@ -119,7 +119,8 @@ def stream_from_peers():
                 # Tell them to keep streaming
                 sock.sendall(int(1).to_bytes(1, 'big'))
         except (BrokenPipeError, TimeoutError) as e:
-            logger.debug(f"{e} when streaming peers", terminal=True)
+            pass
+            #logger.debug(f"{e} when streaming from peers", terminal=True)
             #logger.debug(traceback.format_exc())
         except Exception:
             logger.warn(traceback.format_exc(), terminal=True)

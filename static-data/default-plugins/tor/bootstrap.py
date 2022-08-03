@@ -46,7 +46,7 @@ def on_bootstrap(api, data):
                 bootstrap_nodes = set(bootstrap_file_obj.read().split(','))
         except FileNotFoundError:
             bootstrap_nodes = set()
-    except Exception as e:
+    except Exception as _:
         logger.warn(traceback.format_exc(), terminal=True)
         return
     else:
@@ -62,7 +62,7 @@ def on_bootstrap(api, data):
     socks_address, socks_port = get_socks()[0]
 
     for address in bootstrap_nodes:
-        if address == config.get('tor.transport_address') or not address:
+        if address == config.get('tor.transport_address').replace('.onion', '') or not address:
             continue
         assert not address.endswith('.onion')
         address += '.onion'
