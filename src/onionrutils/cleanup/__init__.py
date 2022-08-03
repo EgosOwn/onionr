@@ -38,3 +38,4 @@ def delete_run_files():
     _safe_remove(filepaths.daemon_mark_file)
     _safe_remove(filepaths.lock_file)
     _safe_remove(filepaths.gossip_server_socket_file)
+    _safe_remove(filepaths.pid_file)

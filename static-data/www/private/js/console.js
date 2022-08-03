@@ -1,2 +1,0 @@
-console.log('%c Welcome to Onionr 🧅', 'border: 1px solid purple; float: left; font-weight: bold; font-size: 50px;color: purple; padding: 3em; background-color: black;');
-console.log('See the documentation at https://gitlab.com/beardog/Onionr/tree/master/docs')

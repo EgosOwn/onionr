@@ -13,4 +13,4 @@ echo "Future Onionr commands will use your set or default Onionr home directory,
 echo "Ultimately, a live boot operating system such as Tails or Debian would be better for you to use."
 $(dirname $0)/onionr.sh start & disown
 sleep 2
-$(dirname $0)/onionr.sh open-home
+#$(dirname $0)/onionr.sh open-home

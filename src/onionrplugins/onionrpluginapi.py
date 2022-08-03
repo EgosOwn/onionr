@@ -19,7 +19,7 @@
 '''
 
 import onionrplugins, logger
-from onionrutils import localcommand
+
 
 class PluginAPI:
     def __init__(self, pluginapi):
