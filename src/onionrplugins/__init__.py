@@ -21,6 +21,7 @@ import os, re, importlib
 import traceback
 
 from . import onionrevents as events
+from .pluginapis import plugin_apis
 import config, logger
 from utils import identifyhome
 

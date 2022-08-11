@@ -28,11 +28,12 @@ def identify_home() -> str:
     """
     path = os.environ.get('ONIONR_HOME', None)
 
-
     if path is None:
         system = platform.system()
         if system == 'Linux':
-            path = os.path.expanduser('~') + '/.local/share/onionr/'
+            path = os.environ.get(
+                'XDG_DATA_HOME',
+                os.path.expanduser('~') + '/.local/share/onionr/')
         elif system == 'Darwin':
             path = os.path.expanduser('~' +
                                       '/Library/Application Support/onionr/')

@@ -6,6 +6,7 @@ import sys
 import os
 import locale
 from threading import Thread
+from time import sleep
 
 import cherrypy
 
@@ -37,11 +38,13 @@ PLUGIN_VERSION = '0.0.0'
 socket_file_path = identifyhome.identify_home() + 'rpc.sock'
 
 from jsonrpc import JSONRPCResponseManager, dispatcher
+import jsonrpc
+import ujson
+jsonrpc.manager.json = ujson
 
+# RPC modules map Onionr APIs to the RPC dispacher
+from rpc import blocks
 
-@dispatcher.add_method
-def foobar(**kwargs):
-    return kwargs["foo"] + kwargs["bar"]
 
 class OnionrRPC(object):
     @cherrypy.expose
@@ -50,16 +53,14 @@ class OnionrRPC(object):
         # Dispatcher is dictionary {<method_name>: callable}
         data = cherrypy.request.body.read().decode('utf-8')
 
-        dispatcher["echo"] = lambda s: s
-        dispatcher["add"] = lambda a, b: a + b
-
         response = JSONRPCResponseManager.handle(data, dispatcher)
         return response.json
 
 
 def on_init(api, data=None):
     config = {
-        'server.socket_file': socket_file_path,
+        #'server.socket_file': socket_file_path,
+        'server.socket_port': 0,
         'engine.autoreload.on': False
     }
     cherrypy.config.update(config)
@@ -67,3 +68,4 @@ def on_init(api, data=None):
     add_onionr_thread(
         cherrypy.quickstart, 5, 'OnionrRPCServer',
         OnionrRPC(), initial_sleep=0)
+        
