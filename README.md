@@ -11,7 +11,7 @@
     WIP anonymous social platform, mail, file sharing and marketplace
 </p>
 
-<img src="https://img.shields.io/badge/License-aGPLv3-yellow"> <img src='https://img.shields.io/badge/python%20version%20%F0%9F%90%8D-3.7+-blue'>
+<img src="https://img.shields.io/badge/License-aGPLv3-yellow"> <img src='https://img.shields.io/badge/python%20version%20%F0%9F%90%8D-3.10+-blue'>
 
 <a href='https://twitter.com/onionrnet'><img src='https://img.shields.io/twitter/follow/onionrnet?style=social'></a> - [Discord](https://discord.gg/DVF2bEAzrt) - Matrix: #onionr:amorgan.xyz
 
@@ -84,7 +84,7 @@ Master may be unstable, you should use the latest release tag. (checkout via git
 
 `$ sudo apt install python3-pip python3-dev tor`
 
-* Have python3.7+, python3-pip, Tor (daemon, not browser) installed. python3-dev is recommended.
+* Have python3.10, python3-pip, Tor (daemon, not browser) installed. python3-dev is recommended.
 * You may need build-essentials or the equivalent of your platform
 * Clone the git repo: `$ git clone https://gitlab.com/beardog/onionr --tags`
 * cd into install direction: `$ cd onionr/`
