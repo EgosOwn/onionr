@@ -35,13 +35,13 @@ async def accept_stem_blocks(
 
     for _ in range(MAX_STEM_BLOCKS_PER_STREAM):
         read_routine = reader.readexactly(BLOCK_ID_SIZE)
-        logger.debug(f"Reading block id in stem server", terminal=True)
+        #logger.debug(f"Reading block id in stem server", terminal=True)
         block_id = await wait_for(read_routine, base_wait_timeout)
         block_id = block_id.decode('utf-8')
         if not block_id:
             break
 
-        logger.debug(f"Reading block size in stem server", terminal=True)
+        #logger.debug(f"Reading block size in stem server", terminal=True)
         block_size = (await wait_for(
             reader.readexactly(BLOCK_SIZE_LEN),
             base_wait_timeout)).decode('utf-8')
@@ -54,7 +54,7 @@ async def accept_stem_blocks(
         if block_size > BLOCK_MAX_SIZE:
             raise ValueError("Max block size")
 
-        logger.debug(f"Reading block of size {block_size} in stem server", terminal=True)
+        #logger.debug(f"Reading block of size {block_size} in stem server", terminal=True)
 
         raw_block: bytes = await wait_for(
             reader.readexactly(block_size), base_wait_timeout * 6)

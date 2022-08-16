@@ -83,7 +83,7 @@ def stream_from_peers():
 
             while stream_times >= stream_counter:
                 stream_counter += 1
-                logger.debug("Reading block of id in stream with " + peer.transport_address, terminal=True)
+                #logger.debug("Reading block of id in stream with " + peer.transport_address, terminal=True)
                 sock.settimeout(5)
                 block_id = sock.recv(BLOCK_ID_SIZE)
                 if blockdb.has_block(block_id):
@@ -100,7 +100,7 @@ def stream_from_peers():
                         f"Peer {peer.transport_address} " +
                         "reported block size out of range")
                     break
-                
+
                 sock.settimeout(5)
                 block_data = sock.recv(block_size)
 
@@ -130,7 +130,7 @@ def stream_from_peers():
 
     # spawn stream threads infinitely
     while True:
-        
+
         available_set = gossip_peer_set - tried_peers
         if not len(available_set) and len(tried_peers):
             try:
@@ -157,4 +157,4 @@ def stream_from_peers():
             except IndexError:
                 need_socket_lock.release()
                 break
-            
+
