@@ -43,7 +43,7 @@ import ujson
 jsonrpc.manager.json = ujson
 
 # RPC modules map Onionr APIs to the RPC dispacher
-from rpc import blocks
+from rpc import blocks, pluginrpcmethods
 
 
 class OnionrRPC(object):
@@ -57,6 +57,10 @@ class OnionrRPC(object):
         return response.json
 
 
+def on_afterinit(api, data=None):
+    pluginrpcmethods.add_plugin_rpc_methods()
+
+
 def on_init(api, data=None):
     config = {
         #'server.socket_file': socket_file_path,
@@ -68,4 +72,3 @@ def on_init(api, data=None):
     add_onionr_thread(
         cherrypy.quickstart, 5, 'OnionrRPCServer',
         OnionrRPC(), initial_sleep=0)
-        

@@ -62,7 +62,7 @@ def daemon():
 
     def _handle_sig_term(signum, frame):
         sys.exit(0)
-    
+
     with open(filepaths.pid_file, 'w') as f:
         f.write(str(os.getpid()))
 
@@ -77,14 +77,15 @@ def daemon():
     logger.info(
         f"Onionr daemon is running under pid {os.getpid()}", terminal=True)
     events.event('init', threaded=False)
+    events.event('afterinit', threaded=False)
     events.event('daemon_start')
 
     add_onionr_thread(
         clean_block_database, 60, 'clean_block_database', initial_sleep=0)
 
     Thread(
-        target=gossip.start_gossip_threads, 
-        daemon=True, 
+        target=gossip.start_gossip_threads,
+        daemon=True,
         name='start_gossip_threads').start()
 
     try:
