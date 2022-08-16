@@ -18,16 +18,16 @@
 |                                      |                            |                            |
 | -----------                          | -----------                | -----------                |
 | [Install](#install-and-run-on-linux) | [Features](#main-features) | [Screenshots](#screenshots)|
-| [Docs](#documentation)/[web copy](https://beardog108.github.io/onionr/)               | [Get involved](#help-out)  | [Onionr.net](https://onionr.net/)/[.onion](http://onionrbak72t5zhbzuey2fdkpczlvhowgcpqc6uoyrd3uxztzxwz5cyd.onion/)                  |
+| [Docs](#documentation)               | [Get involved](#help-out)  | [Onionr.net](https://onionr.net/)/[.onion](http://onionrbak72t5zhbzuey2fdkpczlvhowgcpqc6uoyrd3uxztzxwz5cyd.onion/)                  |
 
 
 ---
 
-**The main repository for this software is at https://git.VoidNet.tech/kev/onionr/**
+**The main repository for this software is at https://gitlab.com/beardog/onionr/**
 
 ***Note that this README reflects the state of the rewrite, and not the original alpha network***
 
-Mirrors [Gitlab](https://git.voidnet.tech/onionr)
+Mirrors [Gitea](https://git.voidnet.tech/kev/onionr)
 
 
 Onionr ("Onion Relay") is a decentralized/distributed peer-to-peer communication network, designed to be anonymous and resistant to (meta)data analysis, spam, and corruption.
@@ -86,7 +86,7 @@ Master may be unstable, you should use the latest release tag. (checkout via git
 
 * Have python3.7+, python3-pip, Tor (daemon, not browser) installed. python3-dev is recommended.
 * You may need build-essentials or the equivalent of your platform
-* Clone the git repo: `$ git clone https://git.voidnet.tech/onionr --tags`
+* Clone the git repo: `$ git clone https://gitlab.com/beardog/onionr --tags`
 * cd into install direction: `$ cd onionr/`
 * Install the Python dependencies ([virtualenv strongly recommended](https://virtualenv.pypa.io/en/stable/userguide/)): `$ pip3 install --require-hashes -r requirements.txt` (on ARM64 devices like Raspberry Pi 4's use requirements-ARM.txt instead.)
 * (Optional): Install desktop notification dependencies: `$ pip3 install --require-hashes -r requirements-notifications.txt`
