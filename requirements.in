@@ -9,3 +9,5 @@ ujson==5.4.0
 cffi==1.15.1
 onionrblocks==7.0.0
 ordered-set==4.1.0
+cherrypy==18.8.0
+json-rpc==1.13.0

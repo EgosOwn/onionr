@@ -4,16 +4,46 @@
 #
 #    pip-compile
 #
+autocommand==2.2.1
+    # via jaraco-text
 cffi==1.15.1
     # via
     #   -r requirements.in
     #   pynacl
+cheroot==8.6.0
+    # via cherrypy
+cherrypy==18.8.0
+    # via -r requirements.in
 filenuke==0.0.0
+    # via -r requirements.in
+inflect==6.0.0
+    # via jaraco-text
+jaraco-classes==3.2.2
+    # via jaraco-collections
+jaraco-collections==3.5.2
+    # via cherrypy
+jaraco-context==4.1.2
+    # via jaraco-text
+jaraco-functools==3.5.1
+    # via
+    #   cheroot
+    #   jaraco-text
+    #   tempora
+jaraco-text==3.9.0
+    # via jaraco-collections
+json-rpc==1.13.0
     # via -r requirements.in
 kasten==3.0.0
     # via onionrblocks
 mimcvdf==1.2.1
     # via kasten
+more-itertools==8.14.0
+    # via
+    #   cheroot
+    #   cherrypy
+    #   jaraco-classes
+    #   jaraco-functools
+    #   jaraco-text
 msgpack==1.0.3
     # via kasten
 niceware==0.2.1
@@ -22,19 +52,36 @@ onionrblocks==7.0.0
     # via -r requirements.in
 ordered-set==4.1.0
     # via -r requirements.in
+portend==3.1.0
+    # via cherrypy
 psutil==5.9.1
     # via -r requirements.in
 pycparser==2.19
     # via cffi
+pydantic==1.9.2
+    # via inflect
 pynacl==1.5.0
     # via
     #   -r requirements.in
     #   onionrblocks
 pysocks==1.7.1
     # via -r requirements.in
+pytz==2022.2.1
+    # via tempora
+six==1.16.0
+    # via cheroot
 stem==1.8.0
     # via -r requirements.in
+tempora==5.0.2
+    # via portend
+typing-extensions==4.3.0
+    # via pydantic
 ujson==5.4.0
     # via -r requirements.in
 unpaddedbase32==0.2.0
     # via -r requirements.in
+zc-lockfile==2.0
+    # via cherrypy
+
+# The following packages are considered to be unsafe in a requirements file:
+# setuptools
