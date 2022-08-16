@@ -130,7 +130,8 @@ def stream_from_peers():
 
     # spawn stream threads infinitely
     while True:
-
+        if not gossip_peer_set:
+            sleep(2)
         available_set = gossip_peer_set - tried_peers
         if not len(available_set) and len(tried_peers):
             try:

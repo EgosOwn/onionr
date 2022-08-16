@@ -59,7 +59,7 @@ def block_queue_processing():
 
 
     while not len(gossip_peer_set):
-        sleep(0.2)
+        sleep(1)
     if dandelion_phase.remaining_time() <= 15:
         #logger.debug("Sleeping", terminal=True)
         sleep(dandelion_phase.remaining_time())
