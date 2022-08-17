@@ -67,7 +67,7 @@ def stream_from_peers():
         stream_times = 100
         try:
             sock = peer.get_socket(CONNECT_TIMEOUT)
-        except ConnectionRefusedError:
+        except (TimeoutError, ConnectionRefusedError) as _:
             need_socket_lock.release()
             return
         except Exception:
@@ -118,7 +118,7 @@ def stream_from_peers():
                     raise
                 # Tell them to keep streaming
                 sock.sendall(int(1).to_bytes(1, 'big'))
-        except (BrokenPipeError, TimeoutError) as e:
+        except (BrokenPipeError, TimeoutError, ConnectionError) as e:
             pass
             #logger.debug(f"{e} when streaming from peers", terminal=True)
             #logger.debug(traceback.format_exc())

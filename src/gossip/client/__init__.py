@@ -101,7 +101,7 @@ def start_gossip_client():
     # transport plugin handles the new peer
     add_onionr_thread(
         get_new_peers,
-        60, 'get_new_peers', initial_sleep=120)
+        120, 'get_new_peers', initial_sleep=120)
 
     # Start a new thread to stream blocks from peers
     # These blocks are being diffused and are stored in

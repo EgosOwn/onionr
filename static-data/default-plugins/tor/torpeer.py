@@ -3,12 +3,24 @@ import socks
 from gossip.peerset import gossip_peer_set
 import logger
 
+
 class HandleRevc:
     def __init__(self, sock):
         self.sock_recv = sock.recv
+        self.sock = sock
 
     def recv(self, *args, **kwargs):
-        return self.sock_recv(*args, **kwargs)
+        try:
+            got_data = self.sock_recv(*args, **kwargs)
+            if not len(got_data):
+                raise ConnectionError("Peer socket returned empty value")
+            return got_data
+        except Exception:
+            try:
+                gossip_peer_set.remove(self.sock)
+            except KeyError:
+                pass
+            raise
 
 
 class TorPeer:
@@ -37,7 +49,7 @@ class TorPeer:
                 pass
             else:
                 logger.debug(f"Could not create socket to peer {self.transport_address}", terminal=True)
-            raise
+            raise TimeoutError
         mock_recv = HandleRevc(s)
         s.recv = mock_recv.recv
         return s

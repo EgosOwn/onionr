@@ -24,9 +24,6 @@ def _do_ask_peer(peer):
         _ask_peer(peer)
     except TimeoutError:
         logger.debug("Timed out when asking for new peers")
-    except GeneralProxyError:
-        logger.debug("Proxy error")
-        logger.debug(format_exc(), terminal=True)
     except Exception:
         logger.error(format_exc(), terminal=True)
 
@@ -49,7 +46,7 @@ def _ask_peer(peer):
             'address': peer,
             'callback': connectpeer.connect_peer
         }
-        logger.info("Got new peer from exchange " + peer.decode('utf-8'), terminal=True)
+        #logger.info("Got new peer from exchange " + peer.decode('utf-8'), terminal=True)
         onionrevents.event('announce_rec', data=connect_data, threaded=True)
     s.close()
 
@@ -79,7 +76,7 @@ def get_new_peers():
     threads = []
     for peer in peers_we_ask:
         t = Thread(
-            target=_do_ask_peer, 
+            target=_do_ask_peer,
             args=[peer], daemon=True, name='_do_ask_peer')
         t.start()
         threads.append(t)
