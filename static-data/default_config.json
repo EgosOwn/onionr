@@ -8,19 +8,11 @@
     "general": {
         "allow_public_api_dns_rebinding": false,
         "announce_node": true,
-        "bind_address": "",
         "dev_mode": false,
         "display_header": true,
         "ephemeral_tunnels": false,
-        "insert_deniable_blocks": true,
-        "max_block_age": 2678400,
-        "minimum_block_pow": 5,
-        "minimum_send_pow": 5,
         "public_key": "",
-        "random_bind_ip": true,
         "security_level": 0,
-        "show_notifications": true,
-        "store_plaintext_blocks": true,
         "use_bootstrap_list": true
     },
     "log": {
@@ -34,50 +26,14 @@
         },
         "verbosity": "default"
     },
-    "onboarding": {
-        "done": false
-    },
-    "peers": {
-        "max_connect": 1000,
-        "max_stored_peers": 10000000,
-        "minimum_score": -100
-    },
     "plugins": {
         "disabled": ["unixtransport"],
         "enabled": []
-    },
-    "statistics": {
-        "i_dont_want_privacy": false,
-        "server": ""
     },
     "security": {
         "dandelion": {
             "strict": true,
             "enabled": true
         }
-    },
-    "timers": {
-        "getBlocks": 10,
-        "lookupBlocks": 25
-    },
-    "tor": {
-        "bridge_fingerprint": "",
-        "bridge_ip": "",
-        "existing_control_password": "",
-        "existing_control_port": 0,
-        "existing_socks_port": 0,
-        "use_bridge": false,
-        "use_existing_tor": false
-    },
-    "transports": {
-        "lan": true,
-        "sneakernet": true,
-        "tor": true
-    },
-    "ui": {
-        "animated_background": true,
-        "public_remote_enabled": false,
-        "public_remote_hosts": [],
-        "theme": "dark"
     }
 }

@@ -3,6 +3,7 @@ from threading import Thread
 from queue import Queue
 from queue import Empty
 
+from onionrplugins.onionrevents import event
 import blockdb
 
 if TYPE_CHECKING:
@@ -32,9 +33,8 @@ def store_blocks(dandelion_phase: 'DandelionPhase'):
     while not dandelion_phase.is_stem_phase() \
             and dandelion_phase.remaining_time() > 1:
         try:
-            blockdb.add_block_to_db(
-                new_queue.get(timeout=dandelion_phase.remaining_time() + 1)
-            )
+            bl = new_queue.get(timeout=dandelion_phase.remaining_time() + 1)
+            blockdb.add_block_to_db(bl)
+            event('gotblock', data=bl, threaded=True)
         except Empty:
             pass
-
