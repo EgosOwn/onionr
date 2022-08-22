@@ -38,8 +38,6 @@ def get_arguments() -> dict:
         ('version',): version.version,
         ('start', 'daemon'): daemonlaunch.start,
         ('stop', 'kill'): daemonlaunch.kill_daemon,
-        ('addid', 'add-id'): pubkeymanager.add_ID,
-        ('changeid', 'change-id'): pubkeymanager.change_ID,
         ('resetplugins', 'reset-plugins'): resetplugins.reset
     }
     return args
