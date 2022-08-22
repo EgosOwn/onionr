@@ -89,7 +89,6 @@ Master may be unstable, you should use the latest release tag. (checkout via git
 * Clone the git repo: `$ git clone https://gitlab.com/beardog/onionr --tags`
 * cd into install direction: `$ cd onionr/`
 * Install the Python dependencies ([virtualenv strongly recommended](https://virtualenv.pypa.io/en/stable/userguide/)): `$ pip3 install --require-hashes -r requirements.txt`
-* (Optional): Install desktop notification dependencies: `$ pip3 install --require-hashes -r requirements-notifications.txt`
 
 Require-hashes is suggested for security but is optional. The hashes are not correct for ARM machines.
 
