@@ -31,10 +31,8 @@ def generate_pub_key():
     return tuple of base32encoded pubkey, privkey
     """
     private_key = nacl.signing.SigningKey.generate()
-    public_key = private_key.verify_key.encode(
-        encoder=nacl.encoding.Base32Encoder())
-    return (public_key.decode(), private_key.encode(
-        encoder=nacl.encoding.Base32Encoder()).decode())
+    public_key = private_key.verify_key
+    return (public_key, private_key)
 
 
 def generate_deterministic(passphrase, bypassCheck=False):

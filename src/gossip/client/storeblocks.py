@@ -36,5 +36,6 @@ def store_blocks(dandelion_phase: 'DandelionPhase'):
             bl = new_queue.get(timeout=dandelion_phase.remaining_time() + 1)
             blockdb.add_block_to_db(bl)
             event('gotblock', data=bl, threaded=True)
+            event(f'gotblock{bl.type}', data=bl, threaded=True)
         except Empty:
             pass

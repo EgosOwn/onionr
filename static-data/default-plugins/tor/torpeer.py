@@ -48,7 +48,9 @@ class TorPeer:
             except KeyError:
                 pass
             else:
-                logger.debug(f"Could not create socket to peer {self.transport_address}", terminal=True)
+                logger.debug(
+                    f"Could not create socket to peer {self.transport_address}",
+                    terminal=True)
             raise TimeoutError
         mock_recv = HandleRevc(s)
         s.recv = mock_recv.recv
