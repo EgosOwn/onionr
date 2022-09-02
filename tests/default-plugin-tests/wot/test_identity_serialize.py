@@ -42,6 +42,7 @@ class IdentitySerializeTest(unittest.TestCase):
 
         identity = Identity(iden_priv_key, "test")
         serialized = identity.serialize()
+        print(serialized)
         self.assertEqual(len(serialized), expected_serialized_len)
         self.assertEqual(serialized, expected_serialized)
 

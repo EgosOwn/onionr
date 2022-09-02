@@ -1,2 +1,2 @@
-class InvalidWotBlock(Exception):
-    pass
+class InvalidWotBlock(Exception): pass
+class IdentitySerializationError(Exception): pass

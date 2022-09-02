@@ -35,7 +35,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-
+from wot import loadfromblocks, identities
 
 plugin_name = 'wot'
 PLUGIN_VERSION = '0.0.0'
@@ -50,3 +50,5 @@ def on_init(api, data=None):
     logger.info(
         f"Web of Trust Plugin v{PLUGIN_VERSION} enabled", terminal=True)
     onionrplugins.plugin_apis['wot'] = wot_test
+
+    list(map(lambda x: identities.add(x), loadfromblocks.load_identities()))

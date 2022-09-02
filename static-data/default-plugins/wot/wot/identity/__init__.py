@@ -9,6 +9,7 @@ from nacl.exceptions import BadSignatureError
 
 from .name import IdentityName
 from .name import max_len as max_name_len
+from exceptions import IdentitySerializationError
 from timestamp import WotTimestamp
 
 
@@ -18,7 +19,6 @@ short_identity_keys = {
     'key': 'k'
 }
 
-class WotSerializationError(Exception): pass
 
 
 class Identity:
@@ -57,7 +57,7 @@ class Identity:
         the public key and the date (used to prevent replay attacks)
         """
         if not self.private_key:
-            raise WotSerializationError("Cannot serialize public identity")
+            raise IdentitySerializationError("Cannot serialize public identity")
         signed = self.private_key.sign(
             self.name.zfill(max_name_len).encode('utf-8') + bytes(self.key) +
             str(int(time.time())).encode('utf-8'))
@@ -72,14 +72,14 @@ class Identity:
         key = VerifyKey(message[max_name_len:max_name_len + 32])
         date = WotTimestamp(message[max_name_len + 32:].decode('utf-8'))
         if date > time.time():
-            raise WotSerializationError(
+            raise IdentitySerializationError(
                 "Date in serialized identity is in the future")
         elif date <= 0:
-            raise WotSerializationError("Date in serialized identity is <= 0")
+            raise IdentitySerializationError("Date in serialized identity is <= 0")
         try:
             VerifyKey.verify(key, message, signature)
         except BadSignatureError:
-            raise WotSerializationError(
+            raise IdentitySerializationError(
                 "Signature in serialized identity is invalid")
         return cls(key, name)
 
