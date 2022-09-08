@@ -4,8 +4,6 @@ from typing import TYPE_CHECKING, Set
 
 from .identity import Identity
 from .blockprocessing import process_block
-
-
-# Set of identites within N-distance trust
-identities: Set['Identity'] = set()
+from .getbykey import get_identity_by_key
+from .identityset import identities
 

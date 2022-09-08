@@ -18,6 +18,7 @@ from identity import Identity
 from loadfromblocks import load_identities_from_blocks
 import blockdb
 
+
 def _safe_remove(path):
     try:
         os.remove(path)

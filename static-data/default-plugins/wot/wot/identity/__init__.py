@@ -19,8 +19,6 @@ short_identity_keys = {
     'key': 'k'
 }
 
-
-
 class Identity:
     def __init__(
             self,

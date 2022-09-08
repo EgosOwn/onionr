@@ -16,6 +16,7 @@ class WotCommand(IntEnum):
     ANNOUNCE = auto()
     REVOKE = auto()
 
+
 class WotPayload:
     def __init__(self, block_data: bytes):
         wot_command = WotCommand(
