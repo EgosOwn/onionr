@@ -15,11 +15,13 @@ sys.path.append(".")
 sys.path.append('static-data/default-plugins/wot/')
 sys.path.append("src/")
 from wot import identity
-from wot import process_block
 
 
-class BlockProcessingTest(unittest.TestCase):
+class TrustSignatureProcessing(unittest.TestCase):
     def test_block_processing_trust(self):
+        identity1 = identity.Identity()
+        identity2 = identity.Identity()
+        identity1.trust(identity2)
 
 
 unittest.main()
