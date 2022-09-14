@@ -1,8 +1,9 @@
+import traceback
 import logger
 
 from nacl.signing import VerifyKey
 
-from ..getbykey import get_identity_by_key
+from getbykey import get_identity_by_key
 
 
 def process_trust_signature(sig_payload: bytes):
@@ -27,6 +28,7 @@ def process_trust_signature(sig_payload: bytes):
     except KeyError:
         # if signer or signed identity are not in the identity set
         # this means they have not been announced yet
+        traceback.print_exc()
         pass
     else:
         # noop if already signed

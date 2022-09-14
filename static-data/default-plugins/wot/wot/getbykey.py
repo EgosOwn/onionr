@@ -5,7 +5,7 @@ from nacl.signing import VerifyKey
 if TYPE_CHECKING:
     from identity import Identity
 
-from .identityset import identities
+from identityset import identities
 
 
 def get_identity_by_key(
@@ -14,7 +14,6 @@ def get_identity_by_key(
     if not isinstance(key, VerifyKey):
         key = VerifyKey(key)
     for identity in identities:
-        print(identity)
         if bytes(identity.key) == bytes(key):
             return identity
     raise KeyError("Identity not found")

@@ -1,7 +1,8 @@
 import os, uuid
 from random import randint
 from time import sleep
-from nacl.signing import SigningKey
+from nacl.signing import SigningKey, VerifyKey
+import nacl
 import secrets
 import onionrblocks
 
@@ -13,35 +14,100 @@ os.environ["ONIONR_HOME"] = TEST_DIR
 import unittest
 import sys
 sys.path.append(".")
-sys.path.append('static-data/default-plugins/wot/')
+sys.path.append('static-data/default-plugins/wot/wot')
 sys.path.append("src/")
-from wot import identity
-from wot import identityset
+import identity
+from identityset import identities
+
 
 class TrustSignatureProcessing(unittest.TestCase):
-    def test_processing_trust_payloads(self):
+
+    def test_processing_trust_payload_without_announced_identity(self):
         # reset identity set
-        identityset.identities = set()
+        identities.clear()
 
         fake_pubkey = secrets.token_bytes(32)
         signing_key = SigningKey.generate()
 
-        identityset.identities.add(identity.Identity(bytes(signing_key.verify_key), "test"))
-        identityset.identities.add(identity.Identity(fake_pubkey, "test2"))
+        identities.add(identity.Identity(signing_key.verify_key, "test"))
+
+        trust_signature = signing_key.sign(fake_pubkey)
+        trust_signature_payload = bytes(signing_key.verify_key) + fake_pubkey + \
+            trust_signature.signature
+
+        for iden in identities:
+            if iden.key == signing_key.verify_key:
+                for i in iden.trusted:
+                    if i.key == VerifyKey(fake_pubkey):
+                        raise AssertionError("Signed identity found")
+                break
+        else:
+            raise AssertionError("Signing identity not found")
+
+    def test_processing_invalid_trust_payloads(self):
+        # reset identity set
+        identities.clear()
+
+        fake_pubkey = secrets.token_bytes(32)
+        signing_key = SigningKey.generate()
+
+        identities.add(identity.Identity(signing_key.verify_key, "test"))
+        identities.add(identity.Identity(VerifyKey(fake_pubkey), "test2"))
+
+        trust_signature = signing_key.sign(fake_pubkey)
+        trust_signature_payload = bytes(signing_key.verify_key) + fake_pubkey + \
+            trust_signature.signature
+        trust_signature_payload = bytearray(trust_signature_payload)
+        trust_signature_payload[64] = 0
+        trust_signature_payload = bytes(trust_signature_payload)
+
+
+        self.assertRaises(
+            nacl.exceptions.BadSignatureError, identity.process_trust_signature, trust_signature_payload)
+
+        for iden in identities:
+            if iden.key == signing_key.verify_key:
+                for i in iden.trusted:
+                    if i.key == VerifyKey(fake_pubkey):
+                        raise AssertionError("Signed identity found")
+                break
+        else:
+            raise AssertionError("Signing identity not found")
+
+    def test_processing_trust_payloads(self):
+        # reset identity set
+        identities.clear()
+
+        fake_pubkey = secrets.token_bytes(32)
+        signing_key = SigningKey.generate()
+
+        identities.add(identity.Identity(signing_key.verify_key, "test"))
+        identities.add(identity.Identity(VerifyKey(fake_pubkey), "test2"))
 
 
         trust_signature = signing_key.sign(fake_pubkey)
         trust_signature_payload = bytes(signing_key.verify_key) + fake_pubkey + \
             trust_signature.signature
+
         identity.process_trust_signature(trust_signature_payload)
 
-
-
-        for iden in identityset.identities:
+        for iden in identities:
             if iden.key == signing_key.verify_key:
-                self.assertIn(fake_pubkey, iden.trusted)
+
+                for i in iden.trusted:
+                    if i.key == VerifyKey(fake_pubkey):
+                        break
+                else:
+                    raise AssertionError("Signed identity not found")
                 break
+        else:
+            raise AssertionError("Signing identity not found")
 
 
 
 unittest.main()
+
+
+"""
+
+"""

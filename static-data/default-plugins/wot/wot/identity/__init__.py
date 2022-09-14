@@ -10,8 +10,8 @@ from nacl.exceptions import BadSignatureError
 from .processtrustsignature import process_trust_signature
 from .name import IdentityName
 from .name import max_len as max_name_len
-from ..exceptions import IdentitySerializationError
-from ..timestamp import WotTimestamp
+from exceptions import IdentitySerializationError
+from timestamp import WotTimestamp
 
 
 short_identity_keys = {
