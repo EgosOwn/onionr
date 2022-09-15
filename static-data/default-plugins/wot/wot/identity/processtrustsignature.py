@@ -4,22 +4,27 @@ import logger
 from nacl.signing import VerifyKey
 
 from getbykey import get_identity_by_key
+from blockprocessingevent import WotCommand
 
 
 def process_trust_signature(sig_payload: bytes):
-    if len(sig_payload) != 128:
+    if len(sig_payload) != 129:
         logger.warn(
             f'Signature size is invalid for a signed identity')
 
+    # verify that this is a signature for a trust command
+    if sig_payload[0] != WotCommand.TRUST:
+        logger.warn(
+            f'Invalid command in signature')
     # signer is first 32 bytes
-    signer = VerifyKey(sig_payload[:32])
+    signer = VerifyKey(sig_payload[1:33])
     # signed is next 32 bytes
-    signed = sig_payload[32:64]
+    signed = sig_payload[33:65]
     # signature is last 64 bytes
-    signature = sig_payload[64:]
+    signature = sig_payload[65:]
 
     # If bad signature, it raises nacl.exceptions.BadSignatureError
-    signer.verify(signed, signature)
+    signer.verify(int.to_bytes(sig_payload[0], 1, 'big') + signed, signature)
 
     # if good signature
     try:

@@ -7,12 +7,12 @@ import msgpack
 if TYPE_CHECKING:
     from onionrblocks import Block
 
-from .exceptions import InvalidWotBlock
+from exceptions import InvalidWotBlock
 
 
 class WotCommand(IntEnum):
     TRUST = 1
-    UNTRUST = auto()
+    REVOKE_TRUST = auto()
     ANNOUNCE = auto()
     REVOKE = auto()
 
