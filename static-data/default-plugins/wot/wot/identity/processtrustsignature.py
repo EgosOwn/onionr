@@ -16,6 +16,7 @@ def process_trust_signature(sig_payload: bytes):
     if sig_payload[0] != WotCommand.TRUST:
         logger.warn(
             f'Invalid command in signature')
+        return
     # signer is first 32 bytes
     signer = VerifyKey(sig_payload[1:33])
     # signed is next 32 bytes

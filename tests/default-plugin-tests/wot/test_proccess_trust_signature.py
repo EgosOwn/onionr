@@ -18,7 +18,7 @@ sys.path.append(".")
 sys.path.append('static-data/default-plugins/wot/wot')
 sys.path.append("src/")
 import identity
-from identityset import identities
+from identity import identities
 
 
 class WotCommand(IntEnum):

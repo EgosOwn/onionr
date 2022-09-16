@@ -1,11 +1,11 @@
-from typing import TYPE_CHECKING, Iterable, Union
+from typing import TYPE_CHECKING, Union
 
 from nacl.signing import VerifyKey
 
 if TYPE_CHECKING:
     from identity import Identity
 
-from identityset import identities
+from identity.identityset import identities
 
 
 def get_identity_by_key(

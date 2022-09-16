@@ -7,9 +7,8 @@ import nacl.exceptions
 import logger
 import blockdb
 
-from identity import Identity, processtrustsignature
+from identity import Identity, processtrustsignature, identities
 from exceptions import IdentitySerializationError
-from identityset import identities
 from getbykey import get_identity_by_key
 
 

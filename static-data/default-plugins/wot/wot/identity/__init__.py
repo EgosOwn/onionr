@@ -8,8 +8,10 @@ from nacl.encoding import Base32Encoder
 from nacl.exceptions import BadSignatureError
 
 from .processtrustsignature import process_trust_signature
+from .proccessrevokesignature import process_revoke_signature
 from .name import IdentityName
 from .name import max_len as max_name_len
+from .identityset import IdentitySet, identities
 from exceptions import IdentitySerializationError
 from timestamp import WotTimestamp
 
@@ -26,11 +28,14 @@ class Identity:
             key: Union[SigningKey, VerifyKey],
             name: 'IdentityName',
             created_date: WotTimestamp = None):
-        self.trusted: Set[Identity] = set()
+        self.trusted: Set[Identity] = IdentitySet()
         self.name = IdentityName(name)
         self.created_date = created_date
 
         self.private_key = self.key = None
+
+        if isinstance(key, bytes):
+            self.key = VerifyKey(key)
 
         # SigningKey and VerifyKey have minimal memory overhead
         # so we do not need to make them properties

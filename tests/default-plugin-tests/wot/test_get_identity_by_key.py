@@ -18,7 +18,7 @@ import onionrblocks
 from blockdb import block_db_path
 from identity import Identity
 from getbykey import get_identity_by_key
-from identityset import identities as iden_set
+from identity.identityset import identities
 import blockdb
 
 
@@ -29,7 +29,7 @@ class GetIdentityByKeyTest(unittest.TestCase):
         iden_public = iden_priv_key.verify_key
         identity = Identity(iden_priv_key, "test")
 
-        iden_set.add(identity)
+        identities.add(identity)
 
         self.assertIsInstance(get_identity_by_key(iden_public), Identity)
 
