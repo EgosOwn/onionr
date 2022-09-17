@@ -15,15 +15,16 @@ try:
 except ImportError:
     pass
 
+
+import os
+import cProfile
+import threading
+
+onionr_profiling = os.getenv("ONIONR_PROFILING", False)
+
+
 import sys
 
-try:
-    import sqlite3
-except ModuleNotFoundError:
-    sys.stderr.write(
-        'Error, Onionr requires Sqlite3-enabled Python.\n' +
-        'https://stackoverflow.com/a/1875095\n')
-    sys.exit(1)
 """
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -42,6 +43,27 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 # Set the user's locale for encoding reasons
 import locale  # noqa
 locale.setlocale(locale.LC_ALL, '')  # noqa
+
+import traceback
+import signal
+
+def sigusr_stacktrace(signum, frame):
+    """Print stacktrace on SIGUSR1"""
+    stack_trace_file = os.getenv('ONIONR_STACK_TRACE_FILE', False)
+    for th in threading.enumerate():
+        if stack_trace_file:
+            with open(stack_trace_file, 'a') as f:
+                f.write(f'Thread: {th.name}')
+                f.write('-' * 44 + '')
+                traceback.print_stack(sys._current_frames()[th.ident], file=f)
+        else:
+            print(f'Thread: {th.name}')
+            print('-' * 44)
+            traceback.print_stack(sys._current_frames()[th.ident])
+    #print(traceback.format_stack(frame))
+
+signal.signal(signal.SIGUSR1, sigusr_stacktrace)
+
 
 ran_as_script = False
 if __name__ == "__main__": ran_as_script = True
@@ -83,7 +105,8 @@ import config  # noqa
 from utils import identifyhome  # noqa
 import filepaths  # noqa
 
-if config.get('advanced.security_auditing', True):
+if config.get('advanced.security_auditing', True) \
+        and not onionr_profiling:
     try:
         bigbrother.enable_ministries()
     except onionrexceptions.PythonVersion:
@@ -99,7 +122,10 @@ def onionr_main():
 
 
 if ran_as_script:
-    onionr_main()
+    if onionr_profiling:
+        cProfile.run('onionr_main()')
+    else:
+        onionr_main()
 
     config.reload()
 
