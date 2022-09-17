@@ -85,9 +85,12 @@ def daemon():
 
     try:
         while True:
+            # Mainly for things like repls
+            events.event('primary_loop', threaded=False)
             sleep(60)
     except KeyboardInterrupt:
         pass
+
 
     cleanup.delete_run_files()
     if security_level >= 2:
