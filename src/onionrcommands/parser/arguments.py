@@ -5,7 +5,6 @@ Sets CLI arguments for Onionr
 from typing import Callable
 
 from .. import onionrstatistics, version, daemonlaunch
-from .. import pubkeymanager  # commands to add or change id
 from .. import resetplugins  # command to reinstall default plugins
 
 

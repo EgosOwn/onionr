@@ -44,11 +44,3 @@ def create_dirs():
                     " already exists and is not owned by the same user")
 
     os.chmod(home, stat.S_IRWXU)
-
-    from onionrsetup import dbcreator
-
-    for db in dbcreator.create_funcs:
-        try:
-            db()
-        except FileExistsError:
-            pass

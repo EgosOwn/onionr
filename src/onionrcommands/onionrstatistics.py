@@ -4,10 +4,7 @@ This module defines commands to show stats/details about the local node
 """
 import os
 import logger
-from onionrutils import mnemonickeys
 from utils import sizeutils, getconsolewidth, identifyhome
-from coredb import keydb
-import onionrcrypto
 import config
 import onionrvalues
 from filepaths import lock_file
@@ -129,8 +126,6 @@ def show_details():
     """
     details = {
         'Data directory': identifyhome.identify_home(),
-        'Public Key': onionrcrypto.pub_key.replace('=', ''),
-        'Human-readable Public Key': mnemonickeys.get_human_readable_ID()
     }
 
     for detail in details:

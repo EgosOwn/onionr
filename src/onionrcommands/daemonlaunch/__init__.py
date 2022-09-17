@@ -21,7 +21,6 @@ from utils import identifyhome
 import filepaths
 import onionrvalues
 from onionrutils import cleanup
-from onionrcrypto import getourkeypair
 from onionrthreads import add_onionr_thread
 from blockdb.blockcleaner import clean_block_database
 from .. import version
@@ -51,10 +50,6 @@ def _show_info_messages():
 
     if onionrvalues.DEVELOPMENT_MODE:
         logger.warn('Development mode enabled', timestamp=False, terminal=True)
-
-    logger.info('Using public key: %s' %
-                (logger.colors.underline +
-                 getourkeypair.get_keypair()[0][:52]))
 
 
 def daemon():
