@@ -1,6 +1,6 @@
 """Onionr - Private P2P Communication.
 
-Default example plugin for devs or to test blocks
+Web of Trust Plugin
 """
 import sys
 import os
@@ -35,10 +35,10 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-from wot import loadfromblocks, identities
-
 plugin_name = 'wot'
 PLUGIN_VERSION = '0.0.0'
+from wot import loadfromblocks, identities
+
 
 
 def wot_test(arg: int):

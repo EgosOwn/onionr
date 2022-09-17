@@ -7,7 +7,7 @@ import msgpack
 if TYPE_CHECKING:
     from onionrblocks import Block
 
-from exceptions import InvalidWotBlock
+from wot.exceptions import InvalidWotBlock
 
 
 class WotCommand(IntEnum):

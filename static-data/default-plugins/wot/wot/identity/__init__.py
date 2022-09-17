@@ -7,13 +7,14 @@ from nacl.signing import SigningKey, VerifyKey
 from nacl.encoding import Base32Encoder
 from nacl.exceptions import BadSignatureError
 
-from .processtrustsignature import process_trust_signature
-from .proccessrevokesignature import process_revoke_signature
-from .name import IdentityName
-from .name import max_len as max_name_len
-from .identityset import IdentitySet, identities
-from exceptions import IdentitySerializationError
-from timestamp import WotTimestamp
+from wot.identity.processtrustsignature import process_trust_signature
+from wot.identity.processrevokesignature import process_revoke_signature
+from wot.identity.processidentityannounce import process_identity_announce
+from wot.identity.name import IdentityName
+from wot.identity.name import max_len as max_name_len
+from wot.identity.identityset import IdentitySet, identities
+from wot.exceptions import IdentitySerializationError
+from wot.timestamp import WotTimestamp
 
 
 short_identity_keys = {
@@ -58,7 +59,7 @@ class Identity:
     def serialize(self) -> bytes:
         """
         A serialized identity is the name signed by the private key plus
-        the public key and the date (used to prevent replay attacks)
+        the public key
         """
         if not self.private_key:
             raise IdentitySerializationError("Cannot serialize public identity")

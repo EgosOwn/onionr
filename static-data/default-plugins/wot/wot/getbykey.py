@@ -5,7 +5,7 @@ from nacl.signing import VerifyKey
 if TYPE_CHECKING:
     from identity import Identity
 
-from identity.identityset import identities
+from wot.identity.identityset import identities
 
 
 def get_identity_by_key(

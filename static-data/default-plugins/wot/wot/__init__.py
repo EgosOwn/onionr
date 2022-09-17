@@ -4,5 +4,5 @@ from typing import TYPE_CHECKING, Set
 
 from .identity import Identity
 from .getbykey import get_identity_by_key
-from .identityset import identities
+from .identity import identities
 

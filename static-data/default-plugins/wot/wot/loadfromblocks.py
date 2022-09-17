@@ -7,9 +7,9 @@ import nacl.exceptions
 import logger
 import blockdb
 
-from identity import Identity, processtrustsignature, identities
-from exceptions import IdentitySerializationError
-from getbykey import get_identity_by_key
+from wot.identity import Identity, processtrustsignature, identities
+from wot.exceptions import IdentitySerializationError
+from wot.getbykey import get_identity_by_key
 
 
 def load_identity_from_block(block) -> Identity:

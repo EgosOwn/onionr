@@ -3,8 +3,8 @@ import logger
 
 from nacl.signing import VerifyKey
 
-from getbykey import get_identity_by_key
-from blockprocessingevent import WotCommand
+from wot.getbykey import get_identity_by_key
+from wot.blockprocessingevent import WotCommand
 
 
 def process_trust_signature(sig_payload: bytes):

@@ -4,8 +4,8 @@ from nacl.signing import VerifyKey
 
 import logger
 
-from getbykey import get_identity_by_key
-from blockprocessingevent import WotCommand
+from wot.getbykey import get_identity_by_key
+from wot.blockprocessingevent import WotCommand
 
 
 def process_revoke_signature(revoke_signature_payload):
