@@ -1,6 +1,8 @@
 from os.path import exists
 from socket import AF_UNIX, SOCK_STREAM, socket
 
+from gossip.peerset import gossip_peer_set
+
 class UnixPeer:
 
     def __init__(self, socket_file):
@@ -14,8 +16,12 @@ class UnixPeer:
     def get_socket(self, connect_timeout) -> socket:
         s = socket(AF_UNIX, SOCK_STREAM)
         #s.settimeout(connect_timeout)
-        s.connect(self.transport_address)
-        return s
+        try:
+            s.connect(self.transport_address)
+        except FileNotFoundError:
+            gossip_peer_set.remove(self)
+        else:
+            return s
 
     def __hash__(self):
         return hash(self.transport_address)
