@@ -15,10 +15,10 @@ os.environ["ONIONR_HOME"] = TEST_DIR
 import unittest
 import sys
 sys.path.append(".")
-sys.path.append('static-data/default-plugins/wot/wot')
+sys.path.append('static-data/default-plugins/wot/')
 sys.path.append("src/")
-import identity
-from identity.identityset import identities
+from wot import identity
+from wot.identity.identityset import identities
 
 
 class WotCommand(IntEnum):

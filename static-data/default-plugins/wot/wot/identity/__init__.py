@@ -7,9 +7,6 @@ from nacl.signing import SigningKey, VerifyKey
 from nacl.encoding import Base32Encoder
 from nacl.exceptions import BadSignatureError
 
-from wot.identity.processtrustsignature import process_trust_signature
-from wot.identity.processrevokesignature import process_revoke_signature
-from wot.identity.processidentityannounce import process_identity_announce
 from wot.identity.name import IdentityName
 from wot.identity.name import max_len as max_name_len
 from wot.identity.identityset import IdentitySet, identities

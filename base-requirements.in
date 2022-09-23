@@ -1,13 +1,8 @@
 PyNaCl==1.5.0
-PySocks==1.7.1
-stem==1.8.0
-unpaddedbase32==0.2.0
-niceware==0.2.1
 psutil==5.9.1
 filenuke==0.0.0
 ujson==5.4.0
 cffi==1.15.1
 onionrblocks==7.0.0
 ordered-set==4.1.0
-cherrypy==18.8.0
 json-rpc==1.13.0

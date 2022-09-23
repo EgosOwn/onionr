@@ -15,10 +15,11 @@ os.environ["ONIONR_HOME"] = TEST_DIR
 import unittest
 import sys
 sys.path.append(".")
-sys.path.append('static-data/default-plugins/wot/wot')
+sys.path.append('static-data/default-plugins/wot/')
 sys.path.append("src/")
-import identity
-from identity.identityset import identities
+from wot.identityprocessing import process_identity_announce
+from wot import identity
+from wot.identity.identityset import identities
 
 
 class WotCommand(IntEnum):
@@ -34,16 +35,14 @@ class TestAnnounceIdentityPayload(unittest.TestCase):
         identities.clear()
 
         signing_key = SigningKey.generate()
-        main_iden = identity.Identity(signing_key.verify_key, "test")
+        main_iden = identity.Identity(signing_key, "test")
 
         wot_cmd = int(WotCommand.ANNOUNCE).to_bytes(1, 'big')
-        announce_signature = signing_key.sign(wot_cmd + bytes(main_iden))
-        announce_signature_payload = wot_cmd + bytes(signing_key.verify_key) + \
-            bytes(announce_signature)
+        serialized_iden = wot_cmd + main_iden.serialize()
 
-        identity.process_identity_announce(announce_signature_payload)
+        process_identity_announce(serialized_iden)
 
-        self.assertEqual(main_iden, identities[0])
+        self.assertEqual(bytes(main_iden.key), bytes(list(identities)[0].key))
         self.assertEqual(len(identities), 1)
         self.assertEqual(len(main_iden.trusted), 0)
 

@@ -11,6 +11,7 @@ def process_trust_signature(sig_payload: bytes):
     if len(sig_payload) != 129:
         logger.warn(
             f'Signature size is invalid for a signed identity')
+        return
 
     # verify that this is a signature for a trust command
     if sig_payload[0] != WotCommand.TRUST:
