@@ -1,5 +1,6 @@
 psutil==5.9.1
-filenuke==0.0.0
 ujson==5.4.0
-onionrblocks==7.0.0
 ordered-set==4.1.0
+# These two are also by Kevin
+filenuke==0.0.0
+onionrblocks==7.0.0

@@ -88,9 +88,9 @@ Master may be unstable, you should use the latest release tag. (checkout via git
 * You may need build-essentials or the equivalent of your platform
 * Clone the git repo: `$ git clone https://gitlab.com/beardog/onionr --tags`
 * cd into install direction: `$ cd onionr/`
-* Install the Python dependencies ([virtualenv strongly recommended](https://virtualenv.pypa.io/en/stable/userguide/)): `$ pip3 install --require-hashes -r requirements.txt`
+* Install the Python dependencies ([virtualenv strongly recommended](https://virtualenv.pypa.io/en/stable/userguide/)): `$ pip3 install --require-hashes -r requirements-x86-all-plugins.txt`
 
-Require-hashes is suggested for security but is optional. The hashes are not correct for ARM machines.
+Require-hashes is suggested for supply-chain security but is optional. The hashes are not correct for ARM machines. If you are just running a node or want a bare-bones install you can use requirements-base-x86.txt and selectively install the requirements.txt files in static-data/official-plugins/ subdirectories
 
 ## Run Onionr
 
