@@ -10,7 +10,7 @@ os.makedirs(TEST_DIR)
 
 import unittest
 import sys
-sys.path.append('static-data/default-plugins/wot/wot')
+sys.path.append('static-data/official-plugins/wot/wot')
 sys.path.append("src/")
 import onionrblocks
 from blockdb import block_db_path

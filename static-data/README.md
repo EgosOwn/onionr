@@ -2,7 +2,7 @@
 
 This folder contains whatever static files are needed by Onionr and default plugins.
 
-default-plugins/: default plugin program files to be installed on first Onionr run.
+official-plugins/: default plugin program files to be installed on first Onionr run.
 
 www/: onionr web ui static files including those of default plugins
 

@@ -40,32 +40,9 @@ def block_exec(event, info):
     if untrusted_exec:
         return
     whitelisted_code = [
-                        'netrc.py',
-                        'shlex.py',
-                        'gzip.py',
-                        '<werkzeug routing>',
-                        'werkzeug/test.py',
-                        'multiprocessing/popen_fork.py',
-                        'multiprocessing/util.py',
-                        'multiprocessing/connection.py',
-                        'multiprocessing/queues.py',
-                        'multiprocessing/synchronize.py',
-                        'onionrutils/escapeansi.py',
-                        'stem/connection.py',
-                        'stem/response/add_onion.py',
-                        'stem/response/authchallenge.py',
-                        'stem/response/getinfo.py',
-                        'stem/response/getconf.py',
-                        'stem/response/mapaddress.py',
-                        'stem/response/protocolinfo.py',
-                        'apport/__init__.py',
-                        'apport/report.py'
+
                        ]
     whitelisted_source = [
-        'ZABaAGQBZAJsAW0CWgIBAHoGZAFkA2wDWgRXAG4LBABlBXkZAQABAAEAZARaBlkAbgN3AGQFWgZkAWQGbAdtCFoIAQBkAWQDbAlaCWQBZAdsCm0LWgwBAAkAZQmgDWQIZAWhAnM1ZARaBmUIgwBkCRcAWg5kEmQMZQ9kDWUPZgRkDmQPhAVaEGQTZBBkEYQBWhFkA1MA',
-        'RwBkAGQBhABkAYMCWgBkAlMA',
-        'ZABaAGQBZAJsAVoBZAFkAmwCWgJkAWQCbANaA2QBZAJsBFoEZAFkAmwFWgVkAWQCbAZaBmQBZAJsB1oIZAFkAmwJWghkAWQCbApaCGQBZAJsC1oIZANaDGQEWg1kBWQCZAJkBmQCZQ1kB2QIZAJmCWQJZAqEAVoOZAVkBmQCZQ1kB2QIZgZkC2QMhAFaD2QCUwA=',
-        'ZABaAGQBZAJsAVoBZAFkAmwCWgJkAWQCbANaA2QBZAJsBFoEZAFkAmwFWgVkAWQCbAZaBmQBZAJsB1oIZAFkAmwJWghkAWQCbApaCGQBZANsC20MWgxtDVoNbQ5aDm0PWg9tEFoQbRFaEQEAZARaEmQFWhNkBmQCZAJkB2QCZRNkCGQJZAJmCWQKZRRkC2UPZRBlFBkAGQBkDGUPZRQZAGQNZRVkDmUPZQ1lFGcBZAJmAhkAGQBkD2UVZBBlFmQRZRZkEmUPZRQZAGQTZQRqF2YUZBRkFYQFWhhkBmQHZAJlE2QIZAlmBmQWZQ5lFGURZRRlEGUUGQBmAhkAZgIZAGQKZRRkDWUVZA5lD2UNZRRnAWQCZgIZABkAZA9lFWQQZRZkEWUWZBNlBGoXZhBkF2QYhAVaGWQCUwA='
     ]
     home = identifyhome.identify_home()
 

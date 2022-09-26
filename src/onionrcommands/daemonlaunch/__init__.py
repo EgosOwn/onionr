@@ -20,7 +20,6 @@ from onionrplugins import onionrevents as events
 from utils import identifyhome
 import filepaths
 import onionrvalues
-from onionrutils import cleanup
 from onionrthreads import add_onionr_thread
 from blockdb.blockcleaner import clean_block_database
 from .. import version
@@ -43,6 +42,21 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
+def _safe_remove(path):
+    try:
+        os.remove(path)
+    except FileNotFoundError:
+        pass
+
+
+def delete_run_files():
+    """Delete run files, do not error if not found.
+
+    Test: test_cleanup.py
+    """
+    _safe_remove(filepaths.lock_file)
+    _safe_remove(filepaths.gossip_server_socket_file)
+    _safe_remove(filepaths.pid_file)
 
 def _show_info_messages():
     version.version(verbosity=5, function=logger.info)
@@ -92,7 +106,7 @@ def daemon():
         pass
 
 
-    cleanup.delete_run_files()
+    delete_run_files()
     if security_level >= 2:
         filenuke.nuke.clean_tree(identifyhome.identify_home())
 

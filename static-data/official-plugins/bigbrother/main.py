@@ -3,10 +3,11 @@
 Processes interpreter hook events to detect security leaks
 """
 import sys
+import os
 from typing import Iterable
 
-from onionrexceptions import PythonVersion
-from . import ministry
+import logger
+
 """
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -21,15 +22,11 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
+sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
+import ministry
 
-
-def _auditing_supported():
-    try:
-        sys.audit
-        sys.addaudithook
-    except AttributeError:
-        raise PythonVersion('Auditing not supported interpreter')
-
+plugin_name = 'bigbrother'
+PLUGIN_VERSION = '0.0.0'
 
 def sys_hook_entrypoint(event, info):
     """Entrypoint for big brother sys auditors."""
@@ -47,5 +44,10 @@ def sys_hook_entrypoint(event, info):
 def enable_ministries(disable_hooks: Iterable = None):
     """Enable auditors."""
     disable_hooks = disable_hooks or []
-    _auditing_supported()  # raises PythonVersion exception if <3.8
     sys.addaudithook(sys_hook_entrypoint)
+
+
+def on_init(api, data=None):
+    enable_ministries()
+    logger.info(
+        "Big brother enabled, blocking unsafe Python code.", terminal=True)

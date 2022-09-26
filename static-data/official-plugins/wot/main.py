@@ -6,10 +6,8 @@ import sys
 import os
 import locale
 from time import sleep
-import traceback
 from typing import Set, TYPE_CHECKING
 from threading import Thread, local
-import blockdb
 from gossip.peerset import gossip_peer_set
 
 
@@ -37,18 +35,14 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 plugin_name = 'wot'
 PLUGIN_VERSION = '0.0.0'
-from wot import loadfromblocks, identities
-
-
-
-def wot_test(arg: int):
-    return arg + 1
+from wot.identity import identities
+from wot.loadfromblocks import load_identities_from_blocks
 
 
 
 def on_init(api, data=None):
     logger.info(
         f"Web of Trust Plugin v{PLUGIN_VERSION} enabled", terminal=True)
-    onionrplugins.plugin_apis['wot'] = wot_test
+    #onionrplugins.plugin_apis['wot'] = wot_test
 
-    list(map(lambda x: identities.add(x), loadfromblocks.load_identities()))
+    list(map(lambda x: identities.add(x), load_identities_from_blocks()))

@@ -1,19 +1,7 @@
 {
-    "advanced": {
-        "security_auditing": false
-    },
-    "allocations": {
-        "disk": 1073741824
-    },
     "general": {
-        "allow_public_api_dns_rebinding": false,
-        "announce_node": true,
-        "dev_mode": false,
         "display_header": true,
-        "ephemeral_tunnels": false,
-        "public_key": "",
-        "security_level": 0,
-        "use_bootstrap_list": true
+        "security_level": 0
     },
     "log": {
         "console": {
@@ -27,7 +15,7 @@
         "verbosity": "default"
     },
     "plugins": {
-        "disabled": ["unixtransport"],
+        "disabled": ["unixtransport", "repl", "bigbrother"],
         "enabled": []
     },
     "security": {

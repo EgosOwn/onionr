@@ -26,10 +26,10 @@ from utils.readstatic import get_static_dir
 
 def setup_default_plugins():
     # Copy default plugins into plugins folder
-    if os.path.exists(get_static_dir() + '/default-plugins/'):
-        names = [f for f in os.listdir(get_static_dir() + '/default-plugins/')]
+    if os.path.exists(get_static_dir() + '/official-plugins/'):
+        names = [f for f in os.listdir(get_static_dir() + '/official-plugins/')]
         shutil.copytree(
-            get_static_dir() + '/default-plugins/',
+            get_static_dir() + '/official-plugins/',
             plugins.get_plugins_folder(), dirs_exist_ok=True)
 
 

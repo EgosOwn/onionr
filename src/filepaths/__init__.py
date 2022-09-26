@@ -7,27 +7,8 @@ app_root = os.path.dirname(os.path.realpath(__file__)) + '/../../'
 
 gossip_server_socket_file = home + 'gossip-server.sock'
 
-usage_file = home + 'disk-usage.txt'
-contacts_location = home + 'contacts/'
-cached_storage = home + 'cachedstorage.dat'
-export_location = home + 'block-export/'
-upload_list = home + 'upload-list.json'
 config_file = home + 'config.json'
-daemon_mark_file = home + '/daemon-true.txt'
 lock_file = home + 'onionr.lock'
 pid_file = home + 'onionr.pid'
 
-site_cache = home + 'onionr-sites.txt'
-
-tor_hs_loc = home + 'hs/'
-tor_hs_address_file = home + 'hs/hostname'
-
-keys_file = home + 'keys.txt'
-
-onboarding_mark_file = home + 'onboarding-completed'
-
 log_file = home + 'onionr.log'
-
-ephemeral_services_file = home + 'ephemeral-services.list'
-
-restarting_indicator = home + "is-restarting"

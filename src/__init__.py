@@ -95,7 +95,6 @@ if sys.version_info[0] == 2 or sys.version_info[1] < min_ver:
 from utils import createdirs
 createdirs.create_dirs()
 
-import bigbrother  # noqa
 from onionrcommands import parser  # noqa
 from onionrplugins import onionrevents as events  # noqa
 
@@ -104,13 +103,6 @@ from onionrplugins import onionrevents as events  # noqa
 import config  # noqa
 from utils import identifyhome  # noqa
 import filepaths  # noqa
-
-if config.get('advanced.security_auditing', True) \
-        and not onionr_profiling:
-    try:
-        bigbrother.enable_ministries()
-    except onionrexceptions.PythonVersion:
-        pass
 
 
 def onionr_main():

@@ -7,8 +7,6 @@ print("Test directory:", TEST_DIR)
 os.environ["ONIONR_HOME"] = TEST_DIR
 from utils import createdirs
 createdirs.create_dirs()
-from onionrcrypto import getourkeypair
-getourkeypair.get_keypair()
 from utils import readstatic
 import onionrblocks
 class OnionrConfig(unittest.TestCase):
@@ -21,11 +19,8 @@ class OnionrConfig(unittest.TestCase):
         with open(TEST_DIR + 'config.json') as conf:
             conf = json.loads(conf.read())
             self.assertEqual(conf['advanced']['security_auditing'], True)
-            self.assertEqual(conf['allocations']['disk'], 1073741824)
-            self.assertEqual(conf['allocations']['disk'], 1073741824)
             self.assertEqual(conf['general']['announce_node'], True)
             self.assertEqual(conf['general']['bind_address'], '')
-            self.assertEqual(conf['general']['dev_mode'], False)
             self.assertEqual(conf['general']['display_header'], True)
             self.assertEqual(conf['general']['ephemeral_tunnels'], False)
             self.assertEqual(conf['general']['hide_created_blocks'], True)
@@ -37,7 +32,6 @@ class OnionrConfig(unittest.TestCase):
             self.assertEqual(conf['general']['security_level'], 0)
             self.assertEqual(conf['general']['show_notifications'], True)
             self.assertEqual(conf['general']['store_plaintext_blocks'], True)
-            self.assertEqual(conf['general']['use_bootstrap_list'], True)
             self.assertEqual(conf['general']['use_subprocess_pow_if_possible'], True)
             self.assertEqual(conf['log']['console']['color'], True)
             self.assertEqual(conf['log']['console']['output'], True)

@@ -10,7 +10,7 @@ os.environ["ONIONR_HOME"] = TEST_DIR
 
 import unittest
 import sys
-sys.path.append('static-data/default-plugins/wot/wot')
+sys.path.append('static-data/official-plugins/wot/wot')
 sys.path.append("src/")
 from identity import Identity
 from identity.name import max_len

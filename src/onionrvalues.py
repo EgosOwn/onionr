@@ -38,9 +38,3 @@ DATABASE_LOCK_TIMEOUT = 60
 
 BLOCK_EXPORT_FILE_EXT = '.onionr'
 
-# Begin OnionrValues migrated values
-
-if os.path.exists(filepaths.daemon_mark_file):
-    SCRIPT_NAME = 'start-daemon.sh'
-else:
-    SCRIPT_NAME = 'onionr.sh'

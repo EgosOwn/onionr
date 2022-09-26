@@ -10,14 +10,11 @@ import unittest, json
 
 from utils import identifyhome, createdirs
 createdirs.create_dirs()
-from onionrutils.cleanup import delete_run_files
+from onionrcommands.daemonlaunch import delete_run_files
 import filepaths
 
 
 run_file_paths = [
-    filepaths.public_API_host_file,
-    filepaths.private_API_host_file,
-    filepaths.daemon_mark_file,
     filepaths.lock_file]
 
 def _run_paths_exist():

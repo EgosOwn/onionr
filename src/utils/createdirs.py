@@ -5,10 +5,7 @@ Create required Onionr directories
 import os
 import stat
 
-from onionrplugins import get_plugins_folder
-
 from . import identifyhome
-import filepaths
 import onionrexceptions
 """
 This program is free software: you can redistribute it and/or modify
@@ -31,9 +28,7 @@ def create_dirs():
     """Create onionr data-related directories in
     order of the hardcoded list below,
     then trigger creation of DBs"""
-    gen_dirs = [home,
-                filepaths.contacts_location,
-                filepaths.export_location]
+    gen_dirs = [home]
     for path in gen_dirs:
         if not os.path.exists(path):
             os.makedirs(path)
