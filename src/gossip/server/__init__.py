@@ -120,14 +120,13 @@ def gossip_server():
                         if blockdb.has_block(block_id):
                             writer.write(int(0).to_bytes(1, 'big'))
                         else:
-                            
                             writer.write(int(1).to_bytes(1, 'big'))
                             await writer.drain()
                             block_size = int(await asyncio.wait_for(reader.readexactly(constants.BLOCK_SIZE_LEN), 30))
                             block_data = await reader.readexactly(block_size)
 
                             Thread(
-                                target=add_block_to_db, 
+                                target=add_block_to_db,
                                 args=[
                                     Block(block_id, block_data, auto_verify=True)]
                                     ).start()
@@ -137,6 +136,7 @@ def gossip_server():
             await writer.drain()
         except BrokenPipeError:
             pass
+        writer.close()
 
     async def main():
 
