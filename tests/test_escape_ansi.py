@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import sys, os, random
+import sys, os
 sys.path.append(".")
 sys.path.append("src/")
 import unittest, uuid
@@ -12,7 +12,7 @@ from utils import identifyhome, createdirs
 from onionrsetup import setup_config
 createdirs.create_dirs()
 
-from onionrutils.escapeansi import escape_ANSI
+from utils.escapeansi import escape_ANSI
 
 class Colors:
     """ ANSI color codes """
@@ -41,7 +41,7 @@ class Colors:
     CROSSED = "\033[9m"
     END = "\033[0m"
 
-class OnionrForwardSecrecyTests(unittest.TestCase):
+class OnionrTestEscapeAnsi(unittest.TestCase):
     def test_no_replace(self):
         msg = 'test message'
         self.assertEqual(escape_ANSI(msg), msg)

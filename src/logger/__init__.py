@@ -4,6 +4,7 @@ Onionr - Private P2P Communication
 We use built in logging but with a custom formatter for colors and such
 """
 import logging
+import sys
 
 from filepaths import log_file
 """
@@ -71,7 +72,7 @@ class FileFormatter(logging.Formatter):
 log = logging.getLogger('onionr')
 log.setLevel(logging.INFO)
 
-ch = logging.StreamHandler()
+ch = logging.StreamHandler(sys.stdout)
 ch.setLevel(logging.INFO)
 
 ch.setFormatter(ConsoleFormatter())
