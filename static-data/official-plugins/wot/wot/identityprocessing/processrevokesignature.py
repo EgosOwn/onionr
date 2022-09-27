@@ -2,7 +2,7 @@ import traceback
 
 from nacl.signing import VerifyKey
 
-import logger
+from logger import log as logging
 
 from wot.getbykey import get_identity_by_key
 from wot.blockprocessingevent import WotCommand
@@ -10,14 +10,14 @@ from wot.blockprocessingevent import WotCommand
 
 def process_revoke_signature(revoke_signature_payload):
     if len(revoke_signature_payload) != 129:
-        logger.warn(
+        logging.warn(
             f'Signature size is invalid for revoking an identity',
-            terminal=True)
+            )
 
     # verify that this is a signature for a trust command
     if revoke_signature_payload[0] != WotCommand.REVOKE_TRUST:
-        logger.warn(
-            f'Invalid command in signature' , terminal=True)
+        logging.warn(
+            f'Invalid command in signature' )
         return
     # signer is first 32 bytes
     signer = VerifyKey(revoke_signature_payload[1:33])

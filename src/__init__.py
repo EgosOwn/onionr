@@ -64,6 +64,8 @@ def sigusr_stacktrace(signum, frame):
 
 signal.signal(signal.SIGUSR1, sigusr_stacktrace)
 
+# Importing initailzes logging
+from logger import log as logging
 
 ran_as_script = False
 if __name__ == "__main__": ran_as_script = True

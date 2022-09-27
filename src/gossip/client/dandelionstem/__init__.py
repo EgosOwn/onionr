@@ -11,7 +11,7 @@ from ordered_set import OrderedSet
 import config
 from onionrthreads import add_delayed_thread
 from blockdb import add_block_to_db
-import logger
+from logger import log as logging
 
 from ...constants import BLACKHOLE_EVADE_TIMER_SECS, OUTBOUND_DANDELION_EDGES
 from ...commands import GossipCommands, command_to_byte
@@ -45,9 +45,9 @@ async def _setup_edge(
     try:
         s = peer.get_socket(12)
     except TimeoutError:
-        logger.debug(f"{peer.transport_address} timed out when trying stemout")
+        logging.debug(f"{peer.transport_address} timed out when trying stemout")
     except Exception:
-        logger.debug(traceback.format_exc())
+        logging.debug(traceback.format_exc())
         return
 
     try:
@@ -56,18 +56,18 @@ async def _setup_edge(
         if s.recv(1) == dandelion.StemAcceptResult.DENY:
             raise StemConnectionDenied
     except TimeoutError:
-        logger.debug(
-            "Peer timed out when establishing stem connection", terminal=True)
-        logger.debug(traceback.format_exc())
+        logging.debug(
+            "Peer timed out when establishing stem connection")
+        logging.debug(traceback.format_exc())
     except StemConnectionDenied:
-        logger.debug(
+        logging.debug(
             "Stem connection denied (peer has too many) " +
             f"{peer.transport_address}")
-        logger.debug(traceback.format_exc())
+        logging.debug(traceback.format_exc())
     except Exception:
-        logger.warn(
+        logging.warn(
             "Error asking peer to establish stem connection" +
-            traceback.format_exc(), terminal=True)
+            traceback.format_exc())
     else:
         # Return peer socket if it is in stem reception mode successfully
         return s
@@ -113,10 +113,10 @@ async def stem_out(d_phase: 'DandelionPhase'):
                 await _setup_edge(gossip_peer_set, tried_edges))
         except NotEnoughEdges:
             # No possible edges at this point (edges < OUTBOUND_DANDELION_EDGE)
-            #logger.debug(
+            #logging.debug(
             #    "Making too few edges for stemout " +
             #    "this is bad for anonymity if frequent.",
-            #    terminal=True)
+            #    )
             if strict_dandelion:
                 not_enough_edges = True
             else:
@@ -133,10 +133,10 @@ async def stem_out(d_phase: 'DandelionPhase'):
         else:
             # Ran out of time for stem phase
             if not d_phase.is_stem_phase() or d_phase.remaining_time() < 5:
-                logger.error(
+                logging.error(
                     "Did not stem out any blocks in time, " +
                     "if this happens regularly you may be under attack",
-                    terminal=False)
+                    )
                 for s in peer_sockets:
                     if s:
                         s.close()
@@ -155,7 +155,7 @@ async def stem_out(d_phase: 'DandelionPhase'):
         except Empty:
             pass
         except Exception:
-            logger.warn(traceback.format_exc())
+            logging.warn(traceback.format_exc())
         else:
             # stream routine exited early
             pass

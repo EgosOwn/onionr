@@ -6,7 +6,7 @@ import os
 from signal import SIGTERM
 
 from filepaths import pid_file
-import logger
+from logger import log as logging
 """
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -29,9 +29,9 @@ def kill_daemon():
         with open(pid_file, 'r') as pid:
             os.kill(int(pid.read()), SIGTERM)
     except FileNotFoundError:
-        logger.error("Daemon not running/pid file missing")
-    logger.warn('Stopping the running daemon, if one exists...', timestamp=False,
-                terminal=True)
+        logging.error("Daemon not running/pid file missing")
+    logging.warn('Stopping the running daemon, if one exists...', timestamp=False,
+                )
 
 
 kill_daemon.onionr_help = "Gracefully stops the "  # type: ignore

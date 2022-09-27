@@ -10,7 +10,7 @@ from gossip.server import gossip_server_socket_file
 from gossip.peer import Peer
 from gossip.peerset import gossip_peer_set
 from utils.identifyhome import identify_home
-import logger
+from logger import log as logging
 import config
 
 from unixpeer import UnixPeer
@@ -46,7 +46,7 @@ def on_bootstrap(api, data=None):
         except FileNotFoundError:
             bootstrap_nodes = set()
     except Exception as e:
-        logger.warn(traceback.format_exc(), terminal=True)
+        logging.warn(traceback.format_exc())
         return
     else:
         return

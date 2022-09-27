@@ -6,7 +6,7 @@ import os
 from json import JSONDecodeError
 
 import ujson as json
-import logger
+from logger import log as logging
 import filepaths
 
 """
@@ -106,7 +106,7 @@ def save():
         with open(get_config_file(), 'w', encoding="utf8") as configfile:
             json.dump(get_config(), configfile, indent=2)
     except JSONDecodeError:
-        logger.warn('Failed to write to configuration file.')
+        logging.warn('Failed to write to configuration file.')
 
 
 def reload():
@@ -117,7 +117,7 @@ def reload():
             set_config(json.loads(configfile.read()))
     except (FileNotFoundError, JSONDecodeError) as e:
         pass
-        #logger.debug('Failed to parse configuration file.')
+        #logging.debug('Failed to parse configuration file.')
 
 
 def get_config():

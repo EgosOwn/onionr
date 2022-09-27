@@ -4,7 +4,7 @@ Try to provide recommendations for invalid Onionr commands
 """
 import sys
 from difflib import SequenceMatcher
-import logger
+from logger import log as logging
 from . import arguments
 """
 This program is free software: you can redistribute it and/or modify
@@ -30,9 +30,9 @@ def recommend(print_default: bool = True):
     for key in args.keys():
         for word in key:
             if SequenceMatcher(None, tried, word).ratio() >= 0.75:
-                logger.warn(f'{print_message} "{tried}", '
+                logging.warn(f'{print_message} "{tried}", '
                             + f'did you mean "{word}"?',
-                            terminal=True)
+                            )
                 return
     if print_default:
-        logger.error('%s "%s"' % (print_message, tried), terminal=True)
+        logging.error('%s "%s"' % (print_message, tried))

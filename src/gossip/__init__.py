@@ -1,6 +1,7 @@
 import threading
 from time import sleep
 from typing import TYPE_CHECKING, Set, Tuple
+from logger import log as logging
 
 if TYPE_CHECKING:
     from ordered_set import OrderedSet
@@ -11,7 +12,6 @@ if TYPE_CHECKING:
 
 from onionrthreads import add_onionr_thread
 import onionrplugins
-import logger
 
 from .connectpeer import connect_peer
 from .client import start_gossip_client
@@ -56,4 +56,4 @@ def start_gossip_threads():
         sleep(60)
         if len(gossip_peer_set):
             return
-    logger.error("Could not connect to any peers :(", terminal=True)
+    logging.error("Could not connect to any peers :(")

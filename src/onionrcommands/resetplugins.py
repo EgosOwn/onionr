@@ -6,7 +6,7 @@ import os
 import shutil
 
 from utils import identifyhome
-import logger
+from logger import log as logging
 """
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -32,7 +32,7 @@ def reset():
     if os.path.exists(plugin_dir):
         shutil.rmtree(plugin_dir)
 
-    logger.info('Default plugins have been reset.', terminal=True)
+    logging.info('Default plugins have been reset.')
 
 
 reset.onionr_help = "reinstalls default Onionr plugins"  # type: ignore

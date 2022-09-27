@@ -21,6 +21,8 @@ from code import InteractiveConsole
 sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
 # import after path insert
 
+import logger
+
 """
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -42,6 +44,7 @@ PLUGIN_VERSION = '0.0.0'
 
 def on_primary_loop(event_name, data):
     """Run a REPL on the primary loop"""
+    logger.disable_console_logging()
     header = """You are now in the Onionr REPL. Type 'exit()' to exit.
 
 Enter repl_locals to see the (default) special locals available to you.

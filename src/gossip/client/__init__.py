@@ -21,7 +21,7 @@ if TYPE_CHECKING:
     from ..peer import Peer
     from ordered_set import OrderedSet
 
-import logger
+from logger import log as logging
 import config
 import onionrplugins
 from ..commands import GossipCommands
@@ -61,20 +61,20 @@ def block_queue_processing():
     while not len(gossip_peer_set):
         sleep(1)
     if dandelion_phase.remaining_time() <= 15:
-        #logger.debug("Sleeping", terminal=True)
+        #logging.debug("Sleeping")
         sleep(dandelion_phase.remaining_time())
     if dandelion_phase.is_stem_phase() and config.get('security.dandelion.enabled', True):
-        logger.debug("Entering stem phase", terminal=True)
+        logging.debug("Entering stem phase")
         try:
             # Stem out blocks for (roughly) remaining epoch time
             asyncio.run(stem_out(dandelion_phase))
         except TimeoutError:
             pass
         except Exception:
-            logger.error(traceback.format_exc(), terminal=True)
+            logging.error(traceback.format_exc())
         pass
     else:
-        #logger.debug("Entering fluff phase", terminal=True)
+        #logging.debug("Entering fluff phase")
         # Add block to primary block db, where the diffuser can read it
         sleep(0.1)
         store_blocks(dandelion_phase)

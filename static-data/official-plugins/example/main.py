@@ -6,13 +6,11 @@ import sys
 import os
 import locale
 from time import sleep
-import traceback
+from logger import log as logging
 from typing import Set, TYPE_CHECKING
-from threading import Thread, local
+
 import blockdb
 from gossip.peerset import gossip_peer_set
-
-import logger
 
 import onionrblocks
 
@@ -58,5 +56,5 @@ def on_printtest_cmd(api, data=None):
 
 
 def on_init(api, data=None):
-    logger.info(
-        f"Example Plugin v{PLUGIN_VERSION} enabled", terminal=True)
+    logging.info(
+        f"Example Plugin v{PLUGIN_VERSION} enabled")

@@ -8,9 +8,8 @@ import base64
 import ujson as json
 
 import config
-import logger
+from logger import log as logging
 import onionrvalues
-from logger.settings import *
 from utils import readstatic
 """
 This program is free software: you can redistribute it and/or modify
@@ -37,42 +36,3 @@ def setup_config():
         config.save()
 
     config.reload()
-
-    settings = 0b000
-    if config.get('log.console.color', True):
-        settings = settings | USE_ANSI
-    if config.get('log.console.output', True):
-        settings = settings | OUTPUT_TO_CONSOLE
-    if config.get('log.file.output', True):
-        settings = settings | OUTPUT_TO_FILE
-    set_settings(settings)
-
-    verbosity = str(config.get('log.verbosity', 'default')).lower().strip()
-    if not verbosity in ['default', 'null', 'none', 'nil']:
-        map = {
-            str(LEVEL_DEBUG) : LEVEL_DEBUG,
-            'verbose' : LEVEL_DEBUG,
-            'debug' : LEVEL_DEBUG,
-            str(LEVEL_INFO) : LEVEL_INFO,
-            'info' : LEVEL_INFO,
-            'information' : LEVEL_INFO,
-            str(LEVEL_WARN) : LEVEL_WARN,
-            'warn' : LEVEL_WARN,
-            'warning' : LEVEL_WARN,
-            'warnings' : LEVEL_WARN,
-            str(LEVEL_ERROR) : LEVEL_ERROR,
-            'err' : LEVEL_ERROR,
-            'error' : LEVEL_ERROR,
-            'errors' : LEVEL_ERROR,
-            str(LEVEL_FATAL) : LEVEL_FATAL,
-            'fatal' : LEVEL_FATAL,
-            str(LEVEL_IMPORTANT) : LEVEL_IMPORTANT,
-            'silent' : LEVEL_IMPORTANT,
-            'quiet' : LEVEL_IMPORTANT,
-            'important' : LEVEL_IMPORTANT
-        }
-
-        if verbosity in map:
-            set_level(map[verbosity])
-        else:
-            logger.warn('Verbosity level %s is not valid, using default verbosity.' % verbosity)

@@ -6,7 +6,7 @@ import sys
 import os
 from typing import Iterable
 
-import logger
+from logger import log as logging
 
 """
 This program is free software: you can redistribute it and/or modify
@@ -49,5 +49,5 @@ def enable_ministries(disable_hooks: Iterable = None):
 
 def on_init(api, data=None):
     enable_ministries()
-    logger.info(
-        "Big brother enabled, blocking unsafe Python code.", terminal=True)
+    logging.info(
+        "Big brother enabled, blocking unsafe Python code.")

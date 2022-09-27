@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from .. import Peer
 
-import logger
+from logger import log as logging
 import onionrplugins
 
 from ..commands import GossipCommands, command_to_byte
@@ -28,7 +28,7 @@ def do_announce():
         sock.sendall(command_to_byte(GossipCommands.ANNOUNCE))
         sock.sendall(our_transport_address)
         if int.from_bytes(sock.recv(1), 'big') != 1:
-            logger.warn(
+            logging.warn(
                 f"Could not announce with {announce_peer.transport_address}")
         sock.close()
 

@@ -11,7 +11,7 @@ from threading import Thread, local
 from gossip.peerset import gossip_peer_set
 
 
-import logger
+from logger import log as logging
 
 import onionrplugins
 
@@ -41,8 +41,8 @@ from wot.loadfromblocks import load_identities_from_blocks
 
 
 def on_init(api, data=None):
-    logger.info(
-        f"Web of Trust Plugin v{PLUGIN_VERSION} enabled", terminal=True)
+    logging.info(
+        f"Web of Trust Plugin v{PLUGIN_VERSION} enabled")
     #onionrplugins.plugin_apis['wot'] = wot_test
 
     list(map(lambda x: identities.add(x), load_identities_from_blocks()))

@@ -1,5 +1,5 @@
 import config
-import logger
+from logger import log as logging
 from gossip.peerset import gossip_peer_set
 
 from getsocks import get_socks
@@ -24,6 +24,6 @@ def on_announce_rec(api, data=None):
         return
 
 
-    logger.info(f"Peer {announced} announced to us.", terminal=True)
+    logging.info(f"Peer {announced} announced to us.")
 
     data['callback'](TorPeer(socks_address, socks_port, announced))

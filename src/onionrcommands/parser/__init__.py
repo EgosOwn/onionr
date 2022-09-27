@@ -11,7 +11,7 @@ try:
 except (KeyError, IndexError) as _:
     pass
 
-import logger
+from logger import log as logging
 import onionrexceptions
 import onionrplugins
 from onionrplugins import onionrpluginapi
@@ -48,10 +48,6 @@ def register_plugin_commands(cmd) -> bool:
     return False
 
 
-def _show_term(msg: str):
-    logger.info(msg, terminal=True)
-
-
 def register():
     """Register commands and handles help command processing."""
     def get_help_message(cmd: str,
@@ -80,7 +76,7 @@ def register():
     try:
         cmd = sys.argv[1]
     except IndexError:
-        logger.info('Run with --help to see available commands', terminal=True)
+        logging.info('Run with --help to see available commands')
         sys.exit(10)
 
     is_help_cmd = False
@@ -102,29 +98,28 @@ def register():
             sys.argv[2]
         except IndexError:
             for i in arguments.get_arguments():
-                _show_term('%s <%s>: %s' % (PROGRAM_NAME, '/'.join(i),
+                logging.info('%s <%s>: %s' % (PROGRAM_NAME, '/'.join(i),
                                             get_help_message(i[0])))
             for pl in onionrplugins.get_enabled_plugins():
                 pl = onionrplugins.get_plugin(pl)
                 if hasattr(pl, 'ONIONR_COMMANDS'):
                     print('')
                     try:
-                        _show_term('%s commands:' % (pl.plugin_name,))
+                        logging.info('%s commands:' % (pl.plugin_name,))
                     except AttributeError:
-                        _show_term('%s commands:' % (pl.__name__,))
+                        logging.info('%s commands:' % (pl.__name__,))
                     for plugin_cmd in pl.ONIONR_COMMANDS:
-                        _show_term('%s %s: %s' %
+                        logging.info('%s %s: %s' %
                                    (PROGRAM_NAME,
                                     plugin_cmd,
                                     get_help_message(plugin_cmd)),)
                     print('')
         else:
             try:
-                _show_term('%s %s: %s' % (PROGRAM_NAME,
+                logging.info('%s %s: %s' % (PROGRAM_NAME,
                                           sys.argv[2],
                                           get_help_message(sys.argv[2])))
             except KeyError:
-                logger.error('%s: command does not exist.' % [sys.argv[2]],
-                             terminal=True)
+                logging.error('%s: command does not exist.' % [sys.argv[2]])
                 sys.exit(3)
         return

@@ -22,7 +22,7 @@ if TYPE_CHECKING:
 
 from ordered_set import OrderedSet
 
-import logger
+from logger import log as logging
 
 import onionrblocks
 from ...peerset import gossip_peer_set
@@ -71,7 +71,7 @@ def stream_from_peers():
             need_socket_lock.release()
             return
         except Exception:
-            logger.warn(traceback.format_exc(), terminal=True)
+            logging.warn(traceback.format_exc())
             need_socket_lock.release()
             return
         try:
@@ -83,7 +83,7 @@ def stream_from_peers():
 
             while stream_times >= stream_counter:
                 stream_counter += 1
-                #logger.debug("Reading block of id in stream with " + peer.transport_address, terminal=True)
+                #logging.debug("Reading block of id in stream with " + peer.transport_address)
                 sock.settimeout(5)
                 block_id = sock.recv(BLOCK_ID_SIZE)
                 if blockdb.has_block(block_id):
@@ -91,12 +91,12 @@ def stream_from_peers():
                     continue
                 sock.sendall(int(1).to_bytes(1, 'big'))
 
-                #logger.debug("Reading block size in stream", terminal=True)
+                #logging.debug("Reading block size in stream")
 
                 sock.settimeout(5)
                 block_size = int(sock.recv(BLOCK_SIZE_LEN))
                 if block_size > BLOCK_MAX_SIZE or block_size <= 0:
-                    logger.warn(
+                    logging.warn(
                         f"Peer {peer.transport_address} " +
                         "reported block size out of range")
                     break
@@ -104,9 +104,9 @@ def stream_from_peers():
                 sock.settimeout(5)
                 block_data = sock.recv(block_size)
 
-                #logger.debug(
+                #logging.debug(
                 #    "We got a block from stream, assuming it is valid",
-                #    terminal=True)
+                #    )
                 try:
                     blockdb.add_block_to_db(
                         onionrblocks.Block(
@@ -120,10 +120,10 @@ def stream_from_peers():
                 sock.sendall(int(1).to_bytes(1, 'big'))
         except (BrokenPipeError, TimeoutError, ConnectionError) as e:
             pass
-            #logger.debug(f"{e} when streaming from peers", terminal=True)
-            #logger.debug(traceback.format_exc())
+            #logging.debug(f"{e} when streaming from peers")
+            #logging.debug(traceback.format_exc())
         except Exception:
-            logger.warn(traceback.format_exc(), terminal=True)
+            logging.warn(traceback.format_exc())
         finally:
             sock.close()
             need_socket_lock.release()

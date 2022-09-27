@@ -20,7 +20,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 import os, shutil
 
 import onionrplugins as plugins
-import logger
+from logger import log as logging
 import filepaths
 from utils.readstatic import get_static_dir
 
@@ -38,9 +38,9 @@ def setup_default_plugins():
             if not name in plugins.get_enabled_plugins():
                 plugins.enable(name)
     else:
-        logger.error(
+        logging.error(
             "Plugin source directory does not exist!" +
-            "Onionr needs plugins to be useful", terminal=True)
+            "Onionr needs plugins to be useful")
 
 
     for name in plugins.get_enabled_plugins():
@@ -50,5 +50,5 @@ def setup_default_plugins():
             except FileExistsError:
                 pass
             except Exception as e:
-                #logger.warn('Error enabling plugin: ' + str(e), terminal=True)
+                #logging.warn('Error enabling plugin: ' + str(e))
                 plugins.disable(name, stop_event = False)

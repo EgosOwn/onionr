@@ -4,7 +4,7 @@ import traceback
 from nacl.signing import VerifyKey
 import nacl.exceptions
 
-import logger
+from logger import log as logging
 import blockdb
 
 from wot.identity import Identity, identities
@@ -33,5 +33,5 @@ def load_signatures_from_blocks() -> None:
             # noop if already signed
             processtrustsignature.process_trust_signature(block.data)
         except nacl.exceptions.BadSignatureError:
-            logger.warn('Bad signature in block:')
-            logger.warn(traceback.format_exc())
+            logging.warn('Bad signature in block:')
+            logging.warn(traceback.format_exc())

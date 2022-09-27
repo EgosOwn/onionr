@@ -1,7 +1,7 @@
 import socks
 
 from gossip.peerset import gossip_peer_set
-import logger
+from logger import log as logging
 
 
 class HandleRevc:
@@ -48,9 +48,9 @@ class TorPeer:
             except KeyError:
                 pass
             else:
-                logger.debug(
+                logging.debug(
                     f"Could not create socket to peer {self.transport_address}",
-                    terminal=True)
+                    )
             raise TimeoutError
         mock_recv = HandleRevc(s)
         s.recv = mock_recv.recv

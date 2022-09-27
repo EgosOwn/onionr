@@ -3,7 +3,7 @@
 Log (not block) read/write of non-user data files and non-python lib files
 """
 from utils.identifyhome import identify_home
-import logger
+from logger import log as logging
 """
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -33,4 +33,4 @@ def detect_disk_access(info):
 
     if identify_home() not in info[0]:
         if 'proc' not in info[0]:  # if it is, it is onionr stats
-            logger.warn(f'[DISK MINISTRY] {info}')
+            logging.warn(f'[DISK MINISTRY] {info}')

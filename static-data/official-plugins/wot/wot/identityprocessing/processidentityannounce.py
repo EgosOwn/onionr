@@ -1,4 +1,4 @@
-import logger
+from logger import log as logging
 
 from nacl.signing import VerifyKey
 
@@ -10,8 +10,8 @@ def process_identity_announce(identity_announce_payload):
 
     # verify that this is a signature for an announce command
     if identity_announce_payload[0] != WotCommand.ANNOUNCE:
-        logger.warn(
-            f'Invalid command in signature' , terminal=True)
+        logging.warn(
+            f'Invalid command in signature' )
         return
     iden = Identity.deserialize(identity_announce_payload[1:])
     identities.add(iden)

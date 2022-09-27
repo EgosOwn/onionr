@@ -1,5 +1,5 @@
 import traceback
-import logger
+from logger import log as logging
 
 from nacl.signing import VerifyKey
 
@@ -9,13 +9,13 @@ from wot.blockprocessingevent import WotCommand
 
 def process_trust_signature(sig_payload: bytes):
     if len(sig_payload) != 129:
-        logger.warn(
+        logging.warn(
             f'Signature size is invalid for a signed identity')
         return
 
     # verify that this is a signature for a trust command
     if sig_payload[0] != WotCommand.TRUST:
-        logger.warn(
+        logging.warn(
             f'Invalid command in signature')
         return
     # signer is first 32 bytes

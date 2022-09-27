@@ -12,7 +12,7 @@ from gossip import constants
 from ..connectpeer import connect_peer
 
 from onionrplugins import onionrevents
-import logger
+from logger import log as logging
 
 if TYPE_CHECKING:
     from onionrblocks import Block
@@ -88,9 +88,9 @@ def gossip_server():
                     try:
                         await diffuse_blocks(reader, writer)
                     except Exception:
-                        logger.warn(
+                        logging.warn(
                             f"Err streaming blocks\n{traceback.format_exc()}",
-                            terminal=True)
+                            )
                 case GossipCommands.PUT_BLOCKS:
                     # Pick block queue & append stemmed blocks to it
                     try:
@@ -99,18 +99,18 @@ def gossip_server():
                             inbound_dandelion_edge_count)
                     except asyncio.exceptions.TimeoutError:
                         pass
-                        logger.debug(
+                        logging.debug(
                             "Inbound edge timed out when steming blocks to us",
-                            terminal=True)
+                            )
                     except asyncio.exceptions.IncompleteReadError:
                         pass
-                        logger.debug(
+                        logging.debug(
                             "Inbound edge timed out (Incomplete Read) when steming blocks to us",
-                            terminal=True)
+                            )
                     except Exception:
-                        logger.warn(
+                        logging.warn(
                             f"Err accepting stem blocks\n{traceback.format_exc()}",
-                            terminal=True)
+                            )
                     # Subtract dandelion edge, make sure >=0
                     inbound_dandelion_edge_count[0] = \
                         max(inbound_dandelion_edge_count[0] - 1, 0)

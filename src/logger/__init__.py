@@ -1,71 +1,91 @@
-'''
-    Onionr - Private P2P Communication
+"""
+Onionr - Private P2P Communication
 
-    This file handles all operations involving logging
-'''
-'''
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
+We use built in logging but with a custom formatter for colors and such
+"""
+import logging
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+from filepaths import log_file
+"""
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
 
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <https://www.gnu.org/licenses/>.
-'''
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
 
-import sys, traceback
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+"""
 
-from . import colors, readline, log, raw, confirm, colors, settings
-colors = colors.Colors
-readline = readline.readline
-log = log.log
-raw = raw.raw
-confirm = confirm.confirm
+# credit: https://stackoverflow.com/a/384076
+# license: https://creativecommons.org/licenses/by-sa/4.0/
+class ConsoleFormatter(logging.Formatter):
 
-# debug: when there is info that could be useful for debugging purposes only
-def debug(data: str, error = None, timestamp = True, prompt = True, terminal = False, level = settings.LEVEL_DEBUG):
-    if settings.get_level() <= level:
-        log('/', data, timestamp = timestamp, prompt = prompt, terminal = terminal)
-    if not error is None:
-        debug('Error: ' + str(error) + parse_error())
+    grey = "\x1b[38;20m"
+    green = "\x1b[38;5;82m"
+    yellow = "\x1b[33;20m"
+    red = "\x1b[31;20m"
+    bold_red = "\x1b[31;1m"
+    reset = "\x1b[0m"
+    format_default = "%(levelname)s - %(message)s (%(filename)s:%(lineno)d)"
+    format_info = "%(message)s - (%(filename)s:%(lineno)d)"
 
-# info: when there is something to notify the user of, such as the success of a process
-def info(data: str, timestamp = False, prompt = True, terminal = False, level = settings.LEVEL_INFO):
-    if settings.get_level() <= level:
-        log('+', data, colors.fg.green, timestamp = timestamp, prompt = prompt, terminal = terminal)
+    FORMATS = {
+        logging.DEBUG: grey + format_default + reset,
+        logging.INFO: green + format_info + reset,
+        logging.WARNING: yellow + format_default + reset,
+        logging.ERROR: red + format_default + reset,
+        logging.CRITICAL: bold_red + format_default + reset
+    }
 
-# warn: when there is a potential for something bad to happen
-def warn(data: str, error = None, timestamp = True, prompt = True, terminal = False, level = settings.LEVEL_WARN):
-    if not error is None:
-        debug('Error: ' + str(error) + parse_error())
-    if settings.get_level() <= level:
-        log('!', data, colors.fg.orange, timestamp = timestamp, prompt = prompt, terminal = terminal)
+    def format(self, record):
+        log_fmt = self.FORMATS.get(record.levelno)
+        formatter = logging.Formatter(log_fmt)
+        return formatter.format(record)
 
-# error: when only one function, module, or process of the program encountered a problem and must stop
-def error(data: str, error = None, timestamp = True, prompt = True, terminal = False, level = settings.LEVEL_ERROR):
-    if settings.get_level() <= level:
-        log('-', data, colors.fg.red, timestamp = timestamp, fd = sys.stderr, prompt = prompt, terminal = terminal)
-    if not error is None:
-        debug('Error: ' + str(error) + parse_error())
+class FileFormatter(logging.Formatter):
 
-# fatal: when the something so bad has happened that the program must stop
-def fatal(data: str, error = None, timestamp=True, prompt = True, terminal = False, level = settings.LEVEL_FATAL):
-    if not error is None:
-        debug('Error: ' + str(error) + parse_error(), terminal = terminal)
-    if settings.get_level() <= level:
-        log('#', data, colors.bg.red + colors.fg.green + colors.bold, timestamp = timestamp, fd = sys.stderr, prompt = prompt, terminal = terminal)
 
-# returns a formatted error message
-def parse_error():
-    details = traceback.extract_tb(sys.exc_info()[2])
-    output = ''
+    format_default = "%(levelname)s - %(message)s (%(filename)s:%(lineno)d)"
+    format_info = "%(message)s - (%(filename)s:%(lineno)d)"
 
-    for line in details:
-        output += '\n    ... module %s in  %s:%i' % (line[2], line[0], line[1])
+    FORMATS = {
+        logging.DEBUG: format_default,
+        logging.INFO: format_info,
+        logging.WARNING: format_default,
+        logging.ERROR: format_default,
+        logging.CRITICAL: format_default
+    }
 
-    return output
+    def format(self, record):
+        log_fmt = self.FORMATS.get(record.levelno)
+        formatter = logging.Formatter(log_fmt)
+        return formatter.format(record)
+
+
+#logging.basicConfig(level=logging.ERROR, format='%(message)s ')
+log = logging.getLogger('onionr')
+log.setLevel(logging.INFO)
+
+ch = logging.StreamHandler()
+ch.setLevel(logging.INFO)
+
+ch.setFormatter(ConsoleFormatter())
+
+
+def enable_file_logging():
+    fh = logging.FileHandler(log_file)
+    fh.setLevel(logging.INFO)
+    fh.setFormatter(FileFormatter())
+    log.addHandler(fh)
+
+def disable_console_logging():
+    log.removeHandler(ch)
+
+def enable_console_logging():
+    log.addHandler(ch)
+enable_console_logging()

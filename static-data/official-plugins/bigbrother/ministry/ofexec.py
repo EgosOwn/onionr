@@ -5,7 +5,7 @@ Prevent eval/exec/os.system and log it
 import base64
 import platform
 
-import logger
+from logger import log as logging
 from utils import identifyhome
 from onionrexceptions import ArbitraryCodeExec
 """
@@ -27,8 +27,8 @@ untrusted_exec = True
 
 def block_system(cmd):
     """Prevent os.system except for whitelisted commands+contexts."""
-    logger.warn('POSSIBLE EXPLOIT DETECTED, SEE LOGS', terminal=True)
-    logger.warn(f'POSSIBLE EXPLOIT: shell command not in whitelist: {cmd}')
+    logging.warn('POSSIBLE EXPLOIT DETECTED, SEE LOGS')
+    logging.warn(f'POSSIBLE EXPLOIT: shell command not in whitelist: {cmd}')
     raise ArbitraryCodeExec('os.system command not in whitelist')
 
 
@@ -57,8 +57,8 @@ def block_exec(event, info):
     if 'plugins/' in info[0].co_filename:
         return
 
-    logger.warn('POSSIBLE EXPLOIT DETECTED, SEE LOGS', terminal=True)
-    logger.warn('POSSIBLE EXPLOIT DETECTED: ' + info[0].co_filename)
-    logger.warn('Prevented exec/eval. Report this with the sample below')
-    logger.warn(f'{event} code in base64 format: {code_b64}')
+    logging.warn('POSSIBLE EXPLOIT DETECTED, SEE LOGS')
+    logging.warn('POSSIBLE EXPLOIT DETECTED: ' + info[0].co_filename)
+    logging.warn('Prevented exec/eval. Report this with the sample below')
+    logging.warn(f'{event} code in base64 format: {code_b64}')
     raise ArbitraryCodeExec("Arbitrary code (eval/exec) detected.")

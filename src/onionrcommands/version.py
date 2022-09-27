@@ -5,7 +5,7 @@ Command to show version info
 import platform
 from utils import identifyhome
 import onionrvalues
-import logger
+from logger import log as logging
 """
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -22,23 +22,21 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
 
-def version(verbosity=5, function=logger.info):
+def version(verbosity=5, function=logging.info):
     """Display the Onionr version."""
     function('Onionr v%s (%s)' % (onionrvalues.ONIONR_VERSION,
-                                            platform.machine()),
-             terminal=True)
+                                            platform.machine()))
     if verbosity >= 1:
-        function(onionrvalues.ONIONR_TAGLINE, terminal=True)
+        function(onionrvalues.ONIONR_TAGLINE)
     if verbosity >= 2:
         pf = platform.platform()
         release = platform.release()
         python_imp = platform.python_implementation()
         python_version = platform.python_version()
         function(
-            f'{python_imp} {python_version} on {pf} {release}',
-            terminal=True)
+            f'{python_imp} {python_version} on {pf} {release}')
         function('Onionr data dir: %s' %
-                 identifyhome.identify_home(), terminal=True)
+                 identifyhome.identify_home())
 
 
 version.onionr_help = 'Shows environment details including '  # type: ignore

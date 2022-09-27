@@ -9,7 +9,7 @@ from typing import Callable
 from gossip.peer import Peer
 from gossip.peerset import gossip_peer_set
 from utils.identifyhome import identify_home
-import logger
+from logger import log as logging
 import config
 from getsocks import get_socks
 
@@ -47,7 +47,7 @@ def on_bootstrap(api, data):
         except FileNotFoundError:
             bootstrap_nodes = set()
     except Exception as _:
-        logger.warn(traceback.format_exc(), terminal=True)
+        logging.warn(traceback.format_exc())
         return
     else:
         return
@@ -60,7 +60,7 @@ def on_bootstrap(api, data):
         try:
             config.reload()
         except Exception:
-            logger.error(traceback.format_exc(), terminal=True)
+            logging.error(traceback.format_exc())
 
     socks_address, socks_port = get_socks()[0]
 

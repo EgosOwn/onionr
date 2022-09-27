@@ -19,7 +19,7 @@ if TYPE_CHECKING:
 from ..constants import BLOCK_MAX_SIZE, BLOCK_SIZE_LEN
 from ..constants import BLOCK_STREAM_OFFSET_DIGITS
 
-import logger
+from logger import log as logging
 import blockdb
 from blockdb import get_blocks_after_timestamp, block_storage_observers
 """
@@ -103,5 +103,5 @@ async def diffuse_blocks(reader: 'StreamReader', writer: 'StreamWriter'):
     except ConnectionResetError:
         pass
     except Exception:
-        logger.warn(traceback.format_exc(), terminal=True)
+        logging.warn(traceback.format_exc())
 

@@ -6,7 +6,7 @@ import sys
 import os
 import locale
 from time import sleep
-import traceback
+from logger import log as logging
 from typing import Set, TYPE_CHECKING
 from threading import Thread
 import shelve
@@ -14,7 +14,6 @@ import shelve
 import stem
 from stem.control import Controller
 
-import logger
 from utils import readstatic
 import config
 from filepaths import gossip_server_socket_file
@@ -59,10 +58,10 @@ def on_shutdown_event(api, data=None):
                 db[peer.transport_address] = peer
 
 def on_init(api, data=None):
-    logger.info(
-        f"Unix Transport Plugin v{PLUGIN_VERSION} enabled", terminal=True)
-    logger.info(
-        f"Peers can connect to {gossip_server_socket_file}", terminal=True)
+    logging.info(
+        f"Unix Transport Plugin v{PLUGIN_VERSION} enabled")
+    logging.info(
+        f"Peers can connect to {gossip_server_socket_file}")
 
 def on_get_our_transport(api, data=None):
     callback_func = data['callback']

@@ -11,11 +11,10 @@
         "file": {
             "output": true,
             "remove_on_exit": false
-        },
-        "verbosity": "default"
+        }
     },
     "plugins": {
-        "disabled": ["unixtransport", "repl", "bigbrother"],
+        "disabled": ["unixtransport", "repl", "bigbrother", "example"],
         "enabled": []
     },
     "security": {

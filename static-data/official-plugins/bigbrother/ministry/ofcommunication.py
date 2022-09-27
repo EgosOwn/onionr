@@ -4,7 +4,7 @@ Ensure sockets don't get made to non localhost
 """
 import ipaddress
 
-import logger
+from logger import log as logging
 from onionrexceptions import NetworkLeak
 """
 This program is free software: you can redistribute it and/or modify
@@ -37,12 +37,12 @@ def detect_socket_leaks(socket_event):
     try:
         ip_address = ipaddress.ip_address(ip_address)
     except ValueError:
-        logger.warn(f'Conn made to {ip_address} outside of Tor/similar')
+        logging.warn(f'Conn made to {ip_address} outside of Tor/similar')
         raise \
             NetworkLeak('Conn to host/non local IP, this is a privacy issue!')
 
     # Validate that the IP is localhost ipv4
     if not ip_address.is_loopback and not ip_address.is_multicast \
             and not ip_address.is_private:
-        logger.warn(f'Conn made to {ip_address} outside of Tor/similar')
+        logging.warn(f'Conn made to {ip_address} outside of Tor/similar')
         raise NetworkLeak('Conn to non local IP, this is a privacy concern!')

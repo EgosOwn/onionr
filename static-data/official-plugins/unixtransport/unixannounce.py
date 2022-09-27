@@ -1,5 +1,5 @@
 import config
-import logger
+from logger import log as logging
 from gossip.server import gossip_server_socket_file
 
 from unixpeer import UnixPeer
@@ -19,6 +19,6 @@ def on_announce_rec(api, data=None):
     if announced == gossip_server_socket_file:
         return
 
-    logger.info(f"Peer {announced} announced to us.", terminal=True)
+    logging.info(f"Peer {announced} announced to us.")
 
     data['callback'](UnixPeer(announced))

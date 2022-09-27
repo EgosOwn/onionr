@@ -8,13 +8,14 @@ import sys
 import platform
 import signal
 from threading import Thread
+from logger import log as logging
+from logger import enable_file_logging
 
 import filenuke
 import psutil
 
 import config
 
-import logger
 from onionrplugins import onionrevents as events
 
 from utils import identifyhome
@@ -59,15 +60,18 @@ def delete_run_files():
     _safe_remove(filepaths.pid_file)
 
 def _show_info_messages():
-    version.version(verbosity=5, function=logger.info)
-    logger.debug('Python version %s' % platform.python_version())
+    version.version(verbosity=5, function=logging.info)
+    logging.debug('Python version %s' % platform.python_version())
 
     if onionrvalues.DEVELOPMENT_MODE:
-        logger.warn('Development mode enabled', timestamp=False, terminal=True)
+        logging.warn('Development mode enabled')
 
 
 def daemon():
     """Start Onionr's primary threads for communicator, API server, node, and LAN."""
+
+    if config.get('log.file.output', False):
+        enable_file_logging()
 
     def _handle_sig_term(signum, frame):
         sys.exit(0)
@@ -83,8 +87,8 @@ def daemon():
     security_level = config.get('general.security_level', 1)
 
     _show_info_messages()
-    logger.info(
-        f"Onionr daemon is running under pid {os.getpid()}", terminal=True)
+    logging.info(
+        f"Onionr daemon is running under pid {os.getpid()}")
     events.event('init', threaded=False)
     events.event('afterinit', threaded=False)
     events.event('daemon_start')
@@ -117,33 +121,25 @@ def start(override: bool = False):
     Error exit if there is and its not overridden
     """
     if os.path.exists(filepaths.lock_file) and not override:
-        if os.path.exists(filepaths.restarting_indicator):
-            try:
-                os.remove(filepaths.restarting_indicator)
-            except FileNotFoundError:
-                pass
-            else:
-                return
         with open(filepaths.lock_file, 'r') as lock_file:
             try:
                 proc = psutil.Process(int(lock_file.read())).name()
             except psutil.NoSuchProcess:
                 proc = ""
             if not proc.startswith("python"):
-                logger.warn(
-                    f"Detected stale run file, deleting {filepaths.lock_file}",
-                    terminal=True)
+                logging.warn(
+                    f"Detected stale run file, deleting {filepaths.lock_file}")
                 try:
                     os.remove(filepaths.lock_file)
                 except FileNotFoundError:
                     pass
                 start(override=True)
                 return
-        logger.fatal('Cannot start. Daemon is already running,'
+        logging.error('Cannot start. Daemon is already running,'
                      + ' or it did not exit cleanly.\n'
                      + ' (if you are sure that there is not a daemon running,'
                      + f' delete {filepaths.lock_file} & try again).',
-                     terminal=True)
+                     )
     else:
         if not onionrvalues.DEVELOPMENT_MODE:
             lock_file = open(filepaths.lock_file, 'w')

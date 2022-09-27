@@ -6,7 +6,7 @@ if TYPE_CHECKING:
     from socket import socket
 
 from onionrplugins import onionrevents
-import logger
+from logger import log as logging
 
 from socks import GeneralProxyError
 
@@ -23,9 +23,9 @@ def _do_ask_peer(peer):
     try:
         _ask_peer(peer)
     except TimeoutError:
-        logger.debug("Timed out when asking for new peers")
+        logging.debug("Timed out when asking for new peers")
     except Exception:
-        logger.error(format_exc(), terminal=True)
+        logging.error(format_exc())
 
 def _ask_peer(peer):
     s: 'socket' = peer.get_socket(12)
@@ -46,14 +46,14 @@ def _ask_peer(peer):
             'address': peer,
             'callback': connectpeer.connect_peer
         }
-        #logger.info("Got new peer from exchange " + peer.decode('utf-8'), terminal=True)
+        #logging.info("Got new peer from exchange " + peer.decode('utf-8'))
         onionrevents.event('announce_rec', data=connect_data, threaded=True)
     s.close()
 
 
 def get_new_peers():
     if not len(gossip_peer_set):
-        logger.debug("Peer set empty, cannot get new peers")
+        logging.debug("Peer set empty, cannot get new peers")
         return
 
     # Deep copy the peer list

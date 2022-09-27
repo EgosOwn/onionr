@@ -4,7 +4,7 @@ Sets CLI arguments for Onionr
 """
 from typing import Callable
 
-from .. import onionrstatistics, version, daemonlaunch
+from .. import version, daemonlaunch
 from .. import resetplugins  # command to reinstall default plugins
 
 
@@ -32,8 +32,6 @@ def get_arguments() -> dict:
     dynamically modify them with plugins
     """
     args = {
-        ('details', 'info'): onionrstatistics.show_details,
-        ('stats', 'statistics'): onionrstatistics.show_stats,
         ('version',): version.version,
         ('start', 'daemon'): daemonlaunch.start,
         ('stop', 'kill'): daemonlaunch.kill_daemon,

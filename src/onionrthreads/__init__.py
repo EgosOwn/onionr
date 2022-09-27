@@ -6,7 +6,7 @@ from threading import Thread
 from uuid import uuid4
 from time import sleep
 
-import logger
+from logger import log as logging
 
 
 def _onionr_thread(func: Callable,
@@ -18,10 +18,10 @@ def _onionr_thread(func: Callable,
         try:
             func(*args, **kwargs)
         except Exception as _:  # noqa
-            logger.warn(
+            logging.warn(
                 f"Onionr thread exception in {thread_id} \n" +
                 traceback.format_exc(),
-                terminal=True)
+                )
         sleep(sleep_secs)
 
 

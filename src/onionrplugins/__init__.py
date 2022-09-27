@@ -22,7 +22,7 @@ import traceback
 
 from . import onionrevents as events
 from .pluginapis import plugin_apis
-import config, logger
+import config, logging
 from utils import identifyhome
 
 # set data dir
@@ -43,9 +43,9 @@ def reload(stop_event = True):
         enabled_plugins = get_enabled_plugins()
 
         if stop_event is True:
-            logger.debug('Reloading all plugins...')
+            logging.debug('Reloading all plugins...')
         else:
-            logger.debug('Loading all plugins...')
+            logging.debug('Loading all plugins...')
 
         if stop_event is True:
             for plugin in enabled_plugins:
@@ -56,7 +56,7 @@ def reload(stop_event = True):
 
         return True
     except:
-        logger.error('Failed to reload plugins.')
+        logging.error('Failed to reload plugins.')
 
     return False
 
@@ -73,8 +73,8 @@ def enable(name, start_event = True):
             except ImportError as e: # Was getting import error on Gitlab CI test "data"
                 # NOTE: If you are experiencing issues with plugins not being enabled, it might be this resulting from an error in the module
                 # can happen inconsistently (especially between versions)
-                logger.error('Failed to enable module:', terminal=True)
-                logger.error(traceback.format_exc(), terminal=True)
+                logging.error('Failed to enable module:')
+                logging.error(traceback.format_exc())
                 return False
             else:
                 enabled_plugins.append(name)
@@ -86,8 +86,8 @@ def enable(name, start_event = True):
         else:
             return False
     else:
-        logger.error('Failed to enable plugin \"%s\", disabling plugin.' % name, terminal=True)
-        logger.debug('Plugins folder not found: %s' % get_plugins_folder(str(name).lower()), terminal=True)
+        logging.error('Failed to enable plugin \"%s\", disabling plugin.' % name)
+        logging.debug('Plugins folder not found: %s' % get_plugins_folder(str(name).lower()))
         disable(name)
 
         return False
@@ -129,9 +129,9 @@ def start(name):
 
             return plugin
         except:
-            logger.error('Failed to start module \"%s\".' % name)
+            logging.error('Failed to start module \"%s\".' % name)
     else:
-        logger.error('Failed to start nonexistant module \"%s\".' % name)
+        logging.error('Failed to start nonexistant module \"%s\".' % name)
 
     return None
 
@@ -153,9 +153,9 @@ def stop(name):
 
             return plugin
         except:
-            logger.error('Failed to stop module \"%s\".' % name)
+            logging.error('Failed to stop module \"%s\".' % name)
     else:
-        logger.error('Failed to stop nonexistant module \"%s\".' % name)
+        logging.error('Failed to stop nonexistant module \"%s\".' % name)
 
     return None
 
@@ -258,11 +258,11 @@ def check():
     """
 
     if not config.is_set('plugins'):
-        logger.debug('Generating plugin configuration data...')
+        logging.debug('Generating plugin configuration data...')
         config.set('plugins', {'enabled': []}, True)
 
     if not os.path.exists(os.path.dirname(get_plugins_folder())):
-        logger.debug('Generating plugin data folder...')
+        logging.debug('Generating plugin data folder...')
         try:
             os.makedirs(os.path.dirname(get_plugins_folder()))
         except FileExistsError:

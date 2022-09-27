@@ -7,7 +7,7 @@ from threading import Thread
 
 import traceback
 
-import config, logger
+import config, logging
 import onionrplugins as plugins
 from . import onionrpluginapi as pluginapi
 """
@@ -41,11 +41,11 @@ def __event_caller(event_name, data = {}):
         try:
             call(plugins.get_plugin(plugin), event_name, data, get_pluginapi(data))
         except ModuleNotFoundError as _:
-            logger.warn('Disabling nonexistant plugin "%s"...' % plugin, terminal=True)
+            logging.warn('Disabling nonexistant plugin "%s"...' % plugin)
             plugins.disable(plugin, stop_event = False)
         except Exception as _:
-            logger.error('Event "%s" failed for plugin "%s".' % (event_name, plugin), terminal=True)
-            logger.error('\n' + traceback.format_exc(), terminal=True)
+            logging.error('Event "%s" failed for plugin "%s".' % (event_name, plugin))
+            logging.error('\n' + traceback.format_exc())
 
 def event(event_name, data = {}, threaded = True):
     """Call an event on all plugins (if defined)"""

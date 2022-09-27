@@ -4,7 +4,7 @@ from queue import Empty
 
 from typing import TYPE_CHECKING
 
-import logger
+from logger import log as logging
 from ...constants import BLOCK_ID_SIZE, BLOCK_MAX_SIZE, BLOCK_SIZE_LEN
 
 if TYPE_CHECKING:
@@ -22,7 +22,7 @@ async def do_stem_stream(
     remaining_time = d_phase.remaining_time()
     my_phase_id = d_phase.phase_id
 
-    
+
     while remaining_time > 1 and my_phase_id == d_phase.phase_id:
         # Primary client component that communicate's with gossip.server.acceptstem
         remaining_time = d_phase.remaining_time()
@@ -35,7 +35,7 @@ async def do_stem_stream(
                 await sleep(1)
             else:
                 break
-        logger.info("Sending block over dandelion++", terminal=True)
+        logging.info("Sending block over dandelion++")
 
         block_size = str(len(bl.raw)).zfill(BLOCK_SIZE_LEN)
         def _send_it():
