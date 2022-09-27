@@ -1,5 +1,5 @@
-psutil==5.9.1
-ujson==5.4.0
+psutil==5.9.2
+ujson==5.5.0
 ordered-set==4.1.0
 # These two are also by Kevin
 filenuke==0.0.0
