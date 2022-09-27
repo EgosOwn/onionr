@@ -24,9 +24,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 def version(verbosity=5, function=logger.info):
     """Display the Onionr version."""
-    function('Onionr v%s (%s) (API v%s)' % (onionrvalues.ONIONR_VERSION,
-                                            platform.machine(),
-                                            onionrvalues.API_VERSION),
+    function('Onionr v%s (%s)' % (onionrvalues.ONIONR_VERSION,
+                                            platform.machine()),
              terminal=True)
     if verbosity >= 1:
         function(onionrvalues.ONIONR_TAGLINE, terminal=True)

@@ -4,7 +4,7 @@ from time import sleep
 import secrets
 
 
-TEST_DIR = 'testdata/%s-%s' % (uuid.uuid4(), os.path.basename(__file__)) + '/'
+TEST_DIR = 'testdata/%s-%s' % (secrets.token_hex(2), os.path.basename(__file__)) + '/'
 print("Test directory:", TEST_DIR)
 os.environ["ONIONR_HOME"] = TEST_DIR
 

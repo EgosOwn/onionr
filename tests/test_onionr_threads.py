@@ -10,10 +10,7 @@ print("Test directory:", TEST_DIR)
 os.environ["ONIONR_HOME"] = TEST_DIR
 from utils import createdirs
 createdirs.create_dirs()
-from onionrcrypto import getourkeypair
-getourkeypair.get_keypair()
 
-from coredb import keydb
 import onionrsetup as setup
 from onionrthreads import add_onionr_thread
 
@@ -25,7 +22,7 @@ class OnionrThreadsTests(unittest.TestCase):
         def _test_func(obj_list):
             obj_list.append(1)
 
-        add_onionr_thread(_test_func, 0.05, l, initial_sleep=0)
+        add_onionr_thread(_test_func, 0.05, "test", l, initial_sleep=0)
         sleep(0.05)
         self.assertGreaterEqual(len(l), 1)
 
@@ -34,7 +31,8 @@ class OnionrThreadsTests(unittest.TestCase):
         def _test_func(obj_list):
             obj_list.append(1)
 
-        add_onionr_thread(_test_func, 0.05, l, initial_sleep=1)
+        add_onionr_thread(_test_func, 0.05, "test", l, initial_sleep=1)
+        sleep(0.05)
         self.assertEqual(len(l), 0)
 
 

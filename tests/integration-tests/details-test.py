@@ -12,7 +12,3 @@ with Popen(['./onionr.sh', 'details'], stdout=PIPE) as onionr_proc:
     output = onionr_proc.stdout.read().decode()
 if onionr_proc.returncode != 0:
     raise ValueError('Raised non zero exit ' + str(onionr_proc.returncode))
-
-for word in ['Human-readable']:
-    if word not in output:
-        raise ValueError(word + " not in " + output)

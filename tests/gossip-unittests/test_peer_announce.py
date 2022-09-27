@@ -4,7 +4,7 @@ from time import sleep
 import secrets
 
 
-TEST_DIR = 'testdata/%s-%s' % (uuid.uuid4(), os.path.basename(__file__)) + '/'
+TEST_DIR = 'testdata/%s-%s' % (secrets.token_hex(1), os.path.basename(__file__)) + '/'
 print("Test directory:", TEST_DIR)
 os.environ["ONIONR_HOME"] = TEST_DIR
 
@@ -62,7 +62,6 @@ class OnionrServerPeerAnnounce(unittest.TestCase):
             writer.write(address.encode('utf-8') + b'\n')
             await writer.drain()
             self.assertEqual(await reader.readexactly(1), int(1).to_bytes(1,'big'))
-
             try:
                 await reader.readexactly(1)
             except asyncio.IncompleteReadError:
