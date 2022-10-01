@@ -5,6 +5,7 @@ from enum import IntEnum, auto
 from nacl.signing import SigningKey, VerifyKey
 from nacl.exceptions import BadSignatureError
 import nacl
+import nacl.exceptions
 import secrets
 import onionrblocks
 
@@ -43,8 +44,11 @@ class TestRevokeIdentityPayload(unittest.TestCase):
 
         signed =  signing_key.sign(wot_cmd + bytes(main_iden.key))
         revoke_payload = wot_cmd + bytes(signing_key.verify_key) + signed.signature
+        revoke_payload = bytearray(revoke_payload)
+        revoke_payload[63] = revoke_payload[63] + 1
+        revoke_payload = bytes(revoke_payload)
 
-        self.assertRaises(nacl.exceptions.Inv process_identity_revoke(revoke_payload)
+        self.assertRaises(nacl.exceptions.BadSignatureError, process_identity_revoke, revoke_payload)
 
         self.assertEqual(len(identities), 1)
 

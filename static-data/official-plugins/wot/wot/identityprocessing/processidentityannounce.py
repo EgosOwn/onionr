@@ -2,7 +2,7 @@ from logger import log as logging
 
 from nacl.signing import VerifyKey
 
-from wot.blockprocessingevent import WotCommand
+from wot.wotcommand import WotCommand
 from wot.identity import Identity
 from wot.identity.identityset import identities
 

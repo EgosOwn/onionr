@@ -14,6 +14,7 @@ from gossip.peerset import gossip_peer_set
 from logger import log as logging
 
 import onionrplugins
+from onionrplugins.pluginapis import plugin_apis
 
 locale.setlocale(locale.LC_ALL, '')
 sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
@@ -34,15 +35,24 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 plugin_name = 'wot'
-PLUGIN_VERSION = '0.0.0'
+PLUGIN_VERSION = '0.0.1'
 from wot.identity import identities
 from wot.loadfromblocks import load_identities_from_blocks
-
+from wot.identity import get_distance
 
 
 def on_init(api, data=None):
     logging.info(
         f"Web of Trust Plugin v{PLUGIN_VERSION} enabled")
     #onionrplugins.plugin_apis['wot'] = wot_test
+    plugin_apis['wot.get_distance'] = get_distance
 
-    list(map(lambda x: identities.add(x), load_identities_from_blocks()))
+    list(
+        map(
+            lambda x: identities.add(x),
+            load_identities_from_blocks())
+        )
+
+
+def on_wot_cmd(api, data=None):
+    return

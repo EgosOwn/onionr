@@ -4,7 +4,7 @@ from logger import log as logging
 from nacl.signing import VerifyKey
 
 from wot.getbykey import get_identity_by_key
-from wot.blockprocessingevent import WotCommand
+from wot.wotcommand import WotCommand
 
 
 def process_trust_signature(sig_payload: bytes):
