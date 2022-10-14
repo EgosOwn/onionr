@@ -17,3 +17,5 @@ def get_identity_by_key(
         if bytes(identity.key) == bytes(key):
             return identity
     raise KeyError("Identity not found")
+
+get_identity_by_key

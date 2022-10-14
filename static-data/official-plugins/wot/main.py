@@ -37,15 +37,16 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 plugin_name = 'wot'
 PLUGIN_VERSION = '0.0.1'
 from wot.identity import identities
+from cli import main_ui
+from onionrplugins import plugin_apis
+
+import wot
 from wot.loadfromblocks import load_identities_from_blocks
-from wot.identity import get_distance
 
 
 def on_init(api, data=None):
     logging.info(
         f"Web of Trust Plugin v{PLUGIN_VERSION} enabled")
-    #onionrplugins.plugin_apis['wot'] = wot_test
-    plugin_apis['wot.get_distance'] = get_distance
 
     list(
         map(
@@ -53,6 +54,8 @@ def on_init(api, data=None):
             load_identities_from_blocks())
         )
 
+    plugin_apis['rpc.add_module_to_api'](wot)
+
 
 def on_wot_cmd(api, data=None):
-    return
+    main_ui()

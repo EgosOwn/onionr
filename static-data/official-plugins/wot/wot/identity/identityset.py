@@ -28,3 +28,11 @@ class IdentitySet(set):
 # Set of identites within N-distance trust
 
 identities = IdentitySet()
+
+def serialize_identity_set():
+    serialized_idens = []
+    for identity in list(identities):
+        serialized_idens.append(identity.serialize())
+    return serialized_idens
+
+serialize_identity_set.json_compatible = True
