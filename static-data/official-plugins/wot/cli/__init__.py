@@ -9,7 +9,7 @@ def list_idens():
 
 
 main_menu = {
-    'l': (list_idens, 'list identities'),
+    'l': (list_idens, 'list trusted identities'),
     'q': (do_quit, 'quit CLI')
 }
 

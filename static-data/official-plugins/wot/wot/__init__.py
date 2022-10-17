@@ -6,4 +6,3 @@ from .identity import Identity
 from .getbykey import get_identity_by_key
 from .identity import identities
 from .identity.identityset import serialize_identity_set
-
