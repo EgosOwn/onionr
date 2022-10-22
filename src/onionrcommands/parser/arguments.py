@@ -35,7 +35,7 @@ def get_arguments() -> dict:
         ('version',): version.version,
         ('start', 'daemon'): daemonlaunch.start,
         ('stop', 'kill'): daemonlaunch.kill_daemon,
-        ('resetplugins', 'reset-plugins'): resetplugins.reset
+        ('resetplugins', 'reset-plugins', 'updateplugins', 'update-plugins'): resetplugins.reset
     }
     return args
 
