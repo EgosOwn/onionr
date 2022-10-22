@@ -1,4 +1,4 @@
-FROM python:3.7
+FROM python:3.10
 EXPOSE 8080
 
 USER root
@@ -15,7 +15,7 @@ RUN sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen && \
     locale-gen
 ENV LANG=en_US.UTF-8 LANGUAGE=en_US:en LC_ALL=en_US.UTF-8
 
-ADD ./requirements.txt /app/requirements.txt
+ADD ./requirements-x86-all-plugins.txt /app/requirements.txt
 RUN pip3 install --require-hashes -r requirements.txt
 
 #Add Onionr source
@@ -28,4 +28,4 @@ RUN chmod g=u -R /app
 USER 1000
 ENV HOME=/app
 
-CMD ["bash", "./run-onionr-node.sh"]
+CMD ["bash", "./onionr.sh", "start"]
