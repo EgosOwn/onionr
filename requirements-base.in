@@ -1,4 +1,4 @@
-psutil==5.9.2
+psutil==5.9.3
 ujson==5.5.0
 ordered-set==4.1.0
 # These two are also by Kevin
