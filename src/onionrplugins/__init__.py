@@ -17,7 +17,8 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
-import os, re, importlib
+import os, re
+import importlib.util
 import traceback
 
 from . import onionrevents as events

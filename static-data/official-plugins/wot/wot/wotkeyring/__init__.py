@@ -1,13 +1,13 @@
 import keyring
 
-from identity import Identity
+import wot.identity
 
 
 def get_identity_by_name(name: str) -> 'Identity':
     iden_key = keyring.get_credential('onionr.wot', name)
     if not iden_key:
         raise KeyError('Identity not found')
-    return Identity(iden_key, name)
+    return wot.identity.Identity(iden_key, name)
 
 
 def set_identity_by_name(identity: 'Identity', name: str) -> None:

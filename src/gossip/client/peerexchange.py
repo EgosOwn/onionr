@@ -8,8 +8,6 @@ if TYPE_CHECKING:
 from onionrplugins import onionrevents
 from logger import log as logging
 
-from socks import GeneralProxyError
-
 from ..peer import Peer
 from ..commands import GossipCommands, command_to_byte
 from ..constants import PEER_AMOUNT_TO_ASK, TRANSPORT_SIZE_BYTES

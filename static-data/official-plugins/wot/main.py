@@ -61,17 +61,23 @@ def on_init(api, data=None):
 
     # load active identity, from there load our trust graph
     active_identity = config.get('wot.active_identity_name', '')
-    if active_identity:
+    if not active_identity:
         try:
             script = sys.argv[0] + ' '
         except IndexError:
             script = ''
         logging.info(
-            "Generate a web of trust identity with '{script}wot new" +
+            f"Generate a web of trust identity with '{script}wot new" +
             "<name>' and restart Onionr")
         return
+    
     if config.get('wot.use_system_keyring', True):
-        iden = wotkeyring.get_identity_by_name(active_identity)
+        try:
+            iden = wotkeyring.get_identity_by_name(active_identity)
+        except KeyError:
+            logging.error(
+                f"Could not load identity {active_identity} " +
+                "from keyring despite configuration choice to do so")
     else:
         # load from file
         iden = load_identity_from_config(active_identity)

@@ -11,6 +11,7 @@ from wot.identity import Identity, identities
 from wot.exceptions import IdentitySerializationError
 from wot.getbykey import get_identity_by_key
 from wot.identityprocessing import processtrustsignature
+import wot.wotcommand
 
 
 def load_identity_from_block(block) -> Identity:
@@ -26,7 +27,7 @@ def load_identities_from_blocks() -> Generator[Identity, None, None]:
 
 
 def load_signatures_from_blocks() -> None:
-    for block in blockdb.get_blocks_by_type(b'wots'):
+    for block in blockdb.get_blocks_by_type(wot.wotcommand.block_type_map.trust):
         try:
             # If good signature,
             # it adds the signature to the signed identity's trust set
