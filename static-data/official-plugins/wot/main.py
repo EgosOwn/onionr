@@ -80,9 +80,17 @@ def on_init(api, data=None):
             "<name>' and restart Onionr")
         return
 
-    try:
+    if config.get('wot.use_system_keyring', True):
+        try:
+            iden = wotkeyring.get_identity_by_name(active_identity)
+        except KeyError:
+            logging.error(
+                f"Could not load identity {active_identity} " +
+                "from keyring despite configuration choice to do so")
+    else:
+        # load from file
         iden = load_identity_from_config(active_identity)
-    except KeyError:
+
         try:
             iden = wotkeyring.get_identity_by_name(active_identity)
         except KeyError:

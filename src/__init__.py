@@ -112,6 +112,7 @@ def onionr_main():
 
     Entrypoint for daemon is commands/daemonlaunch/__init__.py
     """
+    events.event('beforecmdparsing', threaded=False)
     parser.register()
 
 

@@ -1,7 +1,7 @@
 import base64
 import keyring
 
-from wot.identity import Identity
+import wot.identity
 
 
 def get_identity_by_name(name: str) -> 'Identity':
@@ -10,7 +10,7 @@ def get_identity_by_name(name: str) -> 'Identity':
 
     if not iden_key:
         raise KeyError('Identity not found')
-    return Identity(iden_key, name)
+    return wot.identity.Identity(iden_key, name)
 
 
 def set_identity(identity: 'Identity') -> None:

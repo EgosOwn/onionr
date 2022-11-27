@@ -42,12 +42,17 @@ socket_file_path = identifyhome.identify_home() + 'rpc.sock'
 from jsonrpc import JSONRPCResponseManager, dispatcher
 import jsonrpc
 import ujson
+import requests_unixsocket
+import requests
 jsonrpc.manager.json = ujson
+
+from onionrplugins import plugin_apis
 
 # RPC modules map Onionr APIs to the RPC dispacher
 from rpc import blocks, pluginrpcmethods
 
 from rpc.addmodule import add_module_to_api
+
 
 plugin_apis['rpc.add_module_to_api'] = add_module_to_api
 
@@ -61,6 +66,20 @@ class OnionrRPC(object):
         response = JSONRPCResponseManager.handle(data, dispatcher)
         return response.json
 
+
+def rpc_client(*args, **kwargs):
+    if config.get('rpc.use_sock_file', True):
+        session = requests_unixsocket.Session()
+        return session.post(
+            'http+unix://' + config.get('rpc.sock_file_path', socket_file_path).replace('/', '%2F') + '/rpc',
+            *args, **kwargs)
+    else:
+        return requests.post(
+            f'http://{config.get("rpc.bind_host")}/rpc:{config.get("rpc.bind_port")}',
+            *args, **kwargs)
+            
+def on_beforecmdparsing(api, data=None):
+    plugin_apis['rpc.rpc_client'] = rpc_client
 
 def on_afterinit(api, data=None):
     def ping():
