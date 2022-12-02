@@ -58,7 +58,6 @@ plugin_apis['rpc.add_module_to_api'] = add_module_to_api
 
 class OnionrRPC(object):
     @cherrypy.expose
-    @cherrypy.tools.json_out()
     def rpc(self):
         # Dispatcher is dictionary {<method_name>: callable}
         data = cherrypy.request.body.read().decode('utf-8')
@@ -75,9 +74,9 @@ def rpc_client(*args, **kwargs):
             *args, **kwargs)
     else:
         return requests.post(
-            f'http://{config.get("rpc.bind_host")}/rpc:{config.get("rpc.bind_port")}',
+            f'http://{config.get("rpc.bind_host")}:{config.get("rpc.bind_port")}/rpc',
             *args, **kwargs)
-            
+
 def on_beforecmdparsing(api, data=None):
     plugin_apis['rpc.rpc_client'] = rpc_client
 
