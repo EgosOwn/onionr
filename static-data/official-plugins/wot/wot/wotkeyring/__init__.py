@@ -1,15 +1,18 @@
 import base64
+
 import keyring
+import nacl.signing
 
 import wot.identity
 
 
 def get_identity_by_name(name: str) -> 'Identity':
     iden_key = keyring.get_credential('onionr.wot', name)
-    iden_key = base64.b85decode(iden_key)
-
     if not iden_key:
         raise KeyError('Identity not found')
+    iden_key = base64.b85decode(iden_key.password)
+    iden_key = nacl.signing.SigningKey(iden_key)
+
     return wot.identity.Identity(iden_key, name)
 
 

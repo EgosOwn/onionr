@@ -1,3 +1,5 @@
+import base64
+
 class IdentitySet(set):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -32,7 +34,7 @@ identities = IdentitySet()
 def serialize_identity_set():
     serialized_idens = []
     for identity in list(identities):
-        serialized_idens.append(identity.serialize())
+        serialized_idens.append(base64.b85encode(identity.serialize()).decode('utf-8'))
     return serialized_idens
 
 serialize_identity_set.json_compatible = True

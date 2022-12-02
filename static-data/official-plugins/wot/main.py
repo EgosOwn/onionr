@@ -99,6 +99,8 @@ def on_init(api, data=None):
             return
 
     logging.info('Loaded active identity: ' + iden.name)
+    identities.add(iden)
+
 
 def on_wot_cmd(api, data=None):
     def _create_new_iden():
