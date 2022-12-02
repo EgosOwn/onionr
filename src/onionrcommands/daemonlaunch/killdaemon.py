@@ -30,8 +30,7 @@ def kill_daemon():
             os.kill(int(pid.read()), SIGTERM)
     except FileNotFoundError:
         logging.error("Daemon not running/pid file missing")
-    logging.warn('Stopping the running daemon, if one exists...', timestamp=False,
-                )
+    logging.warn('Stopping the running daemon, if one exists...')
 
 
 kill_daemon.onionr_help = "Gracefully stops the "  # type: ignore
