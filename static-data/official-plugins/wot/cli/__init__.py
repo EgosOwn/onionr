@@ -11,10 +11,12 @@ import requests_unixsocket
 from logger import log as logging
 import onionrplugins.pluginapis
 
+from .trustidentity import trust_identity
+
 def do_quit(): raise KeyboardInterrupt
 
 
-rpc_payload = {
+rpc_payload_template = {
     "method": "echo",
     "params": ["example"],
     "jsonrpc": "2.0",
@@ -24,14 +26,14 @@ rpc_payload = {
 
 def list_idens():
     print('Listing identities')
-    payload = dict(rpc_payload)
+    payload = dict(rpc_payload_template)
     payload['method'] = 'wot.serialize_identity_set'
     del payload['params']
     print(onionrplugins.pluginapis.plugin_apis['rpc.rpc_client'](json=payload).text)
 
 
 def ping_api() -> result.Result:
-    payload = dict(rpc_payload)
+    payload = dict(rpc_payload_template)
     payload['method'] = 'ping'
     del payload['params']
     try:
@@ -51,6 +53,7 @@ def ping_api() -> result.Result:
 
 main_menu = {
     'l': (list_idens, 'list trusted identities'),
+    't': (trust_identity, 'trust identity'),
     'q': (do_quit, 'quit CLI')
 }
 
