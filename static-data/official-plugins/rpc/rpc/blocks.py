@@ -22,4 +22,3 @@ def insert_block(block):
     gossip_block_queues[queue_to_use].put_nowait(block)
     return "ok"
 
-#dispatcher['get_blocks_after_timestamp'] = get_blocks_after_timestamp
