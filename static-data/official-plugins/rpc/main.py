@@ -60,6 +60,12 @@ class OnionrRPC(object):
     @cherrypy.expose
     def rpc(self):
         # Dispatcher is dictionary {<method_name>: callable}
+        
+        if cherrypy.request.method == 'OPTIONS':
+            cherrypy.response.headers['Access-Control-Allow-Origin'] = '*'
+            cherrypy.response.headers['Access-Control-Allow-Methods'] = 'POST'
+            return ''
+
         data = cherrypy.request.body.read().decode('utf-8')
 
         response = JSONRPCResponseManager.handle(data, dispatcher)
