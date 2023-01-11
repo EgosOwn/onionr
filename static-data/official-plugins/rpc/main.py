@@ -97,6 +97,27 @@ def _gen_random_loopback():
     return f'127.{randbelow(256)}.{randbelow(256)}.{randbelow(256)}'
 
 
+def on_setunixsocket_cmd(api, data=None):
+    config.set('rpc.use_sock_file', True, savefile=True)
+    logging.info('Set RPC to use unix socket')
+
+def on_settcpsocket_cmd(api, data=None):
+    config.set('rpc.use_sock_file', False, savefile=True)
+    address = input('Enter address to bind to (default: random loopback): ').strip()
+    if not address:
+        address = _gen_random_loopback()
+    port = input('Enter port to bind to (default: 0 (random/picked by OS)): ').strip()
+    if not port:
+        port = 0
+    port = int(port)
+    config.set('rpc.bind_host', address, savefile=True)
+    config.set('rpc.bind_port', port, savefile=True)
+
+    logging.info(
+        'Set RPC to use TCP socket http://' + 
+        f'{config.get("rpc.bind_host")}:{config.get("rpc.bind_port")}')
+
+
 def on_init(api, data=None):
     bind_config = {}
     if config.get('rpc.use_sock_file', True, save=True):
