@@ -19,6 +19,7 @@ def get_blocks(timestamp):
 @dispatcher.add_method
 def create_block(
         block_data: 'base64', block_type: str, ttl: int, metadata: dict):
+    # TODO use a module from an old version to use multiprocessing to avoid blocking GIL
     # Wrapper for onionrblocks.create_block (take base64 to be compatible with RPC)
     bl = onionrblocks.create_anonvdf_block(
         base64.b64decode(block_data), block_type, ttl, **metadata)

@@ -52,18 +52,47 @@ from onionrplugins import plugin_apis
 from rpc import blocks, pluginrpcmethods
 
 from rpc.addmodule import add_module_to_api
+import longrpc
 
 
 plugin_apis['rpc.add_module_to_api'] = add_module_to_api
 
+def _detect_cors_and_add_headers():
+    cherrypy.response.headers['Access-Control-Allow-Headers'] = 'Content-Type'
+    cherrypy.response.headers['Access-Control-Allow-Origin'] = '*'
+    cherrypy.response.headers['Access-Control-Allow-Methods'] = 'POST'
+    if cherrypy.request.method == 'OPTIONS':
+        return True
+    return False
+
 class OnionrRPC(object):
     @cherrypy.expose
+    def queue_rpc(self):
+        if _detect_cors_and_add_headers():
+            return ''
+        
+        rpc_request_json: str = cherrypy.request.body.read().decode('utf-8')
+        longrpc.threaded_rpc(rpc_request_json)
+        return 'ok'
+
+    @cherrypy.expose
+    def get_rpc_result(self, id=0):
+        if _detect_cors_and_add_headers():
+            return ''
+            
+        results = longrpc.get_results(id)
+        if not results:
+            return '"no result"'
+        return results
+        
+    @cherrypy.expose
     def rpc(self):
+        # Basic RPC, intended for small amounts of work
+        # Use /queue_rpc for large workloads like creating blocks
+        # and getting results with /get_rpc_result?id=<id>
         # Dispatcher is dictionary {<method_name>: callable}
         
-        if cherrypy.request.method == 'OPTIONS':
-            cherrypy.response.headers['Access-Control-Allow-Origin'] = '*'
-            cherrypy.response.headers['Access-Control-Allow-Methods'] = 'POST'
+        if _detect_cors_and_add_headers():
             return ''
 
         data = cherrypy.request.body.read().decode('utf-8')
@@ -89,7 +118,10 @@ def on_beforecmdparsing(api, data=None):
 def on_afterinit(api, data=None):
     def ping():
         return "pong"
+    def always_fails():
+        raise Exception("This always fails")
     dispatcher['ping'] = ping
+    dispatcher['always_fails'] = always_fails
     pluginrpcmethods.add_plugin_rpc_methods()
 
 
