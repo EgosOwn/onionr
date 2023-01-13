@@ -5,10 +5,10 @@ from base64 import b85decode
 from onionrblocks import Block
 import onionrblocks
 from jsonrpc import dispatcher
-import ujson
 
 from gossip.blockqueues import gossip_block_queues
 from blockdb import get_blocks_after_timestamp
+from utils import multiproc
 
 
 @dispatcher.add_method
@@ -19,10 +19,16 @@ def get_blocks(timestamp):
 @dispatcher.add_method
 def create_block(
         block_data: 'base64', block_type: str, ttl: int, metadata: dict):
-    # TODO use a module from an old version to use multiprocessing to avoid blocking GIL
     # Wrapper for onionrblocks.create_block (take base64 to be compatible with RPC)
-    bl = onionrblocks.create_anonvdf_block(
-        base64.b64decode(block_data), block_type, ttl, **metadata)
+    bl = multiproc.subprocess_compute(
+        onionrblocks.create_anonvdf_block,
+        3600,
+        base64.b64decode(block_data),
+        block_type,
+        ttl,
+        **metadata
+        )
+
     return base64.b85encode(bl.raw).decode('utf-8')
 
 queue_to_use = randbits(1)

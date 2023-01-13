@@ -67,7 +67,7 @@ def _detect_cors_and_add_headers():
 
 class OnionrRPC(object):
     @cherrypy.expose
-    def queue_rpc(self):
+    def threaded_rpc(self):
         if _detect_cors_and_add_headers():
             return ''
         
