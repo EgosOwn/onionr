@@ -1,3 +1,4 @@
+import traceback
 from typing import TYPE_CHECKING
 from typing import List
 import secrets
@@ -61,10 +62,18 @@ async def accept_stem_blocks(
         if not raw_block:
             break
 
+        try:
+            bl = Block(block_id, raw_block, auto_verify=True)
+        except Exception as e:
+            logging.warn(
+                f"Error in received stem block {block_id} {str(e)}")
+            logging.debug(traceback.format_exc())
+            break
+
+
         logging.debug("Got a stem block, put into queue")
-        block_queue_to_use.put(
-            Block(block_id, raw_block, auto_verify=True)
-        )
+
+        block_queue_to_use.put(bl)
 
         # Regardless of stem phase, we add to queue
         # Client will decide if they are to be stemmed
