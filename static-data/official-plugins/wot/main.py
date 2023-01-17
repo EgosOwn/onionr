@@ -66,7 +66,11 @@ def on_init(api, data=None):
             load_identities_from_blocks())
         )
 
-    plugin_apis['rpc.add_module_to_api'](wot)
+    # Expose WOT to RPC if the RPC plugin is loaded
+    try:
+        plugin_apis['rpc.add_module_to_api'](wot)
+    except KeyError:
+        pass
 
     # load active identity, from there load our trust graph
     active_identity = config.get('wot.active_identity_name', '')
