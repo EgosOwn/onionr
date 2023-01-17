@@ -57,6 +57,7 @@ import longrpc
 
 plugin_apis['rpc.add_module_to_api'] = add_module_to_api
 
+
 def _detect_cors_and_add_headers():
     cherrypy.response.headers['Access-Control-Allow-Headers'] = 'Content-Type'
     cherrypy.response.headers['Access-Control-Allow-Origin'] = '*'
@@ -65,12 +66,13 @@ def _detect_cors_and_add_headers():
         return True
     return False
 
+
 class OnionrRPC(object):
     @cherrypy.expose
     def threaded_rpc(self):
         if _detect_cors_and_add_headers():
             return ''
-        
+
         rpc_request_json: str = cherrypy.request.body.read().decode('utf-8')
         longrpc.threaded_rpc(rpc_request_json)
         return 'ok'
@@ -79,19 +81,19 @@ class OnionrRPC(object):
     def get_rpc_result(self, id=0):
         if _detect_cors_and_add_headers():
             return ''
-            
+
         results = longrpc.get_results(id)
         if not results:
             return '"no result"'
         return results
-        
+
     @cherrypy.expose
     def rpc(self):
         # Basic RPC, intended for small amounts of work
         # Use /queue_rpc for large workloads like creating blocks
         # and getting results with /get_rpc_result?id=<id>
         # Dispatcher is dictionary {<method_name>: callable}
-        
+
         if _detect_cors_and_add_headers():
             return ''
 
@@ -146,7 +148,7 @@ def on_settcpsocket_cmd(api, data=None):
     config.set('rpc.bind_port', port, savefile=True)
 
     logging.info(
-        'Set RPC to use TCP socket http://' + 
+        'Set RPC to use TCP socket http://' +
         f'{config.get("rpc.bind_host")}:{config.get("rpc.bind_port")}')
 
 
