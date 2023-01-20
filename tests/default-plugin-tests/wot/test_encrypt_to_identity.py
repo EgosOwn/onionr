@@ -19,6 +19,7 @@ from blockdb import block_db_path
 import nacl.public
 import nacl.exceptions
 import nacl.signing
+import result
 
 import wot
 from wot.identity import Identity
@@ -42,7 +43,9 @@ class TestEncryptToIdentity(unittest.TestCase):
         test_message = b"test message"
 
         encrypted = crypto.encryption.encrypt_to_identity(identity, their_identity, test_message)
-        decrypted = nacl.public.Box(their_priv_key.to_curve25519_private_key(), iden_public.to_curve25519_public_key()).decrypt(encrypted)
+        self.assertIsInstance(encrypted, result.Ok)
+
+        decrypted = nacl.public.Box(their_priv_key.to_curve25519_private_key(), iden_public.to_curve25519_public_key()).decrypt(encrypted.value)
         self.assertEqual(decrypted, test_message)
 
     def test_encrypt_to_identity_str(self):
@@ -57,7 +60,8 @@ class TestEncryptToIdentity(unittest.TestCase):
         test_message = "test message"
 
         encrypted = crypto.encryption.encrypt_to_identity(identity, their_identity, test_message)
-        decrypted = nacl.public.Box(their_priv_key.to_curve25519_private_key(), iden_public.to_curve25519_public_key()).decrypt(encrypted)
+        self.assertIsInstance(encrypted, result.Ok)
+        decrypted = nacl.public.Box(their_priv_key.to_curve25519_private_key(), iden_public.to_curve25519_public_key()).decrypt(encrypted.value)
         self.assertEqual(decrypted, test_message.encode('utf-8'))
 
     def test_encrypt_to_identity_bytes_invalid(self):
@@ -72,7 +76,8 @@ class TestEncryptToIdentity(unittest.TestCase):
         test_message = b"test message"
 
         encrypted = crypto.encryption.encrypt_to_identity(identity, their_identity, test_message)
-        encrypted = encrypted[:-1] + b'\x00'
+        self.assertIsInstance(encrypted, result.Ok)
+        encrypted = encrypted.value[:-1] + b'\x00'
         try:
             decrypted = nacl.public.Box(their_priv_key.to_curve25519_private_key(), iden_public.to_curve25519_public_key()).decrypt(encrypted)
         except nacl.exceptions.CryptoError:

@@ -29,6 +29,7 @@ class Identity:
         self.trusted: Set[Identity] = IdentitySet()
         self.name = IdentityName(name)
         self.created_date = created_date
+        self.private_key: Union[None, SigningKey]
 
         self.private_key = self.key = None
 
