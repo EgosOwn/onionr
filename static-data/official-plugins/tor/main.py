@@ -71,7 +71,11 @@ def on_get_our_transport(api, data=None):
 def on_gossip_start(api, data: Set[Peer] = None):
     # We don't do gossip logic
 
-    starttor.start_tor()
+    try:
+        starttor.start_tor()
+    except OSError:
+        logging.error("Tor is not in your path. Install a recent version of Tor and try again.")
+        return
 
     with Controller.from_socket_file(control_socket) as controller:
         controller
