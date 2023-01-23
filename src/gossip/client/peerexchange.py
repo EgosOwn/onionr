@@ -22,6 +22,8 @@ def _do_ask_peer(peer):
         _ask_peer(peer)
     except TimeoutError:
         logging.debug("Timed out when asking for new peers")
+    except ConnectionError:
+        pass
     except Exception:
         logging.error(format_exc())
 

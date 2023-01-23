@@ -1,7 +1,9 @@
 from secrets import randbits
 import base64
+
 from typing import Union
 
+import ujson
 from onionrblocks import Block
 import onionrblocks
 from jsonrpc import dispatcher
@@ -28,8 +30,7 @@ def get_blocks(timestamp):
     return blocks
 
 
-@dispatcher.add_method
-def create_block(
+def _do_create_block(
         block_data: 'base64', block_type: str, ttl: int, metadata: dict):
     # Wrapper for onionrblocks.create_block
     # (take base64 to be compatible with RPC)
@@ -51,14 +52,19 @@ def create_block(
     }
     return bl_json
 
+@dispatcher.add_method
+def create_block(
+        block_data: 'base64', block_type: str, ttl: int, metadata: dict):
+    return _do_create_block(block_data, block_type, ttl, metadata)
+
 
 @dispatcher.add_method
 def create_and_insert_block(
         block_data: 'base64',
         block_type: str, ttl: int, metadata: dict) -> str:
-    bl = create_block(block_data, block_type, ttl, metadata)['id']
+    bl = _do_create_block(block_data, block_type, ttl, metadata)['id']
     insert_block(bl)
-    return bl['id']
+    return bl
 
 
 # As per dandelion++ spec the edge should be the same.

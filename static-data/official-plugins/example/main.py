@@ -6,13 +6,17 @@ import sys
 import os
 import locale
 from time import sleep
+import base64
 from logger import log as logging
 from typing import Set, TYPE_CHECKING
+import onionrplugins
+
+
+import requests
+import requests_unixsocket
 
 import blockdb
-from gossip.peerset import gossip_peer_set
-
-import onionrblocks
+import config
 
 locale.setlocale(locale.LC_ALL, '')
 sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
@@ -37,9 +41,21 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 plugin_name = 'example'
 PLUGIN_VERSION = '0.0.0'
 
+rpc_payload_template = {
+    "method": "echo",
+    "params": ["example"],
+    "jsonrpc": "2.0",
+    "id": 0,
+}
+
 
 def on_blocktest_cmd(api, data=None):
-    bl = onionrblocks.create_anonvdf_block(input("Enter a message:").encode('utf-8'), b"tst", 3600)
+    message = base64.b64encode(input("Enter a message ").encode('utf-8')).decode('utf-8')
+    payload = rpc_payload_template
+    payload['method'] = 'create_and_insert_block'
+    payload['params'] = [message, "tst", 3600, {}]
+    req = onionrplugins.pluginapis.plugin_apis['rpc.rpc_client'](json=payload).text
+    print(req)
 
 
 def on_printtest_cmd(api, data=None):

@@ -88,7 +88,7 @@ def gossip_server():
                     try:
                         await diffuse_blocks(reader, writer)
                     except Exception:
-                        logging.warn(
+                        logging.debug(
                             f"Err streaming blocks\n{traceback.format_exc()}",
                             )
                 case GossipCommands.PUT_BLOCKS:

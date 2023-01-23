@@ -1,6 +1,6 @@
 """Onionr - Private P2P Communication.
 
-Unix transport plugin. Intended for testing Onionr networks using IPC
+Unix transport plugin. Intended for testing Onionr without actual network traffic.
 """
 import sys
 import os

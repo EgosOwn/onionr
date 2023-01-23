@@ -11,8 +11,8 @@ def connect_peer(peer):
     try:
         s = peer.get_socket(120)
     except Exception:
-        logging.warn(f"Could not connect to {peer.transport_address}")
-        logging.warn(traceback.format_exc())
+        logging.debug(f"Could not connect to {peer.transport_address}")
+        logging.debug(traceback.format_exc())
     else:
         with s:
             s.sendall(command_to_byte(GossipCommands.PING))

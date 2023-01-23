@@ -80,7 +80,7 @@ def on_init(api, data=None):
         except IndexError:
             script = ''
         logging.info(
-            f"Generate a web of trust identity with '{script}wot new" +
+            f"Generate a web of trust identity with '{script}wot new " +
             "<name>' and restart Onionr")
         return
 
