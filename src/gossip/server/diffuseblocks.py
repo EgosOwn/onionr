@@ -102,6 +102,8 @@ async def diffuse_blocks(reader: 'StreamReader', writer: 'StreamWriter'):
                     break
     except ConnectionResetError:
         pass
+    except IncompleteReadError:
+        pass
     except Exception:
         logging.warn(traceback.format_exc())
 
