@@ -62,7 +62,7 @@ def create_block(
 def create_and_insert_block(
         block_data: 'base64',
         block_type: str, ttl: int, metadata: dict) -> str:
-    bl = _do_create_block(block_data, block_type, ttl, metadata)['id']
+    bl = _do_create_block(block_data, block_type, ttl, metadata)
     insert_block(bl)
     return bl
 
