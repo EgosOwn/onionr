@@ -30,11 +30,14 @@ async def do_stem_stream(
             try:
                 # queues can't block because we're in async
                 bl = block_queue.get(block=False)
+                assert hasattr(bl, 'raw')
             except Empty:
                 remaining_time = d_phase.remaining_time()
                 await sleep(1)
             else:
                 break
+        if not remaining_time:
+            break
         logging.info("Sending block over dandelion++")
 
         block_size = str(len(bl.raw)).zfill(BLOCK_SIZE_LEN)
