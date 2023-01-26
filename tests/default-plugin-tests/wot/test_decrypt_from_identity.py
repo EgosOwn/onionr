@@ -46,6 +46,24 @@ class TestDecryptFromIdentity(unittest.TestCase):
         decrypted = crypto.encryption.decrypt_from_identity(identity, their_identity, encrypted)
         self.assertIsInstance(decrypted, result.Ok)
         self.assertEqual(decrypted.value, test_message)
+    
+    def test_decrypt_from_identity_anonymously(self):
+        iden_priv_key = signing.SigningKey.generate()
+        iden_public = iden_priv_key.verify_key
+        identity = Identity(iden_priv_key, "us")
+
+        their_priv_key = signing.SigningKey.generate()
+        their_public = their_priv_key.verify_key
+        their_identity = Identity(their_priv_key, "them")
+
+        test_message = b"test message"
+
+        encrypted = nacl.public.SealedBox(their_public.to_curve25519_public_key()).encrypt(test_message)
+        self.assertIsInstance(encrypted, bytes)
+
+        decrypted = crypto.encryption.decrypt_from_identity_anonymously(their_identity, encrypted)
+        self.assertIsInstance(decrypted, result.Ok)
+        self.assertEqual(decrypted.value, test_message)
 
 
 
