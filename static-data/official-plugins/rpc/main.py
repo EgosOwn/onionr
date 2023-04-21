@@ -89,7 +89,7 @@ class OnionrRPC(object):
 
     @cherrypy.expose
     def rpc(self):
-        # Basic RPC, intended for small amounts of work
+        # Basic RPC, intended for work that won't block very long
         # Use /queue_rpc for large workloads like creating blocks
         # and getting results with /get_rpc_result?id=<id>
         # Dispatcher is dictionary {<method_name>: callable}
