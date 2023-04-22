@@ -74,18 +74,19 @@ def create_and_insert_block(
 def prepare_block_for_vdf(block_data: 'base64', block_type, ttl: int, metadata: dict):
     # This allows for untrusted clients to create blocks, they just have to compute the VDF
     metadata['ttl'] = ttl
+    block_data = base64.b64decode(block_data)
     kasten_packed = kasten_pack.pack(block_data, block_type, metadata, int(time()))
     kasten_obj = kasten.Kasten('', kasten_packed, kasten.generator.KastenBaseGenerator, auto_check_generator=False)
     return {
-        'raw': base64.b64encode(kasten_obj).decode('utf-8'),
-        'rounds_needed': onionrblocks.blockcreator.anonvdf.AnonVDFGenerator.get_rounds_for_ttl_seconds(ttl, len(kasten_packed))
+        'raw': base64.b64encode(kasten_packed).decode('utf-8'),
+        'rounds_needed': onionrblocks.blockcreator.anonvdf.AnonVDFGenerator.get_rounds_for_ttl_seconds(ttl, len(kasten_obj.get_packed()))
     }
 
 @dispatcher.add_method
 def assemble_and_insert_block(
-        kasten_packed: 'base64', vdf_result: 'base64') -> str:
+        kasten_packed: 'base64', vdf_result: str) -> str:
     bl = onionrblocks.Block(
-        base64.b64decode(vdf_result), 
+        vdf_result, 
         base64.b64decode(kasten_packed), auto_verify=True)
     insert_block(bl)
     return {

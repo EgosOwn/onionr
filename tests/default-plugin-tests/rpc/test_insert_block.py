@@ -26,18 +26,6 @@ from gossip import blockqueues
 
 import blocks
 
-class MockQueue:
-    def __init__(self):
-        self.data = []
-    def get_nowait(self):
-        return self.data.pop(0)
-
-    def put_nowait(self, data):
-        print("putting", data)
-        self.data.append(data)
-        return True
-
-
 
 class RPCInsertBlockTest(unittest.TestCase):
 
